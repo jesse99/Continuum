@@ -1,0 +1,9 @@
+<Bosses namespaces = "Gear Shared Subversion">
+	<Extend name = "Sccs">			
+		<Implementation interfaces = "IInterface +ISccs" name = "Svn"/>
+	</Extend>
+
+	<Extend name = "TextEditorPlugin">			
+		<Implementation interfaces = "IInterface +ITextContextCommands" name = "SvnTextCommands"/>
+	</Extend>
+</Bosses>

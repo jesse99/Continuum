@@ -1,0 +1,313 @@
+# Add the IComparable and IEquatable bases, add Equals(object and Equals(T), add 
+# operator== and !=, the relational operators, and GetHashCode.
+define Run()
+	if Scope is TypeDeclaration then
+		Process(Scope)
+			
+	elif Scope is Member then
+		Process(Scope.DeclaringType)
+			
+	else
+		Raise("Selection is not within a type or member.")
+	end
+end
+
+define Process(type)
+	if type.IsStatic then
+		Raise("Can't make a static class IComparable.")
+	end
+	
+	Globals.AddUsing("System")
+	type.AddBase("IComparable<#{type.Name}>")
+	type.AddBase("IEquatable<#{type.Name}>")
+
+	if type is Class then
+		ProcessClass(type)
+	elif type is Struct then
+		ProcessStruct(type)
+	end
+end
+
+define ProcessClass(type)
+	if not type.HasMember("Equals", ["object"]) then
+		type.AddMember(
+"public override bool Equals(object obj)
+{
+	if (obj == null)
+		return false;
+	
+	#{type.Name} rhs = obj as #{type.Name};
+	return Compare(this, rhs) == 0;
+}")
+	end
+
+	if not type.HasMember("Equals", [type.Name]) then
+		type.AddMember(
+"public bool Equals(#{type.Name} rhs)
+{
+	return Compare(this, rhs) == 0;
+}")
+	end
+	
+	if not type.HasMember("Compare", [type.Name]) then
+		type.AddMember(
+"public static int Compare(#{type.Name} lhs, #{type.Name} rhs)
+{
+	if (object.ReferenceEquals(lhs, rhs))
+		return 0;
+	
+	if ((object) lhs == null)
+		if ((object) rhs == null)
+			return 0;
+		else
+			return -1;
+	else if ((object) rhs == null)
+		return +1;
+	
+	int result = 0;
+	
+#{GetCompareMembers(type)}
+	return result;
+}")
+	end
+
+	if not type.HasMember("CompareTo", [type.Name]) then
+		type.AddMember(
+"public int CompareTo(#{type.Name} rhs)
+{
+	return Compare(this, rhs);
+}")
+	end
+
+	if not type.HasMember("==", [type.Name, type.Name]) then
+		type.AddMember(
+"public static bool operator==(#{type.Name} lhs, #{type.Name} rhs)
+{
+	return Compare(lhs, rhs) == 0;
+}")
+	end
+
+	if not type.HasMember("!=", [type.Name, type.Name]) then
+		type.AddMember(
+"public static bool operator!=(#{type.Name} lhs, #{type.Name} rhs)
+{
+	return Compare(lhs, rhs) != 0;
+}")
+	end
+
+	if not type.HasMember(">=", [type.Name, type.Name]) then
+		type.AddMember(
+"public static bool operator>=(#{type.Name} lhs, #{type.Name} rhs)
+{
+	return Compare(lhs, rhs) >= 0;
+}")
+	end
+
+	if not type.HasMember(">", [type.Name, type.Name]) then
+		type.AddMember(
+"public static bool operator>(#{type.Name} lhs, #{type.Name} rhs)
+{
+	return Compare(lhs, rhs) > 0;
+}")
+	end
+
+	if not type.HasMember("<=", [type.Name, type.Name]) then
+		type.AddMember(
+"public static bool operator<=(#{type.Name} lhs, #{type.Name} rhs)
+{
+	return Compare(lhs, rhs) <= 0;
+}")
+	end
+
+	if not type.HasMember("<", [type.Name, type.Name]) then
+		type.AddMember(
+"public static bool operator<(#{type.Name} lhs, #{type.Name} rhs)
+{
+	return Compare(lhs, rhs) < 0;
+}")
+	end
+
+	if not type.HasMember("GetHashCode", []) then
+		type.AddMember(
+"public override int GetHashCode()
+{
+	int hash = 0;
+	
+	unchecked
+	{
+#{GetHashMembers(type)}
+	}
+	
+	return hash;
+}")
+	end
+end
+
+define ProcessStruct(type)
+	if not type.HasMember("Equals", ["object"]) then
+		type.AddMember(
+"public override bool Equals(object obj)
+{
+	if (obj == null)
+		return false;
+	
+	if (GetType() != obj.GetType())
+		return false;
+	
+	#{type.Name} rhs = (#{type.Name}) obj;
+	return CompareTo(rhs) == 0;
+}")
+	end
+
+	if not type.HasMember("Equals", [type.Name]) then
+		type.AddMember(
+"public bool Equals(#{type.Name} rhs)
+{
+	return CompareTo(rhs) == 0;
+}")
+	end
+
+	if not type.HasMember("CompareTo", [type.Name]) then
+		type.AddMember(
+"public int CompareTo(#{type.Name} rhs)
+{
+	int result = 0;
+	
+#{GetCompareMembers(type)}
+	return result;
+}")
+	end
+
+	if not type.HasMember("==", [type.Name, type.Name]) then
+		type.AddMember(
+"public static bool operator==(#{type.Name} lhs, #{type.Name} rhs)
+{
+	return lhs.CompareTo(rhs) == 0;
+}")
+	end
+
+	if not type.HasMember("!=", [type.Name, type.Name]) then
+		type.AddMember(
+"public static bool operator!=(#{type.Name} lhs, #{type.Name} rhs)
+{
+	return lhs.CompareTo(rhs) != 0;
+}")
+	end
+
+	if not type.HasMember(">=", [type.Name, type.Name]) then
+		type.AddMember(
+"public static bool operator>=(#{type.Name} lhs, #{type.Name} rhs)
+{
+	return lhs.CompareTo(rhs) >= 0;
+}")
+	end
+
+	if not type.HasMember(">", [type.Name, type.Name]) then
+		type.AddMember(
+"public static bool operator>(#{type.Name} lhs, #{type.Name} rhs)
+{
+	return lhs.CompareTo(rhs) > 0;
+}")
+	end
+
+	if not type.HasMember("<=", [type.Name, type.Name]) then
+		type.AddMember(
+"public static bool operator<=(#{type.Name} lhs, #{type.Name} rhs)
+{
+	return lhs.CompareTo(rhs) <= 0;
+}")
+	end
+
+	if not type.HasMember("<", [type.Name, type.Name]) then
+		type.AddMember(
+"public static bool operator<(#{type.Name} lhs, #{type.Name} rhs)
+{
+	return lhs.CompareTo(rhs) < 0;
+}")
+	end
+
+	if not type.HasMember("GetHashCode", []) then
+		type.AddMember(
+"public override int GetHashCode()
+{
+	int hash = 0;
+	
+	unchecked
+	{
+#{GetHashMembers(type)}
+	}
+	
+	return hash;
+}")
+	end
+end
+
+define GetCompareMembers(type)
+	let p = GetCompareProps(type), f = GetCompareFields(type) in
+		if p.IsEmpty and f.IsEmpty then
+			return "	"
+		elif p.IsEmpty then
+			return f
+		elif f.IsEmpty then
+			return p
+		else
+			return p + "
+" + f
+		end
+	end
+end
+
+define GetCompareProps(type)
+	let prefix = "lhs." when type is Class else "", props = (from prop in type.Properties 
+	where not prop.IsStatic and prop.HasGetter and prop.GetterBody == null # null body means it is an auto-property
+	select "	if (result == 0)
+		result = #{prefix}#{prop.Name}.CompareTo(rhs.#{prop.Name});
+	") in
+		return "
+".Join(props)
+	end
+end
+
+define GetCompareFields(type)
+	let prefix = "lhs." when type is Class else "", fields = (from field in type.Fields 
+	where not field.IsStatic and not field.IsConst 
+	select "	if (result == 0)
+		result = #{prefix}#{field.Name}.CompareTo(rhs.#{field.Name});
+	") in
+		return "
+".Join(fields)
+	end
+end
+
+define GetHashMembers(type)
+	let p = GetHashProps(type), f = GetHashFields(type) in
+		if p.IsEmpty and f.IsEmpty then
+			return "	"
+		elif p.IsEmpty then
+			return f
+		elif f.IsEmpty then
+			return p
+		else
+			return p + "
+" + f
+		end
+	end
+end
+
+define GetHashProps(type)
+	let props = (from prop in type.Properties 
+	where not prop.IsStatic and prop.HasGetter and prop.GetterBody == null 
+	select "		hash += #{prop.Name}.GetHashCode();") in
+		return "
+".Join(props)
+	end
+end
+
+define GetHashFields(type)
+	let fields = (from field in type.Fields 
+	where not field.IsStatic and not field.IsConst 
+	select "		hash += #{field.Name}.GetHashCode();") in
+		return "
+".Join(fields)
+	end
+end

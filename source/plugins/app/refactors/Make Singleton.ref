@@ -1,0 +1,100 @@
+# Changes ctors to private, adds a static Instance method, and adds an instance
+# field.
+define Run()
+	if Scope is Class then
+		Process(Scope)
+	
+	elif Scope is Member and Scope.DeclaringType is Class then
+		Process(Scope.DeclaringType)
+			
+	else
+		Raise("Selection is not within a class.")
+	end
+end
+
+define Process(type)
+	if type.IsStatic then
+		Raise("Can't make a static class a singleton!")
+	end
+	
+	let threaded = Ask("Make thread safe?", false) in
+		let fname = type.GetFieldName("static", "instance") in
+			if threaded then
+				MultiThreaded(type, fname)
+			else
+				SingleThreaded(type, fname)
+			end
+		end
+	end
+end
+
+define SingleThreaded(type, fname)
+	ProcessCtors(type, false, fname)
+	type.Body.InsertLast("private static #{type.Name} #{fname};")
+end
+
+define MultiThreaded(type, fname)
+	ProcessCtors(type, true, fname)
+	type.Body.InsertLast("private static object ms_lock = new object();")
+	type.Body.InsertLast("private static #{type.Name} #{fname};")
+end
+
+define ProcessCtors(type, threaded, fname)
+	let ctors = (from method in type.Methods where method.IsConstructor) in
+		if ctors.IsEmpty then
+			AddDefaultCtor(type)
+			type.Body.InsertFirst(InstanceMethod(type, threaded, fname))
+		else
+			MakeCtorsPrivate(ctors)
+			ctors.Last.AddMemberAfter(InstanceMethod(type, threaded, fname))
+		end
+	end
+end
+
+define AddDefaultCtor(type)
+	type.Body.InsertFirst(
+"private #{type.Name}()
+{
+}")
+end
+
+define MakeCtorsPrivate(ctors)
+	for ctor in ctors do	
+		ctor.ChangeAccess("private")
+	end
+end
+
+define InstanceMethod(type, threaded, fname)
+	if threaded then
+		return
+"public static #{type.Name} Instance
+{
+	get
+	{
+		if (#{fname} == null)
+		{
+			lock (ms_lock)
+			{
+				if (#{fname} == null)
+				{
+					#{fname} = new #{type.Name}();
+				}
+			}
+		}
+		
+		return #{fname};
+	}
+}"
+	else
+"public static #{type.Name} Instance
+{
+	get
+	{
+		if (#{fname} == null)
+			#{fname} = new #{type.Name}();
+		
+		return #{fname};
+	}
+}"
+	end
+end

@@ -1,0 +1,11 @@
+<Language name = "xml">
+	<comment>&lt;!-- (?: . | \r | \n)*? --></comment>
+	<keyword>(?:&lt; \s*) [\w:.]+</keyword>						<!-- <element -->
+	<keyword>(?:&lt; \s*) /[\w:.]+ \s* &gt;</keyword>			<!-- </element> -->
+	<keyword>(?:&lt; \s*) \? [\w:.]+</keyword>					<!-- <?directive -->
+	<other1>[\w:.]+ (?= \s* = \s* &quot;|&apos;)</other1>	<!-- attribute = " -->
+	<string>&quot; [^&quot;\r\n]* &quot;</string>
+	<string>&apos; [^&apos;\r\n]* &apos;</string>
+</Language>
+
+

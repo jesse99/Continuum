@@ -1,0 +1,11 @@
+Scripts are language agnostic command line tools used to modify the 
+selection in a Continuum text window. The scripts may be written in 
+any language but need to use a shebang (like #!/bin/sh) so that they 
+can be run by simply executing them. 
+
+The script should read from standard in and write to standard out.
+
+Scripts in the standard and user directories are added to the Text menu.
+Scripts in the standard directory will be overwritten if they are out of date.
+Continuum scripts that are missing from both the standard and unused
+directories will be copied into the standard directory.

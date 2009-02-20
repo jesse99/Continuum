@@ -1,0 +1,58 @@
+# Adds code to create a thread and a stub for the thread method.
+define Run()
+	if Scope is Method then
+		Globals.AddUsing("System")				# need this for Exception
+		Globals.AddUsing("System.Threading")
+	
+		let type = Scope.DeclaringType, default = type.GetUniqueName("DoThread") in
+			let name = Ask("Thread method name:", default) in
+				if type.IsStatic then
+					StaticClass(type, Scope, name)
+				else
+					NormalClass(type, Scope, name)
+				end
+			end
+		end
+	else
+		Raise("Selection is not within a method.")
+	end
+end
+
+# Note that it is not neccesary to retain a reference to the thread object.
+define NormalClass(type, method, name)
+	InsertAfterSelection(
+"Thread thread = new Thread(this.#{name});
+thread.Name = ""#{type.Name}.#{name}"";
+thread.IsBackground = true;		// allow the app to quit even if the thread is still running
+thread.Start();")
+
+	method.AddMemberAfter(
+"private void #{name}()
+{
+	try
+	{
+	}
+	catch (Exception)	// note that unhandled thread exceptions normally terminate the app
+	{
+	}
+}")
+end
+
+define StaticClass(type, method, name)
+	InsertAfterSelection(
+"Thread thread = new Thread(#{type.Name}.#{name});
+thread.Name = ""#{type.Name}.#{name}"";
+thread.IsBackground = true;		// allow the app to quit even if the thread is still running
+thread.Start();")
+
+	method.AddMemberAfter(
+"private static void #{name}()
+{
+	try
+	{
+	}
+	catch (Exception)	// note that unhandled thread exceptions normally terminate the app
+	{
+	}
+}")
+end

@@ -1,0 +1,196 @@
+# Inherit from IDisposable, add Dispose and/or finalizers, and throw 
+# ObjectDisposedException. 
+define Run()
+	if Scope is TypeDeclaration then
+		Process(Scope)
+			
+	elif Scope is Member then
+		Process(Scope.DeclaringType)
+			
+	else
+		Raise("Selection is not within a type or member.")
+	end
+end
+
+define Process(type)
+	Globals.AddUsing("System")
+	type.AddBase("IDisposable")
+		
+	if not (type is Interface) then
+		AddExceptions(type)
+					
+		if type.IsSealed then
+			if HasNativeFields(type) then
+				SealedAndNative(type)
+			else
+				SealedAndManaged(type)
+			end
+		else
+			if HasNativeFields(type) then
+				UnealedAndNative(type)
+			else
+				UnealedAndManaged(type)
+			end
+		end
+	end
+end
+
+# Note that event accessors should normally not throw.
+define AddExceptions(type)
+	for method in type.Methods where method.Body != null and not method.IsStatic and not method.IsFinalizer and not method.IsConstructor do
+		if method.Name != "Equals" and method.Name != "Compare" and method.Name != "GetHashCode" and method.Name != "ToString" and method.Name != "Dispose" then
+			InsertThrow(method.Body)
+		end
+	end
+
+	for prop in type.Properties where prop.SetterBody != null and not prop.IsStatic do
+		InsertThrow(prop.SetterBody)
+	end
+
+	for indexer in type.Indexers where indexer.SetterBody != null and not indexer.IsStatic do
+		InsertThrow(indexer.SetterBody)
+	end
+
+	for op in type.Operators where op.Body != null and not op.IsStatic do
+		if op.Name != "==" and op.Name != "!=" and not op.IsImplicit then
+			InsertThrow(op.Body)
+		end
+	end
+end
+
+define InsertThrow(body)
+	body.InsertFirst(
+"if (Disposed)
+	throw new ObjectDisposedException(GetType().Name);")
+end
+
+define SealedAndManaged(type)
+	type.AddMember(
+"public void Dispose()
+{
+	if (!Disposed)
+	{
+		// Clean up the managed resources here.
+		
+		Disposed = true;
+	}
+}")
+
+	type.AddMember("private bool Disposed {get; set;}")
+end
+
+define UnealedAndManaged(type)
+	type.AddMember(
+"public void Dispose()
+{
+	Dispose(true);
+}")
+
+	type.AddMember(
+"protected virtual void Dispose(bool disposing)
+{
+	if (!Disposed)
+	{
+		// Clean up the managed resources here.
+		
+		Disposed = true;
+	}
+}")
+
+	type.AddMember("protected bool Disposed {get; private set;}")
+end
+
+define SealedAndNative(type)
+	AddFinalizerType(type)
+
+	type.AddMember(
+"public void Dispose()
+{
+	Dispose(true);
+	GC.SuppressFinalize(this);
+}")
+
+	type.AddMember(
+"private void Dispose(bool disposing)
+{
+	if (!Disposed)
+	{
+		if (disposing)
+		{
+			// This code will execute if we were called from Dispose()
+			// so we can call methods on our managed fields.
+		}
+		
+		// There are only very weak guarantees on the order in which
+		// finalizers are called so we should not use any managed
+		// objects here unless we are sure that they (and all objects
+		// they may use) are not finalizeable. Note that System.Console
+		// may be used.
+		Disposed = true;
+	}
+}")
+
+	type.AddMember("private bool Disposed {get; set;}")
+end
+
+define UnealedAndNative(type)
+	AddFinalizerType(type)
+
+	type.AddMember(
+"public void Dispose()
+{
+	Dispose(true);
+	GC.SuppressFinalize(this);
+}")
+
+	type.AddMember(
+"protected virtual void Dispose(bool disposing)
+{
+	if (!Disposed)
+	{
+		if (disposing)
+		{
+			// This code will execute if we were called from Dispose()
+			// so we can call methods on our managed fields.
+		}
+		
+		// There are only very weak guarantees on the order in which
+		// finalizers are called so we should not use any managed
+		// objects here unless we are sure that they (and all objects
+		// they may use) are not finalizeable. Note that System.Console
+		// may be used.
+		Disposed = true;
+	}
+}")
+
+	type.AddMember("protected bool Disposed {get; private set;}")
+end
+
+define AddFinalizerType(type)
+	let finalizers = (from method in type.Methods where method.IsFinalizer) in
+		if finalizers.IsEmpty then
+			type.AddMember(
+"~#{type.Name}()
+{
+	// Note that this is called even if the ctor throws so it's important
+	// to check for null fields (if the finalizer throws your app will be
+	// torn down). Also note that this will execute within a worker thread.
+	Dispose(false);
+}")
+		else
+			finalizers.Head.Body.InsertLast("Dispose(false);")
+		end
+	end
+end
+
+define HasNativeFields(type)
+	for field in type.Fields where not field.IsStatic do
+		if type.Namespace.TypeMatches(field.Type, "System.IntPtr") then
+			return true
+		elif type.Namespace.TypeMatches(field.Type, "System.UIntPtr") then
+			return true
+		end
+	end
+	
+	return false
+end

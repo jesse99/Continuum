@@ -1,0 +1,215 @@
+# Add the IEquatable base, add Equals(object and Equals(T), add operator== 
+# and !=, add GetHashCode.
+define Run()
+	if Scope is TypeDeclaration then
+		Process(Scope)
+			
+	elif Scope is Member then
+		Process(Scope.DeclaringType)
+			
+	else
+		Raise("Selection is not within a type or member.")
+	end
+end
+
+define Process(type)
+	if type.IsStatic then
+		Raise("Can't make a static class IEquatable.")
+	end
+	
+	Globals.AddUsing("System")
+	type.AddBase("IEquatable<#{type.Name}>")
+
+	if type is Class then
+		ProcessClass(type)
+	elif type is Struct then
+		ProcessStruct(type)
+	end
+end
+
+define ProcessClass(type)
+	if not type.HasMember("Equals", ["object"]) then
+		type.AddMember(
+"public override bool Equals(object obj)
+{
+	if (obj == null)
+		return false;
+	
+	#{type.Name} rhs = obj as #{type.Name};
+	return this == rhs;
+}")
+	end
+
+	if not type.HasMember("Equals", [type.Name]) then
+		type.AddMember(
+"public bool Equals(#{type.Name} rhs)
+{
+	return this == rhs;
+}")
+	end
+
+	if not type.HasMember("==", [type.Name, type.Name]) then
+		type.AddMember(
+"public static bool operator==(#{type.Name} lhs, #{type.Name} rhs)
+{
+	if (object.ReferenceEquals(lhs, rhs))
+		return true;
+	
+	if ((object) lhs == null || (object) rhs == null)
+		return false;
+	
+#{GetEqualMembers(type)}
+	return true;
+}")
+	end
+
+	if not type.HasMember("!=", [type.Name, type.Name]) then
+		type.AddMember(
+"public static bool operator!=(#{type.Name} lhs, #{type.Name} rhs)
+{
+	return !(lhs == rhs);
+}")
+	end
+	
+	if not type.HasMember("GetHashCode", []) then
+		type.AddMember(
+"public override int GetHashCode()
+{
+	int hash = 0;
+	
+	unchecked
+	{
+#{GetHashMembers(type)}
+	}
+	
+	return hash;
+}")
+	end
+end
+
+define ProcessStruct(type)
+	if not type.HasMember("Equals", ["object"]) then
+		type.AddMember(
+"public override bool Equals(object obj)
+{
+	if (obj == null)
+		return false;
+	
+	if (GetType() != obj.GetType())
+		return false;
+	
+	#{type.Name} rhs = (#{type.Name}) obj;
+	return this == rhs;
+}")
+	end
+
+	if not type.HasMember("Equals", [type.Name]) then
+		type.AddMember(
+"public bool Equals(#{type.Name} rhs)
+{
+	return this == rhs;
+}")
+	end
+
+	if not type.HasMember("==", [type.Name, type.Name]) then
+		type.AddMember(
+"public static bool operator==(#{type.Name} lhs, #{type.Name} rhs)
+{
+#{GetEqualMembers(type)}
+	return true;
+}")
+	end
+
+	if not type.HasMember("!=", [type.Name, type.Name]) then
+		type.AddMember(
+"public static bool operator!=(#{type.Name} lhs, #{type.Name} rhs)
+{
+	return !(lhs == rhs);
+}")
+	end
+
+	if not type.HasMember("GetHashCode", []) then
+		type.AddMember(
+"public override int GetHashCode()
+{
+	int hash = 0;
+	
+	unchecked
+	{
+#{GetHashMembers(type)}
+	}
+	
+	return hash;
+}")
+	end
+end
+
+define GetEqualMembers(type)
+	let p = GetEqualProps(type), f = GetEqualFields(type) in
+		if p.IsEmpty and f.IsEmpty then
+			return "	"
+		elif p.IsEmpty then
+			return f
+		elif f.IsEmpty then
+			return p
+		else
+			return p + "
+" + f
+		end
+	end
+end
+
+define GetEqualProps(type)
+	let props = (from prop in type.Properties 
+	where not prop.IsStatic and prop.HasGetter and prop.GetterBody == null # null body means it is an auto-property
+	select "	if (lhs.#{prop.Name} != rhs.#{prop.Name})
+		return false;
+	") in
+		return "
+".Join(props)
+	end
+end
+
+define GetEqualFields(type)
+	let fields = (from field in type.Fields 
+	where not field.IsStatic and not field.IsConst 
+	select "	if (lhs.#{field.Name} != rhs.#{field.Name})
+		return false;
+	") in
+		return "
+".Join(fields)
+	end
+end
+
+define GetHashMembers(type)
+	let p = GetHashProps(type), f = GetHashFields(type) in
+		if p.IsEmpty and f.IsEmpty then
+			return "	"
+		elif p.IsEmpty then
+			return f
+		elif f.IsEmpty then
+			return p
+		else
+			return p + "
+" + f
+		end
+	end
+end
+
+define GetHashProps(type)
+	let props = (from prop in type.Properties 
+	where not prop.IsStatic and prop.HasGetter and prop.GetterBody == null 
+	select "		hash += #{prop.Name}.GetHashCode();") in
+		return "
+".Join(props)
+	end
+end
+
+define GetHashFields(type)
+	let fields = (from field in type.Fields 
+	where not field.IsStatic and not field.IsConst 
+	select "		hash += #{field.Name}.GetHashCode();") in
+		return "
+".Join(fields)
+	end
+end

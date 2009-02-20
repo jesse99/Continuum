@@ -1,0 +1,5 @@
+<!-- Gendarme rule ignore files. -->
+<Language name = "ignore" ignore_whitespace = "true">
+	<comment>\# .* $</comment>
+	<other1>^R:.+$</other1>
+</Language>

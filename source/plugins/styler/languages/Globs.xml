@@ -1,0 +1,14 @@
+<Globs>
+	<!-- If this is edited you should probably review DirectoryItemStyler.DoSetDefaultPrefs. -->
+	<Glob language = "c#">*.cs</Glob>
+	<Glob language = "ignore">*.ignore</Glob>
+	<Glob language = "makefile">Makefile Makefile.am *.make *.mk</Glob> <!-- may want a custom language for automake files -->
+	<Glob language = "objective-c">*.h *.m</Glob>
+	<Glob language = "patch">diff *.patch *.diff</Glob>
+	<Glob language = "plain-text">NOTES README AUTHORS CHANGES CHANGE_LOG ChangeLog *.log *.txt *.text</Glob>
+	<Glob language = "refactor">*.ref</Glob>
+	<Glob language = "python">*.py SConstruct</Glob>
+	<Glob language = "shell">*.sh</Glob>
+	<Glob language = "todo">TODO</Glob>
+	<Glob language = "xml">*.xml *.xsd *.schema *.config *.plist</Glob>
+</Globs>

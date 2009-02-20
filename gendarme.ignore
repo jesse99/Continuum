@@ -1,0 +1,143 @@
+# Ignore lists start with a rule name (R) followed by a list of assemblies (A),
+# types (T), and methods (M) to ignore.
+
+# We don't care about VB.NET consumer.
+R: Gendarme.Rules.Design.Linq.AvoidExtensionMethodOnSystemObjectRule
+M: System.String CsRefactor.Script.ObjectExtensions::Stringify(System.Object)
+M: System.String CsRefactor.Script.ObjectExtensions::QuotedStringify(System.Object)
+
+# This is only done in debug code.
+R: Gendarme.Rules.BadPractice.AvoidCallingProblematicMethodsRule
+M: System.Void App.AppDelegate::dumpActiveObjects(MObjc.NSObject)
+M: System.Void App.AppDelegate::dumpObjectDetails(MObjc.NSObject)
+
+# These are created via reflection.
+R: Gendarme.Rules.Performance.AvoidUninstantiatedInternalClassesRule
+T: DirectoryEditor.DirectoryView
+T: BuildErrors.ErrorsTextView
+
+# This rule seems totally bogus.
+R: Gendarme.Rules.Smells.AvoidLargeClassesRule
+A: cs-refactor
+A: directory-editor
+A: find
+A: shared
+A: text-editor
+
+# This rule is lame.
+R: Gendarme.Rules.Design.AvoidVisibleNestedTypesRule
+A: shared
+
+# This rule is (almost always) lame.
+R: Gendarme.Rules.Performance.ConsiderCustomAccessorsForNonVisibleEventsRule
+A: text-editor
+
+R: Gendarme.Rules.Design.FlagsShouldNotDefineAZeroValueRule
+A: cs-refactor
+
+# This rule seems way too picky.
+R: Gendarme.Rules.Smells.AvoidCodeDuplicatedInSameClassRule
+A: app
+A: cs-refactor
+A: directory-editor
+A: file-system
+A: find
+A: make-builder
+A: object-model
+A: shared
+A: svn
+A: text-editor
+A: transcript
+
+# This one isn't quite so bad. Might want to review some of these.
+R: Gendarme.Rules.Smells.AvoidCodeDuplicatedInSiblingClassesRule
+A: app
+A: cs-refactor
+A: find
+A: shared
+
+# This is firing for unused arguments which makes it pretty much useless.
+R: Gendarme.Rules.Smells.AvoidSpeculativeGeneralityRule
+A: app
+A: continuum
+A: cs-refactor
+A: directory-editor
+A: find
+A: shared
+A: text-editor
+
+R: Gendarme.Rules.Maintainability.AvoidComplexMethodsRule
+A: cs-refactor
+A: object-model
+
+# This rule would be a lot nicer if it didn't fire for private methods.
+R: Gendarme.Rules.Maintainability.AvoidUnnecessarySpecializationRule
+A: app
+A: cs-refactor
+A: object-model
+
+R: Gendarme.Rules.Smells.AvoidLongMethodsRule
+A: cs-refactor
+A: object-model
+
+R: Gendarme.Rules.Naming.AvoidTypeInterfaceInconsistencyRule
+T: Shared.ISccs
+
+# False positive
+R: Gendarme.Rules.Correctness.EnsureLocalDisposalRule
+M: System.Collections.Generic.List`1<System.String> TextEditor.UnicodeName::DoGetNames()
+
+R: Gendarme.Rules.Concurrency.DoNotUseLockedRegionOutsideMethodRule
+M: System.Void Shared.AssemblyCache::ReleaseLock()
+M: System.Void Shared.AssemblyCache::AcquireLock()
+
+# These cares are a bit smelly but should be OK.
+R: Gendarme.Rules.BadPractice.ConstructorShouldNotCallVirtualMethodsRule
+T: CsRefactor.Script.RefactorType
+T: CsRefactor.Namespace
+T: CsRefactor.TypeDeclaration
+
+# We don't care when these resources are cleaned up.
+R: Gendarme.Rules.Design.TypesWithDisposableFieldsShouldBeDisposableRule
+T: App.BaseScripts
+T: CsRefactor.Script.ScriptType
+T: DirectoryEditor.DirectoryController
+T: DirectoryEditor.GenericBuilder
+T: ObjectModel.Objects
+T: ObjectModel.ParseAssembly
+T: ObjectModel.Populate
+T: ObjectModel.ShortForm
+T: TextEditor.Styler
+T: TextEditor.TextController
+
+# Complains about generic names like A1.
+R: Gendarme.Rules.Naming.UseCorrectPrefixRule
+T: CsRefactor.Script.RefactorType/Binary`3
+T: CsRefactor.Script.RefactorType/Unary`2
+T: CsRefactor.Script.RefactorType/Binary`3
+
+R: Gendarme.Rules.Performance.AvoidRepetitiveCastsRule
+M: System.Object CsRefactor.Script.ScriptType::DoAsk(CsRefactor.Script.Script,System.String,System.Object)
+
+R: Gendarme.Rules.Naming.DoNotPrefixValuesWithEnumNameRule
+T: Shared.Database/Error
+
+# These are private types so we don't care about the convenience methods like
+# == or <.
+R: Gendarme.Rules.Design.ImplementIComparableCorrectlyRule
+T: TextEditor.TextEditorView/Entry
+
+# Safe handle seems over kill here.
+R: Gendarme.Rules.BadPractice.PreferSafeHandleRule
+T: Shared.DirectoryWatcher
+T: Shared.Database
+
+# It's only 20 bytes.
+R: Gendarme.Rules.Performance.AvoidLargeStructureRule
+T: CsRefactor.Token
+
+R: Gendarme.Rules.Naming.UsePreferredTermsRule
+T: Shared.Database/Error
+
+R: Gendarme.Rules.Correctness.EnsureLocalDisposalRule
+M: System.Void ObjectModel.Populate::DoOnOpenDir(System.String,System.Object)

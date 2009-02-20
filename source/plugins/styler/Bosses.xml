@@ -1,0 +1,5 @@
+<Bosses namespaces = "Gear Shared Styler">
+	<Boss name = "Stylers" singleton = "true">
+		<Implementation interfaces = "IInterface +IFindStyler" name = "FindStyler"/>
+	</Boss>
+</Bosses>

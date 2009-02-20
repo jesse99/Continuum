@@ -1,0 +1,9 @@
+<Bosses namespaces = "Gear Shared MakeBuilder">
+	<Extend name = "Builders">			
+		<Implementation interfaces = "IInterface +ICanBuild" name = "CanBuild"/>
+	</Extend>
+
+	<Boss name = "MakeBuilder">			
+		<Implementation interfaces = "IBuilder" name = "Builder"/>
+	</Boss>
+</Bosses>

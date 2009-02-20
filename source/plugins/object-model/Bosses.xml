@@ -1,0 +1,11 @@
+<Bosses namespaces = "Gear Shared ObjectModel">
+	<Extend name = "DirectoryEditor">			
+		<Implementation interfaces = "IObjectModel +IOpened" name = "Objects"/>
+		<Implementation interfaces = "IInterface +IOpened +IShutdown" name = "Populate"/>
+		<Implementation interfaces = "IInterface +IOpened +IParseAssembly" name = "ParseAssembly"/>
+	</Extend>
+
+	<Extend name = "TextEditorPlugin">			
+		<Implementation interfaces = "IInterface +ITextContextCommands" name = "FindInDatabase"/>
+	</Extend>
+</Bosses>

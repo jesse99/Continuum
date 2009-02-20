@@ -1,0 +1,89 @@
+Currently only the object-model plugin uses the database. Times are in System.DateTime
+ticks. Field names appended with # are part of the primary key. Field names appended
+with $ are foreign keys. Note that the main database should only be used for data which
+can be re-generated.
+
+Note that there is some tension here between exposing attributes to allow for custom queries
+and the database size/query times. Even with this relatively simple schema the size of the
+database can be 100+ megabytes.
+
+-------------------
+Assemblies
+hash#		name		culture	major	minor	build	revision	
+
+* hash is an md5sum of the assembly. (We can't rely on the public key because not all assemblies
+  have strong names and because different versions of mono assemblies use the same public
+  key and version).
+* name is the name of the assembly, e.g. "mobjc".
+* culture is the lower-case culture targeted by the assembly, e.g. "neutral" or "en-us".
+* major, minor, build, and revision are integers and compose the assemblies
+  version number.
+  
+Note that because the primary key is the assemblies hash assemblies can be regarded
+as immutable: if an assembly is recompiled it winds up with an entirely new set of types
+and methods.
+
+-------------------
+AssemblyPaths
+path#		hash$		write_time
+
+* path is the full path to the assembly.
+* hash is from the Assemblies table.
+* write_time is the local time the assembly was generated on.
+
+-------------------
+NameInfo
+full_name#	hash#$		file_name		name#		kind
+
+* full_name is the full name of a type or method.
+* hash is from the Assemblies table.
+* file_name is the name (not path) the type is declared within. May be empty.
+* name is the name of a type or method. Generic types will have both Foo`1 and Foo.
+* kind is 0 for a method, 1 for an interface, 2 for a class, and 3 for a sealed type.
+
+-------------------
+Types
+type#$			hash#$			name		declaring_type		namespace		base_type			attributes						
+
+* type is the full name of the type, e.g. "MObjc.WeakList`1".
+* hash is from the Assemblies table.
+* name is the name of the type, not including the generic argument count, e.g. "WeakList".
+* declaring_type is the full name of the type the type is nested within. May be empty. 
+* namespace is the namespace the type was declared in. May be empty if the type is inside the global namespace.
+* base_type is the full name of the type the type inherits from. May be empty. Might not be in Types.
+* attributes is the same as Cecil's TypeAttributes.
+
+TODO: need to store custom attributes
+
+-------------------
+Implements
+type#$		hash#$		interface_type#
+
+* type is from the Types table and is a full name of a type.
+* hash is from the Assemblies table.
+* interface_type is a full name of an interface the type implements. Might not be in Types.
+
+-------------------
+Methods
+method#	hash#$		name			declaring_type$		file		line		attributes		semantics						
+
+* method is the full name of the method, e.g. "System.Boolean MObjc.Registrar::TryGetType(System.String,System.Type&)".
+* hash is from the Assemblies table.
+* name is the name of the method, e.g. "TryGetType". Note that for properties and events
+  this will be "Value" not "get_Value".
+* declaring_type is from Types and is the full name of the declaring type.
+* return_type is the full name of the return type. It will usually be in TypeNames.
+* file is the full path of the method's compilation unit. May be empty.
+* line is the 1-based line number within the compilation unit. May be -1.
+* attributes is the same as Cecil's MethodAttributes.
+* semantics is the same as Cecil's MethodSemanticsAttributes.
+
+TODO: need to store custom attributes		
+
+
+_id can be used but should be unique schema wide (and don't use the table name as the prefix)
+attribute names should not contain the table name (makes joins really clunky)
+names should not change from place to place, eg MetadataTokens should just be tokens, 
+   not method_token and type_token
+don't split attributes across tables (eg MaleStudents and FemaleStudents tables)
+don't split attributes across columns (eg one col tells you how to interpret another)

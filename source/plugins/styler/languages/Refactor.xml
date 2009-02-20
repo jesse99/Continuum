@@ -1,0 +1,7 @@
+<!-- This is the little language Continuum refactor scripts are written in. -->
+<Language name = "refactor">
+	<comment>\# .* $</comment>
+	<keyword>\b(?: and | define | do | elif | else | end | false | for | from | if | in | is | let | not | null | or | property | return | select | self | then | true | when | where)\b</keyword>
+	<string>&quot; (?: (?: &quot; &quot;) | [^&quot;])* &quot;</string>
+	<member>(?&lt;=\b define (?: \s+ property)? \s+) \w+</member>
+</Language>

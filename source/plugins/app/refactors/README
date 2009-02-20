@@ -1,0 +1,13 @@
+Refactors are language specific scripts or plugins which operate on entire
+source code files. The scripts may be written in any language but need to 
+use a shebang (like #!/bin/sh) so that they can be run by simply executing 
+them.
+
+The script will be passed the location of the selection as its first argument
+and the length of the selection as the second argument. The script should
+read the file from stdin and write the modifed file to stdout.
+
+Scripts in the standard and user directories are added to the Refactor menu.
+Scripts in the standard directory will be overwritten if they are out of date.
+Continuum scripts that are missing from both the standard and unused
+directories will be copied into the standard directory.

@@ -1,0 +1,361 @@
+BMPN - flow charts
+http://code.google.com
+http://dev.mysql.com/tech-resources/articles/why-data-modeling.html
+SQL and it's Applications
+http://otx.osxninja.com/
+
+http://code.google.com/p/simple-assembly-explorer/
+can make readonly rule
+mutating a local used in multiple lambdas (or for loop variable used with lambda)
+
+might want a sample app
+		
+	<keyword>(?:&lt; \s*) [^&quot;\r\n]* &quot;</keyword>	
+
+* Move to google code.
+* Add some tool tips to the nibs.
+* Should not iterate over the entire opened directory.
+* Fix dir editor so it doesn't collapse child dirs when an item changes.
+* Add goto next/previous declaration. Try to get this working for python and refactor
+  too.
+* Need to handle aliaii in the Continuum directory.
+* Probably need to handle aliaii in open panels as well.
+* Find button locations look a bit odd.
+* After duplicating directory items select the new item(s).
+* Need a preference for Type.GetFieldName
+* Handle languages like scripts.
+	- TODO could go here
+	- should be able to override built in languages
+	- might want a language for gendarme console reports, what extension?
+* Html/css languge.
+* Need a directory for custom plugins:
+	- google code search might be a good example
+* Foreshadow/continuum scripts need work:
+	- should work if continuum is not running
+	- should be able to start/bring to front without an arg
+	- should be able to open dirs
+	- handle spaces in args
+	- support line numbers via colons
+* About box needs a bit more info.
+* Move Continuum directory to prefs or maybe app support? Has really big files
+   though so its not clear we should hide it like this.
+* Need to use a universal binary for the mobjc dylib.
+* Need some way to install the continuum script.
+* Probably want an uninstall script.
+* May want to bundle cecil with the app.
+* Do a release.
+   
+* Add support for auto backing up files. keepBackupFile
+* Should be able to style txt files (or maybe just rtf file).
+* Support optional word wrap.
+* Window, scroller position, word wrap should be saved in a (project) database.
+* Allow utf-16 to be read.
+* Allow files to be saved in different encodings.
+* Allow files to be saved with different line endings.
+* Warn on mixed line endings read.
+* Need to set file type for saved files.
+* Should be able to open locked files.
+* Should be able to run from read-only media.
+* Warn if opening a big file.
+* Add ChangeLog support.
+* Add better support for svn commits.
+* Add text get info:
+	- selection offset
+	- selection length
+	- bytes
+	- number of lines
+	- full path
+* Add file get info:
+	- work with multiple selection
+	- do soemthing reasonable with both files and directories
+	- print bytes
+	- print directory valence
+	- print flags
+* Can we ask if the user really wants to open a bunch of files?
+	- open files
+	- return in dir editor
+	- return in find in files result
+* Open selection should use some sort of picker.
+* Look at startup times.
+* Add a method popup using the parser:
+	- classes in bold
+	- members indented
+	- show all members except fields
+	- need to show method args (but not return type)
+	- ignore namespaces
+	- option key sorts
+	- menu should update as insertion point changes or text changes (restart a one
+	  second timer to re-parse after changes)
+* Add support for nant.
+* Add support for scons.
+* Need a way to build weird projects like Cecil, probably a pref with a build
+  command line which overrides make builder.
+* Add an assembly viewer
+* Show IL (for member/type) command.
+* Look at iron python scripting (might also be able to use this for the refactor language)
+* Add a hex viewer. Should work with big files. Maybe memory map them.
+* Command-8, or 2, or -, should switch between frontmost and next frontmost text windows.
+	- enable if there are more than two text windows and the main window is a text window
+	- probably need to track window z-order ourself
+	- might want a cycle command as well
+* Work on parser:
+	- see what safe speed is
+	- what about #if false?
+	- should we try to handle #if some_thing?
+	- remove unsafe from test.dll, plugin dll, and the class
+	- might want to use a StringSlice class in the scanner and parser, maybe with an
+	  implicit or explicit conversion to string
+	- think about integrating refactors into builds, might allow for AOP sort of stuff
+* Should be able to find properties like BuildStartTime.
+* Can we always generate response files? Maybe fix the timestamp?
+* Would be nice to have a find on python site command.
+* Short form should show comments
+	- both types
+	- should be able to do this w/o the scanner
+	- will need to special case attributes
+	- would be nice if we can tell if file does not match mdb
+* Add support for refactoring:
+	dump fields (may require reflection)
+	dump args, locals, fields used in a method
+	extract code to file
+	rename arg, need some sort of minimal statement/expr parser
+	rename field, need table with fields used by each type
+	rename method
+	rename type
+	trace methods, might want to ask if exit should be traced
+* Is cancel really killing the process?
+* May want to use the thread pool for any short lived threads.
+* Add (query) unicode database.
+* Add a simple calculator. Could use python or cssharp to evaluate expressions
+  and print them in one or more bases.
+  - or maybe an mpw style csharp shell
+  - context menu could allow output format(s) to be set
+* Libraries (but not apps) should always be built as debug?
+	- need to check to see if anything would be slow
+* Pref file has an awful lot of -origin-x entries.
+* Would be nice to have a monkey. Would probably need to disable save and things
+   like move to trash or svn revert.
+* Work on features to make debugging and maintainability easier:
+	- find references
+	- method popup
+	- queries?
+* Editor should work as well as bbedit:
+	- method widget
+	- languages xml might need an option for word wrap
+	- use setAutosaveExpandedItems?
+	- might want a favorites menu
+* Would be cool to support saving styles as rtf and html.
+* Should support rectangular selections (option-shift-drag).
+* Work on databases:
+	- add a comment about separate versus mondo database
+	- can we add some sort of prefer local attribute for use when too many fields are
+	  returned?
+	- what if someone opens a root dir? maybe we should parse only immediate child
+	  directories? would probably need an option to recurse deeper
+	- probably should default to deleting the db on exit
+	- try using an assembly id instead of the hash for the key
+	- get the db size and the time for the second use of context menu
+* Seem to be problems with leaks:
+	- most NSConcreteTextStorage are going away but not all of them
+	- NSConcreteTextStorage retain counts look OK so maybe cocoa is caching them
+	- someone has a reference, maybe Styler
+	- might want to register Styler and some other objects with a WeakList to see
+	  if they are going away
+* Might want to use alert sheets:
+	http://developer.apple.com/DOCUMENTATION/Cocoa/Conceptual/Sheets/Tasks/UsingAlertSheets.html#//apple_ref/doc/uid/20001045
+* Might want to add an align columns script. Kind of tricky to do though if the font
+   is proportional and tabs use stops.
+* Get find references working.
+* Get type/method popup working.
+* Would be nice to degrade gracefully if sqlite is not installed (or has the wrong
+   version)
+* Get code completion working:
+	- use dir editor windows as project roots
+	- note that we don't need a full blown parser: can get by with a top-level
+	  class parser and a scanner for locals (var types will probably need a 
+	  simple expr scanne). Or blow off parsing and just use cecil.
+	- note that NSTextView already has some support for text completion
+* Undo has some problems with saving:
+	http://www.cocoabuilder.com/archive/message/cocoa/2002/12/28/62337
+* Need a way to easily open recent dirs.
+* More stuff:
+	code collapsing
+	integrated svn
+	queries
+	scid
+	time machine
+	alternate key bindings
+	integrated gendarme
+	diff
+	more complex refactors
+	replay
+	code coverage
+	gross performance cues
+* Good manifesto:
+	http://alarmingdevelopment.org/index.php?p=5
+	schematic tables
+* Add widgets:
+	- fun popup
+	- fun should have classes and methods
+	- option click should sort
+	- popup value should change as insertion pt moves
+* Can we up the limit on the number of files in the open recent menu, Supposed to
+  be able to use maximumRecentDocumentCount, but when I tried it was not called.
+* Do we want to use the entity approach? What does that mean for dir editor?
+* Do some more work on the svn plugin:
+	- ignore list, could probably use propget and propset
+	- add an svn manage command to do stuff like diffs and updates for the whole tree
+	- would be nice to better support revision numbers, maybe with a popup menu
+* Can we prevent the text view from treating colons as word characters? Messes
+   up option-arrow for example. Afaict there is no good way to do this.
+* Would be nice to auto-add using declarations.
+* Would be nice to collapse copyright boilerplate.
+* Would be really cool to have internal and external layout (ie to save files
+  using mono's crappy layout)
+* Keep an XML view of the open source documents in sync with the source
+	- need some sort of BadParse element, really we need a scanner more than a
+	  parser
+	- need a visual cue for bad parse lines
+	- xml is just a view, can't edit it
+* Would be nice to have color schemes. Should be easy to edit these.
+* Need a way to view what's happening to the code:
+	- save an annotated copy of open source files
+	- canonical copy should also be saved
+	- if crash need to pop up an alert and restore canonical copy
+	- edits should goto both files
+	- to start with annotated copy can record lines executed
+	- sidebar or something can show lines executed for last run
+	- later could add a debugger sort of thing for open files
+* Replay feature:
+	- instrument all assemblies
+	- on method entry record method and thread ids
+	- for stepping could instrument branches and record taken/not taken, when
+	  debugging create a reversible data structure
+	- should have an attribute to disable stepping in time critical code
+	- exception handlers need special instrumentation
+	- on field store record new value, maybe just ToString with a few special cases
+	  or inject ToReplayString if no ToString override and to default ToReplayString
+	- interop stores will be a little tricky, may have to special case blittable
+	  types
+	- should be able to set breakpoints, go forward, backward, etc
+	  conditional breakpoints
+	- break on exception
+	- could show code easily
+	- instead of showing a stack crawl show a stack crawl region
+	- won't instrumenting assemblies break pdb files?
+	- could show field history
+	- ref and out types would need special handling
+	- how do we figure out which fields refer to which objects?
+* mono has a code coverage switch.
+* Work on background builds:
+	- could so this on save
+	- maybe write a message when starting
+	- cancel if user saves again or starts a real build
+	- not sure how to handle errors, could write an error message saying "There
+	  were 12 errors from the background build." and let users do a next error
+	- recursive makes are hard to cancel
+* Might want to use row types.
+* Support DBC via a python script
+	- google for dbc and c#
+	- google for c# parser/grammar
+	- if an assert fails exception should include assert expr and names/values for the
+	  variables
+	- post should support old(argName)
+	- inject calls to Invariant if one is present, optionally disable via an attibute
+	  or comment
+* Work on object-model plugin:
+	- windows showing query results should probably be live
+	- when doing a lookup need to only return the assemblies used by the file being
+	  edited
+	- need to handle namespaces better
+		` first try to treat x.y.z as a fully qualified name
+		` then check only the imported namespaces
+		` also handle aliased namespaces
+	- support interface locate (probably requires a custom database populator using
+	  a parser, also a source or provider column in the tables)
+	- support locate for other weird types like enums and delegates
+* Comments should be wiki format.
+* Would be cool to have a generate docs option. As html and some form suitable
+  for printing (maybe pdf).
+* First time a file is opened show a skeleton of public (and maybe protected)
+  members with no method bodies (except maybe asserts).
+* Can we do some sort of subtle hiliting of variable uses if the selection is
+  in a variable name?
+* Allow most everything to be collapsable?
+* Maybe have some visual cue for gross performance.
+* Can we link methods and tests somwhow?
+* Do we want to make the app scriptable and recordable?
+* Might be nice to have a structured c# editor. Would allow nice stuff like 
+  user specific formating, local variable tab completion, smart statement 
+  insertion/tabbing, xml comment hiding/formatting, faster context menus, etc. 
+  One issue is that it would kind of suck to change an entire file to use 
+  project formatting if only one line changed.
+* Very important to be able to grok the code:
+	- static structure
+	- dynamic behavior
+		` app wide (code flow, threads, memory, assemblies)
+		` inter-procedural (threads, who called this)
+		` local (debugger, logging)
+* Should be able to easily form simple custom relations, eg
+  nant target <--> log file
+* Need to store revisions for custom relation objects.
+* Might want selected smokey rules always on (eg bad casts)
+* Lot's of good scid examples here:
+	http://mindprod.com/project/scid.html
+* Also
+	http://wesnerm.blogs.com/net_undocumented/2004/06/whidbey_may_mis.html
+* Have to be careful of language lockin.
+* Might be able to do some refactors with drag and drop.
+* Look into lisp and smalltalk ides. Squeak and etoys.
+* Review intentional programming.
+* Look at other editors, eg TextMate.
+* Should be able to diff two entity instances.
+* Experiment with a runtime monitor plugin:
+	- have a low priority thread which monitors memory usage
+	- maybe use attributes or something to monitor runtime of selected methods
+	- maybe method/code coverage
+	- store results in a database somewhere?
+	- pop an alert if differences between two runs exceed some threshold
+* Look at literate programming again. TextMate, BBEdit, SlickEdit, MSVS, Eclipse,
+  Apple's. Resharper is supposed to be sweet.
+* IntelliJ IDEA is supposed to be one of the best IDEs
+	if I want to go to class MyMouseEventListener it's "Ctrl-NMMEL")
+* http://webpages.charter.net/edreamleo/front.html
+* Review other editors.
+* http://code.google.com/p/opentf/
+* Links: user editable list of text files, pdf files, html links, etc
+* Work on a structure editor?
+	- statements and method arguments should be plain text?
+	- might want empty blocks: correspond to non-terminals and act as insertion pts
+	- http://www.osenkov.com/diplom/
+	- http://www.onboard.jetbrains.com/is1/articles/04/10/lop/4.html
+	- add an xml editor first?
+	- might want sibling (cmd-[]), child (cmd-/), and peer (cmd-\) nodes
+	  child would be xml text or child element, peer would be attribute
+	- should be a generic framework (but only support c# for now)
+	- need structure definitions, eg if is a statement with an
+	  expression and a body, probably needs presentation info too (make this
+	  separate?)
+	- don't load malformed files
+	- when saving incomplete files use a special comment so we can load properly
+	- comments will be a bit tricky, probably need a hueristic to attach them to a node
+	- display should be non-editable text view
+	- return should open up an expandable text field for that node
+	- can delete contents and hit return to change node types
+	- use a gradient to color a node and its children
+	- optionally omit ;, noisy (), {}
+	- need both a view and a save style
+	- would be nice if save saved only the code that changed (or maybe the method(s)
+	  that were edited)
+	- would be cool if invariant support could be added via a script		
+* Release checklist:
+	- run continuum with no prefs
+	- run continuum with no Continuum dir
+	- look at memory usage
+	- run unit tests in debug
+	- run unit tests in release
+	- review config file
+	
+/Users/jessejones/Documents/Developer/c#.cs
+/Users/jessejones/Documents/Developer/Unix/UnixNotes.txt
+
