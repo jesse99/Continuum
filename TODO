@@ -19,7 +19,7 @@ might want a sample app
 			
 			return runs.ToArray();
 		}
-		
+
 * Add some tool tips to the nibs.
 * Should not iterate over the entire opened directory.
 * Fix dir editor so it doesn't collapse child dirs when an item changes.

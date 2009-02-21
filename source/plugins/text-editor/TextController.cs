@@ -103,6 +103,8 @@ namespace TextEditor
 				m_watcher = new DirectoryWatcher(dir, TimeSpan.FromMilliseconds(500));
 				m_watcher.Changed += this.DoDirChanged;	
 			}
+			else
+				((DeclarationsPopup) m_decPopup.Value).Init(this, null);			
 		}
 		
 		public string Text
@@ -144,7 +146,7 @@ namespace TextEditor
 			window().makeKeyAndOrderFront(this);
 			m_textView.Value.layoutManager().setDelegate(this);
 		}
-				
+		
 		public NSTextView TextView
 		{
 			get {return m_textView.Value;}
@@ -456,17 +458,7 @@ namespace TextEditor
 				m_textView.Value.showFindIndicatorForRange(range);
 			}
 		}
-		
-		public void findNextDec(NSObject sender)
-		{
-			Console.WriteLine("finding next");
-		}
-		
-		public void findPrevDec(NSObject sender)
-		{
-			Console.WriteLine("finding prev");
-		}
-		
+				
 		public void dirHandler(NSObject sender)
 		{
 			if (Path != null)
@@ -652,6 +644,7 @@ namespace TextEditor
 			string fileName = System.IO.Path.GetFileName(Path);	
 			
 			IStyler styler = null;
+			IDeclarations decs = null;
 			Boss boss = ObjectModel.Create("Stylers");
 			if (boss.Has<IFindLanguage>())
 			{
@@ -664,13 +657,13 @@ namespace TextEditor
 						styler = language.Get<IStyler>();
 						
 						if (language.Has<IDeclarations>())
-							((DeclarationsPopup) m_decPopup.Value).Init(this, language.Get<IDeclarations>());
-						else
-							((DeclarationsPopup) m_decPopup.Value).Init(this, null);
+							decs = language.Get<IDeclarations>();
 					}
 					find = boss.GetNext<IFindLanguage>(find);
 				}
 			}
+			
+			((DeclarationsPopup) m_decPopup.Value).Init(this, decs);
 			
 			if (m_styler == null)
 			{
@@ -680,10 +673,7 @@ namespace TextEditor
 			{
 				m_styler = styler;
 				if (m_styler != null)
-				{
 					m_styler.Apply(m_boss, this.DoStylerFinished);	// we only want to call this if the document is saved under a new name because the text view starts out with that lame latin
-					m_decPopup.Value.Call("textWasEdited");
-				}
 			}
 		}
 		

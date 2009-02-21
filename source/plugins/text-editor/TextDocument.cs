@@ -36,18 +36,18 @@ namespace TextEditor
 	internal sealed class TextDocument : NSDocument
 	{
 		private TextDocument(IntPtr instance) : base(instance)
-		{	
+		{
 			ActiveObjects.Add(this);
 		}
-				
+		
 		public new void makeWindowControllers()
-		{			
+		{
 			m_controller = new TextController();
 			addWindowController(m_controller);
 			m_controller.OnPathChanged();
 			m_controller.Text = m_data ?? string.Empty;		// will be null if we're opening a new doc
 			m_controller.Open();
-
+			
 			m_data = null;
 		}
 		
@@ -59,10 +59,10 @@ namespace TextEditor
 			if (!NSObject.IsNullOrNil(url))
 			{
 				NSDate docTime = fileModificationDate();
-
+				
 				NSDictionary attrs = NSFileManager.defaultManager().fileAttributesAtPath_traverseLink(url.path(), true);
 				NSDate fileTime = attrs.objectForKey(Externs.NSFileModificationDate).To<NSDate>();
-	
+				
 				changed = fileTime != null && fileTime.compare(docTime) == Enums.NSOrderedDescending;
 			}
 			
@@ -73,7 +73,7 @@ namespace TextEditor
 		{
 			NSString type = fileType();
 			NSURL url = fileURL();
-
+			
 			NSError err;
 			bool read = revertToContentsOfURL_ofType_error(url, type, out err);
 			if (!read)
@@ -82,16 +82,27 @@ namespace TextEditor
 				var transcript = boss.Get<ITranscript>();
 				transcript.WriteLine(Output.Error, "Couldn't reload {0:D}:\n{1:D}.", url, err.localizedFailureReason());
 			}
-
+			
 			m_data = null;
 		}
-				
+		
+		// This is called every time the document is saved...
 		public new void setFileURL(NSURL url)
-		{			
+		{
 			Unused.Value = SuperCall("setFileURL:", url);
 			
-			if (m_controller != null)
+			if (m_controller != null && url != m_url)
+			{
 				m_controller.OnPathChanged();
+				
+				if (m_url != null)
+					m_url.release();
+					
+				m_url = url;
+
+				if (m_url != null)
+					m_url.retain();
+			}
 		}
 		
 		// Used to read the document.
@@ -100,14 +111,14 @@ namespace TextEditor
 			bool read = true;
 			
 			try
-			{			
+			{
 				Boss boss = ObjectModel.Create("TextEditorPlugin");
 				var encoding = boss.Get<ITextEncoding>();
 				var result = encoding.Decode(data);
-					
+				
 				m_data = result.First.description();
 				m_encoding = result.Second;
-
+				
 				DoCheckForControlChars(m_data);
 				
 				if (m_controller != null)			// will be null for initial open, but non-null for revert
@@ -124,13 +135,13 @@ namespace TextEditor
 				
 				NSObject error = NSError.errorWithDomain_code_userInfo(Externs.Cocoa3Domain, 1, userInfo);
 				Marshal.WriteIntPtr(outError, error);
-	
+				
 				read = false;
 			}
 			
 			return read;
-		}		
-
+		}
+		
 		// Used to write the document.
 		public NSData dataOfType_error(NSString typeName, IntPtr outError)
 		{
@@ -140,7 +151,7 @@ namespace TextEditor
 			{
 				DoCheckForControlChars(m_controller.Text);
 				NSString s = NSString.Create(m_controller.Text);
-
+				
 				Boss boss = ObjectModel.Create("TextEditorPlugin");
 				var encoding = boss.Get<ITextEncoding>();
 				data = encoding.Encode(s, m_encoding);
@@ -166,8 +177,8 @@ namespace TextEditor
 				Reload();
 			}
 		}
-	
-		#region Private Methods -----------------------------------------------
+		
+		#region Private Methods
 		// It is fairly rare for control characters to wind up in text files, but 
 		// when it does happen it can be quite annoying, especially because they
 		// cannot ordinarily be seen. So, if this happens we'll write a message 
@@ -179,13 +190,13 @@ namespace TextEditor
 			if (chars.Count > 0)
 			{
 				string path = fileURL().path().ToString();
-
+				
 				string mesg;
 				if (chars.Count <= 2)
 					mesg = string.Format("Found {0} in '{1}'.", DoCharsToString(chars), path);
 				else
 					mesg = string.Format("Found {0} control characters of {1} different types in '{2}'.", chars.Values.Sum(), chars.Count, path);
-
+				
 				Boss boss = ObjectModel.Create("Application");
 				var transcript = boss.Get<ITranscript>();
 				transcript.WriteLine(Output.Error, mesg);
@@ -231,11 +242,12 @@ namespace TextEditor
 			return chars;
 		}
 		#endregion
-
-		#region Fields --------------------------------------------------------
+		
+		#region Fields
 		private TextController m_controller;
-		private string m_data;		
+		private string m_data;
 		private uint m_encoding = Enums.NSUTF8StringEncoding;		// TODO: should allow this to be set so that the file can be written to other encodings (and store this in a pref?)
+		private NSURL m_url;
 		
 		private static Dictionary<char, string> ms_controlNames = new Dictionary<char, string>
 		{
@@ -274,4 +286,4 @@ namespace TextEditor
 		};
 		#endregion
 	}
-}	
+}
