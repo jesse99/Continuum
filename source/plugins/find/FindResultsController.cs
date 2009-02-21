@@ -147,7 +147,7 @@ namespace Find
 			{
 				for (int i = 0; i < finds.Length; ++i)
 				{
-					if (Paths.AreEqual(finds[i].Path, value.First))
+					if (value.First != null && Paths.AreEqual(finds[i].Path, value.First))
 					{
 						finds[i].Update(value.Second, value.Third);
 					}

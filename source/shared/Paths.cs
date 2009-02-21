@@ -51,12 +51,15 @@ namespace Shared
 		// to "." or "..".
 		public static bool AreEqual(string lhs, string rhs)
 		{
+			Trace.Assert(lhs != null, "lhs is null");
+			Trace.Assert(rhs != null, "rhs is null");
+				
 			lhs = UnixPath.GetCanonicalPath(lhs);
 			rhs = UnixPath.GetCanonicalPath(rhs);
 			
 			return lhs == rhs;
 		}
-				
+		
 		private static string ms_supportPath;
-	} 
+	}
 }

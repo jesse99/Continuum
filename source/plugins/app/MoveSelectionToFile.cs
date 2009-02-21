@@ -56,6 +56,8 @@ namespace App
 			if (range.length == 0)
 				throw new OperationCanceledException("Selection is empty");
 			
+			// Note that we don't use IStyles here because we want to ensure that 
+			// the text is well formed.
 			Boss b = ObjectModel.Create("CsParser");
 			var cParser = b.Get<ICsParser>();
 			CsGlobalNamespace globals = cParser.Parse(text.Text);

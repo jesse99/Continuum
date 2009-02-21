@@ -40,7 +40,8 @@ namespace CsRefactor
 		
 		public string Execute(string rSource, string cSource, int selStart, int selLen)
 		{
-			// Parse the C# code.
+			// Parse the C# code. Note that we don't use IStyles here because we
+			// want to ensure that the text is well formed.
 			Boss boss = ObjectModel.Create("CsParser");
 			var cParser = boss.Get<ICsParser>();
 			CsGlobalNamespace globals = cParser.Parse(cSource);
@@ -67,5 +68,5 @@ namespace CsRefactor
 		#region Fields
 		private Boss m_boss;
 		#endregion
-	} 
+	}
 }
