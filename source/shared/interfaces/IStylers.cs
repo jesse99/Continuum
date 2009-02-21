@@ -24,10 +24,12 @@ using System;
 
 namespace Shared
 {
-	// Repeated interface used to color code arbitrary text files.
-	public interface IFindStyler : IInterface
+	public interface IStylers : IInterface
 	{
-		// Returns null if a styler could not be found. 
-		Styler Find(string fileName);
-	} 
+		// Note that these will not be shown if the language's styler does
+		// not show whitespace.
+		bool ShowSpaces  {get; set;}
+		
+		bool ShowTabs {get; set;}
+	}
 }

@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Jesse Jones
+// Copyright (C) 2009 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -20,38 +20,55 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using MCocoa;
 using Shared;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 
-namespace TextEditor
+namespace Styler
 {
-	internal sealed class CanOpen : ICanOpen
-	{		
-		public void Instantiated(Boss boss)
-		{	
-			m_boss = boss;
-		}
-		
+	internal sealed class RegexDeclarations : IDeclarations
+	{
 		public Boss Boss
 		{
 			get {return m_boss;}
 		}
 		
-		public bool Can(string fileName)
+		public void Instantiated(Boss boss)
 		{
-			Boss boss = ObjectModel.Create("Stylers");
-			if (boss.Has<IFindLanguage>())
+			m_boss = boss;
+		}
+		
+		public Declaration[] Get(string text)
+		{
+			Trace.Assert(text != null, "text is null");
+			
+			var styler = (RegexStyler) m_boss.Get<IStyler>();
+			StyleRun[] runs = styler.Compute(text);	// TODO: only do this if the styler does types or members
+			
+			var decs = new List<Declaration>();
+			string indent = string.Empty;
+			foreach (StyleRun run in runs)
 			{
-				var find = boss.Get<IFindLanguage>();
-				while (find != null)
+				if (run.Type == StyleType.Type)
 				{
-					if (find.Find(fileName) != null)
-						return true;
-					find = boss.GetNext<IFindLanguage>(find);
+					decs.Add(new Declaration(
+						text.Substring(run.Offset, run.Length),	
+						new NSRange(run.Offset, run.Length),
+						true));
+					indent = "    ";
+				}
+				else if (run.Type == StyleType.Member)
+				{
+					decs.Add(new Declaration(
+						indent + text.Substring(run.Offset, run.Length),
+						new NSRange(run.Offset, run.Length),
+						false));
 				}
 			}
 			
-			return false;
+			return decs.ToArray();
 		}
 		
 		#region Fields 

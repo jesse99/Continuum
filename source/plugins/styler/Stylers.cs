@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Jesse Jones
+// Copyright (C) 2009 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -19,13 +19,58 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear;
+using MCocoa;
+using Shared;
 using System;
+using System.Diagnostics;
 
-namespace Shared
+namespace Styler
 {
-	public static class Constants
+	internal sealed class Stylers : IStylers
 	{
-		public const string Ellipsis = "\x2026";
-		public const string ZeroWidthSpace = "\x200C";
+		public Boss Boss
+		{
+			get {return m_boss;}
+		}
+		
+		public void Instantiated(Boss boss)
+		{
+			m_boss = boss;
+			
+			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
+			m_showSpaces = defaults.boolForKey(NSString.Create("show spaces"));
+			m_showTabs = defaults.boolForKey(NSString.Create("show tabs"));
+		}
+		
+		public bool ShowSpaces
+		{
+			get {return m_showSpaces;}
+			set
+			{
+				m_showSpaces = value;
+				
+				NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
+				defaults.setBool_forKey(m_showSpaces, NSString.Create("show spaces"));
+			}
+		}
+		
+		public bool ShowTabs
+		{
+			get {return m_showTabs;}
+			set
+			{
+				m_showTabs = value;
+				
+				NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
+				defaults.setBool_forKey(m_showTabs, NSString.Create("show tabs"));
+			}
+		}
+		
+		#region Fields 
+		private Boss m_boss;
+		private bool m_showSpaces;
+		private bool m_showTabs;
+		#endregion
 	}
 }

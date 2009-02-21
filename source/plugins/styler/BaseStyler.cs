@@ -20,25 +20,19 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
-using MCocoa;
+//using MCocoa;
+using Shared;
 using System;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading;
 
-namespace Shared
+#if false
+namespace Styler
 {
 	public abstract class Styler
 	{
-		static Styler()
-		{
-			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
-			
-			ms_showSpaces = defaults.boolForKey(NSString.Create("show spaces"));
-			ms_showTabs = defaults.boolForKey(NSString.Create("show tabs"));
-		}
-		
 		protected Styler()
 		{
 			m_timer = new Timer((o) => DoTimer(), null, Timeout.Infinite, Timeout.Infinite);
@@ -94,33 +88,7 @@ namespace Shared
 				Unused.Value = m_timer.Change(750, Timeout.Infinite);
 			}
 		}
-		
-		public abstract bool StylesWhitespace {get;}
-		
-		public static bool ShowSpaces
-		{
-			get {return ms_showSpaces;}
-			set
-			{
-				ms_showSpaces = value;
-				
-				NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
-				defaults.setBool_forKey(ms_showSpaces, NSString.Create("show spaces"));
-			}
-		}
-		
-		public static bool ShowTabs
-		{
-			get {return ms_showTabs;}
-			set
-			{
-				ms_showTabs = value;
-				
-				NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
-				defaults.setBool_forKey(ms_showTabs, NSString.Create("show tabs"));
-			}
-		}
-		
+						
 		#region Protected Methods
 		protected abstract void OnComputeRuns(string text, int edit, List<StyleRun> runs);		// threaded
 		#endregion
@@ -180,9 +148,7 @@ namespace Shared
 			private int m_edit;
 			private Func<Tuple2<string, int>> m_data;
 			private Action<int, List<StyleRun>> m_callback;
-		
-		private static bool ms_showSpaces;
-		private static bool ms_showTabs;
 		#endregion
 	}
 }
+#endif

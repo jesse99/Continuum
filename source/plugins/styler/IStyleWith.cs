@@ -20,31 +20,12 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
-using Shared;
 using System;
-using System.Diagnostics;
 
 namespace Styler
 {
-	internal sealed class FindStyler : IFindStyler
+	internal interface IStyleWith : IInterface
 	{
-		public Boss Boss
-		{
-			get {return m_boss;}
-		}
-		
-		public void Instantiated(Boss boss)
-		{
-			m_boss = boss;
-		}
-		
-		public Shared.Styler Find(string fileName)
-		{
-			return Languages.Find(fileName);
-		}
-		
-		#region Fields 
-		private Boss m_boss;
-		#endregion
-	} 
+		Language Language {get; set;}
+	}
 }

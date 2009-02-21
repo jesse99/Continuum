@@ -10,14 +10,39 @@ mutating a local used in multiple lambdas (or for loop variable used with lambda
 
 might want a sample app
 		
-	<keyword>(?:&lt; \s*) [^&quot;\r\n]* &quot;</keyword>	
-
-* Move to google code.
+	<keyword>(?:&lt; \s*) [^&quot;\r\n]* &quot;</keyword>
+	
+* Add a method popup using the parser:
+	- get this working with python and refactor too
+	- add an interface to get the cs declarations, should rely on edit count
+	  or hook into the timer styler uses
+	- can we not style 2x?
+	- option key sorts?
+* Do a checkin.
+* Remove BaseStyler
+* Got an error:
+Errors Warning       There was an error processing the text range changed broadcast:
+Errors Warning       System.NullReferenceException: Object reference not set to an instance of an object
+                       at Mono.Unix.UnixPath.GetPathComponents (System.String path, System.String[]& components, System.Int32& lastIndex) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.2/mcs/class/Mono.Posix/Mono.Unix/UnixPath.cs:149 
+                       at Mono.Unix.UnixPath.GetCanonicalPath (System.String path) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.2/mcs/class/Mono.Posix/Mono.Unix/UnixPath.cs:141 
+                       at Shared.Paths.AreEqual (System.String lhs, System.String rhs) [0x00008] in /Users/jessejones/Source/Continuum/source/shared/Paths.cs:55 
+                       at Find.FindResultsController.DoDocChanged (System.String name, System.Object v) [0x00021] in /Users/jessejones/Source/Continuum/source/plugins/find/FindResultsController.cs:150 
+                       at Shared.Broadcaster.DoInvoke (System.String name, System.Action`2 callback, System.Object value) [0x00000] in /Users/jessejones/Source/Continuum/source/shared/Broadcaster.cs:81 
+* Styling doesn't work quite right for the line being edited (first token at least
+  isn't updated).
+* Make a new foreshadow.
+* Replace menu commands should be enabled even if there is no replace text.
+* Support bookmarks:
+	- make sure we can embed graphics in the text, or use a floating window?
+	- add bookmark (cmd-/) adds up to nine bookmarks
+	- once at nine replaces ninth bookmark
+	- little graphic of a digit indicates bookmark
+	- cmd-1 to 9 change the selection to the bookmark
+	- bookmark is found with a live line number
+	- cmd-0 clears bookmarks
 * Add some tool tips to the nibs.
 * Should not iterate over the entire opened directory.
 * Fix dir editor so it doesn't collapse child dirs when an item changes.
-* Add goto next/previous declaration. Try to get this working for python and refactor
-  too.
 * Need to handle aliaii in the Continuum directory.
 * Probably need to handle aliaii in open panels as well.
 * Find button locations look a bit odd.
@@ -77,15 +102,6 @@ might want a sample app
 	- return in find in files result
 * Open selection should use some sort of picker.
 * Look at startup times.
-* Add a method popup using the parser:
-	- classes in bold
-	- members indented
-	- show all members except fields
-	- need to show method args (but not return type)
-	- ignore namespaces
-	- option key sorts
-	- menu should update as insertion point changes or text changes (restart a one
-	  second timer to re-parse after changes)
 * Add support for nant.
 * Add support for scons.
 * Need a way to build weird projects like Cecil, probably a pref with a build
@@ -166,7 +182,7 @@ might want a sample app
 * Might want to add an align columns script. Kind of tricky to do though if the font
    is proportional and tabs use stops.
 * Get find references working.
-* Get type/method popup working.
+* Might want goto begin end of declaration commands.
 * Would be nice to degrade gracefully if sqlite is not installed (or has the wrong
    version)
 * Get code completion working:

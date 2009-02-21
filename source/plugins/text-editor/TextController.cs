@@ -31,13 +31,14 @@ using System.Text.RegularExpressions;
 
 namespace TextEditor
 {
-	[ExportClass("TextController", "NSWindowController", Outlets = "textView lineLabel scrollView")]
+	[ExportClass("TextController", "NSWindowController", Outlets = "textView lineLabel decsPopup scrollView")]
 	internal sealed class TextController : NSWindowController
 	{
 		public TextController() : base("TextController", "text-editor")
 		{
 			m_textView = new IBOutlet<NSTextView>(this, "textView");
 			m_lineLabel = new IBOutlet<NSButton>(this, "lineLabel");
+			m_decPopup = new IBOutlet<NSPopUpButton>(this, "decsPopup");
 			m_scrollView = new IBOutlet<NSScrollView>(this, "scrollView");
 			
 			m_boss = ObjectModel.Create("TextEditor");
@@ -100,7 +101,7 @@ namespace TextEditor
 				string dir = System.IO.Path.GetDirectoryName(Path);
 				m_dir = NSString.Create(dir).stringByStandardizingPath().Retain();
 				m_watcher = new DirectoryWatcher(dir, TimeSpan.FromMilliseconds(500));
-				m_watcher.Changed += this.DoDirChanged;	 
+				m_watcher.Changed += this.DoDirChanged;	
 			}
 		}
 		
@@ -176,6 +177,7 @@ namespace TextEditor
 			}
 		}
 		
+		// Count is used for the find indicator.
 		public void ShowLine(int begin, int end, int count)
 		{
 			m_textView.Value.setSelectedRange(new NSRange(begin, 0));
@@ -414,7 +416,9 @@ namespace TextEditor
 		{
 			if (m_styler != null)
 			{
-				Styler.ShowSpaces = !Styler.ShowSpaces;
+				Boss boss = ObjectModel.Create("Stylers");
+				var stylers = boss.Get<IStylers>();
+				stylers.ShowSpaces = !stylers.ShowSpaces;
 				
 				m_styler.Apply(Text, m_editCount, this.DoStylerFinished);
 			}
@@ -424,7 +428,9 @@ namespace TextEditor
 		{
 			if (m_styler != null)
 			{
-				Styler.ShowTabs = !Styler.ShowTabs;
+				Boss boss = ObjectModel.Create("Stylers");
+				var stylers = boss.Get<IStylers>();
+				stylers.ShowTabs = !stylers.ShowTabs;
 				
 				m_styler.Apply(Text, m_editCount, this.DoStylerFinished);
 			}
@@ -449,6 +455,16 @@ namespace TextEditor
 				m_textView.Value.scrollRangeToVisible(range);
 				m_textView.Value.showFindIndicatorForRange(range);
 			}
+		}
+		
+		public void findNextDec(NSObject sender)
+		{
+			Console.WriteLine("finding next");
+		}
+		
+		public void findPrevDec(NSObject sender)
+		{
+			Console.WriteLine("finding prev");
 		}
 		
 		public void dirHandler(NSObject sender)
@@ -480,7 +496,10 @@ namespace TextEditor
 			{
 				if (StylesWhitespace)
 				{
-					Unused.Value = item.Call("setTitle:", Styler.ShowSpaces ? NSString.Create("Hide Spaces") : NSString.Create("Show Spaces"));
+					Boss boss = ObjectModel.Create("Stylers");
+					var stylers = boss.Get<IStylers>();
+					
+					Unused.Value = item.Call("setTitle:", stylers.ShowSpaces ? NSString.Create("Hide Spaces") : NSString.Create("Show Spaces"));
 					valid = true;
 				}
 			}
@@ -488,7 +507,10 @@ namespace TextEditor
 			{
 				if (StylesWhitespace)
 				{
-					Unused.Value = item.Call("setTitle:", Styler.ShowTabs ? NSString.Create("Hide Tabs") : NSString.Create("Show Tabs"));
+					Boss boss = ObjectModel.Create("Stylers");
+					var stylers = boss.Get<IStylers>();
+					
+					Unused.Value = item.Call("setTitle:", stylers.ShowTabs ? NSString.Create("Hide Tabs") : NSString.Create("Show Tabs"));
 					valid = true;
 				}
 			}
@@ -536,6 +558,7 @@ namespace TextEditor
 					m_styler.Queue(() => Tuple.Make(Text, m_editCount), this.DoStylerFinished);
 				
 				DoUpdateLineLabel(text);
+				m_decPopup.Value.Call("textWasEdited");
 				
 				if (m_userEdit)
 				{
@@ -545,7 +568,7 @@ namespace TextEditor
 					// (e.g. so build errors can be fixed up).
 					if (Path != null)
 					{
-						int deltaLines = m_metrics.LineCount - oldNumLines;		
+						int deltaLines = m_metrics.LineCount - oldNumLines;
 						int startLine = m_metrics.GetLine(range.location);
 						
 						Broadcaster.Invoke("text lines changed", Tuple.Make(Path, startLine, deltaLines));
@@ -620,6 +643,7 @@ namespace TextEditor
 			}
 			
 			DoUpdateLineLabel(text);
+			m_decPopup.Value.Call("textSelectionChanged");
 		}
 		
 		#region Private Methods
@@ -627,15 +651,24 @@ namespace TextEditor
 		{
 			string fileName = System.IO.Path.GetFileName(Path);	
 			
-			Styler styler = null;
+			IStyler styler = null;
 			Boss boss = ObjectModel.Create("Stylers");
-			if (boss.Has<IFindStyler>())
+			if (boss.Has<IFindLanguage>())
 			{
-				var find = boss.Get<IFindStyler>();
+				var find = boss.Get<IFindLanguage>();
 				while (find != null && styler == null)
 				{
-					styler = find.Find(fileName);
-					find = boss.GetNext<IFindStyler>(find);
+					Boss language = find.Find(fileName);
+					if (language != null)
+					{
+						styler = language.Get<IStyler>();
+						
+						if (language.Has<IDeclarations>())
+							((DeclarationsPopup) m_decPopup.Value).Init(this, language.Get<IDeclarations>());
+						else
+							((DeclarationsPopup) m_decPopup.Value).Init(this, null);
+					}
+					find = boss.GetNext<IFindLanguage>(find);
 				}
 			}
 			
@@ -647,12 +680,16 @@ namespace TextEditor
 			{
 				m_styler = styler;
 				if (m_styler != null)
+				{
 					m_styler.Apply(Text, m_editCount, this.DoStylerFinished);	// we only want to call this if the document is saved under a new name because the text view starts out with that lame latin
+					m_decPopup.Value.Call("textWasEdited");
+				}
 			}
 		}
 		
-		// This is retarded, but showFindIndicatorForRange only works if the window is aleady visible
-		// and the indicator doesn't always show up if we simply use BeginInvoke.
+		// This is retarded, but showFindIndicatorForRange only works if the window is
+		//  already visible and the indicator doesn't always show up if we simply use 
+		// BeginInvoke.
 		private void DoDeferredFindIndicator(NSRange range)
 		{
 			System.Threading.Thread.Sleep(200);
@@ -789,9 +826,10 @@ namespace TextEditor
 		#region Fields
 		private IBOutlet<NSTextView> m_textView;
 		private IBOutlet<NSButton> m_lineLabel;
+		private IBOutlet<NSPopUpButton> m_decPopup;
 		private IBOutlet<NSScrollView> m_scrollView;
 		private Boss m_boss;
-		private Styler m_styler;
+		private IStyler m_styler;
 		private ApplyStyles m_applier;
 		private bool m_userEdit = true;
 		private TextMetrics m_metrics = new TextMetrics(string.Empty);

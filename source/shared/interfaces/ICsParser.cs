@@ -22,7 +22,7 @@
 using Gear;
 
 namespace Shared
-{	
+{
 	// Interface used to parse C# code.
 	public interface ICsParser : IInterface
 	{
@@ -32,5 +32,5 @@ namespace Shared
 		// will contain as much as possible and offset/length will point to the
 		// offending token.
 		CsGlobalNamespace TryParse(string text, out int offset, out int length);
-	} 
+	}
 }

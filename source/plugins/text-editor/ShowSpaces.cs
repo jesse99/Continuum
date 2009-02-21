@@ -29,9 +29,9 @@ using System.Collections.Generic;
 namespace TextEditor
 {
 	internal sealed class ShowSpaces : ITextContextCommands
-	{		
+	{
 		public void Instantiated(Boss boss)
-		{	
+		{
 			m_boss = boss;
 		}
 		
@@ -49,8 +49,11 @@ namespace TextEditor
 				{
 					items.Add(new TextContextItem(0.8f));
 					
-					items.Add(new TextContextItem(Styler.ShowSpaces ? "Hide Spaces" : "Show Spaces", this.DoToggleSpaces, 0.8f));
-					items.Add(new TextContextItem(Styler.ShowTabs ? "Hide Tabs" : "Show Tabs", this.DoToggleTabs, 0.8f));
+					Boss b = ObjectModel.Create("Stylers");
+					var stylers = b.Get<IStylers>();
+					
+					items.Add(new TextContextItem(stylers.ShowSpaces ? "Hide Spaces" : "Show Spaces", this.DoToggleSpaces, 0.8f));
+					items.Add(new TextContextItem(stylers.ShowTabs ? "Hide Tabs" : "Show Tabs", this.DoToggleTabs, 0.8f));
 				}
 			}
 		}

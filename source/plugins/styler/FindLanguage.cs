@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Jesse Jones
+// Copyright (C) 2009 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -19,13 +19,46 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear;
+using Shared;
 using System;
+using System.Diagnostics;
 
-namespace Shared
+namespace Styler
 {
-	public static class Constants
+	internal sealed class FindLanguage : IFindLanguage
 	{
-		public const string Ellipsis = "\x2026";
-		public const string ZeroWidthSpace = "\x200C";
+		public Boss Boss
+		{
+			get {return m_boss;}
+		}
+		
+		public void Instantiated(Boss boss)
+		{
+			m_boss = boss;
+		}
+		
+		public Boss Find(string fileName)
+		{
+			Language language =  Languages.Find(fileName);
+			
+			Boss result = null;
+			if (language != null)
+			{
+				if (language.Name == "c#")
+					result = ObjectModel.Create("CsLanguage");
+				else
+					result = ObjectModel.Create("RegexLanguage");
+					
+				var with = result.Get<IStyleWith>();
+				with.Language = language;
+			}
+				
+			return result;
+		}
+		
+		#region Fields 
+		private Boss m_boss;
+		#endregion
 	}
 }

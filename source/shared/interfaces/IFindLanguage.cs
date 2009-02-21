@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Jesse Jones
+// Copyright (C) 2009 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -19,13 +19,17 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear;
 using System;
 
 namespace Shared
 {
-	public static class Constants
+	// Repeated interface used to find the (computer) language specific
+	// interfaces associated with a file.
+	public interface IFindLanguage : IInterface
 	{
-		public const string Ellipsis = "\x2026";
-		public const string ZeroWidthSpace = "\x200C";
+		// Returns either null or a boss with an IStyler interface. The boss
+		// may also have additional interfaces, in particular, IDeclarations. 
+		Boss Find(string fileName);
 	}
 }

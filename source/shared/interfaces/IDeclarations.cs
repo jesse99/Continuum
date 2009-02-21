@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Jesse Jones
+// Copyright (C) 2009 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -19,13 +19,33 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear;
+using MCocoa;
 using System;
 
 namespace Shared
 {
-	public static class Constants
+	public struct Declaration
 	{
-		public const string Ellipsis = "\x2026";
-		public const string ZeroWidthSpace = "\x200C";
+		public Declaration(string name, NSRange extent, bool isType)
+		{
+			Name = name;
+			Extent = extent;
+			IsType = isType;
+		}
+		
+		public string Name {get; private set;}
+		
+		public NSRange Extent {get; private set;}
+		
+		public bool IsType {get; private set;}
+	}
+	
+	// Optional interface on language bosses.
+	public interface IDeclarations : IInterface
+	{
+		// Returns all the declarations in the text. Note that this will return as
+		// many declarations as possible even for malformed text. 
+		Declaration[] Get(string text);
 	}
 }

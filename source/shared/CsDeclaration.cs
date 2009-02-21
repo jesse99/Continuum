@@ -50,5 +50,5 @@ namespace Shared
 		
 		// The one-based line the declaration started on.
 		public int Line {get; private set;}
-	} 
+	}
 }

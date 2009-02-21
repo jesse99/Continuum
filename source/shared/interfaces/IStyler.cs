@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Jesse Jones
+// Copyright (C) 2009 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -19,13 +19,29 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear;
 using System;
+using System.Collections.Generic;
 
 namespace Shared
 {
-	public static class Constants
+	// Main interface for language bosses.
+	public interface IStyler : IInterface
 	{
-		public const string Ellipsis = "\x2026";
-		public const string ZeroWidthSpace = "\x200C";
+		// Asynchronously computes the style runs and calls the callback on the 
+		// main thread when finished. The callback will be called with the edit 
+		// count. The runs will cover the text and the caller can assume ownership 
+		// of runs.
+		void Apply(string text, int edit, Action<int, List<StyleRun>> callback);
+		
+		// Like the above except data is called to get the text and edit count (on 
+		// the main thread) and there is a delay before data is called. Queue can 
+		// be called multiple times and any queue requests which have not yet 
+		// been processed are dropped.
+		void Queue(Func<Tuple2<string, int>> data, Action<int, List<StyleRun>> callback);
+		
+		// Returns true if the language supports showing leading/trailing tabs and
+		// spaces.
+		bool StylesWhitespace {get;}
 	}
 }

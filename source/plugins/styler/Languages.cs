@@ -37,15 +37,15 @@ namespace Styler
 			try
 			{
 				DoLoadGlobs();
-				DoLoadLanguages(); 
+				DoLoadLanguages();
 				
 				foreach (KeyValuePair<string, string> entry in ms_globs)
 				{
-					if (!ms_stylers.ContainsKey(entry.Value))
+					if (!ms_languages.ContainsKey(entry.Value))
 						Console.Error.WriteLine("glob {0} is associated with language {1}, but there is no xml file for that language", entry.Key, entry.Value);
 				}
 				
-				foreach (string name in ms_stylers.Keys)
+				foreach (string name in ms_languages.Keys)
 				{
 					if (!ms_globs.ContainsValue(name))
 						Console.Error.WriteLine("language {0} is not associated with a glob", name);
@@ -59,14 +59,14 @@ namespace Styler
 			}
 		}
 		
-		public static RegexStyler Find(string fileName)
+		public static Language Find(string fileName)
 		{
 			foreach (KeyValuePair<string, string> entry in ms_globs)
 			{
 				if (Glob.Match(entry.Key, fileName))
 				{
-					RegexStyler result;
-					Ignore.Value = ms_stylers.TryGetValue(entry.Value, out result);
+					Language result;
+					Ignore.Value = ms_languages.TryGetValue(entry.Value, out result);
 					return result;		// this may be null if the xml files aren't in sync
 				}
 			}
@@ -83,7 +83,7 @@ namespace Styler
 			string globsSchemaPath = Path.Combine(languagesPath, "Globs.schema");
 			using (Stream stream = new FileStream(globsSchemaPath, FileMode.Open, FileAccess.Read))
 			{
-				XmlSchema schema = XmlSchema.Read(stream, DoValidationEvent);	
+				XmlSchema schema = XmlSchema.Read(stream, DoValidationEvent);
 			
 				// Setup the xml parsing options.
 				XmlReaderSettings settings = new XmlReaderSettings();
@@ -91,7 +91,7 @@ namespace Styler
 				settings.ValidationType = ValidationType.Schema;
 				settings.IgnoreComments = true;
 				settings.Schemas.Add(schema);
-	
+				
 				// Load the xml file.
 				string globsPath = Path.Combine(languagesPath, "Globs.xml");
 				using (Stream stream2 = new FileStream(globsPath, FileMode.Open, FileAccess.Read))
@@ -116,7 +116,7 @@ namespace Styler
 			string globsSchemaPath = Path.Combine(languagesPath, "Language.schema");
 			using (Stream stream = new FileStream(globsSchemaPath, FileMode.Open, FileAccess.Read))
 			{
-				XmlSchema schema = XmlSchema.Read(stream, DoValidationEvent);	
+				XmlSchema schema = XmlSchema.Read(stream, DoValidationEvent);
 			
 				// Setup the xml parsing options.
 				XmlReaderSettings settings = new XmlReaderSettings();
@@ -124,7 +124,7 @@ namespace Styler
 				settings.ValidationType = ValidationType.Schema;
 				settings.IgnoreComments = true;
 				settings.Schemas.Add(schema);
-	
+				
 				// Load the xml files.		
 				foreach (string path in Directory.GetFiles(languagesPath, "*.xml"))
 				{
@@ -143,8 +143,8 @@ namespace Styler
 									XmlNode node = xml.ChildNodes[0];
 									string name = node.Attributes["name"].Value;
 				
-									if (!ms_stylers.ContainsKey(name)) 
-										ms_stylers.Add(name, new RegexStyler(node));
+									if (!ms_languages.ContainsKey(name)) 
+										ms_languages.Add(name, new Language(node));
 									else
 										Console.Error.WriteLine("language '{0}' was declared twice.", name);
 								}
@@ -191,14 +191,14 @@ namespace Styler
 		{
 			if (e.Severity == XmlSeverityType.Warning)
 				Console.WriteLine("{0}", e.Message);
-			else 
+			else
 				throw e.Exception;
 		}
 		#endregion
 		
 		#region Fields 
 		private static Dictionary<string, string> ms_globs = new Dictionary<string, string>();					// glob => language name
-		private static Dictionary<string, RegexStyler> ms_stylers = new Dictionary<string, RegexStyler>();	// language name => styler
+		private static Dictionary<string, Language> ms_languages = new Dictionary<string, Language>();	// language name => styler
 		#endregion
-	} 
+	}
 }	
