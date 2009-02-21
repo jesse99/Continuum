@@ -42,20 +42,16 @@ namespace Styler
 			m_boss = boss;
 		}
 		
-		public Declaration[] Get(string text)
+		public Declaration[] Get(string text, StyleRun[] runs, CsGlobalNamespace globals)
 		{
-			Trace.Assert(text != null, "text is null");
-			
-			Boss boss = ObjectModel.Create("CsParser");
-			var parser = boss.Get<ICsParser>();
-					
-			int offset, length;
-			CsGlobalNamespace globals = parser.TryParse(text, out offset, out length);
-			
 			var decs = new List<Declaration>();
-			DoGetDecs(globals, string.Empty, decs);
 			
-			decs.Sort((lhs, rhs) => lhs.Extent.location.CompareTo(rhs.Extent.location));
+			if (globals != null)
+			{
+				DoGetDecs(globals, string.Empty, decs);
+			
+				decs.Sort((lhs, rhs) => lhs.Extent.location.CompareTo(rhs.Extent.location));
+			}
 			
 			return decs.ToArray();
 		}

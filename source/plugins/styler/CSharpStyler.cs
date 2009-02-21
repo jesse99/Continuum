@@ -37,15 +37,15 @@ namespace Styler
 			m_parser = b.Get<ICsParser>();
 		}
 		
-		protected override void OnComputeRuns(string text, int edit, List<StyleRun> runs)		// threaded
+		protected override CsGlobalNamespace OnComputeRuns(string text, int edit, List<StyleRun> runs)		// threaded
 		{
 			base.OnComputeRuns(text, edit, runs);
 			
-			DoParseMatch(text, runs);
+			return DoParseMatch(text, runs);
 		}
 		
 		#region Private Methods
-		private void DoParseMatch(string text, List<StyleRun> runs)		// threaded
+		private CsGlobalNamespace DoParseMatch(string text, List<StyleRun> runs)		// threaded
 		{
 			int offset, length;
 			CsGlobalNamespace globals = m_parser.TryParse(text, out offset, out length);
@@ -63,6 +63,8 @@ namespace Styler
 			}
 			
 			DoMatchScope(globals, runs);
+			
+			return globals;
 		}
 		
 		private void DoMatchScope(CsTypeScope scope, List<StyleRun> runs)		// threaded

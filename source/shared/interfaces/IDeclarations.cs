@@ -46,6 +46,6 @@ namespace Shared
 	{
 		// Returns all the declarations in the text. Note that this will return as
 		// many declarations as possible even for malformed text. 
-		Declaration[] Get(string text);
+		Declaration[] Get(string text, StyleRun[] runs, CsGlobalNamespace globals);
 	}
 }

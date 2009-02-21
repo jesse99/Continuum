@@ -15,5 +15,6 @@
 	
 	<Boss name = "TextEditor">
 		<Implementation interfaces = "IWindow ITextEditor IText IReload" name = "Editor"/>
+		<Implementation interfaces = "IStyles" name = "Styles"/>
 	</Boss>
 </Bosses>

@@ -58,18 +58,20 @@ namespace Styler
 			set {m_language = value; m_regex = value.Regex;}
 		}
 		
-		public void Apply(string text, int edit, Action<int, List<StyleRun>> callback)
+		public void Apply(Boss boss, Action callback)
 		{
-			Trace.Assert(text != null, "text is null");
+			Trace.Assert(boss != null, "boss is null");
 			Trace.Assert(callback != null, "callback is null");
 			
-			if (text.Length < 128*1024)
+			var text = boss.Get<IText>();
+			
+			if (text.Text.Length < 128*1024)
 			{
 				lock (m_mutex)
 				{
-					m_text = text;
-					m_edit = edit;
-					m_data = null;
+					m_text = text.Text;
+					m_edit = text.EditCount;
+					m_textBoss = boss;
 					m_callback = callback;
 					
 					Unused.Value = m_timer.Change(0, Timeout.Infinite);
@@ -80,101 +82,103 @@ namespace Styler
 				// We need to ensure that the callback is always called because
 				// TextController uses the call as a signal that it is OK to restore the
 				// scroller.
-				var runs = new List<StyleRun>();
-				NSApplication.sharedApplication().BeginInvoke(() => callback(edit, runs));
+				var styles = boss.Get<IStyles>();
+				styles.Reset(text.EditCount, new StyleRun[0], null);
+				
+				NSApplication.sharedApplication().BeginInvoke(callback);
 			}
 		}
 		
-		public void Queue(Func<Tuple2<string, int>> data, Action<int, List<StyleRun>> callback)
+		public void Queue(Boss boss, Action callback)
 		{
-			Trace.Assert(data != null, "data is null");
+			Trace.Assert(boss != null, "boss is null");
 			Trace.Assert(callback != null, "callback is null");
 			
 			lock (m_mutex)
 			{
 				m_text = null;
 				m_edit = 0;
-				m_data = data;
+				m_textBoss = boss;
 				m_callback = callback;
 				
 				Unused.Value = m_timer.Change(750, Timeout.Infinite);
 			}
 		}
 		
-		internal StyleRun[] Compute(string text)
-		{
-			var runs = new List<StyleRun>(text.Length/50);
-			DoComputeRuns(text, 1, runs);
-			
-			return runs.ToArray();
-		}
-		
 		#region Protected Methods
 		// TODO: This is a bit slow. The parser seems to be significantly faster than the mondo
 		// regex so we might get a speedup for c# by reusing the scanner. Note that we'd still
 		// have to use the regex for stuff like whitespace and preprocessor runs though.
-		protected virtual void OnComputeRuns(string text, int edit, List<StyleRun> runs)		// threaded
+		protected virtual CsGlobalNamespace OnComputeRuns(string text, int edit, List<StyleRun> runs)		// threaded
 		{
 			DoRegexMatch(text, runs);
+			
+			return null;
 		}
 		#endregion
 		
 		#region Private Methods
 		private void DoQueuedApply()
 		{
-			string text = null;
-			int edit = 0;
-			Action<int, List<StyleRun>> callback = null;
+			Boss boss = null;
+			Action callback = null;
 			
 			lock (m_mutex)
 			{
-				if (m_data != null)				// Apply may have been called before we landed here
+				if (m_text == null)				// Apply may have been called before we landed here
 				{
-					var data = m_data();
-					text = data.First;
-					edit = data.Second;
+					boss = m_textBoss;
 					callback = m_callback;
 				}
 			}
 			
-			if (text != null)
-				Apply(text, edit, callback);
+			if (boss != null)
+				Apply(boss, callback);
 		}
 		
 		private void DoTimer()			// threaded		TODO: might be better to use a low priority thread (tho mono 2.2 doesn't support them)
 		{
 			string text = null;
 			int edit = 0;
-			Action<int, List<StyleRun>> callback = null;
+			Boss boss = null;
+			Action callback = null;
 			
 			lock (m_mutex)	
 			{
 				text = m_text;
 				edit = m_edit;
+				boss = m_textBoss;
 				callback = m_callback;
 			}
 			
 			if (text != null)
 			{
 				var runs = new List<StyleRun>(text.Length/50);
-				DoComputeRuns(text, edit, runs);
+				CsGlobalNamespace globals = DoComputeRuns(text, edit, runs);
 				
-				NSApplication.sharedApplication().BeginInvoke(() => callback(edit, runs));
+				var styles = boss.Get<IStyles>();
+				styles.Reset(edit, runs.ToArray(), globals);
+
+				NSApplication.sharedApplication().BeginInvoke(callback);
 			}
 			else
 				NSApplication.sharedApplication().BeginInvoke(DoQueuedApply);
 		}
-		
-		private void DoComputeRuns(string text, int edit, List<StyleRun> runs)		// threaded
+				
+		private CsGlobalNamespace DoComputeRuns(string text, int edit, List<StyleRun> runs)		// threaded
 		{
+			CsGlobalNamespace globals = null;
+			
 			if (m_regex != null)
 			{
 				Log.WriteLine(TraceLevel.Verbose, "Styler", "computing runs for edit {0} and {1} characters", edit, text.Length);
 				
-				OnComputeRuns(text, edit, runs);
+				globals = OnComputeRuns(text, edit, runs);
 				
 				Log.WriteLine(TraceLevel.Verbose, "Styler", "    done computing runs for edit {0}", edit);
 			}
+			
+			return globals;
 		}
 		
 		private void DoRegexMatch(string text, List<StyleRun> runs)		// threaded
@@ -248,8 +252,8 @@ namespace Styler
 		private object m_mutex = new object();
 			private string m_text;
 			private int m_edit;
-			private Func<Tuple2<string, int>> m_data;
-			private Action<int, List<StyleRun>> m_callback;
+			private Boss m_textBoss;
+			private Action m_callback;
 		#endregion
 	}
 }

@@ -75,7 +75,7 @@ namespace Transcript
 		{
 			get {return m_controller != null  && m_controller.window().isVisible();}
 		}
-
+		
 		public void Show()
 		{
 			if (m_controller == null)
@@ -86,7 +86,7 @@ namespace Transcript
 			
 			m_controller.window().makeKeyAndOrderFront(null);
 		}
-
+		
 		public void Write(Output type, string text)		// Write methods need to be thread safe
 		{
 			if (NSApplication.sharedApplication().InvokeRequired)
@@ -94,7 +94,7 @@ namespace Transcript
 				NSApplication.sharedApplication().BeginInvoke(() => Write(type, text));
 				return;
 			}
-
+			
 			if (m_controller == null)
 			{
 				m_controller = new TranscriptController();
@@ -102,13 +102,14 @@ namespace Transcript
 			}
 			
 			m_controller.Write(type, text);
+			m_editCount = unchecked(m_editCount + 1);
 		}
 		
 		public void Write(Output type, string format, params object[] args)
 		{
 			Write(type, string.Format(format, args));
 		}
-
+		
 		public void WriteLine(Output type, string text)
 		{
 			Write(type, text + Environment.NewLine);
@@ -118,7 +119,7 @@ namespace Transcript
 		{
 			Write(type, string.Format(format, args) + Environment.NewLine);
 		}
-				
+		
 		public string Text
 		{
 			get
@@ -129,6 +130,11 @@ namespace Transcript
 				NSTextView view = m_controller.TextView;
 				return view.textStorage().ToString();
 			}
+		}
+		
+		public int EditCount
+		{
+			get {return m_editCount;}
 		}
 		
 		public void Replace(string replacement, int index, int length, string undoText)
@@ -143,9 +149,10 @@ namespace Transcript
 				
 				NSUndoManager undo = view.undoManager();
 				undo.setActionName(NSString.Create(undoText));
+				m_editCount = unchecked(m_editCount + 1);
 			}
 		}
-
+		
 		public NSRange Selection
 		{
 			get
@@ -160,23 +167,23 @@ namespace Transcript
 			set
 			{
 				NSTextView view = m_controller.TextView;
-
+				
 				view.setSelectedRange(value);
 			}
 		}
 		
 		public void ShowSelection()
-		{			
+		{
 			NSTextView view = m_controller.TextView;
 			NSRange range = view.selectedRange();
-
+			
 			view.scrollRangeToVisible(range);
-							
+			
 			System.Threading.Thread thread = new System.Threading.Thread(() => DoAnimateError(view, range));
 			thread.Name = "show selection animation";
 			thread.Start();
 		}
-
+		
 		// This is retarded, but showFindIndicatorForRange only works if the window is aleady visible
 		// and the indicator doesn't always show up if we simply use BeginInvoke.
 		private static void DoAnimateError(NSTextView view, NSRange range)
@@ -189,6 +196,7 @@ namespace Transcript
 		#region Fields 
 		private Boss m_boss;
 		private TranscriptController m_controller;
+		private int m_editCount;
 		#endregion
-	} 
+	}
 }

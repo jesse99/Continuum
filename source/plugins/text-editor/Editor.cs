@@ -42,7 +42,7 @@ namespace TextEditor
 		}
 
 		// IWindow
-		public NSWindow Window 
+		public NSWindow Window
 		{
 			get {Trace.Assert(m_window != null, "window isn't set"); return m_window;}
 			set {Trace.Assert(value != null, "value is null"); Trace.Assert(m_window == null, "window isn't null"); m_window = (NSWindow) value;}
@@ -72,7 +72,7 @@ namespace TextEditor
 			Trace.Assert(line >= 1, "line is not positive");
 			Trace.Assert(col == -1 || col >= 1, "col is not -1 or a positive number");
 			Trace.Assert(tabWidth >= 1, "tabWidth is not positive");
-						
+			
 			int begin = DoGetOffset(text, line - 1);	
 			
 			int c = col - 1;
@@ -160,9 +160,9 @@ namespace TextEditor
 				}
 			}
 		}
-
+		
 		// IText
-		public string Text 
+		public string Text
 		{
 			get
 			{
@@ -171,7 +171,16 @@ namespace TextEditor
 			}
 		}
 		
-		public NSRange Selection 
+		public int EditCount
+		{
+			get
+			{
+				TextController controller = (TextController) m_window.windowController();
+				return controller.EditCount;
+			}
+		}
+		
+		public NSRange Selection
 		{
 			get
 			{
@@ -253,10 +262,10 @@ namespace TextEditor
 			return offset;
 		}
 		#endregion
-
+		
 		#region Fields
-		private Boss m_boss; 
+		private Boss m_boss;
 		private NSWindow m_window;
 		#endregion
-	} 
-}	
+	}
+}

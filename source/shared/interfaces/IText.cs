@@ -30,11 +30,13 @@ namespace Shared
 	{
 		string Text {get;}
 		
+		int EditCount {get;}
+		
 		void Replace(string replacement, int index, int length, string undoText);
 		
 		NSRange Selection {get; set;}
 		
 		// Scrolls the selection into view and highlights it with an animation.
 		void ShowSelection();
-	} 
+	}
 }

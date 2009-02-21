@@ -21,25 +21,18 @@
 
 using Gear;
 using System;
-using System.Collections.Generic;
 
 namespace Shared
 {
-	// Main interface for language bosses.
-	public interface IStyler : IInterface
+	// Interface on the Text Editor boss which caches style runs and C# parses.
+	public interface IStyles : IInterface
 	{
-		// Asynchronously computes the style runs and calls the callback on the 
-		// main thread when finished. Boss needs IText and IStyles interfaces.
-		// Note that the runs given to IStyles will cover the text.
-		void Apply(Boss boss, Action callback);
+		// This information is not immediately updated so it may be a bit out of
+		// date if the document is being edited.	 Also globals may be missing 
+		// some declarations if the text was malformed.
+		void Get(out int editCount, out StyleRun[] runs, out CsGlobalNamespace globals);
 		
-		// Like the above except there is a delay before styling begins. Queue can 
-		// be called multiple times and any queue requests which have not yet 
-		// finished are dropped.
-		void Queue(Boss boss, Action callback);
-		
-		// Returns true if the language supports showing leading/trailing tabs and
-		// spaces.
-		bool StylesWhitespace {get;}
+		// This is normally called from a worker thread.
+		void Reset(int edit, StyleRun[] runs, CsGlobalNamespace globals);
 	}
 }

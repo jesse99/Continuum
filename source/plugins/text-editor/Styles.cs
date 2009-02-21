@@ -1,4 +1,4 @@
-// Copyright (C) 2009 Jesse Jones
+// Copyright (C) 2008 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -20,26 +20,58 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+//using MCocoa;
+//using MObjc;
+using Shared;
 using System;
-using System.Collections.Generic;
+using System.Diagnostics;
+//using System.Globalization;
 
-namespace Shared
+namespace TextEditor
 {
-	// Main interface for language bosses.
-	public interface IStyler : IInterface
-	{
-		// Asynchronously computes the style runs and calls the callback on the 
-		// main thread when finished. Boss needs IText and IStyles interfaces.
-		// Note that the runs given to IStyles will cover the text.
-		void Apply(Boss boss, Action callback);
+	internal sealed class Styles : IStyles
+	{		
+		public void Instantiated(Boss boss)
+		{	
+			m_boss = boss;
+		}
 		
-		// Like the above except there is a delay before styling begins. Queue can 
-		// be called multiple times and any queue requests which have not yet 
-		// finished are dropped.
-		void Queue(Boss boss, Action callback);
+		public Boss Boss
+		{
+			get {return m_boss;}
+		}
 		
-		// Returns true if the language supports showing leading/trailing tabs and
-		// spaces.
-		bool StylesWhitespace {get;}
+		public void Get(out int editCount, out StyleRun[] runs, out CsGlobalNamespace globals)
+		{
+			lock (m_mutex)
+			{
+				editCount = m_editCount;
+				runs = m_runs;
+				globals = m_globals;
+			}
+		}
+		
+		public void Reset(int edit, StyleRun[] runs, CsGlobalNamespace globals)
+		{
+			Trace.Assert(runs != null, "runs is null");
+			
+			// These types are ints or references so they may be atomically set
+			// but we need to ensure that they are atomically set as a group.
+			lock (m_mutex)
+			{
+				m_editCount = edit;
+				m_runs = runs;
+				m_globals = globals;
+			}
+		}
+		
+		#region Fields
+		private Boss m_boss;
+		
+		private object m_mutex = new object();
+			private int m_editCount = int.MinValue;
+			private StyleRun[] m_runs = new StyleRun[0];
+			private CsGlobalNamespace m_globals;
+		#endregion
 	}
 }

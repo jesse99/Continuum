@@ -12,14 +12,21 @@ might want a sample app
 		
 	<keyword>(?:&lt; \s*) [^&quot;\r\n]* &quot;</keyword>
 	
+		internal StyleRun[] Compute(string text)
+		{
+			var runs = new List<StyleRun>(text.Length/50);
+			DoComputeRuns(text, 1, runs);
+			
+			return runs.ToArray();
+		}
+		
 * Add a method popup using the parser:
-	- get this working with python and refactor too
+	- get popup working with IStyles
 	- add an interface to get the cs declarations, should rely on edit count
 	  or hook into the timer styler uses
 	- can we not style 2x?
 	- option key sorts?
 * Do a checkin.
-* Remove BaseStyler
 * Got an error:
 Errors Warning       There was an error processing the text range changed broadcast:
 Errors Warning       System.NullReferenceException: Object reference not set to an instance of an object

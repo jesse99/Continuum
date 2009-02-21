@@ -128,7 +128,7 @@ namespace TextEditor
 					m_applier.Reset(value);
 					m_textView.Value.setSelectedRange(new NSRange(0, 0));
 					if (m_styler != null)
-						m_styler.Apply(value, m_editCount, this.DoStylerFinished);
+						m_styler.Apply(m_boss, this.DoStylerFinished);
 					
 					DoUpdateLineLabel(Text);			// use Text so metrics are up to date
 				}
@@ -420,7 +420,7 @@ namespace TextEditor
 				var stylers = boss.Get<IStylers>();
 				stylers.ShowSpaces = !stylers.ShowSpaces;
 				
-				m_styler.Apply(Text, m_editCount, this.DoStylerFinished);
+				m_styler.Apply(m_boss, this.DoStylerFinished);
 			}
 		}
 		
@@ -432,7 +432,7 @@ namespace TextEditor
 				var stylers = boss.Get<IStylers>();
 				stylers.ShowTabs = !stylers.ShowTabs;
 				
-				m_styler.Apply(Text, m_editCount, this.DoStylerFinished);
+				m_styler.Apply(m_boss, this.DoStylerFinished);
 			}
 		}
 		
@@ -555,10 +555,9 @@ namespace TextEditor
 				NSRange range = storage.editedRange();
 				
 				if (m_styler != null)
-					m_styler.Queue(() => Tuple.Make(Text, m_editCount), this.DoStylerFinished);
+					m_styler.Queue(m_boss, this.DoStylerFinished);
 				
 				DoUpdateLineLabel(text);
-				m_decPopup.Value.Call("textWasEdited");
 				
 				if (m_userEdit)
 				{
@@ -681,7 +680,7 @@ namespace TextEditor
 				m_styler = styler;
 				if (m_styler != null)
 				{
-					m_styler.Apply(Text, m_editCount, this.DoStylerFinished);	// we only want to call this if the document is saved under a new name because the text view starts out with that lame latin
+					m_styler.Apply(m_boss, this.DoStylerFinished);	// we only want to call this if the document is saved under a new name because the text view starts out with that lame latin
 					m_decPopup.Value.Call("textWasEdited");
 				}
 			}
@@ -714,12 +713,23 @@ namespace TextEditor
 			m_scrollView.Value.reflectScrolledClipView(clip);
 		}
 		
-		private void DoStylerFinished(int edit, List<StyleRun> runs)
+		private void DoStylerFinished()
 		{
-			if (edit == m_editCount && !m_closed)
+			if (!m_closed)
 			{
-				m_applier.Apply(edit, runs);
-				m_finishedStyling = true;
+				int edit;
+				StyleRun[] runs;
+				CsGlobalNamespace globals;
+				
+				var styles = m_boss.Get<IStyles>();
+				styles.Get(out edit, out runs, out globals);
+				
+				if (edit == m_editCount)
+				{
+					m_decPopup.Value.Call("textWasStyled");
+					m_applier.Apply(edit, new List<StyleRun>(runs));	// applier mutates runs...
+					m_finishedStyling = true;
+				}
 			}
 		}
 		

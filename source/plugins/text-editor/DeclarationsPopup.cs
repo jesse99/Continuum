@@ -63,7 +63,7 @@ namespace TextEditor
 			selectItemAtIndex(index);
 		}
 		
-		public void textWasEdited()
+		public void textWasStyled()
 		{
 			DoReset();
 		}
@@ -85,7 +85,15 @@ namespace TextEditor
 		{
 			if (m_getter != null)
 			{
-				m_declarations = m_getter.Get(m_controller.Text);
+				int edit;
+				StyleRun[] runs;
+				CsGlobalNamespace globals;
+				
+				var styles = m_controller.Boss.Get<IStyles>();
+				styles.Get(out edit, out runs, out globals);
+				Trace.Assert(edit == m_controller.EditCount, "controller called us with a bad edit count");
+				
+				m_declarations = m_getter.Get(m_controller.Text, runs, globals);
 				
 				string[] names = (from d in m_declarations select d.Name).ToArray();
 				
