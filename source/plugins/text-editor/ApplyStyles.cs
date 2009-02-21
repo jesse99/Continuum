@@ -104,6 +104,10 @@ namespace TextEditor
 				// already applied (there may also be attributes at the end which will
 				// be equal to what we applied but they are more difficult to handle
 				// because the run offsets will normally have changed).
+				//
+				// Note that this is also important because the text will jump if we apply
+				// attributes to text above whatever text we're viewing (and some runs
+				// are taller than others).
 				if (m_appliedSet != null && m_appliedSet.Count > 0)
 				{
 					m_workSet.Sort();				// won't be sorted for c#
@@ -111,7 +115,7 @@ namespace TextEditor
 					
 					int count = 0;
 					int max = Math.Min(m_appliedSet.Count, m_workSet.Count);
-					while (count < max && m_appliedSet[count] == m_workSet[count])
+					while (count < max && m_appliedSet[count] == m_workSet[count] && m_appliedSet[count].Offset < m_editStart)
 						++count;
 					m_workSet.RemoveRange(0, count);
 					m_appliedSet.RemoveRange(count, m_appliedSet.Count - count);
@@ -125,8 +129,18 @@ namespace TextEditor
 					DoResetAttributes(0, m_length, m_length);
 				}
 				
+				m_editStart = int.MaxValue;
+				
 				DoApplyStyles();
 			}
+		}
+		
+		// On occasion the text which is inserted matches the text which was moved. This
+		// messes up the m_appliedSet optimization so we keep track of where the first edit
+		// was.
+		public void EditedRange(NSRange range)
+		{	
+			m_editStart = Math.Min(range.location, m_editStart);
 		}
 		
 		public void HighlightLine(int offset, int length)
@@ -222,12 +236,6 @@ namespace TextEditor
 							m_workSet.RemoveRange(m_workSet.Count - MaxChunkSize, MaxChunkSize);
 						else
 							m_workSet.Clear();
-						
-						// Strictly speaking it isn't neccesary to do this each time, but we have
-						// to do it after the other runs and we don't want to wait until the very
-						// end to do it.
-//						DoApplyStyle(m_line, length);
-//						DoApplyStyle(m_error, length);
 					}
 					finally
 					{
@@ -316,14 +324,8 @@ namespace TextEditor
 				case StyleType.Error:				// this is a parse error (HighlightError handles build errors)
 					m_storage.addAttribute_value_range(Externs.NSUnderlineStyleAttributeName, NSNumber.Create(2), range);
 					m_storage.addAttribute_value_range(Externs.NSUnderlineColorAttributeName, ms_errorColor, range);
-
-//					m_storage.addAttributes_range(ms_attributes["text error font changed"], range);
 					break;
-				
-//				case StyleType.Line:
-//					m_storage.addAttributes_range(ms_selectedLineAttrs, range);
-//					break;
-				
+								
 				default:
 					Trace.Fail("Bad style type: " + run.Type);
 					break;
@@ -387,10 +389,7 @@ namespace TextEditor
 			
 			// attributes
 			string attrKey = key + "attributes";
-			
-//			if ((name == "text spaces color changed" && !ShowSpaces) || (name == "text tabs color changed" && !ShowTabs))
-//				attrKey = "text default font attributes";
-			
+						
 			var data = defaults.objectForKey(NSString.Create(attrKey)).To<NSData>();
 			if (!NSObject.IsNullOrNil(data))
 			{
@@ -477,6 +476,7 @@ namespace TextEditor
 		private int m_numIterations;
 		private int m_editCount;
 		private int m_length;
+		private int m_editStart = int.MaxValue;
 		private List<StyleRun> m_workSet;			// runs that still need to be applied, runs at the end are applied first
 		private List<StyleRun> m_currentSet;		// runs the text should be using (and will be using if m_workSet is empty)
 		private List<StyleRun> m_appliedSet;

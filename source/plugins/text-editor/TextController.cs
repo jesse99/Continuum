@@ -558,6 +558,7 @@ namespace TextEditor
 					m_styler.Queue(m_boss, this.DoStylerFinished);
 				
 				DoUpdateLineLabel(text);
+				m_applier.EditedRange(range);
 				
 				if (m_userEdit)
 				{

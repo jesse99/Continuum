@@ -32,9 +32,9 @@ using System.Text.RegularExpressions;
 namespace Find
 {
 	internal sealed class FindInFile : IFind
-	{		
+	{
 		public void Instantiated(Boss boss)
-		{	
+		{
 			m_boss = boss;
 		}
 		
@@ -42,7 +42,7 @@ namespace Find
 		{
 			get {return m_boss;}
 		}
-
+		
 		public void Find()
 		{
 			if (m_find == null)
@@ -60,7 +60,7 @@ namespace Find
 		}
 		
 		public void FindNext()
-		{					
+		{
 			try
 			{
 				IText text = DoFindTextWindow();
@@ -70,14 +70,14 @@ namespace Find
 					if (FindText == "^" || FindText == "$")
 						++index;
 				int length = text.Text.Length - index;
-	
+				
 				DoMakeRe();
 				Match match = m_re.Match(text.Text, index, length);
 				if (match.Success)
 				{
 					var window = text.Boss.Get<IWindow>();
 					window.Window.makeKeyAndOrderFront(null);
-
+					
 					text.Selection = new NSRange(match.Index, match.Length);
 					text.ShowSelection();
 				}
@@ -95,7 +95,7 @@ namespace Find
 		// do a backwards regex search or even to find all matches
 		// within a substring.
 		public void FindPrevious()
-		{					
+		{
 			try
 			{
 				IText text = DoFindTextWindow();
@@ -127,7 +127,7 @@ namespace Find
 				{
 					var window = text.Boss.Get<IWindow>();
 					window.Window.makeKeyAndOrderFront(null);
-
+					
 					text.Selection = new NSRange(match.Index, match.Length);
 					text.ShowSelection();
 				}
@@ -142,14 +142,14 @@ namespace Find
 		}
 		
 		public void Replace()
-		{						
+		{
 			try
 			{
 				IText text = DoFindTextWindow();
 				
 				int index = text.Selection.location;
 				int length = text.Text.Length - index;
-	
+				
 				DoMakeRe();
 				Match match = m_re.Match(text.Text, index, length);
 				if (match.Success)
@@ -194,16 +194,16 @@ namespace Find
 				Unused.Value = Functions.NSRunCriticalAlertPanel(null, message);
 			}
 		}
-				
+		
 		public void ReplaceAll()
-		{						
+		{
 			try
 			{
-				IText text = DoFindTextWindow();			
+				IText text = DoFindTextWindow();
 				int index = text.Selection.location;
 				
 				DoMakeRe();
-						
+				
 				string result = m_re.Replace(text.Text, ReplaceText, int.MaxValue, index);
 				if (result != text.Text)
 				{
@@ -252,7 +252,7 @@ namespace Find
 		
 		public bool CanReplace()
 		{
-			return m_find != null && CanFind() && FindText.Length > 0 && ReplaceText.Length > 0;
+			return m_find != null && CanFind() && FindText.Length > 0;
 		}
 		
 		public void UseSelectionForFind()
@@ -263,8 +263,8 @@ namespace Find
 				m_findInFiles = new FindInFilesController();
 				
 			IText text = DoFindTextWindow();
-			Trace.Assert(text != null, "text is null");		
-
+			Trace.Assert(text != null, "text is null");
+			
 			string s = text.Text.Substring(text.Selection.location, text.Selection.length);
 			if (s.Length > 0)
 			{	
@@ -283,11 +283,11 @@ namespace Find
 				m_findInFiles = new FindInFilesController();
 				
 			IText text = DoFindTextWindow();
-			Trace.Assert(text != null, "text is null");	
-
+			Trace.Assert(text != null, "text is null");
+			
 			string s = text.Text.Substring(text.Selection.location, text.Selection.length);
 			if (s.Length > 0)
-			{	
+			{
 				m_find.UpdateReplaceList();
 				m_findInFiles.UpdateReplaceList();
 			}
@@ -305,7 +305,7 @@ namespace Find
 			get {return m_find != null ? m_find.ReplaceText : string.Empty;}
 		}
 		
-		#region Private Methods -----------------------------------------------
+		#region Private Methods
 		private void DoMakeRe()
 		{
 			Re re = new Re
@@ -340,12 +340,12 @@ namespace Find
 			return result;
 		}
 		#endregion
-
-		#region Fields --------------------------------------------------------
-		private Boss m_boss; 
+		
+		#region Fields
+		private Boss m_boss;
 		private FindController m_find;
 		private FindInFilesController m_findInFiles;
 		private Regex m_re;
 		#endregion
-	} 
-}	
+	}
+}

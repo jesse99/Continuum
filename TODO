@@ -20,33 +20,6 @@ might want a sample app
 			return runs.ToArray();
 		}
 		
-* Add a method popup using the parser:
-	- get popup working with IStyles
-	- add an interface to get the cs declarations, should rely on edit count
-	  or hook into the timer styler uses
-	- can we not style 2x?
-	- option key sorts?
-* Do a checkin.
-* Got an error:
-Errors Warning       There was an error processing the text range changed broadcast:
-Errors Warning       System.NullReferenceException: Object reference not set to an instance of an object
-                       at Mono.Unix.UnixPath.GetPathComponents (System.String path, System.String[]& components, System.Int32& lastIndex) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.2/mcs/class/Mono.Posix/Mono.Unix/UnixPath.cs:149 
-                       at Mono.Unix.UnixPath.GetCanonicalPath (System.String path) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.2/mcs/class/Mono.Posix/Mono.Unix/UnixPath.cs:141 
-                       at Shared.Paths.AreEqual (System.String lhs, System.String rhs) [0x00008] in /Users/jessejones/Source/Continuum/source/shared/Paths.cs:55 
-                       at Find.FindResultsController.DoDocChanged (System.String name, System.Object v) [0x00021] in /Users/jessejones/Source/Continuum/source/plugins/find/FindResultsController.cs:150 
-                       at Shared.Broadcaster.DoInvoke (System.String name, System.Action`2 callback, System.Object value) [0x00000] in /Users/jessejones/Source/Continuum/source/shared/Broadcaster.cs:81 
-* Styling doesn't work quite right for the line being edited (first token at least
-  isn't updated).
-* Make a new foreshadow.
-* Replace menu commands should be enabled even if there is no replace text.
-* Support bookmarks:
-	- make sure we can embed graphics in the text, or use a floating window?
-	- add bookmark (cmd-/) adds up to nine bookmarks
-	- once at nine replaces ninth bookmark
-	- little graphic of a digit indicates bookmark
-	- cmd-1 to 9 change the selection to the bookmark
-	- bookmark is found with a live line number
-	- cmd-0 clears bookmarks
 * Add some tool tips to the nibs.
 * Should not iterate over the entire opened directory.
 * Fix dir editor so it doesn't collapse child dirs when an item changes.
@@ -169,6 +142,14 @@ Errors Warning       System.NullReferenceException: Object reference not set to 
 	- might want a favorites menu
 * Would be cool to support saving styles as rtf and html.
 * Should support rectangular selections (option-shift-drag).
+* Support bookmarks:
+	- make sure we can embed graphics in the text, or use a floating window?
+	- add bookmark (cmd-/) adds up to nine bookmarks
+	- once at nine replaces ninth bookmark
+	- little graphic of a digit indicates bookmark
+	- cmd-1 to 9 change the selection to the bookmark
+	- bookmark is found with a live line number
+	- cmd-0 clears bookmarks
 * Work on databases:
 	- add a comment about separate versus mondo database
 	- can we add some sort of prefer local attribute for use when too many fields are
@@ -377,6 +358,7 @@ Errors Warning       System.NullReferenceException: Object reference not set to 
 	- look at memory usage
 	- run unit tests in debug
 	- run unit tests in release
+	- make sure untitled docs work OK
 	- review config file
 	
 /Users/jessejones/Documents/Developer/c#.cs
