@@ -57,7 +57,7 @@ namespace DirectoryEditor
 			var wind = m_boss.Get<IWindow>();
 			wind.Window = window();
 			
-			m_builder = new GenericBuilder(path);	
+			m_builder = new GenericBuilder(path);
 			
 			m_targets.Value.removeAllItems();
 			if (m_builder.CanBuild)
@@ -69,11 +69,12 @@ namespace DirectoryEditor
 				handler.Register(this, 599, () => m_builder.Cancel(), this.DoCancelEnabled);
 				handler.Register(this, 1000, this.DoShowPrefs);
 				
-				Broadcaster.Register("global ignores changed", this, this.DoUpdateTargets);
-				
 				DoLoadPrefs(path);
+				Broadcaster.Register("global ignores changed", this, this.DoUpdateTargets);
 				DoUpdateTargets(string.Empty, null);
 			}
+			else
+				DoLoadPrefs(path);
 			
 			m_root = new DirectoryItem(m_path, m_dirStyler, m_ignoredItems);
 			Reload();
@@ -111,11 +112,11 @@ namespace DirectoryEditor
 				
 				m_table.Value.setDelegate(null);
 				m_table.Value.reloadData();	
-
+				
 				root.Close();
 				root.release();
 			}
-
+			
 			window().autorelease();
 			autorelease();
 		}
@@ -128,7 +129,7 @@ namespace DirectoryEditor
 		public void Reload()
 		{
 			m_dirStyler.Reload();
-
+			
 			var root = new DirectoryItem(m_path, m_dirStyler, m_ignoredItems);
 			if (m_root != null)
 			{
@@ -153,7 +154,7 @@ namespace DirectoryEditor
 				if (!value.EqualValues(m_ignoredTargets))
 				{
 					m_ignoredTargets = value;
-					Reload();
+					DoUpdateTargets(string.Empty, null);
 					DoSavePrefs();
 				}
 			}
@@ -209,7 +210,7 @@ namespace DirectoryEditor
 		public void handleSccs(NSObject sender)
 		{
 			string command = sender.Call("title").To<NSObject>().description();
-
+			
 			foreach (uint row in m_table.Value.selectedRowIndexes())
 			{
 				DirectoryItem item = (DirectoryItem) (m_table.Value.itemAtRow((int) row));
@@ -356,7 +357,7 @@ namespace DirectoryEditor
 				Sccs.Rename(oldPath, System.IO.Path.Combine(oldDir, newName));
 			}
 		}
-				
+		
 		private DirectoryWatcher DoCreateWatcher(string path)
 		{
 			DirectoryWatcher watcher = null;
@@ -410,7 +411,7 @@ namespace DirectoryEditor
 		{
 			return m_builder != null && (m_builder.State == State.Opened || m_builder.State == State.Built || m_builder.State == State.Canceled);
 		}
-
+		
 		private void DoBuildFlags()
 		{
 			m_builder.SetBuildFlags();
@@ -443,7 +444,7 @@ namespace DirectoryEditor
 				row = selections.indexGreaterThanIndex(row);
 			}
 		}
-
+		
 		private void DoOpen(string path)
 		{
 			Boss boss = ObjectModel.Create("Application");
@@ -456,31 +457,31 @@ namespace DirectoryEditor
 			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
 			string value = defaults.stringForKey(NSString.Create("globalIgnores")).To<NSString>().ToString();
 			string[] ignored = value.Split(new char[]{'\n', '\r'}, StringSplitOptions.RemoveEmptyEntries);
-
+			
 			List<string> titles = new List<string>();
 			foreach (string title in m_builder.Targets)
 			{
 				if (Array.IndexOf(ignored, title) < 0 && Array.IndexOf(m_ignoredTargets, title) < 0)
 					titles.Add(title);
 			}
-					
+			
 			if (titles.Count != m_targets.Value.itemTitles().count())
 			{
 				m_targets.Value.removeAllItems();
 				m_targets.Value.addItemsWithTitles(NSArray.Create(titles.ToArray()));
-
+				
 				if (Array.IndexOf(ignored, m_builder.Target) < 0 && Array.IndexOf(m_ignoredTargets, m_builder.Target) < 0)
 					m_targets.Value.selectItemWithTitle(NSString.Create(m_builder.Target));
 				else
 					m_builder.Target = m_targets.Value.titleOfSelectedItem().description();
 			}
-		}	
-
+		}
+		
 		private void DoShowPrefs()
-		{		
+		{
 			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("dir-prefs"), this);
 			Trace.Assert(!NSObject.IsNullOrNil(m_prefs.Value), "nib didn't set prefsController");
-	
+			
 			m_prefs.Value.Open(this);
 		}
 		
@@ -520,7 +521,7 @@ namespace DirectoryEditor
 			if (!NSObject.IsNullOrNil(value))
 				m_ignoredItems = value.description().Split(' ');
 			else
-				m_ignoredItems = new string[]{".*", "*.o", "*.pyc", "*.sln", "*.tmp"};
+				m_ignoredItems = new string[]{".*", "*.o", "*.pyc", "MIT.X11", "CVS"};
 			
 			// default target
 			key = path + "-defaultTarget";

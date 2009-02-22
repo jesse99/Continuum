@@ -32,15 +32,15 @@ namespace TextEditor
 	{
 		public TextMetrics(string text)
 		{
-			Reset(text);		
-
+			Reset(text);
+			
 			ActiveObjects.Add(this);
 		}
-				
+		
 		public void Reset(string text)
 		{	
 			m_text = text;
-			DoComputeLineStarts();		
+			DoComputeLineStarts();
 		}
 		
 		public int LineCount
@@ -91,7 +91,7 @@ namespace TextEditor
 		public NSRange Balance(string text, NSRange range)
 		{
 			NSRange result = new NSRange(range.location, range.length);
-
+			
 			// First we need to get a list of all of the braces in the range which are not paired up.
 			List<char> braces = DoFindBraces(text, range);
 			
@@ -101,7 +101,7 @@ namespace TextEditor
 			{
 				result.location -= 1;
 				result.length += 1;
-
+				
 				char ch = text[result.location];
 				if (DoIsOpenBrace(ch))
 				{
@@ -180,13 +180,13 @@ namespace TextEditor
 				{
 					break;
 				}
-					
+				
 				--i;
 			}
 			
 			int result = close.Count == 0 ? i : -1;
 //			Console.WriteLine("{0} at {1} => {2}", text, index, result);
-
+			
 			return result;
 		}
 		
@@ -251,7 +251,7 @@ namespace TextEditor
 			}
 			
 			// Add entries for any remaining lines.
-			while (offset < m_text.Length)
+			while (offset + 1 < m_text.Length)
 			{
 				if (m_text[offset] == '\r' && m_text[offset + 1] == '\n')
 				{
@@ -272,7 +272,7 @@ namespace TextEditor
 			}
 		}
 		#endregion
-
+		
 		#region Fields
 		private string m_text;
 		private List<int> m_lineOffsets = new List<int>();	// offset at which each (zero-based) row starts

@@ -127,7 +127,7 @@ namespace DirectoryEditor
 			DoSetColor(dict, "files1", "*.cs;*.h;*.m", 0, 0, 0);
 			DoSetColor(dict, "files2", "Makefile;*.am;*.make;*.mk", 127, 21, 24);
 			DoSetColor(dict, "files3", "*.nib;*.xib;*.icns;*.png;*.jpeg;*.jpg;*.gif;*.ignore", 18, 94, 16);
-			DoSetColor(dict, "files4", "*.xml;*.xsd;*.schema;*.config;Info.plist", 83, 83, 151);
+			DoSetColor(dict, "files4", "*.xml;*.xsd;*.schema;*.config;Info.plist;*.html;*.css", 83, 83, 151);
 			DoSetColor(dict, "files5", "*.sh;*.py;*.ref", 61, 82, 194);
 			DoSetColor(dict, "files6", string.Empty, 0, 0, 0);
 			

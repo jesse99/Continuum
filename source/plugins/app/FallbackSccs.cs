@@ -43,7 +43,7 @@ namespace App
 		public bool fileManager_shouldCopyItemAtPath_toPath(NSFileManager manager, NSString fromPath, NSString toPath)
 		{
 			NSRange range = fromPath.rangeOfString(ms_svn);
-
+			
 			return range.location == Enums.NSNotFound;
 		}
 		
@@ -62,6 +62,7 @@ namespace App
 			m_commands.Add(Name + " create directory", this.DoCreateDir);
 			m_commands.Add(Name + " create file", this.DoCreateFile);
 			m_commands.Add(Name + " move to trash", this.DoTrash);
+			m_commands.Add(Name + " open with Finder", this.DoFinderOpen);
 			m_commands.Add(Name + " touch", this.DoTouch);
 			m_commands.Add(Name + " show in Finder", this.DoShow);
 			m_commands.Add(Name + " info", this.DoInfo);
@@ -71,31 +72,31 @@ namespace App
 		{
 			get {return m_boss;}
 		}
-
-		public string Name 
+		
+		public string Name
 		{
 			get {return "File";}
 		}
 		
 		public bool Rename(string oldPath, string newPath)
-		{			
+		{
 			File.Move(oldPath, newPath);		// note that this also works for directories
 			
 			return true;
 		}
-				
+		
 		public bool Duplicate(string path)
-		{			
+		{
 			DoDuplicate(path);
 			
 			return true;
 		}
-				
+		
 		public string[] GetCommands()
 		{
 			return m_commands.Keys.ToArray();
 		}
-
+		
 		public string[] GetCommands(IEnumerable<string> paths)
 		{
 			Trace.Assert(paths.Any(), "paths is empty");
@@ -105,12 +106,12 @@ namespace App
 			int count = paths.Count();
 			if (count == 1)
 				commands.Add(Name + " rename");
-
+			
 			if (paths.All(p => File.Exists(p)))
 			{
 				commands.Add(Name + " touch");
 			}
-							
+			
 			if (count == 1)
 			{
 				commands.Add(Name + " create directory");
@@ -119,16 +120,17 @@ namespace App
 			
 			commands.Add(Name + " duplicate");
 			commands.Add(Name + " move to trash");
+			commands.Add(Name + " open with Finder");
 			commands.Add(Name + " show in Finder");
 			commands.Add(Name + " info");
-				
+			
 			return commands.ToArray();
 		}
-
+		
 		public void Execute(string command, string path)
 		{
 			Trace.Assert(m_commands.ContainsKey(command), command + " is not a File command");
-
+			
 			m_commands[command](path);
 		}
 		
@@ -149,13 +151,13 @@ namespace App
 			{
 				if (m_copyRE == null)
 					m_copyRE = new Regex(@" copy \d+$");
-									
+				
 				if (m_copyRE.IsMatch(oldName))
 					newName = m_copyRE.Replace(oldName, " copy " + count);	// "foo copy 4"
-
+				
 				else if (oldName.EndsWith(" copy"))		
 					newName = oldName + " " + count;										// "foo copy"		
-
+				
 				else
 					newName = oldName + " copy " + count;								// "foo"
 			}
@@ -169,10 +171,10 @@ namespace App
 			{
 				string name = Path.GetFileNameWithoutExtension(oldName);
 				string newName = DoGetCopyName(name, i);
-
+				
 				string extension = Path.GetExtension(oldName);
 				newName += extension;
-
+				
 				string newPath = Path.Combine(dir, newName);
 				if (!File.Exists(newPath))
 					return newPath;
@@ -180,7 +182,7 @@ namespace App
 			
 			throw new InvalidOperationException("Couldn't find a new name to use.");
 		}
-
+		
 		private void DoDuplicate(string path)		// TODO: should move this (and maybe some others here) into IFileSystem
 		{
 			// Get the new path.
@@ -191,7 +193,7 @@ namespace App
 			// Copy the directory, but don't copy .svn directories.
 			var handler = new CopyHandler();
 			handler.autorelease();
-						
+			
 			NSError error;
 			NSFileManager.defaultManager().setDelegate(handler);		// this is not thread safe, but NSFileManager is documented as not being thread safe anyway
 			NSFileManager.defaultManager().copyItemAtPath_toPath_error(
@@ -208,7 +210,7 @@ namespace App
 			if (Directory.Exists(svn))
 				Directory.Delete(svn);
 		}
-
+		
 		private void DoCreateDir(string path)
 		{
 			var get = new GetString{Title = "Directory Name", Label = "Name:"};
@@ -219,7 +221,7 @@ namespace App
 				Unused.Value = Directory.CreateDirectory(Path.Combine(oldDir, name));
 			}
 		}
-
+		
 		private void DoCreateFile(string path)
 		{
 			var get = new GetString{Title = "File Name", Label = "Name:"};
@@ -233,7 +235,7 @@ namespace App
 				}
 			}
 		}
-
+		
 		private void DoInfo(string path)
 		{
 			Boss boss = ObjectModel.Create("Application");
@@ -257,10 +259,10 @@ namespace App
 			{
 				transcript.WriteLine(Output.Error, " {0:D}", error.localizedDescription());
 			}
-
+			
 			transcript.WriteLine(Output.Normal, string.Empty);
 		}
-
+		
 		private void DoRename(string path)
 		{
 			string oldName = Path.GetFileName(path);
@@ -273,18 +275,23 @@ namespace App
 				Rename(path, Path.Combine(oldDir, newName));
 			}
 		}
-
+		
+		private void DoFinderOpen(string path)
+		{
+			NSWorkspace.sharedWorkspace().openFile(NSString.Create(path));
+		}
+		
 		private void DoShow(string path)
 		{
 			NSWorkspace.sharedWorkspace().selectFile_inFileViewerRootedAtPath(
 				NSString.Create(path), NSString.Empty);
 		}
-
+		
 		private void DoTouch(string path)
 		{
 			File.SetLastWriteTime(path, DateTime.Now);
 		}
-
+		
 		private void DoTrash(string path)
 		{
 			NSString source = NSString.Create(Path.GetDirectoryName(path));
@@ -303,5 +310,5 @@ namespace App
 		private Regex m_copyRE;
 		private Dictionary<string, Action<string>> m_commands = new Dictionary<string, Action<string>>();
 		#endregion
-	} 
+	}
 }

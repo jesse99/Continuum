@@ -36,7 +36,6 @@ might want a sample app
 	- TODO could go here
 	- should be able to override built in languages
 	- might want a language for gendarme console reports, what extension?
-* Html/css languge.
 * Need a directory for custom plugins:
 	- google code search might be a good example
 * Foreshadow/continuum scripts need work:
