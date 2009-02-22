@@ -250,7 +250,7 @@ namespace App
 					break;
 				}
 			}
-			while (true);
+			while (false);
 			
 			return name;
 		}

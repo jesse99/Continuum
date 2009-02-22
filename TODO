@@ -20,13 +20,17 @@ might want a sample app
 			return runs.ToArray();
 		}
 
+* Can't open (from within gendarme).
+	/private/tmp/monobuild/build/BUILD/mono-2.2/mcs/class/corlib/System.Collections.Generic/Dictionary.cs
+* NOTES should use TODO language.
+* Files should default to plain text (no styles but get rid of formatting)?
 * Add some tool tips to the nibs.
 * Should not iterate over the entire opened directory.
 * Fix dir editor so it doesn't collapse child dirs when an item changes.
+* After duplicating directory items select the new item(s).
 * Need to handle aliaii in the Continuum directory.
 * Probably need to handle aliaii in open panels as well.
 * Find button locations look a bit odd.
-* After duplicating directory items select the new item(s).
 * Need a preference for Type.GetFieldName
 * Handle languages like scripts.
 	- TODO could go here

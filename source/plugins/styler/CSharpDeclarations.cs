@@ -211,8 +211,9 @@ namespace Styler
 				}
 				
 				Trace.Fail("Unexpected member type: " + member.GetType());
+				result = "?";
 			}
-			while (true);
+			while (false);
 			
 			return result;
 		}
@@ -232,7 +233,7 @@ namespace Styler
 						result = string.Format("delegate {0}({1})", d.Name, DoGetParams(d.Parameters));
 					break;
 				}
-						
+				
 				CsIndexer i = member as CsIndexer;
 				if (i != null)
 				{
@@ -259,7 +260,7 @@ namespace Styler
 				
 				result = DoGetShortName(member);
 			}
-			while (true);
+			while (false);
 			
 			return result;
 		}
