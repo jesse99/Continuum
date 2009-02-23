@@ -18,9 +18,17 @@ might want a sample app
 			DoComputeRuns(text, 1, runs);
 			
 			return runs.ToArray();
-		}
+		}	NSCell
 
-* NOTES should use TODO language.
+* Item colors globs in project prefs should use spaces for separator.
+* App prefs should have a Language Globs panel:
+	- table with glob name and NSPopUpButtonCell
+	- factory default is globs.xml
+	- can we identify glob conflicts?
+* Work on plain text files:
+	- plain-text globs need fewer entries
+	- what if there are glob conflicts?
+	- apply should remove all attributes and add default attributes
 * Files should default to plain text (no styles but get rid of formatting)?
 * Add some tool tips to the nibs.
 * Should not iterate over the entire opened directory.
@@ -33,7 +41,7 @@ might want a sample app
 * Handle languages like scripts.
 	- TODO could go here
 	- should be able to override built in languages
-	- what about globs?
+	- what about globs? can globs be overriden?
 	- might want a language for gendarme console reports, what extension?
 * Need a directory for custom plugins:
 	- google code search might be a good example

@@ -6,7 +6,7 @@
 	<Glob language = "makefile">Makefile Makefile.am *.make *.mk</Glob> <!-- may want a custom language for automake files -->
 	<Glob language = "objective-c">*.h *.m</Glob>
 	<Glob language = "patch">diff *.patch *.diff</Glob>
-	<Glob language = "plain-text">README AUTHORS CHANGES CHANGE_LOG ChangeLog *.log *.txt *.text</Glob>
+	<Glob language = "plain-text">README AUTHORS CHANGES ChangeLog *.txt *.text</Glob>
 	<Glob language = "refactor">*.ref</Glob>
 	<Glob language = "python">*.py SConstruct</Glob>
 	<Glob language = "shell">*.sh</Glob>

@@ -69,7 +69,7 @@ namespace DirectoryEditor
 		}
 		
 		public const int FilesCount = 6;
-				
+		
 		#region Private Methods
 		private void DoReadPrefs()
 		{
@@ -79,7 +79,7 @@ namespace DirectoryEditor
 				m_pathColor.release();
 				m_pathColor = null;
 			}
-				
+			
 			for (int i = 0; i < FilesCount; ++i)
 			{
 				if (m_fileColors[i] != null)
@@ -91,7 +91,7 @@ namespace DirectoryEditor
 			
 			// Load the new stuff.
 			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
-
+			
 			var data = defaults.objectForKey(NSString.Create(m_path + "-path color")).To<NSData>();
 			m_pathColor = NSUnarchiver.unarchiveObjectWithData(data).To<NSColor>().Retain();
 			
@@ -101,7 +101,7 @@ namespace DirectoryEditor
 				m_fileColors[i - 1] = NSUnarchiver.unarchiveObjectWithData(data).To<NSColor>().Retain();
 				
 				string globs = defaults.stringForKey(NSString.Create(m_path + "-files" + i + " globs")).description();
-				m_fileGlobs[i - 1] = globs.Split(new char[]{';'}, StringSplitOptions.RemoveEmptyEntries);
+				m_fileGlobs[i - 1] = globs.Split(new char[]{' '}, StringSplitOptions.RemoveEmptyEntries);
 			}
 		}
 		
@@ -124,11 +124,11 @@ namespace DirectoryEditor
 			
 			// colors
 			DoSetColor(dict, "path", null, 0, 0, 0);
-			DoSetColor(dict, "files1", "*.cs;*.h;*.m", 0, 0, 0);
-			DoSetColor(dict, "files2", "Makefile;*.am;*.make;*.mk", 127, 21, 24);
-			DoSetColor(dict, "files3", "*.nib;*.xib;*.icns;*.png;*.jpeg;*.jpg;*.gif;*.ignore", 18, 94, 16);
-			DoSetColor(dict, "files4", "*.xml;*.xsd;*.schema;*.config;Info.plist;*.html;*.css", 83, 83, 151);
-			DoSetColor(dict, "files5", "*.sh;*.py;*.ref", 61, 82, 194);
+			DoSetColor(dict, "files1", "*.cs *.h *.m", 0, 0, 0);
+			DoSetColor(dict, "files2", "Makefile *.am *.make *.mk", 127, 21, 24);
+			DoSetColor(dict, "files3", "*.nib *.xib *.icns *.png *.jpeg *.jpg *.gif *.ignore", 18, 94, 16);
+			DoSetColor(dict, "files4", "*.xml *.xsd *.schema *.config Info.plist *.html *.css", 83, 83, 151);
+			DoSetColor(dict, "files5", "*.sh *.py *.ref", 61, 82, 194);
 			DoSetColor(dict, "files6", string.Empty, 0, 0, 0);
 			
 			NSUserDefaults.standardUserDefaults().registerDefaults(dict);		
@@ -142,4 +142,4 @@ namespace DirectoryEditor
 		private string[][] m_fileGlobs = new string[FilesCount][];
 		#endregion
 	}
-}	
+}
