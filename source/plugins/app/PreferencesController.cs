@@ -28,7 +28,7 @@ using System.Diagnostics;
 
 namespace App
 {
-	[ExportClass("PreferencesController", "NSWindowController", Outlets = "text_memberButton text_typeButton text_preprocessButton monoRoot lineWell transcriptWell errorsWell pathsController defaultWell spacesWell tabsWell contents tabs transcript_commandButton transcript_stdoutButton transcript_stderrButton errorsButton globalIgnores text_defaultButton text_keywordButton text_identifierButton text_stringButton text_numberButton text_commentButton text_other1Button text_other2Button")]
+	[ExportClass("PreferencesController", "NSWindowController", Outlets = "globsTable text_memberButton text_typeButton text_preprocessButton monoRoot lineWell transcriptWell errorsWell pathsController defaultWell spacesWell tabsWell contents tabs transcript_commandButton transcript_stdoutButton transcript_stderrButton errorsButton globalIgnores text_defaultButton text_keywordButton text_identifierButton text_stringButton text_numberButton text_commentButton text_other1Button text_other2Button")]
 	internal sealed class PreferencesController : NSWindowController
 	{
 		public PreferencesController() : base(NSObject.AllocNative("PreferencesController"))
@@ -41,7 +41,7 @@ namespace App
 			
 			m_contents = new IBOutlet<NSTableView>(this, "contents");
 			m_contents.Value.setDelegate(this);
-			m_contents.Value.setDataSource(this);	
+			m_contents.Value.setDataSource(this);
 			
 			NSText text = this["globalIgnores"].To<NSText>();
 			text.setDelegate(this);
@@ -70,9 +70,11 @@ namespace App
 			DoInitWell("transcript");
 			DoInitWell("errors");
 			
+			this["globsTable"].Call("reload");		// TODO: for some reason our table isn't created until we call a method on it...
+			
 			ActiveObjects.Add(this);
 		}
-		
+				
 		public void setDefaultColor(NSObject sender)
 		{
 			NSColor color = sender.Call("color").To<NSColor>();
@@ -80,7 +82,7 @@ namespace App
 			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
 			NSData data = NSArchiver.archivedDataWithRootObject(color);
 			defaults.setObject_forKey(data, NSString.Create("text default color"));
-
+			
 			Broadcaster.Invoke("text default color changed", null);
 		}
 		
@@ -94,18 +96,18 @@ namespace App
 			
 			int button = panel.runModal();
 			if (button == Enums.NSOKButton && panel.filenames().count() > 0)
-			{				
+			{
 				NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
 				defaults.setObject_forKey(panel.filenames().lastObject(), NSString.Create("mono_root"));
-
+				
 				Broadcaster.Invoke("mono_root changed", null);
 			}
 		}
 		
 		public void setSpacesColor(NSObject sender)
-		{			
+		{
 			NSColor color = sender.Call("color").To<NSColor>();
- 			DoSetBackColor("text spaces", color, true);
+			DoSetBackColor("text spaces", color, true);
 		}
 		
 		public void setTabsColor(NSObject sender)
@@ -237,6 +239,9 @@ namespace App
 				DoUpdateButtonTitle(name);
 			}
 			
+			this["globsTable"].Call("reload");
+			Broadcaster.Invoke("language globs changed", null);
+			
 			Broadcaster.Invoke("text default font changed", true);			// small hack to avoid redoing attributes umpteen times for text documents
 			Broadcaster.Invoke("text default color changed", null);
 			Broadcaster.Invoke("transcript default color changed", null);
@@ -292,40 +297,43 @@ namespace App
 				controller.removeObjects(objects);
 		}
 		
-   		public NSObject tableView_objectValueForTableColumn_row(NSTableView table, NSTableColumn col, int tag)
-   		{			
-   			switch (tag)			// note that if the number of rows changes numberOfRowsInTableView has to be updated as well
-   			{
-   				case 0:					
-    				return NSString.Create("Text Attributes");
-  					
-   				case 1:
-    				return NSString.Create("Text Background");
-  					
-   				case 2:
-    				return NSString.Create("Transcript Attributes");
-  					
-   				case 3:
-    				return NSString.Create("Error Attributes");
-  					  				
+		public NSObject tableView_objectValueForTableColumn_row(NSTableView table, NSTableColumn col, int tag)
+		{			
+			switch (tag)			// note that if the number of rows changes numberOfRowsInTableView has to be updated as well
+			{
+				case 0:
+					return NSString.Create("Text Attributes");
+				
+				case 1:
+					return NSString.Create("Text Background");
+				
+				case 2:
+					return NSString.Create("Transcript Attributes");
+				
+				case 3:
+					return NSString.Create("Error Attributes");
+				
 				case 4:
 					return NSString.Create("Ignored Targets");
-								
+				
 				case 5:
 					return NSString.Create("Open Selection");
-								
-     			case 6:					
-    				return NSString.Create("Environment");
-  					
+				
+				case 6:
+					return NSString.Create("Environment");
+				
+				case 7:
+					return NSString.Create("Language Globs");
+				
 				default:
-  					Trace.Fail("bad tag");
-  					return NSString.Empty;
-   			}
-   		}
-   		
+					Trace.Fail("bad tag");
+					return NSString.Empty;
+			}
+		}
+		
 		public int numberOfRowsInTableView(NSTableView table)
 		{
-			return 7;
+			return 8;
 		}
 		
 		public void tableViewSelectionDidChange(NSNotification notification)

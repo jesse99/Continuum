@@ -19,16 +19,13 @@ might want a sample app
 			
 			return runs.ToArray();
 		}	NSCell
-
-* Item colors globs in project prefs should use spaces for separator.
-* App prefs should have a Language Globs panel:
-	- table with glob name and NSPopUpButtonCell
-	- factory default is globs.xml
-	- can we identify glob conflicts?
+		
 * Work on plain text files:
 	- plain-text globs need fewer entries
 	- what if there are glob conflicts?
 	- apply should remove all attributes and add default attributes
+* Should value be a c# keyword?
+* Don't die if a factory pref handler throws.
 * Files should default to plain text (no styles but get rid of formatting)?
 * Add some tool tips to the nibs.
 * Should not iterate over the entire opened directory.
@@ -37,6 +34,7 @@ might want a sample app
 * Need to handle aliaii in the Continuum directory.
 * Probably need to handle aliaii in open panels as well.
 * Find button locations look a bit odd.
+* Might want a Make IEnumerable refactor.
 * Need a preference for Type.GetFieldName
 * Handle languages like scripts.
 	- TODO could go here

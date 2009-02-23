@@ -21,6 +21,7 @@
 
 using Gear;
 using MCocoa;
+using MObjc;
 using Shared;
 using System;
 using System.Collections.Generic;
@@ -32,11 +33,32 @@ namespace Styler
 {
 	internal static class Languages
 	{
-		static Languages()
+		public static Language Find(string fileName)
+		{
+			if (!ms_inited)
+				DoInit();
+				
+			foreach (KeyValuePair<string, string> entry in ms_globs)
+			{
+				if (Glob.Match(entry.Key, fileName))
+				{
+					Language result;
+					Ignore.Value = ms_languages.TryGetValue(entry.Value, out result);
+					return result;		// this may be null if the xml files aren't in sync
+				}
+			}
+			
+			return null;
+		}
+		
+		#region Private Methods
+		private static void DoInit()
 		{
 			try
 			{
-				DoLoadGlobs();
+				Broadcaster.Register("language globs changed", typeof(Languages), Languages.DoLoadGlobs);
+				DoLoadGlobs("language globs changed", null);
+				
 				DoLoadLanguages();
 				
 				foreach (KeyValuePair<string, string> entry in ms_globs)
@@ -57,54 +79,22 @@ namespace Styler
 				Console.Error.WriteLine(e);
 				throw;
 			}
+			
+			ms_inited = true;
 		}
 		
-		public static Language Find(string fileName)
+		private static void DoLoadGlobs(string name, object v)
 		{
-			foreach (KeyValuePair<string, string> entry in ms_globs)
-			{
-				if (Glob.Match(entry.Key, fileName))
-				{
-					Language result;
-					Ignore.Value = ms_languages.TryGetValue(entry.Value, out result);
-					return result;		// this may be null if the xml files aren't in sync
-				}
-			}
+			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
+			var dict = defaults.objectForKey(NSString.Create("language globs")).To<NSDictionary>();
 			
-			return null;
-		}
-		
-		#region Private Methods
-		private static void DoLoadGlobs()
-		{
-			// Load the schema.
-			string resourcesPath = NSBundle.mainBundle().resourcePath().ToString();
-			string languagesPath = Path.Combine(resourcesPath, "Languages");
-			string globsSchemaPath = Path.Combine(languagesPath, "Globs.schema");
-			using (Stream stream = new FileStream(globsSchemaPath, FileMode.Open, FileAccess.Read))
+			ms_globs.Clear();
+			foreach (var entry in dict)
 			{
-				XmlSchema schema = XmlSchema.Read(stream, DoValidationEvent);
-			
-				// Setup the xml parsing options.
-				XmlReaderSettings settings = new XmlReaderSettings();
-				settings.ValidationEventHandler += DoValidationEvent;
-				settings.ValidationType = ValidationType.Schema;
-				settings.IgnoreComments = true;
-				settings.Schemas.Add(schema);
-				
-				// Load the xml file.
-				string globsPath = Path.Combine(languagesPath, "Globs.xml");
-				using (Stream stream2 = new FileStream(globsPath, FileMode.Open, FileAccess.Read))
-				{
-					using (XmlReader reader = XmlReader.Create(stream2, settings))
-					{
-						XmlDocument xml = new XmlDocument();
-						xml.Load(reader);
-						
-						// Process the xml file.
-						DoReadGlobs(xml);
-					}
-				}
+				string key = entry.Key.description();
+				string value = entry.Value.description();
+				if (!ms_globs.ContainsKey(key))
+					ms_globs.Add(key, value);
 			}
 		}
 		
@@ -117,7 +107,7 @@ namespace Styler
 			using (Stream stream = new FileStream(globsSchemaPath, FileMode.Open, FileAccess.Read))
 			{
 				XmlSchema schema = XmlSchema.Read(stream, DoValidationEvent);
-			
+				
 				// Setup the xml parsing options.
 				XmlReaderSettings settings = new XmlReaderSettings();
 				settings.ValidationEventHandler += DoValidationEvent;
@@ -142,8 +132,8 @@ namespace Styler
 									// Process the xml file.
 									XmlNode node = xml.ChildNodes[0];
 									string name = node.Attributes["name"].Value;
-				
-									if (!ms_languages.ContainsKey(name)) 
+									
+									if (!ms_languages.ContainsKey(name))
 										ms_languages.Add(name, new Language(node));
 									else
 										Console.Error.WriteLine("language '{0}' was declared twice.", name);
@@ -161,32 +151,6 @@ namespace Styler
 			}
 		}
 		
-		private static void DoReadGlobs(XmlNode xml)
-		{
-			foreach (XmlNode child in xml.ChildNodes)	
-			{
-				if (child.Name == "Globs")
-				{
-					foreach (XmlNode grandchild in child.ChildNodes)
-					{
-						if (grandchild.Name == "Glob")
-						{
-							string language = grandchild.Attributes["language"].Value;
-							string globs = grandchild.InnerText;
-							
-							foreach (string glob in globs.Split(new char[]{' '}, StringSplitOptions.RemoveEmptyEntries))
-							{
-								if (!ms_globs.ContainsKey(glob))
-									ms_globs.Add(glob, language);
-								else
-									Console.Error.WriteLine("glob '{0}' was declared twice.", glob);
-							}
-						}
-					}
-				}
-			}
-		}
-		
 		private static void DoValidationEvent(object sender, ValidationEventArgs e)
 		{
 			if (e.Severity == XmlSeverityType.Warning)
@@ -196,7 +160,8 @@ namespace Styler
 		}
 		#endregion
 		
-		#region Fields 
+		#region Fields
+		private static bool ms_inited;
 		private static Dictionary<string, string> ms_globs = new Dictionary<string, string>();					// glob => language name
 		private static Dictionary<string, Language> ms_languages = new Dictionary<string, Language>();	// language name => styler
 		#endregion

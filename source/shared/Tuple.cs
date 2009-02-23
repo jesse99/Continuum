@@ -47,7 +47,17 @@ namespace Shared
 		
 		public T0 First  {get; private set;}
 		public T1 Second {get; private set;}
-								
+		
+		public Tuple2<T0, T1> SetFirst(T0 value)
+		{
+			return Tuple.Make(value, Second);
+		}
+		
+		public Tuple2<T0, T1> SetSecond(T1 value)
+		{
+			return Tuple.Make(First, value);
+		}
+		
 		public override string ToString()
 		{
 			return string.Format("[{0}, {1}]", First, Second);
@@ -55,18 +65,18 @@ namespace Shared
 		
 		public override bool Equals(object obj)
 		{
-			if (obj == null)                    
+			if (obj == null)
 				return false;
 			
-			if (GetType() != obj.GetType()) 
+			if (GetType() != obj.GetType())
 				return false;
-		
-			Tuple2<T0, T1> rhs = (Tuple2<T0, T1>) obj;                    
+			
+			Tuple2<T0, T1> rhs = (Tuple2<T0, T1>) obj;
 			return this == rhs;
 		}
-			
-		public bool Equals(Tuple2<T0, T1> rhs) 
-		{                    
+		
+		public bool Equals(Tuple2<T0, T1> rhs)
+		{
 			return this == rhs;
 		}
 		
@@ -91,7 +101,7 @@ namespace Shared
 			
 			return hash;
 		}
-				
+		
 		private static bool DoCompare(object lhs, object rhs)
 		{
 			if (lhs == null)
@@ -100,7 +110,7 @@ namespace Shared
 				return lhs.Equals(rhs);
 		}
 	}
-
+	
 	// Represents a triplet of values.
 	public struct Tuple3<T0, T1, T2> : IEquatable<Tuple3<T0, T1, T2>>
 	{	
@@ -114,7 +124,22 @@ namespace Shared
 		public T0 First  {get; private set;}
 		public T1 Second {get; private set;}
 		public T2 Third  {get; private set;}
-								
+		
+		public Tuple3<T0, T1, T2> SetFirst(T0 value)
+		{
+			return Tuple.Make(value, Second, Third);
+		}
+		
+		public Tuple3<T0, T1, T2> SetSecond(T1 value)
+		{
+			return Tuple.Make(First, value, Third);
+		}
+		
+		public Tuple3<T0, T1, T2> SetThird(T2 value)
+		{
+			return Tuple.Make(First, Second, value);
+		}
+		
 		public override string ToString()
 		{
 			return string.Format("[{0}, {1}, {2}]", First, Second, Third);
@@ -122,18 +147,18 @@ namespace Shared
 		
 		public override bool Equals(object obj)
 		{
-			if (obj == null)                    
+			if (obj == null)
 				return false;
 			
-			if (GetType() != obj.GetType()) 
+			if (GetType() != obj.GetType())
 				return false;
-		
-			Tuple3<T0, T1, T2> rhs = (Tuple3<T0, T1, T2>) obj;                    
+			
+			Tuple3<T0, T1, T2> rhs = (Tuple3<T0, T1, T2>) obj;
 			return this == rhs;
 		}
-			
-		public bool Equals(Tuple3<T0, T1, T2> rhs) 
-		{                    
+		
+		public bool Equals(Tuple3<T0, T1, T2> rhs)
+		{
 			return this == rhs;
 		}
 		
@@ -160,7 +185,7 @@ namespace Shared
 			
 			return hash;
 		}
-				
+		
 		private static bool DoCompare(object lhs, object rhs)
 		{
 			if (lhs == null)

@@ -1,14 +1,18 @@
 <Bosses namespaces = "Gear Shared Styler">
+	<Extend name = "Application">
+		<Implementation interfaces = "IInterface +IFactoryPrefs" name = "FactoryPrefs"/>
+	</Extend>
+	
 	<Boss name = "Stylers" singleton = "true">
 		<Implementation interfaces = "IInterface +IFindLanguage" name = "FindLanguage"/>
 		<Implementation interfaces = "IStylers" name = "Stylers"/>
 	</Boss>
-
+	
 	<Boss name = "CsLanguage">
 		<Implementation interfaces = "IStyler IStyleWith" name = "CSharpStyler"/>
 		<Implementation interfaces = "IDeclarations" name = "CSharpDeclarations"/>
 	</Boss>
-
+	
 	<Boss name = "RegexLanguage">
 		<Implementation interfaces = "IStyler IStyleWith" name = "RegexStyler"/>
 		<Implementation interfaces = "IDeclarations" name = "RegexDeclarations"/>
