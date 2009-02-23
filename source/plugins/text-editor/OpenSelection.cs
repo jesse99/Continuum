@@ -47,10 +47,11 @@ namespace TextEditor
 		{
 			get {return m_boss;}
 		}
-
+		
 		public bool Open(string text)
-		{			
+		{
 			bool opened = false;
+			Log.WriteLine(TraceLevel.Verbose, "Open Selection", "trying to open '{0}'", text);
 			
 			if (!opened)
 				opened = DoOpenURL(text, 0, text.Length);
@@ -58,12 +59,16 @@ namespace TextEditor
 			if (!opened)
 				opened = DoOpenFile(text, 0, text.Length);
 				
+			if (!opened)
+				Log.WriteLine("Open Selection", "open failed");
+			
 			return opened;
 		}
 		
 		public bool Open(string text, ref int location, ref int length)
 		{
 			bool opened = false;
+			Log.WriteLine(TraceLevel.Verbose, "Open Selection", "trying to open a selection");
 			
 			if (!opened)
 			{
@@ -72,7 +77,7 @@ namespace TextEditor
 				DoExtendSelection(this.DoHtmlTest, text, ref loc, ref len);
 				opened = DoOpenURL(text, loc, len);
 			}
-							
+			
 			if (!opened)
 			{
 				int loc = location;
@@ -80,31 +85,32 @@ namespace TextEditor
 				DoExtendSelection(this.DoFileTest, text, ref loc, ref len);
 				opened = DoOpenFile(text, loc, len);
 			}
-											
+			
 			return opened;
 		}
 		
 		#region Private Methods
 		private bool DoOpenURL(string text, int loc, int len)
 		{
-			string name = text.Substring(loc, len);		
+			string name = text.Substring(loc, len);
+			Log.WriteLine(TraceLevel.Verbose, "Open Selection", "trying url '{0}'", name);
 			return 	DoOpenURL(name);
 		}
-  		
+		
 		private bool DoOpenFile(string text, int loc, int len)
-		{			
+		{
 			string name = text.Substring(loc, len);
 			int line = -1, col = -1;
 			DoGetLineAndCol(text, loc, len, ref line, ref col);
-			Log.WriteLine("Open Selection", "opening {0}", name);
+			Log.WriteLine(TraceLevel.Verbose, "Open Selection", "trying path '{0}'", name);
 			
-			return DoOpenAbsolutePath(name, line, col) || 
+			return DoOpenAbsolutePath(name, line, col) ||
 					DoOpenLocalPath(name, line, col) ||
 					DoOpenGlobalPath(name, line, col);
 		}
-  		
+		
 		private void DoGetLineAndCol(string text, int loc, int len, ref int line, ref int col)
-		{			
+		{
 			int l = -1, c = -1;
 			
 			// gmcs - Application.cs(14,10)
@@ -136,10 +142,10 @@ namespace TextEditor
 				line = l;
 			}
 		}
-		  		  		
- 		// If the name looks like an URL we'll launch it with a browser.
+		
+		// If the name looks like an URL we'll launch it with a browser.
 		private bool DoOpenURL(string name)
-		{			
+		{
 			bool opened = false;
 			
 			try
@@ -147,10 +153,12 @@ namespace TextEditor
 				NSURL url = NSURL.URLWithString(NSString.Create(name));
 				if (!NSObject.IsNullOrNil(url))		// URLWithString returns nil on failures...
 				{
-					if (url.scheme().length() > 0)	
+					Log.WriteLine(TraceLevel.Verbose, "Open Selection", "it seems to be an url");
+					if (url.scheme().length() > 0)
 					{
+						Log.WriteLine(TraceLevel.Verbose, "Open Selection", "and the scheme is {0:D}", url.scheme());
 						Unused.Value = NSWorkspace.sharedWorkspace().openURL(url);	
-						opened = true;				
+						opened = true;
 					}
 				}
 			}
@@ -160,9 +168,9 @@ namespace TextEditor
 			
 			return opened;
 		}
- 		
- 		// If the name is an absolute path then we can open it with Continuum if it's
- 		// a file type we handle or launch it with an external app if not.
+		
+		// If the name is an absolute path then we can open it with Continuum if it's
+		// a file type we handle or launch it with an external app if not.
 		private bool DoOpenAbsolutePath(string name, int line, int col)
 		{
 			bool opened = false;
@@ -174,20 +182,18 @@ namespace TextEditor
 					Boss boss = ObjectModel.Create("Application");
 					var launcher = boss.Get<ILaunch>();
 					launcher.Launch(name, line, col, 1);
-					Log.WriteLine("Open Selection", "open using absolute path worked");
 					opened = true;
 				}
 			}
-			catch (Exception)
+			catch
 			{
-				Log.WriteLine("Open Selection", "open using absolute path failed");
 			}
 			
 			return opened;
 		}
- 		
- 		// If the name is not an absolute path then we'll see if it corresponds to a 
- 		// path rooted at one of the directories we have open.
+		
+		// If the name is not an absolute path then we'll see if it corresponds to a 
+		// path rooted at one of the directories we have open.
 		private bool DoOpenLocalPath(string name, int line, int col)
 		{
 			bool opened = false;
@@ -208,15 +214,13 @@ namespace TextEditor
 						if (System.IO.File.Exists(path) || NSWorkspace.sharedWorkspace().isFilePackageAtPath(NSString.Create(path)))
 						{
 							launcher.Launch(path, line, col, 1);	// TODO: probably better to let the user pick the file if there are multiple matches
-							Log.WriteLine("Open Selection", "open using local path worked");
 							opened = true;
 						}
 					}
 				}
 			}
-			catch (Exception)
+			catch
 			{
-				Log.WriteLine("Open Selection", "open using local path failed");
 			}
 			
 			return opened;
@@ -236,8 +240,8 @@ namespace TextEditor
 			
 			return result;
 		}
- 		
- 		// This is our last try. We'll use the locate command to see if we can find the file.
+		
+		// This is our last try. We'll use the locate command to see if we can find the file.
 		private bool DoOpenGlobalPath(string name, int line, int col)
 		{
 			bool opened = false;
@@ -245,23 +249,22 @@ namespace TextEditor
 			try
 			{
 				name = System.IO.Path.GetFileName(name);
-
+				
 				Boss boss = ObjectModel.Create("FileSystem");
 				var fs = boss.Get<IFileSystem>();
 				string[] candidates = fs.LocatePath("/" + name);
-
+				
 				if (candidates.Length > 0)
 				{
 					boss = ObjectModel.Create("Application");
 					var launcher = boss.Get<ILaunch>();
-					Log.WriteLine("Open Selection", "open using locate found {0} candidates", candidates.Length);
-						
+					Log.WriteLine(TraceLevel.Verbose, "Open Selection", "open using locate found {0} candidates", candidates.Length);
+					
 					// If there's only one path then just open it.
 					if (candidates.Length == 1)
 					{
 						launcher.Launch(candidates[0], line, col, 1);
 						opened = true;
-						Log.WriteLine("Open Selection", "open using the single located path worked");
 					}
 					else
 					{
@@ -273,7 +276,7 @@ namespace TextEditor
 						{
 							foreach (string sp in preferred)
 							{
-								if (path.StartsWith(sp))
+								if (path.StartsWith(sp) && System.IO.Path.GetFileName(path) == name)
 								{
 									paths.Add(path);
 									break;
@@ -292,25 +295,24 @@ namespace TextEditor
 							{
 								launcher.Launch(p, line, col, 1);
 							}
-		
+							
 							opened = true;
-							Log.WriteLine("Open Selection", "opened {0} files", paths.Count);
+							Log.WriteLine(TraceLevel.Verbose, "Open Selection", "opened {0} files", paths.Count);
 						}
 						else
 							Log.WriteLine("Open Selection", "open using locate failed ({0} is too many candidates)", paths.Count);
 					}
 				}
 				else
-					Log.WriteLine("Open Selection", "open using locate failed (no candidates)");
+					Log.WriteLine(TraceLevel.Verbose, "Open Selection", "open using locate failed (no candidates)");
 			}
-			catch (Exception e)
+			catch
 			{
-				Log.WriteLine("Open Selection", "open using locate failed ({0})", e.Message);
 			}
 			
 			return opened;
 		}
-				 		
+		
 		private delegate bool Tester(string text, int index);
 		void DoExtendSelection(Tester tester, string text, ref int location, ref int length)
 		{
@@ -319,11 +321,11 @@ namespace TextEditor
 				--location;
 				++length;
 			}
-	
+			
 			while (tester(text, location + length))
 				++length;
 		}
-	 		
+		
 		private bool DoHtmlTest(string text, int index) 
 		{
 			if (index >= 0 && index < text.Length)
@@ -331,14 +333,14 @@ namespace TextEditor
 				if (char.IsLetterOrDigit(text[index]))
 					return true;
 					
-				string valid = ":?#/+-.@[]%_~!$&'()*,;=";	// see <http://tools.ietf.org/html/rfc3986#appendix-A>			
-				if (valid.IndexOf(text[index]) >= 0)
+				string valid = ":?#/+-.@%_~!$&'()*,;=";	// see <http://tools.ietf.org/html/rfc3986#appendix-A>			
+				if (valid.IndexOf(text[index]) >= 0)			// note that we don't allow [] because they are used in wiki formatting
 					return true;
 			}
 			
 			return false;
 		}
- 		
+		
 		private bool DoFileTest(string text, int index) 
 		{
 			if (index >= 0 && index < text.Length)
@@ -361,9 +363,9 @@ namespace TextEditor
 			return false;
 		}
 		#endregion
-		 		
+		
 		#region Fields
-		private Boss m_boss; 
+		private Boss m_boss;
 		#endregion
-	} 
-}	
+	}
+}

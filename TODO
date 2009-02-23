@@ -20,8 +20,6 @@ might want a sample app
 			return runs.ToArray();
 		}
 
-* Can't open (from within gendarme).
-	/private/tmp/monobuild/build/BUILD/mono-2.2/mcs/class/corlib/System.Collections.Generic/Dictionary.cs
 * NOTES should use TODO language.
 * Files should default to plain text (no styles but get rid of formatting)?
 * Add some tool tips to the nibs.
@@ -35,6 +33,7 @@ might want a sample app
 * Handle languages like scripts.
 	- TODO could go here
 	- should be able to override built in languages
+	- what about globs?
 	- might want a language for gendarme console reports, what extension?
 * Need a directory for custom plugins:
 	- google code search might be a good example
