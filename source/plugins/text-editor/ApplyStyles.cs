@@ -96,42 +96,57 @@ namespace TextEditor
 				m_elapsed = TimeSpan.Zero;
 				m_numIterations = 0;
 				
-				m_currentSet = new List<StyleRun>(runs);
-				m_currentSet.Sort();
-				
-				// This is an optimization for the common case where we have a whole
-				// bunch of runs at the start which are indentical to runs we have
-				// already applied (there may also be attributes at the end which will
-				// be equal to what we applied but they are more difficult to handle
-				// because the run offsets will normally have changed).
-				//
-				// Note that this is also important because the text will jump if we apply
-				// attributes to text above whatever text we're viewing (and some runs
-				// are taller than others).
-				if (m_appliedSet != null && m_appliedSet.Count > 0)
+				if (runs.Count > 0)
 				{
-					m_workSet.Sort();				// won't be sorted for c#
-					m_appliedSet.Sort();
+					m_currentSet = new List<StyleRun>(runs);
+					m_currentSet.Sort();
 					
-					int count = 0;
-					int max = Math.Min(m_appliedSet.Count, m_workSet.Count);
-					while (count < max && m_appliedSet[count] == m_workSet[count] && m_appliedSet[count].Offset < m_editStart)
-						++count;
-					m_workSet.RemoveRange(0, count);
-					m_appliedSet.RemoveRange(count, m_appliedSet.Count - count);
+					// This is an optimization for the common case where we have a whole
+					// bunch of runs at the start which are indentical to runs we have
+					// already applied (there may also be attributes at the end which will
+					// be equal to what we applied but they are more difficult to handle
+					// because the run offsets will normally have changed).
+					//
+					// Note that this is also important because the text will jump if we apply
+					// attributes to text above whatever text we're viewing (and some runs
+					// are taller than others).
+					if (m_appliedSet != null && m_appliedSet.Count > 0)
+					{
+						m_workSet.Sort();				// won't be sorted for c#
+						m_appliedSet.Sort();
+						
+						int count = 0;
+						int max = Math.Min(m_appliedSet.Count, m_workSet.Count);
+						while (count < max && m_appliedSet[count] == m_workSet[count] && m_appliedSet[count].Offset < m_editStart)
+							++count;
+						m_workSet.RemoveRange(0, count);
+						m_appliedSet.RemoveRange(count, m_appliedSet.Count - count);
+						
+						if (m_workSet.Count > 0)
+							DoResetAttributes(m_workSet[0].Offset, m_length - m_workSet[0].Offset, m_length);
+					}
+					else
+					{
+						m_appliedSet = new List<StyleRun>(runs.Count);
+						DoResetAttributes(0, m_length, m_length);
+					}
 					
-					if (m_workSet.Count > 0)
-						DoResetAttributes(m_workSet[0].Offset, m_length - m_workSet[0].Offset, m_length);
+					m_editStart = int.MaxValue;
+					
+					DoApplyStyles();
 				}
 				else
 				{
-					m_appliedSet = new List<StyleRun>(runs.Count);
-					DoResetAttributes(0, m_length, m_length);
+					// If there are no runs (which will be the case for the plain-text language) then we
+					// need to set the attributes to the default (so attributes within pasted text are reset).
+					m_currentSet = new List<StyleRun>();
+					m_workSet = new List<StyleRun>();
+					m_appliedSet = new List<StyleRun>();
+					
+					int textLength = (int) m_storage.length();
+					NSRange range = new NSRange(0, textLength);
+					m_storage.setAttributes_range(ms_attributes["text default font changed"], range);
 				}
-				
-				m_editStart = int.MaxValue;
-				
-				DoApplyStyles();
 			}
 		}
 		

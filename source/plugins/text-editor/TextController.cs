@@ -542,7 +542,7 @@ namespace TextEditor
 				m_editCount = unchecked(m_editCount + 1);
 			
 				int oldNumLines = m_metrics.LineCount;
-				string text = Text;
+				string text = Text;										// TODO: this is slow for very large files
 				
 				NSRange range = storage.editedRange();
 				
