@@ -45,6 +45,7 @@ namespace TextEditor
 			var wind = m_boss.Get<IWindow>();
 			wind.Window = window();
 			
+			m_styler = m_boss.Get<IStyler>();
 			m_applier = new ApplyStyles(this, m_textView.Value, m_scrollView.Value);
 			DoSetTextOptions();
 			
@@ -129,8 +130,8 @@ namespace TextEditor
 					
 					m_applier.Reset(value);
 					m_textView.Value.setSelectedRange(new NSRange(0, 0));
-					if (m_styler != null)
-						m_styler.Apply(m_boss, this.DoStylerFinished);
+					if (m_computer != null)
+						m_styler.Apply(m_computer, this.DoStylerFinished);
 					
 					DoUpdateLineLabel(Text);			// use Text so metrics are up to date
 				}
@@ -172,7 +173,7 @@ namespace TextEditor
 		// how many lines there are until this happens).
 		public void layoutManager_didCompleteLayoutForTextContainer_atEnd(NSLayoutManager mgr, NSTextContainer container, bool atEnd)
 		{
-			if (atEnd && m_finishedStyling && !m_opened && !m_scrolled)
+			if (atEnd && m_finishedStyling && !m_opened && !m_scrolled && !m_closed)
 			{
 				DoRestoreScrollers();
 				m_opened = true;
@@ -227,9 +228,16 @@ namespace TextEditor
 			
 			Broadcaster.Unregister(this);
 			
+			if (m_styler != null)					// may be null if ctor threw
+				m_styler.Close();
+				
 			if (m_applier != null)
 				m_applier.Stop();
 			
+			// If the windows are closed very very quickly then if we don't do this
+			// we get a crash when Cocoa tries to call our delegate.
+			m_textView.Value.layoutManager().setDelegate(null);
+
 			autorelease();
 		}
 		
@@ -416,25 +424,25 @@ namespace TextEditor
 				
 		public void showSpaces(NSObject sender)
 		{
-			if (m_styler != null)
+			if (m_computer != null)
 			{
 				Boss boss = ObjectModel.Create("Stylers");
-				var stylers = boss.Get<IStylers>();
-				stylers.ShowSpaces = !stylers.ShowSpaces;
+				var white = boss.Get<IWhitespace>();
+				white.ShowSpaces = !white.ShowSpaces;
 				
-				m_styler.Apply(m_boss, this.DoStylerFinished);
+				m_styler.Apply(m_computer, this.DoStylerFinished);
 			}
 		}
 		
 		public void showTabs(NSObject sender)
 		{
-			if (m_styler != null)
+			if (m_computer != null)
 			{
 				Boss boss = ObjectModel.Create("Stylers");
-				var stylers = boss.Get<IStylers>();
-				stylers.ShowTabs = !stylers.ShowTabs;
+				var white = boss.Get<IWhitespace>();
+				white.ShowTabs = !white.ShowTabs;
 				
-				m_styler.Apply(m_boss, this.DoStylerFinished);
+				m_styler.Apply(m_computer, this.DoStylerFinished);
 			}
 		}
 		
@@ -471,7 +479,7 @@ namespace TextEditor
 		
 		public bool StylesWhitespace
 		{
-			get {return m_styler != null && m_styler.StylesWhitespace;}
+			get {return m_computer != null && m_computer.StylesWhitespace;}
 		}
 		
 		public bool validateUserInterfaceItem(NSObject item)
@@ -489,9 +497,9 @@ namespace TextEditor
 				if (StylesWhitespace)
 				{
 					Boss boss = ObjectModel.Create("Stylers");
-					var stylers = boss.Get<IStylers>();
+					var white = boss.Get<IWhitespace>();
 					
-					Unused.Value = item.Call("setTitle:", stylers.ShowSpaces ? NSString.Create("Hide Spaces") : NSString.Create("Show Spaces"));
+					Unused.Value = item.Call("setTitle:", white.ShowSpaces ? NSString.Create("Hide Spaces") : NSString.Create("Show Spaces"));
 					valid = true;
 				}
 			}
@@ -500,9 +508,9 @@ namespace TextEditor
 				if (StylesWhitespace)
 				{
 					Boss boss = ObjectModel.Create("Stylers");
-					var stylers = boss.Get<IStylers>();
+					var white = boss.Get<IWhitespace>();
 					
-					Unused.Value = item.Call("setTitle:", stylers.ShowTabs ? NSString.Create("Hide Tabs") : NSString.Create("Show Tabs"));
+					Unused.Value = item.Call("setTitle:", white.ShowTabs ? NSString.Create("Hide Tabs") : NSString.Create("Show Tabs"));
 					valid = true;
 				}
 			}
@@ -546,8 +554,8 @@ namespace TextEditor
 				
 				NSRange range = storage.editedRange();
 				
-				if (m_styler != null)
-					m_styler.Queue(m_boss, this.DoStylerFinished);
+				if (m_computer != null)
+					m_styler.Queue(m_computer, this.DoStylerFinished);
 				
 				DoUpdateLineLabel(text);
 				m_applier.EditedRange(range);
@@ -612,7 +620,7 @@ namespace TextEditor
 		{
 			string text = Text;			// note that this will ensure m_metrics is up to date
 			
-			if (m_styler != null)
+			if (m_computer != null)
 			{
 				int line = -1;
 				int offset = 0;
@@ -643,18 +651,18 @@ namespace TextEditor
 		{
 			string fileName = System.IO.Path.GetFileName(Path);	
 			
-			IStyler styler = null;
+			IComputeRuns computer = null;
 			IDeclarations decs = null;
 			Boss boss = ObjectModel.Create("Stylers");
 			if (boss.Has<IFindLanguage>())
 			{
 				var find = boss.Get<IFindLanguage>();
-				while (find != null && styler == null)
+				while (find != null && computer == null)
 				{
 					Boss language = find.Find(fileName);
 					if (language != null)
 					{
-						styler = language.Get<IStyler>();
+						computer = language.Get<IComputeRuns>();
 						
 						if (language.Has<IDeclarations>())
 							decs = language.Get<IDeclarations>();
@@ -665,15 +673,15 @@ namespace TextEditor
 			
 			((DeclarationsPopup) m_decPopup.Value).Init(this, decs);
 			
-			if (m_styler == null)
+			if (m_computer == null)
 			{
-				m_styler = styler;
+				m_computer = computer;
 			}
-			else if (m_styler != styler)
+			else if (m_computer != computer)
 			{
-				m_styler = styler;
-				if (m_styler != null)
-					m_styler.Apply(m_boss, this.DoStylerFinished);	// we only want to call this if the document is saved under a new name because the text view starts out with that lame latin
+				m_computer = computer;
+				if (m_computer != null)
+					m_styler.Apply(m_computer, this.DoStylerFinished);	// we only want to call this if the document is saved under a new name because the text view starts out with that lame latin
 			}
 		}
 		
@@ -830,6 +838,7 @@ namespace TextEditor
 		private IBOutlet<NSPopUpButton> m_decPopup;
 		private IBOutlet<NSScrollView> m_scrollView;
 		private Boss m_boss;
+		private IComputeRuns m_computer;
 		private IStyler m_styler;
 		private ApplyStyles m_applier;
 		private bool m_userEdit = true;

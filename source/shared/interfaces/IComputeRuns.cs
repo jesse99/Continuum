@@ -21,15 +21,19 @@
 
 using Gear;
 using System;
+using System.Collections.Generic;
 
 namespace Shared
 {
-	public interface IStylers : IInterface
+	// Primary interface on language bosses.
+	public interface IComputeRuns : IInterface
 	{
-		// Note that these will not be shown if the language's styler does
-		// not show whitespace.
-		bool ShowSpaces  {get; set;}
+		// Adds runs and as a side effect returns C# declarations (or null).
+		// Note that this is called from a thread. 
+		CsGlobalNamespace ComputeRuns(string text, int edit, List<StyleRun> runs);
 		
-		bool ShowTabs {get; set;}
+		// Returns true if the language supports showing leading/trailing tabs and
+		// spaces.
+		bool StylesWhitespace {get;}
 	}
 }

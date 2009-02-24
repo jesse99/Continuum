@@ -50,10 +50,10 @@ namespace TextEditor
 					items.Add(new TextContextItem(0.8f));
 					
 					Boss b = ObjectModel.Create("Stylers");
-					var stylers = b.Get<IStylers>();
+					var white = b.Get<IWhitespace>();
 					
-					items.Add(new TextContextItem(stylers.ShowSpaces ? "Hide Spaces" : "Show Spaces", this.DoToggleSpaces, 0.8f));
-					items.Add(new TextContextItem(stylers.ShowTabs ? "Hide Tabs" : "Show Tabs", this.DoToggleTabs, 0.8f));
+					items.Add(new TextContextItem(white.ShowSpaces ? "Hide Spaces" : "Show Spaces", this.DoToggleSpaces, 0.8f));
+					items.Add(new TextContextItem(white.ShowTabs ? "Hide Tabs" : "Show Tabs", this.DoToggleTabs, 0.8f));
 				}
 			}
 		}

@@ -20,57 +20,16 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
-using MCocoa;
-using Shared;
 using System;
-using System.Diagnostics;
 
-namespace Styler
+namespace Shared
 {
-	internal sealed class Stylers : IStylers
+	public interface IWhitespace : IInterface
 	{
-		public Boss Boss
-		{
-			get {return m_boss;}
-		}
+		// Note that these will not be shown if the language's styler does
+		// not show whitespace.
+		bool ShowSpaces  {get; set;}
 		
-		public void Instantiated(Boss boss)
-		{
-			m_boss = boss;
-			
-			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
-			m_showSpaces = defaults.boolForKey(NSString.Create("show spaces"));
-			m_showTabs = defaults.boolForKey(NSString.Create("show tabs"));
-		}
-		
-		public bool ShowSpaces
-		{
-			get {return m_showSpaces;}
-			set
-			{
-				m_showSpaces = value;
-				
-				NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
-				defaults.setBool_forKey(m_showSpaces, NSString.Create("show spaces"));
-			}
-		}
-		
-		public bool ShowTabs
-		{
-			get {return m_showTabs;}
-			set
-			{
-				m_showTabs = value;
-				
-				NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
-				defaults.setBool_forKey(m_showTabs, NSString.Create("show tabs"));
-			}
-		}
-		
-		#region Fields 
-		private Boss m_boss;
-		private bool m_showSpaces;
-		private bool m_showTabs;
-		#endregion
+		bool ShowTabs {get; set;}
 	}
 }

@@ -27,7 +27,7 @@ using System.Collections.Generic;
 
 namespace Styler
 {
-	internal sealed class CSharpStyler : RegexStyler
+	internal sealed class CSharpComputer : RegexComputer
 	{
 		public override void Instantiated(Boss boss)
 		{
@@ -37,9 +37,9 @@ namespace Styler
 			m_parser = b.Get<ICsParser>();
 		}
 		
-		protected override CsGlobalNamespace OnComputeRuns(string text, int edit, List<StyleRun> runs)		// threaded
+		protected override CsGlobalNamespace OnComputeRuns(string text, int edit, List<StyleRun> runs)	// threaded
 		{
-			base.OnComputeRuns(text, edit, runs);
+			Unused.Value = base.OnComputeRuns(text, edit, runs);
 			
 			return DoParseMatch(text, runs);
 		}

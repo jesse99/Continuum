@@ -5,16 +5,16 @@
 	
 	<Boss name = "Stylers" singleton = "true">
 		<Implementation interfaces = "IInterface +IFindLanguage" name = "FindLanguage"/>
-		<Implementation interfaces = "IStylers" name = "Stylers"/>
+		<Implementation interfaces = "IWhitespace" name = "Whitespace"/>
 	</Boss>
 	
 	<Boss name = "CsLanguage">
-		<Implementation interfaces = "IStyler IStyleWith" name = "CSharpStyler"/>
+		<Implementation interfaces = "IComputeRuns IStyleWith" name = "CSharpComputer"/>
 		<Implementation interfaces = "IDeclarations" name = "CSharpDeclarations"/>
 	</Boss>
 	
 	<Boss name = "RegexLanguage">
-		<Implementation interfaces = "IStyler IStyleWith" name = "RegexStyler"/>
+		<Implementation interfaces = "IComputeRuns IStyleWith" name = "RegexComputer"/>
 		<Implementation interfaces = "IDeclarations" name = "RegexDeclarations"/>
 	</Boss>
 </Bosses>

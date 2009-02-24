@@ -20,23 +20,8 @@ might want a sample app
 			return runs.ToArray();
 		}
 
-* Work on styling:
-	- IStyler implementations need to be part of the text boss
-	- add an IComputeRuns interface
-	- IStyler needs a Cancel method
-* Got a crash closing a window:
-  at (wrapper managed-to-native) MObjc.DirectCalls.Callp (intptr,intptr,intptr&) <0x00094>
-  at (wrapper managed-to-native) MObjc.DirectCalls.Callp (intptr,intptr,intptr&) <0xffffffff>
-  at MCocoa.NSWindow.windowController () [0x00006] in /Users/jessejones/Source/mcocoa/source/appkit/generated/NSWindow.cs:1711
-  at TextEditor.Editor.get_Text () [0x00000] in /Users/jessejones/Source/Continuum/source/plugins/text-editor/Editor.cs:169
-  at Styler.RegexStyler.Apply (Gear.Boss,System.Action) [0x00029] in /Users/jessejones/Source/Continuum/source/plugins/styler/RegexStyler.cs:68
-  at Styler.RegexStyler.DoQueuedApply () [0x0003c] in /Users/jessejones/Source/Continuum/source/plugins/styler/RegexStyler.cs:136
-  at MCocoa.AppHelper.execute (MObjc.NSObject) [0x00051] in /Users/jessejones/Source/mcocoa/source/appkit/AppHelper.cs:173
-  at (wrapper runtime-invoke) MCocoa.AppHelper.runtime_invoke_void__this___object (object,intptr,intptr,intptr) <0xffffffff>
-  at (wrapper managed-to-native) System.Reflection.MonoMethod.InternalInvoke (object,object[],System.Exception&) <0x00098>
-  at (wrapper managed-to-native) System.Reflection.MonoMethod.InternalInvoke (object,object[],System.Exception&) <0xffffffff>
-  at System.Reflection.MonoMethod.Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo) [0x00057] in /private/tmp/monobuild/build/BUILD/mono-2.2/mcs/class/corlib/System.Reflection/MonoMethod.cs:159
 * Should value be a c# keyword?
+* Find in files include and exclude items should use spaces.
 * Don't die if a factory pref handler throws.
 * Files should default to plain text (no styles but get rid of formatting)?
 * Add some tool tips to the nibs.
