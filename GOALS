@@ -1,0 +1,51 @@
+GOALS
+
+* Continuum should work well with other development tools. In particular it should
+  work well with make/nant/visual studio project files/mono-develop project
+  files, svn, and web browsers.
+* There should be no need to do any setup or to tell Continuum anything it can 
+  figure out itself. For example, instead of creating a project Continuum should 
+  rely on things like make files. Instead of asking the user where a source file 
+  is it should search for it.
+* The UI should follow the Apple UI guidelines and make use of features such as
+  animation, composition, and advanced typography. The interface should be clean,
+  uncluttered, and relatively sparing in the options it presents to the user.
+* There should be very strong support for browsing both source code and assemblies.
+  It should not be neccesary to compile in order to browse and all assemblies in 
+  the current working directory or referenced from it should be browseable. Note
+  that this also includes things like opening files in a summary view and panels
+  to show information about the code under the mouse cursor or selection.
+* The workflow for common activities should be streamlined as much as possible.
+  For example, on foreground compiler errors the offending window should be
+  automatically brought to the front, the error hilited, and an unobstrusive
+  popup window should appear below the error with the error message. Other examples
+  include support for refactoring, code snippets, and background compiles.
+* Continuum should be very extensible. It should be easy to add basic support for
+  new languages and possible to add new plugins or to replace existing ones. The
+  application itself should be quite small: all of the real work should be done
+  by plugins.
+* Experiment with features like time machine for all files in a directory, wiki
+  formatting, replay, code coverage and profiling hinting, test integration,
+  scripting, database queries, intentional programming
+
+ARCHITECTURE
+
+The extensibility goal is the main driver for the Continuum architecture. Continuum
+uses Gear (see <http://code.google.com/p/gear-sharp/>) to define the public
+interfaces exposed by plugins. All communication with a plugin goes through these
+interfaces so platform details are hidden, plugins can be replaced by any plugin
+that implements the same interfaces, and plugins can even add new interfaces to
+existing bosses.
+
+It would be possible to do something similar using an ad hoc approach with managed
+or native code, but this would be rather clumsy, implementation details would tend
+to leak into the public types, and there's no clear specification of the plugin's
+interface.
+
+Mono.Addins is another possibility. However these merely support extension points:
+they aren't really designed to support a truly extensible application. MonoDevelop
+for example is a monolithic application with extension points for plugins to hook
+into. Continuum is completely different: the application is very small and plugins
+do all the real work.
+
+

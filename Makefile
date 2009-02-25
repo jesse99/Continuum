@@ -20,8 +20,8 @@ endif
 
 # ------------------------------------------------------------------------
 # Internal variables
-dummy := $(shell mkdir bin 2> /dev/null)			
-dummy := $(shell mkdir bin/plugins 2> /dev/null)			
+dummy := $(shell mkdir bin 2> /dev/null)
+dummy := $(shell mkdir bin/plugins 2> /dev/null)
 dummy := $(shell if [[ "$(CSC_FLAGS)" != `cat bin/csc_flags 2> /dev/null` ]]; then echo "$(CSC_FLAGS)" > bin/csc_flags; fi)
 
 base_version := 0.2.xxx.0										# major.minor.build.revision
@@ -70,27 +70,31 @@ app: $(program-targets) bin/continuum.exe.config
 run-app: app
 	$(macos-path)/launcher
 	
-test: bin/tests.dll 
+test: bin/tests.dll
 	cd bin && "$(NUNIT)" -nologo tests.dll
 
-test1: bin/tests.dll 
+test1: bin/tests.dll
 	cd bin && "$(NUNIT)" -nologo -fixture=$(TEST1) tests.dll
 
 # ------------------------------------------------------------------------
 # Misc targets
-keys: 
+keys:
 	sn -k keys
 	
-bin/test-files: $(test-files) 
+bin/test-files: $(test-files)
 	@echo "$^" > $@
 
-bin/tests.dll: bin/test-files $(gear-dll) bin/csc_flags 
+bin/tests.dll: bin/test-files $(gear-dll) bin/csc_flags
 	$(CSC) -out:$@ $(CSC_FLAGS) -unsafe -d:TEST -pkg:mono-nunit -r:$(cocoa-dlls),$(gear-dll),ICSharpCode.SharpZipLib.dll,Mono.Posix.dll,bin/Mono.Cecil.dll,bin/Mono.Cecil.Mdb.dll,System.Configuration.dll -target:library @bin/test-files
 
 update-libraries:
 	cp `pkg-config --variable=Libraries mobjc` bin
 	cp `pkg-config --variable=Libraries mcocoa` bin
 	cp `pkg-config --variable=Libraries gear` bin
+	
+tar-bin:
+	tar --create --compress --file=Continuum-$(version).tar.gz \
+		README bin/Continuum.app
 
 clean:
 	-rm bin/csc_flags
@@ -105,7 +109,7 @@ bin/continuum.exe.config:
 	@echo "<?xml version = \"1.0\" encoding = \"utf-8\" ?>" > bin/continuum.exe.config
 	@echo "<configuration>" >> bin/continuum.exe.config
 	@echo "	<configSections>" >> bin/continuum.exe.config
-	@echo "		<section name = \"logger\" type = \"Shared.Log+LoggerSection,shared\"/>   " >> bin/continuum.exe.config
+	@echo "		<section name = \"logger\" type = \"Shared.Log+LoggerSection,shared\"/>" >> bin/continuum.exe.config
 	@echo "	</configSections>" >> bin/continuum.exe.config
 	@echo "	" >> bin/continuum.exe.config
 	@echo "	<!-- This is used to control logging for the various plugins. The level" >> bin/continuum.exe.config
@@ -113,7 +117,16 @@ bin/continuum.exe.config:
 	@echo "	but you can change this by adding a category entry whose name is \"*\". -->" >> bin/continuum.exe.config
 	@echo "	<logger>" >> bin/continuum.exe.config
 	@echo "		<categories>" >> bin/continuum.exe.config
-	@echo "			<add name = \"App\" level = \"Warning\"/>" >> bin/continuum.exe.config
+	@echo "			<add name = \"App\" level = \"Verbose\"/>" >> bin/continuum.exe.config
+	@echo "			<add name = \"Database\" level = \"Info\"/>" >> bin/continuum.exe.config
+	@echo "			<add name = \"Errors\" level = \"Info\"/>" >> bin/continuum.exe.config
+	@echo "			<add name = \"FindInDatabase\" level = \"Warning\"/>" >> bin/continuum.exe.config
+	@echo "			<add name = \"ObjectModel\" level = \"Verbose\"/>" >> bin/continuum.exe.config
+	@echo "			<add name = \"Open Selection\" level = \"Info\"/>" >> bin/continuum.exe.config
+	@echo "			<add name = \"Refactor Commands\" level = \"Info\"/>" >> bin/continuum.exe.config
+	@echo "			<add name = \"Refactor Evaluate\" level = \"Warning\"/>" >> bin/continuum.exe.config
+	@echo "			<add name = \"Startup\" level = \"Verbose\"/>" >> bin/continuum.exe.config
+	@echo "			<add name = \"Styler\" level = \"Warning\"/>" >> bin/continuum.exe.config
 	@echo "		</categories>" >> bin/continuum.exe.config
 	@echo "	</logger>" >> bin/continuum.exe.config
 	@echo "	" >> bin/continuum.exe.config
@@ -126,7 +139,7 @@ bin/continuum.exe.config:
 	@echo "	<system.diagnostics>" >> bin/continuum.exe.config
 	@echo "		<trace autoflush = \"true\" indentsize = \"4\">	" >> bin/continuum.exe.config
 	@echo "			<listeners>" >> bin/continuum.exe.config
-	@echo "				<remove name = \"Default\"/> " >> bin/continuum.exe.config
+	@echo "				<remove name = \"Default\"/>" >> bin/continuum.exe.config
 	@echo "				<add name = \"logger\" type = \"Continuum.PrettyTraceListener,continuum\" initializeData = \"$(here)/continuum.log\"/>" >> bin/continuum.exe.config
 	@echo "			</listeners>" >> bin/continuum.exe.config
 	@echo "		</trace>" >> bin/continuum.exe.config

@@ -159,7 +159,7 @@ namespace Shared
 			Trace.Assert(name == m_lock, string.Format("m_lock is {0} but should be {1}", m_lock, name));
 			
 			Update("COMMIT TRANSACTION");
-			Log.WriteLine("Database", "{0} transaction took {1:0.000} seconds", m_lock, (DateTime.Now - m_lockTime).TotalMilliseconds/1000.0);
+			Log.WriteLine(TraceLevel.Verbose, "Database", "{0} transaction took {1:0.000} seconds", m_lock, (DateTime.Now - m_lockTime).TotalMilliseconds/1000.0);
 			m_lock = null;
 		}
 		

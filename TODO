@@ -19,11 +19,24 @@ might want a sample app
 			
 			return runs.ToArray();
 		}
+		
+sudo mv ~/mobjc-glue.dylib /usr/local/lib/	
 
+* Work on a preview:
+	- add a tar-bin target
+	- make sure the binary works with no files/prefs
+	- send a binary to duanne with verbose logging enabled
+	- check in mobjc
+	- check in continuum
+* Update build number?
+* New cecil.
 * Should value be a c# keyword?
+* Shell language should not use other2 for built-ins.
+* Sccs menu can take a long time to popdown for dir windows.
 * Find in files include and exclude items should use spaces.
 * Don't die if a factory pref handler throws.
 * Files should default to plain text (no styles but get rid of formatting)?
+* Make sure untitled files still preserve attributes.
 * Add some tool tips to the nibs.
 * Should not iterate over the entire opened directory.
 * Fix dir editor so it doesn't collapse child dirs when an item changes.
@@ -32,6 +45,7 @@ might want a sample app
 * Probably need to handle aliaii in open panels as well.
 * Find button locations look a bit odd.
 * Might want a Make IEnumerable refactor.
+* mono root finder may not be correct.
 * Need a preference for Type.GetFieldName
 * Handle languages like scripts.
 	- TODO could go here
@@ -48,9 +62,9 @@ might want a sample app
 	- handle spaces in args
 	- support line numbers via colons
 * About box needs a bit more info.
+* Use the 2.2 cecil.
 * Move Continuum directory to prefs or maybe app support? Has really big files
    though so its not clear we should hide it like this.
-* Need to use a universal binary for the mobjc dylib.
 * Need some way to install the continuum script.
 * Probably want an uninstall script.
 * May want to bundle cecil with the app.
@@ -68,6 +82,7 @@ might want a sample app
 * Should be able to open locked files.
 * Should be able to run from read-only media.
 * Warn if opening a big file.
+* Database file names should probably include a hash or something for the dir path.
 * Add ChangeLog support.
 * Add better support for svn commits.
 * Add text get info:
@@ -360,7 +375,8 @@ might want a sample app
 	- would be cool if invariant support could be added via a script		
 * Release checklist:
 	- run continuum with no prefs
-	- run continuum with no Continuum dir
+	- run continuum with no Continuum Files dir
+	- review generated config log categories
 	- look at memory usage
 	- run unit tests in debug
 	- run unit tests in release

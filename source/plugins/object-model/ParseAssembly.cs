@@ -41,12 +41,12 @@ namespace ObjectModel
 		{
 			get {return m_boss;}
 		}
-
+		
 		public void Opened()
 		{
 			string path = Populate.GetDatabasePath(m_boss);
 			m_database = new Database(path);
-
+			
 			// TODO: once sqlite supports it the hash foreign keys should use ON DELETE CASCADE
 			m_database.Update("create tables2", () =>
 			{
@@ -112,7 +112,7 @@ namespace ObjectModel
 		// is around the types, not the assembly.
 		public void Parse(string path, AssemblyDefinition assembly, string hash)		// threaded
 		{
-	Console.WriteLine("    parsing {0} for thread {1}", assembly.Name.FullName, System.Threading.Thread.CurrentThread.ManagedThreadId);
+//	Console.WriteLine("    parsing {0} for thread {1}", assembly.Name.FullName, System.Threading.Thread.CurrentThread.ManagedThreadId);
 			bool fullParse = !path.Contains("/gac/") && !path.Contains("/mscorlib.dll") && File.Exists(path + ".mdb");	// TODO: might want to optionally allow full parse of mscorlib and assemblies in the gac			
 			Log.WriteLine("ObjectModel", "{0}parsing {1}", fullParse ? "fully " : string.Empty, assembly.Name.FullName);
 			
@@ -138,7 +138,7 @@ namespace ObjectModel
 				{
 					m_database.Insert("Types",
 						type.FullName,
-						hash, 
+						hash,
 						type.Name.GetTypeName(),
 						type.DeclaringType != null ? type.DeclaringType.FullName : string.Empty,
 						!string.IsNullOrEmpty(type.Namespace) ? type.Namespace : string.Empty,
@@ -148,10 +148,10 @@ namespace ObjectModel
 					if (type.HasInterfaces)
 					{
 						foreach (TypeReference i in type.Interfaces)
-						{				
+						{
 							m_database.Insert("Implements",
 								type.FullName,
-								hash, 
+								hash,
 								i.FullName);
 						}
 					}
@@ -189,15 +189,15 @@ namespace ObjectModel
 					{
 						m_database.InsertOrIgnore("NameInfo",
 							type.FullName,
-							hash, 
-							file, 
+							hash,
+							file,
 							type.Name,							// adds names like String or List`1
 							kind.ToString());
 						
 						m_database.InsertOrIgnore("NameInfo",
 							type.FullName,
-							hash, 
-							file, 
+							hash,
+							file,
 							DoGetNameWithoutTick(type.Name),	// adds List
 							kind.ToString());
 					}
@@ -288,7 +288,7 @@ namespace ObjectModel
 						m_database.InsertOrIgnore("NameInfo",
 							method.ToString(),
 							hash,
-							fileName, 
+							fileName,
 							method.Name,
 							"0");
 				}
@@ -300,41 +300,41 @@ namespace ObjectModel
 		// Based on the gendarme code.
 		private bool DoIsGeneratedCode(TypeReference type)	// theaded
 		{
-			if (type.HasCustomAttributes) 
-				if (type.Module.Assembly.Runtime >= TargetRuntime.NET_2_0) 
+			if (type.HasCustomAttributes)
+				if (type.Module.Assembly.Runtime >= TargetRuntime.NET_2_0)
 					if (DoHasGeneratedAtribute(type.CustomAttributes))
 						return true;
-
-			switch (type.Name [0]) 
+			
+			switch (type.Name [0])
 			{
 				case '<': 			// e.g. <Module>, <PrivateImplementationDetails>
 				case '$': 			// e.g. $ArrayType$1 nested inside <PrivateImplementationDetails>
 					return true;
 			}
-
+			
 			if (type.IsNested)
 				return DoIsGeneratedCode(type.DeclaringType);
 				
 			return false;
 		}
-
+		
 		private bool DoIsGeneratedCode(MethodDefinition method)	// theaded
 		{
-			if (method.HasCustomAttributes) 
+			if (method.HasCustomAttributes)
 				if (DoHasGeneratedAtribute(method.CustomAttributes))
 					return true;
-
+			
 			return false;
 		}
-
+		
 		private bool DoHasGeneratedAtribute(CustomAttributeCollection attrs)	// theaded
 		{
-			foreach (CustomAttribute attr in attrs) 
+			foreach (CustomAttribute attr in attrs)
 			{
 				string fullName = attr.Constructor.DeclaringType.FullName;
 				if (fullName == "System.CodeDom.Compiler.GeneratedCodeAttribute")
 					return true;
-
+				
 				else if (fullName == "System.Runtime.CompilerServices.CompilerGeneratedAttribute")
 					return true;
 			}
@@ -342,10 +342,10 @@ namespace ObjectModel
 			return false;
 		}
 		#endregion
-
+		
 		#region Fields 
-		private Boss m_boss; 
+		private Boss m_boss;
 		private Database m_database;
 		#endregion
-	} 
-}	
+	}
+}

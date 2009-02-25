@@ -24,14 +24,15 @@ using MCocoa;
 using MObjc;
 using Shared;
 using System;
+using System.Diagnostics;
 using System.IO;
 
 namespace App
 {
 	internal sealed class Application : IApplication, IFactoryPrefs
-	{		
+	{
 		public void Instantiated(Boss boss)
-		{	
+		{
 			m_boss = boss;
 		}
 		
@@ -39,16 +40,18 @@ namespace App
 		{
 			get {return m_boss;}
 		}
-
+		
 		public void Run()
-		{									
+		{
 			NSApplication app = NSApplication.Create("App", "MainMenu.nib", this.DoExtendDebugMenu);
-
+			Log.WriteLine(TraceLevel.Verbose, "Startup", "created NSApplication");
+			
 			var pool = NSAutoreleasePool.Create();
 			NSMutableDictionary dict = NSMutableDictionary.Create();
 			m_boss.CallRepeated<IFactoryPrefs>(i => i.OnInitFactoryPref(dict));
 			NSUserDefaultsController.sharedUserDefaultsController().setInitialValues(dict);
 			NSUserDefaults.standardUserDefaults().registerDefaults(dict);	
+			Log.WriteLine(TraceLevel.Verbose, "Startup", "initialized default prefs");
 			
 			// TODO: starting with mono 2.2 the path to the exe is part of the unmanaged command
 			// line arguments, but not the managed command line arguments. So, when cocoa starts
@@ -57,6 +60,7 @@ namespace App
 			NSUserDefaults.standardUserDefaults().setObject_forKey(NSString.Create("NO"), NSString.Create("NSTreatUnknownArgumentsAsOpen"));
 			pool.release();
 			
+			Log.WriteLine(TraceLevel.Verbose, "Startup", "starting event loop");
 			app.run();
 		}
 		
@@ -69,13 +73,13 @@ namespace App
 			{
 				string root = Path.GetDirectoryName(candidates[0]);
 				root = Path.GetDirectoryName(root);
-		
+				
 				dict.setObject_forKey(NSString.Create(root), NSString.Create("mono_root"));
 			}
 			else
 				dict.setObject_forKey(NSString.Create("/some/thing/mono-2.2"), NSString.Create("mono_root"));
 		}
-
+		
 		private void DoExtendDebugMenu(NSMenu menu)
 		{
 #if DEBUG
@@ -88,7 +92,7 @@ namespace App
 		}
 		
 		#region Fields 
-		private Boss m_boss; 
+		private Boss m_boss;
 		#endregion
-	} 
+	}
 }

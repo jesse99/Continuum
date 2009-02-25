@@ -34,9 +34,9 @@ using System.Threading;
 namespace ObjectModel
 {
 	internal sealed class Populate : IOpened, IShutdown
-	{		
+	{
 		public void Instantiated(Boss boss)
-		{	
+		{
 			m_boss = boss;
 		}
 		
@@ -68,6 +68,7 @@ namespace ObjectModel
 			// 3) Assembly versioning is a bit nicer because the queries run against the
 			// assemblies which are being used instead of the latest version of the assembly.
 			string path = Populate.GetDatabasePath(m_boss);
+			Log.WriteLine("ObjectModel", "'{0}' was opened", path);
 			m_database = new Database(path);
 			
 			Broadcaster.Register("opened directory", this, this.DoOnOpenDir);
@@ -78,6 +79,7 @@ namespace ObjectModel
 			
 			// We could place an upper limit on some of the field sizes, but it won't
 			// do much good because sqlite stores just what is needed.
+			Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "creating tables");
 			m_database.Update("create tables", () =>
 			{
 				m_database.Update(@"
@@ -110,6 +112,7 @@ namespace ObjectModel
 					)");
 			});
 			
+			Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "starting thread");
 			m_thread = new Thread(this.DoParseAssemblies);
 			m_thread.Name = "parse assemblies";
 			m_thread.IsBackground = false;
@@ -194,6 +197,7 @@ namespace ObjectModel
 				try
 				{
 					DoPruneAssemblies();
+					Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "pruned assemblies");
 					
 					string root;
 					lock (m_lock)
@@ -213,7 +217,10 @@ namespace ObjectModel
 					}
 					
 					if (!root.Contains(".app/") && !root.Contains("/.svn"))
+					{
 						DoUpdateAssemblyPaths(root);
+						Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "updated assemblies for '{0}'", root);
+					}
 				}
 				catch (Exception e)
 				{
@@ -238,7 +245,7 @@ namespace ObjectModel
 				{
 					if (!File.Exists(row[0]))
 					{
-						Log.WriteLine("ObjectModel", "removing '{0}' from AssemblyPaths", row[0]);
+						Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "removing '{0}' from AssemblyPaths", row[0]);
 	
 						m_database.Update(string.Format(@"
 							DELETE FROM AssemblyPaths 
@@ -267,7 +274,7 @@ namespace ObjectModel
 						if (temp.Length > 0)
 						{
 							string name = string.Format("{0} {1}.{2}.{3}.{4}", temp[0][0], temp[0][1], temp[0][2], temp[0][3], temp[0][4]);	
-							Log.WriteLine("ObjectModel", "removing '{0}' from Assemblies (no assemblies with its hash exist)", name);
+							Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "removing '{0}' from Assemblies (no assemblies with its hash exist)", name);
 						}
 					}
 					
@@ -332,11 +339,11 @@ namespace ObjectModel
 					});
 				}
 			}
-			catch (BadImageFormatException) 
+			catch (BadImageFormatException)
 			{
 				// not an assembly
 			}
-			catch (ImageFormatException) 
+			catch (ImageFormatException)
 			{
 				// not an assembly
 			}
@@ -487,7 +494,7 @@ namespace ObjectModel
 					Version rhs = new Version(int.Parse(r[0]), int.Parse(r[1]), int.Parse(r[2]), int.Parse(r[3]));
 					if (name.Version > rhs)
 					{
-						Log.WriteLine( "ObjectModel", "pruning {0} {1}.{2}.{3}.{4} (there's a newer version)", name.Name, r[0], r[1], r[2], r[3]);
+						Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "pruning {0} {1}.{2}.{3}.{4} (there's a newer version)", name.Name, r[0], r[1], r[2], r[3]);
 
 						m_database.Update(string.Format(@"
 							DELETE FROM Types 
@@ -505,10 +512,10 @@ namespace ObjectModel
 			});
 		}
 		#endregion
-
+		
 		#region Fields
 		private Thread m_thread;
-		private Boss m_boss; 
+		private Boss m_boss;
 		private MD5 m_hasher = MD5.Create();				// md5 isn't cryptographically secure any more, but that's OK: we just want a good hash to minimize duplicate work
 		private Database m_database;
 		private List<string> m_resolvedAssemblies = new List<string>();
@@ -517,5 +524,5 @@ namespace ObjectModel
 			private bool m_running = true;
 			private List<string> m_files = new List<string>();
 		#endregion
-	} 
+	}
 }

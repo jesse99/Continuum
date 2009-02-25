@@ -25,40 +25,44 @@ using MObjc;
 using Shared;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 
 namespace Continuum
 {
 	internal static class Program
-	{	
-		public static void Main(string[] args) 
+	{
+		public static void Main(string[] args)
 		{
 			Shared.AssertListener.Install();
-			Log.WriteLine("App", "started up on {0}", DateTime.Now);
-						
+			Log.WriteLine("Startup", "started up on {0}", DateTime.Now);
+			
 			// Note that we have to be careful not to use mobjc
 			// until all the plugins are loaded so all classes are
 			// properly registered.
 			DoLoadPlugins();
+			Log.WriteLine(TraceLevel.Verbose, "Startup", "loaded plugins");
 			Registrar.CanInit = true;
-						
+			
 			Boss appBoss = ObjectModel.Create("Application");
 			IApplication app = appBoss.Get<IApplication>();
+			Log.WriteLine(TraceLevel.Verbose, "Startup", "running app");
 			app.Run();
-
+			
 			// note that we don't actually land here when quitting...
 		}
 		
 		// TODO: about box should list all of the loaded plugins along with
 		// their version numbers
-		private static void DoLoadPlugins() 
+		private static void DoLoadPlugins()
 		{
 			Gear.Ignore.Value = typeof(IStartup);		// force shared.dll to load (we need to do this or the plugins will fail when they try to use shared types from Bosses.xml)
 			
 			string loc = Assembly.GetExecutingAssembly().Location;
 			string root = Path.GetDirectoryName(loc);
 			string path = Path.Combine(root, "plugins");
+			Log.WriteLine(TraceLevel.Verbose, "Startup", "loading plugins using '{0}'", path);
 			
 			// TODO: we might want required and optional plugins
 			Plugins plugins = new Plugins(path, "*.dll");

@@ -38,7 +38,7 @@ namespace Shared
 				{
 					// TODO: use /Library/Application Support/Continuum instead
 					string path = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-					ms_supportPath = Path.Combine(path, "Continuum");
+					ms_supportPath = Path.Combine(path, "Continuum Files");
 					if (!Directory.Exists(ms_supportPath))
 						Directory.CreateDirectory(ms_supportPath);
 				}
@@ -53,7 +53,7 @@ namespace Shared
 		{
 			Trace.Assert(lhs != null, "lhs is null");
 			Trace.Assert(rhs != null, "rhs is null");
-				
+			
 			lhs = UnixPath.GetCanonicalPath(lhs);
 			rhs = UnixPath.GetCanonicalPath(rhs);
 			

@@ -1,0 +1,29 @@
+* Build the gear project. You can find this at <http://code.google.com/p/gear-sharp/>.
+ Use the version in svn and execute 'make lib' followed by 'sudo make install'.
+
+* Build the mobjc project. You can find this at <http://code.google.com/p/mobjc/>.
+ Use the version in svn and execute 'make libs' followed by 'sudo make install'.
+
+* Build the mcocoa project. You can find this at <http://code.google.com/p/mcocoa/>.
+ Use the version in svn and execute 'make update-libraries', 'make lib', and 'sudo make install'.
+
+* Build the latest version of Cecil (you may not need to use the svn version with Mono 2.4). To 
+do this download the source using 'svn co svn://anonsvn.mono-project.com/source/trunk/mcs/class/Mono.Cecil'
+and build it using 'make -f standalone.make'.
+
+* Navigate to the Continuum directory and execute 'make update-libraries'.
+
+* Copy the Mono.Cecil.dll you built to Continuum's bin directory.
+
+ * Copy Mono.Cecil.Mdb.dll to Continuum's build directory. You can find this with the locate 
+ command. It will normally be in a directory like 
+ '/Library/Frameworks/Mono.framework/Versions/2.0/lib/mono/2.0/'.
+ 
+ * Execute 'make run-app'. This will build the Continuum app and run it from the Terminal.
+ Console output will appear in the Terminal instead of the Console app.
+
+If you plan on working on Continuum you may want to execute './make-foreshadow'. This will
+copy the Continuum app and make a new app named Foreshadow. Then you can make changes
+to Continuum without disturbing your tool chain. Once you're happy with your changes you 
+can build a new Foreshadow.
+ 

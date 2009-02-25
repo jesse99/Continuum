@@ -27,46 +27,48 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace Shared
-{	    
+{
 	[Serializable]
 	public sealed class DirectoryWatcherEventArgs : EventArgs
 	{
-	    	public DirectoryWatcherEventArgs(string[] paths)
-    		{
-        		Paths = paths;
-    		}
-
-	    public string[] Paths {get; private set;}    
+		public DirectoryWatcherEventArgs(string[] paths)
+		{
+			Paths = paths;
+		}
+		
+		public string[] Paths {get; private set;}
 	}
- 
-    // System.IO.FileSystemWatcher doesn't seem to work too well on OS X. There
-    // is a managed implementation which is supposed to work better (enabled via
-    // an environment variable), but it has a fair amount of overhead because it
-    // relies on polling.
-    // /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/CarbonCore.framework/Versions/A/Headers/FSEvents.h
+	
+	// System.IO.FileSystemWatcher doesn't seem to work too well on OS X. There
+	// is a managed implementation which is supposed to work better (enabled via
+	// an environment variable), but it has a fair amount of overhead because it
+	// relies on polling.
+	// /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/CarbonCore.framework/Versions/A/Headers/FSEvents.h
 	public sealed class DirectoryWatcher : IDisposable
 	{
 		~DirectoryWatcher()
 		{
-	        Dispose(false);
+			Dispose(false);
 		}
 		
 		public DirectoryWatcher(string path, TimeSpan latency)
 		{
+			Log.WriteLine(TraceLevel.Verbose, "App", "creating a directory watcher for '{0}'", path);
+
 			Path = path;
 			m_callback = this.DoCallback;
 			
 			NSArray paths = NSArray.Create(path);
-	
+			
 			m_stream = FSEventStreamCreate(		// note that the stream will always be valid
 				IntPtr.Zero,									// allocator
 				m_callback, 									// callback
 				IntPtr.Zero,							 		// context
-		    	paths,											// pathsToWatch
+				paths,											// pathsToWatch
 				kFSEventStreamEventIdSinceNow, 	// sinceWhen
 				latency.TotalSeconds,						// latency (in seconds)
 				FSEventStreamCreateFlags.kFSEventStreamCreateFlagNone);	// flags
-			    
+				
 			FSEventStreamScheduleWithRunLoop(
 				m_stream,							// streamRef
 				CFRunLoopGetMain(),			// runLoop
@@ -78,10 +80,11 @@ namespace Shared
 				GC.SuppressFinalize(this);
 				throw new InvalidOperationException("Failed to start FSEvent stream for " + path);
 			}
-
+			
 			ActiveObjects.Add(this);
+			Log.WriteLine(TraceLevel.Verbose, "App", "created the directory watcher");
 		}
-				
+		
 		// This will fire if files are added, removed, or changed from the specified directory 
 		// or any of its sub-directories.
 		public event EventHandler<DirectoryWatcherEventArgs> Changed;
@@ -93,8 +96,8 @@ namespace Shared
 			Dispose(true);
 			GC.SuppressFinalize(this);
 		}
-    
-  		#region Private Members		
+		
+		#region Private Members		
 		private void Dispose(bool disposing)
 		{
 			if (m_stream != IntPtr.Zero)
@@ -106,8 +109,8 @@ namespace Shared
 				m_stream = IntPtr.Zero;
 			}
 		}
-        
- 		// TODO: this is called even if a file is simply touched. AFAICT there is no way
+		
+		// TODO: this is called even if a file is simply touched. AFAICT there is no way
 		// to filter these out (eventPaths would be a candidate, but it seems to always 
 		// be a directory). 
 		// Note that this is called from the run loop so it is not threaded.
@@ -141,55 +144,55 @@ namespace Shared
 		private ulong kFSEventStreamEventIdSinceNow = 0xFFFFFFFFFFFFFFFFUL;
 		
 		private delegate void FSEventStreamCallback(
-			IntPtr streamRef, 
-			IntPtr clientCallBackInfo, 
-			int numEvents, 
-			IntPtr eventPaths, 
-			IntPtr eventFlags, 
+			IntPtr streamRef,
+			IntPtr clientCallBackInfo,
+			int numEvents,
+			IntPtr eventPaths,
+			IntPtr eventFlags,
 			IntPtr eventIds);
 		#endregion
 		
 		#region P/Invokes
 		[DllImport("/System/Library/Frameworks/CoreServices.framework/CoreServices")]
 		private extern static IntPtr CFRunLoopGetMain();
-
+		
 		[DllImport("/System/Library/Frameworks/CoreServices.framework/CoreServices")]
-		private extern static IntPtr FSEventStreamCreate( 
-		    IntPtr allocator, 
-		    FSEventStreamCallback callback, 
-		    IntPtr context, 
-		    IntPtr pathsToWatch, 
-		    ulong sinceWhen, 
-		    double latency, 
-		    FSEventStreamCreateFlags flags);
-
+		private extern static IntPtr FSEventStreamCreate(
+			IntPtr allocator,
+			FSEventStreamCallback callback,
+			IntPtr context,
+			IntPtr pathsToWatch,
+			ulong sinceWhen,
+			double latency,
+			FSEventStreamCreateFlags flags);
+		
 		[DllImport("/System/Library/Frameworks/CoreServices.framework/CoreServices")]
 		private extern static void FSEventStreamScheduleWithRunLoop(
 			IntPtr   streamRef,
-			IntPtr       runLoop,
-			IntPtr        runLoopMode);
-
+			IntPtr   runLoop,
+			IntPtr   runLoopMode);
+		
 		[DllImport("/System/Library/Frameworks/CoreServices.framework/CoreServices")]
 		[return: MarshalAs(UnmanagedType.U1)] 
 		private extern static bool FSEventStreamStart(
 			IntPtr   streamRef);
-
+		
 		[DllImport("/System/Library/Frameworks/CoreServices.framework/CoreServices")]
 		private extern static void FSEventStreamStop(
 			IntPtr   streamRef);
-
+		
 		[DllImport("/System/Library/Frameworks/CoreServices.framework/CoreServices")]
 		private extern static void FSEventStreamInvalidate(
 			IntPtr   streamRef);
-
+		
 		[DllImport("/System/Library/Frameworks/CoreServices.framework/CoreServices")]
 		private extern static void FSEventStreamRelease(
 			IntPtr   streamRef);
 		#endregion
-		
+				
 		#region Fields		
 		private IntPtr m_stream;
 		private FSEventStreamCallback m_callback;	// need to keep a reference around so that th	is isn't GCed
 		#endregion
-	} 
+	}
 }
