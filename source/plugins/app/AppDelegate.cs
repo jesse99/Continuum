@@ -26,6 +26,7 @@ using Shared;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace App
 {
@@ -46,6 +47,9 @@ namespace App
 			
 			// Initialize the Sccs menu.
 			NSMenu menu = this["SccsMenu"].To<NSMenu>();
+			menu.setAutoenablesItems(false);
+			menu.setDelegate(this);
+			
 			Dictionary<string, string[]> commands = Sccs.GetCommands();
 			foreach (var entry in commands)
 			{
@@ -94,6 +98,36 @@ namespace App
 			Log.WriteLine("App", "exiting normally");
 		}
 		
+		// We handle the enabling manually for the Sccs menu so that we can call
+		// Sccs.GetCommands once for the menu instead of for each item which 
+		// makes a noticeable speed difference.
+		public void menuNeedsUpdate(NSMenu menu)
+		{
+			string[] paths = DoGetSelectedPaths();
+			Dictionary<string, string[]> commands = Sccs.GetCommands(paths);
+				
+			for (int i = 0; i < menu.numberOfItems(); ++i)
+			{
+				NSMenuItem item = menu.itemAtIndex(i);
+				
+				string command = item.title().description();
+				bool enable = commands.Values.Any(a => Array.IndexOf(a, command) >= 0);
+				
+				item.setEnabled(enable);
+			}
+		}
+		
+		public void handleSccs(NSObject sender)
+		{
+			string command = sender.Call("title").To<NSObject>().description();
+			
+			string[] paths = DoGetSelectedPaths();
+			foreach (string path in paths)
+			{
+				Sccs.Execute(command, path);
+			}
+		}
+
 #if DEBUG
 		public void dumpBosses(NSObject sender)
 		{
@@ -323,6 +357,43 @@ namespace App
 		}
 		
 		#region Private Methods
+		private string[] DoGetSelectedPaths()
+		{
+			string[] paths = null;
+			
+			// First see if the main window is a text window.
+			Boss boss = ObjectModel.Create("TextEditorPlugin");
+			var windows = boss.Get<IWindows>();
+			boss = windows.Main();
+			
+			if (boss != null)
+			{
+				var editor = boss.Get<ITextEditor>();
+				paths = new string[]{editor.Path};
+			}
+			
+			// Then see if it is a directory window.
+			if (paths == null)
+			{
+				boss = ObjectModel.Create("DirectoryEditorPlugin");
+				windows = boss.Get<IWindows>();
+				boss = windows.Main();
+				
+				if (boss != null)
+				{
+					var editor = boss.Get<IDirectoryEditor>();
+					paths = editor.SelectedPaths();
+				}
+			}
+			
+			// If the main window is not a text or directory window then we can't
+			// get a path for the sccs commands.
+			if (paths == null)
+				paths = new string[0];
+			
+			return paths;
+		}
+		
 		private void DoReload(Boss boss)
 		{
 			var windows = boss.Get<IWindows>();

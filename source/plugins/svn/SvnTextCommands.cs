@@ -20,8 +20,6 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
-//using MCocoa;
-//using MObjc;
 using Shared;
 using System;
 using System.Collections.Generic;

@@ -27,7 +27,7 @@ using System;
 
 namespace App
 {
-	[ExportClass("App", "NSApplication", Outlets = "textMenu refactorMenu")]
+	[ExportClass("App", "NSApplication", Outlets = "buildMenu editMenu fileMenu refactorMenu sccsMenu searchMenu textMenu windowMenu")]
 	internal sealed class App : NSApplication
 	{
 		public App(IntPtr instance) : base(instance)
@@ -55,15 +55,45 @@ namespace App
 				}
 			}
 		}
+				
+		public NSMenu buildMenu()
+		{
+			return this["buildMenu"].To<NSMenu>();
+		}
+		
+		public NSMenu editMenu()
+		{
+			return this["editMenu"].To<NSMenu>();
+		}
+		
+		public NSMenu fileMenu()
+		{
+			return this["fileMenu"].To<NSMenu>();
+		}
+		
+		public NSMenu refactorMenu()
+		{
+			return this["refactorMenu"].To<NSMenu>();
+		}
+		
+		public NSMenu sccsMenu()
+		{
+			return this["sccsMenu"].To<NSMenu>();
+		}
+		
+		public NSMenu searchMenu()
+		{
+			return this["searchMenu"].To<NSMenu>();
+		}
 		
 		public NSMenu textMenu()
 		{
 			return this["textMenu"].To<NSMenu>();
 		}
 		
-		public NSMenu refactorMenu()
+		public NSMenu windowMenu()
 		{
-			return this["refactorMenu"].To<NSMenu>();
+			return this["windowMenu"].To<NSMenu>();
 		}
 		
 		public new void updateWindowsItem(NSWindow window)

@@ -23,7 +23,7 @@ using Gear;
 using System;
 
 namespace Shared
-{	
+{
 	// This is the primary interface for the plugin which pops up a window
 	// showing a directory and allowing files to be added or deleted. Note
 	// that when a directory editor is opened it will broadcast "opened directory"
@@ -33,9 +33,12 @@ namespace Shared
 		// Returns the full path to the directory being edited.
 		string Path {get;}
 		
+		// Returns the full paths of the selected items.
+		string[] SelectedPaths();
+		
 		// Returns the time at which the the last build started (for this
 		// session). If the directory was not built DateTime.MinValue is
 		// returned.
 		DateTime BuildStartTime {get;}
-	} 
+	}
 }

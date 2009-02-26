@@ -23,6 +23,7 @@ using Gear;
 using MCocoa;
 using Shared;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace DirectoryEditor
@@ -54,6 +55,22 @@ namespace DirectoryEditor
 				DirectoryController controller = (DirectoryController) m_window.windowController();
 				return controller.Path;
 			}
+		}
+		
+		public string[] SelectedPaths()
+		{
+			var paths = new List<string>();
+			
+			DirectoryController controller = (DirectoryController) m_window.windowController();
+			NSOutlineView table = controller.Table;
+			
+			foreach (uint row in table.selectedRowIndexes())
+			{
+				DirectoryItem item = (DirectoryItem) (table.itemAtRow((int) row));
+				paths.Add(item.Path);
+			}
+			
+			return paths.ToArray();
 		}
 		
 		public DateTime BuildStartTime

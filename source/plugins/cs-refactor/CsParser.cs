@@ -311,7 +311,9 @@ namespace CsRefactor
 							Log.WriteLine(TraceLevel.Warning, "Errors", "{0}", e.Message);
 							m_bad = m_scanner.Token;
 						}
-						m_scanner.Advance();
+						
+						if (m_scanner.Token.IsValid())
+							m_scanner.Advance();
 					}
 					else
 						throw;
@@ -994,7 +996,9 @@ namespace CsRefactor
 							Log.WriteLine(TraceLevel.Warning, "Errors", "{0}", e.Message);
 							m_bad = m_scanner.Token;
 						}
-						m_scanner.Advance();
+						
+						if (m_scanner.Token.IsValid())
+							m_scanner.Advance();
 					}
 					else
 						throw;
@@ -1206,7 +1210,7 @@ namespace CsRefactor
 			else
 				return new CsBases(previous.Offset + previous.Length, previous.Line);
 		}
-
+		
 		private Token DoParseKeyword(string name)
 		{
 			if (!m_scanner.Token.IsIdentifier(name))
@@ -1217,7 +1221,7 @@ namespace CsRefactor
 			
 			return token;
 		}
-     	
+	
 		// member-name:
 		//    identifier
 		//    interface-type   .   identifier
@@ -1852,10 +1856,10 @@ namespace CsRefactor
 				DoParsePunct(":");
 				last = DoParseTypeParameterConstraints();
 			}
-
-			if (last.Offset != first.Offset)			
+			
+			if (last.Offset != first.Offset)
 				constraints = m_text.Substring(first.Offset, last.Offset + last.Length - first.Offset);
-
+			
 			return constraints;
 		}
 		
@@ -1986,5 +1990,5 @@ namespace CsRefactor
 		private bool m_try;
 		private Token m_bad;
 		#endregion
-	} 
+	}
 }

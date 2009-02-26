@@ -30,17 +30,6 @@ dummy := $(shell mkdir bin 2> /dev/null)
 dummy := $(shell mkdir bin/plugins 2> /dev/null)
 dummy := $(shell if [[ "$(CSC_FLAGS)" != `cat bin/csc_flags 2> /dev/null` ]]; then echo "$(CSC_FLAGS)" > bin/csc_flags; fi)
 
-Index: source/continuum/PrettyTraceListener.cs
-* Instead of killing the app fallback on stdout if the log file cannot be created.
-
-Index: make-foreshadow
-* Change the path of the log file from /tmp/continuum.log to ${here}/foreshadow.log.
-
-Index: Makefile
-* Incremented version number.
-
-* Assert: can't advance past the end of the text
-* Sccs menu can take a long time to popdown for dir windows.
 * Find in files include and exclude items should use spaces.
 * Also find in files options.
 * Glob lists need to support escaped spaces.

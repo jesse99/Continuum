@@ -111,7 +111,7 @@ namespace DirectoryEditor
 				m_root = null;
 				
 				m_table.Value.setDelegate(null);
-				m_table.Value.reloadData();	
+				m_table.Value.reloadData();
 				
 				root.Close();
 				root.release();
@@ -124,6 +124,11 @@ namespace DirectoryEditor
 		public Boss Boss
 		{
 			get {return m_boss;}
+		}
+		
+		public NSOutlineView Table
+		{
+			get {return m_table.Value;}
 		}
 		
 		public void Reload()
@@ -206,18 +211,7 @@ namespace DirectoryEditor
 					DoRename(item, newName);
 			}
 		}
-		
-		public void handleSccs(NSObject sender)
-		{
-			string command = sender.Call("title").To<NSObject>().description();
-			
-			foreach (uint row in m_table.Value.selectedRowIndexes())
-			{
-				DirectoryItem item = (DirectoryItem) (m_table.Value.itemAtRow((int) row));
-				Sccs.Execute(command, item.Path);
-			}
-		}
-		
+				
 		// Duplicate is such a common operation that we provide a shortcut for it.
 		public void duplicate(NSObject sender)
 		{
@@ -270,23 +264,7 @@ namespace DirectoryEditor
 			else if (sel.Name == "duplicate:")
 			{
 				NSIndexSet selections = m_table.Value.selectedRowIndexes();
-				enabled = selections.count() > 0 && 	m_table.Value.editedRow() < 0;	// cocoa crashes if we do a duplicate while editing...
-			}
-			else if (sel.Name == "handleSccs:")
-			{
-				var paths = new List<string>();
-				foreach (uint row in m_table.Value.selectedRowIndexes())
-				{
-					DirectoryItem item = (DirectoryItem) (m_table.Value.itemAtRow((int) row));
-					paths.Add(item.Path);
-				}
-				
-				if (paths.Count > 0)
-				{
-					string command = sender.Call("title").To<NSObject>().description();
-					Dictionary<string, string[]> commands = Sccs.GetCommands(paths);
-					enabled = commands.Values.Any(a => Array.IndexOf(a, command) >= 0);
-				}
+				enabled = selections.count() > 0 && m_table.Value.editedRow() < 0;	// cocoa crashes if we do a duplicate while editing...
 			}
 			else if (respondsToSelector(sel))
 			{

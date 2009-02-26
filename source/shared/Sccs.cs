@@ -24,10 +24,11 @@ using MCocoa;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Shared
-{	    
-    // Helper class to make it easier to work with ISccs interfaces.
+{
+	// Helper class to make it easier to work with ISccs interfaces.
 	public static class Sccs
 	{
 		public static void Rename(string oldPath, string newPath)
@@ -37,7 +38,7 @@ namespace Shared
 			Trace.Assert(!Paths.AreEqual(oldPath, newPath), "oldPath equals newPath");
 			
 			try
-			{				
+			{
 				// Use a real sccs,
 				Boss boss = ObjectModel.Create("Sccs");
 				if (boss.Has<ISccs>())
@@ -47,7 +48,7 @@ namespace Shared
 					{
 						if (candidate.Rename(oldPath, newPath))
 							return;
-
+						
 						candidate = boss.GetNext<ISccs>(candidate);
 					}
 				}
@@ -65,13 +66,13 @@ namespace Shared
 				Unused.Value = Functions.NSRunAlertPanel(title, message);
 			}
 		}
-				
+		
 		public static void Duplicate(string path)
 		{
 			Trace.Assert(!string.IsNullOrEmpty(path), "path is null or empty");
 			
 			try
-			{				
+			{
 				// Use a real sccs,
 				Boss boss = ObjectModel.Create("Sccs");
 				if (boss.Has<ISccs>())
@@ -81,7 +82,7 @@ namespace Shared
 					{
 						if (candidate.Duplicate(path))
 							return;
-
+						
 						candidate = boss.GetNext<ISccs>(candidate);
 					}
 				}
@@ -99,7 +100,7 @@ namespace Shared
 				Unused.Value = Functions.NSRunAlertPanel(title, message);
 			}
 		}
-				
+		
 		// Returns the name of each supported sccs along with all the commands
 		// it supports.
 		public static Dictionary<string, string[]> GetCommands()
@@ -121,43 +122,46 @@ namespace Shared
 			boss = ObjectModel.Create("Application");
 			var fallback = boss.Get<ISccs>();
 			commands.Add(fallback.Name, fallback.GetCommands());
-				
+			
 			return commands;
 		}
-
+		
 		// Returns the name of each supported sccs along with all the commands
 		// it supports for every specified path.
 		public static Dictionary<string, string[]> GetCommands(IEnumerable<string> paths)
 		{
 			var commands = new Dictionary<string, string[]>();
 			
-			Boss boss = ObjectModel.Create("Sccs");
-			if (boss.Has<ISccs>())
+			if (paths.Count() > 0)
 			{
-				var sccs = boss.Get<ISccs>();
-				while (sccs != null)
+				Boss boss = ObjectModel.Create("Sccs");
+				if (boss.Has<ISccs>())
 				{
-					commands.Add(sccs.Name, sccs.GetCommands(paths));
-					sccs = boss.GetNext<ISccs>(sccs);
+					var sccs = boss.Get<ISccs>();
+					while (sccs != null)
+					{
+						commands.Add(sccs.Name, sccs.GetCommands(paths));
+						sccs = boss.GetNext<ISccs>(sccs);
+					}
 				}
+				
+				// or the fallback.
+				boss = ObjectModel.Create("Application");
+				var fallback = boss.Get<ISccs>();
+				commands.Add(fallback.Name, fallback.GetCommands(paths));
 			}
 			
-			// or the fallback.
-			boss = ObjectModel.Create("Application");
-			var fallback = boss.Get<ISccs>();
-			commands.Add(fallback.Name, fallback.GetCommands(paths));
-				
 			return commands;
 		}
-
+		
 		// Executes the command for a single sccs.
 		public static void Execute(string command, string path)
 		{
 			Trace.Assert(!string.IsNullOrEmpty(command), "command is null or empty");
 			Trace.Assert(!string.IsNullOrEmpty(path), "path is null or empty");
-
+			
 			try
-			{				
+			{
 				// Use a real sccs,
 				Boss boss = ObjectModel.Create("Sccs");
 				if (boss.Has<ISccs>())
@@ -170,7 +174,7 @@ namespace Shared
 							candidate.Execute(command, path);
 							return;
 						}
-
+						
 						candidate = boss.GetNext<ISccs>(candidate);
 					}
 				}
