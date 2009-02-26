@@ -30,11 +30,11 @@ using System.Linq;
 namespace Subversion
 {
 	internal sealed class Svn : ISccs
-	{		
+	{
 		public void Instantiated(Boss boss)
-		{	
+		{
 			m_boss = boss;
-						
+			
 			try
 			{
 				var result = DoCommand("help");
@@ -45,7 +45,7 @@ namespace Subversion
 			{
 				Log.WriteLine(TraceLevel.Info, "Errors", "svn is not installed");
 			}
-
+			
 			if (m_installled)
 			{
 				// Note that if this is changed GetCommands must be updated as well.
@@ -70,8 +70,8 @@ namespace Subversion
 		{
 			get {return m_boss;}
 		}
-
-		public string Name 
+		
+		public string Name
 		{
 			get {return "Svn";}
 		}
@@ -86,41 +86,41 @@ namespace Subversion
 				if (string.IsNullOrEmpty(result.Second))
 					renamed = true;
 			}
-						
+			
 			return renamed;
 		}
-				
+		
 		public bool Duplicate(string path)
 		{
 			return false;		// let the fallback handle it
 		}
-				
+		
 		public string[] GetCommands()
 		{
 			return m_commands.Keys.ToArray();
 		}
-
+		
 		public string[] GetCommands(IEnumerable<string> paths)
 		{
 			Trace.Assert(paths.Any(), "paths is empty");
-						
+			
 			List<string> commands = new List<string>(m_commands.Count);
-
+			
 			if (m_installled)
 			{
 				char[] status = DoGetStatus(paths);
 				int numModified = status.Count(s => s == 'M' || s == 'C');
 				int numControlled = paths.Count(p => DoIsControlled(p));	// unfortunately svn stat won't tell us whether the file is not checked in or simply not dirty
-
+				
 				if (numModified == status.Length)
 				{
 					if (status.Length == 1)
 						commands.Add(Name + " commit");		// if these names change SvnTextCommands should be reviewed
-
+					
 					int numConflicted = status.Count(s => s == 'C');
 					if (numConflicted == paths.Count())
 						commands.Add(Name + " resolved");
-
+					
 					commands.Add(Name + " diff");
 					commands.Add(Name + " revert");
 				}
@@ -128,19 +128,19 @@ namespace Subversion
 				{
 					if (paths.Count() == 1)
 						commands.Add(Name + " rename");
-
+					
 					commands.Add(Name + " remove");
 					commands.Add(Name + " update");
 				}
-			
+				
 				if (numControlled == paths.Count())
-				{											
+				{
 					commands.Add(Name + " blame");
 					commands.Add(Name + " cat");
 					commands.Add(Name + " info");
 					commands.Add(Name + " log");
 					commands.Add(Name + " status");
-
+					
 					if (numControlled == 1)
 						commands.Add(Name + " propedit svn:ignore");
 				}
@@ -151,14 +151,14 @@ namespace Subversion
 						commands.Add(Name + " add");
 				}
 			}
-							
+			
 			return commands.ToArray();
 		}
-
+		
 		public void Execute(string command, string path)
 		{
 			Trace.Assert(m_commands.ContainsKey(command), command + " is not an Svn command");
-
+			
 			m_commands[command](path);
 		}
 		
@@ -184,10 +184,10 @@ namespace Subversion
 				Console.Error.WriteLine("Error calling svn stat:");	// this should not happen
 				Console.Error.WriteLine(e.Message);
 			}
-													
+			
 			return status;
 		}
-				
+		
 		private bool DoIsControlled(string path)
 		{
 			bool controlled = false;
@@ -226,7 +226,7 @@ namespace Subversion
 				process.StartInfo.UseShellExecute = false;
 				process.StartInfo.RedirectStandardOutput = true;
 				process.StartInfo.RedirectStandardError = true;
-	
+				
 				process.Start();
 				
 				stdout = process.StandardOutput.ReadToEnd();
@@ -253,12 +253,12 @@ namespace Subversion
 			Boss boss = ObjectModel.Create("FileSystem");
 			var fs = boss.Get<IFileSystem>();
 			string file = fs.GetTempFile("svn blame " + Path.GetFileName(path), ".txt");
-
-			using (StreamWriter writer = new StreamWriter(file)) 
+			
+			using (StreamWriter writer = new StreamWriter(file))
 			{
 				writer.WriteLine("{0}", result.First);
 			}
-
+			
 			boss = ObjectModel.Create("Application");
 			var launcher = boss.Get<ILaunch>();
 			launcher.Launch(file, -1, -1, 1);
@@ -273,12 +273,12 @@ namespace Subversion
 			Boss boss = ObjectModel.Create("FileSystem");
 			var fs = boss.Get<IFileSystem>();
 			string file = fs.GetTempFile("svn cat " + Path.GetFileName(path), Path.GetExtension(path));
-
-			using (StreamWriter writer = new StreamWriter(file)) 
+			
+			using (StreamWriter writer = new StreamWriter(file))
 			{
 				writer.WriteLine("{0}", result.First);
 			}
-
+			
 			boss = ObjectModel.Create("Application");
 			var launcher = boss.Get<ILaunch>();
 			launcher.Launch(file, -1, -1, 1);
@@ -297,7 +297,7 @@ namespace Subversion
 					throw new InvalidOperationException(result.Second);
 			}
 		}
-
+		
 		private void DoDiff(string path)
 		{
 			var result = DoCommand("diff '{0}'", path);
@@ -307,12 +307,12 @@ namespace Subversion
 			Boss boss = ObjectModel.Create("FileSystem");
 			var fs = boss.Get<IFileSystem>();
 			string file = fs.GetTempFile("svn diff " + Path.GetFileName(path), ".diff");
-
-			using (StreamWriter writer = new StreamWriter(file)) 
+			
+			using (StreamWriter writer = new StreamWriter(file))
 			{
 				writer.WriteLine("{0}", result.First);
 			}
-
+			
 			boss = ObjectModel.Create("Application");
 			var launcher = boss.Get<ILaunch>();
 			launcher.Launch(file, -1, -1, 1);
@@ -322,11 +322,11 @@ namespace Subversion
 		{
 			if (File.Exists(path))
 				path = Path.GetDirectoryName(path);
-	
+			
 			var result = DoCommand("propget svn:ignore '{0}'", path);
 			if (!string.IsNullOrEmpty(result.Second))
 				throw new InvalidOperationException(result.Second);
-
+			
 			var getter = new GetText{Title = "Ignore List", Text = result.First};
 			string text = getter.Run();
 			if (text != null)
@@ -336,13 +336,13 @@ namespace Subversion
 					throw new InvalidOperationException(result.Second);
 			}
 		}
-
+		
 		private void DoInfo(string path)
 		{
 			var result = DoCommand("info '{0}'", path);
 			if (!string.IsNullOrEmpty(result.Second))
 				throw new InvalidOperationException(result.Second);
-
+			
 			Boss boss = ObjectModel.Create("Application");
 			var transcript = boss.Get<ITranscript>();
 			
@@ -360,12 +360,12 @@ namespace Subversion
 			Boss boss = ObjectModel.Create("FileSystem");
 			var fs = boss.Get<IFileSystem>();
 			string file = fs.GetTempFile("svn log " + Path.GetFileName(path), ".txt");
-
-			using (StreamWriter writer = new StreamWriter(file)) 
+			
+			using (StreamWriter writer = new StreamWriter(file))
 			{
 				writer.WriteLine("{0}", result.First);
 			}
-
+			
 			boss = ObjectModel.Create("Application");
 			var launcher = boss.Get<ILaunch>();
 			launcher.Launch(file, -1, -1, 1);
@@ -381,13 +381,13 @@ namespace Subversion
 			{
 				string oldDir = Path.GetDirectoryName(path);
 				string newPath = Path.Combine(oldDir, newName); 
-
+				
 				var result = DoCommand("move '{0}' '{1}'", path, newPath);
 				if (!string.IsNullOrEmpty(result.Second))
 					throw new InvalidOperationException(result.Second);
 			}
 		}
-
+		
 		private void DoRemove(string path)
 		{
 			var result = DoCommand("remove '{0}'", path);
@@ -414,7 +414,7 @@ namespace Subversion
 			var result = DoCommand("status '{0}'", path);
 			if (!string.IsNullOrEmpty(result.Second))
 				throw new InvalidOperationException(result.Second);
-
+			
 			Boss boss = ObjectModel.Create("Application");
 			var transcript = boss.Get<ITranscript>();
 			
@@ -436,5 +436,5 @@ namespace Subversion
 		private bool m_installled;
 		private Dictionary<string, Action<string>> m_commands = new Dictionary<string, Action<string>>();
 		#endregion
-	} 
-}	
+	}
+}
