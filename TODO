@@ -1,3 +1,5 @@
+https://home.comcast.net/~jesse98/public/Continuum-0.2.222.0.tar.gz
+
 BMPN - flow charts
 http://code.google.com
 http://dev.mysql.com/tech-resources/articles/why-data-modeling.html
@@ -22,19 +24,29 @@ might want a sample app
 		
 sudo mv ~/mobjc-glue.dylib /usr/local/lib/	
 
-https://home.comcast.net/~jesse98/public/Continuum-0.2.222.0.tar.gz
 				<add name = "logger" traceOutputOptions = "Timestamp" type = "Continuum.PrettyTraceListener,continuum" initializeData = "/Users/jessejones/Source/Continuum/continuum.log"/>
 
-* Do a preview release:
-	- add a couple screen shots to the web site
-	- email the group, add a link to the screen shots, include error example
-	- archive the source
-	- make sure tar-src untars OK
-	- record the revision number
-	- bump version number
+dummy := $(shell mkdir bin 2> /dev/null)
+dummy := $(shell mkdir bin/plugins 2> /dev/null)
+dummy := $(shell if [[ "$(CSC_FLAGS)" != `cat bin/csc_flags 2> /dev/null` ]]; then echo "$(CSC_FLAGS)" > bin/csc_flags; fi)
+
+Index: source/continuum/PrettyTraceListener.cs
+* Instead of killing the app fallback on stdout if the log file cannot be created.
+
+Index: make-foreshadow
+* Change the path of the log file from /tmp/continuum.log to ${here}/foreshadow.log.
+
+Index: Makefile
+* Incremented version number.
+
+* Assert: can't advance past the end of the text
 * Sccs menu can take a long time to popdown for dir windows.
 * Find in files include and exclude items should use spaces.
+* Also find in files options.
 * Glob lists need to support escaped spaces.
+* Shell regex should probably assert that text before the command is white:
+	- CpMac and config in make-foreshadow are bad
+	- make sure first command name in a file without a shebang is ok
 * Don't die if a factory pref handler throws.
 * Files should default to plain text (no styles but get rid of formatting)?
 * Make sure untitled files still preserve attributes.
@@ -63,7 +75,7 @@ https://home.comcast.net/~jesse98/public/Continuum-0.2.222.0.tar.gz
 	- handle spaces in args
 	- support line numbers via colons
 * About box needs a bit more info.
-* Use the 2.2 cecil.
+* Use the 2.2 cecil?
 * Move Continuum directory to prefs or maybe app support? Has really big files
    though so its not clear we should hide it like this.
 * Need some way to install the continuum script.
@@ -75,9 +87,12 @@ https://home.comcast.net/~jesse98/public/Continuum-0.2.222.0.tar.gz
 * Would be nice if method popup menu was sorted when option key was down.
    Maybe format can change to MyType.SomeMethod, or just SomeMethod if
    there is only one type, or just sort members under the type.
+* Would be really nice if #region pragmas worked with the method popup. Maybe
+   they can appear disabled. Probably would need to special case fields.
 * Should be able to style txt files (or maybe just rtf file).
 * Support optional word wrap.
 * Window, scroller position, word wrap should be saved in a (project) database.
+* Work on intellisense.
 * Allow utf-16 to be read.
 * Allow files to be saved in different encodings.
 * Allow files to be saved with different line endings.
@@ -386,6 +401,11 @@ https://home.comcast.net/~jesse98/public/Continuum-0.2.222.0.tar.gz
 	- run unit tests in release
 	- make sure untitled docs work OK
 	- review config file
+	- review tar targets
+	- r18 was preview1
+	- upload the new binary
+	- update the version number
+	- delete build_num
 	
 /Users/jessejones/Documents/Developer/c#.cs
 /Users/jessejones/Documents/Developer/Unix/UnixNotes.txt

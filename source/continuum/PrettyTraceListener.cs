@@ -25,7 +25,7 @@ using System.IO;
 using System.Threading;
 
 namespace Continuum	
-{    
+{
 	// Like TextWriterTraceListener except:
 	// 1) We truncate the old log file instead of appending.
 	// 2) We align the category column.
@@ -35,10 +35,10 @@ namespace Continuum
 		public PrettyTraceListener(string path) : base(DoGetStream(path), string.Empty)
 		{
 		}
-
+		
 		// This is the only Write method our logger calls.
 		public override void WriteLine(string message, string category)
-		{			
+		{
 			if (message.Length == 0)
 			{
 				WriteLine(string.Empty);
@@ -58,18 +58,38 @@ namespace Continuum
 		{
 			DoWrite("Assert: " + message, string.Empty);	// don't include details (which is normally a stack trace) because AssertListener will throw and we want the catcher to handle logging
 		}
-	
+		
 		#region Private Methods
 		private static Stream DoGetStream(string path)
 		{
 			if (path == "stdout")
 				return Console.OpenStandardOutput();
-
+			
 			else if (path == "stderr")
 				return Console.OpenStandardError();
 			
 			else
-				return new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite);
+				return DoCreateFileStream(path);
+		}
+		
+		private static Stream DoCreateFileStream(string path)
+		{
+			Stream stream;
+			
+			try
+			{
+				stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite);
+			}
+			catch (Exception e)
+			{
+				// We don't want to just roll over and die if the app is run on a machine that
+				// doesn't have the log path used by the machine it was built for.
+				Console.Error.WriteLine("Couldn't create a log for '{0}'. Using stdout instead.", path);
+				Console.Error.WriteLine(e.Message);
+				stream = Console.OpenStandardOutput();
+			}
+			
+			return stream;
 		}
 		
 		private void DoWrite(string message, string category)
@@ -87,14 +107,14 @@ namespace Continuum
 					else
 						category = Thread.CurrentThread.ManagedThreadId + " " + category;
 				}
-
+				
 				if ((TraceOutputOptions & TraceOptions.Timestamp) == TraceOptions.Timestamp)
 				{
-					TimeSpan span = DateTime.Now - m_startTime;					
+					TimeSpan span = DateTime.Now - m_startTime;
 					string time = string.Format("{0:00}:{1:00}:{2:00}.{3:0.000} ", span.Hours, span.Minutes, span.Seconds, span.Milliseconds/1000.0);
 					category = time + " " + category;
 				}
-
+				
 				m_categoryWidth = Math.Max(category.Length + 2, m_categoryWidth);
 				Write(category);
 			}

@@ -24,7 +24,7 @@ dummy := $(shell mkdir bin 2> /dev/null)
 dummy := $(shell mkdir bin/plugins 2> /dev/null)
 dummy := $(shell if [[ "$(CSC_FLAGS)" != `cat bin/csc_flags 2> /dev/null` ]]; then echo "$(CSC_FLAGS)" > bin/csc_flags; fi)
 
-base_version := 0.2.xxx.0										# major.minor.build.revision
+base_version := 0.3.xxx.0										# major.minor.build.revision
 version := $(shell ./get_version.sh $(base_version) build_num)	# this will increment the build number stored in build_num
 version := $(strip $(version))
 
@@ -91,8 +91,16 @@ update-libraries:
 	cp `pkg-config --variable=Libraries mobjc` bin
 	cp `pkg-config --variable=Libraries mcocoa` bin
 	cp `pkg-config --variable=Libraries gear` bin
+
+# This is enough to ensure that everything is rebuilt, and even more important, that
+# the config file will be portable. (We can't do a full clean because the plugin directory
+# structure is built as a side effect of evaluating the make file).
+mini-clean:
+	-rm bin/*-sources
+	-rm -rf bin/*.config
+	-rm -rf bin/*.nib
 	
-tar-bin:
+tar-bin: mini-clean app
 	tar --create --compress --file=Continuum-$(version).tar.gz \
 		README bin/Continuum.app
 
@@ -100,16 +108,24 @@ tar-src:
 	tar --create --compress --exclude \*/.svn --exclude \*/.svn/\* --file=Continuum-src-$(version).tar.gz \
 		BUILDING Dictionary.txt GOALS MIT.X11 Makefile README make-foreshadow rules.xml source
 
+# Note that it's important to delete the config files so that we run with the same environment
+# as users.
 clean:
 	-rm bin/csc_flags
 	-rm $(clean-files)
 	-rm -rf $(clean-dirs)
 	-rm -rf bin/plugins
 	-rm bin/*-sources
+	-rm -rf bin/*.config
 	-rm -rf bin/*.nib
+	-rm -rf bin/TestResult.xml
+	-rm -rf bin/test-files
+	-rm -rf bin/tests.dll
+	-rm -rf bin/tests.dll.mdb
 
 bin/continuum.exe.config:
 	@echo "generating bin/continuum.exe.config"
+	@echo "<!-- Note that make-foreshadow uses the foreshadow.exe.config file >" > bin/continuum.exe.config
 	@echo "<?xml version = \"1.0\" encoding = \"utf-8\" ?>" > bin/continuum.exe.config
 	@echo "<configuration>" >> bin/continuum.exe.config
 	@echo "	<configSections>" >> bin/continuum.exe.config
@@ -121,15 +137,15 @@ bin/continuum.exe.config:
 	@echo "	but you can change this by adding a category entry whose name is \"*\". -->" >> bin/continuum.exe.config
 	@echo "	<logger>" >> bin/continuum.exe.config
 	@echo "		<categories>" >> bin/continuum.exe.config
-	@echo "			<add name = \"App\" level = \"Verbose\"/>" >> bin/continuum.exe.config
-	@echo "			<add name = \"Database\" level = \"Info\"/>" >> bin/continuum.exe.config
+	@echo "			<add name = \"App\" level = \"Info\"/>" >> bin/continuum.exe.config
+	@echo "			<add name = \"Database\" level = \"Warning\"/>" >> bin/continuum.exe.config
 	@echo "			<add name = \"Errors\" level = \"Info\"/>" >> bin/continuum.exe.config
 	@echo "			<add name = \"FindInDatabase\" level = \"Warning\"/>" >> bin/continuum.exe.config
-	@echo "			<add name = \"ObjectModel\" level = \"Verbose\"/>" >> bin/continuum.exe.config
-	@echo "			<add name = \"Open Selection\" level = \"Info\"/>" >> bin/continuum.exe.config
-	@echo "			<add name = \"Refactor Commands\" level = \"Info\"/>" >> bin/continuum.exe.config
+	@echo "			<add name = \"ObjectModel\" level = \"Warning\"/>" >> bin/continuum.exe.config
+	@echo "			<add name = \"Open Selection\" level = \"Warning\"/>" >> bin/continuum.exe.config
+	@echo "			<add name = \"Refactor Commands\" level = \"Warning\"/>" >> bin/continuum.exe.config
 	@echo "			<add name = \"Refactor Evaluate\" level = \"Warning\"/>" >> bin/continuum.exe.config
-	@echo "			<add name = \"Startup\" level = \"Verbose\"/>" >> bin/continuum.exe.config
+	@echo "			<add name = \"Startup\" level = \"Info\"/>" >> bin/continuum.exe.config
 	@echo "			<add name = \"Styler\" level = \"Warning\"/>" >> bin/continuum.exe.config
 	@echo "		</categories>" >> bin/continuum.exe.config
 	@echo "	</logger>" >> bin/continuum.exe.config
@@ -141,10 +157,10 @@ bin/continuum.exe.config:
 	@echo "	supports the Timestamp and ThreadId traceOutputOptions. To enable these add an" >> bin/continuum.exe.config
 	@echo "	attribute like 'traceOutputOptions = \"Timestamp,ThreadId\"' to the logger element. -->" >> bin/continuum.exe.config
 	@echo "	<system.diagnostics>" >> bin/continuum.exe.config
-	@echo "		<trace autoflush = \"true\" indentsize = \"4\">	" >> bin/continuum.exe.config
+	@echo "		<trace autoflush = \"true\" indentsize = \"4\">" >> bin/continuum.exe.config
 	@echo "			<listeners>" >> bin/continuum.exe.config
 	@echo "				<remove name = \"Default\"/>" >> bin/continuum.exe.config
-	@echo "				<add name = \"logger\" type = \"Continuum.PrettyTraceListener,continuum\" initializeData = \"$(here)/continuum.log\"/>" >> bin/continuum.exe.config
+	@echo "				<add name = \"logger\" type = \"Continuum.PrettyTraceListener,continuum\" initializeData = \"/tmp/continuum.log\"/>" >> bin/continuum.exe.config
 	@echo "			</listeners>" >> bin/continuum.exe.config
 	@echo "		</trace>" >> bin/continuum.exe.config
 	@echo "	</system.diagnostics>" >> bin/continuum.exe.config
