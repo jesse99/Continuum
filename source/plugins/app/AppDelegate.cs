@@ -39,7 +39,7 @@ namespace App
 		}
 		
 		public void applicationDidFinishLaunching(NSObject notification)
-		{					
+		{
 			m_boss = ObjectModel.Create("Application");
 			m_boss.CallRepeated<IStartup>(i => i.OnStartup());
 			
@@ -52,7 +52,7 @@ namespace App
 				{
 					if (menu.numberOfItems() > 0)
 						menu.addItem(NSMenuItem.separatorItem());
-										
+					
 					var cmds = new List<string>(entry.Value);
 					cmds.Sort();
 					foreach (string command in cmds)
@@ -67,7 +67,7 @@ namespace App
 				}
 			}
 		}
-
+		
 		public void applicationDidBecomeActive(NSObject notification)
 		{
 //			Boss boss = ObjectModel.Create("TextEditorPlugin");
@@ -76,9 +76,9 @@ namespace App
 			Boss boss = ObjectModel.Create("DirectoryEditorPlugin");
 			DoReload(boss);
 		}
-
+		
 		public bool applicationShouldOpenUntitledFile(NSObject app)
-		{					
+		{
 			return false;
 		}
 		
@@ -100,7 +100,7 @@ namespace App
 				Console.WriteLine("{0}", boss);
 			}
 		}
-
+		
 		// Note that there are races in this code (e.g. another thread may
 		// release the last reference to an object before we can retain it).
 		// Also we don't always know if an object is deallocated.
@@ -113,7 +113,7 @@ namespace App
 				GC.WaitForPendingFinalizers();
 				System.Threading.Thread.Sleep(250);
 			}
-
+			
 			foreach (NSObject o in NSObject.Snapshot())
 			{
 				if (!o.IsDeallocated())
@@ -132,7 +132,7 @@ namespace App
 				else
 					Console.WriteLine("{0}", o);		// this will work if o is deallocated...
 			}
-
+			
 			Console.WriteLine(" ");
 		}
 				
@@ -145,7 +145,7 @@ namespace App
 				GC.WaitForPendingFinalizers();
 				System.Threading.Thread.Sleep(250);
 			}
-
+			
 			var dict = new Dictionary<Type, int>();
 			foreach (object o in ActiveObjects.Snapshot())
 			{
@@ -163,40 +163,40 @@ namespace App
 			Console.WriteLine(" ");
 		}
 #endif	
-
+		
 		public void appHandler(NSObject sender)
-		{		
+		{
 			int tag = (int) sender.Call("tag");
 			
 			var handler = m_boss.Get<IMenuHandler>();
 			handler.Handle(tag);
 		}
-
+		
 		public void openDir(NSObject sender)
-		{					
+		{
 			Boss boss = ObjectModel.Create("DirectoryEditorPlugin");
 			var open = boss.Get<IOpen>();
 			open.Open();
 		}
-
+		
 		public void openScripts(NSObject sender)
-		{					
+		{
 			string path = System.IO.Path.Combine(Paths.SupportPath, "scripts/standard/");
-
+			
 			NSWorkspace.sharedWorkspace().selectFile_inFileViewerRootedAtPath(
 				NSString.Create(path), NSString.Empty);
 		}
-
+		
 		public void openRefactors(NSObject sender)
-		{					
+		{
 			string path = System.IO.Path.Combine(Paths.SupportPath, "refactors/standard/");
-
+		
 			NSWorkspace.sharedWorkspace().selectFile_inFileViewerRootedAtPath(
 				NSString.Create(path), NSString.Empty);
 		}
-
+		
 		public void saveAll(NSObject sender)
-		{					
+		{
 			Boss boss = ObjectModel.Create("TextEditorPlugin");
 			var windows = boss.Get<IWindows>();
 			
@@ -206,69 +206,69 @@ namespace App
 				editor.Save();
 			}
 		}
-
+		
 		public void setPreferences(NSObject sender)
-		{					
+		{
 			if (m_prefs == null)
 				m_prefs = new PreferencesController();
-	
+			
 			m_prefs.window().makeKeyAndOrderFront(this);
 		}
-
+		
 		public void find(NSObject sender)
-		{			
+		{
 			var find = m_boss.Get<IFind>();
 			find.Find();
 		}
-
+		
 		public void findInFiles(NSObject sender)
-		{			
+		{
 			var find = m_boss.Get<IFind>();
 			find.FindInFiles();
 		}
-
+		
 		public void findAgain(NSObject sender)
-		{			
+		{
 			var find = m_boss.Get<IFind>();
 			find.FindNext();
 		}
-
+		
 		public void findPrevious(NSObject sender)
-		{			
+		{
 			var find = m_boss.Get<IFind>();
 			find.FindPrevious();
 		}
-
+		
 		public void useSelectionForFind(NSObject sender)
-		{			
+		{
 			var find = m_boss.Get<IFind>();
 			find.UseSelectionForFind();
 		}
-
+		
 		public void useSelectionForReplace(NSObject sender)
-		{			
+		{
 			var find = m_boss.Get<IFind>();
 			find.UseSelectionForReplace();
 		}
-
+		
 		public void replace(NSObject sender)
-		{			
+		{
 			var find = m_boss.Get<IFind>();
 			find.Replace();
 		}
-
+		
 		public void replaceAll(NSObject sender)
-		{			
+		{
 			var find = m_boss.Get<IFind>();
 			find.ReplaceAll();
 		}
-
+		
 		public void replaceAndFindAgain(NSObject sender)
-		{			
+		{
 			var find = m_boss.Get<IFind>();
 			find.ReplaceAndFind();
 		}
-
+		
 		public bool validateUserInterfaceItem(NSObject sender)
 		{
 			bool enabled = false;
@@ -318,8 +318,8 @@ namespace App
 			
 			return enabled;
 		}
-
-		#region Private Methods -----------------------------------------------
+		
+		#region Private Methods
 		private void DoReload(Boss boss)
 		{
 			var windows = boss.Get<IWindows>();
@@ -333,8 +333,8 @@ namespace App
 			}
 		}
 		#endregion
-
-		#region Fields --------------------------------------------------------
+		
+		#region Fields
 		private Boss m_boss;
 		private PreferencesController m_prefs;
 		#endregion
