@@ -25,7 +25,7 @@ using System.Linq;
 using System.Text;
 
 namespace Shared
-{	
+{
 	public static class StringExtensions
 	{
 		// Removes all whitespace from the string.
@@ -42,6 +42,37 @@ namespace Shared
 				result = s;			// we don't want to build a new string for the common case of no whitespace
 			
 			return result;
+		}
+		
+		// Escapes control characters and high ASCII.
+		public static string EscapeAll(this string s)
+		{
+			Trace.Assert(s != null, "s is null");
+			
+			var builder = new StringBuilder(s.Length);
+			
+			foreach (char ch in s)
+			{
+				if (ch == '\n')
+					builder.Append("\\n");
+				
+				else if (ch == '\r')
+					builder.Append("\\r");
+				
+				else if (ch == '\t')
+					builder.Append("\\t");
+				
+				else if (ch < ' ')
+					builder.AppendFormat("\\x{0:X2}", (int) ch);
+				
+				else if (ch > '~')
+					builder.AppendFormat("\\x{0:X4}", (int) ch);
+				
+				else
+					builder.Append(ch);
+			}
+			
+			return builder.ToString();
 		}
 		
 		#region Private Methods		
@@ -63,5 +94,5 @@ namespace Shared
 		#region Fields		
 		private static char[] ms_whitespace = new char[]{' ', '\t', '\n', '\r'};
 		#endregion
-	} 
+	}
 }

@@ -251,9 +251,9 @@ namespace TextEditor
 			}
 			
 			// Add entries for any remaining lines.
-			while (offset + 1 < m_text.Length)
+			while (offset < m_text.Length)
 			{
-				if (m_text[offset] == '\r' && m_text[offset + 1] == '\n')
+				if (offset + 1 < m_text.Length && m_text[offset] == '\r' && m_text[offset + 1] == '\n')
 				{
 					offset += 2;
 					if (offset <= m_text.Length)

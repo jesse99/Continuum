@@ -96,6 +96,10 @@ tar-bin:
 	tar --create --compress --file=Continuum-$(version).tar.gz \
 		README bin/Continuum.app
 
+tar-src:
+	tar --create --compress --exclude \*/.svn --exclude \*/.svn/\* --file=Continuum-src-$(version).tar.gz \
+		BUILDING Dictionary.txt GOALS MIT.X11 Makefile README make-foreshadow rules.xml source
+
 clean:
 	-rm bin/csc_flags
 	-rm $(clean-files)

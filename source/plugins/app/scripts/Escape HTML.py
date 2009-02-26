@@ -11,3 +11,4 @@ def processLine(line):
 
 for line in fileinput.input():
 	processLine(line)
+NSWindow.h

@@ -41,6 +41,7 @@ namespace App
 		public void applicationDidFinishLaunching(NSObject notification)
 		{
 			m_boss = ObjectModel.Create("Application");
+			Log.WriteLine(TraceLevel.Verbose, "Startup", "invoking IStartup");
 			m_boss.CallRepeated<IStartup>(i => i.OnStartup());
 			
 			// Initialize the Sccs menu.
@@ -66,13 +67,15 @@ namespace App
 					item.autorelease();
 				}
 			}
+			Log.WriteLine(TraceLevel.Verbose, "Startup", "initialized Sccs menu");
 		}
 		
 		public void applicationDidBecomeActive(NSObject notification)
 		{
+			Log.WriteLine(TraceLevel.Verbose, "Startup", "applicationDidBecomeActive");
 //			Boss boss = ObjectModel.Create("TextEditorPlugin");
 //			DoReload(boss);
-
+			
 			Boss boss = ObjectModel.Create("DirectoryEditorPlugin");
 			DoReload(boss);
 		}
@@ -93,7 +96,7 @@ namespace App
 		
 #if DEBUG
 		public void dumpBosses(NSObject sender)
-		{			
+		{
 			Boss[] bosses = Boss.GetBosses();
 			foreach (Boss boss in bosses)
 			{
@@ -126,7 +129,7 @@ namespace App
 					
 						string details = o.ToString("D", null);
 						Console.WriteLine("   {0}", details.Length < 480 ? details : details.Substring(0, 480));
-					}					
+					}
 //					o.release();
 				}
 				else
@@ -135,9 +138,9 @@ namespace App
 			
 			Console.WriteLine(" ");
 		}
-				
+		
 		public void dumpActiveObjects(NSObject sender)
-		{			
+		{
 //			Call("collectGarbage:", this);
 			for (int i = 0; i < 4; ++i)
 			{

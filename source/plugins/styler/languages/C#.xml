@@ -2,7 +2,7 @@
 	<comment>// .* $</comment>
 	<comment>/\* (?: . | \r | \n)*? \*/</comment>		<!-- note that comments do not nest -->
 	<keyword>\b(?: abstract | event | new | struct | as | explicit | null | switch | base | extern | object | this | bool | false | operator | throw | break | finally | out | true | byte | fixed | override | try | case | float | params | typeof | catch | for | private | uint | char | foreach | protected | ulong | checked | goto | public | unchecked | class | if | readonly | unsafe | const | implicit | ref | ushort | continue | in | return | using | decimal | int | sbyte | virtual | default | interface | sealed | volatile | delegate | internal | short | void | do | is | sizeof | while | double | lock | stackalloc | else | long | static | enum | namespace | string)\b</keyword>
-	<keyword>\b(?: by | on | ascending | descending | from | get | group | into | join | let | orderby | partial | partial | select | set | value | var | where | where | yield )\b</keyword>	<!-- context sensitive keywords -->
+	<keyword>\b(?: by | on | ascending | descending | from | get | group | into | join | let | orderby | partial | partial | select | set | var | where | where | yield )\b</keyword>	<!-- context sensitive keywords -->
 	<number>(?&lt;= \W) \d+ \. \d+ (?: [eE] [\+-]? \d+)? [FfDdMm]? (?= \W)</number>
 	<number>(?&lt;= \W) \. \d+ (?: [eE] [\+-]? \d+)? [FfDdMm]? (?= \W)</number>
 	<number>(?&lt;= \W) \d+ [eE] [\+-]? \d+ [FfDdMm]? (?= \W)</number>

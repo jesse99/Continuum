@@ -22,18 +22,19 @@ might want a sample app
 		
 sudo mv ~/mobjc-glue.dylib /usr/local/lib/	
 
-* Work on a preview:
-	- add a tar-bin target
-	- make sure the binary works with no files/prefs
-	- send a binary to duanne with verbose logging enabled
-	- check in mobjc
-	- check in continuum
-* Update build number?
-* New cecil.
-* Should value be a c# keyword?
-* Shell language should not use other2 for built-ins.
+https://home.comcast.net/~jesse98/public/Continuum-0.2.222.0.tar.gz
+				<add name = "logger" traceOutputOptions = "Timestamp" type = "Continuum.PrettyTraceListener,continuum" initializeData = "/Users/jessejones/Source/Continuum/continuum.log"/>
+
+* Do a preview release:
+	- add a couple screen shots to the web site
+	- email the group, add a link to the screen shots, include error example
+	- archive the source
+	- make sure tar-src untars OK
+	- record the revision number
+	- bump version number
 * Sccs menu can take a long time to popdown for dir windows.
 * Find in files include and exclude items should use spaces.
+* Glob lists need to support escaped spaces.
 * Don't die if a factory pref handler throws.
 * Files should default to plain text (no styles but get rid of formatting)?
 * Make sure untitled files still preserve attributes.
@@ -71,6 +72,9 @@ sudo mv ~/mobjc-glue.dylib /usr/local/lib/
 * Do a release.
    
 * Add support for auto backing up files. keepBackupFile
+* Would be nice if method popup menu was sorted when option key was down.
+   Maybe format can change to MyType.SomeMethod, or just SomeMethod if
+   there is only one type, or just sort members under the type.
 * Should be able to style txt files (or maybe just rtf file).
 * Support optional word wrap.
 * Window, scroller position, word wrap should be saved in a (project) database.

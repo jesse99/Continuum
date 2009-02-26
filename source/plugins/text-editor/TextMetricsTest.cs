@@ -27,7 +27,7 @@ using Shared;
 using System;
 
 [TestFixture]
-public class TextMetricsTest 	
+public class TextMetricsTest
 {	
 	[TestFixtureSetUp]
 	public void Init()
@@ -36,7 +36,7 @@ public class TextMetricsTest
 	}
 	
 	[Test]
-	public void TestCol()
+	public void CheckCol()
 	{
 		Assert.AreEqual(1, DoGetCol(string.Empty, 0));
 		
@@ -44,16 +44,16 @@ public class TextMetricsTest
 		Assert.AreEqual(2, DoGetCol("foo", 1));
 		Assert.AreEqual(3, DoGetCol("foo", 2));
 		Assert.AreEqual(4, DoGetCol("foo", 3));
-
+		
 		Assert.AreEqual(3, DoGetCol("hi\nthere", 2));
 		Assert.AreEqual(1, DoGetCol("hi\nthere", 3));
 		Assert.AreEqual(2, DoGetCol("hi\nthere", 4));
-
+		
 		Assert.AreEqual(2, DoGetCol("hi\rthere", 4));
 	}
 	
 	[Test]
-	public void TestLine()
+	public void CheckLine()
 	{
 		Assert.AreEqual(1, DoGetLine(string.Empty, 0));
 		
@@ -61,7 +61,7 @@ public class TextMetricsTest
 		Assert.AreEqual(1, DoGetLine("foo", 1));
 		Assert.AreEqual(1, DoGetLine("foo", 2));
 		Assert.AreEqual(1, DoGetLine("foo", 3));
-
+		
 		Assert.AreEqual(1, DoGetLine("hi\nthere", 2));
 		Assert.AreEqual(2, DoGetLine("hi\nthere", 3));
 		Assert.AreEqual(2, DoGetLine("hi\nthere", 4));
@@ -73,7 +73,7 @@ public class TextMetricsTest
 	}
 	
 	[Test]
-	public void TestBalance()
+	public void CheckBalance()
 	{
 		Assert.AreEqual(new NSRange(0, 0), DoBalance("hello", 2, 0));
 		
@@ -102,7 +102,7 @@ public class TextMetricsTest
 		Assert.AreEqual(new NSRange(0, 10), DoBalance("(foo(bar))", 6,  4));
 		
 		Assert.AreEqual(new NSRange(0, 0), DoBalance("(hey[hey)", 4, 5));
-
+		
 		string text = "x(string text, NSRange range)y";
 		int first = text.IndexOf("(");
 		int last = text.IndexOf(")");
@@ -111,7 +111,7 @@ public class TextMetricsTest
 	}
 	
 	[Test]
-	public void TestBalanceLeft()
+	public void CheckBalanceLeft()
 	{
 		Assert.AreEqual(-2, DoBalanceLeft("hello", 2));
 		
@@ -120,11 +120,11 @@ public class TextMetricsTest
 		Assert.AreEqual(-1, DoBalanceLeft("(hey))", 5));
 		Assert.AreEqual(0, DoBalanceLeft("((hey))", 6));
 		Assert.AreEqual(1, DoBalanceLeft("((hey))", 5));
-
+		
 		Assert.AreEqual(-1, DoBalanceLeft("((hey)]", 6));
 		Assert.AreEqual(-1, DoBalanceLeft("([hey)]", 6));
 		Assert.AreEqual(0, DoBalanceLeft("[(hey)]", 6));
-
+		
 		Assert.AreEqual(0, DoBalanceLeft("[]", 1));
 	}
 	
@@ -134,19 +134,19 @@ public class TextMetricsTest
 		TextMetrics metrics = new TextMetrics(text);
 		return metrics.BalanceLeft(text, index);
 	}
-
+		
 	private NSRange DoBalance(string text, int index, int len)
 	{
 		TextMetrics metrics = new TextMetrics(text);
 		return metrics.Balance(text, new NSRange(index, len));
 	}
-
+		
 	private int DoGetCol(string text, int index)
 	{
 		TextMetrics metrics = new TextMetrics(text);
 		return metrics.GetCol(index);
 	}
-
+		
 	private int DoGetLine(string text, int index)
 	{
 		TextMetrics metrics = new TextMetrics(text);
