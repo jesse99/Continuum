@@ -25,7 +25,7 @@ using NUnit.Framework;
 using System;
 
 [TestFixture]
-public sealed class CsScannerTest 	
+public sealed class CsScannerTest
 {	
 	[TestFixtureSetUp]
 	public void Init()
@@ -34,7 +34,7 @@ public sealed class CsScannerTest
 	}
 	
 	[Test]
-	public void Basics()	
+	public void Basics()
 	{
 		string text = @"using System.IO;
 	 	
@@ -43,7 +43,7 @@ protected override Tuple2<NSMenu, int> GetScriptsLocation()
 }
 	
 ";
-		var scanner = new CsScanner(text); 
+		var scanner = new CsScanner(text);
 		Assert.AreEqual("using", scanner.Token.Text());
 		scanner.Advance(); Assert.AreEqual("System", scanner.Token.Text());
 		Assert.AreEqual(1, scanner.Token.Line);
@@ -70,7 +70,7 @@ protected override Tuple2<NSMenu, int> GetScriptsLocation()
 	}
 	
 	[Test]
-	public void String()	
+	public void String()
 	{
 		string text = "foo \"hmm\" xx \"aa { \" ";
 		var scanner = new CsScanner(text); Assert.AreEqual("foo", scanner.Token.Text());
@@ -100,13 +100,13 @@ text
 		scanner.Advance(); Assert.AreEqual(TokenKind.Invalid, scanner.Token.Kind);
 
 		text = "aa @\"bb\"\"cc\" dd";
-		scanner = new CsScanner(text); 
+		scanner = new CsScanner(text);
 		Assert.AreEqual("aa", scanner.Token.Text());
 		
-		scanner.Advance(); 
+		scanner.Advance();
 		Assert.AreEqual("\"bb\"\"cc\"", scanner.Token.Text());
 
-		scanner.Advance(); 
+		scanner.Advance();
 		Assert.AreEqual("dd", scanner.Token.Text());
 	}
 	
@@ -122,22 +122,22 @@ text
 		scanner.Advance(); Assert.AreEqual(TokenKind.Invalid, scanner.Token.Kind);
 
 		text = "'\\t' '\\x21' '\\u0041' '\"' '\\\\' ";
-		scanner = new CsScanner(text); 
+		scanner = new CsScanner(text);
 		Assert.AreEqual("'\\t'", scanner.Token.Text()); Assert.AreEqual(TokenKind.Char, scanner.Token.Kind);
 
-		scanner.Advance(); 
+		scanner.Advance();
 		Assert.AreEqual("'\\x21'", scanner.Token.Text()); Assert.AreEqual(TokenKind.Char, scanner.Token.Kind);
 
-		scanner.Advance(); 
+		scanner.Advance();
 		Assert.AreEqual("'\\u0041'", scanner.Token.Text()); Assert.AreEqual(TokenKind.Char, scanner.Token.Kind);
 
-		scanner.Advance(); 
+		scanner.Advance();
 		Assert.AreEqual("'\"'", scanner.Token.Text()); Assert.AreEqual(TokenKind.Char, scanner.Token.Kind);
 
-		scanner.Advance(); 
+		scanner.Advance();
 		Assert.AreEqual(@"'\\'", scanner.Token.Text()); Assert.AreEqual(TokenKind.Char, scanner.Token.Kind);
 
-		scanner.Advance(); 
+		scanner.Advance();
 		Assert.AreEqual(TokenKind.Invalid, scanner.Token.Kind);
 	}
 	
@@ -169,19 +169,19 @@ is a comment */
 	{
 		string text = @"alpha _beta @gamma";
 		
-		var scanner = new CsScanner(text); 
+		var scanner = new CsScanner(text);
 		Assert.AreEqual("alpha", scanner.Token.Text());
 		Assert.AreEqual(TokenKind.Identifier, scanner.Token.Kind);
 				
-		scanner.Advance(); 
+		scanner.Advance();
 		Assert.AreEqual("_beta", scanner.Token.Text());
 		Assert.AreEqual(TokenKind.Identifier, scanner.Token.Kind);
 		
-		scanner.Advance(); 
+		scanner.Advance();
 		Assert.AreEqual("gamma", scanner.Token.Text());
 		Assert.AreEqual(TokenKind.Identifier, scanner.Token.Kind);
 		
-		scanner.Advance(); 
+		scanner.Advance();
 		Assert.AreEqual(TokenKind.Invalid, scanner.Token.Kind);
 	}
 	
@@ -191,11 +191,11 @@ is a comment */
 	{
 		string text = @"alpha  epsi\u006Con";
 		
-		var scanner = new CsScanner(text); 
+		var scanner = new CsScanner(text);
 		Assert.AreEqual("alpha", scanner.Token.Text());
 		Assert.AreEqual(TokenKind.Identifier, scanner.Token.Kind);
 				
-		scanner.Advance(); 
+		scanner.Advance();
 	}
 }
 #endif	// TEST
