@@ -30,12 +30,52 @@ dummy := $(shell mkdir bin 2> /dev/null)
 dummy := $(shell mkdir bin/plugins 2> /dev/null)
 dummy := $(shell if [[ "$(CSC_FLAGS)" != `cat bin/csc_flags 2> /dev/null` ]]; then echo "$(CSC_FLAGS)" > bin/csc_flags; fi)
 
+* Work on globs:
+	- exiting glob code that splits on ; needs to use Globs.Split
+	- also string.Join
+	- fix prefs
+* Glob lists need to support escaped spaces.
 * Find in files include and exclude items should use spaces.
 * Also find in files options.
-* Glob lists need to support escaped spaces.
 * Shell regex should probably assert that text before the command is white:
 	- CpMac and config in make-foreshadow are bad
 	- make sure first command name in a file without a shebang is ok
+* Would be nice if method popup menu was sorted when option key was down.
+   Maybe format can change to MyType.SomeMethod, or just SomeMethod if
+   there is only one type, or just sort members under the type.
+* Would be really nice if #region pragmas worked with the method popup. Maybe
+   they can appear disabled. Probably would need to special case fields.
+* Work on tab completion:
+	- three versions target, call, and arg completion
+	- target shows all locals, args, fields, this methods
+	- call shows all methods of the target (but only if editing at the end of a name)
+	- arg shows most locals, args, fields for an arg position
+	- use a table in a floating window
+	- part that matches current text is in blue, currently selected item is in bold,
+	  text that will be inserted is underlined
+	- need to be able to get locals and args even if the method won't parse completely
+	- only get locals which are lexically before the current selection (probably want to
+	  ignore scope, at least for now)
+	- need to check access and visibility
+	- need to be able to get the type of var locals for new expressions and simple
+	  (possibly generic) calls
+	- show like eight items at a time
+	- up and down arrows move the selection
+	- command arrow goes to top or bottom
+	- home selects best match?
+	- return/tab inserts text
+	- arg completion should show the method signature as the first (disabled) item
+	- arg completion should attempt to prune what it shows, eg if the arg expects
+	  a (non-generic?) value type we don't have to show any other value types
+	- escape hides the window? when do we show it again? when the identifier being
+	  edited starts at a different offset?
+	- should the insert be a new undo command?
+	- window needs to move if the main window is scrolled
+	- window should hide when the app is deactivated
+	- can we show the comments for the selection? maybe in a second window? or
+	   maybe some sort of context help window that can also be shown if the text 
+	   window selection is within a method?
+* Do a new preview. Add a screenshot showing the three completion windows.
 * Don't die if a factory pref handler throws.
 * Files should default to plain text (no styles but get rid of formatting)?
 * Make sure untitled files still preserve attributes.
@@ -73,12 +113,8 @@ dummy := $(shell if [[ "$(CSC_FLAGS)" != `cat bin/csc_flags 2> /dev/null` ]]; th
 * Do a release.
    
 * Add support for auto backing up files. keepBackupFile
-* Would be nice if method popup menu was sorted when option key was down.
-   Maybe format can change to MyType.SomeMethod, or just SomeMethod if
-   there is only one type, or just sort members under the type.
-* Would be really nice if #region pragmas worked with the method popup. Maybe
-   they can appear disabled. Probably would need to special case fields.
 * Should be able to style txt files (or maybe just rtf file).
+* Need to do something with the spelling and grammar menu.
 * Support optional word wrap.
 * Window, scroller position, word wrap should be saved in a (project) database.
 * Work on intellisense.

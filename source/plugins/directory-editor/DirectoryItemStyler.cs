@@ -101,7 +101,7 @@ namespace DirectoryEditor
 				m_fileColors[i - 1] = NSUnarchiver.unarchiveObjectWithData(data).To<NSColor>().Retain();
 				
 				string globs = defaults.stringForKey(NSString.Create(m_path + "-files" + i + " globs")).description();
-				m_fileGlobs[i - 1] = globs.Split(new char[]{' '}, StringSplitOptions.RemoveEmptyEntries);
+				m_fileGlobs[i - 1] = Glob.Split(globs);
 			}
 		}
 		

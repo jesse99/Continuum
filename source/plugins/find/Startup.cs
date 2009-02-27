@@ -29,9 +29,9 @@ using System.Diagnostics;
 namespace Find
 {
 	internal sealed class Startup : IStartup
-	{			
+	{
 		public void Instantiated(Boss boss)
-		{	
+		{
 			m_boss = boss;
 		}
 		
@@ -39,25 +39,25 @@ namespace Find
 		{
 			get {return m_boss;}
 		}
-
+		
 		// Note that we do not want to use IFactoryPrefs here because we don't set
 		// these in the main pref window.
 		public void OnStartup()
 		{
 			NSMutableDictionary dict = NSMutableDictionary.Create();
-
+			
 			NSMutableArray dirs = NSMutableArray.Create();
 			foreach (string path in DefaultDirs)
 			{
 				dirs.addObject(NSString.Create(path));
 			}
 			dict.setObject_forKey(dirs, NSString.Create("default find directories"));
-
+			
 			dict.setObject_forKey(NSString.Create(DefaultInclude), NSString.Create("default include glob"));
-
+			
 			dict.setObject_forKey(NSString.Create(AlwaysExclude), NSString.Create("always exclude globs"));
-
-			NSUserDefaults.standardUserDefaults().registerDefaults(dict);		
+			
+			NSUserDefaults.standardUserDefaults().registerDefaults(dict);	
 		}
 		
 		internal static readonly string[] DefaultDirs = new string[]
@@ -66,12 +66,12 @@ namespace Find
 			"/System/Library/Frameworks/Foundation.framework/Versions/C/Headers",
 		};
 		
-		internal const string DefaultInclude = "*.cs;*.h;*.m";
-
-		internal const string AlwaysExclude = ".*;*.app;*.dll;*.dylib;*.exe;*.gif;*.icns;*.jpeg;*.jpg;*.mdb;*.nib;*.pdb;*.X11";
-				
-		#region Fields --------------------------------------------------------
+		internal const string DefaultInclude = "*.cs *.h *.m";
+			
+		internal const string AlwaysExclude = ".* *.app *.dll *.dylib *.exe *.gif *.icns *.jpeg *.jpg *.mdb *.nib *.pdb *.X11";
+		
+		#region Fields
 		private Boss m_boss;
 		#endregion
-	} 
+	}
 }

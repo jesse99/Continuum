@@ -469,12 +469,12 @@ namespace DirectoryEditor
 			
 			// ignored targets
 			string key = Path + "-ignored targets";
-			string value = string.Join(" ", m_ignoredTargets);
+			string value = Glob.Join(m_ignoredTargets);
 			defaults.setObject_forKey(NSString.Create(value), NSString.Create(key));
 			
 			// ignored targets
 			key = Path + "-ignored items";
-			value = string.Join(" ", m_ignoredItems);
+			value = Glob.Join(m_ignoredItems);
 			defaults.setObject_forKey(NSString.Create(value), NSString.Create(key));
 			
 			// default target
@@ -491,13 +491,13 @@ namespace DirectoryEditor
 			string key = path + "-ignored targets";
 			NSString value = defaults.stringForKey(NSString.Create(key)).To<NSString>();
 			if (!NSObject.IsNullOrNil(value))
-				m_ignoredTargets = value.description().Split(' ');
+				m_ignoredTargets = Glob.Split(value.description());		// these aren't globs but they are split the same way
 			
 			// ignored items
 			key = path + "-ignored items";
 			value = defaults.stringForKey(NSString.Create(key)).To<NSString>();
 			if (!NSObject.IsNullOrNil(value))
-				m_ignoredItems = value.description().Split(' ');
+				m_ignoredItems = Glob.Split(value.description());
 			else
 				m_ignoredItems = new string[]{".*", "*.o", "*.pyc", "MIT.X11", "CVS"};
 			

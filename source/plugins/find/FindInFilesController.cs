@@ -34,9 +34,9 @@ namespace Find
 	internal sealed class FindInFilesController : BaseFindController
 	{
 		public FindInFilesController() : base(NSObject.AllocNative("FindInFilesController"), "find-in-files")
-		{		
+		{
 			Unused.Value = window().setFrameAutosaveName(NSString.Create("find in files window"));
-
+			
 			m_include = new IBOutlet<NSString>(this, "include");
 			m_exclude = new IBOutlet<NSString>(this, "exclude");
 			
@@ -47,17 +47,17 @@ namespace Find
 			this.willChangeValueForKey(NSString.Create("includeList"));
 			NSMutableArray includes = NSMutableArray.Create();
 			includes.addObject(defaultIncludes);
-			includes.addObject(NSString.Create("Makefile;Makefile.am;*.make;*.mk"));	// TODO: might want some sort of pref for these
-			includes.addObject(NSString.Create("*.h;*.m"));
-			includes.addObject(NSString.Create("*.xml;*.xsd;*.config;*.plist"));
+			includes.addObject(NSString.Create("Makefile Makefile.am *.make *.mk"));	// TODO: might want some sort of pref for these
+			includes.addObject(NSString.Create("*.h *.m"));
+			includes.addObject(NSString.Create("*.xml *.xsd *.config *.plist"));
 			m_includeList.Value = includes;
 			this.didChangeValueForKey(NSString.Create("includeList"));
-
+			
 			m_excludeList = new IBOutlet<NSMutableArray>(this, "excludeList");
 			this.willChangeValueForKey(NSString.Create("excludeList"));
 			m_excludeList.Value = NSMutableArray.Create();
 			this.didChangeValueForKey(NSString.Create("excludeList"));
-
+			
 			m_dirPopup = new IBOutlet<NSPopUpButton>(this, "dirPopup");	// pulldown buttons probably look a bit better but I was never able to get them working correctly
 			string dir = DoGetDirectory();
 			AddDefaultDirs();
@@ -66,17 +66,17 @@ namespace Find
 				NSString name = NSString.Create(dir);
 				m_dirPopup.Value.addItemWithTitle(name);
 				m_dirPopup.Value.setTitle(name);
-			}				
+			}
 			
 			this.willChangeValueForKey(NSString.Create("include"));
 			m_include.Value = defaultIncludes;
 			this.didChangeValueForKey(NSString.Create("include"));
-
+			
 			this.addObserver_forKeyPath_options_context(
 				this, NSString.Create("include"), 0, IntPtr.Zero);
 			this.addObserver_forKeyPath_options_context(
 				this, NSString.Create("exclude"), 0, IntPtr.Zero);
-
+			
 			Broadcaster.Register("opened directory", this, this.DoDirOpened);
 		}
 		
@@ -88,21 +88,21 @@ namespace Find
 			
 			string dir = Directory.description();
 			
- 			Re re = new Re
- 			{
- 				UseRegex = UseRegex, 
- 				CaseSensitive = CaseSensitive, 
- 				MatchWords = MatchWords, 
- 				WithinText = WithinText,
- 			};
-
+			Re re = new Re
+			{
+				UseRegex = UseRegex,
+				CaseSensitive = CaseSensitive,
+				MatchWords = MatchWords,
+				WithinText = WithinText,
+			};
+			
 			var findAll = new FindAll(dir, re.Make(FindText), Include, AllExcludes());
 			findAll.Title = string.Format("Find '{0}'", FindText);
 			findAll.Run();
-						
+			
 			Unused.Value = new FindResultsController(findAll);		// FindResultsController will handle retain counts and references
 		}
-				
+		
 		public void replaceAll(NSObject sender)
 		{
 			Unused.Value = sender;
@@ -111,14 +111,14 @@ namespace Find
 			
 			string dir = Directory.description();
 			
- 			Re re = new Re
- 			{
- 				UseRegex = UseRegex, 
- 				CaseSensitive = CaseSensitive, 
- 				MatchWords = MatchWords, 
- 				WithinText = WithinText,
- 			};
-
+			Re re = new Re
+			{
+				UseRegex = UseRegex,
+				CaseSensitive = CaseSensitive,
+				MatchWords = MatchWords,
+				WithinText = WithinText,
+			};
+			
 			var replaceAll = new ReplaceAll(dir, re.Make(FindText), ReplaceText, Include, AllExcludes());
 			replaceAll.Title = string.Format("Replacing '{0}' with '{1}'.", FindText, ReplaceText);
 			replaceAll.Run();
@@ -135,7 +135,7 @@ namespace Find
 			panel.setCanChooseDirectories(true);
 			panel.setAllowsMultipleSelection(false);
 			panel.setCanCreateDirectories(false);
-
+			
 			int result = panel.runModalForDirectory_file_types(null, null, null);
 			if (result == Enums.NSOKButton && panel.filenames().count() == 1)
 			{
@@ -160,7 +160,7 @@ namespace Find
 			m_dirPopup.Value.addItemsWithTitles(dirs);
 		}
 		
-		#region Protected Methods ---------------------------------------------
+		#region Protected Methods
 		private void DoDirOpened(string name, object b)
 		{
 			Boss boss = (Boss) b;
@@ -176,8 +176,8 @@ namespace Find
 		protected override void OnUpdateLists()
 		{
 			base.OnUpdateLists();
-
-			NSString name = NSString.Create(string.Join(";", Include));
+			
+			NSString name = NSString.Create(Glob.Join(Include));
 			if (name.length() > 0 && !m_includeList.Value.containsObject(name))	
 			{
 				this.willChangeValueForKey(NSString.Create("includeList"));
@@ -185,8 +185,8 @@ namespace Find
 				
 				this.didChangeValueForKey(NSString.Create("includeList"));
 			}
-
-			name = NSString.Create(string.Join(";", Exclude));
+			
+			name = NSString.Create(Glob.Join(Exclude));
 			if (name.length() > 0 && !m_excludeList.Value.containsObject(name))	
 			{
 				this.willChangeValueForKey(NSString.Create("excludeList"));
@@ -196,35 +196,35 @@ namespace Find
 			}
 		}
 		#endregion
-
-		#region Private Methods -----------------------------------------------
+		
+		#region Private Methods
 		private NSString Directory
 		{
 			get {return m_dirPopup.Value.title();}
-			set 
+			set
 			{
 				m_dirPopup.Value.addItemWithTitle(value);
 				m_dirPopup.Value.setTitle(value);
-
+				
 				OnEnableButtons();
 			}
 		}
-
+		
 		private string[] Include
 		{
-			get 
+			get
 			{	
 				string text = !NSObject.IsNullOrNil(m_include.Value) ? m_include.Value.description() : string.Empty;
-				return text.Split(new char[]{';'}, StringSplitOptions.RemoveEmptyEntries);
+				return Glob.Split(text);
 			}
 		}
-
+		
 		private string[] Exclude
 		{
-			get 
+			get
 			{	
 				string text = !NSObject.IsNullOrNil(m_exclude.Value) ? m_exclude.Value.description() : string.Empty;
-				return text.Split(new char[]{';'}, StringSplitOptions.RemoveEmptyEntries);
+				return Glob.Split(text);
 			}
 		}
 		
@@ -235,8 +235,8 @@ namespace Find
 			
 			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
 			string text = defaults.stringForKey(NSString.Create("always exclude globs")).description();
-			string[] globs = text.Split(new char[]{';'}, StringSplitOptions.RemoveEmptyEntries);
-
+			string[] globs = Glob.Split(text);
+			
 			foreach (string glob in globs)
 			{
 				excludes.Add(glob);
@@ -282,7 +282,7 @@ namespace Find
 		}
 		#endregion
 		
-		#region Fields --------------------------------------------------------
+		#region Fields
 		private IBOutlet<NSString> m_include;
 		private IBOutlet<NSString> m_exclude;
 		private IBOutlet<NSMutableArray> m_includeList;

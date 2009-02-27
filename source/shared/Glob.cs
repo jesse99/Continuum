@@ -21,6 +21,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Shared
 {
@@ -44,6 +45,39 @@ namespace Shared
 			int result = fnmatch(glob, name, flags);
 			
 			return result == 0;
+		}
+		
+		// Splits a list of globs separated by spaces with optional escaping of embeded spaces.
+		public static string[] Split(string inGlobs)
+		{
+			string globs = inGlobs.Replace("\\ ", Constants.Replacement);
+			
+			string[] result = globs.Split(new char[]{' '}, StringSplitOptions.RemoveEmptyEntries);
+			if (globs.Length != inGlobs.Length)
+			{
+				for (int i = 0; i < result.Length; ++i)
+				{
+					result[i] = result[i].Replace(Constants.Replacement, " ");
+				}
+			}
+			
+			return result;
+		}
+		
+		// Returns the globs as a space separated list with embedded spaces escaped.
+		public static string Join(string[] globs)
+		{
+			var result = new StringBuilder(3*globs.Length);
+			
+			for (int i = 0; i < globs.Length; ++i)
+			{
+				result.Append(globs[i].Replace(" ", "\\ "));
+				
+				if (i + 1 < globs.Length)
+					result.Append(' ');
+			}
+			
+			return result.ToString();
 		}
 		
 		[DllImport("libc")]

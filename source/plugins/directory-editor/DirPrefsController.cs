@@ -45,11 +45,11 @@ namespace DirectoryEditor
 			m_dir = dir;
 			
 			// set ignored targets
-			string s = string.Join(" ", m_dir.IgnoredTargets);
+			string s = Glob.Join(m_dir.IgnoredTargets);
 			m_ignoredTargets.Value.setStringValue(NSString.Create(s));
 			
 			// set ignored items
-			s = string.Join(" ", m_dir.IgnoredItems);
+			s = Glob.Join(m_dir.IgnoredItems);
 			m_ignoredItems.Value.setStringValue(NSString.Create(s));
 			
 			// set path color
@@ -85,11 +85,11 @@ namespace DirectoryEditor
 			
 			// save ignored targets
 			string s = m_ignoredTargets.Value.stringValue().description();
-			m_dir.IgnoredTargets = s.Split(new char[]{' '}, StringSplitOptions.RemoveEmptyEntries);
+			m_dir.IgnoredTargets = Glob.Split(s);
 			
 			// save ignored items
 			s = m_ignoredItems.Value.stringValue().description();
-			m_dir.IgnoredItems = s.Split(new char[]{' '}, StringSplitOptions.RemoveEmptyEntries);
+			m_dir.IgnoredItems = Glob.Split(s);
 			
 			// save path color
 			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();

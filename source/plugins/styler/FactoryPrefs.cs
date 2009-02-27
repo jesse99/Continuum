@@ -103,9 +103,9 @@ namespace Styler
 						if (grandchild.Name == "Glob")
 						{
 							string language = grandchild.Attributes["language"].Value;
-							string globs = grandchild.InnerText;
+							string[] globs = Glob.Split(grandchild.InnerText);
 							
-							foreach (string glob in globs.Split(new char[]{' '}, StringSplitOptions.RemoveEmptyEntries))
+							foreach (string glob in globs)
 							{
 								NSString key = NSString.Create(glob);
 								if (NSObject.IsNullOrNil(dict.objectForKey(key)))

@@ -57,13 +57,44 @@ namespace App
 				menu.removeItemAtIndex(index);
 			}
 		}
-
+		
 		protected override Tuple2<NSMenu, int> GetScriptsLocation()
 		{
 			NSApplication app = NSApplication.sharedApplication();
 			NSMenu menu = app.Call("refactorMenu").To<NSMenu>();
 			
 			return Tuple.Make(menu, 0);
+		}
+		
+		protected override bool IsEnabled()
+		{
+			// Only enable refactors if the main window is a text window,
+			Boss boss = ObjectModel.Create("TextEditorPlugin");
+			var windows = boss.Get<IWindows>();
+			boss = windows.Main();
+			
+			// and it's for C#.
+			bool enabled = false;
+			if (boss != null)
+			{
+				var editor = boss.Get<ITextEditor>();
+				string fileName = System.IO.Path.GetFileName(editor.Path);
+				
+				boss = ObjectModel.Create("Stylers");
+				if (boss.Has<IFindLanguage>())
+				{
+					var find = boss.Get<IFindLanguage>();
+					while (find != null && !enabled)
+					{
+						Boss language = find.Find(fileName);
+						enabled = language.Name == "CsLanguage";
+						
+						find = boss.GetNext<IFindLanguage>(find);
+					}
+				}
+			}
+			
+			return enabled;
 		}
 		
 		protected override void Execute(int index)
@@ -184,9 +215,9 @@ namespace App
 			}
 		}
 		#endregion
-
+		
 		#region Fields
 		private Dictionary<string, Action<Boss>> m_refactors = new Dictionary<string, Action<Boss>>();
 		#endregion
-	} 
+	}
 }
