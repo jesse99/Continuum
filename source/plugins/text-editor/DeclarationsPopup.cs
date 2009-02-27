@@ -23,6 +23,7 @@ using MCocoa;
 using MObjc;
 using Shared;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
@@ -35,6 +36,7 @@ namespace TextEditor
 		{
 			setTarget(this);
 			setAction("selectedItemChanged:");
+			setAutoenablesItems(false);
 			
 			ActiveObjects.Add(this);
 		}
@@ -45,6 +47,18 @@ namespace TextEditor
 			
 			m_controller = controller;
 			m_getter = getter;
+		}
+		
+		public new void mouseDown(NSEvent e)
+		{
+			if ((e.modifierFlags() & Enums.NSAlternateKeyMask) != 0)
+			{
+				DoBuildUsingNamesOrder();
+				SuperCall("mouseDown:", e);
+				DoBuildUsingOffsetsOrder();
+			}
+			else
+				SuperCall("mouseDown:", e);
 		}
 		
 		public void textSelectionChanged()
@@ -70,7 +84,7 @@ namespace TextEditor
 		
 		public void selectedItemChanged(NSObject sender)
 		{
-			Declaration d = m_declarations[indexOfSelectedItem()];
+			Declaration d = m_indexTable[indexOfSelectedItem()];
 			
 			int begin = d.Extent.location;
 			int count = 0;
@@ -95,23 +109,103 @@ namespace TextEditor
 				
 				m_declarations = m_getter.Get(m_controller.Text, runs, globals);
 				
-				string[] names = (from d in m_declarations select d.Name).ToArray();
-				
-				// NSPopUpButton wants all the menu items to be unique so we'll
-				// fix up the names here.
-				for (int i = 0; i < names.Length - 1; ++i)
-				{
-					for (int j = i + 1; j < names.Length; ++j)
-					{
-						if (names[i] == names[j])
-							names[j] += Constants.ZeroWidthSpace;
-					}
-				}
-				
-				var items = NSArray.Create(names.ToArray());
-				removeAllItems();
-				addItemsWithTitles(items);
+				DoBuildUsingOffsetsOrder();
 			}
+		}
+		
+		private void DoBuild(IList<Declaration> declarations)
+		{
+			string[] names = (from d in declarations select d.Name).ToArray();
+			
+			// NSPopUpButton wants all the menu items to be unique so we'll
+			// fix up the names here.
+			for (int i = 0; i < names.Length - 1; ++i)
+			{
+				for (int j = i + 1; j < names.Length; ++j)
+				{
+					if (names[i] == names[j])
+						names[j] += Constants.ZeroWidthSpace;
+				}
+			}
+			
+			removeAllItems();
+			m_indexTable.Clear();
+			
+			for (int i = 0; i < declarations.Count; ++i)
+			{
+				var dict = NSMutableDictionary.Create();
+				
+				NSFont font = NSFont.systemFontOfSize(NSFont.smallSystemFontSize());
+				dict.setObject_forKey(font, Externs.NSFontAttributeName);
+				
+				if (declarations[i].IsType)
+					dict.setObject_forKey(NSNumber.Create(-5.0f), Externs.NSStrokeWidthAttributeName);
+				
+				addItemWithTitle(NSString.Empty);
+				NSMenuItem item = itemAtIndex(i);
+				item.setAttributedTitle(NSAttributedString.Create(names[i], dict));
+				
+				if (declarations[i].IsDirective)
+					item.setEnabled(false);
+				
+				m_indexTable.Add(i, declarations[i]);
+			}
+		}
+		
+		private void DoBuildUsingOffsetsOrder()
+		{
+			DoBuild(m_declarations);
+		}
+		
+		private int DoCountSpaces(string s)
+		{
+			int count = 0;
+			
+			for (int i = 0; i < s.Length && s[i] == ' '; ++i)
+				++count;
+				
+			return count;
+		}
+		
+		private void DoBuildUsingNamesOrder()
+		{
+			var items = (from d in m_declarations where !d.IsDirective select new QualifiedName(d.Name, d)).ToList();
+			
+			// Sort the items by building a full name consisting of whatever it is declared under
+			// plus the item name.
+			for (int i = 0; i < items.Count - 1; ++i)
+			{
+				Trace.Assert(DoCountSpaces(items[i].Name) == 0, items[i].Name + " is indented");
+				
+				int numSpaces = DoCountSpaces(items[i + 1].Name);
+				for (int j = i + 1; j < items.Count && items[j].Name.Length > 0 && items[j].Name[0] == ' '; ++j)
+				{
+					items[j].Prefix += items[i].Name + ".";
+					items[j].Name = items[j].Name.Substring(numSpaces);
+				}
+			}
+			
+			items.Sort((lhs, rhs) =>lhs.FullName.CompareTo(rhs.FullName));
+			var declarations = (from d in items select d.Declaration).ToArray();
+			
+			DoBuild(declarations);
+		}
+		#endregion
+		
+		#region Private Types
+		private sealed class QualifiedName
+		{
+			public QualifiedName(string name, Declaration d)
+			{
+				Prefix = string.Empty;
+				Name = name;
+				Declaration = d;
+			}
+			
+			public string Prefix {get; set;}
+			public string Name {get; set;}
+			public string FullName {get {return Prefix + Name;}}
+			public Declaration Declaration {get; private set;}
 		}
 		#endregion
 		
@@ -119,6 +213,7 @@ namespace TextEditor
 		private TextController m_controller;
 		private IDeclarations m_getter;
 		private Declaration[] m_declarations = new Declaration[0];
+		private Dictionary<int, Declaration> m_indexTable = new Dictionary<int, Declaration>();
 		#endregion
 	}
 }

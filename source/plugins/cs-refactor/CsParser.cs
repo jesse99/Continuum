@@ -553,7 +553,7 @@ namespace CsRefactor
 					throw;
 			}
 			
-			return new CsGlobalNamespace(new CsBody("<globals>", m_text.Length), attrs.ToArray(), externs.ToArray(), aliases.ToArray(), uses.ToArray(), namespaces.ToArray(), members.ToArray(), types.ToArray(), last.Offset + last.Length);
+			return new CsGlobalNamespace(m_scanner.Preprocess, new CsBody("<globals>", m_text.Length), attrs.ToArray(), externs.ToArray(), aliases.ToArray(), uses.ToArray(), namespaces.ToArray(), members.ToArray(), types.ToArray(), last.Offset + last.Length);
 		}
 			
 		// constant-declaration:

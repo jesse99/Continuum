@@ -30,21 +30,14 @@ dummy := $(shell mkdir bin 2> /dev/null)
 dummy := $(shell mkdir bin/plugins 2> /dev/null)
 dummy := $(shell if [[ "$(CSC_FLAGS)" != `cat bin/csc_flags 2> /dev/null` ]]; then echo "$(CSC_FLAGS)" > bin/csc_flags; fi)
 
-* Work on globs:
-	- exiting glob code that splits on ; needs to use Globs.Split
-	- also string.Join
-	- fix prefs
-* Glob lists need to support escaped spaces.
-* Find in files include and exclude items should use spaces.
-* Also find in files options.
-* Shell regex should probably assert that text before the command is white:
-	- CpMac and config in make-foreshadow are bad
-	- make sure first command name in a file without a shebang is ok
-* Would be nice if method popup menu was sorted when option key was down.
-   Maybe format can change to MyType.SomeMethod, or just SomeMethod if
-   there is only one type, or just sort members under the type.
 * Would be really nice if #region pragmas worked with the method popup. Maybe
    they can appear disabled. Probably would need to special case fields.
+   - remove these when sorting by name
+   - expose CsPreprocess to refactor?
+   - maybe some refactor methods can look for stuff like #region Fields
+* Find in files is not working for the locked files.
+* Why does short form say Declaration is in mscorlib?
+* Build a new foreshadow. Probably need to manually update some glob prefs.
 * Work on tab completion:
 	- three versions target, call, and arg completion
 	- target shows all locals, args, fields, this methods
@@ -69,6 +62,7 @@ dummy := $(shell if [[ "$(CSC_FLAGS)" != `cat bin/csc_flags 2> /dev/null` ]]; th
 	  a (non-generic?) value type we don't have to show any other value types
 	- escape hides the window? when do we show it again? when the identifier being
 	  edited starts at a different offset?
+	- need to handle extension methods too
 	- should the insert be a new undo command?
 	- window needs to move if the main window is scrolled
 	- window should hide when the app is deactivated
@@ -89,6 +83,7 @@ dummy := $(shell if [[ "$(CSC_FLAGS)" != `cat bin/csc_flags 2> /dev/null` ]]; th
 * Might want a Make IEnumerable refactor.
 * mono root finder may not be correct.
 * Need a preference for Type.GetFieldName
+* Get parse errors for show base class. Maybe use an rtf format instead of cs.
 * Handle languages like scripts.
 	- TODO could go here
 	- should be able to override built in languages

@@ -48,8 +48,9 @@ namespace Styler
 			
 			if (globals != null)
 			{
-				DoGetDecs(globals, string.Empty, decs);
-			
+				DoGetDeclarations(globals, string.Empty, decs);
+				DoGetDirectives(globals.Preprocess, decs);
+				
 				decs.Sort((lhs, rhs) => lhs.Extent.location.CompareTo(rhs.Extent.location));
 			}
 			
@@ -59,14 +60,57 @@ namespace Styler
 		#region Private Methods
 		private const string IndentLevel = "    ";
 		
-		private void DoGetDecs(CsTypeScope scope, string indent, List<Declaration> decs)
+		private Declaration DoFindDeclaration(List<Declaration> decs, int offset)
+		{
+			Declaration d = new Declaration();
+			
+			foreach (Declaration candidate in decs)
+			{
+				if (candidate.Extent.Intersects(offset))
+					d = candidate;						// note that we want to keep going so we get the innermost declaration that intersects the offset
+			}
+			
+			return d;
+		}
+		
+		private int DoCountSpaces(string s)
+		{
+			int count = 0;
+			
+			for (int i = 0; i < s.Length && s[i] == ' '; ++i)
+				++count;
+				
+			return count;
+		}
+				
+		private void DoGetDirectives(CsPreprocess[] preprocess, List<Declaration> decs)
+		{
+			foreach (CsPreprocess p in preprocess)
+			{
+				if (p.Name == "region")
+				{
+					string name = p.Text;
+					
+					Declaration d = DoFindDeclaration(decs, p.Offset);
+					if (d.Name != null)
+						name = IndentLevel + new string(' ', DoCountSpaces(d.Name)) + name;
+					
+					decs.Add(new Declaration(
+						name,
+						new NSRange(p.Offset, p.Length),
+						false, true));
+				}
+			}
+		}
+		
+		private void DoGetDeclarations(CsTypeScope scope, string indent, List<Declaration> decs)
 		{
 			CsNamespace ns = scope as CsNamespace;
 			if (ns != null)
 			{
 				foreach (CsNamespace n in ns.Namespaces)
 				{
-					DoGetDecs(n, indent, decs);
+					DoGetDeclarations(n, indent, decs);
 				}
 				
 				foreach (CsDelegate d in ns.Delegates)
@@ -74,7 +118,7 @@ namespace Styler
 					decs.Add(new Declaration(
 						indent + "delegate " + d.Name,
 						new NSRange(d.Offset, d.Length),
-						true));
+						true, false));
 				}
 				
 				foreach (CsEnum e in ns.Enums)
@@ -82,12 +126,12 @@ namespace Styler
 					decs.Add(new Declaration(
 						indent + "enum " + e.Name,
 						new NSRange(e.Offset, e.Length),
-						true));
+						true, false));
 				}
 				
 				foreach (CsType nested in scope.Types)
 				{
-					DoGetDecs(nested, indent, decs);
+					DoGetDeclarations(nested, indent, decs);
 				}
 			}
 			else
@@ -96,7 +140,7 @@ namespace Styler
 				decs.Add(new Declaration(
 					indent + DoGetTypePrefix(type) + type.Name,
 					new NSRange(type.Offset, type.Length),
-					true));
+					true, false));
 					
 				string[] names = (from m in type.Members select DoGetShortName(m)).ToArray();
 				for (int i = 0; i < names.Length - 1; ++i)
@@ -121,12 +165,12 @@ namespace Styler
 						decs.Add(new Declaration(
 							indent + IndentLevel + names[i],
 							new NSRange(type.Members[i].Offset, type.Members[i].Length),
-							false));
+							false, false));
 				}
 				
 				foreach (CsType nested in scope.Types)
 				{
-					DoGetDecs(nested, indent + IndentLevel, decs);
+					DoGetDeclarations(nested, indent + IndentLevel, decs);
 				}
 			}
 		}

@@ -2,12 +2,14 @@
 # Copies the Continuum app and renames it Foreshadow so we can more easily
 # work on Continuum as we use it.
 here=`pwd`
+contents=bin/Foreshadow.app/Contents
+resources=bin/Foreshadow.app/Contents/Resources
 
 rm -rf bin/Foreshadow.app &&
 /Developer/Tools/CpMac -r bin/Continuum.app bin/Foreshadow.app &&
-mv bin/Foreshadow.app/Contents/Resources/continuum.exe bin/Foreshadow.app/Contents/Resources/foreshadow.exe &&
-mv bin/Foreshadow.app/Contents/Resources/continuum.exe.mdb bin/Foreshadow.app/Contents/Resources/foreshadow.exe.mdb &&
-mv bin/Foreshadow.app/Contents/Resources/continuum.exe.config bin/Foreshadow.app/Contents/Resources/foreshadow.exe.config &&
-sed -i '' "s|/tmp/continuum.log|${here}/foreshadow.log|g" bin/Foreshadow.app/Contents/Resources/foreshadow.exe.config &&
-sed -i '' "s/continuum/foreshadow/g" bin/Foreshadow.app/Contents/MacOS/launcher &&
-sed -i '' "s/Continuum/Foreshadow/g" bin/Foreshadow.app/Contents/Info.plist
+mv ${resources}/continuum.exe ${resources}/foreshadow.exe &&
+mv ${resources}/continuum.exe.mdb ${resources}/foreshadow.exe.mdb &&
+mv ${resources}/continuum.exe.config ${resources}/foreshadow.exe.config &&
+sed -i '' "s|/tmp/continuum.log|${here}/foreshadow.log|g" ${resources}/foreshadow.exe.config &&
+sed -i '' "s/continuum/foreshadow/g" ${contents}/MacOS/launcher &&
+sed -i '' "s/Continuum/Foreshadow/g" ${contents}/Info.plist

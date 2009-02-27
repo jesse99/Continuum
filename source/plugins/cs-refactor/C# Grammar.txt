@@ -382,6 +382,7 @@ skipped-characters:
 
 not-number-sign:
     Any input-character except  #
+
 pp-diagnostic:
      whitespace?   #   whitespace?   error   pp-message
      whitespace?   #   whitespace?   warning   pp-message
@@ -427,6 +428,7 @@ pragma-body:
 pragma-warning-body:
     warning   whitespace   warning-action
     warning   whitespace   warning-action   whitespace   warning-list
+
 warning-action:
     disable
     restore

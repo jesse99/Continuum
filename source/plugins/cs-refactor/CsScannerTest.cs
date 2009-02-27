@@ -22,6 +22,7 @@
 #if TEST
 using CsRefactor;
 using NUnit.Framework;
+using Shared;
 using System;
 
 [TestFixture]
@@ -194,8 +195,36 @@ is a comment */
 		var scanner = new CsScanner(text);
 		Assert.AreEqual("alpha", scanner.Token.Text());
 		Assert.AreEqual(TokenKind.Identifier, scanner.Token.Kind);
-				
+		
 		scanner.Advance();
+	}
+	
+	[Test]
+	public void Preprocess()
+	{
+		string text = "alpha\n#region Your Name Here	\n#define Foo\n#endif\n#endregion\n";
+		
+		var scanner = new CsScanner(text);
+		Assert.AreEqual("alpha", scanner.Token.Text());
+		Assert.AreEqual(TokenKind.Identifier, scanner.Token.Kind);
+		
+		scanner.Advance();
+		Assert.AreEqual(TokenKind.Invalid, scanner.Token.Kind);
+		
+		CsPreprocess[] preprocess = scanner.Preprocess;
+		Assert.AreEqual(4, preprocess.Length);
+		
+		Assert.AreEqual("region", preprocess[0].Name);
+		Assert.AreEqual("Your Name Here", preprocess[0].Text);
+		
+		Assert.AreEqual("define", preprocess[1].Name);
+		Assert.AreEqual("Foo", preprocess[1].Text);
+		
+		Assert.AreEqual("endif", preprocess[2].Name);
+		Assert.AreEqual("", preprocess[2].Text);
+		
+		Assert.AreEqual("endregion", preprocess[3].Name);
+		Assert.AreEqual("", preprocess[3].Text);
 	}
 }
 #endif	// TEST

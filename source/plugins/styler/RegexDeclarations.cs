@@ -53,7 +53,7 @@ namespace Styler
 					decs.Add(new Declaration(
 						text.Substring(run.Offset, run.Length),	
 						new NSRange(run.Offset, run.Length),
-						true));
+						true, false));
 					indent = "    ";
 				}
 				else if (run.Type == StyleType.Member)
@@ -61,7 +61,7 @@ namespace Styler
 					decs.Add(new Declaration(
 						indent + text.Substring(run.Offset, run.Length),
 						new NSRange(run.Offset, run.Length),
-						false));
+						false, false));
 				}
 			}
 			

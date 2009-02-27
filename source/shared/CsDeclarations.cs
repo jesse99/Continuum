@@ -232,15 +232,19 @@ namespace Shared
 	
 	public sealed class CsGlobalNamespace : CsNamespace
 	{
-		public CsGlobalNamespace(CsBody body, CsAttribute[] attrs, CsExternAlias[] externs, CsUsingAlias[] aliases, CsUsingDirective[] uses, CsNamespace[] namespaces, CsMember[] members, CsType[] types, int length) : base(body, "<globals>", externs, aliases, uses, namespaces, members, types, 0, length, 1)
+		public CsGlobalNamespace(CsPreprocess[] preprocess, CsBody body, CsAttribute[] attrs, CsExternAlias[] externs, CsUsingAlias[] aliases, CsUsingDirective[] uses, CsNamespace[] namespaces, CsMember[] members, CsType[] types, int length) : base(body, "<globals>", externs, aliases, uses, namespaces, members, types, 0, length, 1)
 		{
 			Trace.Assert(attrs != null, "attrs is null");
+			Trace.Assert(preprocess != null, "preprocess is null");
 			
 			Attributes = attrs;
+			Preprocess = preprocess;
 		}
 		
 		// Target will be "assembly" or "module".
 		public CsAttribute[] Attributes {get; private set;}
+		
+		public CsPreprocess[] Preprocess {get; private set;}
 	}
 	
 	// int this[int x] {get; set;}
@@ -543,8 +547,35 @@ namespace Shared
 		{
 			return Name;
 		}
-	} 
-
+	}
+	
+	// #region Private methods
+	public sealed class CsPreprocess : CsDeclaration
+	{
+		public CsPreprocess(string name, string text, int offset, int length, int line) : base(offset, length, line)
+		{
+			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
+			Trace.Assert(text != null, "text is null");
+			
+			Name = name;
+			Text = text.Trim();
+		}
+		
+		// Will be define, undef, if, elif, else, endif, line, error, warning, region, 
+		// endregion, or pragma.
+		public string Name {get; private set;}
+		
+		// Will not be null, but may be empty for directives like #else.  Will not 
+		// have leading or trailing spaces but some directives (like #if) may have
+		// interior spaces.
+		public string Text {get; private set;}
+		
+		public override string ToString()
+		{
+			return Name + " " + Text;
+		}
+	}
+	
 	// int Age {get; set;}
 	public sealed class CsProperty : CsMember
 	{
@@ -567,7 +598,7 @@ namespace Shared
 			GetterBody = getterBody;
 			SetterBody = setterBody;
 		}
-
+		
 		// Will be something like "int" or "Dictionary<KEY,VALUE>". Note that the type will 
 		// not have any whitespace.
 		public string ReturnType {get; private set;}

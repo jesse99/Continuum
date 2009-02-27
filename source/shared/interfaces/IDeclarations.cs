@@ -27,11 +27,12 @@ namespace Shared
 {
 	public struct Declaration
 	{
-		public Declaration(string name, NSRange extent, bool isType)
+		public Declaration(string name, NSRange extent, bool isType, bool isDir)
 		{
 			Name = name;
 			Extent = extent;
 			IsType = isType;
+			IsDirective = isDir;
 		}
 		
 		public string Name {get; private set;}
@@ -39,12 +40,14 @@ namespace Shared
 		public NSRange Extent {get; private set;}
 		
 		public bool IsType {get; private set;}
+		
+		public bool IsDirective {get; private set;}
 	}
-	
+		
 	// Optional interface on language bosses.
 	public interface IDeclarations : IInterface
 	{
-		// Returns all the declarations in the text. Note that this will return as
+		// Returns most of the declarations in the text. Note that this will return as
 		// many declarations as possible even for malformed text. 
 		Declaration[] Get(string text, StyleRun[] runs, CsGlobalNamespace globals);
 	}

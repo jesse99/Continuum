@@ -19,7 +19,9 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Shared;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.Serialization;
@@ -104,6 +106,13 @@ namespace CsRefactor
 			Debug.Assert(Token.Kind != TokenKind.Invalid, "can't advance past the end of the text");
 		
 			fixed (char* buffer = m_text) DoAdvance(buffer);
+		}
+		
+		// Returns all of the preprocessing directives that have been encountered
+		// so far. 
+		public CsPreprocess[] Preprocess
+		{
+			get {return m_preprocess.ToArray();}
 		}
 		
 		#region Private Methods
@@ -478,10 +487,14 @@ namespace CsRefactor
 				case "endregion":
 				case "pragma":
 					// body  pp-new-line
+					int bodyIndex = m_index;
 					while (Current != '\n' && Current != '\r' && Current != '\x00')
 					{
 						++m_index;
 					}
+
+					string body = m_text.Substring(bodyIndex, m_index - bodyIndex);
+					m_preprocess.Add(new CsPreprocess(name, body, oldIndex, m_index - oldIndex, m_line));
 					break;
 				
 				default:
@@ -557,6 +570,7 @@ namespace CsRefactor
 		private int m_index;
 		private int m_line = 1;
 		private Token m_token;
+		private List<CsPreprocess> m_preprocess = new List<CsPreprocess>();
 		#endregion
 	}
 }
