@@ -33,15 +33,15 @@ namespace CsRefactor
 		public CsScannerException()
 		{
 		}
-
-		public CsScannerException(string text) : base(text) 
+		
+		public CsScannerException(string text) : base(text)
 		{
 		}
-
-		public CsScannerException(string format, params object[] args) : base(string.Format(format, args)) 
+		
+		public CsScannerException(string format, params object[] args) : base(string.Format(format, args))
 		{
 		}
-
+		
 		public CsScannerException(string text, Exception inner) : base (text, inner)
 		{
 		}
@@ -51,7 +51,7 @@ namespace CsRefactor
 		{
 		}
 	}
-		
+	
 	internal sealed unsafe class CsScanner
 	{
 		public CsScanner(string text)	 : this(text, 0)
@@ -61,7 +61,7 @@ namespace CsRefactor
 		public CsScanner(string text, int offset)
 		{
 			m_text = text + '\x00';		// scanning is easier and faster with a sentinel value
-			m_index = offset;		
+			m_index = offset;
 			fixed (char* buffer = m_text) DoAdvance(buffer);
 		}
 		
@@ -81,7 +81,7 @@ namespace CsRefactor
 			int oldLine = m_line;
 			Token oldToken = m_token;
 			
-			fixed (char* buffer = m_text) 
+			fixed (char* buffer = m_text)
 			{
 				while (delta-- > 0 && Token.Kind != TokenKind.Invalid)
 				{
@@ -102,10 +102,10 @@ namespace CsRefactor
 		public void Advance()
 		{
 			Debug.Assert(Token.Kind != TokenKind.Invalid, "can't advance past the end of the text");
-
+		
 			fixed (char* buffer = m_text) DoAdvance(buffer);
 		}
-
+		
 		#region Private Methods
 		// This is a bottleneck for the parser so it's important that it be fast.
 		// Using a pointer should be pretty fast, but other possibilities are
@@ -115,12 +115,12 @@ namespace CsRefactor
 		{
 			get {return m_buffer[m_index];}	// unsafe code so that we can avoid range checkes
 		}
-
+		
 		private char Next
 		{
 			get {return m_buffer[m_index + 1];}
 		}
-				
+		
 		private void DoAdvance(char* buffer)
 		{
 			m_buffer = buffer;
@@ -137,7 +137,7 @@ namespace CsRefactor
 				else
 					break;
 			}
-							
+			
 			// identifier
 			if (DoIsLetter(Current) || Current == '_')
 			{
@@ -148,38 +148,38 @@ namespace CsRefactor
 				++m_index;
 				DoScanIdentifier();
 			}
-							
+			
 			// char
 			else if (Current == '\'')
 			{
 				DoScanChar();
 			}
-				
+			
 			// string 
 			else if (Current == '"')
 			{
 				DoScanString();
 			}
-				
+			
 			// verbatim string
 			else if (Current == '@' && Next == '"')
 			{
 				DoScanVerbatimString();
 			}
-				
+			
 			// eof
 			else if (Current == '\x00')
 			{
 				m_token = new Token(m_text, m_token.Line);
 				++m_index;
 			}
-				
+			
 			// catch all
 			else
 			{
 				m_token = new Token(m_text, m_index, 1, m_line, TokenKind.Other);
 				++m_index;
-			}			
+			}
 		}
 		
 		// character-literal:
@@ -207,7 +207,7 @@ namespace CsRefactor
 		{
 			int offset = m_index;
 			++m_index;
-	
+			
 			while (Current != '\'' && Current != '\x00')
 			{
 				if (Current == '\\' && Next == '\\')
@@ -216,7 +216,7 @@ namespace CsRefactor
 					++m_index;
 				++m_index;
 			}
-						
+			
 			if (Current == '\'')
 			{
 				++m_index;
@@ -245,7 +245,7 @@ namespace CsRefactor
 		{
 			int offset = m_index;
 			++m_index;
-	
+			
 			while (Current != '"' && Current != '\n' && Current != '\r' && Current != '\x00')
 			{
 				if (Current == '\\' && Next == '\\')
@@ -285,7 +285,7 @@ namespace CsRefactor
 			int line = m_line;
 			m_index = m_index + 2;
 			int offset = m_index - 1;
-	
+			
 			while (Current != '\x00')
 			{
 				if (char.IsWhiteSpace(Current))
@@ -299,7 +299,7 @@ namespace CsRefactor
 				else
 					++m_index;
 			}
-						
+			
 			if (Current == '"')
 			{
 				++m_index;
@@ -334,7 +334,7 @@ namespace CsRefactor
 			{
 				++m_index;
 			}
-		
+			
 			m_token = new Token(m_text, offset, m_index - offset, m_line, TokenKind.Identifier);
 		}
 		
@@ -360,7 +360,7 @@ namespace CsRefactor
 			
 			return false;
 		}
-
+		
 		// identifier-part-character:
 		//      letter-character
 		//      decimal-digit-character
@@ -387,7 +387,7 @@ namespace CsRefactor
 		{
 			if (char.IsLetterOrDigit(Current) || Current == '_')	// fast path
 				return true;
-								
+			
 			if (Current == '\\' && (Next == 'u' || Next == 'U'))
 				throw new CsScannerException("Line {0} has a unicode escape in an identifier which the parser does not support.", m_line);
 				
@@ -404,7 +404,7 @@ namespace CsRefactor
 			
 			return false;
 		}
-
+		
 		// whitespace:
 		//     Any character with Unicode class Zs
 		//     Horizontal tab character (U+0009)
@@ -441,26 +441,26 @@ namespace CsRefactor
 					break;
 			}
 		}
-
+		
 		// '#'   whitespace?   name   body  pp-new-line		
 		private bool DoSkipPreprocessor()
 		{
 			// '#'
 			int oldIndex = m_index++;
-
+			
 			// whitespace?
 			while (Current == '\t' || Current == '\x0B' || Current == '\x0C' || char.GetUnicodeCategory(Current) == UnicodeCategory.SpaceSeparator)
 			{
 				++m_index;
 			}
-
+			
 			// name
 			int offset = m_index;
 			while (DoIsIdentifierPartChar())	
 			{
 				++m_index;
 			}
-
+			
 			bool matched = true;
 			string name = m_text.Substring(offset, m_index - offset);
 			switch (name)
@@ -485,7 +485,7 @@ namespace CsRefactor
 					break;
 				
 				default:
-					m_index = oldIndex; 
+					m_index = oldIndex;
 					matched = false;
 					break;
 			}
@@ -546,17 +546,17 @@ namespace CsRefactor
 					++m_index;
 				}
 			}
-						
+			
 			throw new CsScannerException("Expected a terminating '*/' for line {0}", line);
 		}
 		#endregion
-
+		
 		#region Fields 
 		private string m_text;
 		private char* m_buffer;
 		private int m_index;
 		private int m_line = 1;
-		private Token m_token; 
+		private Token m_token;
 		#endregion
-	} 
+	}
 }
