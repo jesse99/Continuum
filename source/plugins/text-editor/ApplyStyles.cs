@@ -154,7 +154,7 @@ namespace TextEditor
 		// messes up the m_appliedSet optimization so we keep track of where the first edit
 		// was.
 		public void EditedRange(NSRange range)
-		{	
+		{
 			m_editStart = Math.Min(range.location, m_editStart);
 		}
 		
@@ -203,16 +203,34 @@ namespace TextEditor
 			{
 				m_origin = origin;
 				
-				m_workSet.Sort((lhs, rhs) =>				// note that the sort time appears to be insigificant compared to the setAttributes_range time
+				m_workSet.Sort((lhs, rhs) =>			// note that the sort time appears to be insigificant compared to the setAttributes_range time
 				{
+					// In general we want the runs which are closest to the origin to appear at the end.
 					int ldist = Math.Min(Math.Abs(lhs.Offset - m_origin), Math.Abs(lhs.Offset + lhs.Length - m_origin));
 					int rdist = Math.Min(Math.Abs(rhs.Offset - m_origin), Math.Abs(rhs.Offset + rhs.Length - m_origin));
 					
-					int result = rdist.CompareTo(ldist);					// we want runs closest to the selection at the end
+					return rdist.CompareTo(ldist);
+				});
+				
+				// However we also want interior runs to appear before the runs they are within so their
+				// styles overlay the styles of the runs they are within. It seems tricky to do this with
+				// one sort and not violate transitivity so we use two sorts (the second should be quite
+				// fast since the list should already be mostly sorted).
+				m_workSet.StableSort((lhs, rhs) =>
+				{
+					int result = 0;
 					
-					if (result == 0)
-						result = lhs.Length.CompareTo(rhs.Length);	// we want the larger runs towards the ends
-						
+					if (lhs.Type == StyleType.Type || lhs.Type == StyleType.Member)
+					{
+						if (rhs.Type != StyleType.Type && rhs.Type != StyleType.Member)
+							result = -1;
+					}
+					else if (rhs.Type == StyleType.Type || rhs.Type == StyleType.Member)
+					{
+						if (lhs.Type != StyleType.Type && lhs.Type != StyleType.Member)
+							result = +1;
+					}
+					
 					return result;
 				});
 			}
@@ -340,7 +358,7 @@ namespace TextEditor
 					m_storage.addAttribute_value_range(Externs.NSUnderlineStyleAttributeName, NSNumber.Create(2), range);
 					m_storage.addAttribute_value_range(Externs.NSUnderlineColorAttributeName, ms_errorColor, range);
 					break;
-								
+				
 				default:
 					Trace.Fail("Bad style type: " + run.Type);
 					break;

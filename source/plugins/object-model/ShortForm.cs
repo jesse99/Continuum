@@ -43,6 +43,8 @@ namespace ObjectModel
 		{
 			TypeDefinition original = null;
 			
+			m_assembly = null;
+			
 			string name = fullName;
 			while (name != null)
 			{
@@ -112,7 +114,7 @@ namespace ObjectModel
 				if ((attrs & TypeAttributes.Sealed) == TypeAttributes.Sealed)
 					result += "sealed ";
 			}
-						
+			
 			switch (attrs & TypeAttributes.ClassSemanticMask)
 			{
 				case TypeAttributes.Class:
@@ -145,7 +147,8 @@ namespace ObjectModel
 				type = assembly.MainModule.Types[fullName];
 				if (type != null)
 				{
-					m_assembly = path;
+					if (m_assembly == null)
+						m_assembly = path;
 					DoGetMembers(type, includeCtors);
 					break;
 				}
@@ -193,7 +196,7 @@ namespace ObjectModel
 						m_writer.WriteLine(indent2);
 				}
 			}
-						
+			
 			// events
 			if (m_events.Count > 0)
 			{
@@ -424,7 +427,7 @@ namespace ObjectModel
 		private string DoGetQualifiedTypeName(TypeReference type, bool useAlias)
 		{
 			var builder = new StringBuilder();
-
+			
 			builder.Append(DoGetTypeName(type, useAlias));
 			
 			if (type.HasGenericParameters)
@@ -686,7 +689,7 @@ namespace ObjectModel
 						builder.Append("out ");
 					else
 						builder.Append("ref ");
-
+					
 					tname = tname.Remove(tname.Length - 1);
 				}
 				
@@ -727,7 +730,7 @@ namespace ObjectModel
 		}
 		
 		private string DoGetShortName(TypeReference type)
-		{			
+		{
 			string tname = type.FullName;
 			if (tname.EndsWith("&"))
 				tname = tname.Remove(tname.Length - 1);
@@ -801,7 +804,7 @@ namespace ObjectModel
 					builder.Append("sealed ");
 			}
 		}
-
+		
 		private void DoGetFieldModifiers(StringBuilder builder, FieldAttributes attrs)
 		{
 			switch (attrs & FieldAttributes.FieldAccessMask)
@@ -876,7 +879,7 @@ namespace ObjectModel
 				Access = access;
 				Text = text;
 				Key = key.Name;
-
+				
 				for (int i = 0; i < key.Parameters.Count; ++i)
 				{
 					Key += key.Parameters[i].ParameterType.FullName;
@@ -885,16 +888,16 @@ namespace ObjectModel
 			
 			// E.g. "FullPath".
 			public string Name {get; private set;}
-
+			
 			public MethodAttributes Access {get; private set;}
-
+			
 			// E.g. "internal  string FullPath {get;}".
 			public string Text {get; private set;}
-
+			
 			public string Key {get; private set;}
 		}
 		#endregion
-
+		
 		#region Fields
 		private Boss m_boss;
 		private TextWriter m_writer;
@@ -906,7 +909,7 @@ namespace ObjectModel
 		private List<Member> m_staticMethods = new List<Member>();
 		private List<Member> m_instanceMethods = new List<Member>();
 		private List<Member> m_fields = new List<Member>();
-
+		
 		private static Dictionary<string, string> ms_aliases = new Dictionary<string, string>
 		{
 			{"System.Boolean", "bool"},
@@ -942,7 +945,7 @@ namespace ObjectModel
 			{"System.UInt32[]", "uint[]"},
 			{"System.UInt64[]", "ulong[]"},
 			{"System.Void[]", "void[]"},
-		}; 
+		};
 		#endregion
 	}
 }	

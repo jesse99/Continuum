@@ -204,6 +204,11 @@ namespace Find
 		}
 		
 		#region Protected Methods
+		protected override NSFileHandle OnOpenFile(string path)	// threaded
+		{
+			return NSFileHandle.fileHandleForReadingAtPath(NSString.Create(path));
+		}
+		
 		protected override string OnProcessFile(string file, string text)	// threaded
 		{
 			MatchCollection matches = m_regex.Matches(text);

@@ -19,6 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using MCocoa;
 using Shared;
 using System;
 using System.Text.RegularExpressions;
@@ -35,6 +36,11 @@ namespace Find
 		}
 		
 		#region Protected Methods
+		protected override NSFileHandle OnOpenFile(string path)	// threaded
+		{
+			return NSFileHandle.fileHandleForUpdatingAtPath(NSString.Create(path));
+		}
+		
 		protected override string OnProcessFile(string file, string text)	// threaded
 		{
 			return m_regex.Replace(text, m_replacement);

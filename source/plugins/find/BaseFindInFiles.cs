@@ -89,6 +89,8 @@ namespace Find
 		}
 		
 		#region Protected Methods
+		protected abstract NSFileHandle OnOpenFile(string path);	// threaded
+		
 		protected abstract string OnProcessFile(string file, string text);	// threaded
 		#endregion
 		
@@ -233,7 +235,7 @@ namespace Find
 			
 			try
 			{
-				var handle = NSFileHandle.fileHandleForUpdatingAtPath(NSString.Create(file));	// note that this will work even if the file is locked (but writeData will fail)
+				NSFileHandle handle = OnOpenFile(file);
 				NSData data = handle.readDataToEndOfFile();
 				
 				Boss boss = ObjectModel.Create("TextEditorPlugin");

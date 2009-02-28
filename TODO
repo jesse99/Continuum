@@ -30,13 +30,6 @@ dummy := $(shell mkdir bin 2> /dev/null)
 dummy := $(shell mkdir bin/plugins 2> /dev/null)
 dummy := $(shell if [[ "$(CSC_FLAGS)" != `cat bin/csc_flags 2> /dev/null` ]]; then echo "$(CSC_FLAGS)" > bin/csc_flags; fi)
 
-* Would be really nice if #region pragmas worked with the method popup. Maybe
-   they can appear disabled. Probably would need to special case fields.
-   - remove these when sorting by name
-   - expose CsPreprocess to refactor?
-   - maybe some refactor methods can look for stuff like #region Fields
-* Find in files is not working for the locked files.
-* Why does short form say Declaration is in mscorlib?
 * Build a new foreshadow. Probably need to manually update some glob prefs.
 * Work on tab completion:
 	- three versions target, call, and arg completion
@@ -69,6 +62,7 @@ dummy := $(shell if [[ "$(CSC_FLAGS)" != `cat bin/csc_flags 2> /dev/null` ]]; th
 	- can we show the comments for the selection? maybe in a second window? or
 	   maybe some sort of context help window that can also be shown if the text 
 	   window selection is within a method?
+* Can probably add a Lift Code to Method refactor now.
 * Do a new preview. Add a screenshot showing the three completion windows.
 * Don't die if a factory pref handler throws.
 * Files should default to plain text (no styles but get rid of formatting)?
@@ -122,6 +116,7 @@ dummy := $(shell if [[ "$(CSC_FLAGS)" != `cat bin/csc_flags 2> /dev/null` ]]; th
 * Should be able to run from read-only media.
 * Warn if opening a big file.
 * Database file names should probably include a hash or something for the dir path.
+* Might want to expose CsPreprocess to refactor.
 * Add ChangeLog support.
 * Add better support for svn commits.
 * Add text get info:
@@ -178,6 +173,7 @@ dummy := $(shell if [[ "$(CSC_FLAGS)" != `cat bin/csc_flags 2> /dev/null` ]]; th
 	rename field, need table with fields used by each type
 	rename method
 	rename type
+	split (non-cohesive) class
 	trace methods, might want to ask if exit should be traced
 * Is cancel really killing the process?
 * May want to use the thread pool for any short lived threads.
