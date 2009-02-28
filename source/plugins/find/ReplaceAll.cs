@@ -26,24 +26,24 @@ using System.Text.RegularExpressions;
 namespace Find
 {
 	internal sealed class ReplaceAll : BaseFindInFiles
-	{		
+	{
 		public ReplaceAll(string directory, Regex re, string replacement, string[] include, string[] exclude)
 			: base(directory, include, exclude)
 		{	
 			m_regex = re;
 			m_replacement = replacement;
 		}
-																
-		#region Protected Methods ---------------------------------------------
- 		protected override string OnProcessFile(string file, string text)	// threaded
- 		{
+		
+		#region Protected Methods
+		protected override string OnProcessFile(string file, string text)	// threaded
+		{
 			return m_regex.Replace(text, m_replacement);
- 		}
+		}
 		#endregion
-
-		#region Fields --------------------------------------------------------
+		
+		#region Fields
 		private Regex m_regex;
 		private string m_replacement;
 		#endregion
-	} 
-}	
+	}
+}

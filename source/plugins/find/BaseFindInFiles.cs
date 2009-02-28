@@ -32,7 +32,7 @@ using System.Threading;
 namespace Find
 {
 	internal abstract class BaseFindInFiles : IFindProgress
-	{		
+	{
 		protected BaseFindInFiles(string directory, string[] include, string[] exclude)
 		{	
 			m_directory = directory;
@@ -177,8 +177,8 @@ namespace Find
 				}
 			}
 			
- 			if (include)
- 			{
+			if (include)
+			{
 				foreach (string glob in m_exclude)
 				{
 					if (Glob.Match(glob, name))
@@ -189,53 +189,53 @@ namespace Find
 				}
 			}
 			
- 			return include;
- 		}
- 		
- 		private bool DoIsValidDir(string dir)	
- 		{
- 			string name = Path.GetFileName(dir.TrimEnd('/'));
- 				
- 			foreach (string glob in m_exclude)
- 			{
- 				if (Glob.Match(glob, name))
- 					return false;
- 			}
- 				
- 			return true;
- 		}
- 		
- 		private void DoThread()			// threaded
- 		{
- 			// Then process each file in turn.
- 			for (int i = 0; i < m_files.Count && !m_cancelled; ++i)
- 			{
- 				if (m_cancelled)
- 					break;
- 					
-	 			++m_processCount;		// note that ints and references can be read and written atomically (but not longs)
- 				m_processing = m_files[i];
- 				
+			return include;
+		}
+		
+		private bool DoIsValidDir(string dir)
+		{
+			string name = Path.GetFileName(dir.TrimEnd('/'));
+			
+			foreach (string glob in m_exclude)
+			{
+				if (Glob.Match(glob, name))
+					return false;
+			}
+			
+			return true;
+		}
+		
+		private void DoThread()			// threaded
+		{
+			// Then process each file in turn.
+			for (int i = 0; i < m_files.Count && !m_cancelled; ++i)
+			{
+				if (m_cancelled)
+					break;
+					
+				++m_processCount;		// note that ints and references can be read and written atomically (but not longs)
+				m_processing = m_files[i];
+				
 				DoProcessFile(m_processing);
 			}
-				
+			
 			m_files.Clear();
 			
 			// Finally we need to reload any windows the user may have opened
 			// while we were in our thread.
 			if (m_changeCount > 0)
 				NSApplication.sharedApplication().BeginInvoke(this.DoReload);
- 		}
- 		 		
- 		private void DoProcessFile(string file)		// threaded
- 		{
+		}
+		
+		private void DoProcessFile(string file)		// threaded
+		{
 			NSAutoreleasePool pool = NSAutoreleasePool.Create();
-
+			
 			try
 			{
 				var handle = NSFileHandle.fileHandleForUpdatingAtPath(NSString.Create(file));	// note that this will work even if the file is locked (but writeData will fail)
 				NSData data = handle.readDataToEndOfFile();
-	
+				
 				Boss boss = ObjectModel.Create("TextEditorPlugin");
 				var encoding = boss.Get<ITextEncoding>();
 				var result = encoding.Decode(data);

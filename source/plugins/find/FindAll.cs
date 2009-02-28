@@ -41,7 +41,7 @@ namespace Find
 		}
 		
 		public FindInstance(string path, string context, int offset, int index, int length) : base(NSObject.AllocNative("FindInstance"))
-		{				
+		{
 			m_path = path;
 			m_context = NSString.Create(context).Retain();
 			m_range = new NSRange(index, length);
@@ -56,7 +56,7 @@ namespace Find
 			Unused.Value = retain();
 			return this;
 		}
-
+		
 		public string Path
 		{
 			get {return m_path;}
@@ -66,12 +66,12 @@ namespace Find
 		{
 			get {return m_context;}
 		}
-						
+		
 		public NSAttributedString StyledContext
 		{
 			get {return m_styledContext;}
 		}
-						
+		
 		public NSRange Range
 		{
 			get {return m_range;}
@@ -89,12 +89,12 @@ namespace Find
 			else if (m_range.Intersects(changed)) 
 			{
 				m_range = new NSRange(0, 0);
-
+				
 				var attrs = NSDictionary.dictionaryWithObject_forKey(NSColor.disabledControlTextColor(), Externs.NSForegroundColorAttributeName);
 				m_styledContext.setAttributes_range(attrs, new NSRange(0, (int) m_context.length()));
 			}
 		}
-						
+		
 		private string m_path;
 		private NSString m_context;
 		private NSRange m_range;
@@ -118,13 +118,13 @@ namespace Find
 		}
 		
 		public FindsForFile(string path, string text, MatchCollection matches) : base(NSObject.AllocNative("FindsForFile"))
-		{				
+		{
 			m_path = NSString.Create(path).Retain();
- 			m_instances = new FindInstance[matches.Count];
-
+			m_instances = new FindInstance[matches.Count];
+			
 			int i = 0;
 			foreach (Match m in matches)
- 			{
+			{
 				int index = m.Index;
 				int length = m.Length;
 				while (index > 0 && text[index - 1] != '\n')
@@ -132,14 +132,14 @@ namespace Find
 					--index;
 					++length;
 				}
-					
+				
 				while (index + length < text.Length && text[index + length] != '\n')
 					++length;
 					
 				string context = text.Substring(index, length);
 				m_instances[i] = new FindInstance(path, context, index, m.Index, m.Length).Retain();
 				++i;
- 			}
+			}
 			
 			var attrs = NSDictionary.dictionaryWithObject_forKey(NSNumber.Create(-3.0f), Externs.NSStrokeWidthAttributeName);
 			m_styledPath = NSAttributedString.Create(path, attrs).Retain();
@@ -150,17 +150,17 @@ namespace Find
 			Unused.Value = retain();
 			return this;
 		}
-
+		
 		public NSString Path
 		{
 			get {return m_path;}
 		}
-			
+		
 		public NSAttributedString StyledPath
 		{
 			get {return m_styledPath;}
 		}
-						
+		
 		public int Length
 		{
 			get {return m_instances.Length;}
@@ -170,7 +170,7 @@ namespace Find
 		{
 			get {return m_instances[index];}
 		}
-			
+		
 		private NSString m_path;
 		private FindInstance[] m_instances;
 		private NSAttributedString m_styledPath;
@@ -187,42 +187,42 @@ namespace Find
 		
 		public FindAll(string directory, Regex re, string[] include, string[] exclude)
 			: base(directory, include, exclude)
-		{	
+		{
 			m_regex = re;
 		}
-																
- 		public FindsForFile[] Results()
- 		{
- 			FindsForFile[] results;
- 			
+		
+		public FindsForFile[] Results()
+		{
+			FindsForFile[] results;
+			
 			lock (m_lock)
 			{
 				results = m_finds.ToArray();
 			}
- 			
+			
 			return results;
- 		}
-
-		#region Protected Methods ---------------------------------------------
- 		protected override string OnProcessFile(string file, string text)	// threaded
- 		{
- 			MatchCollection matches = m_regex.Matches(text);
- 			if (matches.Count > 0)
- 			{
- 				lock (m_lock)
- 				{
-	 				m_finds.Add(new FindsForFile(file, text, matches).Retain());
-	 			}
- 			}
- 			
+		}
+		
+		#region Protected Methods
+		protected override string OnProcessFile(string file, string text)	// threaded
+		{
+			MatchCollection matches = m_regex.Matches(text);
+			if (matches.Count > 0)
+			{
+				lock (m_lock)
+				{
+					m_finds.Add(new FindsForFile(file, text, matches).Retain());
+				}
+			}
+			
 			return text;
- 		}
+		}
 		#endregion
-
-		#region Fields --------------------------------------------------------
+		
+		#region Fields
 		private Regex m_regex;
 		private object m_lock = new object();
 		private List<FindsForFile> m_finds = new List<FindsForFile>();
 		#endregion
-	} 
-}	
+	}
+}
