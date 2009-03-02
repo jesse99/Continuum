@@ -642,6 +642,7 @@ member-initializer-list:
 
 member-initializer:
    identifier   =   initializer-value
+   
 initializer-value:
      expression
      object-or-collection-initializer
