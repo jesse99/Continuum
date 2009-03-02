@@ -33,7 +33,8 @@ namespace CsParser
 		public Parser(string text)
 		{
 			m_text = text;
-			m_scanner = new CsScanner(text);
+			m_scanner = new Scanner();
+			m_scanner.Init(text);
 		}
 		
 		public CsGlobalNamespace Parse()
@@ -1963,7 +1964,7 @@ namespace CsParser
 		
 		#region Fields
 		private string m_text;
-		private CsScanner m_scanner;
+		private Scanner m_scanner;
 		private bool m_try;
 		private Token m_bad;
 		#endregion

@@ -26,7 +26,7 @@ using Shared;
 using System;
 
 [TestFixture]
-public sealed class CsScannerTest
+public sealed class ScannerTest
 {	
 	[TestFixtureSetUp]
 	public void Init()
@@ -44,7 +44,7 @@ protected override Tuple2<NSMenu, int> GetScriptsLocation()
 }
 	
 ";
-		var scanner = new CsScanner(text);
+		var scanner = new Scanner(text);
 		Assert.AreEqual("using", scanner.Token.Text());
 		scanner.Advance(); Assert.AreEqual("System", scanner.Token.Text());
 		Assert.AreEqual(1, scanner.Token.Line);
@@ -74,14 +74,14 @@ protected override Tuple2<NSMenu, int> GetScriptsLocation()
 	public void String()
 	{
 		string text = "foo \"hmm\" xx \"aa { \" ";
-		var scanner = new CsScanner(text); Assert.AreEqual("foo", scanner.Token.Text());
+		var scanner = new Scanner(text); Assert.AreEqual("foo", scanner.Token.Text());
 		scanner.Advance(); Assert.AreEqual("\"hmm\"", scanner.Token.Text());
 		scanner.Advance(); Assert.AreEqual("xx", scanner.Token.Text());
 		scanner.Advance(); Assert.AreEqual("\"aa { \"", scanner.Token.Text());
 		scanner.Advance(); Assert.AreEqual(TokenKind.Invalid, scanner.Token.Kind);
 
 		text = "xxx \"aa\\\"b\" yyy";
-		scanner = new CsScanner(text); Assert.AreEqual("xxx", scanner.Token.Text());
+		scanner = new Scanner(text); Assert.AreEqual("xxx", scanner.Token.Text());
 		scanner.Advance(); Assert.AreEqual("\"aa\\\"b\"", scanner.Token.Text());
 		scanner.Advance(); Assert.AreEqual("yyy", scanner.Token.Text());
 		scanner.Advance(); Assert.AreEqual(TokenKind.Invalid, scanner.Token.Kind);
@@ -93,7 +93,7 @@ protected override Tuple2<NSMenu, int> GetScriptsLocation()
 		string text = @"foo @""some
 text
 	goes here"" yyy";
-		var scanner = new CsScanner(text); Assert.AreEqual("foo", scanner.Token.Text());
+		var scanner = new Scanner(text); Assert.AreEqual("foo", scanner.Token.Text());
 		scanner.Advance(); Assert.AreEqual("\"some\ntext\n	goes here\"", scanner.Token.Text());
 		Assert.AreEqual(1, scanner.Token.Line);
 		scanner.Advance(); Assert.AreEqual("yyy", scanner.Token.Text());
@@ -101,7 +101,7 @@ text
 		scanner.Advance(); Assert.AreEqual(TokenKind.Invalid, scanner.Token.Kind);
 
 		text = "aa @\"bb\"\"cc\" dd";
-		scanner = new CsScanner(text);
+		scanner = new Scanner(text);
 		Assert.AreEqual("aa", scanner.Token.Text());
 		
 		scanner.Advance();
@@ -115,7 +115,7 @@ text
 	public void Char()
 	{
 		string text = "aa 'x' bb '\\'' cc";
-		var scanner = new CsScanner(text); Assert.AreEqual("aa", scanner.Token.Text());
+		var scanner = new Scanner(text); Assert.AreEqual("aa", scanner.Token.Text());
 		scanner.Advance(); Assert.AreEqual("'x'", scanner.Token.Text());
 		scanner.Advance(); Assert.AreEqual("bb", scanner.Token.Text());
 		scanner.Advance(); Assert.AreEqual("'\\''", scanner.Token.Text());
@@ -123,7 +123,7 @@ text
 		scanner.Advance(); Assert.AreEqual(TokenKind.Invalid, scanner.Token.Kind);
 
 		text = "'\\t' '\\x21' '\\u0041' '\"' '\\\\' ";
-		scanner = new CsScanner(text);
+		scanner = new Scanner(text);
 		Assert.AreEqual("'\\t'", scanner.Token.Text()); Assert.AreEqual(TokenKind.Char, scanner.Token.Kind);
 
 		scanner.Advance();
@@ -147,7 +147,7 @@ text
 	{
 		string text = @"alpha // text goes here @"" hmm
 some more // foo";
-		var scanner = new CsScanner(text); Assert.AreEqual("alpha", scanner.Token.Text());
+		var scanner = new Scanner(text); Assert.AreEqual("alpha", scanner.Token.Text());
 		scanner.Advance(); Assert.AreEqual("some", scanner.Token.Text());
 		scanner.Advance(); Assert.AreEqual("more", scanner.Token.Text());
 		scanner.Advance(); Assert.AreEqual(TokenKind.Invalid, scanner.Token.Kind);
@@ -159,7 +159,7 @@ some more // foo";
 		string text = @"alpha /* this
 is a comment */
  foo";
-		var scanner = new CsScanner(text); Assert.AreEqual("alpha", scanner.Token.Text());
+		var scanner = new Scanner(text); Assert.AreEqual("alpha", scanner.Token.Text());
 		scanner.Advance(); Assert.AreEqual("foo", scanner.Token.Text());
 		Assert.AreEqual(3, scanner.Token.Line);
 		scanner.Advance(); Assert.AreEqual(TokenKind.Invalid, scanner.Token.Kind);
@@ -170,7 +170,7 @@ is a comment */
 	{
 		string text = @"alpha _beta @gamma";
 		
-		var scanner = new CsScanner(text);
+		var scanner = new Scanner(text);
 		Assert.AreEqual("alpha", scanner.Token.Text());
 		Assert.AreEqual(TokenKind.Identifier, scanner.Token.Kind);
 				
@@ -187,12 +187,12 @@ is a comment */
 	}
 	
 	[Test]
-	[ExpectedException(typeof(CsScannerException))]
+	[ExpectedException(typeof(ScannerException))]
 	public void BadIdentifier()
 	{
 		string text = @"alpha  epsi\u006Con";
 		
-		var scanner = new CsScanner(text);
+		var scanner = new Scanner(text);
 		Assert.AreEqual("alpha", scanner.Token.Text());
 		Assert.AreEqual(TokenKind.Identifier, scanner.Token.Kind);
 		
@@ -204,7 +204,7 @@ is a comment */
 	{
 		string text = "alpha\n#region Your Name Here	\n#define Foo\n#endif\n#endregion\n";
 		
-		var scanner = new CsScanner(text);
+		var scanner = new Scanner(text);
 		Assert.AreEqual("alpha", scanner.Token.Text());
 		Assert.AreEqual(TokenKind.Identifier, scanner.Token.Kind);
 		

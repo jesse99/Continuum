@@ -19,37 +19,44 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear;
 using Shared;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Runtime.Serialization;
-using System.Security.Permissions;
 
 namespace CsParser
 {
-	internal sealed unsafe class CsScanner
+	internal sealed unsafe class Scanner : ICsScanner
 	{
-		public CsScanner(string text)	 : this(text, 0)
+		public void Instantiated(Boss boss)
 		{
+			m_boss = boss;
 		}
 		
-		public CsScanner(string text, int offset)
+		public Boss Boss
+		{
+			get {return m_boss;}
+		}
+		
+		public void Init(string text)
+		{
+			Init(text, 0);
+		}
+		
+		public void Init(string text, int offset)
 		{
 			m_text = text + '\x00';		// scanning is easier and faster with a sentinel value
 			m_index = offset;
 			fixed (char* buffer = m_text) DoAdvance(buffer);
 		}
 		
-		// Returns the current token. Once all the characters have been
-		// consumed the token's kind will be invalid.
 		public Token Token
 		{
 			get {return m_token;}
 		}
 		
-		// Returns the nth token from the current token.
 		public Token LookAhead(int delta)
 		{
 			Debug.Assert(delta >= 0, "delta is negative");
@@ -74,8 +81,6 @@ namespace CsParser
 			return token;
 		}
 		
-		// Skips whitespace and comments and advances to the next token.
-		// Should only be called if Token is valid.
 		public void Advance()
 		{
 			Debug.Assert(Token.Kind != TokenKind.Invalid, "can't advance past the end of the text");
@@ -83,8 +88,6 @@ namespace CsParser
 			fixed (char* buffer = m_text) DoAdvance(buffer);
 		}
 		
-		// Returns all of the preprocessing directives that have been encountered
-		// so far. 
 		public CsPreprocess[] Preprocess
 		{
 			get {return m_preprocess.ToArray();}
@@ -539,7 +542,8 @@ namespace CsParser
 		}
 		#endregion
 		
-		#region Fields 
+		#region Fields
+		private Boss m_boss;
 		private string m_text;
 		private char* m_buffer;
 		private int m_index;
