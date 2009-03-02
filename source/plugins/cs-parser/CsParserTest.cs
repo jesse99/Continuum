@@ -20,13 +20,13 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #if TEST
-using CsRefactor;
+using CsParser;
 using NUnit.Framework;
 using Shared;
 using System;
 
 [TestFixture]
-public sealed class CsParserTest 	
+public sealed class CsParserTest
 {	
 	[TestFixtureSetUp]
 	public void Init()
@@ -40,10 +40,10 @@ public sealed class CsParserTest
 		string text = @"using System;
 using System.IO;";
 		
-		var parser = new CsParser(text); 
+		var parser = new Parser(text);
 		var globals = parser.Parse();
 
-		var uses = globals.Uses;		
+		var uses = globals.Uses;
 		Assert.AreEqual(2, uses.Length);
 		
 		CsUsingDirective u = uses[0];
@@ -56,12 +56,12 @@ using System.IO;";
 	}
 	
 	[Test]
-	[ExpectedException(typeof(CsParserException))]
+	[ExpectedException(typeof(ParserException))]
 	public void ExtraChars()
 	{
 		string text = @"using System; xxx";
 		
-		var parser = new CsParser(text); 
+		var parser = new Parser(text);
 		Unused.Value = parser.Parse();
 	}
 		
@@ -72,10 +72,10 @@ using System.IO;";
 extern alias 	/* hmm */ Bar	;
 using System.IO;";
 		
-		var parser = new CsParser(text); 
+		var parser = new Parser(text);
 		var globals = parser.Parse();
 
-		var externs = globals.Externs;		
+		var externs = globals.Externs;
 		Assert.AreEqual(2, externs.Length);
 		
 		CsExternAlias a = externs[0];
@@ -103,7 +103,7 @@ using F = float;
 using OldSchool = System.Collections;
 ";
 		
-		var parser = new CsParser(text); 
+		var parser = new Parser(text); 
 		var globals = parser.Parse();
 
 		var aliases = globals.Aliases;
@@ -136,7 +136,7 @@ using OldSchool = System.Collections;
 [module: Alpha, Beta(), Gamma(x, y)]             
 ";
 		
-		var parser = new CsParser(text); 
+		var parser = new Parser(text); 
 		var globals = parser.Parse();
 
 		var attrs = globals.Attributes;		
@@ -184,10 +184,10 @@ namespace Foo.Bar
 }            
 ";
 		
-		var parser = new CsParser(text); 
+		var parser = new Parser(text);
 		var globals = parser.Parse();
 
-		var ns = globals.Namespaces;		
+		var ns = globals.Namespaces;
 		Assert.AreEqual(1, ns.Length);
 		
 		Assert.AreEqual("Foo.Bar", ns[0].Name);
@@ -205,10 +205,10 @@ namespace Foo.Bar
 }            
 ";
 		
-		var parser = new CsParser(text); 
+		var parser = new Parser(text);
 		var globals = parser.Parse();
 
-		var ns = globals.Namespaces;		
+		var ns = globals.Namespaces;
 		Assert.AreEqual(1, ns.Length);
 		Assert.AreEqual("Foo.Bar", ns[0].Name);
 
@@ -237,7 +237,7 @@ namespace Foo.Bar
 }            
 ";
 		
-		var parser = new CsParser(text); 
+		var parser = new Parser(text); 
 		var globals = parser.Parse();
 
 		Assert.AreEqual(1, globals.Namespaces.Length);
@@ -263,7 +263,7 @@ namespace Foo.Bar
 public enum Greek {alpha, beta, gamma}          
 ";
 		
-		var parser = new CsParser(text); 
+		var parser = new Parser(text);
 		var globals = parser.Parse();
 
 		Assert.AreEqual(1, globals.Enums.Length);
@@ -281,7 +281,7 @@ public enum Greek {alpha, beta, gamma}
 public enum Greek {alpha, beta, gamma}          
 ";
 		
-		var parser = new CsParser(text); 
+		var parser = new Parser(text);
 		var globals = parser.Parse();
 
 		Assert.AreEqual(1, globals.Enums.Length);
@@ -306,7 +306,7 @@ namespace Mine
 }
 ";
 		
-		var parser = new CsParser(text); 
+		var parser = new Parser(text);
 		var globals = parser.Parse();
 		var ns = globals.Namespaces[0];
 
@@ -327,7 +327,7 @@ namespace Mine
 public delegate void Foo();
 ";
 		
-		var parser = new CsParser(text); 
+		var parser = new Parser(text);
 		var globals = parser.Parse();
 
 		Assert.AreEqual(1, globals.Delegates.Length);
@@ -344,7 +344,7 @@ public delegate void Foo();
 public delegate Dictionary<int, string> Foo();
 ";
 		
-		var parser = new CsParser(text); 
+		var parser = new Parser(text);
 		var globals = parser.Parse();
 
 		Assert.AreEqual(1, globals.Delegates.Length);
@@ -361,7 +361,7 @@ public delegate Dictionary<int, string> Foo();
 public delegate void Foo<int, string>();
 ";
 		
-		var parser = new CsParser(text); 
+		var parser = new Parser(text);
 		var globals = parser.Parse();
 
 		Assert.AreEqual(1, globals.Delegates.Length);
@@ -380,7 +380,7 @@ public delegate void Foo<int, string>();
 delegate void Foo(int alpha, Dictionary < int, string > beta);
 ";
 		
-		var parser = new CsParser(text); 
+		var parser = new Parser(text);
 		var globals = parser.Parse();
 
 		Assert.AreEqual(1, globals.Delegates.Length);
@@ -403,7 +403,7 @@ delegate void Foo(int alpha, Dictionary < int, string > beta);
 delegate void Foo([Hmm ] int alpha, ref float beta, params int [ ] args);
 ";
 		
-		var parser = new CsParser(text); 
+		var parser = new Parser(text);
 		var globals = parser.Parse();
 
 		Assert.AreEqual(1, globals.Delegates.Length);
@@ -434,7 +434,7 @@ delegate void Bar<KEY>(KEY value) where KEY : new() where KEY : class;
 delegate void Bar<KEY>(KEY value) where KEY : new(), class;
 ";
 		
-		var parser = new CsParser(text); 
+		var parser = new Parser(text);
 		var globals = parser.Parse();
 
 		Assert.AreEqual(3, globals.Delegates.Length);
@@ -456,7 +456,7 @@ public interface IFoo
 }
 ";
 		
-		var parser = new CsParser(text); 
+		var parser = new Parser(text);
 		var globals = parser.Parse();
 
 		Assert.AreEqual(1, globals.Interfaces.Length);
@@ -473,7 +473,7 @@ public interface IFoo : IBar, IBaz
 }
 ";
 		
-		var parser = new CsParser(text); 
+		var parser = new Parser(text);
 		var globals = parser.Parse();
 
 		Assert.AreEqual(1, globals.Interfaces.Length);
@@ -495,7 +495,7 @@ public interface IFoo : IBar, IBaz
 }
 ";
 		
-		var parser = new CsParser(text); 
+		var parser = new Parser(text);
 		var globals = parser.Parse();
 
 		Assert.AreEqual(1, globals.Interfaces.Length);
@@ -522,7 +522,7 @@ public interface IFoo : IBar, IBaz
 }
 ";
 		
-		var parser = new CsParser(text); 
+		var parser = new Parser(text);
 		var globals = parser.Parse();
 
 		Assert.AreEqual(1, globals.Interfaces.Length);
@@ -548,7 +548,7 @@ public interface IFoo : IBar, IBaz
 }
 ";
 		
-		var parser = new CsParser(text); 
+		var parser = new Parser(text);
 		var globals = parser.Parse();
 
 		Assert.AreEqual(1, globals.Interfaces.Length);
@@ -570,7 +570,7 @@ public interface IFoo : IBar, IBaz
 }
 ";
 		
-		var parser = new CsParser(text); 
+		var parser = new Parser(text);
 		var globals = parser.Parse();
 
 		Assert.AreEqual(1, globals.Interfaces.Length);
@@ -594,7 +594,7 @@ public interface IFoo : IBar, IBaz
 }
 ";
 		
-		var parser = new CsParser(text); 
+		var parser = new Parser(text);
 		var globals = parser.Parse();
 
 		Assert.AreEqual(1, globals.Interfaces.Length);
@@ -626,7 +626,7 @@ public struct Foo
 }
 ";
 		
-		var parser = new CsParser(text); 
+		var parser = new Parser(text);
 		var globals = parser.Parse();
 
 		Assert.AreEqual(1, globals.Structs.Length);
@@ -664,7 +664,7 @@ public struct Foo
 }
 ";
 		
-		var parser = new CsParser(text); 
+		var parser = new Parser(text);
 		var globals = parser.Parse();
 
 		Assert.AreEqual(1, globals.Structs.Length);
@@ -699,7 +699,7 @@ public struct Foo
 }
 ";
 		
-		var parser = new CsParser(text); 
+		var parser = new Parser(text);
 		var globals = parser.Parse();
 
 		Assert.AreEqual(1, globals.Structs.Length);
@@ -745,7 +745,7 @@ public struct Foo
 }
 ";
 		
-		var parser = new CsParser(text); 
+		var parser = new Parser(text);
 		var globals = parser.Parse();
 
 		Assert.AreEqual(1, globals.Structs.Length);
@@ -784,7 +784,7 @@ public struct Foo
 }
 ";
 		
-		var parser = new CsParser(text); 
+		var parser = new Parser(text);
 		var globals = parser.Parse();
 
 		Assert.AreEqual(1, globals.Structs.Length);
@@ -821,7 +821,7 @@ public struct Foo
 }
 ";
 		
-		var parser = new CsParser(text); 
+		var parser = new Parser(text);
 		var globals = parser.Parse();
 
 		Assert.AreEqual(1, globals.Structs.Length);
@@ -857,7 +857,7 @@ public struct Foo
 }
 ";
 		
-		var parser = new CsParser(text); 
+		var parser = new Parser(text);
 		var globals = parser.Parse();
 
 		Assert.AreEqual(1, globals.Structs.Length);
@@ -906,7 +906,7 @@ public struct Foo
 }
 ";
 		
-		var parser = new CsParser(text); 
+		var parser = new Parser(text);
 		var globals = parser.Parse();
 
 		Assert.AreEqual(1, globals.Structs.Length);
@@ -938,7 +938,7 @@ public struct Foo
 }
 ";
 		
-		var parser = new CsParser(text); 
+		var parser = new Parser(text);
 		var globals = parser.Parse();
 
 		Assert.AreEqual(1, globals.Structs.Length);
@@ -973,7 +973,7 @@ public struct Foo
 }
 ";
 		
-		var parser = new CsParser(text); 
+		var parser = new Parser(text);
 		var globals = parser.Parse();
 
 		Assert.AreEqual(1, globals.Structs.Length);
@@ -1047,7 +1047,7 @@ public sealed class Database	: IDisposable
 }
 ";
 		
-		var parser = new CsParser(text); 
+		var parser = new Parser(text);
 		var globals = parser.Parse();
 
 		Assert.AreEqual(1, globals.Classes.Length);
@@ -1131,12 +1131,12 @@ public sealed class Foo
 }
 ";
 		
-		var parser = new CsParser(text); 
+		var parser = new Parser(text);
 		var globals = parser.Parse();
 
 		Assert.AreEqual(1, globals.Classes.Length);
 
-		CsClass klass = globals.Classes[0];		
+		CsClass klass = globals.Classes[0];
 
 		Assert.AreEqual(4, klass.Fields.Length);
 		Assert.AreEqual("m_weight", klass.Fields[0].Name);
@@ -1160,11 +1160,11 @@ public sealed class Foo
 }
 ";
 		
-		var parser = new CsParser(text); 
+		var parser = new Parser(text);
 		var globals = parser.Parse();
 		Assert.AreEqual(1, globals.Classes.Length);
 
-		CsClass klass = globals.Classes[0];		
+		CsClass klass = globals.Classes[0];
 
 		Assert.AreEqual(1, klass.Fields.Length);
 		Assert.AreEqual("Alloc", klass.Fields[0].Name);

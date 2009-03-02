@@ -44,7 +44,7 @@ public sealed class EvaluateMethodsTest
 		StringWriter writer = new StringWriter();
 		ScriptType.Instance.SetWriter(writer);
 		
-		CsGlobalNamespace globals = new CsParser(cs).Parse();
+		CsGlobalNamespace globals = new CsParser.Parser(cs).Parse();
 		Script script = new Parser(refactor).Parse();
 		script.Evaluate(new Context(script, globals, cs, offset, 0));
 		

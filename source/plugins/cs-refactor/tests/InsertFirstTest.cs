@@ -35,7 +35,7 @@ public sealed class InsertFirstTest
 	
 	private string DoEdit(string cs, string lines)
 	{
-		CsParser parser = new CsParser(cs);
+		CsParser.Parser parser = new CsParser.Parser(cs);
 		CsGlobalNamespace globals = parser.Parse();
 		Refactor refactor = new Refactor(cs);
 

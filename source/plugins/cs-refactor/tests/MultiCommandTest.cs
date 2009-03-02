@@ -42,7 +42,7 @@ public sealed class MultiCommandTest
 	using System.Threading;
 ";
 
-		CsParser parser = new CsParser(cs);
+		CsParser.Parser parser = new CsParser.Parser(cs);
 		CsGlobalNamespace globals = parser.Parse();
 		Refactor refactor = new Refactor(cs);
 		

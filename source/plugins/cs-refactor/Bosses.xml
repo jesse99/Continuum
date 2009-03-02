@@ -1,8 +1,4 @@
 <Bosses namespaces = "Gear Shared CsRefactor">
-	<Boss name = "CsParser" singleton = "true">
-		<Implementation interfaces = "ICsParser" name = "ParseCs"/>
-	</Boss>
-	
 	<Boss name = "Refactor" singleton = "true">
 		<Implementation interfaces = "IRefactorScript" name = "RefactorScript"/>
 	</Boss>

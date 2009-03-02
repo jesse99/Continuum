@@ -35,7 +35,7 @@ public sealed class AddUsingTest
 	
 	private string DoEdit(string cs, params string[] names)
 	{
-		CsParser parser = new CsParser(cs);
+		CsParser.Parser parser = new CsParser.Parser(cs);
 		CsGlobalNamespace globals = parser.Parse();
 		Refactor refactor = new Refactor(cs);
 		
@@ -125,13 +125,13 @@ public enum Names {Alpha, Beta}
 }
 ";
 		
-		CsParser parser = new CsParser(text);
+		CsParser.Parser parser = new CsParser.Parser(text);
 		CsGlobalNamespace globals = parser.Parse();
-
-		Refactor refactor = new Refactor(text);		
+		
+		Refactor refactor = new Refactor(text);
 		refactor.Queue(new AddUsing(globals.Namespaces[0], "System.Text"));
 		string result = refactor.Process();
-
+		
 		Assert.AreEqual(@"namespace Foo
 {
 	using System.Text;

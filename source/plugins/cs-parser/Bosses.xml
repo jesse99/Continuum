@@ -1,0 +1,5 @@
+<Bosses namespaces = "Gear Shared CsParser">
+	<Boss name = "CsParser" singleton = "true">
+		<Implementation interfaces = "ICsParser" name = "ParseCs"/>
+	</Boss>
+</Bosses>

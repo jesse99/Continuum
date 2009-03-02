@@ -40,7 +40,7 @@ public sealed class EvaluateTest
 	
 	private string[] DoParse(string refactor, string cs, int offset)
 	{
-		CsGlobalNamespace globals = new CsParser(cs).Parse();
+		CsGlobalNamespace globals = new CsParser.Parser(cs).Parse();
 		Script script = new Parser(refactor).Parse();
 		RefactorCommand[] commands = script.Evaluate(new Context(script, globals, cs, offset, 0)); 
 		return (from c in commands select c.ToString()).ToArray();
@@ -54,7 +54,7 @@ define Run()		# this is the simplest legal refactor script
 end";
 		
 		string[] results = DoParse(script, string.Empty, 0);
-				
+		
 		Assert.AreEqual(0, results.Length);
 	}
 

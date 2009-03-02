@@ -30,7 +30,50 @@ dummy := $(shell mkdir bin 2> /dev/null)
 dummy := $(shell mkdir bin/plugins 2> /dev/null)
 dummy := $(shell if [[ "$(CSC_FLAGS)" != `cat bin/csc_flags 2> /dev/null` ]]; then echo "$(CSC_FLAGS)" > bin/csc_flags; fi)
 
-* Build a new foreshadow. Probably need to manually update some glob prefs.
+separate body parser?
+or ad-hoc parser which looks for locals on a line and omits locals in a scope
+
+	// int count = m_data.Count;
+	public sealed class CsLocal
+	{
+		public CsLocal(string name, string type, string value)
+		{
+			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
+			Trace.Assert(!string.IsNullOrEmpty(type), "type is null or empty");
+			
+			Name = name;
+			Type = type.TrimAll();
+			
+			if (value != null)
+				Value = value.Trim();
+		}
+		
+		public string Name {get; private set;}
+		
+		// May be "var". Will not have any whitespace.
+		public string Type {get; private set;}
+		
+		// May be null. If present will not have leading or trailing whitespace.
+		public string Value {get; private set;}
+	}
+	
+* Work on parser:
+	- move Token into shared
+	- add an ICsScanner interface
+	- remove CsScanner from cs-refactor
+	- may want to move the parser into ParseCs
+	- rename the classes
+	- rename cs-refactor/CsScanner
+	- use a Cs namespace for shared types
+	- improve Token
+	- improve the scanner
+	- write an expression parser
+* Work on parsing method bodies:
+	- expose an ad-hoc parser via an interface
+	- check for foreach variables
+	- check for for variables
+	- check for delegate formal arguments
+	- check for anon method formal arguments
 * Work on tab completion:
 	- three versions target, call, and arg completion
 	- target shows all locals, args, fields, this methods
@@ -62,6 +105,11 @@ dummy := $(shell if [[ "$(CSC_FLAGS)" != `cat bin/csc_flags 2> /dev/null` ]]; th
 	- can we show the comments for the selection? maybe in a second window? or
 	   maybe some sort of context help window that can also be shown if the text 
 	   window selection is within a method?
+	- refactor needs to document Scope and support Locals property
+* Could probably speed up editing of large files if we got a pointer to the text from
+  native code and operated on that with unsafe code.
+* Tab style isn't getting applied correctly
+	- seems to screw up when pasting from C# Grammar.txt
 * Can probably add a Lift Code to Method refactor now.
 * Do a new preview. Add a screenshot showing the three completion windows.
 * Don't die if a factory pref handler throws.

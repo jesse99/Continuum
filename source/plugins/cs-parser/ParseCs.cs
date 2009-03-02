@@ -19,74 +19,39 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-using CsRefactor;
-using NUnit.Framework;
+using Gear;
 using Shared;
 using System;
+using System.Diagnostics;
 
-[TestFixture]
-public sealed class InsertLastTest
-{	
-	[TestFixtureSetUp]
-	public void Init()
+namespace CsParser
+{
+	internal sealed class ParseCs : ICsParser
 	{
-		Shared.AssertListener.Install();
-	}
-	
-	private string DoEdit(string cs, string lines)
-	{
-		CsParser.Parser parser = new CsParser.Parser(cs);
-		CsGlobalNamespace globals = parser.Parse();
-		Refactor refactor = new Refactor(cs);
-
-		refactor.Queue(new InsertLast(globals.Types[0].Methods[0].Body, lines.Split('\n')));
+		public void Instantiated(Boss boss)
+		{
+			m_boss = boss;
+		}
 		
-		return refactor.Process();
-	}
-	
-	[Test]
-	public void Empty()
-	{
-		string text = @"
-internal sealed class Foo
-{
-	public void Process(int x)
-	{
-	}
-}
-";
-		Assert.AreEqual(@"
-internal sealed class Foo
-{
-	public void Process(int x)
-	{
-		Console.WriteLine(""on exit"");
-	}
-}
-", DoEdit(text, "Console.WriteLine(\"on exit\");"));
-}
-	
-	[Test]
-	public void Full()
-	{
-		string text = @"
-internal sealed class Foo
-{
-	public int Process(int x)
-	{
-		return x + x;
-	}
-}
-";
-		Assert.AreEqual(@"
-internal sealed class Foo
-{
-	public int Process(int x)
-	{
-		return x + x;
-		Console.WriteLine(""on exit"");
-	}
-}
-", DoEdit(text, "Console.WriteLine(\"on exit\");"));
-}
+		public Boss Boss
+		{
+			get {return m_boss;}
+		}
+		
+		public CsGlobalNamespace Parse(string text)
+		{
+			var parser = new Parser(text);
+			return parser.Parse();
+		}
+		
+		public CsGlobalNamespace TryParse(string text, out int offset, out int length)
+		{
+			var parser = new Parser(text);
+			return parser.TryParse(out offset, out length);
+		}
+		
+		#region Fields
+		private Boss m_boss;
+		#endregion
+	} 
 }

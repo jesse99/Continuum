@@ -35,7 +35,7 @@ public sealed class AddRelativeMemberTest
 	
 	private string DoEdit(string cs, bool after, int i, params string[] lines)
 	{
-		CsParser parser = new CsParser(cs);
+		CsParser.Parser parser = new CsParser.Parser(cs);
 		CsGlobalNamespace globals = parser.Parse();
 		Refactor refactor = new Refactor(cs);
 		

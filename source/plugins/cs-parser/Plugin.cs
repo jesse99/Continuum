@@ -1,4 +1,4 @@
-// Copyright (C) 2009 Jesse Jones
+// Copyright (C) 2007-2008 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -22,36 +22,29 @@
 using Gear;
 using Shared;
 using System;
-using System.Diagnostics;
+using System.IO;
+using System.Reflection;
 
-namespace CsRefactor
+namespace CsParser
 {
-	internal sealed class ParseCs : ICsParser
+	[Plugin]
+	public static class Plugin
 	{
-		public void Instantiated(Boss boss)
+		public static void OnLoaded()
 		{
-			m_boss = boss;
+			DoInitObjectModel();
 		}
-		
-		public Boss Boss
+
+		private static void DoInitObjectModel()
 		{
-			get {return m_boss;}
+			string loc = Assembly.GetExecutingAssembly().Location;
+			string root = Path.GetDirectoryName(loc);
+			string path = Path.Combine(root, "Bosses.xml");
+			
+			using (StreamReader reader = new StreamReader(path))
+			{
+				XmlModel.Read(reader.BaseStream);
+			}
 		}
-		
-		public CsGlobalNamespace Parse(string text)
-		{
-			var parser = new CsParser(text);
-			return parser.Parse();
-		}
-		
-		public CsGlobalNamespace TryParse(string text, out int offset, out int length)
-		{
-			var parser = new CsParser(text);
-			return parser.TryParse(out offset, out length);
-		}
-		
-		#region Fields
-		private Boss m_boss;
-		#endregion
-	} 
+	}
 }

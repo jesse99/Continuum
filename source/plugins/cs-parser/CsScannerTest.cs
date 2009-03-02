@@ -20,7 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #if TEST
-using CsRefactor;
+using CsParser;
 using NUnit.Framework;
 using Shared;
 using System;

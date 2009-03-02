@@ -26,34 +26,34 @@ using System.Diagnostics;
 using System.Runtime.Serialization;
 using System.Security.Permissions;
 
-namespace CsRefactor
+namespace CsParser
 {
 	[Serializable]
-	public class CsParserException : Exception
+	public class ParserException : Exception
 	{
-		public CsParserException(string text) : base(text) 
+		public ParserException(string text) : base(text) 
 		{
 		}
 		
-		public CsParserException(string format, params object[] args) : base(string.Format(format, args)) 
+		public ParserException(string format, params object[] args) : base(string.Format(format, args)) 
 		{
 		}
 		
-		public CsParserException(string text, Exception inner) : base (text, inner)
+		public ParserException(string text, Exception inner) : base (text, inner)
 		{
 		}
 		
 		[SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
-		protected CsParserException(SerializationInfo info, StreamingContext context) : base(info, context)
+		protected ParserException(SerializationInfo info, StreamingContext context) : base(info, context)
 		{
 		}
 	}
 	
 	// Note that this parser is a bit simplified because we only care whether the text is well-formed
 	// not if it is actually correct.
-	public sealed class CsParser
+	public sealed class Parser
 	{
-		public CsParser(string text)
+		public Parser(string text)
 		{
 			m_text = text;
 			m_scanner = new CsScanner(text);
@@ -147,7 +147,7 @@ namespace CsRefactor
 				}
 			}
 			else
-				throw new CsParserException("Expected 'get' or 'set' on line {0}, but found '{1}'", m_scanner.Token.Line, m_scanner.Token.Text());
+				throw new ParserException("Expected 'get' or 'set' on line {0}, but found '{1}'", m_scanner.Token.Line, m_scanner.Token.Text());
 		}
 				
 		// attributes:
@@ -430,7 +430,7 @@ namespace CsRefactor
 							DoParseMethodStub(typeOrName, name, nameOffset, first, attrs, modifiers, members);
 						}
 						else
-							throw new CsParserException("Expected member declaration on line {0}, but found '{1}'", m_scanner.Token.Line, m_scanner.Token.Text());
+							throw new ParserException("Expected member declaration on line {0}, but found '{1}'", m_scanner.Token.Line, m_scanner.Token.Text());
 					}
 			}
 		}
@@ -537,7 +537,7 @@ namespace CsRefactor
 				DoParseNamespaceMemberDeclarations(ref last, namespaces, members, types);
 				
 				if (m_scanner.Token.Kind != TokenKind.Invalid)
-					throw new CsParserException("Expected eof on line {0}, but found '{1}'", m_scanner.Token.Line, m_scanner.Token.Text());
+					throw new ParserException("Expected eof on line {0}, but found '{1}'", m_scanner.Token.Line, m_scanner.Token.Text());
 			}
 			catch (Exception e)
 			{
@@ -903,7 +903,7 @@ namespace CsRefactor
 		private string DoParseIdentifier(ref Token last)
 		{
 			if (m_scanner.Token.Kind != TokenKind.Identifier)
-				throw new CsParserException("Expected an identifier on line {0}, but found '{1}'", m_scanner.Token.Line, m_scanner.Token.Text());
+				throw new ParserException("Expected an identifier on line {0}, but found '{1}'", m_scanner.Token.Line, m_scanner.Token.Text());
 			
 			last = m_scanner.Token;
 			string name = last.Text();
@@ -958,7 +958,7 @@ namespace CsRefactor
 				setAttrs = attrs;
 			}
 			else
-				throw new CsParserException("Expected 'get' or 'set' on line {0}, but found '{1}'", m_scanner.Token.Line, m_scanner.Token.Text());
+				throw new ParserException("Expected 'get' or 'set' on line {0}, but found '{1}'", m_scanner.Token.Line, m_scanner.Token.Text());
 			m_scanner.Advance();
 
 			DoParsePunct(";");
@@ -1214,7 +1214,7 @@ namespace CsRefactor
 		private Token DoParseKeyword(string name)
 		{
 			if (!m_scanner.Token.IsIdentifier(name))
-				throw new CsParserException("Expected '{0}' on line {1}, but found '{2}'", name, m_scanner.Token.Line, m_scanner.Token.Text());
+				throw new ParserException("Expected '{0}' on line {1}, but found '{2}'", name, m_scanner.Token.Line, m_scanner.Token.Text());
 			
 			Token token = m_scanner.Token;
 			m_scanner.Advance();
@@ -1587,7 +1587,7 @@ namespace CsRefactor
 				}
 			}
 			else
-				throw new CsParserException("Expected a unary or binary operator name on line {0}, but found '{1}'", m_scanner.Token.Line, m_scanner.Token.Text());
+				throw new ParserException("Expected a unary or binary operator name on line {0}, but found '{1}'", m_scanner.Token.Line, m_scanner.Token.Text());
 			
 			return name;
 		}
@@ -1639,7 +1639,7 @@ namespace CsRefactor
 		private Token DoParsePunct(string symbol)
 		{
 			if (!m_scanner.Token.IsPunct(symbol))
-				throw new CsParserException("Expected a '{0}' on line {1}, but found '{2}'", symbol, m_scanner.Token.Line, m_scanner.Token.Text());
+				throw new ParserException("Expected a '{0}' on line {1}, but found '{2}'", symbol, m_scanner.Token.Line, m_scanner.Token.Text());
 			
 			Token token = m_scanner.Token;
 			m_scanner.Advance();
@@ -1818,7 +1818,7 @@ namespace CsRefactor
 				types.Add(type);
 			}
 			else
-				throw new CsParserException("Expected 'class', 'struct', 'interface', 'enum', 'delegate', or 'partial' on line {0}, but found '{1}'", m_scanner.Token.Line, m_scanner.Token.Text());			
+				throw new ParserException("Expected 'class', 'struct', 'interface', 'enum', 'delegate', or 'partial' on line {0}, but found '{1}'", m_scanner.Token.Line, m_scanner.Token.Text());			
 		}
 		
 		// type-name:
@@ -1949,7 +1949,7 @@ namespace CsRefactor
 		private Token DoSkipBody(string open, string close, ref Token first, ref Token last)
 		{
 			if (!m_scanner.Token.IsPunct(open))
-				throw new CsParserException("Expected a '{0}' on line {1}, but found '{2}'", open, m_scanner.Token.Line, m_scanner.Token.Text());
+				throw new ParserException("Expected a '{0}' on line {1}, but found '{2}'", open, m_scanner.Token.Line, m_scanner.Token.Text());
 			
 			int count = 1;
 			m_scanner.Advance();
@@ -1967,7 +1967,7 @@ namespace CsRefactor
 			}
 			
 			if (count > 0)
-				throw new CsParserException("Expected a '{0}' to close line {1}, but found '{2}'", close, first.Line, m_scanner.Token.Text());
+				throw new ParserException("Expected a '{0}' to close line {1}, but found '{2}'", close, first.Line, m_scanner.Token.Text());
 			
 			return first;
 		}
