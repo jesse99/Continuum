@@ -20,8 +20,6 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #if TEST
-using CsRefactor;
-using CsRefactor.Script;
 using NUnit.Framework;
 using Shared;
 using System;
@@ -29,32 +27,34 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-// Test all of the built-in methods.
-[TestFixture]
-public sealed class EvaluateMethodsTest 	
-{	
-	[TestFixtureSetUp]
-	public void Init()
-	{
-		AssertListener.Install();
-	}
-			
-	private string DoParse(string refactor, string cs, int offset)
+namespace CsRefactor.Script
+{
+	// Test all of the built-in methods.
+	[TestFixture]
+	public sealed class EvaluateMethodsTest
 	{	
-		StringWriter writer = new StringWriter();
-		ScriptType.Instance.SetWriter(writer);
-		
-		CsGlobalNamespace globals = new CsParser.Parser(cs).Parse();
-		Script script = new Parser(refactor).Parse();
-		script.Evaluate(new Context(script, globals, cs, offset, 0));
-		
-		return writer.ToString();
-	}
-		
-	[Test]
-	public void AttributeMethods()
-	{
-		string source = @"
+		[TestFixtureSetUp]
+		public void Init()
+		{
+			AssertListener.Install();
+		}
+				
+		private string DoParse(string refactor, string cs, int offset)
+		{	
+			StringWriter writer = new StringWriter();
+			ScriptType.Instance.SetWriter(writer);
+			
+			CsGlobalNamespace globals = new CsParser.Parser().Parse(cs);
+			Script script = new Parser(refactor).Parse();
+			script.Evaluate(new Context(script, globals, cs, offset, 0));
+			
+			return writer.ToString();
+		}
+			
+		[Test]
+		public void AttributeMethods()
+		{
+			string source = @"
 [assembly: foo]
 internal sealed class MyClass
 {
@@ -64,9 +64,9 @@ internal sealed class MyClass
 		return x + x;
 	}
 }
-";
-		
-		string script = @"
+	";
+			
+			string script = @"
 define property EnableTracing
 	return false
 end
@@ -86,21 +86,21 @@ define Run()
 		end
 	end
 end
-";
-		string result = DoParse(script, source, source.IndexOf("return"));
-		Assert.AreEqual(@"Name = foo
+	";
+			string result = DoParse(script, source, source.IndexOf("return"));
+			Assert.AreEqual(@"Name = foo
 Args = 
 Target = assembly
 Name = bar
 Args = 22, false
 Target = null
 ", result);
-	}
-	
-	[Test]
-	public void BooleanMethods()
-	{
-		string source = @"
+		}
+		
+		[Test]
+		public void BooleanMethods()
+		{
+			string source = @"
 [assembly: foo]
 internal sealed class MyClass : IFoo, IBar
 {
@@ -109,9 +109,9 @@ internal sealed class MyClass : IFoo, IBar
 		return x + x;
 	}
 }
-";
-		
-		string script = @"
+	";
+			
+			string script = @"
 define Run()
 	let method = Globals.Classes.Head.Methods.Head in
 		WriteLine(""and = "" + (Globals.Attributes.IsEmpty and method.Attributes.IsEmpty))
@@ -125,9 +125,9 @@ define Run()
 		WriteLine(""contains = "" + Globals.Classes.Head.Bases.Contains(""IBar""))
 	end
 end
-";
-		string result = DoParse(script, source, source.IndexOf("return"));
-		Assert.AreEqual(@"and = false
+	";
+			string result = DoParse(script, source, source.IndexOf("return"));
+			Assert.AreEqual(@"and = false
 or = true
 not = true
 is1 = true
@@ -135,12 +135,12 @@ is2 = true
 is3 = false
 contains = true
 ", result);
-	}
-	
-	[Test]
-	public void StringMethods()
-	{
-		string source = @"
+		}
+		
+		[Test]
+		public void StringMethods()
+		{
+			string source = @"
 [assembly: foo]
 internal sealed class MyClass : IFoo, IBar
 {
@@ -150,8 +150,8 @@ internal sealed class MyClass : IFoo, IBar
 	}
 }
 ";
-		
-		string script = @"
+			
+			string script = @"
 define Run()
 	let klass = Globals.Classes.Head, method = klass.Methods.Head in
 		WriteLine(""Contains = "" + klass.Bases.Head.Contains(""Foo""))
@@ -164,8 +164,8 @@ define Run()
 	end
 end
 ";
-		string result = DoParse(script, source, source.IndexOf("return"));
-		Assert.AreEqual(@"Contains = true
+			string result = DoParse(script, source, source.IndexOf("return"));
+			Assert.AreEqual(@"Contains = true
 EndsWith = true
 StartsWith = false
 Replace = IFxxxxxx
@@ -173,12 +173,12 @@ IsEmpty = false
 eq = true
 ne = false
 ", result);
-	}
-	
-	[Test]
-	public void MemberMethods()
-	{
-		string source = @"
+		}
+		
+		[Test]
+		public void MemberMethods()
+		{
+			string source = @"
 [assembly: foo]
 internal sealed class MyClass : IFoo, IBar
 {
@@ -188,8 +188,8 @@ internal sealed class MyClass : IFoo, IBar
 	}
 }
 ";
-		
-		string script = @"
+			
+			string script = @"
 define Run()
 	let klass = Globals.Classes.Head, method = klass.Methods.Head in
 		WriteLine(""DeclaringType = "" + method.DeclaringType.Name)
@@ -200,19 +200,19 @@ define Run()
 	end
 end
 ";
-		string result = DoParse(script, source, source.IndexOf("return"));
-		Assert.AreEqual(@"DeclaringType = MyClass
+			string result = DoParse(script, source, source.IndexOf("return"));
+			Assert.AreEqual(@"DeclaringType = MyClass
 Access = public
 Attributes = []
 Modifiers = public, static
 Name = Process
 ", result);
-	}
-	
-	[Test]
-	public void TypeScopeMethods()
-	{
-		string source = @"
+		}
+		
+		[Test]
+		public void TypeScopeMethods()
+		{
+			string source = @"
 [assembly: foo]
 internal sealed class MyClass : IFoo, IBar
 {
@@ -222,8 +222,8 @@ internal sealed class MyClass : IFoo, IBar
 	}
 }
 ";
-		
-		string script = @"
+			
+			string script = @"
 define Run()
 	let klass = Globals.Classes.Head in
 		WriteLine("""")
@@ -237,8 +237,8 @@ define Run()
 	end
 end
 ";
-		string result = DoParse(script, source, source.IndexOf("return"));
-		Assert.AreEqual(@"
+			string result = DoParse(script, source, source.IndexOf("return"));
+			Assert.AreEqual(@"
 Declarations = [Process]
 Delegates = []
 Enums = []
@@ -247,12 +247,12 @@ Namespace = <globals>
 Structs = []
 Types = [MyClass]
 ", result);
-	}
-	
-	[Test]
-	public void NamespaceMethods1()
-	{
-		string source = @"
+		}
+		
+		[Test]
+		public void NamespaceMethods1()
+		{
+			string source = @"
 using System;
 using System.IO;
 
@@ -265,8 +265,8 @@ internal sealed class MyClass : IFoo, IBar
 	}
 }
 ";
-		
-		string script = @"
+			
+			string script = @"
 define Run()
 	WriteLine("""")
 	WriteLine(""Aliases = "" + Globals.Aliases)
@@ -276,20 +276,20 @@ define Run()
 	WriteLine(""Uses = "" + Globals.Uses)
 end
 ";
-		string result = DoParse(script, source, source.IndexOf("return"));
-		Assert.AreEqual(@"
+			string result = DoParse(script, source, source.IndexOf("return"));
+			Assert.AreEqual(@"
 Aliases = []
 Externs = []
 Name = <globals>
 Namespaces = []
 Uses = [System, System.IO]
 ", result);
-	}
-
-	[Test]
-	public void NamespaceMethods2()
-	{
-		string source = @"
+		}
+	
+		[Test]
+		public void NamespaceMethods2()
+		{
+			string source = @"
 using System;
 using SS = System;
 using Ptr1 = System.IntPtr;
@@ -304,8 +304,8 @@ internal sealed class MyClass
 	private Ptr2 m_5;
 }
 ";
-		
-		string script = @"
+			
+			string script = @"
 define Run()
 	WriteLine("""")
 	let fields = Globals.Classes.Head.Fields in
@@ -319,8 +319,8 @@ define Run()
 	end
 end
 ";
-		string result = DoParse(script, source, 0);
-		Assert.AreEqual(@"
+			string result = DoParse(script, source, 0);
+			Assert.AreEqual(@"
 is1 = true
 is1b = false
 is2 = true
@@ -329,12 +329,12 @@ is4 = true
 is5 = true
 is5b = false
 ", result);
-	}
-
-	[Test]
-	public void TypeDeclarationMethods()
-	{
-		string source = @"
+		}
+	
+		[Test]
+		public void TypeDeclarationMethods()
+		{
+			string source = @"
 [assembly: foo]
 public abstract partial class MyClass : IFoo, IBar
 {
@@ -346,8 +346,8 @@ public abstract partial class MyClass : IFoo, IBar
 	private string m_name;
 }
 ";
-		
-		string script = @"
+			
+			string script = @"
 define Run()
 	let klass = Globals.Classes.Head in
 		WriteLine("""")
@@ -369,8 +369,8 @@ define Run()
 	end
 end
 ";
-		string result = DoParse(script, source, source.IndexOf("return"));
-		Assert.AreEqual(@"
+			string result = DoParse(script, source, source.IndexOf("return"));
+			Assert.AreEqual(@"
 Access = public
 Attributes = []
 Bases = [IFoo, IBar]
@@ -388,11 +388,11 @@ Operators = []
 Properties = []
 ", result);
 	}
-
-	[Test]
-	public void DelegateMethods()
-	{
-		string source = @"
+	
+		[Test]
+		public void DelegateMethods()
+		{
+			string source = @"
 public delegate int Process<T, U>(T x, U y) where T : new();
 ";
 		
@@ -407,23 +407,23 @@ define Run()
 	end
 end
 ";
-		string result = DoParse(script, source, 0);
-		Assert.AreEqual(@"
+			string result = DoParse(script, source, 0);
+			Assert.AreEqual(@"
 Constraints = where T : new()
 GenericArguments = T,U
 Parameters = [x, y]
 ReturnType = int
 ", result);
-	}
-	
-	[Test]
-	public void EnumMethods()
-	{
-		string source = @"
+		}
+		
+		[Test]
+		public void EnumMethods()
+		{
+			string source = @"
 public enum Colors {red, green, blue}
 ";
-		
-		string script = @"
+			
+			string script = @"
 define Run()
 	let enum = Globals.Enums.Head in
 		WriteLine("""")
@@ -431,16 +431,16 @@ define Run()
 	end
 end
 ";
-		string result = DoParse(script, source, 0);
-		Assert.AreEqual(@"
+			string result = DoParse(script, source, 0);
+			Assert.AreEqual(@"
 BaseType = int
 ", result);
-	}
-
-	[Test]
-	public void FieldMethods()
-	{
-		string source = @"
+		}
+	
+		[Test]
+		public void FieldMethods()
+		{
+			string source = @"
 [assembly: foo]
 public abstract partial class MyClass : IFoo, IBar
 {
@@ -452,8 +452,8 @@ public abstract partial class MyClass : IFoo, IBar
 	private string m_name;
 }
 ";
-		
-		string script = @"
+			
+			string script = @"
 define Run()
 	let klass = Globals.Classes.Head in
 		WriteLine("""")
@@ -462,17 +462,17 @@ define Run()
 	end
 end
 ";
-		string result = DoParse(script, source, source.IndexOf("return"));
-		Assert.AreEqual(@"
+			string result = DoParse(script, source, source.IndexOf("return"));
+			Assert.AreEqual(@"
 Field Type = string
 Field Value = null
 ", result);
-	}
-
-	[Test]
-	public void GlobalNamespaceMethods()
-	{
-		string source = @"
+		}
+	
+		[Test]
+		public void GlobalNamespaceMethods()
+		{
+			string source = @"
 [assembly: foo]
 public abstract partial class MyClass : IFoo, IBar
 {
@@ -484,23 +484,23 @@ public abstract partial class MyClass : IFoo, IBar
 	private string m_name;
 }
 ";
-		
-		string script = @"
+			
+			string script = @"
 define Run()
 	WriteLine("""")
 	WriteLine(""Attributes = "" + Globals.Attributes)
 end
 ";
-		string result = DoParse(script, source, 0);
-		Assert.AreEqual(@"
+			string result = DoParse(script, source, 0);
+			Assert.AreEqual(@"
 Attributes = [foo]
 ", result);
-	}
-
-	[Test]
-	public void IndexerMethods()
-	{
-		string source = @"
+		}
+	
+		[Test]
+		public void IndexerMethods()
+		{
+			string source = @"
 public abstract partial class MyClass : IFoo, IBar
 {
 	public static int Process(int x)
@@ -515,7 +515,7 @@ public abstract partial class MyClass : IFoo, IBar
 }
 ";
 		
-		string script = @"
+			string script = @"
 define Run()
 	let index = Globals.Classes.Head.Indexers.Head in
 		WriteLine("""")
@@ -530,8 +530,8 @@ define Run()
 	end
 end
 ";
-		string result = DoParse(script, source, 0);
-		Assert.AreEqual(@"
+			string result = DoParse(script, source, 0);
+			Assert.AreEqual(@"
 GetterAccess = null
 GetterAttributes = []
 HasGetter = true
@@ -541,12 +541,12 @@ ReturnType = int
 SetterAccess = null
 SetterAttributes = null
 ", result);
-	}
-
-	[Test]
-	public void MethodMethods()
-	{
-		string source = @"
+		}
+	
+		[Test]
+		public void MethodMethods()
+		{
+			string source = @"
 public abstract partial class MyClass : IFoo, IBar
 {
 	public static int Process(int x)
@@ -555,8 +555,8 @@ public abstract partial class MyClass : IFoo, IBar
 	}
 }
 ";
-		
-		string script = @"
+			
+			string script = @"
 define Run()
 	let method = Globals.Classes.Head.Methods.Head in
 		WriteLine("""")
@@ -570,8 +570,8 @@ define Run()
 	end
 end
 ";
-		string result = DoParse(script, source, 0);
-		Assert.AreEqual(@"
+			string result = DoParse(script, source, 0);
+			Assert.AreEqual(@"
 Constraints = null
 GenericArguments = null
 IsConstructor = false
@@ -580,12 +580,12 @@ ReturnType = int
 Parameters = [x]
 Is = true
 ", result);
-	}
-	
-	[Test]
-	public void OperatorMethods()
-	{
-		string source = @"
+		}
+		
+		[Test]
+		public void OperatorMethods()
+		{
+			string source = @"
 public abstract class MyClass : IFoo, IBar
 {
 	public static int operator+(int lhs, int rhs)
@@ -594,8 +594,8 @@ public abstract class MyClass : IFoo, IBar
 	}
 }
 ";
-		
-		string script = @"
+			
+			string script = @"
 define Run()
 	let op = Globals.Classes.Head.Operators.Head in
 		WriteLine("""")
@@ -607,8 +607,8 @@ define Run()
 	end
 end
 ";
-		string result = DoParse(script, source, 0);
-		Assert.AreEqual(@"
+			string result = DoParse(script, source, 0);
+			Assert.AreEqual(@"
 IsConversion = false
 IsExplicit = false
 IsImplicit = false
@@ -616,11 +616,11 @@ Parameters = [lhs, rhs]
 ReturnType = int
 ", result);
 	}
-	
-	[Test]
-	public void ParameterMethods()
-	{
-		string source = @"
+		
+		[Test]
+		public void ParameterMethods()
+		{
+			string source = @"
 public abstract partial class MyClass : IFoo, IBar
 {
 	public static int Process(int x, out string s, params object[] args)
@@ -629,8 +629,8 @@ public abstract partial class MyClass : IFoo, IBar
 	}
 }
 ";
-		
-		string script = @"
+			
+			string script = @"
 define Run()
 	let params = Globals.Classes.Head.Methods.Head.Parameters, p1 = params.First, 
 	p2 = params.Second, p3 = params.Last in
@@ -657,8 +657,8 @@ define Run()
 	end
 end
 ";
-		string result = DoParse(script, source, 0);
-		Assert.AreEqual(@"
+			string result = DoParse(script, source, 0);
+			Assert.AreEqual(@"
 Attributes1 = []
 Attributes2 = []
 Attributes3 = []
@@ -675,12 +675,12 @@ Type1 = int
 Type2 = string
 Type3 = object[]
 ", result);
-	}
-
-	[Test]
-	public void PropertyMethods()
-	{
-		string source = @"
+		}
+	
+		[Test]
+		public void PropertyMethods()
+		{
+			string source = @"
 public class MyClass : IFoo, IBar
 {
 	public int Weight {get; private set;}
@@ -691,8 +691,8 @@ public class MyClass : IFoo, IBar
 	}
 }
 ";
-		
-		string script = @"
+			
+			string script = @"
 define Run()
 	let props = Globals.Classes.Head.Properties, p1 = props.First, p2 = props.Second in
 		WriteLine("""")
@@ -719,9 +719,9 @@ define Run()
 	end
 end
 ";
-
-		string result = DoParse(script, source, 0);
-		Assert.AreEqual(@"
+	
+			string result = DoParse(script, source, 0);
+			Assert.AreEqual(@"
 GetterAccess1 = null
 GetterAccess2 = null
 GetterAttributes1 = []
@@ -737,17 +737,17 @@ SetterAccess2 = null
 SetterAttributes1 = []
 SetterAttributes2 = null
 ", result);
-	}
-	
-	[Test]
-	public void UsingAliasMethods()
-	{
-		string source = @"
+		}
+		
+		[Test]
+		public void UsingAliasMethods()
+		{
+			string source = @"
 using Cookie = IntPtr;
 using OldCollections = System.Collections;
 ";
 		
-		string script = @"
+			string script = @"
 define Run()
 	let a1 = Globals.Aliases.First, a2 = Globals.Aliases.Second in
 		WriteLine("""")
@@ -759,25 +759,25 @@ define Run()
 	end
 end
 ";
-
-		string result = DoParse(script, source, 0);
-		Assert.AreEqual(@"
+	
+			string result = DoParse(script, source, 0);
+			Assert.AreEqual(@"
 Alias1 = Cookie
 Alias2 = OldCollections
 Value1 = IntPtr
 Value2 = System.Collections
 ", result);
-	}
-
-	[Test]
-	public void UsingDirectiveMethods()
-	{
-		string source = @"
+		}
+	
+		[Test]
+		public void UsingDirectiveMethods()
+		{
+			string source = @"
 using Mono.Posix;
 using System.Collections;
 ";
-		
-		string script = @"
+			
+			string script = @"
 define Run()
 	let a1 = Globals.Uses.First, a2 = Globals.Uses.Second in
 		WriteLine("""")
@@ -786,12 +786,13 @@ define Run()
 	end
 end
 ";
-
-		string result = DoParse(script, source, 0);
-		Assert.AreEqual(@"
+	
+			string result = DoParse(script, source, 0);
+			Assert.AreEqual(@"
 Name1 = Mono.Posix
 Name2 = System.Collections
 ", result);
+		}
 	}
 }
 #endif	// TEST

@@ -35,8 +35,8 @@ public sealed class InsertFirstTest
 	
 	private string DoEdit(string cs, string lines)
 	{
-		CsParser.Parser parser = new CsParser.Parser(cs);
-		CsGlobalNamespace globals = parser.Parse();
+		CsParser.Parser parser = new CsParser.Parser();
+		CsGlobalNamespace globals = parser.Parse(cs);
 		Refactor refactor = new Refactor(cs);
 
 		refactor.Queue(new InsertFirst(globals.Types[0].Methods[0].Body, lines.Split('\n')));

@@ -104,6 +104,7 @@ or ad-hoc parser which looks for locals on a line and omits locals in a scope
 	   maybe some sort of context help window that can also be shown if the text 
 	   window selection is within a method?
 	- refactor needs to document Scope and support Locals property
+* Is ChangeAccess correct?
 * Could probably speed up editing of large files if we got a pointer to the text from
   native code and operated on that with unsafe code.
 * Tab style isn't getting applied correctly

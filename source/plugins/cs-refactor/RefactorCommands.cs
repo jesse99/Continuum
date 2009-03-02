@@ -434,7 +434,7 @@ namespace CsRefactor
 			
 			// But if an accessor is present we'll need to replace it.
 #if TEST
-			ICsScanner scanner = new CsParser.ScanCs();
+			ICsScanner scanner = new CsParser.Scanner();
 #else
 			Boss boss = ObjectModel.Create("CsParser");
 			var scanner = boss.Get<ICsScanner>();

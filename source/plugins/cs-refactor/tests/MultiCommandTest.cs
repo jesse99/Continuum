@@ -42,8 +42,8 @@ public sealed class MultiCommandTest
 	using System.Threading;
 ";
 
-		CsParser.Parser parser = new CsParser.Parser(cs);
-		CsGlobalNamespace globals = parser.Parse();
+		CsParser.Parser parser = new CsParser.Parser();
+		CsGlobalNamespace globals = parser.Parse(cs);
 		Refactor refactor = new Refactor(cs);
 		
 		refactor.Queue(new AddUsing(globals, "System.Com"));

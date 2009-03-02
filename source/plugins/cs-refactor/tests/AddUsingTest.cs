@@ -35,8 +35,8 @@ public sealed class AddUsingTest
 	
 	private string DoEdit(string cs, params string[] names)
 	{
-		CsParser.Parser parser = new CsParser.Parser(cs);
-		CsGlobalNamespace globals = parser.Parse();
+		CsParser.Parser parser = new CsParser.Parser();
+		CsGlobalNamespace globals = parser.Parse(cs);
 		Refactor refactor = new Refactor(cs);
 		
 		foreach (string name in names)
@@ -125,8 +125,8 @@ public enum Names {Alpha, Beta}
 }
 ";
 		
-		CsParser.Parser parser = new CsParser.Parser(text);
-		CsGlobalNamespace globals = parser.Parse();
+		CsParser.Parser parser = new CsParser.Parser();
+		CsGlobalNamespace globals = parser.Parse(text);
 		
 		Refactor refactor = new Refactor(text);
 		refactor.Queue(new AddUsing(globals.Namespaces[0], "System.Text"));

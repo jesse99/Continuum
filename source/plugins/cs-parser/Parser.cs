@@ -19,6 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear;
 using Shared;
 using System;
 using System.Collections.Generic;
@@ -28,17 +29,22 @@ namespace CsParser
 {
 	// Note that this parser is a bit simplified because we only care whether the text is well-formed
 	// not if it is actually correct.
-	public sealed class Parser
+	internal sealed class Parser : ICsParser
 	{
-		public Parser(string text)
+		public void Instantiated(Boss boss)
 		{
-			m_text = text;
-			m_scanner = new Scanner();
-			m_scanner.Init(text);
+			m_boss = boss;
 		}
 		
-		public CsGlobalNamespace Parse()
+		public Boss Boss
 		{
+			get {return m_boss;}
+		}
+		
+		public CsGlobalNamespace Parse(string text)
+		{
+			DoInit(text);
+			
 			m_try = false;
 			return DoParseCompilationUnit();
 		}
@@ -46,8 +52,10 @@ namespace CsParser
 		// Note that we take some pains to recover from parser errors. This is important
 		// because they are quite common while code is being edited and we don't want
 		// to lose all information about a type just because a brace is missing.
-		public CsGlobalNamespace TryParse(out int offset, out int length)
+		public CsGlobalNamespace TryParse(string text, out int offset, out int length)
 		{
+			DoInit(text);
+			
 			m_try = true;
 			m_bad = new Token();
 			CsGlobalNamespace globals = DoParseCompilationUnit();
@@ -62,11 +70,18 @@ namespace CsParser
 				offset = m_bad.Offset;
 				length = m_bad.Length;
 			}
-
+			
 			return globals;
 		}
 		
-		#region Private Methods	
+		#region Private Methods
+		private void DoInit(string text)
+		{
+			m_text = text;
+			m_scanner = new Scanner();
+			m_scanner.Init(text);
+		}
+
 		// accessor-declarations:
 		//      get-accessor-declaration   set-accessor-declaration?
 		//      set-accessor-declaration   get-accessor-declaration?
@@ -1963,6 +1978,7 @@ namespace CsParser
 		#endregion
 		
 		#region Fields
+		private Boss m_boss;
 		private string m_text;
 		private Scanner m_scanner;
 		private bool m_try;

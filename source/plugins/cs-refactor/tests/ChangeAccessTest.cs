@@ -35,8 +35,8 @@ public sealed class ChangeAccessTest
 	
 	private string DoEdit(string cs, string access)
 	{
-		CsParser.Parser parser = new CsParser.Parser(cs);
-		CsGlobalNamespace globals = parser.Parse();
+		CsParser.Parser parser = new CsParser.Parser();
+		CsGlobalNamespace globals = parser.Parse(cs);
 		Refactor refactor = new Refactor(cs);
 		
 		refactor.Queue(new ChangeAccess(globals.Types[0].Methods[0], access));

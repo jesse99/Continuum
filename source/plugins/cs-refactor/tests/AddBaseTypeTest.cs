@@ -24,176 +24,179 @@ using NUnit.Framework;
 using Shared;
 using System;
 
-[TestFixture]
-public sealed class AddBaseTypeTest
-{	
-	[TestFixtureSetUp]
-	public void Init()
-	{
-		Shared.AssertListener.Install();
-	}
-	
-	private string DoEdit(string cs, params string[] bases)
-	{
-		CsParser.Parser parser = new CsParser.Parser(cs);
-		CsGlobalNamespace globals = parser.Parse();
-		Refactor refactor = new Refactor(cs);
-		
-		foreach (string b in bases)
+namespace CsRefactor
+{
+	[TestFixture]
+	public sealed class AddBaseTypeTest
+	{	
+		[TestFixtureSetUp]
+		public void Init()
 		{
-			refactor.Queue(new AddBaseType(globals.Types[0], b));
+			Shared.AssertListener.Install();
 		}
 		
-		return refactor.Process();
+		private string DoEdit(string cs, params string[] bases)
+		{
+			CsParser.Parser parser = new CsParser.Parser();
+			CsGlobalNamespace globals = parser.Parse(cs);
+			Refactor refactor = new Refactor(cs);
+			
+			foreach (string b in bases)
+			{
+				refactor.Queue(new AddBaseType(globals.Types[0], b));
+			}
+			
+			return refactor.Process();
+		}
+		
+		[Test]
+		public void NoBases()
+		{
+			string text = @"
+	internal sealed class Foo
+	{
 	}
-	
-	[Test]
-	public void NoBases()
+	";
+			Assert.AreEqual(@"
+	internal sealed class Foo : Base
 	{
-		string text = @"
-internal sealed class Foo
-{
-}
-";
-		Assert.AreEqual(@"
-internal sealed class Foo : Base
-{
-}
-", DoEdit(text, "Base"));
-}
-	
-	[Test]
-	public void Unsorted()
+	}
+	", DoEdit(text, "Base"));
+	}
+		
+		[Test]
+		public void Unsorted()
+		{
+			string text = @"
+	internal sealed class Foo : IAlpha, IGamma, IBaz
 	{
-		string text = @"
-internal sealed class Foo : IAlpha, IGamma, IBaz
-{
-}
-";
-		Assert.AreEqual(@"
-internal sealed class Foo : IAlpha, IGamma, IBaz, IBeta
-{
-}
-", DoEdit(text, "IBeta"));
-}
-	
-	[Test]
-	public void Sorted1()
+	}
+	";
+			Assert.AreEqual(@"
+	internal sealed class Foo : IAlpha, IGamma, IBaz, IBeta
 	{
-		string text = @"
-internal sealed class Foo : IAlpha, IBaz, IGamma
-{
-}
-";
-		Assert.AreEqual(@"
-internal sealed class Foo : IAlpha, IBaz, IBeta, IGamma
-{
-}
-", DoEdit(text, "IBeta"));
-}
-	
-	[Test]
-	public void Sorted2()
+	}
+	", DoEdit(text, "IBeta"));
+	}
+		
+		[Test]
+		public void Sorted1()
+		{
+			string text = @"
+	internal sealed class Foo : IAlpha, IBaz, IGamma
 	{
-		string text = @"
-internal sealed class Foo : IAlpha, IBaz, IGamma
-{
-}
-";
-		Assert.AreEqual(@"
-internal sealed class Foo : IAlpha, IBaz, IGamma, IZeta
-{
-}
-", DoEdit(text, "IZeta"));
-}
-	
-	[Test]
-	public void BaseWithInterfaces()
+	}
+	";
+			Assert.AreEqual(@"
+	internal sealed class Foo : IAlpha, IBaz, IBeta, IGamma
 	{
-		string text = @"
-internal sealed class Foo : IAlpha, IBaz, IGamma
-{
-}
-";
-		Assert.AreEqual(@"
-internal sealed class Foo : Zowie, IAlpha, IBaz, IGamma
-{
-}
-", DoEdit(text, "Zowie"));
-}
-	
-	[Test]
-	public void Sorted3()
+	}
+	", DoEdit(text, "IBeta"));
+	}
+		
+		[Test]
+		public void Sorted2()
+		{
+			string text = @"
+	internal sealed class Foo : IAlpha, IBaz, IGamma
 	{
-		string text = @"
-internal sealed class Foo : Zeta, IAlpha, IBaz, IGamma
-{
-}
-";
-		Assert.AreEqual(@"
-internal sealed class Foo : Zeta, IAlpha, IBaz, IBeta, IGamma
-{
-}
-", DoEdit(text, "IBeta"));
-}
-	
-	[Test]
-	public void Unsorted2()
+	}
+	";
+			Assert.AreEqual(@"
+	internal sealed class Foo : IAlpha, IBaz, IGamma, IZeta
 	{
-		string text = @"
-internal sealed class Foo : Zeta, IAlpha, IGamma, IBaz
-{
-}
-";
-		Assert.AreEqual(@"
-internal sealed class Foo : Zeta, IAlpha, IGamma, IBaz, IBeta
-{
-}
-", DoEdit(text, "IBeta"));
-}
-	
-	[Test]
-	public void Exists()
+	}
+	", DoEdit(text, "IZeta"));
+	}
+		
+		[Test]
+		public void BaseWithInterfaces()
+		{
+			string text = @"
+	internal sealed class Foo : IAlpha, IBaz, IGamma
 	{
-		string text = @"
-internal sealed class Foo : Zeta, IAlpha, IBaz, IGamma
-{
-}
-";
-		Assert.AreEqual(@"
-internal sealed class Foo : Zeta, IAlpha, IBaz, IGamma
-{
-}
-", DoEdit(text, "IAlpha"));
-}
-	
-	[Test]
-	public void Multiple1()
+	}
+	";
+			Assert.AreEqual(@"
+	internal sealed class Foo : Zowie, IAlpha, IBaz, IGamma
 	{
-		string text = @"
-internal sealed class Foo
-{
-}
-";
-		Assert.AreEqual(@"
-internal sealed class Foo : Zeta, IAlpha, IBeta
-{
-}
-", DoEdit(text, "Zeta", "IAlpha", "IBeta"));
-}
-	
-	[Test]
-	public void Multiple2()
+	}
+	", DoEdit(text, "Zowie"));
+	}
+		
+		[Test]
+		public void Sorted3()
+		{
+			string text = @"
+	internal sealed class Foo : Zeta, IAlpha, IBaz, IGamma
 	{
-		string text = @"
-internal sealed class Foo : IAlpha, IDelta
-{
-}
-";
-		Assert.AreEqual(@"
-internal sealed class Foo : Zeta, IAlpha, IDelta, IGamma
-{
-}
-", DoEdit(text, "Zeta", "IGamma"));
-}
+	}
+	";
+			Assert.AreEqual(@"
+	internal sealed class Foo : Zeta, IAlpha, IBaz, IBeta, IGamma
+	{
+	}
+	", DoEdit(text, "IBeta"));
+	}
+		
+		[Test]
+		public void Unsorted2()
+		{
+			string text = @"
+	internal sealed class Foo : Zeta, IAlpha, IGamma, IBaz
+	{
+	}
+	";
+			Assert.AreEqual(@"
+	internal sealed class Foo : Zeta, IAlpha, IGamma, IBaz, IBeta
+	{
+	}
+	", DoEdit(text, "IBeta"));
+	}
+		
+		[Test]
+		public void Exists()
+		{
+			string text = @"
+	internal sealed class Foo : Zeta, IAlpha, IBaz, IGamma
+	{
+	}
+	";
+			Assert.AreEqual(@"
+	internal sealed class Foo : Zeta, IAlpha, IBaz, IGamma
+	{
+	}
+	", DoEdit(text, "IAlpha"));
+	}
+		
+		[Test]
+		public void Multiple1()
+		{
+			string text = @"
+	internal sealed class Foo
+	{
+	}
+	";
+			Assert.AreEqual(@"
+	internal sealed class Foo : Zeta, IAlpha, IBeta
+	{
+	}
+	", DoEdit(text, "Zeta", "IAlpha", "IBeta"));
+	}
+		
+		[Test]
+		public void Multiple2()
+		{
+			string text = @"
+	internal sealed class Foo : IAlpha, IDelta
+	{
+	}
+	";
+			Assert.AreEqual(@"
+	internal sealed class Foo : Zeta, IAlpha, IDelta, IGamma
+	{
+	}
+	", DoEdit(text, "Zeta", "IGamma"));
+	}
+	}
 }

@@ -35,8 +35,8 @@ public sealed class AddMemberTest
 	
 	private string DoEdit(string cs, params string[] lines)
 	{
-		CsParser.Parser parser = new CsParser.Parser(cs);
-		CsGlobalNamespace globals = parser.Parse();
+		CsParser.Parser parser = new CsParser.Parser();
+		CsGlobalNamespace globals = parser.Parse(cs);
 		Refactor refactor = new Refactor(cs);
 		
 		refactor.Queue(new AddMember(globals.Types[0], lines));
