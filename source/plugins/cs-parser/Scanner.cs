@@ -28,6 +28,9 @@ using System.Globalization;
 
 namespace CsParser
 {
+	// It would be a bit cleaner if we returned TokenKind.Keyword for keywords but changing
+	// the code to so do is somewhat obnoxious and doesn't buy us a whole lot since we don't
+	// care if keywords are used as identifiers.
 	internal sealed unsafe class Scanner : ICsScanner
 	{
 		public void Instantiated(Boss boss)
@@ -108,6 +111,11 @@ namespace CsParser
 			get {return m_buffer[m_index + 1];}
 		}
 		
+		private char NextNext
+		{
+			get {return m_buffer[m_index + 2];}
+		}
+		
 		private void DoAdvance(char* buffer)
 		{
 			m_buffer = buffer;
@@ -154,6 +162,12 @@ namespace CsParser
 				DoScanVerbatimString();
 			}
 			
+			// punctuation
+			else if (char.IsPunctuation(Current) || char.IsSymbol(Current))
+			{
+				DoScanPunct();
+			}
+			
 			// eof
 			else if (Current == '\x00')
 			{
@@ -166,6 +180,245 @@ namespace CsParser
 			{
 				m_token = new Token(m_text, m_index, 1, m_line, TokenKind.Other);
 				++m_index;
+			}
+		}
+		
+		// operator-or-punctuator: one of
+		// {	}	[	]	(	)	.	,	:	;
+		// +	-	*	/	%	&	|	^	!	~
+		// =	<	>	?	??	::	++	--	&&	||
+		// ->	==	!=	<=	>=	+=	-=	*=	/=	%=
+		// &=	|=	^=	<<	<<=	=>	 	 	 	 
+		private void DoScanPunct()
+		{
+			switch (Current)
+			{
+				case '?':
+					if (Next == '?')
+					{
+						m_token = new Token(m_text, m_index, 2, m_line, TokenKind.Punct);
+						m_index += 2;
+					}
+					else
+					{
+						m_token = new Token(m_text, m_index, 1, m_line, TokenKind.Punct);
+						++m_index;
+					}
+					break;
+					
+				case ':':
+					if (Next == ':')
+					{
+						m_token = new Token(m_text, m_index, 2, m_line, TokenKind.Punct);
+						m_index += 2;
+					}
+					else
+					{
+						m_token = new Token(m_text, m_index, 1, m_line, TokenKind.Punct);
+						++m_index;
+					}
+					break;
+					
+				case '+':
+					if (Next == '+')
+					{
+						m_token = new Token(m_text, m_index, 2, m_line, TokenKind.Punct);
+						m_index += 2;
+					}
+					else if (Next == '=')
+					{
+						m_token = new Token(m_text, m_index, 2, m_line, TokenKind.Punct);
+						m_index += 2;
+					}
+					else
+					{
+						m_token = new Token(m_text, m_index, 1, m_line, TokenKind.Punct);
+						++m_index;
+					}
+					break;
+					
+				case '-':
+					if (Next == '=')
+					{
+						m_token = new Token(m_text, m_index, 2, m_line, TokenKind.Punct);
+						m_index += 2;
+					}
+					else if (Next == '>')
+					{
+						m_token = new Token(m_text, m_index, 2, m_line, TokenKind.Punct);
+						m_index += 2;
+					}
+					else if (Next == '-')
+					{
+						m_token = new Token(m_text, m_index, 2, m_line, TokenKind.Punct);
+						m_index += 2;
+					}
+					else
+					{
+						m_token = new Token(m_text, m_index, 1, m_line, TokenKind.Punct);
+						++m_index;
+					}
+					break;
+					
+				case '&':
+					if (Next == '&')
+					{
+						m_token = new Token(m_text, m_index, 2, m_line, TokenKind.Punct);
+						m_index += 2;
+					}
+					else if (Next == '=')
+					{
+						m_token = new Token(m_text, m_index, 2, m_line, TokenKind.Punct);
+						m_index += 2;
+					}
+					else
+					{
+						m_token = new Token(m_text, m_index, 1, m_line, TokenKind.Punct);
+						++m_index;
+					}
+					break;
+					
+				case '|':
+					if (Next == '|')
+					{
+						m_token = new Token(m_text, m_index, 2, m_line, TokenKind.Punct);
+						m_index += 2;
+					}
+					else if (Next == '=')
+					{
+						m_token = new Token(m_text, m_index, 2, m_line, TokenKind.Punct);
+						m_index += 2;
+					}
+					else
+					{
+						m_token = new Token(m_text, m_index, 1, m_line, TokenKind.Punct);
+						++m_index;
+					}
+					break;
+					
+				case '=':
+					if (Next == '=')
+					{
+						m_token = new Token(m_text, m_index, 2, m_line, TokenKind.Punct);
+						m_index += 2;
+					}
+					else if (Next == '>')
+					{
+						m_token = new Token(m_text, m_index, 2, m_line, TokenKind.Punct);
+						m_index += 2;
+					}
+					else
+					{
+						m_token = new Token(m_text, m_index, 1, m_line, TokenKind.Punct);
+						++m_index;
+					}
+					break;
+					
+				case '!':
+					if (Next == '=')
+					{
+						m_token = new Token(m_text, m_index, 2, m_line, TokenKind.Punct);
+						m_index += 2;
+					}
+					else
+					{
+						m_token = new Token(m_text, m_index, 1, m_line, TokenKind.Punct);
+						++m_index;
+					}
+					break;
+					
+				case '<':
+					if (Next == '=')
+					{
+						m_token = new Token(m_text, m_index, 2, m_line, TokenKind.Punct);
+						m_index += 2;
+					}
+					else if (Next == '<')
+					{
+						m_token = new Token(m_text, m_index, 2, m_line, TokenKind.Punct);
+						m_index += 2;
+					}
+					else if (Next == '<' && NextNext == '=')
+					{
+						m_token = new Token(m_text, m_index, 3, m_line, TokenKind.Punct);
+						m_index += 3;
+					}
+					else
+					{
+						m_token = new Token(m_text, m_index, 1, m_line, TokenKind.Punct);
+						++m_index;
+					}
+					break;
+					
+				case '>':
+					if (Next == '=')
+					{
+						m_token = new Token(m_text, m_index, 2, m_line, TokenKind.Punct);
+						m_index += 2;
+					}
+					else
+					{
+						m_token = new Token(m_text, m_index, 1, m_line, TokenKind.Punct);
+						++m_index;
+					}
+					break;
+					
+				case '*':
+					if (Next == '=')
+					{
+						m_token = new Token(m_text, m_index, 2, m_line, TokenKind.Punct);
+						m_index += 2;
+					}
+					else
+					{
+						m_token = new Token(m_text, m_index, 1, m_line, TokenKind.Punct);
+						++m_index;
+					}
+					break;
+					
+				case '/':
+					if (Next == '=')
+					{
+						m_token = new Token(m_text, m_index, 2, m_line, TokenKind.Punct);
+						m_index += 2;
+					}
+					else
+					{
+						m_token = new Token(m_text, m_index, 1, m_line, TokenKind.Punct);
+						++m_index;
+					}
+					break;
+					
+				case '%':
+					if (Next == '=')
+					{
+						m_token = new Token(m_text, m_index, 2, m_line, TokenKind.Punct);
+						m_index += 2;
+					}
+					else
+					{
+						m_token = new Token(m_text, m_index, 1, m_line, TokenKind.Punct);
+						++m_index;
+					}
+					break;
+					
+				case '^':
+					if (Next == '=')
+					{
+						m_token = new Token(m_text, m_index, 2, m_line, TokenKind.Punct);
+						m_index += 2;
+					}
+					else
+					{
+						m_token = new Token(m_text, m_index, 1, m_line, TokenKind.Punct);
+						++m_index;
+					}
+					break;
+				
+				default:
+					m_token = new Token(m_text, m_index, 1, m_line, TokenKind.Punct);
+					++m_index;
+					break;
 			}
 		}
 		

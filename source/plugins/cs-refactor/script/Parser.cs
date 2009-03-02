@@ -272,19 +272,17 @@ namespace CsRefactor.Script
 			
 			result = DoParseRelationalExpression(locals);
 			
-			if (m_scanner.Token.IsPunct("=") && m_scanner.LookAhead(1).IsPunct("="))
+			if (m_scanner.Token.IsPunct("=="))
 			{
 				int line = m_scanner.Token.Line;
-				m_scanner.Advance();
 				m_scanner.Advance();
 				
 				Expression rhs = DoParseRelationalExpression(locals);
 				result = new InvokeMethod(line, result, "op_Equals", new Expression[]{rhs});
 			}
-			else if (m_scanner.Token.IsPunct("!") && m_scanner.LookAhead(1).IsPunct("="))
+			else if (m_scanner.Token.IsPunct("!="))
 			{
 				int line = m_scanner.Token.Line;
-				m_scanner.Advance();
 				m_scanner.Advance();
 				
 				Expression rhs = DoParseRelationalExpression(locals);

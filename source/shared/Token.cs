@@ -32,10 +32,11 @@ namespace Shared
 		Keyword,
 		Char,				// text will include the ' characters
 		String,			// text will include the " characters, text may have new lines
-		Other,			// text will be a single character (usually punctuation)
+		Punct,
+		Other,
 	}
 	
-	public struct Token : IEquatable<Token>	
+	public struct Token : IEquatable<Token>
 	{
 		public Token(string text, int line)
 		{
@@ -66,12 +67,10 @@ namespace Shared
 			Kind = kind;
 		}
 		
-		// Index of the first character within the token. For strings and
-		// characters this will be one past the opening quote.
+		// Index of the first character within the token. 
 		public int Offset {get; private set;}
 		
-		// The number of characters within the token. For strings and
-		// chars this will not include the delimiters.
+		// The number of characters within the token. 
 		public int Length {get; private set;}
 		
 		// The one-based line the token started on.
@@ -84,7 +83,7 @@ namespace Shared
 			return Kind != TokenKind.Invalid;
 		}
 		
-		public bool IsIdentifier(string name)	// TODO: should get rid of this
+		public bool IsIdentifier(string name)
 		{
 			return Kind == TokenKind.Identifier && this == name;
 		}
@@ -95,13 +94,10 @@ namespace Shared
 		}
 		
 		public bool IsPunct(string name)
-		{
-			Debug.Assert(name.Length == 1, "name is not of length 1");
-			
-			return Kind == TokenKind.Other && this == name;
+		{			
+			return Kind == TokenKind.Punct && this == name;
 		}
 		
-		// Note that this should not be used in time critical parts of the parser.
 		public string Text()
 		{
 			// TODO: Unforunately strings are only usually immutable (unsafe
@@ -146,18 +142,6 @@ namespace Shared
 			return this == rhs;
 		}
 		
-		public override int GetHashCode()
-		{
-			int hash = 33;
-			
-			unchecked
-			{
-				hash += 3*Offset.GetHashCode() + 7*Length.GetHashCode();
-			}
-			
-			return hash;
-		}
-		
 		public static bool operator==(Token lhs, Token rhs)
 		{
 			return lhs.Offset == rhs.Offset && lhs.Length == rhs.Length;
@@ -183,6 +167,18 @@ namespace Shared
 		public static bool operator!=(Token lhs, string rhs)
 		{
 			return !(lhs == rhs);
+		}
+		
+		public override int GetHashCode()
+		{
+			int hash = 33;
+			
+			unchecked
+			{
+				hash += 3*Offset.GetHashCode() + 7*Length.GetHashCode();
+			}
+			
+			return hash;
 		}
 		#endregion
 		

@@ -39,11 +39,11 @@ namespace CsRefactor.Script
 		public ScannerException(int line, string text) : base(line, text) 
 		{
 		}
-
+		
 		public ScannerException(int line, string format, params object[] args) : base(line, string.Format(format, args)) 
 		{
 		}
-
+		
 		public ScannerException(int line, string text, Exception inner) : base (line, text, inner)
 		{
 		}
@@ -53,7 +53,10 @@ namespace CsRefactor.Script
 		{
 		}
 	}
-		
+	
+	
+	// TODO: Should return both keywords and identifiers so people can't do silly things
+	// like name a method "define" or "end".
 	internal sealed unsafe class Scanner
 	{
 		public Scanner(string text) : this(text, 1)
@@ -86,7 +89,7 @@ namespace CsRefactor.Script
 			int oldLine = m_line;
 			Token oldToken = m_token;
 			
-			fixed (char* buffer = m_text) 
+			fixed (char* buffer = m_text)
 			{
 				while (delta-- > 0 && Token.Kind != TokenKind.Invalid)
 				{
@@ -107,10 +110,10 @@ namespace CsRefactor.Script
 		public void Advance()
 		{
 			Debug.Assert(Token.Kind != TokenKind.Invalid, "can't advance past the end of the text");
-
+			
 			fixed (char* buffer = m_text) DoAdvance(buffer);
 		}
-
+		
 		#region Private Methods
 		// This is a bottleneck for the parser so it's important that it be fast.
 		// Using a pointer should be pretty fast, but other possibilities are
@@ -120,12 +123,12 @@ namespace CsRefactor.Script
 		{
 			get {return m_buffer[m_index];}	// unsafe code so that we can avoid range checkes
 		}
-
+		
 		private char Next
 		{
 			get {return m_buffer[m_index + 1];}
 		}
-				
+		
 		private void DoAdvance(char* buffer)
 		{
 			m_buffer = buffer;
@@ -140,7 +143,7 @@ namespace CsRefactor.Script
 				else
 					break;
 			}
-							
+			
 			// identifier
 			if (char.IsLetter(Current) || Current == '_')
 			{
@@ -152,20 +155,63 @@ namespace CsRefactor.Script
 			{
 				DoScanString();
 			}
-				
+			
+			// punctuation
+			else if (char.IsPunctuation(Current) || char.IsSymbol(Current))
+			{
+				DoScanPunct();
+			}
+			
 			// eof
 			else if (Current == '\x00')
 			{
 				m_token = new Token(m_text, m_token.Line);
 				++m_index;
 			}
-				
+			
 			// catch all
 			else
 			{
 				m_token = new Token(m_text, m_index, 1, m_line, TokenKind.Other);
 				++m_index;
-			}			
+			}
+		}
+		
+		private void DoScanPunct()
+		{
+			switch (Current)
+			{
+				case '=':
+					if (Next == '=')
+					{
+						m_token = new Token(m_text, m_index, 2, m_line, TokenKind.Punct);
+						m_index += 2;
+					}
+					else
+					{
+						m_token = new Token(m_text, m_index, 1, m_line, TokenKind.Punct);
+						++m_index;
+					}
+					break;
+					
+				case '!':
+					if (Next == '=')
+					{
+						m_token = new Token(m_text, m_index, 2, m_line, TokenKind.Punct);
+						m_index += 2;
+					}
+					else
+					{
+						m_token = new Token(m_text, m_index, 1, m_line, TokenKind.Punct);
+						++m_index;
+					}
+					break;
+					
+				default:
+					m_token = new Token(m_text, m_index, 1, m_line, TokenKind.Punct);
+					++m_index;
+					break;
+			}
 		}
 		
 		// StringLiteral := '"' StringChar+ '"'
@@ -175,7 +221,7 @@ namespace CsRefactor.Script
 			int line = m_line;
 			int offset = m_index;
 			m_index = m_index + 1;
-	
+			
 			while (Current != '\x00')
 			{
 				if (char.IsWhiteSpace(Current))
@@ -187,7 +233,7 @@ namespace CsRefactor.Script
 				else
 					++m_index;
 			}
-						
+			
 			if (Current == '"')
 			{
 				++m_index;
@@ -216,7 +262,7 @@ namespace CsRefactor.Script
 			TokenKind kind = ms_keywords.Contains(name) ? TokenKind.Keyword : TokenKind.Identifier;
 			m_token = new Token(m_text, offset, m_index - offset, m_line, kind);
 		}
-				
+		
 		// Whitespace := ' ' | '\t' | '\n'
 		private void DoSkipWhiteSpace()
 		{
@@ -249,16 +295,16 @@ namespace CsRefactor.Script
 			}
 		}
 		#endregion
-
+		
 		#region Fields 
 		private string m_text;
 		private char* m_buffer;
 		private int m_index = 0;
 		private int m_line;
-		private Token m_token; 
+		private Token m_token;
 		
 		private static HashSet<string> ms_keywords = new HashSet<string>{"and",  "define",  "do",  "elif",  "else",  "end",  "false",  "for",  "from",  "if",  "in",  "is",  "let",  "not",  "null",  "or",  "property",  "return",  "select",  "self",  "then",  "true",  "when",  "where"};
 		private static HashSet<string> ms_reserved = new HashSet<string>{"assert",  "class",  "case",  "except",  "foreach",  "match",  "otherwise",  "while"};
 		#endregion
-	} 
+	}
 }

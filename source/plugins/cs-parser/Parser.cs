@@ -1416,7 +1416,7 @@ namespace CsParser
 			DoParseNamespaceBody(externs, aliases, uses, childNamespaces, members, types, ref open, ref last);
 			Token close = last;
 			
-			if (m_scanner.Token.IsIdentifier(";"))
+			if (m_scanner.Token.IsPunct(";"))
 			{
 				last = m_scanner.Token;
 				m_scanner.Advance();
@@ -1569,11 +1569,11 @@ namespace CsParser
 				m_scanner.Advance();
 				name = "false";
 			}
-			else if (m_scanner.Token.Kind == TokenKind.Other)
+			else if (m_scanner.Token.Kind == TokenKind.Punct)
 			{
 				name = m_scanner.Token.Text();
 				m_scanner.Advance();
-				if (m_scanner.Token.Kind == TokenKind.Other && !m_scanner.Token.IsPunct("("))
+				if (m_scanner.Token.Kind == TokenKind.Punct && !m_scanner.Token.IsPunct("("))
 				{
 					name += m_scanner.Token.Text();
 					m_scanner.Advance();

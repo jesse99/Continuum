@@ -51,25 +51,25 @@ public sealed class ScannerTest
 			scanner.Advance();
 		}
 		
-		Assert.AreEqual("define", tokens[0].Text());  
-		Assert.AreEqual("Run", tokens[1].Text());  
-		Assert.AreEqual("(", tokens[2].Text());  
-		Assert.AreEqual(")", tokens[3].Text());  
-		Assert.AreEqual("if", tokens[4].Text());  
-		Assert.AreEqual("Scope", tokens[5].Text());  
-		Assert.AreEqual("is", tokens[6].Text());  
-		Assert.AreEqual("Type", tokens[7].Text());  
-		Assert.AreEqual("then", tokens[8].Text());  
-		Assert.AreEqual("Process", tokens[9].Text());  
-		Assert.AreEqual("(", tokens[10].Text());  
-		Assert.AreEqual("scope", tokens[11].Text());  
-		Assert.AreEqual(")", tokens[12].Text());  
-		Assert.AreEqual(13, tokens.Count);  
+		Assert.AreEqual("define", tokens[0].Text());
+		Assert.AreEqual("Run", tokens[1].Text());
+		Assert.AreEqual("(", tokens[2].Text());
+		Assert.AreEqual(")", tokens[3].Text());
+		Assert.AreEqual("if", tokens[4].Text());
+		Assert.AreEqual("Scope", tokens[5].Text());
+		Assert.AreEqual("is", tokens[6].Text());
+		Assert.AreEqual("Type", tokens[7].Text());
+		Assert.AreEqual("then", tokens[8].Text());
+		Assert.AreEqual("Process", tokens[9].Text());
+		Assert.AreEqual("(", tokens[10].Text());
+		Assert.AreEqual("scope", tokens[11].Text());
+		Assert.AreEqual(")", tokens[12].Text());
+		Assert.AreEqual(13, tokens.Count);
 		
 		Assert.AreEqual(TokenKind.Keyword, tokens[0].Kind);
 		Assert.AreEqual(TokenKind.Identifier, tokens[1].Kind);
-		Assert.AreEqual(TokenKind.Other, tokens[2].Kind);
-		Assert.AreEqual(TokenKind.Other, tokens[3].Kind);
+		Assert.AreEqual(TokenKind.Punct, tokens[2].Kind);
+		Assert.AreEqual(TokenKind.Punct, tokens[3].Kind);
 		
 		Assert.AreEqual(1, tokens[0].Line);
 		Assert.AreEqual(1, tokens[2].Line);

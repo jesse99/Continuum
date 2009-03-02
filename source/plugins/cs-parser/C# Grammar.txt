@@ -282,10 +282,10 @@ quote-escape-sequence:
 
 null-literal:
      null
+     
 B.1.9. Operators and Punctuators
 
 operator-or-punctuator: one of
-
 {	}	[	]	(	)	.	,	:	;
 +	-	*	/	%	&	|	^	!	~
 =	<	>	?	??	::	++	--	&&	||
