@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Jesse Jones
+// Copyright (C) 2009 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -20,41 +20,57 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using Shared;
 using System;
-using System.Runtime.Serialization;
-using System.Security.Permissions;
+using System.Diagnostics;
 
-namespace Shared
+namespace CsParser
 {
-	[Serializable]
-	public class CsParserException : Exception
+	internal sealed class ScanCs : ICsScanner
 	{
-		public CsParserException(string text) : base(text)
+		public void Instantiated(Boss boss)
 		{
+			m_boss = boss;
 		}
 		
-		public CsParserException(string format, params object[] args) : base(string.Format(format, args)) 
+		public Boss Boss
 		{
+			get {return m_boss;}
 		}
 		
-		public CsParserException(string text, Exception inner) : base (text, inner)
+		public void Init(string text)
 		{
+			m_scanner = new CsScanner(text);
 		}
 		
-		[SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
-		protected CsParserException(SerializationInfo info, StreamingContext context) : base(info, context)
+		public void Init(string text, int offset)
 		{
+			m_scanner = new CsScanner(text, offset);
 		}
-	}
-	
-	// Interface used to parse C# code.
-	public interface ICsParser : IInterface
-	{
-		CsGlobalNamespace Parse(string text);
 		
-		// If the parse works length is set to zero. If the parse fails the result
-		// will contain as much as possible and offset/length will point to the
-		// offending token.
-		CsGlobalNamespace TryParse(string text, out int offset, out int length);
+		public Token Token
+		{
+			get {return m_scanner.Token;}
+		}
+		
+		public Token LookAhead(int delta)
+		{
+			return m_scanner.LookAhead(delta);
+		}
+		
+		public void Advance()
+		{
+			m_scanner.Advance();
+		}
+		
+		public CsPreprocess[] Preprocess
+		{
+			get {return m_scanner.Preprocess;}
+		}
+		
+		#region Fields
+		private Boss m_boss;
+		private CsScanner m_scanner;
+		#endregion
 	}
 }

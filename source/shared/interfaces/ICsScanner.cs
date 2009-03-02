@@ -27,34 +27,50 @@ using System.Security.Permissions;
 namespace Shared
 {
 	[Serializable]
-	public class CsParserException : Exception
+	public sealed class CsScannerException : Exception
 	{
-		public CsParserException(string text) : base(text)
+		public CsScannerException()
 		{
 		}
 		
-		public CsParserException(string format, params object[] args) : base(string.Format(format, args)) 
+		public CsScannerException(string text) : base(text)
 		{
 		}
 		
-		public CsParserException(string text, Exception inner) : base (text, inner)
+		public CsScannerException(string format, params object[] args) : base(string.Format(format, args))
+		{
+		}
+		
+		public CsScannerException(string text, Exception inner) : base (text, inner)
 		{
 		}
 		
 		[SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
-		protected CsParserException(SerializationInfo info, StreamingContext context) : base(info, context)
+		private CsScannerException(SerializationInfo info, StreamingContext context) : base(info, context)
 		{
 		}
 	}
 	
-	// Interface used to parse C# code.
-	public interface ICsParser : IInterface
+	// Interface used to extract tokens from C# code.
+	public interface ICsScanner : IInterface
 	{
-		CsGlobalNamespace Parse(string text);
+		void Init(string text);
 		
-		// If the parse works length is set to zero. If the parse fails the result
-		// will contain as much as possible and offset/length will point to the
-		// offending token.
-		CsGlobalNamespace TryParse(string text, out int offset, out int length);
+		void Init(string text, int offset);
+		
+		// Returns the current token. Once all the characters have been consumed 
+		// the token's kind will be invalid.
+		Token Token {get;}
+		
+		// Returns the nth token from the current token.
+		Token LookAhead(int delta);
+		
+		// Skips whitespace and comments and advances to the next token. Should 
+		// only be called if Token is valid.
+		void Advance();
+		
+		// Returns all of the preprocessing directives that have been encountered
+		// so far. 
+		CsPreprocess[] Preprocess {get;}
 	}
 }

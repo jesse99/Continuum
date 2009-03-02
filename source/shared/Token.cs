@@ -22,10 +22,10 @@
 using System;
 using System.Diagnostics;
 
-namespace CsParser
+namespace Shared
 {
 	[Serializable]
-	internal enum TokenKind
+	public enum TokenKind
 	{
 		Invalid,
 		Identifier,
@@ -35,7 +35,7 @@ namespace CsParser
 		Other,			// text will be a single character (usually punctuation)
 	}
 	
-	internal struct Token : IEquatable<Token>	
+	public struct Token : IEquatable<Token>	
 	{
 		public Token(string text, int line)
 		{

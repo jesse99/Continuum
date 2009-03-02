@@ -23,11 +23,12 @@
 using CsRefactor;
 using CsRefactor.Script;
 using NUnit.Framework;
+using Shared;
 using System;
 using System.Collections.Generic;
 
 [TestFixture]
-public sealed class ScannerTest 	
+public sealed class ScannerTest
 {	
 	[TestFixtureSetUp]
 	public void Init()

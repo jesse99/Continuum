@@ -20,10 +20,11 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using Shared;
 using System;
 using System.Diagnostics;
 
-namespace Shared
+namespace TextEditor
 {
 	public class Scanner
 	{		

@@ -56,7 +56,7 @@ using System.IO;";
 	}
 	
 	[Test]
-	[ExpectedException(typeof(ParserException))]
+	[ExpectedException(typeof(CsParserException))]
 	public void ExtraChars()
 	{
 		string text = @"using System; xxx";

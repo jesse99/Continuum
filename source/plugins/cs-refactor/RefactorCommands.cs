@@ -19,6 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear;
 using Shared;
 using System;
 using System.Diagnostics;
@@ -409,7 +410,7 @@ namespace CsRefactor
 		private readonly CsNamespace m_namespace;
 		private readonly string m_name;
 		#endregion
-	} 
+	}
 	
 	// Changes the access for a member. 
 	public sealed class ChangeAccess : RefactorCommand
@@ -426,13 +427,20 @@ namespace CsRefactor
 		protected override void OnFindRange(StringBuilder builder, out int offset, out int length)
 		{
 			Trace.Assert(builder != null, "builder is null");
-
+			
 			// Default to no accessor case which is just a simple insert.
 			offset = m_member.Offset;
 			length = 0;
 			
 			// But if an accessor is present we'll need to replace it.
-			var scanner = new CsScanner(builder.ToString(), offset);
+#if TEST
+			ICsScanner scanner = new CsParser.ScanCs();
+#else
+			Boss boss = ObjectModel.Create("CsParser");
+			var scanner = boss.Get<ICsScanner>();
+#endif
+			scanner.Init(builder.ToString(), offset);
+			
 			foreach (string candidate in new string[]{"public", "protected", "internal", "private"})
 			{
 				if (scanner.Token.Kind == TokenKind.Identifier)
@@ -447,13 +455,13 @@ namespace CsRefactor
 				}
 				else
 					break;
-			}			
+			}
 		}
 		
 		protected override void OnExecute()
 		{
 			Log.WriteLine("Refactor Commands", "ChangeAccess to='{0}'", m_access);
-
+			
 			if (Length == 0)
 				InsertText(m_access + " ");
 			else

@@ -29,31 +29,6 @@ using System.Security.Permissions;
 
 namespace CsParser
 {
-	[Serializable]
-	public sealed class CsScannerException : Exception
-	{
-		public CsScannerException()
-		{
-		}
-		
-		public CsScannerException(string text) : base(text)
-		{
-		}
-		
-		public CsScannerException(string format, params object[] args) : base(string.Format(format, args))
-		{
-		}
-		
-		public CsScannerException(string text, Exception inner) : base (text, inner)
-		{
-		}
-		
-		[SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
-		private CsScannerException(SerializationInfo info, StreamingContext context) : base(info, context)
-		{
-		}
-	}
-	
 	internal sealed unsafe class CsScanner
 	{
 		public CsScanner(string text)	 : this(text, 0)

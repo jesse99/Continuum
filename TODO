@@ -58,7 +58,6 @@ or ad-hoc parser which looks for locals on a line and omits locals in a scope
 	}
 	
 * Work on parser:
-	- move Token into shared
 	- add an ICsScanner interface
 	- remove CsScanner from cs-refactor
 	- may want to move the parser into ParseCs
