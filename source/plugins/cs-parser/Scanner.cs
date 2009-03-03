@@ -144,6 +144,23 @@ namespace CsParser
 				DoScanIdentifier();
 			}
 			
+			// number
+			else if (Current == '0' && (Next == 'x' || Next == 'X'))
+			{
+				DoScanHexNumber();
+			}
+			
+			else if (Current >= '0' && Current <= '9')
+			{
+				DoScanNumber();
+			}
+			
+			else if (Current >= '.' && (Next >= '0' && Next <= '9'))
+			{
+				++m_index;
+				DoScanFloat(m_index - 1);
+			}
+			
 			// char
 			else if (Current == '\'')
 			{
@@ -181,6 +198,341 @@ namespace CsParser
 				m_token = new Token(m_text, m_index, 1, m_line, TokenKind.Other);
 				++m_index;
 			}
+		}
+		
+		// hexadecimal-integer-literal:
+		//     0x   hex-digits   integer-type-suffix?
+		//     0X   hex-digits   integer-type-suffix?
+		// 
+		// integer-type-suffix:  one of
+		//      U  u  L  l  UL  Ul  uL  ul  LU  Lu  lU  lu
+		private void DoScanHexNumber()
+		{
+			int offset = m_index;
+			m_index += 2;
+			
+			while ((Current >= '0' && Current <= '9') || (Current >= 'a' && Current <= 'f') || (Current >= 'A' && Current <= 'F'))
+			{
+				++m_index;
+			}
+			
+			if (Current == 'u' || Current == 'l' || Current == 'U' || Current == 'L')
+			{
+				if (Next == 'u' || Next == 'l' || Next == 'U' || Next == 'L')
+					m_index += 2;
+				else
+					m_index += 1;
+			}
+			
+			m_token = new Token(m_text, offset, m_index - offset, m_line, TokenKind.Number);
+		}
+		
+		// decimal-integer-literal:
+		//     decimal-digits   integer-type-suffix?
+		private void DoScanNumber()
+		{
+			int offset = m_index;
+			
+			while (Current >= '0' && Current <= '9')
+			{
+				++m_index;
+			}
+			
+			if (Current == '.')
+			{
+				++m_index;
+				DoScanFloat(offset);
+			}
+			else if (Current == 'e' || Current == 'E')
+			{
+				DoScanExponent(offset);
+			}
+			else
+			{
+				if (Current == 'u' || Current == 'l' || Current == 'U' || Current == 'L')
+				{
+					if (Next == 'u' || Next == 'l' || Next == 'U' || Next == 'L')
+						m_index += 2;
+					else
+						m_index += 1;
+				}
+				else if (Current == 'f' || Current == 'd' || Current == 'm' || Current == 'F' || Current == 'D' || Current == 'M')
+				{
+					m_index += 1;
+				}
+				
+				m_token = new Token(m_text, offset, m_index - offset, m_line, TokenKind.Number);
+			}
+		}
+		
+		// real-literal:
+		//       decimal-digits   .   decimal-digits   exponent-part?   real-type-suffix?
+		//       .   decimal-digits   exponent-part?   real-type-suffix?
+		//       decimal-digits   exponent-part   real-type-suffix?
+		//       decimal-digits   real-type-suffix
+		private void DoScanFloat(int offset)
+		{
+			while (Current >= '0' && Current <= '9')
+			{
+				++m_index;
+			}
+			
+			DoScanExponent(offset);
+		}
+		
+		// exponent-part:
+		//     e   sign?   decimal-digits
+		//     E   sign?   decimal-digits
+		// 
+		// sign:  one of
+		//     +  -
+		// 
+		// real-type-suffix: one of
+		//      F   f   D    d M  m
+		private void DoScanExponent(int offset)
+		{
+			if (Current == 'e' || Current == 'E')
+			{
+				m_index += 1;
+				
+				if (Current == '+' || Current == '-')
+					m_index += 1;
+					
+				while (Current >= '0' && Current <= '9')
+				{
+					++m_index;
+				}
+			}
+			
+			if (Current == 'f' || Current == 'd' || Current == 'm' || Current == 'F' || Current == 'D' || Current == 'M')
+			{
+				m_index += 1;
+			}
+			
+			m_token = new Token(m_text, offset, m_index - offset, m_line, TokenKind.Number);
+		}
+		
+		// character-literal:
+		//     '   character   '
+		// 
+		// character:
+		//     single-character
+		//     simple-escape-sequence
+		//     hexadecimal-escape-sequence
+		//     unicode-escape-sequence
+		// 
+		// single-character:
+		//       Any character except ' (U+0027), \ (U+005C), and new-line-character
+		// 
+		// simple-escape-sequence:  one of
+		//     \'  \''  \\  \0  \a  \b  \f  \n  \r  \t  \v
+		// 
+		// hexadecimal-escape-sequence:
+		//     \x   hex-digit   hex-digit?   hex-digit?   hex-digit?
+		//
+		// unicode-escape-sequence:
+		//     \u   hex-digit   hex-digit   hex-digit   hex-digit
+		//     \U   hex-digit   hex-digit   hex-digit   hex-digit   hex-digit  hex-digit   hex-digit   hex-digit
+		private void DoScanChar()
+		{
+			int offset = m_index;
+			++m_index;
+			
+			while (Current != '\'' && Current != '\x00')
+			{
+				if (Current == '\\' && Next == '\\')
+					++m_index;
+				else if (Current == '\\' && Next == '\'')
+					++m_index;
+				++m_index;
+			}
+			
+			if (Current == '\'')
+			{
+				++m_index;
+				m_token = new Token(m_text, offset, m_index - offset, m_line, TokenKind.Char);
+			}
+			else
+				throw new CsScannerException("Expected a terminating ''' for line {0}", m_line);
+		}
+		
+		// regular-string-literal:
+		//     "   regular-string-literal-characters?   "
+		// 
+		// regular-string-literal-characters:
+		//     regular-string-literal-character
+		//     regular-string-literal-characters   regular-string-literal-character
+		//     
+		// regular-string-literal-character:
+		//     single-regular-string-literal-character
+		//     simple-escape-sequence
+		//     hexadecimal-escape-sequence
+		//     unicode-escape-sequence
+		// 
+		// single-regular-string-literal-character:
+		//      Any character except " (U+0022), \ (U+005C), and new-line-character
+		private void DoScanString()
+		{
+			int offset = m_index;
+			++m_index;
+			
+			while (Current != '"' && Current != '\n' && Current != '\r' && Current != '\x00')
+			{
+				if (Current == '\\' && Next == '\\')
+					++m_index;
+				else if (Current == '\\' && Next == '"')
+					++m_index;
+				++m_index;
+			}
+			
+			if (Current == '"')
+			{
+				++m_index;
+				m_token = new Token(m_text, offset, m_index - offset, m_line, TokenKind.String);
+			}
+			else
+				throw new CsScannerException("Expected a terminating '\"' on line {0}", m_line);
+		}
+		
+		// verbatim-string-literal:
+		//     @"   verbatim-string-literal-characters?   "
+		// 
+		// verbatim-string-literal-characters:
+		//     verbatim-string-literal-character
+		//     verbatim-string-literal-characters   verbatim-string-literal-character
+		// 
+		// verbatim-string-literal-character:
+		//     single-verbatim-string-literal-character
+		//     quote-escape-sequence
+		// 
+		// single-verbatim-string-literal-character:
+		//     any character except "
+		// 
+		// quote-escape-sequence:
+		//     ""
+		private void DoScanVerbatimString()
+		{
+			int line = m_line;
+			m_index = m_index + 2;
+			int offset = m_index - 1;
+			
+			while (Current != '\x00')
+			{
+				if (char.IsWhiteSpace(Current))
+					DoSkipWhiteSpace();
+				else if (Current == '\\' && Next == '"')
+					m_index = m_index + 2;
+				else if (Current == '"' && Next == '"')
+					m_index = m_index + 2;
+				else if (Current == '"')
+					break;
+				else
+					++m_index;
+			}
+			
+			if (Current == '"')
+			{
+				++m_index;
+				m_token = new Token(m_text, offset, m_index - offset, line, TokenKind.String);
+			}
+			else
+				throw new CsScannerException("Expected a terminating '\"' for line {0}", m_line);
+		}
+		
+		// identifier:
+		//      available-identifier
+		//      @   identifier-or-keyword
+		// 
+		// available-identifier:
+		//      An identifier-or-keyword that is not a keyword
+		// 
+		// identifier-or-keyword:
+		//      identifier-start-character   identifier-part-characters?
+		// 
+		// identifier-start-character:
+		//      letter-character
+		//      _ (the underscore character U+005F)
+		// 
+		// identifier-part-characters:
+		//      identifier-part-character
+		//      identifier-part-characters  identifier-part-character
+		private void DoScanIdentifier()
+		{
+			int offset = m_index;
+			
+			while (DoIsIdentifierPartChar())	
+			{
+				++m_index;
+			}
+			
+			m_token = new Token(m_text, offset, m_index - offset, m_line, TokenKind.Identifier);
+		}
+		
+		// letter-character:
+		//       A Unicode character of class Lu, Ll, Lt, Lm, Lo, or Nl
+		//       A unicode-escape-sequence representing a character of class Lu, Ll, Lt, Lm, Lo, or Nl
+		private bool DoIsLetter(char ch)
+		{
+			if (char.IsLetter(ch))			// fast path
+				return true;
+				
+			UnicodeCategory cat = char.GetUnicodeCategory(ch);
+			switch (cat)
+			{
+				case UnicodeCategory.UppercaseLetter:
+				case UnicodeCategory.LowercaseLetter:
+				case UnicodeCategory.TitlecaseLetter:
+				case UnicodeCategory.ModifierLetter:
+				case UnicodeCategory.OtherLetter:
+				case UnicodeCategory.LetterNumber:
+					return true;
+			}
+			
+			return false;
+		}
+		
+		// identifier-part-character:
+		//      letter-character
+		//      decimal-digit-character
+		//      connecting-character
+		//      combining-character
+		//      formatting-character
+		//
+		// decimal-digit-character:
+		//     A Unicode character of the class Nd
+		//     A unicode-escape-sequence representing a character of class Nd
+		// 
+		// connecting-character:
+		//     A Unicode character of the class Pc
+		//     A unicode-escape-sequence representing a character of class Pc
+		// 
+		// combining-character:
+		//     A Unicode character of class Mn or Mc
+		//     A unicode-escape-sequence representing a character of class Mn or Mc
+		// 
+		// formatting-character:
+		//     A Unicode character of the class Cf
+		//     A unicode-escape-sequence representing a character of class Cf
+		private bool DoIsIdentifierPartChar()
+		{
+			if (char.IsLetterOrDigit(Current) || Current == '_')	// fast path
+				return true;
+			
+			if (Current == '\\' && (Next == 'u' || Next == 'U'))
+				throw new CsScannerException("Line {0} has a unicode escape in an identifier which the parser does not support.", m_line);
+				
+			UnicodeCategory cat = char.GetUnicodeCategory(Current);
+			switch (cat)
+			{
+				case UnicodeCategory.DecimalDigitNumber:
+				case UnicodeCategory.ConnectorPunctuation:
+				case UnicodeCategory.NonSpacingMark:
+				case UnicodeCategory.SpacingCombiningMark:
+				case UnicodeCategory.Format:
+					return true;
+			}
+			
+			return false;
 		}
 		
 		// operator-or-punctuator: one of
@@ -420,229 +772,6 @@ namespace CsParser
 					++m_index;
 					break;
 			}
-		}
-		
-		// character-literal:
-		//     '   character   '
-		// 
-		// character:
-		//     single-character
-		//     simple-escape-sequence
-		//     hexadecimal-escape-sequence
-		//     unicode-escape-sequence
-		// 
-		// single-character:
-		//       Any character except ' (U+0027), \ (U+005C), and new-line-character
-		// 
-		// simple-escape-sequence:  one of
-		//     \'  \''  \\  \0  \a  \b  \f  \n  \r  \t  \v
-		// 
-		// hexadecimal-escape-sequence:
-		//     \x   hex-digit   hex-digit?   hex-digit?   hex-digit?
-		//
-		// unicode-escape-sequence:
-		//     \u   hex-digit   hex-digit   hex-digit   hex-digit
-		//     \U   hex-digit   hex-digit   hex-digit   hex-digit   hex-digit  hex-digit   hex-digit   hex-digit
-		private void DoScanChar()
-		{
-			int offset = m_index;
-			++m_index;
-			
-			while (Current != '\'' && Current != '\x00')
-			{
-				if (Current == '\\' && Next == '\\')
-					++m_index;
-				else if (Current == '\\' && Next == '\'')
-					++m_index;
-				++m_index;
-			}
-			
-			if (Current == '\'')
-			{
-				++m_index;
-				m_token = new Token(m_text, offset, m_index - offset, m_line, TokenKind.Char);
-			}
-			else
-				throw new CsScannerException("Expected a terminating ''' for line {0}", m_line);
-		}
-		
-		// regular-string-literal:
-		//     "   regular-string-literal-characters?   "
-		// 
-		// regular-string-literal-characters:
-		//     regular-string-literal-character
-		//     regular-string-literal-characters   regular-string-literal-character
-		//     
-		// regular-string-literal-character:
-		//     single-regular-string-literal-character
-		//     simple-escape-sequence
-		//     hexadecimal-escape-sequence
-		//     unicode-escape-sequence
-		// 
-		// single-regular-string-literal-character:
-		//      Any character except " (U+0022), \ (U+005C), and new-line-character
-		private void DoScanString()
-		{
-			int offset = m_index;
-			++m_index;
-			
-			while (Current != '"' && Current != '\n' && Current != '\r' && Current != '\x00')
-			{
-				if (Current == '\\' && Next == '\\')
-					++m_index;
-				else if (Current == '\\' && Next == '"')
-					++m_index;
-				++m_index;
-			}
-			
-			if (Current == '"')
-			{
-				++m_index;
-				m_token = new Token(m_text, offset, m_index - offset, m_line, TokenKind.String);
-			}
-			else
-				throw new CsScannerException("Expected a terminating '\"' on line {0}", m_line);
-		}
-		
-		// verbatim-string-literal:
-		//     @"   verbatim-string-literal-characters?   "
-		// 
-		// verbatim-string-literal-characters:
-		//     verbatim-string-literal-character
-		//     verbatim-string-literal-characters   verbatim-string-literal-character
-		// 
-		// verbatim-string-literal-character:
-		//     single-verbatim-string-literal-character
-		//     quote-escape-sequence
-		// 
-		// single-verbatim-string-literal-character:
-		//     any character except "
-		// 
-		// quote-escape-sequence:
-		//     ""
-		private void DoScanVerbatimString()
-		{
-			int line = m_line;
-			m_index = m_index + 2;
-			int offset = m_index - 1;
-			
-			while (Current != '\x00')
-			{
-				if (char.IsWhiteSpace(Current))
-					DoSkipWhiteSpace();
-				else if (Current == '\\' && Next == '"')
-					m_index = m_index + 2;
-				else if (Current == '"' && Next == '"')
-					m_index = m_index + 2;
-				else if (Current == '"')
-					break;
-				else
-					++m_index;
-			}
-			
-			if (Current == '"')
-			{
-				++m_index;
-				m_token = new Token(m_text, offset, m_index - offset, line, TokenKind.String);
-			}
-			else
-				throw new CsScannerException("Expected a terminating '\"' for line {0}", m_line);
-		}
-		
-		// identifier:
-		//      available-identifier
-		//      @   identifier-or-keyword
-		// 
-		// available-identifier:
-		//      An identifier-or-keyword that is not a keyword
-		// 
-		// identifier-or-keyword:
-		//      identifier-start-character   identifier-part-characters?
-		// 
-		// identifier-start-character:
-		//      letter-character
-		//      _ (the underscore character U+005F)
-		// 
-		// identifier-part-characters:
-		//      identifier-part-character
-		//      identifier-part-characters  identifier-part-character
-		private void DoScanIdentifier()
-		{
-			int offset = m_index;
-			
-			while (DoIsIdentifierPartChar())	
-			{
-				++m_index;
-			}
-			
-			m_token = new Token(m_text, offset, m_index - offset, m_line, TokenKind.Identifier);
-		}
-		
-		// letter-character:
-		//       A Unicode character of class Lu, Ll, Lt, Lm, Lo, or Nl
-		//       A unicode-escape-sequence representing a character of class Lu, Ll, Lt, Lm, Lo, or Nl
-		private bool DoIsLetter(char ch)
-		{
-			if (char.IsLetter(ch))			// fast path
-				return true;
-				
-			UnicodeCategory cat = char.GetUnicodeCategory(ch);
-			switch (cat)
-			{
-				case UnicodeCategory.UppercaseLetter:
-				case UnicodeCategory.LowercaseLetter:
-				case UnicodeCategory.TitlecaseLetter:
-				case UnicodeCategory.ModifierLetter:
-				case UnicodeCategory.OtherLetter:
-				case UnicodeCategory.LetterNumber:
-					return true;
-			}
-			
-			return false;
-		}
-		
-		// identifier-part-character:
-		//      letter-character
-		//      decimal-digit-character
-		//      connecting-character
-		//      combining-character
-		//      formatting-character
-		//
-		// decimal-digit-character:
-		//     A Unicode character of the class Nd
-		//     A unicode-escape-sequence representing a character of class Nd
-		// 
-		// connecting-character:
-		//     A Unicode character of the class Pc
-		//     A unicode-escape-sequence representing a character of class Pc
-		// 
-		// combining-character:
-		//     A Unicode character of class Mn or Mc
-		//     A unicode-escape-sequence representing a character of class Mn or Mc
-		// 
-		// formatting-character:
-		//     A Unicode character of the class Cf
-		//     A unicode-escape-sequence representing a character of class Cf
-		private bool DoIsIdentifierPartChar()
-		{
-			if (char.IsLetterOrDigit(Current) || Current == '_')	// fast path
-				return true;
-			
-			if (Current == '\\' && (Next == 'u' || Next == 'U'))
-				throw new CsScannerException("Line {0} has a unicode escape in an identifier which the parser does not support.", m_line);
-				
-			UnicodeCategory cat = char.GetUnicodeCategory(Current);
-			switch (cat)
-			{
-				case UnicodeCategory.DecimalDigitNumber:
-				case UnicodeCategory.ConnectorPunctuation:
-				case UnicodeCategory.NonSpacingMark:
-				case UnicodeCategory.SpacingCombiningMark:
-				case UnicodeCategory.Format:
-					return true;
-			}
-			
-			return false;
 		}
 		
 		// whitespace:

@@ -33,6 +33,7 @@ namespace Shared
 		Char,				// text will include the ' characters
 		String,			// text will include the " characters, text may have new lines
 		Punct,
+		Number,		// integer or float literal
 		Other,
 	}
 	

@@ -58,22 +58,21 @@ or ad-hoc parser which looks for locals on a line and omits locals in a scope
 	}
 	
 		
-using System.Text.RegularExpressions;
-
+		private bool DoMatchKeyword(string name)
+		{
+			bool matches = false;
 			
-			if (offset > 0 && m_text[offset - 1] == '@')
-				m_token = new Token(m_text, offset, m_index - offset, m_line, TokenKind.Identifier);
-			else if (!ms_keywords.IsMatch(m_text.Substring(offset, m_index - offset)))
-				m_token = new Token(m_text, offset, m_index - offset, m_line, TokenKind.Identifier);
-			else
-				m_token = new Token(m_text, offset, m_index - offset, m_line, TokenKind.Keyword);
-
-		private static Regex ms_keywords = new Regex(@"\b(abstract | as | base | bool | break | byte | case | catch | char | checked | class | const | continue | decimal | default | delegate | do | double | else | enum | event | explicit | extern | false | finally | fixed | float | for | foreach | goto | if | implicit | in | int | interface | internal | is | lock | long | namespace | new | null | object | operator | out | override | params | private | protected | public | readonly | ref | return | sbyte | sealed | short | sizeof | stackalloc | static | string | struct | switch | this | throw | true | try | typeof | uint | ulong | unchecked | unsafe | ushort | using | virtual | void | volatile | while)\b",
-			RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
+			if (m_scanner.Token.IsIdentifier(name))
+			{
+				m_last = m_scanner.Token;
+				m_scanner.Advance();
+				matches = true;
+			}
+			
+			return matches;
+		}
+		
 * Work on parser:
-	- scanner should return punct
-	- improve the scanner
-	- might want to redo refactor scanner
 	- write an expression parser
 * Work on parsing method bodies:
 	- expose an ad-hoc parser via an interface
@@ -113,6 +112,7 @@ using System.Text.RegularExpressions;
 	   maybe some sort of context help window that can also be shown if the text 
 	   window selection is within a method?
 	- refactor needs to document Scope and support Locals property
+* Apply changes seem to have slowed down the UI.
 * Is ChangeAccess correct?
 * Could probably speed up editing of large files if we got a pointer to the text from
   native code and operated on that with unsafe code.

@@ -246,6 +246,72 @@ is a comment */
 			Assert.AreEqual("endregion", preprocess[3].Name);
 			Assert.AreEqual("", preprocess[3].Text);
 		}
+		
+		[Test]
+		public void Integers()
+		{
+			string text = "15 15U 0x1F 0x1FUL";
+			
+			var scanner = new Scanner();
+			scanner.Init(text);
+			
+			Assert.AreEqual("15", scanner.Token.Text());
+			Assert.AreEqual(TokenKind.Number, scanner.Token.Kind);
+			
+			scanner.Advance();
+			Assert.AreEqual("15U", scanner.Token.Text());
+			Assert.AreEqual(TokenKind.Number, scanner.Token.Kind);
+			
+			scanner.Advance();
+			Assert.AreEqual("0x1F", scanner.Token.Text());
+			Assert.AreEqual(TokenKind.Number, scanner.Token.Kind);
+			
+			scanner.Advance();
+			Assert.AreEqual("0x1FUL", scanner.Token.Text());
+			Assert.AreEqual(TokenKind.Number, scanner.Token.Kind);
+			
+			scanner.Advance();
+			Assert.AreEqual(TokenKind.Invalid, scanner.Token.Kind);
+		}
+		
+		[Test]
+		public void Floats()
+		{
+			string text = "10.4 10.4M 10.4e100 .33 .33e-3 15f 15e100";
+			
+			var scanner = new Scanner();
+			scanner.Init(text);
+			
+			Assert.AreEqual("10.4", scanner.Token.Text());
+			Assert.AreEqual(TokenKind.Number, scanner.Token.Kind);
+			
+			scanner.Advance();
+			Assert.AreEqual("10.4M", scanner.Token.Text());
+			Assert.AreEqual(TokenKind.Number, scanner.Token.Kind);
+			
+			scanner.Advance();
+			Assert.AreEqual("10.4e100", scanner.Token.Text());
+			Assert.AreEqual(TokenKind.Number, scanner.Token.Kind);
+			
+			scanner.Advance();
+			Assert.AreEqual(".33", scanner.Token.Text());
+			Assert.AreEqual(TokenKind.Number, scanner.Token.Kind);
+			
+			scanner.Advance();
+			Assert.AreEqual(".33e-3", scanner.Token.Text());
+			Assert.AreEqual(TokenKind.Number, scanner.Token.Kind);
+			
+			scanner.Advance();
+			Assert.AreEqual("15f", scanner.Token.Text());
+			Assert.AreEqual(TokenKind.Number, scanner.Token.Kind);
+			
+			scanner.Advance();
+			Assert.AreEqual("15e100", scanner.Token.Text());
+			Assert.AreEqual(TokenKind.Number, scanner.Token.Kind);
+
+			scanner.Advance();
+			Assert.AreEqual(TokenKind.Invalid, scanner.Token.Kind);
+		}
 	}
 }
 #endif	// TEST
