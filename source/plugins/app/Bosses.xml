@@ -28,4 +28,7 @@
 		<Implementation interfaces = "IInterface +ITextContextCommands" name = "FindOnSites"/>
 		<Implementation interfaces = "IInterface +ITextContextCommands" name = "ScriptsMenu"/>
 	</Boss>
+
+	<Boss name = "TextEditor">			
+	</Boss>
 </Bosses>

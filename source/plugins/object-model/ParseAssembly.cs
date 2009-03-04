@@ -27,6 +27,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 
 namespace ObjectModel
 {
@@ -91,8 +92,11 @@ namespace ObjectModel
 						method TEXT NOT NULL
 							CONSTRAINT no_empty_method CHECK(length(method) > 0),
 						hash TEXT NOT NULL REFERENCES Assemblies(hash), 
+						return_type TEXT NOT NULL,
 						name TEXT NOT NULL
 							CONSTRAINT no_empty_name CHECK(length(name) > 0),
+						arg_types TEXT NOT NULL,
+						arg_names TEXT NOT NULL,
 						declaring_type TEXT NOT NULL REFERENCES Types(type),
 						file TEXT NOT NULL
 							CONSTRAINT sane_file CHECK(length(file) = 0 OR substr(file, 1, 1) = '/'),
@@ -248,21 +252,7 @@ namespace ObjectModel
 			
 			return Tuple.Make(source, line);
 		}
-		
-		private string DoGetMethodName(MethodDefinition method)		// theaded
-		{
-			string name = method.Name;
-			
-			if (method.SemanticsAttributes != 0)
-			{
-				int i = name.IndexOf('_');
-				if (i >= 0)
-					name = name.Substring(i + 1);
-			}
-			
-			return name;
-		}
-		
+				
 		private string DoParseMethod(TypeDefinition type, MethodDefinition method, string hash, bool fullParse)		// threaded
 		{
 			string fileName = string.Empty;
@@ -271,13 +261,31 @@ namespace ObjectModel
 			{
 				var location = DoGetSourceAndLine(method);
 				fileName = Path.GetFileName(location.First);
-					
+				
 				if (fullParse || method.IsFamily || method.IsFamilyOrAssembly || method.IsPublic)
-				{	
+				{
+					var argTypes = new StringBuilder();
+					var argNames = new StringBuilder();
+					for (int i = 0; i < method.Parameters.Count; ++i)
+					{
+						ParameterDefinition p = method.Parameters[i];
+						argTypes.Append(p.ParameterType.FullName);
+						argNames.Append(p.Name);
+						
+						if (i + 1 < method.Parameters.Count)
+						{
+							argTypes.Append(':');
+							argNames.Append(':');
+						}
+					}
+					
 					m_database.Insert("Methods",
 						method.ToString(),
 						hash,
-						DoGetMethodName(method),
+						method.ReturnType.ReturnType.FullName,
+						method.Name,
+						argTypes.ToString(),
+						argNames.ToString(),
 						method.DeclaringType.FullName,
 						location.First,
 						location.Second.ToString(),

@@ -110,6 +110,9 @@ namespace TextEditor
 					// Note that this is also important because the text will jump if we apply
 					// attributes to text above whatever text we're viewing (and some runs
 					// are taller than others).
+					//
+					// TODO: maybe it would be even better to use attributeRuns and only
+					// apply styles if the style name (or a numeric id) does not match.
 					if (m_appliedSet != null && m_appliedSet.Count > 0)
 					{
 						m_workSet.Sort();				// won't be sorted for c#

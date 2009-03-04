@@ -52,6 +52,8 @@ namespace TextEditor
 			Broadcaster.Register("text default color changed", this, this.DoUpdateDefaultColor);	
 			DoUpdateDefaultColor(string.Empty, null);
 			
+			m_textView.Value.Call("onOpened:", this);
+			
 			ActiveObjects.Add(this);
 		}
 		
@@ -99,6 +101,9 @@ namespace TextEditor
 					m_dir = null;
 				}
 				
+				var complete = m_boss.Get<IAutoComplete>();
+				complete.OnPathChanged();
+
 				string dir = System.IO.Path.GetDirectoryName(Path);
 				m_dir = NSString.Create(dir).stringByStandardizingPath().Retain();
 				m_watcher = new DirectoryWatcher(dir, TimeSpan.FromMilliseconds(500));
@@ -203,6 +208,14 @@ namespace TextEditor
 			thread.Start();
 			
 			m_scrolled = true;
+		}
+		
+		public NSRect window_willPositionSheet_usingRect(NSWindow window, NSWindow sheet, NSRect usingRect)
+		{
+			if (sheet.respondsToSelector("positionSheet:"))
+				return sheet.Call("positionSheet:", usingRect).To<NSRect>();
+			else
+				return usingRect;
 		}
 		
 		public void windowWillClose(NSObject notification)

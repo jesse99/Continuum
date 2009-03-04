@@ -33,7 +33,7 @@ path#		hash$		write_time
 
 -------------------
 NameInfo
-full_name#	hash#$		file_name		name#		kind
+full_name#	hash#$		file_name		name#	kind
 
 * full_name is the full name of a type or method.
 * hash is from the Assemblies table.
@@ -65,12 +65,15 @@ type#$		hash#$		interface_type#
 
 -------------------
 Methods
-method#	hash#$		name			declaring_type$		file		line		attributes		semantics						
+method#	hash#$		return_type	name	arg_types			arg_names	declaring_type$		file		line		attributes		semantics						
 
 * method is the full name of the method, e.g. "System.Boolean MObjc.Registrar::TryGetType(System.String,System.Type&)".
 * hash is from the Assemblies table.
-* name is the name of the method, e.g. "TryGetType". Note that for properties and events
-  this will be "Value" not "get_Value".
+* return_type is something like "System.Boolean".
+* name is the name of the method, e.g. "TryGetType". Note that the name will have a prefix for
+  event, indexer, operator, and property methods. E.g. "set_Text" or "op_Add".
+* arg_types contains a colon separated list of the agument types, e.g. "System.String:System.Type&".
+* arg_names contains a colon separated list of the agument names, e.g. "name:type".
 * declaring_type is from Types and is the full name of the declaring type.
 * return_type is the full name of the return type. It will usually be in TypeNames.
 * file is the full path of the method's compilation unit. May be empty.

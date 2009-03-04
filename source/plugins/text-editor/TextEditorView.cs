@@ -34,33 +34,42 @@ namespace TextEditor
 	internal sealed class TextEditorView : NSTextView
 	{
 		public TextEditorView(IntPtr instance) : base(instance)
-		{		
+		{			
 			ActiveObjects.Add(this);
 		}
-				
+		
+		public void onOpened(TextController controller)
+		{
+			m_boss = controller.Boss;
+			m_autoComplete = m_boss.Get<IAutoComplete>();
+		}
+		
 		public new void keyDown(NSEvent evt)
 		{
-			Unused.Value = SuperCall("keyDown:", evt);
-
-			// If the user is moving up or down within the whitespace at the start
-			// of a line then set the insertion point to the start of the line (this
-			// makes it much nicer to do stuff like manually comment out lines).
-			NSRange range = selectedRange();
-			if (range.length == 0)
+			if (!m_autoComplete.HandleKey(this, evt))
 			{
-				NSString chars = evt.characters();
-				if (chars.length() == 1 && (chars[0] == Enums.NSDownArrowFunctionKey || chars[0] == Enums.NSUpArrowFunctionKey))
+				Unused.Value = SuperCall("keyDown:", evt);
+				
+				// If the user is moving up or down within the whitespace at the start
+				// of a line then set the insertion point to the start of the line (this
+				// makes it much nicer to do stuff like manually comment out lines).
+				NSRange range = selectedRange();
+				if (range.length == 0)
 				{
-					NSString text = string_();
-					int start = DoGetLineStart(text, range.location);
-					if (start >= 0)
+					NSString chars = evt.characters();
+					if (chars.length() == 1 && (chars[0] == Enums.NSDownArrowFunctionKey || chars[0] == Enums.NSUpArrowFunctionKey))
 					{
-						setSelectedRange(new NSRange(start, 0));
+						NSString text = string_();
+						int start = DoGetLineStart(text, range.location);
+						if (start >= 0)
+						{
+							setSelectedRange(new NSRange(start, 0));
+						}
 					}
 				}
 			}
 		}
-
+		
 #if false
 		// This is kind of nice, and BBEdit does something similar but it screws
 		// up things like drag selections.
@@ -128,7 +137,7 @@ namespace TextEditor
 			{
 				// Get the selection.
 				int index = DoMouseEventToIndex(evt);
-							
+					
 				m_range = selectedRange();
 				if (m_range.length == 0 && index < string_().length() && string_()[index] == '\n')
 				{
@@ -143,12 +152,12 @@ namespace TextEditor
 					if (m_range.length > 0)
 						string_().getCharacters_range(m_range, out m_selection);
 				}
-							
+				
 				// Get the commands.
 //		var watch = new Stopwatch();
 //		watch.Start();
 				DoGetEntries(m_selection);
-		
+				
 				if (m_entries.Count == 0)
 					DoGetEntries(null);
 //		Console.WriteLine("secs: {0:0.000}", watch.ElapsedMilliseconds/1000.0);
@@ -159,7 +168,7 @@ namespace TextEditor
 				for (int i = 0; i < m_entries.Count; ++i)
 				{
 					NSMenuItem item = null;
-			
+					
 					if (m_entries[i].Name != null)
 					{
 						if (m_entries[i].Name != Constants.Ellipsis)
@@ -195,7 +204,7 @@ namespace TextEditor
 				NSString message = NSString.Create(e.Message);
 				Unused.Value = Functions.NSRunAlertPanel(title, message);
 			}
-						
+			
 			return menu;
 		}
 		
@@ -208,12 +217,12 @@ namespace TextEditor
 				m_group = group;
 			}
 			
-			public string Name 
+			public string Name
 			{
 				get {return m_item.Name;}
 			}
 			
-			public string UndoText 
+			public string UndoText
 			{
 				get {return m_item.UndoText ?? m_item.Name;}
 			}
@@ -233,10 +242,10 @@ namespace TextEditor
 				if (obj == null)
 					return false;
 				
-				if (GetType() != obj.GetType()) 
+				if (GetType() != obj.GetType())
 					return false;
 				
-				Entry rhs = (Entry) obj;                    
+				Entry rhs = (Entry) obj;
 				return CompareTo(rhs) == 0;
 			}
 			
@@ -248,7 +257,7 @@ namespace TextEditor
 			public int CompareTo(Entry rhs)
 			{
 				int result = m_item.SortOrder.CompareTo(rhs.m_item.SortOrder);
-			
+				
 				if (result == 0)
 					result = m_group.CompareTo(rhs.m_group);
 				
@@ -286,7 +295,7 @@ namespace TextEditor
 				
 				return hash;
 			}
-
+			
 			public override string ToString()
 			{
 				return (Name ?? "separator") + " " + m_group;
@@ -301,13 +310,13 @@ namespace TextEditor
 		private void DoGetEntries(string selection)
 		{
 			int group = 0;
-
+			
 			m_entries.Clear();
-
+			
 			Boss dirBoss = ((TextController) window().windowController()).GetDirEditorBoss();
-
-			Boss boss = ObjectModel.Create("TextEditorPlugin");		
-			boss.CallRepeated<ITextContextCommands>(i => 
+			
+			Boss boss = ObjectModel.Create("TextEditorPlugin");
+			boss.CallRepeated<ITextContextCommands>(i =>
 			{
 				var items = new List<TextContextItem>();
 				i.Get(dirBoss, selection, items);
@@ -335,7 +344,7 @@ namespace TextEditor
 			{
 				while (index > 0 && (text[index] == ' ' || text[index] == '\t'))
 					--index;
-
+				
 				if (index >= 0 && (text[index] == '\n' || text[index] == '\r'))
 					within = true;
 			}
@@ -388,9 +397,11 @@ namespace TextEditor
 		#endregion
 		
 		#region Fields
+		private Boss m_boss;
 		private NSRange m_range;
 		private string m_selection;
 		private List<Entry> m_entries = new List<Entry>();
+		private IAutoComplete m_autoComplete;
 		#endregion
 	}
-}	
+}

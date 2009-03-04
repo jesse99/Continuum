@@ -155,7 +155,7 @@ namespace CsParser
 				DoScanNumber();
 			}
 			
-			else if (Current >= '.' && (Next >= '0' && Next <= '9'))
+			else if (Current == '.' && Next >= '0' && Next <= '9')
 			{
 				++m_index;
 				DoScanFloat(m_index - 1);

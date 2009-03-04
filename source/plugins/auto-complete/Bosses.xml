@@ -1,0 +1,5 @@
+<Bosses namespaces = "Gear Shared AutoComplete">
+	<Extend name = "TextEditor">
+		<Implementation interfaces = "IAutoComplete" name = "AutoComplete"/>
+	</Extend>
+</Bosses>

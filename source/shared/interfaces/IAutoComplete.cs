@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Jesse Jones
+// Copyright (C) 2009 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -19,18 +19,18 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-using System;
+using Gear;
+using MCocoa;
+using System.Diagnostics;
 
 namespace Shared
 {
-	public static class Constants
+	// Interface used to auto-complete things like method calls.
+	public interface IAutoComplete : IInterface
 	{
-		public const string Ellipsis = "\x2026";
-		public const string Replacement = "\xFFFD";
-		public const string ZeroWidthSpace = "\x200C";
+		void OnPathChanged();
 		
-		public const string Escape = "\x001B";
-		public const string Delete = "\x007F";
-		
+		// Returns true if the event was handled.
+		bool HandleKey(NSTextView view, NSEvent evt);
 	}
 }

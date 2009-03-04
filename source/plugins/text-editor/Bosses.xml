@@ -13,9 +13,9 @@
 		<Implementation interfaces = "IInterface +ITextContextCommands" name = "ShowSpaces"/>
 	</Extend>
 	
-	<Boss name = "TextEditor">
+	<Extend name = "TextEditor">
 		<Implementation interfaces = "IWindow ITextEditor IText IReload" name = "Editor"/>
 		<Implementation interfaces = "IStyler" name = "Styler"/>
 		<Implementation interfaces = "IStyles" name = "Styles"/>
-	</Boss>
+	</Extend>
 </Bosses>

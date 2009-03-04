@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Jesse Jones
+// Copyright (C) 2007-2008 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -19,18 +19,32 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear;
+using Shared;
 using System;
+using System.IO;
+using System.Reflection;
 
-namespace Shared
+namespace AutoComplete
 {
-	public static class Constants
+	[Plugin]
+	public static class Plugin
 	{
-		public const string Ellipsis = "\x2026";
-		public const string Replacement = "\xFFFD";
-		public const string ZeroWidthSpace = "\x200C";
-		
-		public const string Escape = "\x001B";
-		public const string Delete = "\x007F";
-		
+		public static void OnLoaded()
+		{
+			DoInitObjectModel();
+		}
+
+		private static void DoInitObjectModel()
+		{
+			string loc = Assembly.GetExecutingAssembly().Location;
+			string root = Path.GetDirectoryName(loc);
+			string path = Path.Combine(root, "Bosses.xml");
+			
+			using (StreamReader reader = new StreamReader(path))
+			{
+				XmlModel.Read(reader.BaseStream);
+			}
+		}
 	}
 }

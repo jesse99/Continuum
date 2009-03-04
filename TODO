@@ -30,9 +30,6 @@ dummy := $(shell mkdir bin 2> /dev/null)
 dummy := $(shell mkdir bin/plugins 2> /dev/null)
 dummy := $(shell if [[ "$(CSC_FLAGS)" != `cat bin/csc_flags 2> /dev/null` ]]; then echo "$(CSC_FLAGS)" > bin/csc_flags; fi)
 
-separate body parser?
-or ad-hoc parser which looks for locals on a line and omits locals in a scope
-
 	// int count = m_data.Count;
 	public sealed class CsLocal
 	{
@@ -57,48 +54,55 @@ or ad-hoc parser which looks for locals on a line and omits locals in a scope
 		public string Value {get; private set;}
 	}
 	
-		
-		private bool DoMatchKeyword(string name)
-		{
-			bool matches = false;
-			
-			if (m_scanner.Token.IsIdentifier(name))
-			{
-				m_last = m_scanner.Token;
-				m_scanner.Advance();
-				matches = true;
-			}
-			
-			return matches;
-		}
-		
-* Work on parser:
-	- write an expression parser
-* Work on parsing method bodies:
-	- expose an ad-hoc parser via an interface
-	- check for foreach variables
-	- check for for variables
-	- check for delegate formal arguments
-	- check for anon method formal arguments
+line height
+	http://developer.apple.com/documentation/Cocoa/Conceptual/TextLayout/Tasks/StringHeight.html#//apple_ref/doc/uid/20001809
+	
+Getting the View Coordinates of a Glyph
+	http://developer.apple.com/documentation/Cocoa/Conceptual/TextArchitecture/Tasks/SimpleTasks.html#//apple_ref/doc/uid/20001797-57320
+
+* Database should only parse assemblies referenced by local assemblies, not
+   all assemblies referenced.
+-rw-r--r--  1 jessejones  jessejones  60900352 Mar  4 12:34 Continuum.db
+-rw-r--r--  1 jessejones  jessejones  16929792 Feb 13 23:37 Mono.Cecil.db
+-rw-r--r--  1 jessejones  jessejones  23283712 Feb 24 12:13 bad-shield-anvil.db
+-rw-r--r--  1 jessejones  jessejones  76693504 Feb 24 22:32 gendarme.db
+-rw-r--r--  1 jessejones  jessejones  43925504 Feb 25 21:52 mcocoa.db
+-rw-r--r--  1 jessejones  jessejones  26219520 Feb 26 05:47 mobjc.db
+-rw-r--r--  1 jessejones  jessejones  11363328 Mar  4 14:18 Trivial.db
+* Work on target completion:
+	- add a context menu:
+		` find on site
+		` open file
+		` complete
+	- need to use using directives with the type
+	- method list needs to account for access
+	- method list needs to account for visibility
+	- do a search for the target:
+		` fields of the type
+		` public or protected fields of base classes
+	- need to special case value arg for indexor and property setters
+	- search for locals, start parsing at one of:
+		` the start of the member declaration the cursor is within
+		` the first { after the previous member
+		` the first { after the type signature
 * Work on tab completion:
-	- three versions target, call, and arg completion
+	- after completing a non-nullary target method call transition to arg completion
+		` first name should be a (disabled) arg name
+		` remaining names should be locals, args, fields
+		` when completing goto the next arg
+		` on last arg insert closing paren
+		` don't show names whose names won't work (should at least be able to
+		   prune the system value types)
+	- five versions target, call, arg, ctor arg, namespace completion
+	- IAutoComplete should be a repeated interface?
 	- target shows all locals, args, fields, this methods
 	- call shows all methods of the target (but only if editing at the end of a name)
 	- arg shows most locals, args, fields for an arg position
-	- use a table in a floating window
-	- part that matches current text is in blue, currently selected item is in bold,
-	  text that will be inserted is underlined
 	- need to be able to get locals and args even if the method won't parse completely
-	- only get locals which are lexically before the current selection (probably want to
-	  ignore scope, at least for now)
 	- need to check access and visibility
+	- make sure private methods work (for local assemblies)
 	- need to be able to get the type of var locals for new expressions and simple
 	  (possibly generic) calls
-	- show like eight items at a time
-	- up and down arrows move the selection
-	- command arrow goes to top or bottom
-	- home selects best match?
-	- return/tab inserts text
 	- arg completion should show the method signature as the first (disabled) item
 	- arg completion should attempt to prune what it shows, eg if the arg expects
 	  a (non-generic?) value type we don't have to show any other value types
@@ -106,14 +110,17 @@ or ad-hoc parser which looks for locals on a line and omits locals in a scope
 	  edited starts at a different offset?
 	- need to handle extension methods too
 	- should the insert be a new undo command?
-	- window needs to move if the main window is scrolled
-	- window should hide when the app is deactivated
 	- can we show the comments for the selection? maybe in a second window? or
 	   maybe some sort of context help window that can also be shown if the text 
 	   window selection is within a method?
 	- refactor needs to document Scope and support Locals property
-* Apply changes seem to have slowed down the UI.
+	- keyDown and textStorageDidProcessEditing should use cStringUsingEncoding
+	  (be sure to do some timing tests to see if it can be used to avoid copying all
+	  of the characters)
+* OpenSelection isn't doing a case insensitive match, try nsview.cs
 * Is ChangeAccess correct?
+* Search witin "…" isn't finding verbatim strings. E.g. search for Methods should
+  find some.
 * Could probably speed up editing of large files if we got a pointer to the text from
   native code and operated on that with unsafe code.
 * Tab style isn't getting applied correctly
