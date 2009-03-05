@@ -31,22 +31,12 @@ namespace AutoComplete
 	[ExportClass("CompletionsController", "NSWindowController", Outlets = "table label")]
 	internal sealed class CompletionsController : NSWindowController
 	{
-		~CompletionsController()
-		{
-//	Console.WriteLine("~window count: {0}", window().retainCount());
-//	Console.WriteLine("~table count: {0}", m_table.Value.retainCount());
-			window().autorelease();
-//			m_table.Value.autorelease();
-			autorelease();
-		}
-		
 		public CompletionsController() : base(NSObject.AllocNative("CompletionsController"))
 		{
 			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("completions"), this);
+			
 			m_table = new IBOutlet<CompletionsTable>(this, "table");
 			m_label = new IBOutlet<NSTextField>(this, "label");
-			
-//			window().makeKeyAndOrderFront(this);
 			
 //			m_table.Value.setDoubleAction("doubleClicked:");
 //			m_table.Value.setTarget(this);
@@ -72,13 +62,7 @@ namespace AutoComplete
 			NSApplication.sharedApplication().endSheet(window());
 			window().orderOut(this);
 		}
-		
-		public void windowWillClose(NSObject notification)
-		{
-//			window().autorelease();
-//			autorelease();
-		}
-		
+				
 		#region Private Methods
 		// TODO: this isn't quite right. We want the base line of the line the glyph is in
 		// not the base line of the glyph itself. There doesn't seem to be a good way to

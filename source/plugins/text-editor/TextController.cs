@@ -233,6 +233,9 @@ namespace TextEditor
 					DoDeleteFile(Path);
 			}
 			
+			var complete = m_boss.Get<IAutoComplete>();
+			complete.Close();
+
 			if (m_watcher != null)
 			{
 				m_watcher.Dispose();

@@ -21,6 +21,7 @@
 
 using MCocoa;
 using MObjc;
+using Shared;
 using System;
 using System.Diagnostics;
 
@@ -31,6 +32,7 @@ namespace AutoComplete
 	{
 		private CompletionsWindow(IntPtr instance) : base(instance)
 		{
+			ActiveObjects.Add(this);
 		}
 		
 		public void SetLoc(NSPoint loc)

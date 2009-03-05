@@ -13,28 +13,16 @@ mutating a local used in multiple lambdas (or for loop variable used with lambda
 might want a sample app
 		
 	<keyword>(?:&lt; \s*) [^&quot;\r\n]* &quot;</keyword>
-	
-* Do a checkin.
-* Remove TargetWindow.
-* Assert
-Ignoring BeginInvoke exception:
-m_closed is true
-  at Shared.AssertListener.Fail (System.String message) [0x00000] in /Users/jessejones/Source/Continuum/source/shared/AssertListener.cs:69 
-  at System.Diagnostics.TraceImpl.Fail (System.String message) [0x00028] in /private/tmp/monobuild/build/BUILD/mono-2.2/mcs/class/System/System.Diagnostics/TraceImpl.cs:247 
-  at System.Diagnostics.TraceImpl.Assert (Boolean condition, System.String message) [0x00006] in /private/tmp/monobuild/build/BUILD/mono-2.2/mcs/class/System/System.Diagnostics/TraceImpl.cs:219 
-  at System.Diagnostics.Trace.Assert (Boolean condition, System.String message) [0x00000] 
-  at TextEditor.Styler.Apply (IComputeRuns computer, System.Action callback) [0x00022] in /Users/jessejones/Source/Continuum/source/plugins/text-editor/Styler.cs:51 
-  at TextEditor.Styler.DoQueuedApply () [0x0003c] in /Users/jessejones/Source/Continuum/source/plugins/text-editor/Styler.cs:117 
-  at MCocoa.AppHelper.execute (MObjc.NSObject arg) [0x0004b] in /Users/jessejones/Source/mcocoa/source/appkit/AppHelper.cs:165 
-* Try to figure out why TextEditor bosses don't reliably go away.
+			
 * Make sure completion controller, window, and table go away.
-* Make sure directory boss and windows go away.
 * Work on target completion:
 	- make the window resizeable?
 	- save the window size in a pref
 	- should we have a shadow?
 	- need to use using directives with the type
 	- special case static method calls
+	- names should include fields
+	- handle this.
 	- support double click
 	- warning window can use IB
 	- do a search for the target:
@@ -99,6 +87,7 @@ m_closed is true
 * Is ChangeAccess correct?
 * Search witin "…" isn't finding verbatim strings. E.g. search for Methods should
   find some.
+* Implement IDisposable added throw to a private method.
 * Rework Apply:
 	- use an AppliedRunsTable
 	- table is updated (using a thread) for edits
@@ -111,6 +100,8 @@ m_closed is true
   native code and operated on that with unsafe code.
 * Code that executes in response to an edit should be constant time. If not queue
    up a timer and do it after editing stops.
+* Might want to submit a bug report for System.Threading.ThreadPool.
+* Also why didn't PulseAll work?
 * Tab style isn't getting applied correctly
 	- seems to screw up when pasting from C# Grammar.txt
 * Can probably add a Lift Code to Method refactor now.
@@ -460,6 +451,11 @@ m_closed is true
 	  that were edited)
 	- would be cool if invariant support could be added via a script		
 * Release checklist:
+	- make sure text editor boss goes away
+	- make sure text objects go away
+	- make sure auto complete objects go away
+	- make sure directory editor boss goes away
+	- make sure directory objects go away
 	- run continuum with no prefs
 	- run continuum with no Continuum Files dir
 	- review generated config log categories

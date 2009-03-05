@@ -28,6 +28,8 @@ namespace Shared
 	// Interface used to auto-complete things like method calls.
 	public interface IAutoComplete : IInterface
 	{
+		void Close();
+		
 		void OnPathChanged();
 		
 		// Returns true if the event was handled.

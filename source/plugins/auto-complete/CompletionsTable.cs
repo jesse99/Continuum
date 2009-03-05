@@ -35,6 +35,8 @@ namespace AutoComplete
 		private CompletionsTable(IntPtr instance) : base(instance)
 		{
 			setDataSource(this);
+			
+			ActiveObjects.Add(this);
 		}
 		
 		public void Open(NSTextView text, string[] names)

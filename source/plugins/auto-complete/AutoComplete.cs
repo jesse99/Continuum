@@ -30,7 +30,7 @@ using System.Linq;
 using System.Text;
 
 namespace AutoComplete
-{	
+{
 	internal sealed class AutoComplete : IAutoComplete
 	{
 		public void Instantiated(Boss boss)
@@ -43,6 +43,16 @@ namespace AutoComplete
 		public Boss Boss
 		{
 			get {return m_boss;}
+		}
+		
+		public void Close()
+		{
+			if (m_controller != null)
+			{
+				m_controller.window().release();
+				m_controller.release();
+				m_controller = null;
+			}
 		}
 		
 		public void OnPathChanged()

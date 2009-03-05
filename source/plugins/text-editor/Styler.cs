@@ -41,38 +41,41 @@ namespace TextEditor
 		{
 			m_boss = boss;
 			
-			m_timer = new Timer(o => DoTimer(), null, Timeout.Infinite, Timeout.Infinite);
+			m_timer = new SafeTimer(o => DoTimer(), null, Timeout.Infinite, Timeout.Infinite);
 		}
 		
 		public void Apply(IComputeRuns computer, Action callback)
 		{
 			Trace.Assert(computer != null, "computer is null");
 			Trace.Assert(callback != null, "callback is null");
-			Trace.Assert(!m_closed, "m_closed is true");
 			
-			var text = m_boss.Get<IText>();
-			if (text.Text.Length < 128*1024)
+			// This is called via a timer so sometimes it will be closed.
+			if (!m_closed)
 			{
-				lock (m_mutex)
+				var text = m_boss.Get<IText>();
+				if (text.Text.Length < 128*1024)
 				{
-					m_text = text.Text;
-					m_edit = text.EditCount;
-					m_computer = computer;
-					m_callback = callback;
-					
-					Unused.Value = m_timer.Change(0, Timeout.Infinite);
+					lock (m_mutex)
+					{
+						m_text = text.Text;
+						m_edit = text.EditCount;
+						m_computer = computer;
+						m_callback = callback;
+						
+						Unused.Value = m_timer.Change(0, Timeout.Infinite);
+					}
 				}
-			}
-			else
-			{
-				// We need to ensure that the callback is always called because
-				// TextController uses the call as a signal that it is OK to restore the
-				// scroller.
-				var styles = m_boss.Get<IStyles>();
-				styles.Reset(text.EditCount, new StyleRun[0], null);
-				
-				NSApplication.sharedApplication().BeginInvoke(callback);
-				Unused.Value = m_timer.Change(Timeout.Infinite, Timeout.Infinite);
+				else
+				{
+					// We need to ensure that the callback is always called because
+					// TextController uses the call as a signal that it is OK to restore the
+					// scroller.
+					var styles = m_boss.Get<IStyles>();
+					styles.Reset(text.EditCount, new StyleRun[0], null);
+					
+					NSApplication.sharedApplication().BeginInvoke(callback);
+					Unused.Value = m_timer.Change(Timeout.Infinite, Timeout.Infinite);
+				}
 			}
 		}
 		
@@ -155,7 +158,7 @@ namespace TextEditor
 		
 		#region Fields
 		private Boss m_boss;
-		private Timer m_timer;
+		private SafeTimer m_timer;
 		private volatile bool m_closed;
 		
 		private object m_mutex = new object();
