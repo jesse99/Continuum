@@ -13,53 +13,7 @@ mutating a local used in multiple lambdas (or for loop variable used with lambda
 might want a sample app
 		
 	<keyword>(?:&lt; \s*) [^&quot;\r\n]* &quot;</keyword>
-	
-		internal StyleRun[] Compute(string text)
-		{
-			var runs = new List<StyleRun>(text.Length/50);
-			DoComputeRuns(text, 1, runs);
-			
-			return runs.ToArray();
-		}
 		
-sudo mv ~/mobjc-glue.dylib /usr/local/lib/	
-
-				<add name = "logger" traceOutputOptions = "Timestamp" type = "Continuum.PrettyTraceListener,continuum" initializeData = "/Users/jessejones/Source/Continuum/continuum.log"/>
-
-dummy := $(shell mkdir bin 2> /dev/null)
-dummy := $(shell mkdir bin/plugins 2> /dev/null)
-dummy := $(shell if [[ "$(CSC_FLAGS)" != `cat bin/csc_flags 2> /dev/null` ]]; then echo "$(CSC_FLAGS)" > bin/csc_flags; fi)
-
-	// int count = m_data.Count;
-	public sealed class CsLocal
-	{
-		public CsLocal(string name, string type, string value)
-		{
-			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
-			Trace.Assert(!string.IsNullOrEmpty(type), "type is null or empty");
-			
-			Name = name;
-			Type = type.TrimAll();
-			
-			if (value != null)
-				Value = value.Trim();
-		}
-		
-		public string Name {get; private set;}
-		
-		// May be "var". Will not have any whitespace.
-		public string Type {get; private set;}
-		
-		// May be null. If present will not have leading or trailing whitespace.
-		public string Value {get; private set;}
-	}
-	
-line height
-	http://developer.apple.com/documentation/Cocoa/Conceptual/TextLayout/Tasks/StringHeight.html#//apple_ref/doc/uid/20001809
-	
-Getting the View Coordinates of a Glyph
-	http://developer.apple.com/documentation/Cocoa/Conceptual/TextArchitecture/Tasks/SimpleTasks.html#//apple_ref/doc/uid/20001797-57320
-
 * Database should only parse assemblies referenced by local assemblies, not
    all assemblies referenced.
 -rw-r--r--  1 jessejones  jessejones  60900352 Mar  4 12:34 Continuum.db
@@ -70,13 +24,9 @@ Getting the View Coordinates of a Glyph
 -rw-r--r--  1 jessejones  jessejones  26219520 Feb 26 05:47 mobjc.db
 -rw-r--r--  1 jessejones  jessejones  11363328 Mar  4 14:18 Trivial.db
 * Work on target completion:
-	- add a context menu:
-		` find on site
-		` open file
-		` complete
+	- use a titled window?
 	- need to use using directives with the type
-	- method list needs to account for access
-	- method list needs to account for visibility
+	- special case static method calls
 	- do a search for the target:
 		` fields of the type
 		` public or protected fields of base classes
@@ -85,6 +35,13 @@ Getting the View Coordinates of a Glyph
 		` the start of the member declaration the cursor is within
 		` the first { after the previous member
 		` the first { after the type signature
+	- build a new foreshadow
+	- add a context menu:
+		` find on site
+		` open file
+		` complete
+	- method list needs to account for access
+	- method list needs to account for visibility
 * Work on tab completion:
 	- after completing a non-nullary target method call transition to arg completion
 		` first name should be a (disabled) arg name
@@ -117,12 +74,24 @@ Getting the View Coordinates of a Glyph
 	- keyDown and textStorageDidProcessEditing should use cStringUsingEncoding
 	  (be sure to do some timing tests to see if it can be used to avoid copying all
 	  of the characters)
+	- might want to support completing names via F5, should also have a menu item
+	   for this
 * OpenSelection isn't doing a case insensitive match, try nsview.cs
 * Is ChangeAccess correct?
 * Search witin "…" isn't finding verbatim strings. E.g. search for Methods should
   find some.
+* Rework Apply:
+	- use an AppliedRunsTable
+	- table is updated (using a thread) for edits
+	- table does a binary search of two tables (normal and type runs)
+	- probably want a unit test
+	- apply is one pass
+	- apply can special case default runs when doing a full apply
+	- use a thread to figure out which runs need to be applied
 * Could probably speed up editing of large files if we got a pointer to the text from
   native code and operated on that with unsafe code.
+* Code that executes in response to an edit should be constant time. If not queue
+   up a timer and do it after editing stops.
 * Tab style isn't getting applied correctly
 	- seems to screw up when pasting from C# Grammar.txt
 * Can probably add a Lift Code to Method refactor now.

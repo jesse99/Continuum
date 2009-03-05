@@ -99,7 +99,7 @@ namespace ObjectModel
 						revision INTEGER NOT NULL
 							CONSTRAINT sane_revision CHECK(revision >= 0)
 					)");
-	
+				
 				// TODO: we should probably be using an assembly_id instead of a hash
 				// for the foreign keys. That should be a bit faster and more space efficient.
 				m_database.Update(@"
@@ -167,7 +167,7 @@ namespace ObjectModel
 					Boss boss = Gear.ObjectModel.Create("FileSystem");
 					var fs = boss.Get<IFileSystem>();
 					
-					string[] dlls = fs.GetAllFiles(root, "*.dll");		
+					string[] dlls = fs.GetAllFiles(root, "*.dll");
 					string[] exes = fs.GetAllFiles(root, "*.exe");
 					
 					lock (m_lock)
@@ -246,7 +246,7 @@ namespace ObjectModel
 					if (!File.Exists(row[0]))
 					{
 						Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "removing '{0}' from AssemblyPaths", row[0]);
-	
+						
 						m_database.Update(string.Format(@"
 							DELETE FROM AssemblyPaths 
 								WHERE path = '{0}' AND hash = '{1}'", row[0], row[1]));
@@ -260,7 +260,7 @@ namespace ObjectModel
 					EXCEPT SELECT hash
 						FROM AssemblyPaths";
 				rows = m_database.QueryRows(sql);
-	
+				
 				foreach (string[] row in rows)
 				{
 					if (Log.IsEnabled(TraceLevel.Info, "ObjectModel"))
@@ -270,7 +270,7 @@ namespace ObjectModel
 								FROM Assemblies
 							WHERE hash = '{0}'", row[0]);
 						string[][] temp = m_database.QueryRows(sql);
-	
+						
 						if (temp.Length > 0)
 						{
 							string name = string.Format("{0} {1}.{2}.{3}.{4}", temp[0][0], temp[0][1], temp[0][2], temp[0][3], temp[0][4]);	
@@ -311,7 +311,7 @@ namespace ObjectModel
 					WHERE path='{0}'", path);
 				string[][] rows = m_database.QueryRows(sql);
 				Trace.Assert(rows.Length <= 1, string.Format("got {0} rows looking for {1}", rows.Length, path));
-					
+				
 				// If we've never processed the file or it has changed since we
 				// last processed it then,
 				bool dirty = rows.Length == 0;
@@ -381,7 +381,7 @@ namespace ObjectModel
 				m_database.Update("update assemblies for " + path, () =>
 				{
 					m_database.Insert("Assemblies",
-						BitConverter.ToString(hash), 
+						BitConverter.ToString(hash),
 						assembly.Name.Name,
 						string.IsNullOrEmpty(assembly.Name.Culture) ? "neutral" : assembly.Name.Culture.ToLower(),
 						assembly.Name.Version.Major.ToString(),
@@ -389,7 +389,7 @@ namespace ObjectModel
 						assembly.Name.Version.Build.ToString(),
 						assembly.Name.Version.Revision.ToString());
 				});
-								
+				
 				// parse the assembly (we do this last so that the Types table
 				// can refer to the new row in the Assemblies table),
 				DoParseAssembly(path, assembly, BitConverter.ToString(hash));
@@ -495,7 +495,7 @@ namespace ObjectModel
 					if (name.Version > rhs)
 					{
 						Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "pruning {0} {1}.{2}.{3}.{4} (there's a newer version)", name.Name, r[0], r[1], r[2], r[3]);
-
+						
 						m_database.Update(string.Format(@"
 							DELETE FROM Types 
 								WHERE hash = '{0}'", r[4]));
