@@ -14,7 +14,6 @@ might want a sample app
 		
 	<keyword>(?:&lt; \s*) [^&quot;\r\n]* &quot;</keyword>
 			
-* Make sure completion controller, window, and table go away.
 * Work on target completion:
 	- make the window resizeable?
 	- save the window size in a pref

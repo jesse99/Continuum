@@ -33,7 +33,8 @@ namespace AutoComplete
 	{
 		public CompletionsController() : base(NSObject.AllocNative("CompletionsController"))
 		{
-			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("completions"), this);
+			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("completions"), this);			
+			Unused.Value = window().setFrameAutosaveName(NSString.Create("auto-complete window"));
 			
 			m_table = new IBOutlet<CompletionsTable>(this, "table");
 			m_label = new IBOutlet<NSTextField>(this, "label");
@@ -62,7 +63,7 @@ namespace AutoComplete
 			NSApplication.sharedApplication().endSheet(window());
 			window().orderOut(this);
 		}
-				
+		
 		#region Private Methods
 		// TODO: this isn't quite right. We want the base line of the line the glyph is in
 		// not the base line of the glyph itself. There doesn't seem to be a good way to
