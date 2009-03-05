@@ -95,7 +95,12 @@ namespace TextEditor
 		
 		public void Close()
 		{
-			m_closed = true;
+			if (!m_closed)
+			{
+				m_timer.Dispose();
+				m_timer = null;
+				m_closed = true;
+			}
 		}
 		
 		#region Private Methods

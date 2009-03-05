@@ -29,6 +29,7 @@ using System.Collections.Generic;
 
 namespace AutoComplete
 {
+#if false
 	[ExportClass("TargetWindow", "NSObject")]
 	internal sealed class TargetWindow : NSObject
 	{
@@ -46,7 +47,7 @@ namespace AutoComplete
 			m_names = names;
 			m_text = text.Retain();
 			
-			DoCreateWindow();
+			DoCreateWindow(type);
 			DoCreateViews(type);
 			
 			ActiveObjects.Add(this);
@@ -67,7 +68,7 @@ namespace AutoComplete
 		}
 		
 		#region Private Methods
-		private void DoCreateWindow()
+		private void DoCreateWindow(string type)
 		{
 			// Note that Interface Builder won't allow us to create a window with no title bar
 			// so we have to do all of this manually.
@@ -77,6 +78,7 @@ namespace AutoComplete
 			
 			m_window.setHidesOnDeactivate(true);
 			m_window.setHasShadow(false);
+			m_window.setTitle(NSString.Create(type));
 		}
 		
 		// TODO: this isn't quite right. We want the base line of the line the glyph is in
@@ -145,4 +147,5 @@ namespace AutoComplete
 		private string[] m_names;
 		#endregion
 	}
+#endif
 }

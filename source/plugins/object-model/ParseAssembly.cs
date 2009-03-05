@@ -114,10 +114,9 @@ namespace ObjectModel
 		// Parsing the larger system assemblies takes 10s of seconds which is much 
 		// too long a period of time to keep the database locked so our transaction
 		// is around the types, not the assembly.
-		public void Parse(string path, AssemblyDefinition assembly, string hash)		// threaded
+		public void Parse(string path, AssemblyDefinition assembly, string hash, bool fullParse)		// threaded
 		{
 //	Console.WriteLine("    parsing {0} for thread {1}", assembly.Name.FullName, System.Threading.Thread.CurrentThread.ManagedThreadId);
-			bool fullParse = !path.Contains("/gac/") && !path.Contains("/mscorlib.dll") && File.Exists(path + ".mdb");	// TODO: might want to optionally allow full parse of mscorlib and assemblies in the gac			
 			Log.WriteLine("ObjectModel", "{0}parsing {1}", fullParse ? "fully " : string.Empty, assembly.Name.FullName);
 			
 			foreach (ModuleDefinition module in assembly.Modules)

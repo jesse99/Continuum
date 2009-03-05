@@ -392,43 +392,49 @@ namespace ObjectModel
 				
 				// parse the assembly (we do this last so that the Types table
 				// can refer to the new row in the Assemblies table),
-				DoParseAssembly(path, assembly, BitConverter.ToString(hash));
+				bool fullParse = !path.Contains("/gac/") && !path.Contains("/mscorlib.dll") && File.Exists(path + ".mdb");	// TODO: might want to optionally allow full parse of mscorlib and assemblies in the gac			
+				DoParseAssembly(path, assembly, BitConverter.ToString(hash), fullParse);
 				
-				// and queue up any assemblies it references.
-				var resolver = (BaseAssemblyResolver) assembly.Resolver;
-				resolver.AddSearchDirectory(Path.GetDirectoryName(path));
-				
-				foreach (ModuleDefinition module in assembly.Modules)
+				// and queue up any assemblies it references (but only for local assemblies:
+				// the database are already large and transitively parsing all assemblies isn't
+				// that useful).
+				if (fullParse)
 				{
-					foreach (AssemblyNameReference nr in module.AssemblyReferences)
+					var resolver = (BaseAssemblyResolver) assembly.Resolver;
+					resolver.AddSearchDirectory(Path.GetDirectoryName(path));
+					
+					foreach (ModuleDefinition module in assembly.Modules)
 					{
-						try
+						foreach (AssemblyNameReference nr in module.AssemblyReferences)
 						{
-							if (!m_resolvedAssemblies.Contains(nr.FullName))
+							try
 							{
-								AssemblyDefinition ad = resolver.Resolve(nr);	// this is a little inefficient because we load the assembly twice, but the load is not the bottleneck...
-								m_resolvedAssemblies.Add(nr.FullName);
-								
-								Image image = ad.MainModule.Image;
-								Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "resolved {0} at {1}", nr.FullName, image.FileInformation.FullName);
-								
-								lock (m_lock)
+								if (!m_resolvedAssemblies.Contains(nr.FullName))
 								{
-//	Console.WriteLine("adding referenced file {0} for thread {1}", image.FileInformation.FullName, Thread.CurrentThread.ManagedThreadId);
-									m_files.Add(image.FileInformation.FullName);	// note that we don't need to pulse because we execute within the thread
+									AssemblyDefinition ad = resolver.Resolve(nr);	// this is a little inefficient because we load the assembly twice, but the load is not the bottleneck...
+									m_resolvedAssemblies.Add(nr.FullName);
+									
+									Image image = ad.MainModule.Image;
+									Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "resolved {0} at {1}", nr.FullName, image.FileInformation.FullName);
+									
+									lock (m_lock)
+									{
+//		Console.WriteLine("adding referenced file {0} for thread {1}", image.FileInformation.FullName, Thread.CurrentThread.ManagedThreadId);
+										m_files.Add(image.FileInformation.FullName);	// note that we don't need to pulse because we execute within the thread
+									}
 								}
 							}
-						}
-						catch
-						{
-							Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "Couldn't resolve {0}", nr.FullName);	// this is fairly common with intermediate build steps when packaging bundles
+							catch
+							{
+								Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "Couldn't resolve {0}", nr.FullName);	// this is fairly common with intermediate build steps when packaging bundles
+							}
 						}
 					}
 				}
 			}
 		}
 		
-		private void DoParseAssembly(string path, AssemblyDefinition assembly, string hash)		// threaded
+		private void DoParseAssembly(string path, AssemblyDefinition assembly, string hash, bool fullParse)		// threaded
 		{
 			int order = DoCompareAssembly(assembly.Name, hash);
 			
@@ -438,7 +444,7 @@ namespace ObjectModel
 			// try to match.
 			if (order >= 0)
 			{
-				m_boss.CallRepeated<IParseAssembly>(i => i.Parse(path, assembly, hash));
+				m_boss.CallRepeated<IParseAssembly>(i => i.Parse(path, assembly, hash, fullParse));
 				
 				// If the assembly is newer then remove the old assemblies types and methods.
 				if (order == 1)

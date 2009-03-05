@@ -29,29 +29,15 @@ namespace AutoComplete
 	[ExportClass("CompletionsWindow", "NSWindow")]
 	internal sealed class CompletionsWindow : NSWindow
 	{
-		public CompletionsWindow(IntPtr instance) : base(instance)
+		private CompletionsWindow(IntPtr instance) : base(instance)
 		{
 		}
 		
-		public static new CompletionsWindow Alloc()
+		public void SetLoc(NSPoint loc)
 		{
-			return (CompletionsWindow) ms_class.Alloc();
+			m_loc = loc;
 		}
-		
-		public CompletionsWindow Init(NSRect frame, NSPoint loc)
-		{
-			CompletionsWindow result = initWithContentRect_styleMask_backing_defer(frame, 0, Enums.NSBackingStoreBuffered, false).To<CompletionsWindow>();
-			result.m_loc = loc;
-			
-			return result;
-		}
-		
-		// NSWindow only returns true for windows with title bars...
-		public new bool canBecomeKeyWindow()
-		{
-			return true;
-		}
-		
+				
 		// This is called by our parent's window_willPositionSheet_usingRect.
 		public NSRect positionSheet(NSRect usingRect)
 		{
@@ -67,7 +53,6 @@ namespace AutoComplete
 		
 		#region Fields
 		private NSPoint m_loc;
-		private static Class ms_class = new Class("CompletionsWindow");
 		#endregion
 	}
 }

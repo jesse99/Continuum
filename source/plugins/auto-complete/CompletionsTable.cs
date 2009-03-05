@@ -32,36 +32,28 @@ namespace AutoComplete
 	[ExportClass("CompletionsTable", "NSTableView")]
 	internal sealed class CompletionsTable : NSTableView
 	{
-		public CompletionsTable(IntPtr instance) : base(instance)
+		private CompletionsTable(IntPtr instance) : base(instance)
 		{
+			setDataSource(this);
 		}
 		
-		public static new CompletionsTable Alloc()
+		public void Open(NSTextView text, string[] names)
 		{
-			return (CompletionsTable) ms_class.Alloc();
-		}
-		
-		public CompletionsTable Init(NSRect frame, NSTextView text, string type, string[] names, TargetWindow window)
-		{
-			CompletionsTable result = Call("initWithFrame:", frame).To<CompletionsTable>();
-			result.m_window = window;
-			result.m_text = text;
-			result.m_names = new List<string>(names);
-			result.setDataSource(result);
+			m_text = text;
+			m_names = new List<string>(names);
+			m_completed = string.Empty;
 			
-			result.m_names.Sort();
-			result.m_names.Insert(0, type);
-			
-			return result;
+			m_names.Sort();
+			reloadData();
 		}
 		
 		public new void keyDown(NSEvent evt)
 		{
 			NSString chars = evt.characters();
-	
+			
 			if (chars == "\t" || chars == "\r")
 			{
-				if (selectedRow() > 0)
+				if (selectedRow() >= 0)
 				{
 					string name = m_names[selectedRow()];
 					int i = name.IndexOf("(");
@@ -74,11 +66,14 @@ namespace AutoComplete
 				}
 				else
 					Functions.NSBeep();
-				m_window.Hide();
+				
+				m_text = null;
+				window().windowController().Call("hide");
 			}
 			else if (chars == Constants.Escape)
 			{
-				m_window.Hide();
+				m_text = null;
+				window().windowController().Call("hide");
 			}
 			else if (chars.length() == 1 && (char.IsLetterOrDigit(chars[0]) || chars[0] == '_'))
 			{
@@ -117,38 +112,26 @@ namespace AutoComplete
 			NSObject result;
 			
 			string name = m_names[row];
-			if (row == 0)
+			int n = DoCountMatching(name);
+			if (n > 0)
 			{
 				var str = NSMutableAttributedString.Create(name);
 				
-				NSRange range = new NSRange(0, name.Length);
-				str.addAttribute_value_range(Externs.NSForegroundColorAttributeName, NSColor.disabledControlTextColor(), range);
+				NSRange range = new NSRange(0, n);
+				str.addAttribute_value_range(Externs.NSForegroundColorAttributeName, NSColor.greenColor(), range);
+				if (n < m_completed.Length)
+				{
+					range = new NSRange(n, m_completed.Length - n);
+					str.addAttribute_value_range(Externs.NSForegroundColorAttributeName, NSColor.redColor(), range);
+				}
 				
 				result = str;
 			}
 			else
 			{
-				int n = DoCountMatching(name);
-				if (n > 0)
-				{
-					var str = NSMutableAttributedString.Create(name);
-					
-					NSRange range = new NSRange(0, n);
-					str.addAttribute_value_range(Externs.NSForegroundColorAttributeName, NSColor.greenColor(), range);
-					if (n < m_completed.Length)
-					{
-						range = new NSRange(n, m_completed.Length - n);
-						str.addAttribute_value_range(Externs.NSForegroundColorAttributeName, NSColor.redColor(), range);
-					}
-					
-					result = str;
-				}
-				else
-				{
-					result = NSString.Create(name);
-				}
+				result = NSString.Create(name);
 			}
-						
+			
 			return result;
 		}
 		
@@ -181,7 +164,7 @@ namespace AutoComplete
 				// scrollRowToVisible twice.
 				int row = Math.Max(index - 2, 0);
 				scrollRowToVisible(row);
-
+				
 				row = Math.Min(index + 2, m_names.Count - 1);
 				scrollRowToVisible(row);
 			}
@@ -203,12 +186,9 @@ namespace AutoComplete
 		#endregion
 		
 		#region Fields
-		private TargetWindow m_window;
 		private NSTextView m_text;
-		private List<string> m_names;
+		private List<string> m_names = new List<string>();
 		private string m_completed = string.Empty;
-		
-		private static Class ms_class = new Class("CompletionsTable");
 		#endregion
 	}
 }

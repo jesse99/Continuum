@@ -30,6 +30,6 @@ namespace ObjectModel
 	{
 		// Note that this will be called from within a worker thread and will be
 		// called multiple times if the assembly is rebuilt.
-		void Parse(string path, AssemblyDefinition assembly, string hash);
-	} 
+		void Parse(string path, AssemblyDefinition assembly, string hash, bool fullParse);
+	}
 }

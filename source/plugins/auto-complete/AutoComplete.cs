@@ -93,8 +93,9 @@ namespace AutoComplete
 								{
 									string[] methods = DoGetMethods(fullName, hash);
 				Console.WriteLine("found {0} methods", methods.Length);
-									m_window = new TargetWindow(view, fullName, methods);
-									m_window.Show();
+									if (m_controller == null)	
+										m_controller = new CompletionsController();
+									m_controller.Show(view, fullName, methods);
 								}
 							}
 						}
@@ -387,7 +388,7 @@ namespace AutoComplete
 		private IText m_text;
 		private IStyles m_styles;
 		private Database m_database;
-		private TargetWindow m_window;
+		private CompletionsController m_controller;
 		private static Dictionary<string, string> ms_aliases = new Dictionary<string, string>	// TODO: ShortForm.cs has the same list
 		{
 			{"System.Boolean", "bool"},
