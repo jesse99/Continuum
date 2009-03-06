@@ -71,6 +71,7 @@ namespace AutoComplete
 					m_database = new Database(path);
 					
 					m_target = new Target(m_boss.Get<IStyles>(), m_database);
+					m_members = new Members(m_database);
 				}
 			}
 		}
@@ -93,7 +94,7 @@ namespace AutoComplete
 						{
 							if (m_target.FindType(target, range.location))
 							{
-								string[] methods = DoGetMethods();
+								string[] methods = m_members.Get(m_target);
 								if (methods.Length > 0)
 								{
 									if (m_controller == null)	
@@ -110,146 +111,6 @@ namespace AutoComplete
 		}
 		
 		#region Private Methods
-		private string[] DoGetMethods()
-		{
-			var result = new List<string>();
-			
-			if (m_target.Hash != null)
-			{
-				string sql = string.Format(@"
-					SELECT name, arg_types, arg_names, attributes
-						FROM Methods 
-					WHERE declaring_type = '{0}' AND hash = '{1}'", m_target.FullTypeName, m_target.Hash);
-				string[][] rows = m_database.QueryRows(sql);
-				
-				var methods = from r in rows
-					where DoIsValidMethod(r[0], ushort.Parse(r[3]), m_target.IsInstanceCall)
-					select DoGetMethodName(r[0], r[1], r[2]);
-				result.AddRange(methods);
-			}
-			
-			// Note that indexers are not counted because they are not preceded with a dot.
-			if (m_target.Type != null)
-			{
-				foreach (CsField field in m_target.Type.Fields)
-				{
-					if (m_target.IsInstanceCall == ((field.Modifiers & MemberModifiers.Static) == 0))
-						result.Add(field.Name);
-				}
-				
-				foreach (CsMethod method in m_target.Type.Methods)
-				{
-					if (!method.IsConstructor && !method.IsFinalizer)
-					{
-						if (m_target.IsInstanceCall == ((method.Modifiers & MemberModifiers.Static) == 0))
-							result.Add(method.Name + "(" + string.Join(", ", (from p in method.Parameters select p.Type + " " + p.Name).ToArray()) + ")");
-					}
-				}
-				
-				foreach (CsProperty prop in m_target.Type.Properties)
-				{
-					if (prop.HasGetter)
-					{
-						if (m_target.IsInstanceCall == ((prop.Modifiers & MemberModifiers.Static) == 0))
-							result.Add(prop.Name);
-					}
-				}
-			}
-			
-			return result.ToArray();
-		}
-		
-		private bool DoIsValidMethod(string name, ushort attributes, bool instanceCall)
-		{
-			bool valid;
-			
-			if (instanceCall)
-				valid = (attributes & 0x0010) == 0;
-			else
-				valid = (attributes & 0x0010) != 0;
-				
-			if (valid && name.Contains(".ctor"))
-				valid = false;
-			
-			if (valid && name.Contains("set_"))
-				valid = false;
-			
-			if (valid && name.Contains("op_"))
-				valid = false;
-				
-			if (valid && name.Contains("add_"))
-				valid = false;
-				
-			if (valid && name.Contains("remove_"))
-				valid = false;
-				
-			if (valid && name == "Finalize")
-				valid = false;
-				
-			return valid;
-		}
-		
-		private string DoGetMethodName(string mname, string argTypes, string argNames)
-		{
-			var builder = new StringBuilder(mname.Length + argTypes.Length + argNames.Length);
-			
-			if (mname.StartsWith("get_"))
-			{
-				builder.Append(mname.Substring(4));
-			}
-			else
-			{
-				builder.Append(mname);
-				
-				builder.Append('(');
-				string[] types = argTypes.Split(new char[]{':'}, StringSplitOptions.RemoveEmptyEntries);
-				string[] names = argNames.Split(new char[]{':'}, StringSplitOptions.RemoveEmptyEntries);
-				for (int i = 0; i < types.Length; ++i)
-				{
-					string type = types[i];
-					if (ms_aliases.ContainsKey(type))
-						type = ms_aliases[type];
-					builder.Append(type);
-					
-					builder.Append(' ');
-					
-					string name = names[i];
-					builder.Append(name);
-					
-					if (i + 1 < types.Length)
-						builder.Append(", ");
-				}
-				builder.Append(')');
-			}
-			
-			return builder.ToString();
-		}
-		
-		// Find the last member offset intersects
-		private CsMember DoFindMember(CsNamespace ns, int offset)
-		{
-			CsMember member = null;
-			
-			for (int i = 0; i < ns.Namespaces.Length && member == null; ++i)
-			{
-				member = DoFindMember(ns.Namespaces[i], offset);
-			}
-			
-			for (int i = 0; i < ns.Types.Length && member == null; ++i)
-			{
-				CsType type = ns.Types[i];
-				
-				for (int j = 0; j < type.Members.Length && member == null; ++j)
-				{
-					CsMember candidate = type.Members[j];
-					if (candidate.Offset <= offset && offset < candidate.Offset + candidate.Length)
-						member = candidate;
-				}
-			}
-			
-			return member;
-		}
-		
 		private string DoGetTarget(int offset)
 		{
 			string text = m_text.Text;
@@ -270,7 +131,7 @@ namespace AutoComplete
 		{
 			if (char.IsLetter(ch))			// fast path
 				return true;
-				
+			
 			UnicodeCategory cat = char.GetUnicodeCategory(ch);
 			switch (cat)
 			{
@@ -290,7 +151,7 @@ namespace AutoComplete
 		{
 			if (char.IsLetterOrDigit(ch) || ch == '_')	// fast path
 				return true;
-							
+			
 			UnicodeCategory cat = char.GetUnicodeCategory(ch);
 			switch (cat)
 			{
@@ -312,43 +173,7 @@ namespace AutoComplete
 		private Database m_database;
 		private CompletionsController m_controller;
 		private Target m_target;
-		
-		private static Dictionary<string, string> ms_aliases = new Dictionary<string, string>	// TODO: ShortForm.cs has the same list
-		{
-			{"System.Boolean", "bool"},
-			{"System.Byte", "byte"},
-			{"System.Char", "char"},
-			{"System.Decimal", "decimal"},
-			{"System.Double", "double"},
-			{"System.Int16", "short"},
-			{"System.Int32", "int"},
-			{"System.Int64", "long"},
-			{"System.SByte", "sbyte"},
-			{"System.Object", "object"},
-			{"System.Single", "float"},
-			{"System.String", "string"},
-			{"System.UInt16", "ushort"},
-			{"System.UInt32", "uint"},
-			{"System.UInt64", "ulong"},
-			{"System.Void", "void"},
-			
-			{"System.Boolean[]", "bool[]"},
-			{"System.Byte[]", "byte[]"},
-			{"System.Char[]", "char[]"},
-			{"System.Decimal[]", "decimal[]"},
-			{"System.Double[]", "double[]"},
-			{"System.Int16[]", "short[]"},
-			{"System.Int32[]", "int[]"},
-			{"System.Int64[]", "long[]"},
-			{"System.SByte[]", "sbyte[]"},
-			{"System.Object[]", "object[]"},
-			{"System.Single[]", "float[]"},
-			{"System.String[]", "string[]"},
-			{"System.UInt16[]", "ushort[]"},
-			{"System.UInt32[]", "uint[]"},
-			{"System.UInt64[]", "ulong[]"},
-			{"System.Void[]", "void[]"},
-		};
+		private Members m_members;
 		#endregion
 	}
 }

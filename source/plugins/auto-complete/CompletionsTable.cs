@@ -36,6 +36,9 @@ namespace AutoComplete
 		{
 			setDataSource(this);
 			
+			setDoubleAction("doubleClicked:");
+			setTarget(this);
+			
 			ActiveObjects.Add(this);
 		}
 		
@@ -62,22 +65,7 @@ namespace AutoComplete
 			
 			if (chars == "\t" || chars == "\r")
 			{
-				if (selectedRow() >= 0)
-				{
-					string name = m_names[selectedRow()];
-					int i = name.IndexOf('(');
-					if (i > 0)
-						if (i + 1 < name.Length && name[i + 1] == ')')
-							name = name.Substring(0, i + 2);
-						else
-							name = name.Substring(0, i + 1);
-					m_text.insertText(NSString.Create(name));
-				}
-				else
-					Functions.NSBeep();
-				
-				m_text = null;
-				window().windowController().Call("hide");
+				doubleClicked(null);
 			}
 			else if (chars == Constants.Escape)
 			{
@@ -119,6 +107,26 @@ namespace AutoComplete
 			{
 				Unused.Value = SuperCall("keyDown:", evt);
 			}
+		}
+		
+		public void doubleClicked(NSObject sender)
+		{
+			if (selectedRow() >= 0)
+			{
+				string name = m_names[selectedRow()];
+				int i = name.IndexOf('(');
+				if (i > 0)
+					if (i + 1 < name.Length && name[i + 1] == ')')
+						name = name.Substring(0, i + 2);
+					else
+						name = name.Substring(0, i + 1);
+				m_text.insertText(NSString.Create(name));
+			}
+			else
+				Functions.NSBeep();
+			
+			m_text = null;
+			window().windowController().Call("hide");
 		}
 		
 		public int numberOfRowsInTableView(NSTableView table)

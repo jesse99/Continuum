@@ -63,9 +63,6 @@ namespace AutoComplete
 			if (m_hash == null && m_type == null)
 				DoHandleVariable(globals, member, target, offset);
 			
-			if (m_type != null)
-				m_hash = null;				// parser will be more up to date so we'll just use that
-
 			return m_hash != null || m_type != null;
 		}
 		
@@ -103,6 +100,7 @@ namespace AutoComplete
 				{
 					m_type = member.DeclaringType;
 					m_fullName = m_type.FullName;
+					m_hash = DoFindAssembly(m_fullName);
 					m_instanceCall = true;
 Console.WriteLine("this type: {0}", m_fullName);
 				}
@@ -116,6 +114,7 @@ Console.WriteLine("this type: {0}", m_fullName);
 			{
 				m_type = type;
 				m_fullName = m_type.FullName;
+				m_hash = DoFindAssembly(m_fullName);
 				m_instanceCall = false;
 Console.WriteLine("local type: {0}", m_fullName);
 			}
@@ -153,6 +152,8 @@ Console.WriteLine("global type: {0}", m_fullName);
 					m_instanceCall = true;
 Console.WriteLine("variable type: {0}", m_fullName);
 				}
+				else
+Console.WriteLine("couldn't find a hash for {0} {1}", target, type);
 			}
 		}
 		

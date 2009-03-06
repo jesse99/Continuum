@@ -19,7 +19,6 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-//using Gear;
 using MCocoa;
 using MObjc;
 using Shared;
@@ -38,9 +37,6 @@ namespace AutoComplete
 			
 			m_table = new IBOutlet<CompletionsTable>(this, "table");
 			m_label = new IBOutlet<NSTextField>(this, "label");
-			
-//			m_table.Value.setDoubleAction("doubleClicked:");
-//			m_table.Value.setTarget(this);
 			
 			ActiveObjects.Add(this);
 		}

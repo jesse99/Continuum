@@ -29,12 +29,13 @@ using System.Collections.Generic;
 
 namespace TextEditor
 {
-	internal sealed class WarningWindow 
+	internal sealed class WarningWindow
 	{
-		public WarningWindow() 
-		{			
+		public WarningWindow()
+		{
 			// Interface Builder won't allow us to create a window with no title bar
-			// so we have to create it manually.
+			// so we have to create it manually. But we could use IB if we display
+			// the window with a sheet...
 			NSRect rect = new NSRect(0, 0, 460, 105);
 			m_window = NSWindow.Alloc().initWithContentRect_styleMask_backing_defer(rect, 0, Enums.NSBackingStoreBuffered, false);
 			
@@ -43,7 +44,7 @@ namespace TextEditor
 			// Initialize the text attributes.
 			var dict = NSMutableDictionary.Create();
 			
-			NSFont font = NSFont.fontWithName_size(NSString.Create("Georgia"), 64.0f);			
+			NSFont font = NSFont.fontWithName_size(NSString.Create("Georgia"), 64.0f);
 			dict.setObject_forKey(font, Externs.NSFontAttributeName);
 			
 			NSMutableParagraphStyle style = NSMutableParagraphStyle.Create();
@@ -53,11 +54,11 @@ namespace TextEditor
 			m_attrs = dict.Retain();
 			
 			// Initialize the background bezier.
-			m_background = NSBezierPath.Create().Retain();  
+			m_background = NSBezierPath.Create().Retain();
 			m_background.appendBezierPathWithRoundedRect_xRadius_yRadius(m_window.contentView().bounds(), 20.0f, 20.0f);
- 
- 			m_color = NSColor.colorWithDeviceRed_green_blue_alpha(250/255.0f, 128/255.0f, 114/255.0f, 1.0f).Retain();	
-
+			
+			m_color = NSColor.colorWithDeviceRed_green_blue_alpha(250/255.0f, 128/255.0f, 114/255.0f, 1.0f).Retain();	
+			
 			ActiveObjects.Add(this);
 		}
 		
@@ -75,18 +76,18 @@ namespace TextEditor
 			
 			m_opening = true;
 			m_alpha = MinAlpha;
-						
-			DoAnimate();	
+			
+			DoAnimate();
 		}
 		
-		#region Private Methods -----------------------------------------------
+		#region Private Methods
 		private void DoAnimate()
 		{
 			if (m_opening)
 			{
 				if (m_alpha == MinAlpha)
 					m_window.orderFront(null);
-
+				
 				m_alpha += 10;
 				if (m_alpha == 100)
 					m_opening = false;
@@ -97,10 +98,10 @@ namespace TextEditor
 				if (m_alpha == MinAlpha)
 					m_window.orderOut(null);
 			}
-
+			
 			if (m_alpha >= MinAlpha)
 			{
-				DoDraw();			
+				DoDraw();
 				NSApplication.sharedApplication().BeginInvoke(() => DoAnimate(), TimeSpan.FromMilliseconds(30));					
 			}
 		}
@@ -116,18 +117,18 @@ namespace TextEditor
 			NSRect bounds = m_window.contentView().bounds();
 			
 			// draw the background
-			m_color.setFill();		
+			m_color.setFill();
 			m_background.fill();
 			
 			// draw the text			
 			m_text.drawInRect_withAttributes(bounds, m_attrs);
-
+			
 			context.flushGraphics();
 			NSGraphicsContext.restoreGraphicsState_c();
 		}
 		#endregion
 		
-		#region Fields --------------------------------------------------------
+		#region Fields
 		private NSWindow m_window;
 		private bool m_opening;
 		private int m_alpha;
@@ -140,4 +141,4 @@ namespace TextEditor
 		private const int MinAlpha = 20;
 		#endregion
 	}
-}	
+}

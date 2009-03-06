@@ -14,15 +14,10 @@ might want a sample app
 		
 	<keyword>(?:&lt; \s*) [^&quot;\r\n]* &quot;</keyword>
 
-* Work on target completion:
-	- test globals:
-		events		add_, remove_
-		operators
-		finalizer
-	- names should include fields
-	- support double click
-	- warning window can use IB
-	- do a search for the target:
+* Work on target completion:	MarshalByRefObject
+	- include base methods
+	- include interface methods?
+	- do a search for the global target:
 		` fields of the type
 		` public or protected fields of base classes
 	- need to special case value arg for indexor and property setters
@@ -31,6 +26,8 @@ might want a sample app
 		` the first { after the previous member
 		` the first { after the type signature
 	- build a new foreshadow
+	- local explicit interface implementation
+	- global explicit interface implementation
 	- add a context menu:
 		` find on site
 		` open file
@@ -85,7 +82,9 @@ might want a sample app
 * Search witin "…" isn't finding verbatim strings. E.g. search for Methods should
   find some.
 * Short form should not show internal members for mscorlib or gac assemblies.
+* Short form should have a separate section for operators (see DateTime).
 * Implement IDisposable added throw to a private method.
+* Expose CsType.FulleName to refactor.
 * Rework Apply:
 	- use an AppliedRunsTable
 	- table is updated (using a thread) for edits

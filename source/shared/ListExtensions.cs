@@ -29,6 +29,14 @@ namespace Shared
 	// Note that arrays implement IList.
 	public static class ListExtensions
 	{
+		public static void AddIfMissing<T>(this List<T> data, T value)
+		{
+			Trace.Assert(data != null, "data is null");
+
+			if (data.IndexOf(value) < 0)
+				data.Add(value);
+		}
+		
 		// Returns true if the lengths of the two lists are equal and each element
 		// is equal.
 		public static bool EqualValues<T>(this IList<T> lhs, IList<T> rhs)
