@@ -42,7 +42,7 @@ namespace AutoComplete
 			// Get the members for the target type. Note that we don't use the
 			// database if we have the parsed type because it is likely out of date.
 			string fullName = target.FullTypeName;
-
+			
 			if (target.Type != null)
 				DoGetParsedMembers(target, members);
 			
@@ -55,7 +55,7 @@ namespace AutoComplete
 				fullName = DoGetBaseType(fullName);
 				if (fullName == null)
 					break;
-	
+				
 				DoGetDatabaseMembers(fullName, target.IsInstanceCall, members);
 			}
 			
@@ -64,6 +64,12 @@ namespace AutoComplete
 		
 		#region Private Methods
 		private void DoGetDatabaseMembers(string fullName, bool instanceCall, List<string> members)
+		{
+			DoGetDatabaseMethods(fullName, instanceCall, members);
+			DoGetDatabaseFields(fullName, instanceCall, members);
+		}
+		
+		private void DoGetDatabaseMethods(string fullName, bool instanceCall, List<string> members)
 		{
 			string sql = string.Format(@"
 				SELECT name, arg_types, arg_names, attributes
@@ -76,6 +82,22 @@ namespace AutoComplete
 				select DoGetMethodName(r[0], r[1], r[2]);
 			
 			foreach (string name in methods)
+				members.AddIfMissing(name);
+		}
+		
+		private void DoGetDatabaseFields(string fullName, bool instanceCall, List<string> members)
+		{
+			string sql = string.Format(@"
+				SELECT name, attributes
+					FROM Fields 
+				WHERE declaring_type = '{0}'", fullName);
+			string[][] rows = m_database.QueryRows(sql);
+			
+			var fields = from r in rows
+				where DoIsValidField(r[0], ushort.Parse(r[1]), instanceCall)
+				select r[0];
+			
+			foreach (string name in fields)
 				members.AddIfMissing(name);
 		}
 		
@@ -148,6 +170,18 @@ namespace AutoComplete
 			if (valid && name == "Finalize")
 				valid = false;
 				
+			return valid;
+		}
+		
+		private bool DoIsValidField(string name, ushort attributes, bool instanceCall)
+		{
+			bool valid;
+			
+			if (instanceCall)
+				valid = (attributes & 0x0010) == 0;
+			else
+				valid = (attributes & 0x0010) != 0;
+			
 			return valid;
 		}
 		

@@ -14,26 +14,15 @@ might want a sample app
 		
 	<keyword>(?:&lt; \s*) [^&quot;\r\n]* &quot;</keyword>
 
-* Work on target completion:	MarshalByRefObject
-	- include base methods
-	- include interface methods?
-	- do a search for the global target:
-		` fields of the type
-		` public or protected fields of base classes
-	- need to special case value arg for indexor and property setters
-	- search for locals, start parsing at one of:
-		` the start of the member declaration the cursor is within
-		` the first { after the previous member
-		` the first { after the type signature
-	- build a new foreshadow
+* Work on target completion:
 	- local explicit interface implementation
 	- global explicit interface implementation
 	- add a context menu:
 		` find on site
 		` open file
 		` complete
-	- method list needs to account for access
-	- method list needs to account for visibility
+	- member list needs to account for access
+	- member list needs to account for visibility
 * Database should only parse assemblies referenced by local assemblies, not
    all assemblies referenced.
 -rw-r--r--  1 jessejones  jessejones  60900352 Mar  4 12:34 Continuum.db
@@ -51,9 +40,9 @@ might want a sample app
 		` on last arg insert closing paren
 		` don't show names whose names won't work (should at least be able to
 		   prune the system value types)
+	- fair amount of duplicated code
 	- five versions target, call, arg, ctor arg, namespace completion
 	- IAutoComplete should be a repeated interface?
-	- target shows all locals, args, fields, this methods
 	- call shows all methods of the target (but only if editing at the end of a name)
 	- arg shows most locals, args, fields for an arg position
 	- need to be able to get locals and args even if the method won't parse completely

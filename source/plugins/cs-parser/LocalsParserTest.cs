@@ -260,7 +260,6 @@ namespace CsParser
 		[Test]
 		public void InnerScope()
 		{
-	Console.WriteLine("\n------------------ InnerScope ------------------");
 			string text = @"
 {
 	int i = 10;
@@ -272,6 +271,38 @@ namespace CsParser
 			DoCheck(text,
 				new Local("int", "i", "10"),
 				new Local("int", "i", "0"));
+		}
+		
+		[Test]
+		public void ArrayTypes()
+		{
+			string text = @"{int[] x;}";
+			DoCheck(text, new Local("int[]", "x", null));
+			
+			text = @"{int[,] x;}";
+			DoCheck(text, new Local("int[,]", "x", null));
+			
+			text = @"{int[][] x;}";
+			DoCheck(text, new Local("int[][]", "x", null));
+			
+			text = @"{int[,][,,] x;}";
+			DoCheck(text, new Local("int[,][,,]", "x", null));
+			
+			text = @"{
+int[] data = new int[]{1, 2, 3};
+string name;
+}";
+			DoCheck(text, new Local("int[]", "data", "new int[]{1, 2, 3}"), new Local("string", "name", null));
+		}
+		
+		[Test]
+		public void NullableTypes()
+		{
+			string text = @"{int? x;}";
+			DoCheck(text, new Local("int?", "x", null));
+			
+			text = @"{int[,]? x;}";
+			DoCheck(text, new Local("int[,]?", "x", null));
 		}
 	}
 }

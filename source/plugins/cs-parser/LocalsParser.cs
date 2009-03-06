@@ -56,12 +56,14 @@ namespace CsParser
 			Trace.Assert(start >= 0, "start is negative");
 			Trace.Assert(start <= text.Length, "start is too big");
 			Trace.Assert(start <= stop, "stop is too small");
+//Console.WriteLine("---------------------------");
+//Console.WriteLine(text.Substring(start, stop - start).EscapeAll());
 			
 			var locals = new List<Local>();
-			m_text = text;
+			m_text = text.Substring(start, stop - start);
 			
 			m_scanner = new Scanner();
-			m_scanner.Init(text.Substring(start, stop - start));
+			m_scanner.Init(m_text);
 			
 			while (m_scanner.Token.IsValid())
 			{
@@ -172,7 +174,7 @@ namespace CsParser
 			
 			if (ok && m_scanner.Token.IsPunct(";"))
 			{
-//	Console.WriteLine("candidates: {0}", candidates.ToDebugString());
+//Console.WriteLine("candidates: {0}", candidates.ToDebugString());
 				m_scanner.Advance();
 				locals.AddRange(candidates);
 			}
@@ -194,14 +196,14 @@ namespace CsParser
 				string name = m_scanner.Token.Text();
 				m_scanner.Advance();
 				ok = true;
-//	Console.WriteLine("    name: {0}", name);
+//Console.WriteLine("    name: {0}", name);
 				
 				string value = null;
 				if (m_scanner.Token.IsPunct("="))
 				{
 					m_scanner.Advance();
 					value = DoParseExpression();
-//	Console.WriteLine("    value: {0}", value);
+//Console.WriteLine("    value: {0}", value);
 				}
 				
 				if (ok)

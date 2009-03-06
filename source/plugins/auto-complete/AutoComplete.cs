@@ -92,7 +92,7 @@ namespace AutoComplete
 						string target = DoGetTarget(range.location);
 						if (target != null)
 						{
-							if (m_target.FindType(target, range.location))
+							if (m_target.FindType(m_text.Text, target, range.location))
 							{
 								string[] methods = m_members.Get(m_target);
 								if (methods.Length > 0)

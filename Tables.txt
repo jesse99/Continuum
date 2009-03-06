@@ -81,6 +81,18 @@ method#	hash#$		return_type	name	arg_types			arg_names	declaring_type$		file		li
 * attributes is the same as Cecil's MethodAttributes.
 * semantics is the same as Cecil's MethodSemanticsAttributes.
 
+TODO: need to store custom attributes
+
+-------------------
+Fields
+name#		declaring_type#$		hash#$		type	attributes
+
+* name is the field's name, e.g. "Empty".
+* declaring_type is from Types and is the full name of the declaring type, e.g. "System.String".
+* hash is from the Assemblies table.
+* type is the full name of the field's type. It will usually be a primary key from Types.
+* attributes is the same as Cecil's FieldAttributes.
+
 TODO: need to store custom attributes		
 
 

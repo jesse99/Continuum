@@ -65,7 +65,7 @@ namespace ObjectModel
 							CONSTRAINT sane_attributes CHECK(attributes >= 0),
 						PRIMARY KEY(type, hash)
 					)");
-	
+				
 				m_database.Update(@"
 					CREATE TABLE IF NOT EXISTS NameInfo(
 						full_name TEXT NOT NULL
@@ -78,7 +78,7 @@ namespace ObjectModel
 							CONSTRAINT sane_kind CHECK(kind >= 0 AND kind <= 3),
 						PRIMARY KEY(full_name, hash, name)
 					)");
-	
+				
 				m_database.Update(@"
 					CREATE TABLE IF NOT EXISTS Implements(
 						type TEXT NOT NULL REFERENCES Types(type),
@@ -86,7 +86,7 @@ namespace ObjectModel
 						interface_type TEXT NOT NULL,
 						PRIMARY KEY(type, hash, interface_type)
 					)");
-	
+				
 				m_database.Update(@"
 					CREATE TABLE IF NOT EXISTS Methods(
 						method TEXT NOT NULL
@@ -107,6 +107,18 @@ namespace ObjectModel
 						semantics INTEGER NOT NULL
 							CONSTRAINT sane_semantics CHECK(semantics >= 0),
 						PRIMARY KEY(method, hash)
+					)");
+				
+				m_database.Update(@"
+					CREATE TABLE IF NOT EXISTS Fields(
+						name TEXT NOT NULL
+							CONSTRAINT no_empty_name CHECK(length(name) > 0),
+						declaring_type TEXT NOT NULL REFERENCES Types(type),
+						hash TEXT NOT NULL REFERENCES Assemblies(hash), 
+						type TEXT NOT NULL,
+						attributes INTEGER NOT NULL
+							CONSTRAINT sane_attributes CHECK(attributes >= 0),
+						PRIMARY KEY(name, declaring_type, hash)
 					)");
 			});
 		}
@@ -177,6 +189,14 @@ namespace ObjectModel
 							string fileName = DoParseMethod(type, method, hash, fullParse);
 							if (fileName.Length > 0 && !files.Contains(fileName))
 								files.Add(fileName);
+						}
+					}
+					
+					if (type.HasFields)
+					{
+						foreach (FieldDefinition field in type.Fields)
+						{
+							DoParseField(type, field, hash, fullParse);
 						}
 					}
 					
@@ -251,7 +271,7 @@ namespace ObjectModel
 			
 			return Tuple.Make(source, line);
 		}
-				
+		
 		private string DoParseMethod(TypeDefinition type, MethodDefinition method, string hash, bool fullParse)		// threaded
 		{
 			string fileName = string.Empty;
@@ -304,6 +324,22 @@ namespace ObjectModel
 			return fileName;
 		}
 		
+		private void DoParseField(TypeDefinition type, FieldDefinition field, string hash, bool fullParse)		// threaded
+		{
+			if (!DoIsGeneratedCode(field))
+			{
+				if (fullParse || field.IsFamily || field.IsFamilyOrAssembly || field.IsPublic)
+				{
+					m_database.Insert("Fields",
+						field.Name,
+						field.DeclaringType.FullName,
+						hash,
+						field.FieldType.FullName,
+						((ushort) field.Attributes).ToString());
+				}
+			}
+		}
+		
 		// Based on the gendarme code.
 		private bool DoIsGeneratedCode(TypeReference type)	// theaded
 		{
@@ -329,6 +365,15 @@ namespace ObjectModel
 		{
 			if (method.HasCustomAttributes)
 				if (DoHasGeneratedAtribute(method.CustomAttributes))
+					return true;
+			
+			return false;
+		}
+		
+		private bool DoIsGeneratedCode(FieldDefinition field)	// theaded
+		{
+			if (field.HasCustomAttributes)
+				if (DoHasGeneratedAtribute(field.CustomAttributes))
 					return true;
 			
 			return false;
