@@ -37,7 +37,6 @@ namespace AutoComplete
 		{
 			m_boss = boss;
 			m_text = m_boss.Get<IText>();
-			m_styles = m_boss.Get<IStyles>();
 		}
 		
 		public Boss Boss
@@ -70,6 +69,8 @@ namespace AutoComplete
 					
 					string path = System.IO.Path.Combine(Paths.SupportPath, name + ".db");
 					m_database = new Database(path);
+					
+					m_target = new Target(m_boss.Get<IStyles>(), m_database);
 				}
 			}
 		}
@@ -90,22 +91,14 @@ namespace AutoComplete
 						string target = DoGetTarget(range.location);
 						if (target != null)
 						{
-				Console.WriteLine("target: {0}", target);
-							string type = DoGetType(target, range.location);
-							if (type != null)
+							if (m_target.FindType(target, range.location))
 							{
-				Console.WriteLine("type: {0}", type);
-								string fullName = DoGetFullTypeName(type);
-				Console.WriteLine("fullName: {0}", fullName);
-								
-								string hash = DoGetAssembly(fullName);
-								if (hash != null)
+								string[] methods = DoGetMethods();
+								if (methods.Length > 0)
 								{
-									string[] methods = DoGetMethods(fullName, hash);
-				Console.WriteLine("found {0} methods", methods.Length);
 									if (m_controller == null)	
 										m_controller = new CompletionsController();
-									m_controller.Show(view, fullName, methods);
+									m_controller.Show(view, m_target.FullTypeName, methods);
 								}
 							}
 						}
@@ -117,36 +110,83 @@ namespace AutoComplete
 		}
 		
 		#region Private Methods
-		private string DoGetAssembly(string fullName)
+		private string[] DoGetMethods()
 		{
-			string sql = string.Format(@"
-				SELECT hash
-					FROM Types 
-				WHERE type = '{0}'", fullName);
-			string[][] rows = m_database.QueryRows(sql);
+			var result = new List<string>();
 			
-			return rows.Length > 0 ? rows[0][0] : null;
-		}
-		
-		private string[] DoGetMethods(string fullName, string hash)
-		{
-			string sql = string.Format(@"
-				SELECT name, arg_types, arg_names
-					FROM Methods 
-				WHERE declaring_type = '{0}' AND hash = '{1}'", fullName, hash);
-			string[][] rows = m_database.QueryRows(sql);
+			if (m_target.Hash != null)
+			{
+				string sql = string.Format(@"
+					SELECT name, arg_types, arg_names, attributes
+						FROM Methods 
+					WHERE declaring_type = '{0}' AND hash = '{1}'", m_target.FullTypeName, m_target.Hash);
+				string[][] rows = m_database.QueryRows(sql);
+				
+				var methods = from r in rows
+					where DoIsValidMethod(r[0], ushort.Parse(r[3]), m_target.IsInstanceCall)
+					select DoGetMethodName(r[0], r[1], r[2]);
+				result.AddRange(methods);
+			}
 			
-			var result = from r in rows where DoIsValidMethod(r[0]) select DoGetMethodName(r[0], r[1], r[2]);
+			// Note that indexers are not counted because they are not preceded with a dot.
+			if (m_target.Type != null)
+			{
+				foreach (CsField field in m_target.Type.Fields)
+				{
+					if (m_target.IsInstanceCall == ((field.Modifiers & MemberModifiers.Static) == 0))
+						result.Add(field.Name);
+				}
+				
+				foreach (CsMethod method in m_target.Type.Methods)
+				{
+					if (!method.IsConstructor && !method.IsFinalizer)
+					{
+						if (m_target.IsInstanceCall == ((method.Modifiers & MemberModifiers.Static) == 0))
+							result.Add(method.Name + "(" + string.Join(", ", (from p in method.Parameters select p.Type + " " + p.Name).ToArray()) + ")");
+					}
+				}
+				
+				foreach (CsProperty prop in m_target.Type.Properties)
+				{
+					if (prop.HasGetter)
+					{
+						if (m_target.IsInstanceCall == ((prop.Modifiers & MemberModifiers.Static) == 0))
+							result.Add(prop.Name);
+					}
+				}
+			}
 			
 			return result.ToArray();
 		}
 		
-		private bool DoIsValidMethod(string name)
+		private bool DoIsValidMethod(string name, ushort attributes, bool instanceCall)
 		{
-			return
-				!name.Contains(".ctor") &&
-				!name.Contains("set_") &&
-				!name.Contains("op_");
+			bool valid;
+			
+			if (instanceCall)
+				valid = (attributes & 0x0010) == 0;
+			else
+				valid = (attributes & 0x0010) != 0;
+				
+			if (valid && name.Contains(".ctor"))
+				valid = false;
+			
+			if (valid && name.Contains("set_"))
+				valid = false;
+			
+			if (valid && name.Contains("op_"))
+				valid = false;
+				
+			if (valid && name.Contains("add_"))
+				valid = false;
+				
+			if (valid && name.Contains("remove_"))
+				valid = false;
+				
+			if (valid && name == "Finalize")
+				valid = false;
+				
+			return valid;
 		}
 		
 		private string DoGetMethodName(string mname, string argTypes, string argNames)
@@ -185,133 +225,6 @@ namespace AutoComplete
 			return builder.ToString();
 		}
 		
-		private string DoGetFullTypeName(string type)
-		{
-			// TODO: if the name doesn't change need to lookup the type
-			// name and the type name concatenated with each of the using
-			// directives
-			return DoGetAliasedName(type);
-		}
-		
-		// TODO: duplicate of FindInDatabase.DoGetRealName
-		private string DoGetAliasedName(string name)
-		{
-			switch (name)
-			{
-				case "bool":
-					return "System.Boolean";
-					
-				case "byte":
-					return "System.Byte";
-					
-				case "char":
-					return "System.Char";
-					
-				case "decimal":
-					return "System.Decimal";
-					
-				case "double":
-					return "System.Double";
-					
-				case "short":
-					return "System.Int16";
-					
-				case "int":
-					return "System.Int32";
-					
-				case "long":
-					return "System.Int64";
-				
-				case "sbyte":
-					return "System.SByte";
-					
-				case "object":
-					return "System.Object";
-					
-				case "float":
-					return "System.Single";
-					
-				case "string":
-					return "System.String";
-					
-				case "ushort":
-					return "System.UInt16";
-					
-				case "uint":
-					return "System.UInt32";
-					
-				case "ulong":
-					return "System.UInt64";
-					
-				case "void":
-					return "System.Void";
-					
-				default:
-					return name;
-			}
-		}
-		
-		private string DoGetType(string target, int offset)
-		{
-			int editCount;
-			StyleRun[] runs;
-			CsGlobalNamespace globals;
-			m_styles.Get(out editCount, out runs, out globals);
-			
-			string type = null;
-			CsMember member = DoFindMember(globals, offset);
-			if (member != null)
-			{
-				type = DoFindArgType(member, target);
-			}
-			
-			return type;
-		}
-		
-		// TODO: this didn't work for the MObjc.Class ctor
-		private string DoFindArgType(CsMember member, string name)
-		{
-			string type = null;
-			
-			do
-			{
-				CsIndexer i = member as CsIndexer;
-				if (i != null)
-				{
-					type = DoFindParamType(i.Parameters, name);
-					break;
-				}
-				
-				CsMethod m = member as CsMethod;
-				if (m != null)
-				{
-					type = DoFindParamType(m.Parameters, name);
-					break;
-				}
-				
-				CsOperator o = member as CsOperator;
-				if (o != null)
-				{
-					type = DoFindParamType(o.Parameters, name);
-					break;
-				}
-			}
-			while (false);
-			
-			return type;
-		}
-		
-		private string DoFindParamType(CsParameter[] parms, string name)
-		{
-			foreach (CsParameter p in parms)
-			{
-				if (p.Name == name)
-					return p.Type;
-			}
-			
-			return null;
-		}
-		
 		// Find the last member offset intersects
 		private CsMember DoFindMember(CsNamespace ns, int offset)
 		{
@@ -342,7 +255,7 @@ namespace AutoComplete
 			string text = m_text.Text;
 			
 			int index = offset;
-			while (index > 0 && DoIsIdentifierPartChar(text[index - 1]))
+			while (index > 0 && (text[index - 1] == '.' || DoIsIdentifierPartChar(text[index - 1])))
 				--index;
 			
 			string target = null;
@@ -396,9 +309,10 @@ namespace AutoComplete
 		#region Fields
 		private Boss m_boss;
 		private IText m_text;
-		private IStyles m_styles;
 		private Database m_database;
 		private CompletionsController m_controller;
+		private Target m_target;
+		
 		private static Dictionary<string, string> ms_aliases = new Dictionary<string, string>	// TODO: ShortForm.cs has the same list
 		{
 			{"System.Boolean", "bool"},

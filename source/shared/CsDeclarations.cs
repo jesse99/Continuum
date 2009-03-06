@@ -454,7 +454,7 @@ namespace Shared
 		
 		// Will be a qualified identifier, e.g. "CoolLib.Internals" or "<globals>" for the global namespace.
 		public string Name {get; private set;}
-		
+				
 		// These properties will have the declarations at the top of the namespace, but not any
 		// declared in a nested namespace.
 		public CsExternAlias[] Externs {get; private set;}
@@ -696,6 +696,14 @@ namespace Shared
 		public MemberModifiers Modifiers {get; private set;}
 		
 		public string Name {get; private set;}
+		
+		public string FullName
+		{
+			get
+			{
+				return Namespace != null && Namespace.Name != "<globals>" ? Namespace.Name + "." + Name : Name;
+			}
+		}
 		
 		public int NameOffset {get; private set;}
 		

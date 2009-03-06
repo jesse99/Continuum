@@ -13,15 +13,13 @@ mutating a local used in multiple lambdas (or for loop variable used with lambda
 might want a sample app
 		
 	<keyword>(?:&lt; \s*) [^&quot;\r\n]* &quot;</keyword>
-			
+
 * Work on target completion:
-	- make the window resizeable?
-	- save the window size in a pref
-	- should we have a shadow?
-	- need to use using directives with the type
-	- special case static method calls
+	- test globals:
+		events		add_, remove_
+		operators
+		finalizer
 	- names should include fields
-	- handle this.
 	- support double click
 	- warning window can use IB
 	- do a search for the target:
@@ -86,6 +84,7 @@ might want a sample app
 * Is ChangeAccess correct?
 * Search witin "…" isn't finding verbatim strings. E.g. search for Methods should
   find some.
+* Short form should not show internal members for mscorlib or gac assemblies.
 * Implement IDisposable added throw to a private method.
 * Rework Apply:
 	- use an AppliedRunsTable

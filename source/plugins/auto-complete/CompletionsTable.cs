@@ -47,6 +47,13 @@ namespace AutoComplete
 			
 			m_names.Sort();
 			reloadData();
+			
+			if (m_names.Count > 0)
+			{
+				var indexes = NSIndexSet.indexSetWithIndex(0);
+				selectRowIndexes_byExtendingSelection(indexes, false);
+				scrollRowToVisible(0);
+			}
 		}
 		
 		public new void keyDown(NSEvent evt)
@@ -58,7 +65,7 @@ namespace AutoComplete
 				if (selectedRow() >= 0)
 				{
 					string name = m_names[selectedRow()];
-					int i = name.IndexOf("(");
+					int i = name.IndexOf('(');
 					if (i > 0)
 						if (i + 1 < name.Length && name[i + 1] == ')')
 							name = name.Substring(0, i + 2);
@@ -80,8 +87,18 @@ namespace AutoComplete
 			else if (chars.length() == 1 && (char.IsLetterOrDigit(chars[0]) || chars[0] == '_'))
 			{
 				m_completed += chars[0];
-				DoMatchName();
-				reloadData();
+				int count = DoMatchName();
+				if (count > 0)
+				{
+					reloadData();
+				}
+				else if (m_completed.Length == 1)
+				{
+					// It's rather confusing to have completed text without any indication
+					// that there is completed text so if the user's completed text is completely
+					// bogus we'll reset it.
+					m_completed = string.Empty;
+				}
 			}
 			else if (chars == Constants.Delete)
 			{
@@ -123,7 +140,7 @@ namespace AutoComplete
 				str.addAttribute_value_range(Externs.NSForegroundColorAttributeName, NSColor.greenColor(), range);
 				if (n < m_completed.Length)
 				{
-					range = new NSRange(n, m_completed.Length - n);
+					range = new NSRange(n, Math.Min(m_completed.Length, name.Length) - n);
 					str.addAttribute_value_range(Externs.NSForegroundColorAttributeName, NSColor.redColor(), range);
 				}
 				
@@ -138,7 +155,7 @@ namespace AutoComplete
 		}
 		
 		#region Private Methods
-		private void DoMatchName()
+		private int DoMatchName()
 		{
 			int index = -1;
 			int count = 0;
@@ -172,6 +189,8 @@ namespace AutoComplete
 			}
 			else
 				deselectAll(this);
+				
+			return count;
 		}
 		
 		private int DoCountMatching(string name)
