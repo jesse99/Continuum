@@ -37,6 +37,10 @@ namespace AutoComplete
 		{
 			m_boss = boss;
 			m_text = m_boss.Get<IText>();
+			m_styles = m_boss.Get<IStyles>();
+			
+			boss = ObjectModel.Create("CsParser");
+			m_locals = boss.Get<ICsLocalsParser>();
 		}
 		
 		public Boss Boss
@@ -70,7 +74,7 @@ namespace AutoComplete
 					string path = System.IO.Path.Combine(Paths.SupportPath, name + ".db");
 					m_database = new Database(path);
 					
-					m_target = new Target(m_boss.Get<IStyles>(), m_database);
+					m_target = new Target(new TargetDatabase(m_database), m_locals);
 					m_members = new Members(m_database);
 				}
 			}
@@ -92,7 +96,12 @@ namespace AutoComplete
 						string target = DoGetTarget(range.location);
 						if (target != null)
 						{
-							if (m_target.FindType(m_text.Text, target, range.location))
+							int editCount;
+							StyleRun[] runs;
+							CsGlobalNamespace globals;
+							m_styles.Get(out editCount, out runs, out globals);
+							
+							if (m_target.FindType(m_text.Text, target, range.location, globals))
 							{
 								string[] methods = m_members.Get(m_target);
 								if (methods.Length > 0)
@@ -172,6 +181,8 @@ namespace AutoComplete
 		private IText m_text;
 		private Database m_database;
 		private CompletionsController m_controller;
+		private IStyles m_styles;
+		private ICsLocalsParser m_locals;
 		private Target m_target;
 		private Members m_members;
 		#endregion

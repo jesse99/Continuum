@@ -28,49 +28,44 @@ namespace AutoComplete
 {
 	internal sealed class Target
 	{
-		public Target(IStyles styles, Database database)
+		public Target(ITargetDatabase database, ICsLocalsParser locals)
 		{
-			m_styles = styles;
 			m_database = database;
-			
-			Boss boss = ObjectModel.Create("CsParser");
-			m_locals = boss.Get<ICsLocalsParser>();
+			m_locals = locals;
 		}
 		
 		// Given the name of a type, local, argument, or field return true if we 
 		// can find its type.
-		public bool FindType(string text, string target, int offset)
+		public bool FindType(string text, string target, int offset, CsGlobalNamespace globals)
 		{
 			m_fullName = null;
 			m_hash = null;
 			m_type = null;
 			m_instanceCall = true;
 			
-			int editCount;
-			StyleRun[] runs;
-			CsGlobalNamespace globals;
-			m_styles.Get(out editCount, out runs, out globals);
+			if (globals != null)
+			{
+				// this.
+				CsMember member = DoFindMember(globals, offset);
+				DoHandleThis(member, target);
+				
+				// value. (special case for setters)
+				if (m_hash == null && m_type == null)
+					DoHandleValue(globals, member, target, offset);
+				
+				// MyType. (where MyType is a type in globals)
+				if (m_hash == null && m_type == null)
+					DoHandleLocalType(globals, target);
+				
+				// IDisposable. (where type name is present in the database)
+				if (m_hash == null && m_type == null)
+					DoHandleType(globals, target);
+				
+				// name. (where name is a local, argument, or field)
+				if (m_hash == null && m_type == null)
+					DoHandleVariable(text, globals, member, target, offset);
+			}
 			
-			// this.
-			CsMember member = DoFindMember(globals, offset);
-			DoHandleThis(member, target);
-			
-			// value. (special case for setters)
-			if (m_hash == null && m_type == null)
-				DoHandleValue(globals, member, target, offset);
-			
-			// MyType. (where MyType is a type in globals)
-			if (m_hash == null && m_type == null)
-				DoHandleLocalType(globals, target);
-			
-			// IDisposable. (where type name is present in the database)
-			if (m_hash == null && m_type == null)
-				DoHandleType(globals, target);
-			
-			// name. (where name is a local, argument, or field)
-			if (m_hash == null && m_type == null)
-				DoHandleVariable(text, globals, member, target, offset);
-						
 			return m_hash != null || m_type != null;
 		}
 		
@@ -108,7 +103,7 @@ namespace AutoComplete
 				{
 					m_type = member.DeclaringType;
 					m_fullName = DoGetTypeName(m_type.FullName);
-					m_hash = DoFindAssembly(m_fullName);
+					m_hash = m_database.FindAssembly(m_fullName);
 					m_instanceCall = true;
 Console.WriteLine("this type: {0}", m_fullName);
 				}
@@ -161,7 +156,7 @@ Console.WriteLine("value type: {0}", m_fullName);
 			{
 				m_type = type;
 				m_fullName = DoGetTypeName(m_type.FullName);
-				m_hash = DoFindAssembly(m_fullName);
+				m_hash = m_database.FindAssembly(m_fullName);
 				m_instanceCall = false;
 Console.WriteLine("local type: {0}", m_fullName);
 			}
@@ -262,26 +257,15 @@ Console.WriteLine("couldn't find a hash for {0} {1}", target, type);
 		private void DoFindFullNameAndHash(CsGlobalNamespace globals, string target, out string fullName, out string hash)
 		{
 			fullName = DoGetAliasedName(target);
-			hash = DoFindAssembly(fullName);
+			hash = m_database.FindAssembly(fullName);
 			
 			for (int i = 0; i < globals.Uses.Length && hash == null; ++i)
 			{
 				fullName = globals.Uses[i].Namespace + "." + target;
-				hash = DoFindAssembly(fullName);
+				hash = m_database.FindAssembly(fullName);
 			}
 		}
-		
-		private string DoFindAssembly(string fullName)
-		{
-			string sql = string.Format(@"
-				SELECT hash
-					FROM Types 
-				WHERE type = '{0}'", fullName);
-			string[][] rows = m_database.QueryRows(sql);
-			
-			return rows.Length > 0 ? rows[0][0] : null;
-		}
-		
+				
 		private CsType DoFindLocalType(CsNamespace outer, string target)
 		{
 			foreach (CsType candidate in outer.Types)
@@ -435,50 +419,11 @@ Console.WriteLine("couldn't find a hash for {0} {1}", target, type);
 					string fullName, hash;
 					DoFindFullNameAndHash(globals, baseType, out fullName, out hash);
 					
-					type = DoFindFieldType(fullName, name);
+					type = m_database.FindFieldType(fullName, name);
 				}
 			}
 			
 			return type;
-		}
-		
-		private string DoFindFieldType(string fullName, string name)
-		{
-			string type = null;
-			
-			while (type == null && fullName != null && fullName != "Sytem.Object")
-			{				
-				string sql = string.Format(@"
-					SELECT name, type, attributes
-						FROM Fields 
-					WHERE declaring_type = '{0}'", fullName);
-				string[][] rows = m_database.QueryRows(sql);
-				
-				for (int i = 0; i < rows.Length && type == null; ++i)
-				{
-					if (rows[i][0] == name)
-						if ((ushort.Parse(rows[i][2]) & 1) == 0)	// no private base fields
-							type = rows[i][1];
-				}
-				
-				fullName = DoGetBaseType(fullName);
-			}
-			
-			return type;
-		}
-		
-		private string DoGetBaseType(string fullName)
-		{
-			if (fullName == "System.Object")
-				return null;
-				
-			string sql = string.Format(@"
-				SELECT DISTINCT base_type
-					FROM Types
-				WHERE type = '{0}' OR type GLOB '{0}<*'", fullName);
-			string[][] rows = m_database.QueryRows(sql);
-			
-			return rows.Length > 0 ? rows[0][0] : null;
 		}
 		
 		private string DoFindParamType(CsParameter[] parms, string name)
@@ -577,8 +522,7 @@ Console.WriteLine("couldn't find a hash for {0} {1}", target, type);
 		#endregion
 		
 		#region Fields
-		private IStyles m_styles;
-		private Database m_database;
+		private ITargetDatabase m_database;
 		private string m_fullName;
 		private string m_hash;
 		private bool m_instanceCall;

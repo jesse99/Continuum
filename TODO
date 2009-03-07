@@ -14,7 +14,24 @@ might want a sample app
 		
 	<keyword>(?:&lt; \s*) [^&quot;\r\n]* &quot;</keyword>
 
+* Fields table isn't being pruned correctly?
+Shared.DatabaseException: Failed to execute 'INSERT INTO Fields VALUES ('m_boss', 'AutoComplete.AutoComplete', '94-21-C7-C8-A4-2F-29-87-08-DE-EE-29-AF-DB-D8-09', 'Gear.Boss', '1')' (columns name, declaring_type, hash are not unique)
+  at Shared.Database.DoRaiseError (System.String command, Error err, IntPtr errMesg) [0x00055] in /Users/jessejones/Source/Continuum/source/shared/Database.cs:302 
+  at Shared.Database.Update (System.String command) [0x00080] in /Users/jessejones/Source/Continuum/source/shared/Database.cs:122 
+  at ObjectModel.DatabaseExtensions.Insert (Shared.Database database, System.String table, System.String[] values) [0x00042] in /Users/jessejones/Source/Continuum/source/plugins/object-model/DatabaseExtensions.cs:36 
+  at ObjectModel.ParseAssembly.DoParseField (Mono.Cecil.TypeDefinition type, Mono.Cecil.FieldDefinition field, System.String hash, Boolean fullParse) [0x00034] in /Users/jessejones/Source/Continuum/source/plugins/object-model/ParseAssembly.cs:333 
+  at ObjectModel.ParseAssembly+<DoParseType>c__AnonStoreyC.<>m__22 () [0x002dd] in /Users/jessejones/Source/Continuum/source/plugins/object-model/ParseAssembly.cs:199 
 * Work on target completion:
+	- try adding a target unit test
+	- get target working with properties
+	- get var working with new expressions
+	- get var working with select expressions
+	- get var working with *.Get<foo>() expressions
+	- add extension methods to names
+	- get arg completion working
+	- complete new SomeType calls
+		` special case array types
+	- shouldn't auto-complete when in a comment or string
 	- local explicit interface implementation
 	- global explicit interface implementation
 	- add a context menu:
@@ -72,8 +89,11 @@ might want a sample app
   find some.
 * Short form should not show internal members for mscorlib or gac assemblies.
 * Short form should have a separate section for operators (see DateTime).
+* Short form should show extension methods:
+	- maybe could use a comment like // System.Linq Extension Methods
 * Implement IDisposable added throw to a private method.
 * Expose CsType.FulleName to refactor.
+* Add some tips to readme, e.g. open selection.
 * Rework Apply:
 	- use an AppliedRunsTable
 	- table is updated (using a thread) for edits

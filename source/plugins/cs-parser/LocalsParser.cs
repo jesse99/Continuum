@@ -60,19 +60,26 @@ namespace CsParser
 //Console.WriteLine(text.Substring(start, stop - start).EscapeAll());
 			
 			var locals = new List<Local>();
-			m_text = text.Substring(start, stop - start);
 			
-			m_scanner = new Scanner();
-			m_scanner.Init(m_text);
-			
-			while (m_scanner.Token.IsValid())
+			try
 			{
-				if (m_scanner.Token.IsPunct("{"))
+				m_text = text.Substring(start, stop - start);
+				
+				m_scanner = new Scanner();
+				m_scanner.Init(m_text);
+				
+				while (m_scanner.Token.IsValid())
 				{
-					DoParseBlock(locals, 0);
+					if (m_scanner.Token.IsPunct("{"))
+					{
+						DoParseBlock(locals, 0);
+					}
+					else
+						m_scanner.Advance();
 				}
-				else
-					m_scanner.Advance();
+			}
+			catch (CsScannerException)
+			{
 			}
 			
 			return locals.ToArray();
