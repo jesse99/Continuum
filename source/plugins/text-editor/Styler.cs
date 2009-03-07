@@ -70,8 +70,14 @@ namespace TextEditor
 					// We need to ensure that the callback is always called because
 					// TextController uses the call as a signal that it is OK to restore the
 					// scroller.
-					var styles = m_boss.Get<IStyles>();
-					styles.Reset(text.EditCount, new StyleRun[0], null);
+					var cachedCatalog = m_boss.Get<ICachedCsCatalog>();
+					cachedCatalog.Reset(new Token[0], new Token[0]);
+					
+					var cachedGlobals = m_boss.Get<ICachedCsDeclarations>();
+					cachedGlobals.Reset(text.EditCount, null);
+					
+					var cachedRuns = m_boss.Get<ICachedStyleRuns>();
+					cachedRuns.Reset(text.EditCount, new StyleRun[0]);
 					
 					NSApplication.sharedApplication().BeginInvoke(callback);
 					Unused.Value = m_timer.Change(Timeout.Infinite, Timeout.Infinite);
@@ -142,12 +148,8 @@ namespace TextEditor
 			
 			if (text != null)
 			{
-				var runs = new List<StyleRun>(text.Length/50);
-				CsGlobalNamespace globals = computer.ComputeRuns(text, edit, runs);
-				
-				var styles = m_boss.Get<IStyles>();
-				styles.Reset(edit, runs.ToArray(), globals);
-				
+				computer.ComputeRuns(text, edit, m_boss);
+								
 				if (!m_closed)
 					NSApplication.sharedApplication().BeginInvoke(callback);
 			}

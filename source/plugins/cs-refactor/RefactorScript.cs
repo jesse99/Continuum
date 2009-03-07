@@ -40,8 +40,9 @@ namespace CsRefactor
 		
 		public string Execute(string rSource, string cSource, int selStart, int selLen)
 		{
-			// Parse the C# code. Note that we don't use IStyles here because we
-			// want to ensure that the text is well formed.
+			// Parse the C# code. Note that we don't use ICachedCsDeclarations here because
+			// we want to ensure that the text is well formed. TODO: but it has a malformed
+			// flag now so we can use it if the editCount is current.
 			Boss boss = ObjectModel.Create("CsParser");
 			var cParser = boss.Get<ICsParser>();
 			CsGlobalNamespace globals = cParser.Parse(cSource);

@@ -43,28 +43,25 @@ namespace AutoComplete
 			m_type = null;
 			m_instanceCall = true;
 			
-			if (globals != null)
-			{
-				// this.
-				CsMember member = DoFindMember(globals, offset);
-				DoHandleThis(member, target);
-				
-				// value. (special case for setters)
-				if (m_hash == null && m_type == null)
-					DoHandleValue(globals, member, target, offset);
-				
-				// MyType. (where MyType is a type in globals)
-				if (m_hash == null && m_type == null)
-					DoHandleLocalType(globals, target);
-				
-				// IDisposable. (where type name is present in the database)
-				if (m_hash == null && m_type == null)
-					DoHandleType(globals, target);
-				
-				// name. (where name is a local, argument, or field)
-				if (m_hash == null && m_type == null)
-					DoHandleVariable(text, globals, member, target, offset);
-			}
+			// this.
+			CsMember member = DoFindMember(globals, offset);
+			DoHandleThis(member, target);
+			
+			// value. (special case for setters)
+			if (m_hash == null && m_type == null)
+				DoHandleValue(globals, member, target, offset);
+			
+			// MyType. (where MyType is a type in globals)
+			if (m_hash == null && m_type == null)
+				DoHandleLocalType(globals, target);
+			
+			// IDisposable. (where type name is present in the database)
+			if (m_hash == null && m_type == null)
+				DoHandleType(globals, target);
+			
+			// name. (where name is a local, argument, or field)
+			if (m_hash == null && m_type == null)
+				DoHandleVariable(text, globals, member, target, offset);
 			
 			return m_hash != null || m_type != null;
 		}

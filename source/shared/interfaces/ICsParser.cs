@@ -55,6 +55,6 @@ namespace Shared
 		// If the parse works length is set to zero. If the parse fails the result
 		// will contain as much as possible and offset/length will point to the
 		// offending token.
-		CsGlobalNamespace TryParse(string text, out int offset, out int length);
+		void TryParse(string text, out int offset, out int length, out CsGlobalNamespace globals, out Token[] tokens, out Token[] comments);
 	}
 }

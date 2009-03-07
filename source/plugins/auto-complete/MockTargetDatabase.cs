@@ -20,19 +20,44 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using Shared;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 
-namespace Shared
+#if TEST
+namespace AutoComplete
 {
-	// Interface on the Text Editor boss which caches style runs and C# parses.
-	public interface IStyles : IInterface
+	internal sealed class MockTargetDatabase : ITargetDatabase
 	{
-		// This information is not immediately updated so it may be a bit out of
-		// date if the document is being edited.	 Also globals may be missing 
-		// some declarations if the text was malformed.
-		void Get(out int editCount, out StyleRun[] runs, out CsGlobalNamespace globals);
+		public string FindAssembly(string fullName)
+		{
+			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
+			
+			string hash = null;
+			
+			if (Hashes != null)
+				Hashes.TryGetValue(fullName, out hash);
+			
+			return hash;
+		}
+				
+		public string FindFieldType(string fullName, string name)
+		{
+			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
+			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
+			
+			string type = null;
+			
+			if (Hashes != null)
+				FieldTypes.TryGetValue(fullName + "+" + name, out type);
+			
+			return type;
+		}
 		
-		// This is normally called from a worker thread.
-		void Reset(int edit, StyleRun[] runs, CsGlobalNamespace globals);
+		public Dictionary<string, string> Hashes {get; set;}
+				
+		public Dictionary<string, string> FieldTypes {get; set;}
 	}
 }
+#endif

@@ -52,13 +52,13 @@ namespace CsParser
 		// Note that we take some pains to recover from parser errors. This is important
 		// because they are quite common while code is being edited and we don't want
 		// to lose all information about a type just because a brace is missing.
-		public CsGlobalNamespace TryParse(string text, out int offset, out int length)
+		public void TryParse(string text, out int offset, out int length, out CsGlobalNamespace globals, out Token[] tokens, out Token[] comments)
 		{
 			DoInit(text);
 			
 			m_try = true;
 			m_bad = new Token();
-			CsGlobalNamespace globals = DoParseCompilationUnit();
+			globals = DoParseCompilationUnit();
 			
 			if (m_bad.Length == 0)
 			{
@@ -69,9 +69,11 @@ namespace CsParser
 			{
 				offset = m_bad.Offset;
 				length = m_bad.Length;
+				globals.Malformed = true;
 			}
 			
-			return globals;
+			comments = m_scanner.Comments;
+			tokens = m_scanner.Tokens;
 		}
 		
 		#region Private Methods

@@ -52,7 +52,13 @@ namespace CsParser
 		{
 			m_text = text + '\x00';		// scanning is easier and faster with a sentinel value
 			m_index = offset;
+			m_comments.Clear();
+			m_tokens.Clear();
+			
 			fixed (char* buffer = m_text) DoAdvance(buffer);
+			
+			if (Token.IsValid())
+				m_tokens.Add(Token);
 		}
 		
 		public Token Token
@@ -89,11 +95,24 @@ namespace CsParser
 			Debug.Assert(Token.Kind != TokenKind.Invalid, "can't advance past the end of the text");
 		
 			fixed (char* buffer = m_text) DoAdvance(buffer);
+			
+			if (Token.IsValid())
+				m_tokens.Add(Token);
 		}
 		
 		public CsPreprocess[] Preprocess
 		{
 			get {return m_preprocess.ToArray();}
+		}
+		
+		public Token[] Comments
+		{
+			get {return m_comments.ToArray();}
+		}
+		
+		public Token[] Tokens
+		{
+			get {return m_tokens.ToArray();}
 		}
 		
 		#region Private Methods
@@ -338,7 +357,7 @@ namespace CsParser
 			int offset = m_index;
 			++m_index;
 			
-			while (Current != '\'' && Current != '\x00')
+			while (Current != '\'' && Current != '\x00' && Current != '\n' && Current != '\r')
 			{
 				if (Current == '\\' && Next == '\\')
 					++m_index;
@@ -353,7 +372,9 @@ namespace CsParser
 				m_token = new Token(m_text, offset, m_index - offset, m_line, TokenKind.Char);
 			}
 			else
+			{
 				throw new CsScannerException("Expected a terminating ''' for line {0}", m_line);
+			}
 		}
 		
 		// regular-string-literal:
@@ -391,7 +412,9 @@ namespace CsParser
 				m_token = new Token(m_text, offset, m_index - offset, m_line, TokenKind.String);
 			}
 			else
+			{
 				throw new CsScannerException("Expected a terminating '\"' on line {0}", m_line);
+			}
 		}
 		
 		// verbatim-string-literal:
@@ -436,7 +459,9 @@ namespace CsParser
 				m_token = new Token(m_text, offset, m_index - offset, line, TokenKind.String);
 			}
 			else
+			{
 				throw new CsScannerException("Expected a terminating '\"' for line {0}", m_line);
+			}
 		}
 		
 		// identifier:
@@ -519,7 +544,9 @@ namespace CsParser
 				return true;
 			
 			if (Current == '\\' && (Next == 'u' || Next == 'U'))
+			{
 				throw new CsScannerException("Line {0} has a unicode escape in an identifier which the parser does not support.", m_line);
+			}
 				
 			UnicodeCategory cat = char.GetUnicodeCategory(Current);
 			switch (cat)
@@ -877,10 +904,14 @@ namespace CsParser
 		//     Any Unicode character except a new-line-character
 		private void DoSkipSingleLineComment()
 		{
+			int offset = m_index;
+			
 			while (Current != '\n' && Current != '\r' && Current != '\x00')
 			{
 				++m_index;
 			}
+			
+			m_comments.Add(new Token(m_text, offset, m_index - offset, m_line, TokenKind.Comment));
 		}
 		
 		// delimited-comment:
@@ -902,6 +933,7 @@ namespace CsParser
 		//     Any Unicode character except / or *
 		private void DoSkipDelimitedComment()
 		{
+			int offset = m_index;
 			int line = m_line;
 			while (m_index < m_text.Length - 1)
 			{
@@ -911,7 +943,8 @@ namespace CsParser
 				}
 				else if (Current == '*' && Next == '/')
 				{
-					m_index = m_index + 2;
+					m_index = m_index + 2;	
+					m_comments.Add(new Token(m_text, offset, m_index - offset, line, TokenKind.Comment));
 					return;
 				}
 				else
@@ -932,6 +965,8 @@ namespace CsParser
 		private int m_line = 1;
 		private Token m_token;
 		private List<CsPreprocess> m_preprocess = new List<CsPreprocess>();
+		private List<Token> m_tokens = new List<Token>();
+		private List<Token> m_comments = new List<Token>();
 		#endregion
 	}
 }

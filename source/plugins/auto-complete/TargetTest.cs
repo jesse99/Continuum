@@ -107,26 +107,8 @@ namespace CoolLib
 			Assert.AreEqual("CoolLib.MyClass", m_target.FullTypeName);
 			Assert.AreEqual("MyClass", m_target.Type.Name);
 		}
-		
-		[Test]
-		public void TargetInsideComment()
-		{
-			string text = @"
-internal sealed class MyClass
-{
-	public void Work(int alpha)
-	{
-		// a comment with this.
-	}
-}
-";
-			bool found = DoGetType(text, "this", text.IndexOf("."));
-			Assert.IsFalse(found);
-		}
-		
+				
 		// TODO:
-		// this inside a comment
-		// this inside a string
 		// value in an indexer setter
 		// value in a property setter
 		// value in a normal method

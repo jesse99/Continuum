@@ -37,7 +37,8 @@ namespace AutoComplete
 		{
 			m_boss = boss;
 			m_text = m_boss.Get<IText>();
-			m_styles = m_boss.Get<IStyles>();
+			m_cachedCatalog = m_boss.Get<ICachedCsCatalog>();
+			m_cachedGlobals = m_boss.Get<ICachedCsDeclarations>();
 			
 			boss = ObjectModel.Create("CsParser");
 			m_locals = boss.Get<ICsLocalsParser>();
@@ -91,24 +92,24 @@ namespace AutoComplete
 				NSString chars = evt.characters();
 				if (range.length == 0 && chars.length() == 1)
 				{
-					if (chars[0] == '.')
+					if (!m_cachedCatalog.IsWithinComment(range.location) && !m_cachedCatalog.IsWithinString(range.location))
 					{
-						string target = DoGetTarget(range.location);
-						if (target != null)
+						if (chars[0] == '.')
 						{
-							int editCount;
-							StyleRun[] runs;
-							CsGlobalNamespace globals;
-							m_styles.Get(out editCount, out runs, out globals);
-							
-							if (m_target.FindType(m_text.Text, target, range.location, globals))
+							string target = DoGetTarget(range.location);
+							if (target != null)
 							{
-								string[] methods = m_members.Get(m_target);
-								if (methods.Length > 0)
+								CsGlobalNamespace globals = m_cachedGlobals.Get();
+								
+								if (globals != null && m_target.FindType(m_text.Text, target, range.location, globals))
 								{
-									if (m_controller == null)	
-										m_controller = new CompletionsController();
-									m_controller.Show(view, m_target.FullTypeName, methods);
+									string[] methods = m_members.Get(m_target);
+									if (methods.Length > 0)
+									{
+										if (m_controller == null)	
+											m_controller = new CompletionsController();
+										m_controller.Show(view, m_target.FullTypeName, methods);
+									}
 								}
 							}
 						}
@@ -181,7 +182,8 @@ namespace AutoComplete
 		private IText m_text;
 		private Database m_database;
 		private CompletionsController m_controller;
-		private IStyles m_styles;
+		private ICachedCsCatalog m_cachedCatalog;
+		private ICachedCsDeclarations m_cachedGlobals;
 		private ICsLocalsParser m_locals;
 		private Target m_target;
 		private Members m_members;

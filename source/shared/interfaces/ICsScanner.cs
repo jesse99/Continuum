@@ -72,5 +72,11 @@ namespace Shared
 		// Returns all of the preprocessing directives that have been encountered
 		// so far. 
 		CsPreprocess[] Preprocess {get;}
+		
+		// Returns all of the comments that have been encountered so far. 
+		Token[] Comments {get;}
+		
+		// Returns all of the tokens which have been scanned so far.
+		Token[] Tokens {get;}
 	}
 }

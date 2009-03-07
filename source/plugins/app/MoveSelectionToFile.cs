@@ -56,8 +56,9 @@ namespace App
 			if (range.length == 0)
 				throw new OperationCanceledException("Selection is empty");
 			
-			// Note that we don't use IStyles here because we want to ensure that 
-			// the text is well formed.
+			// Note that we don't use ICachedCsDeclarations here because we want 
+			// to ensure that the text is well formed. TODO: there's a malformed
+			// flag now though so we can use this if the editCount is current.
 			Boss b = ObjectModel.Create("CsParser");
 			var cParser = b.Get<ICsParser>();
 			CsGlobalNamespace globals = cParser.Parse(text.Text);

@@ -27,10 +27,10 @@ namespace Shared
 {
 	// Primary interface on language bosses.
 	public interface IComputeRuns : IInterface
-	{
-		// Adds runs and as a side effect returns C# declarations (or null).
-		// Note that this is called from a thread. 
-		CsGlobalNamespace ComputeRuns(string text, int edit, List<StyleRun> runs);
+	{		
+		// Computes style runs and updates ICachedCsCatalog, ICachedCsDeclarations,
+		// and ICachedStyleRuns on the boss. Note that this is called from a thread. 
+		void ComputeRuns(string text, int edit, Boss boss);
 		
 		// Returns true if the language supports showing leading/trailing tabs and
 		// spaces.

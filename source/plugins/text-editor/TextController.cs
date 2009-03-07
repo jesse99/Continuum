@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Jesse Jones
+// Copyright (C) 2008-2009 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -654,7 +654,7 @@ namespace TextEditor
 						length = m_metrics.GetLineOffset(line + 1) - offset;
 					}
 				}
-				
+								
 				m_applier.HighlightLine(offset, length);
 			}
 			
@@ -734,10 +734,9 @@ namespace TextEditor
 			{
 				int edit;
 				StyleRun[] runs;
-				CsGlobalNamespace globals;
 				
-				var styles = m_boss.Get<IStyles>();
-				styles.Get(out edit, out runs, out globals);
+				var cachedRuns = m_boss.Get<ICachedStyleRuns>();
+				cachedRuns.Get(out edit, out runs);
 				
 				if (edit == m_editCount)
 				{

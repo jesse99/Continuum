@@ -505,13 +505,17 @@ namespace ObjectModel
 						m_database.Update(string.Format(@"
 							DELETE FROM Types 
 								WHERE hash = '{0}'", r[4]));
-
+						
 						m_database.Update(string.Format(@"
 							DELETE FROM Implements 
 								WHERE hash = '{0}'", r[4]));
-
+						
 						m_database.Update(string.Format(@"
 							DELETE FROM Methods 
+								WHERE hash = '{0}'", r[4]));
+						
+						m_database.Update(string.Format(@"
+							DELETE FROM Fields 
 								WHERE hash = '{0}'", r[4]));
 					}
 				}

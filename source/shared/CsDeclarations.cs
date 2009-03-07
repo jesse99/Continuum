@@ -245,6 +245,8 @@ namespace Shared
 		public CsAttribute[] Attributes {get; private set;}
 		
 		public CsPreprocess[] Preprocess {get; private set;}
+
+		public bool Malformed {get; set;}
 	}
 	
 	// int this[int x] {get; set;}

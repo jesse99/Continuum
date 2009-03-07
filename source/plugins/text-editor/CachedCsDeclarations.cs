@@ -22,22 +22,52 @@
 using Gear;
 using Shared;
 using System;
+using System.Diagnostics;
 
 namespace TextEditor
 {
-	internal interface IStyler : IInterface
-	{
-		// Asynchronously computes the style runs and calls the callback on the 
-		// main thread when finished. Note that the runs given to ICachedStyleRuns
-		// will cover the text.
-		void Apply(IComputeRuns computer, Action callback);
+	internal sealed class CachedCsDeclarations : ICachedCsDeclarations
+	{		
+		public void Instantiated(Boss boss)
+		{
+			m_boss = boss;
+		}
 		
-		// Like the above except there is a delay before styling begins. Queue can 
-		// be called multiple times and any queue requests which have not yet 
-		// finished are dropped.
-		void Queue(IComputeRuns computer, Action callback);
+		public Boss Boss
+		{
+			get {return m_boss;}
+		}
 		
-		// Cancel any pending applies.
-		void Close();
+		public CsGlobalNamespace Get()
+		{
+			return m_globals;
+		}
+		
+		public void Get(out int editCount, out CsGlobalNamespace globals)
+		{
+			lock (m_mutex)
+			{
+				editCount = m_editCount;
+				globals = m_globals;
+			}
+		}
+		
+		public void Reset(int edit, CsGlobalNamespace globals)
+		{			
+			// .NET guarantees that these fields are atomically set but we need
+			// to ensure that the entire group is set atomically.
+			lock (m_mutex)
+			{
+				m_editCount = edit;
+				m_globals = globals;
+			}
+		}
+		
+		#region Fields
+		private Boss m_boss;
+		private object m_mutex = new object();
+			private int m_editCount = int.MinValue;
+			private CsGlobalNamespace m_globals;
+		#endregion
 	}
 }

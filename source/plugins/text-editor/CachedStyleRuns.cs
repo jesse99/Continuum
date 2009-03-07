@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Jesse Jones
+// Copyright (C) 2008-2009 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -20,19 +20,16 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
-//using MCocoa;
-//using MObjc;
 using Shared;
 using System;
 using System.Diagnostics;
-//using System.Globalization;
 
 namespace TextEditor
 {
-	internal sealed class Styles : IStyles
-	{		
+	internal sealed class CachedStyleRuns : ICachedStyleRuns
+	{
 		public void Instantiated(Boss boss)
-		{	
+		{
 			m_boss = boss;
 		}
 		
@@ -41,37 +38,33 @@ namespace TextEditor
 			get {return m_boss;}
 		}
 		
-		public void Get(out int editCount, out StyleRun[] runs, out CsGlobalNamespace globals)
+		public void Get(out int editCount, out StyleRun[] runs)
 		{
 			lock (m_mutex)
 			{
 				editCount = m_editCount;
 				runs = m_runs;
-				globals = m_globals;
 			}
 		}
 		
-		public void Reset(int edit, StyleRun[] runs, CsGlobalNamespace globals)
+		public void Reset(int edit, StyleRun[] runs)
 		{
 			Trace.Assert(runs != null, "runs is null");
 			
-			// These types are ints or references so they may be atomically set
-			// but we need to ensure that they are atomically set as a group.
+			// .NET guarantees that these fields are atomically set but we need
+			// to ensure that the entire group is set atomically.
 			lock (m_mutex)
 			{
 				m_editCount = edit;
 				m_runs = runs;
-				m_globals = globals;
 			}
 		}
 		
 		#region Fields
 		private Boss m_boss;
-		
 		private object m_mutex = new object();
 			private int m_editCount = int.MinValue;
 			private StyleRun[] m_runs = new StyleRun[0];
-			private CsGlobalNamespace m_globals;
 		#endregion
 	}
 }

@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using MCocoa;
 using Shared;
 using System;
 using System.Diagnostics;
@@ -37,23 +38,45 @@ namespace Styler
 			m_parser = b.Get<ICsParser>();
 		}
 		
-		protected override CsGlobalNamespace OnComputeRuns(string text, int edit, List<StyleRun> runs)	// threaded
+		protected override void OnComputeRuns(string text, int edit, List<StyleRun> runs, Boss boss)	// threaded
 		{
-			Unused.Value = base.OnComputeRuns(text, edit, runs);
+			base.OnComputeRuns(text, edit, runs, boss);
 			
-			return DoParseMatch(text, runs);
+			DoParseMatch(text, runs);
+			
+			var cachedCatalog =  boss.Get<ICachedCsCatalog>();
+			DoSetCatalog(text, cachedCatalog);
+			
+			var cachedGlobals =  boss.Get<ICachedCsDeclarations>();
+			cachedGlobals.Reset(edit, m_globals);
+			
+			m_tokens = null;
+			m_comments = null;
 		}
 		
 		#region Private Methods
-		private CsGlobalNamespace DoParseMatch(string text, List<StyleRun> runs)		// threaded
+		private void DoSetCatalog(string text, ICachedCsCatalog catalog)
+		{
+			var strings = new List<Token>();
+			
+			foreach (Token token in m_tokens)
+			{
+				if (token.Kind == TokenKind.String && token.Length > 2)
+					strings.Add(new Token(text, token.Offset + 1, token.Length - 2, token.Line, TokenKind.String));
+			}
+			
+			catalog.Reset(m_comments, strings.ToArray());
+		}
+		
+		private void DoParseMatch(string text, List<StyleRun> runs)		// threaded
 		{
 			int offset, length;
-			CsGlobalNamespace globals = m_parser.TryParse(text, out offset, out length);
+			m_parser.TryParse(text, out offset, out length, out m_globals, out m_tokens, out m_comments);
 			if (length > 0)
 			{
 				// We can't highlight control characters because they have zero width so 
 				// we'll grow to the left until we find a non-control character.
-				while (offset > 0 && char.IsControl(text, offset) && text[offset] != '\t')
+				while (offset > 0 && offset < text.Length && char.IsControl(text, offset) && text[offset] != '\t')
 				{
 					--offset;
 					++length;
@@ -62,9 +85,7 @@ namespace Styler
 				runs.Add(new StyleRun(offset, length, StyleType.Error));
 			}
 			
-			DoMatchScope(globals, runs);
-			
-			return globals;
+			DoMatchScope(m_globals, runs);
 		}
 		
 		private void DoMatchScope(CsTypeScope scope, List<StyleRun> runs)		// threaded
@@ -110,6 +131,9 @@ namespace Styler
 		
 		#region Fields
 		private ICsParser m_parser;
+		private CsGlobalNamespace m_globals;
+		private Token[] m_tokens;
+		private Token[] m_comments;
 		#endregion
 	}
 }

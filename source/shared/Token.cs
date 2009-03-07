@@ -25,7 +25,7 @@ using System.Diagnostics;
 namespace Shared
 {
 	[Serializable]
-	public enum TokenKind
+	public enum TokenKind : ushort
 	{
 		Invalid,
 		Identifier,
@@ -34,11 +34,22 @@ namespace Shared
 		String,			// text will include the " characters, text may have new lines
 		Punct,
 		Number,		// integer or float literal
+		Comment,		// text includes delimiters
 		Other,
 	}
 	
 	public struct Token : IEquatable<Token>
 	{
+		public Token(int offset)
+		{
+			Debug.Assert(offset >= 0, "offset is negative");
+			
+			Offset = offset;
+			Length = 0;
+			Line = 0;
+			Kind = TokenKind.Invalid;
+		}
+		
 		public Token(string text, int line)
 		{
 			Debug.Assert(text != null, "text is null");
@@ -68,7 +79,7 @@ namespace Shared
 			Kind = kind;
 		}
 		
-		// Index of the first character within the token. 
+		// Index of the token's first character. 
 		public int Offset {get; private set;}
 		
 		// The number of characters within the token. 
