@@ -23,6 +23,7 @@ using Gear;
 using Shared;
 using System;
 using System.Diagnostics;
+using System.Text;
 
 namespace AutoComplete
 {
@@ -51,5 +52,22 @@ namespace AutoComplete
 		// True if the target is an instance of the type (as opposed to the
 		// type itself).
 		public bool IsInstance {get; private set;}
+		
+		public override string ToString()
+		{
+			var builder = new StringBuilder();
+			
+			builder.Append(FullName);
+			if (Hash != null)
+			{
+				builder.Append('+');
+				builder.Append(Hash);
+			}
+			
+			if (IsInstance)
+				builder.Append(" instance");
+				
+			return builder.ToString();
+		}
 	}
 }

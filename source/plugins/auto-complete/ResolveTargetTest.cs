@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Jesse Jones
+// Copyright (C) 2009 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -36,11 +36,12 @@ namespace AutoComplete
 			AssertListener.Install();
 		}
 		
-		private bool DoGetType(string text, string target, int offset, MockTargetDatabase database)
+		private bool DoGetTarget(string text, string target, int offset, MockTargetDatabase database)
 		{
-Console.WriteLine("------------------------------------");
-Console.WriteLine(text);
-
+//Console.WriteLine("------------------------------------");
+//Console.WriteLine(target);
+//Console.WriteLine(text);
+			
 			var locals = new CsParser.LocalsParser();
 			var resolver = new ResolveTarget(database, locals);
 			
@@ -51,10 +52,10 @@ Console.WriteLine(text);
 			return m_target != null;
 		}
 		
-		private bool DoGetType(string text, string target, int offset)
+		private bool DoGetTarget(string text, string target, int offset)
 		{
 			var database = new MockTargetDatabase();
-			return DoGetType(text, target, offset, database);
+			return DoGetTarget(text, target, offset, database);
 		}
 		
 		[Test]
@@ -77,7 +78,7 @@ internal sealed class MyClass
 	}
 }
 ";
-			bool found = DoGetType(text, "this", text.IndexOf("."));
+			bool found = DoGetTarget(text, "this", text.IndexOf("."));
 			Assert.IsTrue(found);
 			Assert.AreEqual("MyClass", m_target.FullName);
 			Assert.AreEqual("MyClass", m_target.Type.Name);
@@ -106,7 +107,7 @@ namespace CoolLib
 	}
 }
 ";
-			bool found = DoGetType(text, "this", text.IndexOf("."));
+			bool found = DoGetTarget(text, "this", text.IndexOf("."));
 			Assert.IsTrue(found);
 			Assert.AreEqual("CoolLib.MyClass", m_target.FullName);
 			Assert.AreEqual("MyClass", m_target.Type.Name);
@@ -134,10 +135,10 @@ namespace CoolLib
 	}
 }
 ";
-			bool found = DoGetType(text, "value", text.IndexOf("."));
+			bool found = DoGetTarget(text, "value", text.IndexOf("."));
 			Assert.IsFalse(found);
 			
-			found = DoGetType(text, "value", text.LastIndexOf("."), new MockTargetDatabase
+			found = DoGetTarget(text, "value", text.LastIndexOf("."), new MockTargetDatabase
 			{
 				Hashes = new Dictionary<string, string>
 				{
@@ -171,10 +172,10 @@ namespace CoolLib
 	}
 }
 ";
-			bool found = DoGetType(text, "value", text.IndexOf("."));
+			bool found = DoGetTarget(text, "value", text.IndexOf("."));
 			Assert.IsFalse(found);
 			
-			found = DoGetType(text, "value", text.LastIndexOf("."), new MockTargetDatabase
+			found = DoGetTarget(text, "value", text.LastIndexOf("."), new MockTargetDatabase
 			{
 				Hashes = new Dictionary<string, string>
 				{
@@ -209,12 +210,12 @@ namespace CoolLib
 	}
 }
 ";
-			bool found = DoGetType(text, "MyClass", text.IndexOf("."));
+			bool found = DoGetTarget(text, "MyClass", text.IndexOf("."));
 			Assert.IsTrue(found);
 			Assert.AreEqual("CoolLib.MyClass", m_target.FullName);
 			Assert.AreEqual("MyClass", m_target.Type.Name);
 			
-			found = DoGetType(text, "Helper", text.LastIndexOf("."));
+			found = DoGetTarget(text, "Helper", text.LastIndexOf("."));
 			Assert.IsTrue(found);
 			Assert.AreEqual("CoolLib.Helper", m_target.FullName);
 			Assert.AreEqual("Helper", m_target.Type.Name);
@@ -239,7 +240,7 @@ namespace CoolLib
 }
 ";
 			// int
-			bool found = DoGetType(text, "int", text.IndexOf("."), new MockTargetDatabase
+			bool found = DoGetTarget(text, "int", text.IndexOf("."), new MockTargetDatabase
 			{
 				Hashes = new Dictionary<string, string>
 				{
@@ -252,7 +253,7 @@ namespace CoolLib
 			Assert.IsNull(m_target.Type);
 			
 			// Int32
-			found = DoGetType(text, "Int32", text.IndexOf("."), new MockTargetDatabase
+			found = DoGetTarget(text, "Int32", text.IndexOf("."), new MockTargetDatabase
 			{
 				Hashes = new Dictionary<string, string>
 				{
@@ -265,7 +266,7 @@ namespace CoolLib
 			Assert.IsNull(m_target.Type);
 			
 			// System.Int32
-			found = DoGetType(text, "System.Int32", text.IndexOf("."), new MockTargetDatabase
+			found = DoGetTarget(text, "System.Int32", text.IndexOf("."), new MockTargetDatabase
 			{
 				Hashes = new Dictionary<string, string>
 				{
@@ -278,7 +279,7 @@ namespace CoolLib
 			Assert.IsNull(m_target.Type);
 			
 			// StringBuilder
-			found = DoGetType(text, "StringBuilder", text.IndexOf("."), new MockTargetDatabase
+			found = DoGetTarget(text, "StringBuilder", text.IndexOf("."), new MockTargetDatabase
 			{
 				Hashes = new Dictionary<string, string>
 				{
@@ -291,7 +292,7 @@ namespace CoolLib
 			Assert.IsNull(m_target.Type);
 			
 			// System.Text.StringBuilder
-			found = DoGetType(text, "System.Text.StringBuilder", text.IndexOf("."), new MockTargetDatabase
+			found = DoGetTarget(text, "System.Text.StringBuilder", text.IndexOf("."), new MockTargetDatabase
 			{
 				Hashes = new Dictionary<string, string>
 				{
@@ -322,7 +323,7 @@ namespace CoolLib
 }
 ";
 			// StringBuilder
-			bool found = DoGetType(text, "StringBuilder", text.IndexOf("."), new MockTargetDatabase
+			bool found = DoGetTarget(text, "StringBuilder", text.IndexOf("."), new MockTargetDatabase
 			{
 				Hashes = new Dictionary<string, string>
 				{
@@ -333,7 +334,7 @@ namespace CoolLib
 			Assert.IsFalse(found);
 			
 			// System.Text.StringBuilder
-			found = DoGetType(text, "System.Text.StringBuilder", text.IndexOf("."), new MockTargetDatabase
+			found = DoGetTarget(text, "System.Text.StringBuilder", text.IndexOf("."), new MockTargetDatabase
 			{
 				Hashes = new Dictionary<string, string>
 				{
@@ -358,12 +359,12 @@ namespace CoolLib
 	{
 		public void Work(int alpha, float beta)
 		{
-			xxx.
+			aaa.
 		}
 	}
 }
 ";
-			bool found = DoGetType(text, "alpha", text.IndexOf("."), new MockTargetDatabase
+			bool found = DoGetTarget(text, "alpha", text.IndexOf("."), new MockTargetDatabase
 			{
 				Hashes = new Dictionary<string, string>
 				{
@@ -375,7 +376,7 @@ namespace CoolLib
 			Assert.AreEqual("System.Int32", m_target.FullName);
 			Assert.IsNull(m_target.Type);
 			
-			found = DoGetType(text, "beta", text.IndexOf("."), new MockTargetDatabase
+			found = DoGetTarget(text, "beta", text.IndexOf("."), new MockTargetDatabase
 			{
 				Hashes = new Dictionary<string, string>
 				{
@@ -408,7 +409,7 @@ namespace CoolLib
 	}
 }
 ";
-			bool found = DoGetType(text, "zeta", text.IndexOf("."), new MockTargetDatabase
+			bool found = DoGetTarget(text, "zeta", text.IndexOf("."), new MockTargetDatabase
 			{
 				Hashes = new Dictionary<string, string>
 				{
@@ -445,7 +446,7 @@ namespace CoolLib
 	}
 }
 ";
-			bool found = DoGetType(text, "beta", text.IndexOf("if"), new MockTargetDatabase
+			bool found = DoGetTarget(text, "beta", text.IndexOf("if"), new MockTargetDatabase
 			{
 				Hashes = new Dictionary<string, string>
 				{
@@ -459,7 +460,7 @@ namespace CoolLib
 			Assert.AreEqual("System.Single", m_target.FullName);
 			Assert.IsNull(m_target.Type);
 			
-			found = DoGetType(text, "zeta", text.IndexOf("if"), new MockTargetDatabase
+			found = DoGetTarget(text, "zeta", text.IndexOf("if"), new MockTargetDatabase
 			{
 				Hashes = new Dictionary<string, string>
 				{
@@ -473,7 +474,7 @@ namespace CoolLib
 			Assert.AreEqual("System.Int64", m_target.FullName);
 			Assert.IsNull(m_target.Type);
 			
-			found = DoGetType(text, "beta", text.IndexOf("."), new MockTargetDatabase
+			found = DoGetTarget(text, "beta", text.IndexOf("."), new MockTargetDatabase
 			{
 				Hashes = new Dictionary<string, string>
 				{
@@ -487,7 +488,7 @@ namespace CoolLib
 			Assert.AreEqual("System.Int16", m_target.FullName);
 			Assert.IsNull(m_target.Type);
 			
-			found = DoGetType(text, "zeta", text.IndexOf("."), new MockTargetDatabase
+			found = DoGetTarget(text, "zeta", text.IndexOf("."), new MockTargetDatabase
 			{
 				Hashes = new Dictionary<string, string>
 				{
@@ -522,7 +523,7 @@ namespace CoolLib
 	}
 }
 ";
-			bool found = DoGetType(text, "alpha", text.IndexOf("."), new MockTargetDatabase
+			bool found = DoGetTarget(text, "alpha", text.IndexOf("."), new MockTargetDatabase
 			{
 				Hashes = new Dictionary<string, string>
 				{
@@ -534,7 +535,7 @@ namespace CoolLib
 			Assert.AreEqual("System.Int32", m_target.FullName);
 			Assert.IsNull(m_target.Type);
 			
-			found = DoGetType(text, "beta", text.IndexOf("."), new MockTargetDatabase
+			found = DoGetTarget(text, "beta", text.IndexOf("."), new MockTargetDatabase
 			{
 				Hashes = new Dictionary<string, string>
 				{
@@ -566,7 +567,7 @@ namespace CoolLib
 	}
 }
 ";
-			bool found = DoGetType(text, "alpha", text.LastIndexOf("."), new MockTargetDatabase
+			bool found = DoGetTarget(text, "alpha", text.LastIndexOf("."), new MockTargetDatabase
 			{
 				Hashes = new Dictionary<string, string>
 				{
@@ -576,15 +577,15 @@ namespace CoolLib
 				},
 				BaseFieldTypes = new Dictionary<string, string>
 				{
-					{"System.SomeBase+alpha", "int"},
-					{"System.SomeBase+beta", "int"},
+					{"System.SomeBase+alpha", "System.Int32"},
+					{"System.SomeBase+beta", "System.Int32"},
 				}
 			});
 			Assert.IsTrue(found);
 			Assert.AreEqual("System.Int64", m_target.FullName);
 			Assert.IsNull(m_target.Type);
 			
-			found = DoGetType(text, "beta", text.LastIndexOf("."), new MockTargetDatabase
+			found = DoGetTarget(text, "beta", text.LastIndexOf("."), new MockTargetDatabase
 			{
 				Hashes = new Dictionary<string, string>
 				{
@@ -594,8 +595,8 @@ namespace CoolLib
 				},
 				BaseFieldTypes = new Dictionary<string, string>
 				{
-					{"System.SomeBase+alpha", "int"},
-					{"System.SomeBase+beta", "int"},
+					{"System.SomeBase+alpha", "System.Int32"},
+					{"System.SomeBase+beta", "System.Int32"},
 				}
 			});
 			Assert.IsTrue(found);

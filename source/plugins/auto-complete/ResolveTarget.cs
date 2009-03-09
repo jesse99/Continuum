@@ -34,72 +34,52 @@ namespace AutoComplete
 		{
 			m_database = database;
 			m_locals = locals;
+			m_resolveType = new ResolveType(database);
 		}
 		
 		// May return null.
 		public ResolvedTarget Resolve(string text, string target, int offset, CsGlobalNamespace globals)
 		{
-			m_fullName = null;
-			m_hash = null;
-			m_type = null;
-			m_instanceCall = true;
-			
 			// this.
 			CsMember member = DoFindMember(globals, offset);
-			DoHandleThis(member, target);
-//	Console.WriteLine("1hash: {0}, type: {1}", m_hash, m_type);
+			ResolvedTarget result = DoHandleThis(member, target);
 			
 			// value. (special case for setters)
-			if (m_hash == null && m_type == null)
-			{
-				DoHandleValue(globals, member, target, offset);
-//	Console.WriteLine("1hash: {0}, type: {1}", m_hash, m_type);
-			}
+			if (result == null)
+				result = DoHandleValue(globals, member, target, offset);
 			
-			// MyType. (where MyType is a type in globals)
-			if (m_hash == null && m_type == null)
-			{
-				DoHandleLocalType(globals, target);
-//	Console.WriteLine("2hash: {0}, type: {1}", m_hash, m_type);
-			}
-			
-			// IDisposable. (where type name is present in the database)
-			if (m_hash == null && m_type == null)
-			{
-				DoHandleType(globals, target);
-//	Console.WriteLine("3hash: {0}, type: {1}", m_hash, m_type);
-			}
+			// SomeType.
+			if (result == null)
+				result = m_resolveType.Resolve(target, globals, false);
 			
 			// name. (where name is a local, argument, or field)
-			if (m_hash == null && m_type == null)
-			{
-				DoHandleVariable(text, globals, member, target, offset);
-//	Console.WriteLine("4hash: {0}, type: {1}", m_hash, m_type);
-			}
+			if (result == null)
+				result = DoHandleVariable(text, globals, member, target, offset);
 			
-			return m_hash != null || m_type != null
-				? new ResolvedTarget(m_fullName, m_type, m_hash, m_instanceCall)
-				: null;
+			return result;
 		}
 		
 		#region Private Methods
-		private void DoHandleThis(CsMember member, string target)
+		private ResolvedTarget DoHandleThis(CsMember member, string target)
 		{
+			ResolvedTarget result = null;
+			
 			if (target == "this")
 			{
 				if (member != null)
 				{
-					m_type = member.DeclaringType;
-					m_fullName = DoGetTypeName(m_type.FullName);
-					m_hash = m_database.FindAssembly(m_fullName);
-					m_instanceCall = true;
-Console.WriteLine("this type: {0}", m_fullName);
+					result = m_resolveType.Resolve(member.DeclaringType, true);
+//Console.WriteLine("this type: {0}", m_fullName);
 				}
 			}
+			
+			return result;
 		}
 		
-		private void DoHandleValue(CsGlobalNamespace globals, CsMember member, string target, int offset)
+		private ResolvedTarget DoHandleValue(CsGlobalNamespace globals, CsMember member, string target, int offset)
 		{
+			ResolvedTarget result = null;
+			
 			if (target == "value")
 			{
 				string type = null;
@@ -120,196 +100,52 @@ Console.WriteLine("this type: {0}", m_fullName);
 				
 				if (type != null)
 				{
-					type = DoGetTypeName(type);
-					
-					string fullName, hash;
-					DoFindFullNameAndHash(globals, type, out fullName, out hash);
-					
-					if (hash != null)
-					{
-						m_fullName = fullName;
-						m_hash = hash;
-						m_type = DoFindLocalType(globals, m_fullName);
-						m_instanceCall = false;
-Console.WriteLine("value type: {0}", m_fullName);
-					}
-				}
-			}
-		}
-		
-		private void DoHandleLocalType(CsGlobalNamespace globals, string target)
-		{
-			CsType type = DoFindLocalType(globals, target);
-			if (type != null)
-			{
-				m_type = type;
-				m_fullName = DoGetTypeName(m_type.FullName);
-				m_hash = m_database.FindAssembly(m_fullName);
-				m_instanceCall = false;
-Console.WriteLine("local type: {0}", m_fullName);
-			}
-		}
-		
-		private void DoHandleType(CsGlobalNamespace globals, string target)
-		{
-			string fullName, hash;
-			DoFindFullNameAndHash(globals, target, out fullName, out hash);
-			
-			if (hash != null)
-			{
-				m_fullName = DoGetTypeName(fullName);
-				m_hash = hash;
-				m_type = DoFindLocalType(globals, m_fullName);
-				m_instanceCall = false;
-Console.WriteLine("global type: {0}", m_fullName);
-			}
-		}
-		
-		private void DoHandleVariable(string text, CsGlobalNamespace globals, CsMember member, string target, int offset)
-		{
-			string type = DoFindVariableType(text, globals, member, target, offset);
-			
-			if (type != null)
-			{
-				type = DoGetTypeName(type);
-				
-				string fullName, hash;
-				DoFindFullNameAndHash(globals, type, out fullName, out hash);
-				
-				if (hash != null)
-				{
-					m_fullName = fullName;
-					m_hash = hash;
-					m_type = DoFindLocalType(globals, m_fullName);
-					m_instanceCall = true;
-Console.WriteLine("variable type: {0}", m_fullName);
-				}
-				else
-Console.WriteLine("couldn't find a hash for {0} {1}", target, type);
-			}
-		}
-		
-		private string DoGetTypeName(string fullName)
-		{
-			if (fullName.EndsWith("[]"))
-				return "System.Array";
-			
-			else if (fullName.EndsWith("?"))
-				return "System.Nullable`1";
-			
-			// generic names should be Foo`1 not Foo`<T>
-			else if (fullName.Contains("`"))
-				return DoGetGenericName1(fullName);
-				
-			// generic names should be Foo`1 not Foo<T>
-			else if (fullName.Contains("<"))
-				return DoGetGenericName2(fullName);
-				
-			return fullName;
-		}
-		
-		private string DoGetGenericName1(string name)	// TODO: duplicate of GetTypeName from object-model
-		{
-			int i = name.IndexOf('`');
-			
-			if (i > 0)
-			{
-				++i;
-				while (i < name.Length && char.IsDigit(name[i]))
-				{
-					++i;
+					result = m_resolveType.Resolve(type, globals, true);
 				}
 			}
 			
-			if (i > 0)
-				name = name.Substring(0, i);
-				
-			return name;
+			return result;
 		}
 		
-		private string DoGetGenericName2(string name)
+		private ResolvedTarget DoHandleVariable(string text, CsGlobalNamespace globals, CsMember member, string target, int offset)
 		{
-			int i = name.IndexOf('<');
-			int j = name.LastIndexOf('>');
-			
-			if (i > 0 && j > i)
-			{
-				string args = name.Substring(i + 1, j - i - 1);
-				int count = args.Split(',').Length;
-				name = name.Substring(0, i) + "`" + count;
-			}
-			
-			return name;
-		}
-		
-		private void DoFindFullNameAndHash(CsGlobalNamespace globals, string target, out string fullName, out string hash)
-		{
-			fullName = DoGetAliasedName(target);
-			hash = m_database.FindAssembly(fullName);
-			
-			for (int i = 0; i < globals.Uses.Length && hash == null; ++i)
-			{
-				fullName = globals.Uses[i].Namespace + "." + target;
-				hash = m_database.FindAssembly(fullName);
-			}
-		}
-				
-		private CsType DoFindLocalType(CsNamespace outer, string target)
-		{
-			foreach (CsType candidate in outer.Types)
-			{
-				if (candidate.Name == target || candidate.FullName == target)
-					return candidate;
-			}
-			
-			foreach (CsNamespace inner in outer.Namespaces)
-			{
-				CsType type = DoFindLocalType(inner, target);
-				if (type != null)
-					return type;
-			}
-			
-			return null;
-		}
-		
-		private string DoFindVariableType(string text, CsGlobalNamespace globals, CsMember member, string target, int offset)
-		{
-			string type = null;
+			ResolvedTarget result = null;
 			
 			if (member != null)
 			{
 		Console.WriteLine("member: {0}", member.Name);
-				if (type == null)
-					type = DoFindLocalType(text, member, target, offset);
+				if (result == null)
+					result = DoFindLocalType(text, globals, member, target, offset);
 				
-				if (type == null)
-					type = DoFindArgType(member, target);
+				if (result == null)
+					result = DoFindArgType(globals, member, target);
 				
-				if (type == null)
-					type = DoFindFieldType(globals, member, target);
+				if (result == null)
+					result = DoFindFieldType(globals, member, target);
 			}
 			
-			return type;
+			return result;
 		}
 		
-		private string DoFindLocalType(string text, CsMember member, string name, int offset)
+		private ResolvedTarget DoFindLocalType(string text, CsGlobalNamespace globals, CsMember member, string name, int offset)
 		{
-			string type = null;
+			ResolvedTarget result = null;
 			
 			CsBody body = DoGetBody(member, offset);
 			if (body != null)
 			{
 				Local[] locals = m_locals.Parse(text, body.Start, offset);
-				for (int i = locals.Length - 1; i >= 0 && type == null; --i)		// note that we want to use the last match
+				for (int i = locals.Length - 1; i >= 0 && result == null; --i)		// note that we want to use the last match
 				{
 					if (locals[i].Name == name)
 					{
-						type = locals[i].Type;		// TODO: need to handle "var" types
+						string type = locals[i].Type;		// TODO: need to handle "var" types
+						result = m_resolveType.Resolve(type, globals, true);
 					}
 				}
 			}
 			
-			return type;
+			return result;
 		}
 		
 		private CsBody DoGetBody(CsMember member, int offset)
@@ -357,7 +193,7 @@ Console.WriteLine("couldn't find a hash for {0} {1}", target, type);
 			return body;
 		}
 		
-		private string DoFindArgType(CsMember member, string name)
+		private ResolvedTarget DoFindArgType(CsGlobalNamespace globals, CsMember member, string name)
 		{
 			string type = null;
 			
@@ -386,33 +222,42 @@ Console.WriteLine("couldn't find a hash for {0} {1}", target, type);
 			}
 			while (false);
 			
-			return type;
+			ResolvedTarget result = null;
+			if (type != null)
+			{
+				result = m_resolveType.Resolve(type, globals, true);
+			}
+			
+			return result;
 		}
 		
-		private string DoFindFieldType(CsGlobalNamespace globals, CsMember member, string name)
+		private ResolvedTarget DoFindFieldType(CsGlobalNamespace globals, CsMember member, string name)
 		{
-			string type = null;
+			ResolvedTarget result = null;
 			
-			for (int i = 0; i < member.DeclaringType.Fields.Length && type == null; ++i)
+			for (int i = 0; i < member.DeclaringType.Fields.Length && result == null; ++i)
 			{
 				CsField field = member.DeclaringType.Fields[i];
 				if (field.Name == name)
-					type = field.Type;
+					result = m_resolveType.Resolve(field.Type, globals, true);
 			}
-						
-			if (type == null && member.DeclaringType.Bases.Names.Length > 0)
+			
+			if (result == null && member.DeclaringType.Bases.Names.Length > 0)
 			{
 				string baseType = member.DeclaringType.Bases.Names[0];
 				if (baseType[0] != 'I' || baseType.Length == 1 || char.IsLower(baseType[1]))
 				{
-					string fullName, hash;
-					DoFindFullNameAndHash(globals, baseType, out fullName, out hash);
-					
-					type = m_database.FindFieldType(fullName, name);
+					ResolvedTarget baseTarget = m_resolveType.Resolve(baseType, globals, false);
+					if (baseTarget != null)
+					{
+						string fullName = m_database.FindFieldType(baseTarget.FullName, name);
+						if (fullName != null)
+							result = m_resolveType.Resolve(fullName, true);
+					}
 				}
 			}
 			
-			return type;
+			return result;
 		}
 		
 		private string DoFindParamType(CsParameter[] parms, string name)
@@ -450,73 +295,12 @@ Console.WriteLine("couldn't find a hash for {0} {1}", target, type);
 			
 			return member;
 		}
-		
-		// TODO: duplicate of FindInDatabase.DoGetRealName
-		private string DoGetAliasedName(string name)
-		{
-			switch (name)
-			{
-				case "bool":
-					return "System.Boolean";
-					
-				case "byte":
-					return "System.Byte";
-					
-				case "char":
-					return "System.Char";
-					
-				case "decimal":
-					return "System.Decimal";
-					
-				case "double":
-					return "System.Double";
-					
-				case "short":
-					return "System.Int16";
-					
-				case "int":
-					return "System.Int32";
-					
-				case "long":
-					return "System.Int64";
-				
-				case "sbyte":
-					return "System.SByte";
-					
-				case "object":
-					return "System.Object";
-					
-				case "float":
-					return "System.Single";
-					
-				case "string":
-					return "System.String";
-					
-				case "ushort":
-					return "System.UInt16";
-					
-				case "uint":
-					return "System.UInt32";
-					
-				case "ulong":
-					return "System.UInt64";
-					
-				case "void":
-					return "System.Void";
-					
-				default:
-					return name;
-			}
-		}
 		#endregion
 		
 		#region Fields
 		private ITargetDatabase m_database;
-		private string m_fullName;
-		private string m_hash;
-		private bool m_instanceCall;
-		private CsType m_type;
 		private ICsLocalsParser m_locals;
+		private ResolveType m_resolveType;
 		#endregion
 	}
 }
