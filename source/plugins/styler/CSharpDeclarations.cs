@@ -113,22 +113,6 @@ namespace Styler
 					DoGetDeclarations(n, indent, decs);
 				}
 				
-				foreach (CsDelegate d in ns.Delegates)
-				{
-					decs.Add(new Declaration(
-						indent + "delegate " + d.Name,
-						new NSRange(d.Offset, d.Length),
-						true, false));
-				}
-				
-				foreach (CsEnum e in ns.Enums)
-				{
-					decs.Add(new Declaration(
-						indent + "enum " + e.Name,
-						new NSRange(e.Offset, e.Length),
-						true, false));
-				}
-				
 				foreach (CsType nested in scope.Types)
 				{
 					DoGetDeclarations(nested, indent, decs);
@@ -183,8 +167,17 @@ namespace Styler
 			else if (type is CsStruct)
 				return "struct ";
 			
-			else
+			else if (type is CsInterface)
 				return "interface ";
+			
+			else if (type is CsDelegate)
+				return "delegate ";
+			
+			else if (type is CsEnum)
+				return "enum ";
+			
+			Trace.Fail("bad type: " + type.GetType());
+			return "?";
 		}
 		
 		private string DoGetShortName(CsMember member)
@@ -193,20 +186,6 @@ namespace Styler
 			
 			do
 			{
-				CsDelegate d = member as CsDelegate;
-				if (d != null)
-				{
-					result = string.Format("delegate {0}", d.Name);
-					break;
-				}
-				
-				CsEnum e = member as CsEnum;
-				if (e != null)
-				{
-					result = string.Format("enum {0}", e.Name);
-					break;
-				}
-				
 				CsEvent v = member as CsEvent;
 				if (v != null)
 				{
@@ -268,16 +247,6 @@ namespace Styler
 			
 			do
 			{
-				CsDelegate d = member as CsDelegate;
-				if (d != null)
-				{
-					if (d.GenericArguments != null)
-						result = string.Format("delegate {0}<{1}>({2})", d.Name, d.GenericArguments, DoGetParams(d.Parameters));
-					else
-						result = string.Format("delegate {0}({1})", d.Name, DoGetParams(d.Parameters));
-					break;
-				}
-				
 				CsIndexer i = member as CsIndexer;
 				if (i != null)
 				{

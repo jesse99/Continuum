@@ -109,18 +109,6 @@ namespace Styler
 			CsNamespace ns = scope as CsNamespace;
 			if (ns != null)
 			{
-				// These are considered members not types, so we need to special case
-				// them if they are within a namespace.
-				foreach (CsMember member in ns.Delegates)
-				{
-					runs.Add(new StyleRun(member.NameOffset, member.Name.Length, StyleType.Type));
-				}
-				
-				foreach (CsMember member in ns.Enums)
-				{
-					runs.Add(new StyleRun(member.NameOffset, member.Name.Length, StyleType.Type));
-				}
-				
 				foreach (CsNamespace n in ns.Namespaces)
 				{
 					DoMatchScope(n, runs);

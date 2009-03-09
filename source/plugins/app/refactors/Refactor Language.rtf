@@ -75,11 +75,8 @@ Base class for objects which may be declared in C# source code. This type define
 \
 
 \b Delegate
-\b0  : Member\
+\b0  : TypeDeclaration\
 Represents a C# delegate type declaration.\
-String \cf3 Constraints\cf0 							E.g. "where KEY : new()". May be null.\
-String \cf3 GenericArguments\cf0 				E.g. "KEY,VALUE". Will not have any whitespace. Will be null if the delegate is not generic.\
-Namespace \cf3 Namespace\cf0 					Set if the delegate was declared in a namespace scope (i.e. DeclaringType is null).\
 Sequence<Parameter> \cf3 Parameters\cf0 				\
 String \cf3 ReturnType\cf0 							E.g. "int". Will not have any whitespace.\
 \
@@ -90,10 +87,9 @@ The type of methods which affect the text store. Note that in order for edits to
 \
 
 \b Enum
-\b0  : Member\
+\b0  : TypeDeclaration\
 Represents a C# enum type declaration.\
 String \cf3 BaseType\cf0 				E.g. "int". Will not have any whitespace.\
-Namespace \cf3 Namespace\cf0 	Set if the enum was declared in a namespace scope (i.e. DeclaringType is null).\
 \
 
 \b Event

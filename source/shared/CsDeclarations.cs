@@ -129,57 +129,30 @@ namespace Shared
 	}
 	
 	// public delegate void Foo<KEY, VALUE>(int x, Dictionary<KEY, VALUE> y)
-	public sealed class CsDelegate : CsMember
+	public sealed class CsDelegate : CsType
 	{
-		public CsDelegate(int nameOffset, string constraints, CsParameter[] parms, string gargs, string rtype, CsAttribute[] attrs, MemberModifiers modifiers, string name, int offset, int length, int line) : base(nameOffset, attrs, modifiers, name, offset, length, line)
+		public CsDelegate(int nameOffset, string constraints, CsParameter[] parms, string gargs, string rtype, CsAttribute[] attrs, MemberModifiers modifiers, string name, int offset, int length, int line)
+			: base(nameOffset, null, new CsBases(offset, line), new CsMember[0], new CsType[0], attrs, modifiers, constraints, gargs, name, offset, length, line)
 		{
-			Trace.Assert(parms != null, "parms is null");
 			Trace.Assert(!string.IsNullOrEmpty(rtype), "rtype is null or empty");
+			Trace.Assert(parms != null, "parms is null");
 			
 			ReturnType = rtype.TrimAll();
 			Parameters = parms;
-			Constraints = constraints;
-			
-			if (gargs != null)
-				GenericArguments = gargs.TrimAll();
 		}
 		
 		// Will be something like "int" or "Dictionary<KEY,VALUE>". Note that the type will 
 		// not have any whitespace.
 		public string ReturnType {get; private set;}
 		
-		// Will be something like "KEY,VALUE". Note that this will not have any whitespace
-		// and will be null if the delegate is not generic.
-		public string GenericArguments {get; private set;}
-		
 		public CsParameter[] Parameters {get; private set;}
-		
-		// Will be something like "where KEY : new(), where KEY : class". May be null.
-		public string Constraints {get; private set;}
-		
-		// Will be null if the enum was not declared at a namespace scope.
-		public CsNamespace Namespace {get; internal set;}
-		
-		public override string FullName
-		{
-			get
-			{
-				if (DeclaringType != null)
-					return DeclaringType.FullName + "/" + Name;
-				
-				else if (Namespace != null && Namespace.Name != "<globals>")
-					return Namespace.Name + "." + Name;
-				
-				else
-					return Name;
-			}
-		}
 	}
 	
 	// public enum Greek {alpha, beta, gamma}
-	public sealed class CsEnum : CsMember
+	public sealed class CsEnum : CsType
 	{
-		public CsEnum(int nameOffset, string baseType, CsAttribute[] attrs, MemberModifiers modifiers, string name, int offset, int length, int line) : base(nameOffset, attrs, modifiers, name, offset, length, line)
+		public CsEnum(int nameOffset, string baseType, CsAttribute[] attrs, MemberModifiers modifiers, string name, int offset, int length, int line)
+			: base(nameOffset, null, new CsBases(offset, line), new CsMember[0], new CsType[0], attrs, modifiers, null, null, name, offset, length, line)
 		{
 			Trace.Assert(!string.IsNullOrEmpty(baseType), "baseType is null or empty");
 			
@@ -188,24 +161,6 @@ namespace Shared
 		
 		// Will be an integral type name, e.g. "int".
 		public string BaseType {get; private set;}
-		
-		// Will be null if the enum was not declared at a namespace scope.
-		public CsNamespace Namespace {get; internal set;}
-		
-		public override string FullName
-		{
-			get
-			{
-				if (DeclaringType != null)
-					return DeclaringType.FullName + "/" + Name;
-				
-				else if (Namespace != null && Namespace.Name != "<globals>")
-					return Namespace.Name + "." + Name;
-				
-				else
-					return Name;
-			}
-		}
 	}
 	
 	// event bool Signaled;
@@ -282,7 +237,7 @@ namespace Shared
 	
 	public sealed class CsGlobalNamespace : CsNamespace
 	{
-		public CsGlobalNamespace(CsPreprocess[] preprocess, CsBody body, CsAttribute[] attrs, CsExternAlias[] externs, CsUsingAlias[] aliases, CsUsingDirective[] uses, CsNamespace[] namespaces, CsMember[] members, CsType[] types, int length) : base(body, "<globals>", externs, aliases, uses, namespaces, members, types, 0, length, 1)
+		public CsGlobalNamespace(CsPreprocess[] preprocess, CsBody body, CsAttribute[] attrs, CsExternAlias[] externs, CsUsingAlias[] aliases, CsUsingDirective[] uses, CsNamespace[] namespaces, CsType[] types, int length) : base(body, "<globals>", externs, aliases, uses, namespaces, types, 0, length, 1)
 		{
 			Trace.Assert(attrs != null, "attrs is null");
 			Trace.Assert(preprocess != null, "preprocess is null");
@@ -403,7 +358,7 @@ namespace Shared
 		Unsafe			= 0x8000,
 	}
 	
-	// Base class for things which may appear in a class, e.g. CsEnum, CsClass, CsField, etc.
+	// Base class for things which may appear in a class, e.g. CsMethod, CsProperty etc.
 	public abstract class CsMember : CsDeclaration
 	{
 		public static readonly int AccessMask	= 0x000F;			// can't define this in MemberModifiers or it messes up ToString
@@ -526,7 +481,7 @@ namespace Shared
 	// namespace CoolLib.Internals {}
 	public class CsNamespace : CsTypeScope
 	{
-		public CsNamespace(CsBody body, string name, CsExternAlias[] externs, CsUsingAlias[] aliases, CsUsingDirective[] uses, CsNamespace[] namespaces, CsMember[] members, CsType[] types, int offset, int length, int line) : base(body, members, types, offset, length, line)
+		public CsNamespace(CsBody body, string name, CsExternAlias[] externs, CsUsingAlias[] aliases, CsUsingDirective[] uses, CsNamespace[] namespaces, CsType[] types, int offset, int length, int line) : base(body, types, offset, length, line)
 		{
 			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
 			Trace.Assert(externs != null, "externs is null");
@@ -548,11 +503,6 @@ namespace Shared
 				n.Namespace = this;
 			foreach (CsType t in Types)
 				t.Namespace = this;
-			
-			foreach (CsDelegate d in Delegates)
-				d.Namespace = this;
-			foreach (CsEnum e in Enums)
-				e.Namespace = this;
 		}
 		
 		// Will be a qualified identifier, e.g. "CoolLib.Internals" or "<globals>" for the global namespace.
@@ -774,7 +724,7 @@ namespace Shared
 	// Base class for CsInterface, CsClass, and CsStruct.
 	public abstract class CsType : CsTypeScope
 	{
-		public CsType(int nameOffset, CsBody body, CsBases bases, CsMember[] members, CsType[] types, CsAttribute[] attrs, MemberModifiers modifiers, string constraints, string gargs, string name, int offset, int length, int line) : base(body, members, types, offset, length, line)
+		public CsType(int nameOffset, CsBody body, CsBases bases, CsMember[] members, CsType[] types, CsAttribute[] attrs, MemberModifiers modifiers, string constraints, string gargs, string name, int offset, int length, int line) : base(body, types, offset, length, line)
 		{
 			Trace.Assert(members != null, "members is null");
 			Trace.Assert(types != null, "types is null");
@@ -800,7 +750,7 @@ namespace Shared
 			Methods = (from m in members let e = m as CsMethod where e != null select e).ToArray();
 			Operators = (from m in members let e = m as CsOperator where e != null select e).ToArray();
 			Properties = (from m in members let e = m as CsProperty where e != null select e).ToArray();
-			Trace.Assert(members.Length == Delegates.Length + Enums.Length + Events.Length + Fields.Length + Indexers.Length + Methods.Length + Operators.Length + Properties.Length, "bad members length");
+			Trace.Assert(members.Length == Events.Length + Fields.Length + Indexers.Length + Methods.Length + Operators.Length + Properties.Length, "bad members length");
 			
 			Members = members;
 			
@@ -895,30 +845,28 @@ namespace Shared
 	// Derived classes are CsNamespace, CsClass, etc.
 	public abstract class CsTypeScope : CsDeclaration
 	{
-		public CsTypeScope(CsBody body, CsMember[] members, CsType[] types, int offset, int length, int line) : base(offset, length, line)
+		public CsTypeScope(CsBody body, CsType[] types, int offset, int length, int line) : base(offset, length, line)
 		{
-			Trace.Assert(body != null, "body is null");
-			Trace.Assert(members != null, "members is null");
 			Trace.Assert(types != null, "types is null");
 			
 			Body = body;
 			
-			Delegates = (from m in members let e = m as CsDelegate where e != null select e).ToArray();
-			Enums = (from m in members let e = m as CsEnum where e != null select e).ToArray();
+			Delegates = (from m in types let e = m as CsDelegate where e != null select e).ToArray();
+			Enums = (from m in types let e = m as CsEnum where e != null select e).ToArray();
 			
 			Classes = (from t in types let e = t as CsClass where e != null select e).ToArray();
 			Interfaces = (from t in types let e = t as CsInterface where e != null select e).ToArray();
 			Structs = (from t in types let e = t as CsStruct where e != null select e).ToArray();
 			
 			Types = types;
-			Trace.Assert(Types.Length == Classes.Length + Interfaces.Length + Structs.Length, "bad types length");
+			Trace.Assert(Types.Length == Classes.Length + Interfaces.Length + Structs.Length + Delegates.Length + Enums.Length, "bad types length");
 		}
 		
 		// The namespace this container is declared within. Will be null if it is
 		// declared in the global namespace.
 		public CsNamespace Namespace {get; internal set;}
 		
-		// Will be null for the global namespace.
+		// Will be null for the global namespace and delegates.
 		public CsBody Body {get; private set;}
 		
 		public CsClass[] Classes {get; protected set;}

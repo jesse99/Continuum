@@ -35,7 +35,7 @@ namespace CsRefactor.Script
 		{
 		}
 		
-		public static DelegateType Instance 
+		public static DelegateType Instance
 		{
 			get
 			{
@@ -48,7 +48,7 @@ namespace CsRefactor.Script
 		
 		public override RefactorType Base
 		{
-			get {return MemberType.Instance;}
+			get {return TypeDeclarationType.Instance;}
 		}
 		
 		public override string Name
@@ -63,29 +63,11 @@ namespace CsRefactor.Script
 		
 		protected override void RegisterMethods(RefactorType type)
 		{
-			type.Register<CsDelegate>("get_Constraints", this.DoGetConstraints);
-			type.Register<CsDelegate>("get_GenericArguments", this.DoGetGenericArguments);
-			type.Register<CsDelegate>("get_Namespace", this.DoGetNamespace);
 			type.Register<CsDelegate>("get_Parameters", this.DoGetParameters);
 			type.Register<CsDelegate>("get_ReturnType", this.DoGetReturnType);
 		}
 		
 		#region Private Methods
-		private object DoGetConstraints(CsDelegate type)
-		{
-			return type.Constraints;
-		}
-		
-		private object DoGetGenericArguments(CsDelegate type)
-		{
-			return type.GenericArguments;
-		}
-		
-		private object DoGetNamespace(CsDelegate type)
-		{
-			return type.Namespace;
-		}
-		
 		private object DoGetParameters(CsDelegate type)
 		{
 			return type.Parameters;

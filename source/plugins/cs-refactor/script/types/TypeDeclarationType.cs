@@ -35,9 +35,9 @@ namespace CsRefactor.Script
 		{
 		}
 		
-		public static TypeDeclarationType Instance 
+		public static TypeDeclarationType Instance
 		{
-			get 
+			get
 			{
 				if (ms_instance == null)
 					ms_instance = new TypeDeclarationType();

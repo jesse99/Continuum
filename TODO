@@ -101,7 +101,6 @@ might want a sample app
 * Does time code refactor really need a finally block?
 * Don't do brace hiliting if insertion point is not within code.
 * Implement IDisposable added throw to a private method.
-* Expose CsType.FulleName to refactor.
 * Expose CsGlobalNamespace.Malformed to refactor. Or don't refactor if there are
    parse errors.
 * Add some tips to readme, e.g. open selection.

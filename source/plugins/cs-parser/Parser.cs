@@ -360,13 +360,13 @@ namespace CsParser
 				// class, struct, interface, enum, or delegate
 				else if (m_scanner.Token.IsIdentifier("class") || m_scanner.Token.IsIdentifier("struct") || m_scanner.Token.IsIdentifier("interface") || m_scanner.Token.IsIdentifier("enum") || m_scanner.Token.IsIdentifier("delegate"))
 				{
-					DoParseTypeDeclarationStub(first, attrs, modifiers, members, types, MemberModifiers.Private);
+					DoParseTypeDeclarationStub(first, attrs, modifiers, types, MemberModifiers.Private);
 				}
 				// partial  class, struct, interface, enum, or delegate
 				else if (m_scanner.Token.IsIdentifier("partial") && (m_scanner.LookAhead(1).IsIdentifier("class") || m_scanner.LookAhead(1).IsIdentifier("struct") || m_scanner.LookAhead(1).IsIdentifier("interface") || m_scanner.LookAhead(1).IsIdentifier("enum") || m_scanner.LookAhead(1).IsIdentifier("delegate")))
 				{
 					m_scanner.Advance();
-					DoParseTypeDeclarationStub(first, attrs, modifiers | MemberModifiers.Partial, members, types, MemberModifiers.Private);
+					DoParseTypeDeclarationStub(first, attrs, modifiers | MemberModifiers.Partial, types, MemberModifiers.Private);
 				}
 				// partial   return-type  member-name  type-parameter-list?    (
 				else if (m_scanner.Token.IsIdentifier("partial"))
@@ -521,7 +521,6 @@ namespace CsParser
 			var namespaces = new List<CsNamespace>();
 			var aliases = new List<CsUsingAlias>();
 			var uses = new List<CsUsingDirective>();
-			var members = new List<CsMember>();
 			var types = new List<CsType>();
 			
 			try
@@ -529,7 +528,7 @@ namespace CsParser
 				DoParseExternAliasDirectives(ref last, externs);
 				DoParseUsingDirectives(ref last, aliases, uses);
 				DoParseGlobalAttributes(ref last, attrs);
-				DoParseNamespaceMemberDeclarations(ref last, namespaces, members, types);
+				DoParseNamespaceMemberDeclarations(ref last, namespaces, types);
 				
 				if (m_scanner.Token.Kind != TokenKind.Invalid)
 					throw new CsParserException("Expected eof on line {0}, but found '{1}'", m_scanner.Token.Line, m_scanner.Token.Text());
@@ -548,7 +547,7 @@ namespace CsParser
 					throw;
 			}
 			
-			return new CsGlobalNamespace(m_scanner.Preprocess, new CsBody("<globals>", m_text.Length), attrs.ToArray(), externs.ToArray(), aliases.ToArray(), uses.ToArray(), namespaces.ToArray(), members.ToArray(), types.ToArray(), last.Offset + last.Length);
+			return new CsGlobalNamespace(m_scanner.Preprocess, new CsBody("<globals>", m_text.Length), attrs.ToArray(), externs.ToArray(), aliases.ToArray(), uses.ToArray(), namespaces.ToArray(), types.ToArray(), last.Offset + last.Length);
 		}
 			
 		// constant-declaration:
@@ -582,7 +581,7 @@ namespace CsParser
 		// 
 		// type-parameter-list:
 		//     <   type-parameters   >
-		private CsMember DoParseDelegateDeclaration(CsAttribute[] attrs, MemberModifiers modifiers, Token first, MemberModifiers defaultAccess)
+		private CsType DoParseDelegateDeclaration(CsAttribute[] attrs, MemberModifiers modifiers, Token first, MemberModifiers defaultAccess)
 		{
 			Token last = m_scanner.Token;
 			string rtype = DoParseReturnType();
@@ -649,7 +648,7 @@ namespace CsParser
 		// enum-body:
 		//    {   enum-member-declarations?   }
 		//    {   enum-member-declarations   ,   }
-		private CsMember DoParseEnumDeclaration(CsAttribute[] attrs, MemberModifiers modifiers, Token first, MemberModifiers defaultAccess)
+		private CsType DoParseEnumDeclaration(CsAttribute[] attrs, MemberModifiers modifiers, Token first, MemberModifiers defaultAccess)
 		{
 			Token last = first;
 			int nameOffset = m_scanner.Token.Offset;
@@ -1383,14 +1382,14 @@ namespace CsParser
 		
 		// namespace-body:
 		//     {   extern-alias-directives?   using-directives?   namespace-member-declarations?   }
-		private void DoParseNamespaceBody(List<CsExternAlias> externs, List<CsUsingAlias> aliases, List<CsUsingDirective> uses, List<CsNamespace> namespaces, List<CsMember> members, List<CsType> types, ref Token first, ref Token last)
+		private void DoParseNamespaceBody(List<CsExternAlias> externs, List<CsUsingAlias> aliases, List<CsUsingDirective> uses, List<CsNamespace> namespaces, List<CsType> types, ref Token first, ref Token last)
 		{
 			DoParsePunct("{");
 			first = m_scanner.Token;
 			
 			DoParseExternAliasDirectives(ref last, externs);
 			DoParseUsingDirectives(ref last, aliases, uses);
-			DoParseNamespaceMemberDeclarations(ref last, namespaces, members, types);
+			DoParseNamespaceMemberDeclarations(ref last, namespaces, types);
 
 			if (!m_try || m_scanner.Token.IsPunct("}"))
 				last = DoParsePunct("}");
@@ -1411,11 +1410,10 @@ namespace CsParser
 			var aliases = new List<CsUsingAlias>();
 			var uses = new List<CsUsingDirective>();
 			var childNamespaces = new List<CsNamespace>();
-			var members = new List<CsMember>();
 			var types = new List<CsType>();
 			Token open = m_scanner.Token;
 			Token start = m_scanner.Token;
-			DoParseNamespaceBody(externs, aliases, uses, childNamespaces, members, types, ref open, ref last);
+			DoParseNamespaceBody(externs, aliases, uses, childNamespaces, types, ref open, ref last);
 			Token close = last;
 			
 			if (m_scanner.Token.IsPunct(";"))
@@ -1425,7 +1423,7 @@ namespace CsParser
 			}
 			
 			CsBody body = new CsBody(name, start.Offset, open.Offset, close.Offset + close.Length - start.Offset, start.Line);
-			namespaces.Add(new CsNamespace(body, name, externs.ToArray(), aliases.ToArray(), uses.ToArray(), childNamespaces.ToArray(), members.ToArray(), types.ToArray(), first.Offset, last.Offset + last.Length - first.Offset, first.Line));
+			namespaces.Add(new CsNamespace(body, name, externs.ToArray(), aliases.ToArray(), uses.ToArray(), childNamespaces.ToArray(), types.ToArray(), first.Offset, last.Offset + last.Length - first.Offset, first.Line));
 		}
 		
 		// namespace-member-declarations:
@@ -1435,7 +1433,7 @@ namespace CsParser
 		// namespace-member-declaration:
 		//    namespace-declaration
 		//    type-declaration
-		private void DoParseNamespaceMemberDeclarations(ref Token last,  List<CsNamespace> namespaces, List<CsMember> members, List<CsType> types)
+		private void DoParseNamespaceMemberDeclarations(ref Token last,  List<CsNamespace> namespaces, List<CsType> types)
 		{
 			while (m_scanner.Token.IsValid() && !m_scanner.Token.IsPunct("}"))
 			{
@@ -1445,7 +1443,7 @@ namespace CsParser
 				}
 				else
 				{
-					DoParseTypeDeclaration(members, types, MemberModifiers.Internal);
+					DoParseTypeDeclaration(types, MemberModifiers.Internal);
 				}
 			}
 		}
@@ -1773,29 +1771,29 @@ namespace CsParser
 		//      interface-declaration		partial?   interface
 		//      enum-declaration			enum
 		//      delegate-declaration		delegate
-		private void DoParseTypeDeclaration(List<CsMember> members, List<CsType> types, MemberModifiers defaultAccess)
+		private void DoParseTypeDeclaration(List<CsType> types, MemberModifiers defaultAccess)
 		{
 			// All members and types start with optional attributes and modifiers.
 			Token first = m_scanner.Token;
 			CsAttribute[] attrs = DoParseAttributes();
 			MemberModifiers modifiers = DoParseModifiers();
 			
-			DoParseTypeDeclarationStub(first, attrs, modifiers, members, types, defaultAccess);
+			DoParseTypeDeclarationStub(first, attrs, modifiers, types, defaultAccess);
 		}
 		
-		private void DoParseTypeDeclarationStub(Token first, CsAttribute[] attrs, MemberModifiers modifiers, List<CsMember> members, List<CsType> types, MemberModifiers defaultAccess)
+		private void DoParseTypeDeclarationStub(Token first, CsAttribute[] attrs, MemberModifiers modifiers, List<CsType> types, MemberModifiers defaultAccess)
 		{
 			if (m_scanner.Token.IsIdentifier("enum"))
 			{
 				m_scanner.Advance();
-				CsMember member = DoParseEnumDeclaration(attrs, modifiers, first, defaultAccess);
-				members.Add(member);
+				CsType type = DoParseEnumDeclaration(attrs, modifiers, first, defaultAccess);
+				types.Add(type);
 			}
 			else if (m_scanner.Token.IsIdentifier("delegate"))
 			{
 				m_scanner.Advance();
-				CsMember member = DoParseDelegateDeclaration(attrs, modifiers, first, defaultAccess);
-				members.Add(member);
+				CsType type = DoParseDelegateDeclaration(attrs, modifiers, first, defaultAccess);
+				types.Add(type);
 			}
 			else if (m_scanner.Token.IsIdentifier("interface") || (m_scanner.Token.IsIdentifier("partial") && m_scanner.LookAhead(1).IsIdentifier("interface")))
 			{

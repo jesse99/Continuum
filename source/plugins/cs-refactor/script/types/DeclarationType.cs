@@ -35,27 +35,27 @@ namespace CsRefactor.Script
 		{
 		}
 		
-		public static DeclarationType Instance 
+		public static DeclarationType Instance
 		{
-			get 
+			get
 			{
 				if (ms_instance == null)
 					ms_instance = new DeclarationType();
-					
+				
 				return ms_instance;
 			}
 		}
-
+		
 		public override RefactorType Base
 		{
 			get {return ObjectType.Instance;}
 		}
-				
+		
 		public override string Name
 		{
 			get {return "CsDeclaration";}
 		}
-
+		
 		public override Type ManagedType
 		{
 			get {return typeof(CsDeclaration);}
@@ -66,5 +66,5 @@ namespace CsRefactor.Script
 		}
 		
 		private static DeclarationType ms_instance;
-	} 
+	}
 }

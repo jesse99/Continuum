@@ -35,7 +35,7 @@ namespace CsRefactor.Script
 		{
 		}
 		
-		public static EnumType Instance 
+		public static EnumType Instance
 		{
 			get
 			{
@@ -48,7 +48,7 @@ namespace CsRefactor.Script
 		
 		public override RefactorType Base
 		{
-			get {return MemberType.Instance;}
+			get {return TypeDeclarationType.Instance;}
 		}
 		
 		public override string Name
@@ -64,18 +64,12 @@ namespace CsRefactor.Script
 		protected override void RegisterMethods(RefactorType type)
 		{
 			type.Register<CsEnum>("get_BaseType", this.DoGetBaseType);
-			type.Register<CsEnum>("get_Namespace", this.DoGetNamespace);
 		}
 		
 		#region Private Methods
 		private object DoGetBaseType(CsEnum type)
 		{
 			return type.BaseType;
-		}
-		
-		private object DoGetNamespace(CsEnum type)
-		{
-			return type.Namespace;
 		}
 		#endregion
 		
