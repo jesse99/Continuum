@@ -26,17 +26,18 @@ using System.Diagnostics;
 
 namespace AutoComplete
 {
-	internal sealed class Target
+	// Resolves a simple expression into a type. The expression can be things like
+	// "this", a type name, a local variable, an argument, a field, etc.
+	internal sealed class ResolveTarget
 	{
-		public Target(ITargetDatabase database, ICsLocalsParser locals)
+		public ResolveTarget(ITargetDatabase database, ICsLocalsParser locals)
 		{
 			m_database = database;
 			m_locals = locals;
 		}
 		
-		// Given the name of a type, local, argument, or field return true if we 
-		// can find its type.
-		public bool FindType(string text, string target, int offset, CsGlobalNamespace globals)
+		// May return null.
+		public ResolvedTarget Resolve(string text, string target, int offset, CsGlobalNamespace globals)
 		{
 			m_fullName = null;
 			m_hash = null;
@@ -54,21 +55,21 @@ namespace AutoComplete
 				DoHandleValue(globals, member, target, offset);
 //	Console.WriteLine("1hash: {0}, type: {1}", m_hash, m_type);
 			}
-						
+			
 			// MyType. (where MyType is a type in globals)
 			if (m_hash == null && m_type == null)
 			{
 				DoHandleLocalType(globals, target);
 //	Console.WriteLine("2hash: {0}, type: {1}", m_hash, m_type);
 			}
-						
+			
 			// IDisposable. (where type name is present in the database)
 			if (m_hash == null && m_type == null)
 			{
 				DoHandleType(globals, target);
 //	Console.WriteLine("3hash: {0}, type: {1}", m_hash, m_type);
 			}
-						
+			
 			// name. (where name is a local, argument, or field)
 			if (m_hash == null && m_type == null)
 			{
@@ -76,32 +77,9 @@ namespace AutoComplete
 //	Console.WriteLine("4hash: {0}, type: {1}", m_hash, m_type);
 			}
 			
-			return m_hash != null || m_type != null;
-		}
-		
-		// Set if the target type is declared within globals.
-		public CsType Type
-		{
-			get {return m_type;}
-		}
-		
-		// May be null.
-		public string Hash
-		{
-			get {return m_hash;}
-		}
-		
-		// Valid if Type or Hash is non-null.
-		public string FullTypeName
-		{
-			get {return m_fullName;}
-		}
-		
-		// True if the target is an instance of the type. False if the target
-		// is a type.
-		public bool IsInstanceCall
-		{
-			get {return m_instanceCall;}
+			return m_hash != null || m_type != null
+				? new ResolvedTarget(m_fullName, m_type, m_hash, m_instanceCall)
+				: null;
 		}
 		
 		#region Private Methods

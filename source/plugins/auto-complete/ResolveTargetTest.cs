@@ -28,7 +28,7 @@ using System.Collections.Generic;
 namespace AutoComplete
 {
 	[TestFixture]
-	public sealed class TargetTest
+	public sealed class ResolveTargetTest
 	{	
 		[TestFixtureSetUp]
 		public void Init()
@@ -42,12 +42,13 @@ Console.WriteLine("------------------------------------");
 Console.WriteLine(text);
 
 			var locals = new CsParser.LocalsParser();
-			m_target = new Target(database, locals);
+			var resolver = new ResolveTarget(database, locals);
 			
 			var parser = new CsParser.Parser();
 			CsGlobalNamespace globals = parser.Parse(text);
 			
-			return m_target.FindType(text, target, offset, globals);
+			m_target = resolver.Resolve(text, target, offset, globals);
+			return m_target != null;
 		}
 		
 		private bool DoGetType(string text, string target, int offset)
@@ -78,7 +79,7 @@ internal sealed class MyClass
 ";
 			bool found = DoGetType(text, "this", text.IndexOf("."));
 			Assert.IsTrue(found);
-			Assert.AreEqual("MyClass", m_target.FullTypeName);
+			Assert.AreEqual("MyClass", m_target.FullName);
 			Assert.AreEqual("MyClass", m_target.Type.Name);
 		}
 		
@@ -107,7 +108,7 @@ namespace CoolLib
 ";
 			bool found = DoGetType(text, "this", text.IndexOf("."));
 			Assert.IsTrue(found);
-			Assert.AreEqual("CoolLib.MyClass", m_target.FullTypeName);
+			Assert.AreEqual("CoolLib.MyClass", m_target.FullName);
 			Assert.AreEqual("MyClass", m_target.Type.Name);
 		}
 		
@@ -144,7 +145,7 @@ namespace CoolLib
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int32", m_target.FullTypeName);
+			Assert.AreEqual("System.Int32", m_target.FullName);
 			Assert.IsNull(m_target.Type);
 		}
 		
@@ -181,7 +182,7 @@ namespace CoolLib
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int32", m_target.FullTypeName);
+			Assert.AreEqual("System.Int32", m_target.FullName);
 			Assert.IsNull(m_target.Type);
 		}
 		
@@ -210,12 +211,12 @@ namespace CoolLib
 ";
 			bool found = DoGetType(text, "MyClass", text.IndexOf("."));
 			Assert.IsTrue(found);
-			Assert.AreEqual("CoolLib.MyClass", m_target.FullTypeName);
+			Assert.AreEqual("CoolLib.MyClass", m_target.FullName);
 			Assert.AreEqual("MyClass", m_target.Type.Name);
 			
 			found = DoGetType(text, "Helper", text.LastIndexOf("."));
 			Assert.IsTrue(found);
-			Assert.AreEqual("CoolLib.Helper", m_target.FullTypeName);
+			Assert.AreEqual("CoolLib.Helper", m_target.FullName);
 			Assert.AreEqual("Helper", m_target.Type.Name);
 		}
 		
@@ -247,7 +248,7 @@ namespace CoolLib
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int32", m_target.FullTypeName);
+			Assert.AreEqual("System.Int32", m_target.FullName);
 			Assert.IsNull(m_target.Type);
 			
 			// Int32
@@ -260,7 +261,7 @@ namespace CoolLib
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int32", m_target.FullTypeName);
+			Assert.AreEqual("System.Int32", m_target.FullName);
 			Assert.IsNull(m_target.Type);
 			
 			// System.Int32
@@ -273,7 +274,7 @@ namespace CoolLib
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int32", m_target.FullTypeName);
+			Assert.AreEqual("System.Int32", m_target.FullName);
 			Assert.IsNull(m_target.Type);
 			
 			// StringBuilder
@@ -286,7 +287,7 @@ namespace CoolLib
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Text.StringBuilder", m_target.FullTypeName);
+			Assert.AreEqual("System.Text.StringBuilder", m_target.FullName);
 			Assert.IsNull(m_target.Type);
 			
 			// System.Text.StringBuilder
@@ -299,7 +300,7 @@ namespace CoolLib
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Text.StringBuilder", m_target.FullTypeName);
+			Assert.AreEqual("System.Text.StringBuilder", m_target.FullName);
 			Assert.IsNull(m_target.Type);
 		}
 		
@@ -341,7 +342,7 @@ namespace CoolLib
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Text.StringBuilder", m_target.FullTypeName);
+			Assert.AreEqual("System.Text.StringBuilder", m_target.FullName);
 			Assert.IsNull(m_target.Type);
 		}
 		
@@ -371,7 +372,7 @@ namespace CoolLib
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int32", m_target.FullTypeName);
+			Assert.AreEqual("System.Int32", m_target.FullName);
 			Assert.IsNull(m_target.Type);
 			
 			found = DoGetType(text, "beta", text.IndexOf("."), new MockTargetDatabase
@@ -383,7 +384,7 @@ namespace CoolLib
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Single", m_target.FullTypeName);
+			Assert.AreEqual("System.Single", m_target.FullName);
 			Assert.IsNull(m_target.Type);
 		}
 		
@@ -417,7 +418,7 @@ namespace CoolLib
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int64", m_target.FullTypeName);
+			Assert.AreEqual("System.Int64", m_target.FullName);
 			Assert.IsNull(m_target.Type);
 		}
 		
@@ -455,7 +456,7 @@ namespace CoolLib
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Single", m_target.FullTypeName);
+			Assert.AreEqual("System.Single", m_target.FullName);
 			Assert.IsNull(m_target.Type);
 			
 			found = DoGetType(text, "zeta", text.IndexOf("if"), new MockTargetDatabase
@@ -469,7 +470,7 @@ namespace CoolLib
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int64", m_target.FullTypeName);
+			Assert.AreEqual("System.Int64", m_target.FullName);
 			Assert.IsNull(m_target.Type);
 			
 			found = DoGetType(text, "beta", text.IndexOf("."), new MockTargetDatabase
@@ -483,7 +484,7 @@ namespace CoolLib
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int16", m_target.FullTypeName);
+			Assert.AreEqual("System.Int16", m_target.FullName);
 			Assert.IsNull(m_target.Type);
 			
 			found = DoGetType(text, "zeta", text.IndexOf("."), new MockTargetDatabase
@@ -497,7 +498,7 @@ namespace CoolLib
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int16", m_target.FullTypeName);
+			Assert.AreEqual("System.Int16", m_target.FullName);
 			Assert.IsNull(m_target.Type);
 		}
 		
@@ -530,7 +531,7 @@ namespace CoolLib
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int32", m_target.FullTypeName);
+			Assert.AreEqual("System.Int32", m_target.FullName);
 			Assert.IsNull(m_target.Type);
 			
 			found = DoGetType(text, "beta", text.IndexOf("."), new MockTargetDatabase
@@ -542,7 +543,7 @@ namespace CoolLib
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int64", m_target.FullTypeName);
+			Assert.AreEqual("System.Int64", m_target.FullName);
 			Assert.IsNull(m_target.Type);
 		}
 		
@@ -580,7 +581,7 @@ namespace CoolLib
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int64", m_target.FullTypeName);
+			Assert.AreEqual("System.Int64", m_target.FullName);
 			Assert.IsNull(m_target.Type);
 			
 			found = DoGetType(text, "beta", text.LastIndexOf("."), new MockTargetDatabase
@@ -598,12 +599,11 @@ namespace CoolLib
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int32", m_target.FullTypeName);
+			Assert.AreEqual("System.Int32", m_target.FullName);
 			Assert.IsNull(m_target.Type);
 		}
 		
-		private Target m_target;
+		private ResolvedTarget m_target;
 	}
-	// TODO: need to try base type for global, each using (and current) namespace
 }
 #endif	// TEST

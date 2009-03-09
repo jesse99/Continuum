@@ -28,26 +28,27 @@ using System.Text;
 
 namespace AutoComplete
 {
-	internal sealed class Members
+	// Resolves a target into a list of member names which may be used on it.
+	internal sealed class ResolveMembers
 	{
-		public Members(Database db)
+		public ResolveMembers(Database db)
 		{
 			m_database = db;
 		}
 		
-		public string[] Get(Target target)
+		public string[] Resolve(ResolvedTarget target)
 		{
 			var members = new List<string>();
 			
 			// Get the members for the target type. Note that we don't use the
 			// database if we have the parsed type because it is likely out of date.
-			string fullName = target.FullTypeName;
+			string fullName = target.FullName;
 			
 			if (target.Type != null)
 				DoGetParsedMembers(target, members);
 			
 			if (target.Hash != null && (target.Type == null || (target.Type.Modifiers & MemberModifiers.Partial) != 0))
-				DoGetDatabaseMembers(fullName, target.IsInstanceCall, members);
+				DoGetDatabaseMembers(fullName, target.IsInstance, members);
 			
 			// Get the members for the base types.			
 			while (target.Hash != null)
@@ -56,7 +57,7 @@ namespace AutoComplete
 				if (fullName == null)
 					break;
 				
-				DoGetDatabaseMembers(fullName, target.IsInstanceCall, members);
+				DoGetDatabaseMembers(fullName, target.IsInstance, members);
 			}
 			
 			return members.ToArray();
@@ -101,11 +102,11 @@ namespace AutoComplete
 				members.AddIfMissing(name);
 		}
 		
-		private void DoGetParsedMembers(Target target, List<string> members)
+		private void DoGetParsedMembers(ResolvedTarget target, List<string> members)
 		{
 			foreach (CsField field in target.Type.Fields)
 			{
-				if (target.IsInstanceCall == ((field.Modifiers & MemberModifiers.Static) == 0))
+				if (target.IsInstance == ((field.Modifiers & MemberModifiers.Static) == 0))
 					members.AddIfMissing(field.Name);
 			}
 			
@@ -113,7 +114,7 @@ namespace AutoComplete
 			{
 				if (!method.IsConstructor && !method.IsFinalizer)
 				{
-					if (target.IsInstanceCall == ((method.Modifiers & MemberModifiers.Static) == 0))
+					if (target.IsInstance == ((method.Modifiers & MemberModifiers.Static) == 0))
 						members.AddIfMissing(method.Name + "(" + string.Join(", ", (from p in method.Parameters select p.Type + " " + p.Name).ToArray()) + ")");
 				}
 			}
@@ -123,7 +124,7 @@ namespace AutoComplete
 			{
 				if (prop.HasGetter)
 				{
-					if (target.IsInstanceCall == ((prop.Modifiers & MemberModifiers.Static) == 0))
+					if (target.IsInstance == ((prop.Modifiers & MemberModifiers.Static) == 0))
 						members.AddIfMissing(prop.Name);
 				}
 			}

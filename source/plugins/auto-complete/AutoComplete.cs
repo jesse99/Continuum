@@ -75,8 +75,8 @@ namespace AutoComplete
 					string path = System.IO.Path.Combine(Paths.SupportPath, name + ".db");
 					m_database = new Database(path);
 					
-					m_target = new Target(new TargetDatabase(m_database), m_locals);
-					m_members = new Members(m_database);
+					m_target = new ResolveTarget(new TargetDatabase(m_database), m_locals);
+					m_members = new ResolveMembers(m_database);
 				}
 			}
 		}
@@ -96,19 +96,22 @@ namespace AutoComplete
 					{
 						if (chars[0] == '.')
 						{
-							string target = DoGetTarget(range.location);
-							if (target != null)
+							string expr = DoGetTargetExpr(range.location);
+							if (expr != null)
 							{
 								CsGlobalNamespace globals = m_cachedGlobals.Get();
-								
-								if (globals != null && m_target.FindType(m_text.Text, target, range.location, globals))
+								if (globals != null)
 								{
-									string[] methods = m_members.Get(m_target);
-									if (methods.Length > 0)
+									ResolvedTarget target = m_target.Resolve(m_text.Text, expr, range.location, globals);
+									if (target != null)
 									{
-										if (m_controller == null)	
-											m_controller = new CompletionsController();
-										m_controller.Show(view, m_target.FullTypeName, methods);
+										string[] methods = m_members.Resolve(target);
+										if (methods.Length > 0)
+										{
+											if (m_controller == null)	
+												m_controller = new CompletionsController();
+											m_controller.Show(view, target.FullName, methods);
+										}
 									}
 								}
 							}
@@ -121,7 +124,7 @@ namespace AutoComplete
 		}
 		
 		#region Private Methods
-		private string DoGetTarget(int offset)
+		private string DoGetTargetExpr(int offset)
 		{
 			string text = m_text.Text;
 			
@@ -185,8 +188,8 @@ namespace AutoComplete
 		private ICachedCsCatalog m_cachedCatalog;
 		private ICachedCsDeclarations m_cachedGlobals;
 		private ICsLocalsParser m_locals;
-		private Target m_target;
-		private Members m_members;
+		private ResolveTarget m_target;
+		private ResolveMembers m_members;
 		#endregion
 	}
 }
