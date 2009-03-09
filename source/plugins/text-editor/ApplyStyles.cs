@@ -205,37 +205,28 @@ namespace TextEditor
 			if (origin != m_origin)
 			{
 				m_origin = origin;
-				
-				m_workSet.Sort((lhs, rhs) =>			// note that the sort time appears to be insigificant compared to the setAttributes_range time
+			
+				Stopwatch watch = Stopwatch.StartNew();
+				m_workSet.Sort((lhs, rhs) =>							// note that the sort time appears to be insigificant compared to the setAttributes_range time
 				{
-					// In general we want the runs which are closest to the origin to appear at the end.
-					int ldist = Math.Min(Math.Abs(lhs.Offset - m_origin), Math.Abs(lhs.Offset + lhs.Length - m_origin));
-					int rdist = Math.Min(Math.Abs(rhs.Offset - m_origin), Math.Abs(rhs.Offset + rhs.Length - m_origin));
+					// We want to sort the runs so that those closest to the origin
+					// are processed first.
+					int lhsMidpoint = lhs.Offset + lhs.Length/2;
+					int rhsMidpoint = rhs.Offset + rhs.Length/2;
 					
-					return rdist.CompareTo(ldist);
-				});
-				
-				// However we also want interior runs to appear before the runs they are within so their
-				// styles overlay the styles of the runs they are within. It seems tricky to do this with
-				// one sort and not violate transitivity so we use two sorts (the second should be quite
-				// fast since the list should already be mostly sorted).
-				m_workSet.StableSort((lhs, rhs) =>
-				{
-					int result = 0;
-					
+					// Except for type and member which must be processed after the
+					// run they are within.
 					if (lhs.Type == StyleType.Type || lhs.Type == StyleType.Member)
-					{
-						if (rhs.Type != StyleType.Type && rhs.Type != StyleType.Member)
-							result = -1;
-					}
-					else if (rhs.Type == StyleType.Type || rhs.Type == StyleType.Member)
-					{
-						if (lhs.Type != StyleType.Type && lhs.Type != StyleType.Member)
-							result = +1;
-					}
+						lhsMidpoint += m_length;
+					if (rhs.Type == StyleType.Type || rhs.Type == StyleType.Member)
+						rhsMidpoint += m_length;
 					
-					return result;
+					int lhsDist = Math.Abs(lhsMidpoint - m_origin);
+					int rhsDist = Math.Abs(rhsMidpoint - m_origin);
+					
+					return rhsDist.CompareTo(lhsDist);
 				});
+				Log.WriteLine(TraceLevel.Verbose, "Styler", "    sort: {0:0.000} secs", watch.ElapsedMilliseconds/1000.0);
 			}
 		}
 		

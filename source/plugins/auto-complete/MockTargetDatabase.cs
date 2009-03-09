@@ -50,14 +50,14 @@ namespace AutoComplete
 			string type = null;
 			
 			if (Hashes != null)
-				FieldTypes.TryGetValue(fullName + "+" + name, out type);
+				BaseFieldTypes.TryGetValue(fullName + "+" + name, out type);
 			
 			return type;
 		}
 		
 		public Dictionary<string, string> Hashes {get; set;}
 				
-		public Dictionary<string, string> FieldTypes {get; set;}
+		public Dictionary<string, string> BaseFieldTypes {get; set;}
 	}
 }
 #endif

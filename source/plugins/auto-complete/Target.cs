@@ -46,27 +46,40 @@ namespace AutoComplete
 			// this.
 			CsMember member = DoFindMember(globals, offset);
 			DoHandleThis(member, target);
+//	Console.WriteLine("1hash: {0}, type: {1}", m_hash, m_type);
 			
 			// value. (special case for setters)
 			if (m_hash == null && m_type == null)
+			{
 				DoHandleValue(globals, member, target, offset);
-			
+//	Console.WriteLine("1hash: {0}, type: {1}", m_hash, m_type);
+			}
+						
 			// MyType. (where MyType is a type in globals)
 			if (m_hash == null && m_type == null)
+			{
 				DoHandleLocalType(globals, target);
-			
+//	Console.WriteLine("2hash: {0}, type: {1}", m_hash, m_type);
+			}
+						
 			// IDisposable. (where type name is present in the database)
 			if (m_hash == null && m_type == null)
+			{
 				DoHandleType(globals, target);
-			
+//	Console.WriteLine("3hash: {0}, type: {1}", m_hash, m_type);
+			}
+						
 			// name. (where name is a local, argument, or field)
 			if (m_hash == null && m_type == null)
+			{
 				DoHandleVariable(text, globals, member, target, offset);
+//	Console.WriteLine("4hash: {0}, type: {1}", m_hash, m_type);
+			}
 			
 			return m_hash != null || m_type != null;
 		}
 		
-		// May be null.
+		// Set if the target type is declared within globals.
 		public CsType Type
 		{
 			get {return m_type;}
@@ -287,6 +300,7 @@ Console.WriteLine("couldn't find a hash for {0} {1}", target, type);
 			
 			if (member != null)
 			{
+		Console.WriteLine("member: {0}", member.Name);
 				if (type == null)
 					type = DoFindLocalType(text, member, target, offset);
 				
@@ -407,7 +421,7 @@ Console.WriteLine("couldn't find a hash for {0} {1}", target, type);
 				if (field.Name == name)
 					type = field.Type;
 			}
-			
+						
 			if (type == null && member.DeclaringType.Bases.Names.Length > 0)
 			{
 				string baseType = member.DeclaringType.Bases.Names[0];

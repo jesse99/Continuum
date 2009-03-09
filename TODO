@@ -12,26 +12,20 @@ mutating a local used in multiple lambdas (or for loop variable used with lambda
 
 might want a sample app
 
-* Aren't auto-properties in structs zero initialized?
-* Rework Apply:
-	- get some numbers for NSString to string, run compuation, and run apply
-	- use an AppliedRunsTable
-	- table is updated (using a thread) for edits
-	- table does a binary search of two tables (normal and type runs)
-	- probably want a unit test
-	- apply is one pass
-	- apply can special case default runs when doing a full apply
-	- use a thread to figure out which runs need to be applied
 * Work on target completion:
 	- work on target unit test
+	- not getting auto props from CsMember target
+	- shoud be able to find any type declared locally
+	- use ResolveType
 	- get target working with properties
 	- not getting enum values
 	- arg name should not say Foo`1<T>, see Array.Sort
 	- get target working with array indexing, eg data[foo]
-	- get var working with new expressions
+	- get var working with new expressions, might want a separate var test
 	- get var working with select expressions
 	- get var working with *.Get<foo>() expressions
 	- add extension methods to names
+	- add some logs
 	- get arg completion working
 	- complete new SomeType calls
 		` special case array types
@@ -95,12 +89,21 @@ might want a sample app
 * Short form should have a separate section for operators (see DateTime).
 * Short form should show extension methods:
 	- maybe could use a comment like // System.Linq Extension Methods
+* Does time code refactor really need a finally block?
 * Don't do brace hiliting if insertion point is not within code.
 * Implement IDisposable added throw to a private method.
 * Expose CsType.FulleName to refactor.
 * Expose CsGlobalNamespace.Malformed to refactor. Or don't refactor if there are
    parse errors.
 * Add some tips to readme, e.g. open selection.
+* Rework Apply:
+	- use an AppliedRunsTable
+	- table is updated (using a thread) for edits
+	- table does a binary search of two tables (normal and type runs)
+	- probably want a unit test
+	- apply is one pass
+	- apply can special case default runs when doing a full apply
+	- use a thread to figure out which runs need to be applied
 * Could probably speed up editing of large files if we got a pointer to the text from
   native code and operated on that with unsafe code.
 * Code that executes in response to an edit should be constant time. If not queue

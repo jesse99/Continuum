@@ -119,7 +119,7 @@ namespace CsParser
 					Token start = m_scanner.Token;
 					Token first = m_scanner.Token;
 					DoSkipBody("{", "}", ref first, ref last);
-					getterBody = new CsBody("get_" + name, start.Offset, first.Offset, last.Offset + last.Length - first.Offset, start.Line);
+					getterBody = new CsBody("get_" + name, start.Offset, first.Offset, last.Offset + last.Length - start.Offset, start.Line);
 				}
 			}
 			else if (m_scanner.Token.IsIdentifier("set"))
@@ -138,7 +138,7 @@ namespace CsParser
 					Token first = m_scanner.Token;
 					Token start = m_scanner.Token;
 					DoSkipBody("{", "}", ref first, ref last);
-					setterBody = new CsBody("set_" + name, start.Offset, first.Offset, last.Offset + last.Length - first.Offset, start.Line);
+					setterBody = new CsBody("set_" + name, start.Offset, first.Offset, last.Offset + last.Length - start.Offset, start.Line);
 				}
 			}
 			else

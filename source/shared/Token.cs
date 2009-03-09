@@ -44,6 +44,7 @@ namespace Shared
 		{
 			Debug.Assert(offset >= 0, "offset is negative");
 			
+			m_text = string.Empty;
 			Offset = offset;
 			Length = 0;
 			Line = 0;
