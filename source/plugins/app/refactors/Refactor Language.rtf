@@ -148,6 +148,7 @@ Edit \cf4 AddMemberBefore\cf0 (text)		It's an error to call this with a member s
 Sequence<Attribute> \cf3 Attributes\cf0 			\
 Edit \cf4 ChangeAccess\cf0 (access)			Change "public", "private", etc to a different value.\
 TypeDeclaration \cf3 DeclaringType\cf0 		The type the member is declared within. Will be null for delegates and enums declared in a namespace.\
+String \cf3 FullName\cf0 								\
 Boolean \cf3 IsAbstract\cf0 				\
 Boolean \cf3 IsConst\cf0 					\
 Boolean \cf3 IsInternal\cf0 				\
@@ -295,6 +296,7 @@ String \cf3 Constraints\cf0 							E.g. "where KEY : new ()". May be null.\
 TypeDeclaration \cf3 DeclaringType\cf0 			The type this type is declared within. Will be null if the type is not a nested type.\
 Sequence<Event> \cf3 Events\cf0 					\
 Sequence<Field> \cf3 Fields\cf0 									\
+String \cf3 FullName\cf0 								\
 String \cf3 GenericArguments\cf0 				E.g. "KEY,VALUE" Will not have whitespace and will be null if the method is not generic.\
 String \cf3 GetFieldName\cf0 (name)				Gets a unique field name. May add a prefix or suffix.\
 String \cf3 GetUniqueName\cf0 (name)			Creates a member name that is unique within type (but possibly not its base classes).\

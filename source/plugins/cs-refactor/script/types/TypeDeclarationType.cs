@@ -72,6 +72,7 @@ namespace CsRefactor.Script
 			type.Register<CsType>("get_DeclaringType", this.DoGetDeclaringType);
 			type.Register<CsType>("get_Events", this.DoGetEvents);
 			type.Register<CsType>("get_Fields", this.DoGetFields);
+			type.Register<CsType>("get_FullName", this.DoGetFullName);
 			type.Register<CsType>("get_GenericArguments", this.DoGetGenericArguments);
 			type.Register<CsType>("get_Indexers", this.DoGetIndexers);
 			type.Register<CsType>("get_IsAbstract", this.DoGetIsAbstract);
@@ -138,47 +139,52 @@ namespace CsRefactor.Script
 		{
 			return type.Fields;
 		}
-
+		
+		private object DoGetFullName(CsType type)
+		{
+			return type.FullName;
+		}
+		
 		private object DoGetGenericArguments(CsType type)
 		{
 			return type.GenericArguments;
 		}
-
+		
 		private object DoGetIndexers(CsType type)
 		{
 			return type.Indexers;
 		}
-
+		
 		private object DoGetIsPublic(CsType type)
 		{
 			return (type.Modifiers & MemberModifiers.Public) == MemberModifiers.Public;
 		}
-
+		
 		private object DoGetIsProtected(CsType type)
 		{
 			return (type.Modifiers & MemberModifiers.Protected) == MemberModifiers.Protected;
 		}
-
+		
 		private object DoGetIsInternal(CsType type)
 		{
 			return (type.Modifiers & MemberModifiers.Internal) == MemberModifiers.Internal;
 		}
-
+		
 		private object DoGetIsPrivate(CsType type)
 		{
 			return (type.Modifiers & MemberModifiers.Private) == MemberModifiers.Private;
 		}
-
+		
 		private object DoGetIsStatic(CsType type)
 		{
 			return (type.Modifiers & MemberModifiers.Static) == MemberModifiers.Static;
 		}
-
+		
 		private object DoGetIsAbstract(CsType type)
 		{
 			return (type.Modifiers & MemberModifiers.Abstract) == MemberModifiers.Abstract;
 		}
-
+		
 		private object DoGetIsSealed(CsType type)
 		{
 			if (type is CsStruct)
@@ -186,37 +192,37 @@ namespace CsRefactor.Script
 			else
 				return (type.Modifiers & MemberModifiers.Sealed) == MemberModifiers.Sealed;
 		}
-
+		
 		private object DoGetIsPartial(CsType type)
 		{
 			return (type.Modifiers & MemberModifiers.Partial) == MemberModifiers.Partial;
 		}
-
+		
 		private object DoGetMembers(CsType type)
 		{
 			return type.Members;
 		}
-
+		
 		private object DoGetMethods(CsType type)
 		{
 			return type.Methods;
 		}
-
+		
 		private object DoGetModifiers(CsType type)
 		{
 			return type.Modifiers.ToString().ToLower();
 		}
-
+		
 		private object DoGetName(CsType type)
 		{
 			return type.Name;
 		}
-
+		
 		private object DoGetOperators(CsType type)
 		{
 			return type.Operators;
 		}
-
+		
 		private object DoGetProperties(CsType type)
 		{
 			return type.Properties;
