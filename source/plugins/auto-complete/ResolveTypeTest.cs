@@ -212,6 +212,112 @@ namespace CoolLib
 			Assert.IsNull(m_target.Type);
 		}
 		
+		[Test]
+		public void Array()
+		{
+			string text = @"
+using System;
+
+namespace CoolLib
+{
+	internal sealed class MyClass
+	{
+		public void Work()
+		{
+		}
+	}
+}
+";
+			bool found = DoGetType(text, "int[]", new MockTargetDatabase
+			{
+				Hashes = new Dictionary<string, string>
+				{
+					{"System.Array", "00-01"},
+				}
+			});
+			Assert.IsTrue(found);
+			Assert.AreEqual("System.Array", m_target.FullName);
+			Assert.IsNull(m_target.Type);
+		}
+		
+		[Test]
+		public void NestedType()
+		{
+			string text = @"
+namespace CoolLib
+{
+	internal sealed class MyClass
+	{
+		public void Work()
+		{
+		}
+
+		private sealed class Helper
+		{
+			public void Process()
+			{
+			}
+		}
+	}
+}
+";
+			bool found = DoGetType(text, "MyClass");
+			Assert.IsTrue(found);
+			Assert.AreEqual("CoolLib.MyClass", m_target.FullName);
+			Assert.AreEqual("MyClass", m_target.Type.Name);
+			
+			found = DoGetType(text, "Helper");
+			Assert.IsTrue(found);
+			Assert.AreEqual("CoolLib.MyClass/Helper", m_target.FullName);
+			Assert.AreEqual("Helper", m_target.Type.Name);
+		}
+		
+		[Test]
+		public void GlobalNamespace()
+		{
+			string text = @"
+using System;
+
+internal enum Colors
+{
+	Red,
+	Green,
+	Blue,
+}
+
+namespace CoolLib
+{
+	internal sealed class MyClass
+	{
+		public void Work()
+		{
+		}
+	}
+}
+";
+			bool found = DoGetType(text, "Colors", new MockTargetDatabase
+			{
+				Hashes = new Dictionary<string, string>
+				{
+					{"Patterns", "00-01"},
+				}
+			});
+			Assert.IsTrue(found);
+			Assert.AreEqual("Colors", m_target.FullName);
+			Assert.AreEqual("Colors", m_target.Type.Name);
+			
+			found = DoGetType(text, "Patterns", new MockTargetDatabase
+			{
+				Hashes = new Dictionary<string, string>
+				{
+					{"Patterns", "00-01"},
+				}
+			});
+			Assert.IsTrue(found);
+			Assert.AreEqual("Patterns", m_target.FullName);
+			Assert.AreEqual("Patterns", m_target.Type.Name);
+		}
+		
 		private ResolvedTarget m_target;
 	}
 }

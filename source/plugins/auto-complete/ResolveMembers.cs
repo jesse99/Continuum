@@ -63,7 +63,7 @@ namespace AutoComplete
 			return members.ToArray();
 		}
 		
-		#region Private Methods
+		#region Private Methods		
 		private void DoGetDatabaseMembers(string fullName, bool instanceCall, List<string> members)
 		{
 			DoGetDatabaseMethods(fullName, instanceCall, members);
@@ -103,6 +103,13 @@ namespace AutoComplete
 		}
 		
 		private void DoGetParsedMembers(ResolvedTarget target, List<string> members)
+		{
+			DoGetParsedTypeMembers(target, members);
+				
+			// TODO: enum
+		}
+		
+		private void DoGetParsedTypeMembers(ResolvedTarget target, List<string> members)
 		{
 			foreach (CsField field in target.Type.Fields)
 			{

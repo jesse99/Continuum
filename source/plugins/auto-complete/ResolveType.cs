@@ -41,6 +41,8 @@ namespace AutoComplete
 			m_hash = null;
 			m_type = null;
 			
+			type = DoGetTypeName(type);
+			
 			if (m_hash == null && m_type == null)
 				DoHandleLocalType(globals, type);
 			
@@ -63,10 +65,11 @@ namespace AutoComplete
 		
 		public ResolvedTarget Resolve(string fullName, bool isInstance)
 		{
-			m_hash = m_database.FindAssembly(fullName);
+			m_fullName = DoGetTypeName(fullName);
+			m_hash = m_database.FindAssembly(m_fullName);
 			
 			return m_hash != null
-				? new ResolvedTarget(fullName, null, m_hash, isInstance)
+				? new ResolvedTarget(m_fullName, null, m_hash, isInstance)
 				: null;
 		}
 		
@@ -165,20 +168,34 @@ Console.WriteLine("global type: {0}", m_fullName);
 		
 		private CsType DoFindLocalType(CsNamespace outer, string target)
 		{
-			foreach (CsType candidate in outer.Types)
-			{
-				if (candidate.Name == target || candidate.FullName == target)
-					return candidate;
-			}
+			CsType result = DoFindType(outer, target);
 			
-			foreach (CsNamespace inner in outer.Namespaces)
-			{
-				CsType type = DoFindLocalType(inner, target);
-				if (type != null)
-					return type;
-			}
+			for (int i = 0; i < outer.Namespaces.Length && result == null; ++i)
+				result = DoFindLocalType(outer.Namespaces[i], target);
 			
-			return null;
+			return result;
+		}
+		
+		private CsType DoFindType(CsTypeScope scope, string target)
+		{
+			CsType result = null;
+			
+			CsType candidate = scope as CsType;
+			if (candidate != null && (candidate.Name == target || candidate.FullName == target))
+				result = candidate;
+			
+			for (int i = 0; i < scope.Types.Length && result == null; ++i)
+				result = DoFindType(scope.Types[i], target);
+			
+			for (int i = 0; i < scope.Enums.Length && result == null; ++i)
+				if (scope.Enums[i].Name == target || scope.Enums[i].FullName == target)
+					result = candidate;
+			
+			for (int i = 0; i < scope.Delegates.Length && result == null; ++i)
+				if (scope.Delegates[i].Name == target || scope.Delegates[i].FullName == target)
+					result = candidate;
+							
+			return result;
 		}
 		
 		// TODO: duplicate of FindInDatabase.DoGetRealName

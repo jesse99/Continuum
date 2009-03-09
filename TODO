@@ -12,12 +12,14 @@ mutating a local used in multiple lambdas (or for loop variable used with lambda
 
 might want a sample app
 
-* Styles aren't getting applied reliably.
+* Styles aren't getting applied reliably. Mostly member and type names.
 * Work on target completion:
 	- add some more resolve type tests:
-		` nested types
+		` delegate type
+		` enum type
 		` different namespaces
 		` global namespace
+		` same namespace
 		` using directives
 	- resolve field should check more than the immediate base class
 	- not getting auto props from CsMember target

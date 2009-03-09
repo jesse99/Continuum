@@ -23,6 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 
 namespace Shared
 {
@@ -155,9 +156,24 @@ namespace Shared
 		
 		// Will be something like "where KEY : new(), where KEY : class". May be null.
 		public string Constraints {get; private set;}
-
+		
 		// Will be null if the enum was not declared at a namespace scope.
 		public CsNamespace Namespace {get; internal set;}
+		
+		public override string FullName
+		{
+			get
+			{
+				if (DeclaringType != null)
+					return DeclaringType.FullName + "/" + Name;
+				
+				else if (Namespace != null && Namespace.Name != "<globals>")
+					return Namespace.Name + "." + Name;
+				
+				else
+					return Name;
+			}
+		}
 	}
 	
 	// public enum Greek {alpha, beta, gamma}
@@ -172,9 +188,24 @@ namespace Shared
 		
 		// Will be an integral type name, e.g. "int".
 		public string BaseType {get; private set;}
-
+		
 		// Will be null if the enum was not declared at a namespace scope.
 		public CsNamespace Namespace {get; internal set;}
+		
+		public override string FullName
+		{
+			get
+			{
+				if (DeclaringType != null)
+					return DeclaringType.FullName + "/" + Name;
+				
+				else if (Namespace != null && Namespace.Name != "<globals>")
+					return Namespace.Name + "." + Name;
+				
+				else
+					return Name;
+			}
+		}
 	}
 	
 	// event bool Signaled;
@@ -190,6 +221,17 @@ namespace Shared
 		// Will be something like "int" or "Dictionary<KEY,VALUE>". Note that the type will 
 		// not have any whitespace.
 		public string Type {get; private set;}
+		
+		public override string FullName
+		{
+			get
+			{
+				if (DeclaringType != null)
+					return DeclaringType.FullName + "/" + Name;				
+				else
+					return Name;
+			}
+		}
 	}
 	
 	// extern alias Foo;
@@ -228,6 +270,14 @@ namespace Shared
 		
 		// Will be something like "3.14" and may have white space. May be null, but will not be empty.
 		public string Value {get; private set;}
+		
+		public override string FullName
+		{
+			get
+			{
+				return Type + " " + DeclaringType.FullName + "::" + Name;
+			}
+		}
 	}
 	
 	public sealed class CsGlobalNamespace : CsNamespace
@@ -273,11 +323,11 @@ namespace Shared
 			GetterBody = getterBody;
 			SetterBody = setterBody;
 		}
-
+		
 		// Will be something like "int" or "Dictionary<KEY,VALUE>". Note that the type will 
 		// not have any whitespace.
 		public string ReturnType {get; private set;}
-
+		
 		public CsParameter[] Parameters {get; private set;}
 		
 		public bool HasGetter {get; private set;}
@@ -300,6 +350,23 @@ namespace Shared
 		public MemberModifiers GetterAccess {get; private set;}
 		
 		public MemberModifiers SetterAccess {get; private set;}
+		
+		public override string FullName
+		{
+			get
+			{
+				var builder = new StringBuilder();
+				
+				builder.Append(ReturnType);
+				builder.Append(' ');
+				builder.Append(DeclaringType.FullName);
+				builder.Append("::this[");
+				AppendParameters(builder, Parameters);
+				builder.Append(']');
+				
+				return builder.ToString();
+			}
+		}
 	}
 	
 	// public interface IFoo : IBar, IBaz {}
@@ -370,14 +437,29 @@ namespace Shared
 		
 		// Note that this will not return None.
 		public MemberModifiers Modifiers {get; private set;}
-
+		
 		public string Name {get; private set;}
 		
 		public int NameOffset {get; private set;}
 		
+		public abstract string FullName {get;}
+		
 		public override string ToString()
 		{
 			return Name;
+		}
+		
+		protected void AppendParameters(StringBuilder builder, CsParameter[] parms)
+		{
+			for (int i = 0; i < parms.Length; ++i)
+			{
+				builder.Append(parms[i].Type);
+				builder.Append(' ');
+				builder.Append(parms[i].Name);
+				
+				if (i + 1 < parms.Length)
+					builder.Append(", ");
+			}
 		}
 	}
 	
@@ -420,6 +502,25 @@ namespace Shared
 		
 		// May be null if the method is extern or declared within an interface.
 		public CsBody Body {get; private set;}
+		
+		public override string FullName
+		{
+			get
+			{
+				var builder = new StringBuilder();
+				
+				builder.Append(ReturnType);
+				builder.Append(' ');
+				builder.Append(DeclaringType.FullName);
+				builder.Append("::");
+				builder.Append(Name);
+				builder.Append('(');
+				AppendParameters(builder, Parameters);
+				builder.Append(')');
+				
+				return builder.ToString();
+			}
+		}
 	}
 	
 	// namespace CoolLib.Internals {}
@@ -479,7 +580,7 @@ namespace Shared
 			return Name;
 		}
 	}
-
+	
 	// public static bool operator!(Foo rhs) {return !m_value;}
 	public sealed class CsOperator : CsMember
 	{
@@ -505,12 +606,31 @@ namespace Shared
 		
 		// Returns true if the operator is an implicit conversion operator.
 		public bool IsImplicit {get; private set;}
-
+		
 		// Returns true if the operator is an explicit conversion operator.
 		public bool IsExplicit {get; private set;}
-
+		
 		// May be null.
 		public CsBody Body {get; private set;}
+		
+		public override string FullName
+		{
+			get
+			{
+				var builder = new StringBuilder();
+				
+				builder.Append(ReturnType);
+				builder.Append(' ');
+				builder.Append(DeclaringType.FullName);
+				builder.Append("::operator");
+				builder.Append(Name);
+				builder.Append('(');
+				AppendParameters(builder, Parameters);
+				builder.Append(')');
+				
+				return builder.ToString();
+			}
+		}
 	}
 	
 	[Serializable]
@@ -614,10 +734,10 @@ namespace Shared
 		
 		// Will be null if the indexer does not have a getter.
 		public CsBody GetterBody {get; private set;}
-
+		
 		// Will be null if the indexer does not have a setter.
 		public CsBody SetterBody {get; private set;}
-
+		
 		// Will be null if the property does not have a setter.
 		public CsAttribute[] SetterAttributes {get; private set;}
 		
@@ -625,16 +745,32 @@ namespace Shared
 		public MemberModifiers GetterAccess {get; private set;}
 		
 		public MemberModifiers SetterAccess {get; private set;}
-	} 
-
+		
+		public override string FullName
+		{
+			get
+			{
+				var builder = new StringBuilder();
+				
+				builder.Append(ReturnType);
+				builder.Append(' ');
+				builder.Append(DeclaringType.FullName);
+				builder.Append("::");
+				builder.Append(Name);
+				
+				return builder.ToString();
+			}
+		}
+	}
+	
 	// public struct Foo {}
 	public sealed class CsStruct : CsType
 	{
 		public CsStruct(int nameOffset, CsBody body, CsMember[] members, CsType[] types, CsBases bases, string constraints, string gargs, CsAttribute[] attrs, MemberModifiers modifiers, string name, int offset, int length, int line) : base(nameOffset, body, bases, members, types, attrs, modifiers, constraints, gargs, name, offset, length, line)
 		{
 		}
-	} 
-
+	}
+	
 	// Base class for CsInterface, CsClass, and CsStruct.
 	public abstract class CsType : CsTypeScope
 	{
@@ -703,7 +839,14 @@ namespace Shared
 		{
 			get
 			{
-				return Namespace != null && Namespace.Name != "<globals>" ? Namespace.Name + "." + Name : Name;
+				if (DeclaringType != null)
+					return DeclaringType.FullName + "/" + Name;
+				
+				else if (Namespace != null && Namespace.Name != "<globals>")
+					return Namespace.Name + "." + Name;
+				
+				else
+					return Name;
 			}
 		}
 		

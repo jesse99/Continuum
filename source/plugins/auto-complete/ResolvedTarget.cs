@@ -43,7 +43,7 @@ namespace AutoComplete
 		// Will always be set.
 		public string FullName {get; private set;}
 		
-		// Set if the type was found in globals.
+		// The type will be null, a CsType, CsEnum, or CsDelegate.
 		public CsType Type {get; private set;}
 		
 		// Set if the fullName was found in the database.
