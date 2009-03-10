@@ -59,6 +59,9 @@ if (result != null)
 			// name. (where name is a local, argument, or field)
 			if (result == null)
 				result = DoHandleVariable(text, globals, member, target, offset);
+
+			if (result == null)
+				result = DoHandleProperty(globals, member, target);
 			
 			return result;
 		}
@@ -128,6 +131,62 @@ if (result != null)
 				
 				if (result == null)
 					result = DoFindFieldType(globals, member, target);
+			}
+			
+			return result;
+		}
+		
+		private ResolvedTarget DoHandleProperty(CsGlobalNamespace globals, CsMember member, string target)
+		{
+			ResolvedTarget result = null;
+			
+			if (member != null && member.DeclaringType != null)
+			{
+				ResolvedTarget type = m_resolveType.Resolve(member.DeclaringType.FullName, globals, true);
+				if (type != null)
+					result = DoFindProperty(globals, type, target);
+				
+				if (result == null && member.DeclaringType.Bases.HasBaseClass)
+				{
+					foreach (string fullName in m_resolveType.GetBases(globals, member.DeclaringType.FullName))
+					{
+						type = m_resolveType.Resolve(fullName, globals, true);
+						if (type != null)
+						{
+							result = DoFindProperty(globals, type, target);
+							if (result != null)
+								break;
+						}
+					}
+				}
+			
+if (result != null)
+	Console.WriteLine("found property: {0}", result.FullName);
+			}
+			
+			return result;
+		}
+		
+		private ResolvedTarget DoFindProperty(CsGlobalNamespace globals, ResolvedTarget type, string target)
+		{
+			ResolvedTarget result = null;
+			
+			if (type.Type != null)
+			{
+				for (int i = 0; i < type.Type.Properties.Length && result == null; ++i)
+				{
+					CsProperty prop = type.Type.Properties[i];
+					if (prop.HasGetter && prop.Name == target)
+					{
+						result = m_resolveType.Resolve(prop.ReturnType, globals, true);
+					}
+				}
+			}
+			else if (type.Hash != null)
+			{
+				string fullName = m_database.FindMethodType(type.FullName, "get_" + target, 0);
+				if (fullName != null)
+					result = m_resolveType.Resolve(fullName, globals, true);
 			}
 			
 			return result;
@@ -243,34 +302,55 @@ if (result != null)
 		
 		private ResolvedTarget DoFindFieldType(CsGlobalNamespace globals, CsMember member, string name)
 		{
-			string type = null;
+			ResolvedTarget result = null;
 			
-			for (int i = 0; i < member.DeclaringType.Fields.Length && type == null; ++i)
+			if (member != null && member.DeclaringType != null)
 			{
-				CsField field = member.DeclaringType.Fields[i];
-				if (field.Name == name)
-					type = field.Type;
+				ResolvedTarget type = m_resolveType.Resolve(member.DeclaringType.FullName, globals, true);
+				if (type != null)
+					result = DoFindField(globals, type, name);
+				
+				if (result == null && member.DeclaringType.Bases.HasBaseClass)
+				{
+					foreach (string fullName in m_resolveType.GetBases(globals, member.DeclaringType.FullName))
+					{
+						type = m_resolveType.Resolve(fullName, globals, true);
+						if (type != null)
+						{
+							result = DoFindField(globals, type, name);
+							if (result != null)
+								break;
+						}
+					}
+				}
+			
+if (result != null)
+	Console.WriteLine("found field: {0}", result.FullName);
 			}
 			
-			if (type == null && member.DeclaringType.Bases.Names.Length > 0)
+			return result;
+		}
+		
+		private ResolvedTarget DoFindField(CsGlobalNamespace globals, ResolvedTarget type, string target)
+		{
+			ResolvedTarget result = null;
+		
+			if (type.Type != null)
 			{
-				string baseType = member.DeclaringType.Bases.Names[0];
-				if (baseType[0] != 'I' || baseType.Length == 1 || char.IsLower(baseType[1]))
+				for (int i = 0; i < type.Type.Fields.Length && result == null; ++i)
 				{
-					ResolvedTarget baseTarget = m_resolveType.Resolve(baseType, globals, false);
-					if (baseTarget != null)
+					CsField field = type.Type.Fields[i];
+					if (field.Name == target)
 					{
-						type = m_database.FindFieldType(baseTarget.FullName, name);
+						result = m_resolveType.Resolve(field.Type, globals, true);
 					}
 				}
 			}
-			
-			ResolvedTarget result = null;
-			if (type != null)
+			else if (type.Hash != null)
 			{
-				result = m_resolveType.Resolve(type, globals, true);
-if (result != null)
-	Console.WriteLine("found field: {0}", result.FullName);
+				string fullName = m_database.FindFieldType(type.FullName, target);
+				if (fullName != null)
+					result = m_resolveType.Resolve(fullName, globals, true);
 			}
 			
 			return result;

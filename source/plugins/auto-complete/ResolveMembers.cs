@@ -36,11 +36,28 @@ namespace AutoComplete
 			m_database = db;
 		}
 		
-		public string[] Resolve(ResolvedTarget target, CsUsingDirective[] uses)
+		public string[] Resolve(ResolvedTarget target, CsGlobalNamespace globals)
 		{
 			var members = new List<string>();
-			var namespaces = (from u in uses select u.Namespace).ToList();
 			
+			// Get members of the type.
+			string fullName = DoGetMembers(target, globals, members, true);
+			
+			// Get the members for the base types.			
+			var resolveType = new ResolveType(new TargetDatabase(m_database));
+			foreach (string name in resolveType.GetBases(globals, fullName))
+			{
+				ResolvedTarget b = resolveType.Resolve(name, globals, target.IsInstance);
+				if (b != null)
+					DoGetMembers(b, globals, members, false);
+			}
+			
+			return members.ToArray();
+		}
+		
+		#region Private Methods		
+		private string DoGetMembers(ResolvedTarget target, CsGlobalNamespace globals, List<string> members, bool includePrivates)
+		{
 			// Get the members for the target type. Note that we don't use the
 			// database if we have the parsed type because it is likely out of date.
 			string fullName = target.FullName;
@@ -49,8 +66,7 @@ namespace AutoComplete
 			CsType type = target.Type;
 			if (type != null)
 			{
-				namespaces.Add(type.Namespace.Name);
-				DoGetParsedMembers(target, members);
+				DoGetParsedMembers(target, members, includePrivates);
 				
 				if (type is CsEnum)
 				{
@@ -61,29 +77,18 @@ namespace AutoComplete
 			}
 			
 			if (hash != null && (type == null || (type.Modifiers & MemberModifiers.Partial) != 0))
-				DoGetDatabaseMembers(namespaces, fullName, target.IsInstance, members);
-			
-			// Get the members for the base types.			
-			while (true)
-			{
-				fullName = DoGetBaseType(fullName);
-				if (fullName == null)
-					break;
+				DoGetDatabaseMembers(fullName, target.IsInstance, members, includePrivates);
 				
-				DoGetDatabaseMembers(namespaces, fullName, target.IsInstance, members);
-			}
-			
-			return members.ToArray();
+			return fullName;
 		}
 		
-		#region Private Methods		
-		private void DoGetDatabaseMembers(List<string> namespaces, string fullName, bool instanceCall, List<string> members)
+		private void DoGetDatabaseMembers(string fullName, bool instanceCall, List<string> members, bool includePrivates)
 		{
-			DoGetDatabaseMethods(namespaces, fullName, instanceCall, members);
-			DoGetDatabaseFields(fullName, instanceCall, members);
+			DoGetDatabaseMethods(fullName, instanceCall, members, includePrivates);
+			DoGetDatabaseFields(fullName, instanceCall, members, includePrivates);
 		}
 		
-		private void DoGetDatabaseMethods(List<string> namespaces, string fullName, bool instanceCall, List<string> members)
+		private void DoGetDatabaseMethods(string fullName, bool instanceCall, List<string> members, bool includePrivates)
 		{
 			string sql = string.Format(@"
 				SELECT name, arg_types, arg_names, attributes
@@ -92,14 +97,14 @@ namespace AutoComplete
 			string[][] rows = m_database.QueryRows(sql);
 			
 			var methods = from r in rows
-				where DoIsValidMethod(r[0], ushort.Parse(r[3]), instanceCall)
-				select DoGetMethodName(namespaces, r[0], r[1], r[2]);
+				where DoIsValidMethod(r[0], ushort.Parse(r[3]), instanceCall, includePrivates)
+				select DoGetMethodName(r[0], r[1], r[2]);
 			
 			foreach (string name in methods)
 				members.AddIfMissing(name);
 		}
 		
-		private void DoGetDatabaseFields(string fullName, bool instanceCall, List<string> members)
+		private void DoGetDatabaseFields(string fullName, bool instanceCall, List<string> members, bool includePrivates)
 		{
 			string sql = string.Format(@"
 				SELECT name, attributes
@@ -108,14 +113,14 @@ namespace AutoComplete
 			string[][] rows = m_database.QueryRows(sql);
 			
 			var fields = from r in rows
-				where DoIsValidField(r[0], ushort.Parse(r[1]), instanceCall)
+				where DoIsValidField(r[0], ushort.Parse(r[1]), instanceCall, includePrivates)
 				select r[0];
 			
 			foreach (string name in fields)
 				members.AddIfMissing(name);
 		}
 		
-		private void DoGetParsedMembers(ResolvedTarget target, List<string> members)
+		private void DoGetParsedMembers(ResolvedTarget target, List<string> members, bool includePrivates)
 		{
 			CsEnum e = target.Type as CsEnum;
 			if (e != null)
@@ -124,15 +129,16 @@ namespace AutoComplete
 					members.AddRange(e.Names);
 			}
 			else
-				DoGetParsedTypeMembers(target, members);
+				DoGetParsedTypeMembers(target, members, includePrivates);
 		}
 		
-		private void DoGetParsedTypeMembers(ResolvedTarget target, List<string> members)
+		private void DoGetParsedTypeMembers(ResolvedTarget target, List<string> members, bool includePrivates)
 		{
 			foreach (CsField field in target.Type.Fields)
 			{
 				if (target.IsInstance == ((field.Modifiers & MemberModifiers.Static) == 0))
-					members.AddIfMissing(field.Name);
+					if (includePrivates || field.Access != MemberModifiers.Private)
+						members.AddIfMissing(field.Name);
 			}
 			
 			foreach (CsMethod method in target.Type.Methods)
@@ -140,7 +146,8 @@ namespace AutoComplete
 				if (!method.IsConstructor && !method.IsFinalizer)
 				{
 					if (target.IsInstance == ((method.Modifiers & MemberModifiers.Static) == 0))
-						members.AddIfMissing(method.Name + "(" + string.Join(", ", (from p in method.Parameters select p.Type + " " + p.Name).ToArray()) + ")");
+						if (includePrivates || method.Access != MemberModifiers.Private)
+							members.AddIfMissing(method.Name + "(" + string.Join(", ", (from p in method.Parameters select p.Type + " " + p.Name).ToArray()) + ")");
 				}
 			}
 			
@@ -150,26 +157,13 @@ namespace AutoComplete
 				if (prop.HasGetter)
 				{
 					if (target.IsInstance == ((prop.Modifiers & MemberModifiers.Static) == 0))
-						members.AddIfMissing(prop.Name);
+						if (includePrivates || prop.Access != MemberModifiers.Private)
+							members.AddIfMissing(prop.Name);
 				}
 			}
 		}
 		
-		private string DoGetBaseType(string fullName)
-		{
-			if (fullName == "System.Object")
-				return null;
-				
-			string sql = string.Format(@"
-				SELECT DISTINCT base_type
-					FROM Types
-				WHERE type = '{0}' OR type GLOB '{0}<*'", fullName);
-			string[][] rows = m_database.QueryRows(sql);
-			
-			return rows.Length > 0 ? rows[0][0] : null;
-		}
-		
-		private bool DoIsValidMethod(string name, ushort attributes, bool instanceCall)
+		private bool DoIsValidMethod(string name, ushort attributes, bool instanceCall, bool includePrivates)
 		{
 			bool valid;
 			
@@ -177,6 +171,9 @@ namespace AutoComplete
 				valid = (attributes & 0x0010) == 0;
 			else
 				valid = (attributes & 0x0010) != 0;
+			
+			if (valid && !includePrivates)
+				valid = (attributes & 0x0001) == 0;
 				
 			if (valid && name.Contains(".ctor"))
 				valid = false;
@@ -202,7 +199,7 @@ namespace AutoComplete
 			return valid;
 		}
 		
-		private bool DoIsValidField(string name, ushort attributes, bool instanceCall)
+		private bool DoIsValidField(string name, ushort attributes, bool instanceCall, bool includePrivates)
 		{
 			bool valid;
 			
@@ -211,10 +208,13 @@ namespace AutoComplete
 			else
 				valid = (attributes & 0x0010) != 0;
 			
+			if (valid && !includePrivates)
+				valid = (attributes & 0x0001) == 0;
+				
 			return valid;
 		}
 		
-		private string DoGetMethodName(List<string> namespaces, string mname, string argTypes, string argNames)
+		private string DoGetMethodName(string mname, string argTypes, string argNames)
 		{
 			var builder = new StringBuilder(mname.Length + argTypes.Length + argNames.Length);
 			
@@ -233,9 +233,14 @@ namespace AutoComplete
 				{
 					string type = types[i];
 					if (ms_aliases.ContainsKey(type))
+					{
 						type = ms_aliases[type];
+					}
 					else
-						type = DoTrimType(namespaces, type);
+					{
+						type = DoTrimNamespace(type);
+						type = DoTrimGeneric(type);
+					}
 					builder.Append(type);
 					
 					builder.Append(' ');
@@ -252,12 +257,31 @@ namespace AutoComplete
 			return builder.ToString();
 		}
 		
-		private string DoTrimType(List<string> namespaces, string type)
+		private string DoTrimNamespace(string type)
 		{
-			foreach (string ns in namespaces)
+			int i = type.LastIndexOf('.');
+			if (i >= 0)
+				type = type.Substring(i + 1);
+			
+			return type;
+		}
+		
+		private string DoTrimGeneric(string type)
+		{
+			while (true)
 			{
-				if (type.StartsWith(ns + ".") && type.IndexOf('.', ns.Length + 1) < 0)
-					return type.Substring(ns.Length + 1);
+				int i = type.IndexOf('`');
+				if (i < 0)
+					break;
+					
+				int count = 1;
+				while (i + count < type.Length && char.IsDigit(type[i + count]))
+					++count;
+					
+				if (count > 1)
+				{
+					type = type.Substring(0, i) + type.Substring(i + count);
+				}
 			}
 			
 			return type;

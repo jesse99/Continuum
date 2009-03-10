@@ -22,6 +22,7 @@
 using Gear;
 using Shared;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace AutoComplete
@@ -37,6 +38,8 @@ namespace AutoComplete
 		// May return null.
 		public ResolvedTarget Resolve(string type, CsGlobalNamespace globals, bool isInstance)
 		{
+			Trace.Assert(!string.IsNullOrEmpty(type), "type is null or empty");
+			
 			m_fullName = null;
 			m_hash = null;
 			m_type = null;
@@ -56,6 +59,8 @@ namespace AutoComplete
 		
 		public ResolvedTarget Resolve(CsType type, bool isInstance)
 		{
+			Trace.Assert(type != null, "type is null or empty");
+			
 			m_type = type;
 			m_fullName = DoGetTypeName(m_type.FullName);
 			m_hash = m_database.FindAssembly(m_fullName);
@@ -65,12 +70,50 @@ namespace AutoComplete
 		
 		public ResolvedTarget Resolve(string fullName, bool isInstance)
 		{
+			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
+
 			m_fullName = DoGetTypeName(fullName);
 			m_hash = m_database.FindAssembly(m_fullName);
 			
 			return m_hash != null
 				? new ResolvedTarget(m_fullName, null, m_hash, isInstance)
 				: null;
+		}
+		
+		public IEnumerable<string> GetBases(CsGlobalNamespace globals, string fullName)
+		{
+			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
+			
+			while (fullName != "System.Object")
+			{
+				ResolvedTarget target = Resolve(fullName, globals, true);
+				if (target == null)
+					break;
+					
+				if (target.Type != null)
+				{
+					if (target.Type.Bases.HasBaseClass)
+					{
+						target = Resolve(target.Type.Bases.Names[0], globals, true);
+						if (target == null)
+							break;
+							
+						fullName = target.FullName;
+					}
+					else
+						fullName = "System.Object";
+				}
+				else if (target.Type == null && target.Hash != null)
+				{
+					fullName = m_database.FindBaseType(fullName);
+					if (string.IsNullOrEmpty(fullName))
+						break;
+				}
+				else
+					break;
+				
+				yield return fullName;
+			}
 		}
 		
 		#region Private Methods
@@ -186,12 +229,13 @@ namespace AutoComplete
 			CsType result = null;
 			
 			CsType candidate = scope as CsType;
+		
 			if (candidate != null && (candidate.Name == target || candidate.FullName == target))
 				result = candidate;
 			
 			for (int i = 0; i < scope.Types.Length && result == null; ++i)
 				result = DoFindType(scope.Types[i], target);
-							
+			
 			return result;
 		}
 		

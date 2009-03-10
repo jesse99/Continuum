@@ -317,7 +317,7 @@ namespace CoolLib
 			Assert.AreEqual("Patterns", m_target.FullName);
 			Assert.IsNull(m_target.Type);
 		}
-
+		
 		[Test]
 		public void Delegates()
 		{
@@ -341,11 +341,12 @@ namespace CoolLib
 				Hashes = new Dictionary<string, string>
 				{
 					{"Patterns", "00-01"},
+					{"System.Delegate", "00-02"},
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("CoolLib.Callback", m_target.FullName);
-			Assert.AreEqual("Callback", m_target.Type.Name);
+			Assert.AreEqual("System.Delegate", m_target.FullName);
+			Assert.IsNull(m_target.Type);
 		}
 		
 		private ResolvedTarget m_target;

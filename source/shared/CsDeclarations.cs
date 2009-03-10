@@ -79,6 +79,11 @@ namespace Shared
 		// just after the last one, otherwise Offset will point to just before the opening
 		// brace and Length will be zero.
 		public string[] Names {get; private set;}
+		
+		public bool HasBaseClass
+		{
+			get {return Names.Length > 0 && !(Names[0].Length > 1 && Names[0][0] == 'I' && char.IsUpper(Names[0][1]));}
+		}
 	}
 	
 	// { void Foo(); }

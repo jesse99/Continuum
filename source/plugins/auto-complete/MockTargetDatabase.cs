@@ -41,7 +41,12 @@ namespace AutoComplete
 			
 			return hash;
 		}
-				
+		
+		public string FindMethodType(string fullName, string name, int numArgs)
+		{
+			return null;
+		}
+		
 		public string FindFieldType(string fullName, string name)
 		{
 			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
@@ -49,14 +54,28 @@ namespace AutoComplete
 			
 			string type = null;
 			
-			if (Hashes != null)
+			if (BaseFieldTypes != null)
 				BaseFieldTypes.TryGetValue(fullName + "+" + name, out type);
 			
 			return type;
 		}
 		
+		public string FindBaseType(string fullName)
+		{
+			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
+			
+			string type = null;
+			
+			if (BaseClasses != null)
+				BaseClasses.TryGetValue(fullName, out type);
+			
+			return type;
+		}
+		
 		public Dictionary<string, string> Hashes {get; set;}
-				
+		
+		public Dictionary<string, string> BaseClasses {get; set;}
+		
 		public Dictionary<string, string> BaseFieldTypes {get; set;}
 	}
 }

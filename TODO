@@ -14,20 +14,7 @@ might want a sample app
 
 * Styles aren't getting applied reliably. Mostly member and type names.
 * Work on target completion:
-	- make sure base members are included for delegates
-	- add some more resolve type tests:
-		` delegate type
-		` different namespaces
-		` global namespace
-		` same namespace
-		` using directives
-	- resolve field should check more than the immediate base class
-	- when checking for base type need to use global namespace, current namespace,
-	  and used namespaces
-	- shoud be able to find any type declared locally
-	- get target working with properties
-	- not getting enum values
-	- arg name should not say Foo`1<T>, see Array.Sort
+	- do a checkin
 	- get target working with array indexing, eg data[foo]
 	- get var working with new expressions, might want a separate var test
 	- get var working with select expressions
@@ -99,6 +86,7 @@ might want a sample app
 	- maybe could use a comment like // System.Linq Extension Methods
 * Does time code refactor really need a finally block?
 * Might want to expose CsEnum.Names to refactor.
+* Expose CsBases.HasBaseClass to refactor.
 * Don't do brace hiliting if insertion point is not within code.
 * Implement IDisposable added throw to a private method.
 * Expose CsGlobalNamespace.Malformed to refactor. Or don't refactor if there are

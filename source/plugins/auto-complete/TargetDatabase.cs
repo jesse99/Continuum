@@ -22,8 +22,8 @@
 using Gear;
 using Shared;
 using System;
-//using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace AutoComplete
 {
@@ -46,7 +46,24 @@ namespace AutoComplete
 			
 			return rows.Length > 0 ? rows[0][0] : null;
 		}
-				
+		
+		public string FindMethodType(string fullName, string name, int numArgs)
+		{
+			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
+			
+			string sql = string.Format(@"
+				SELECT return_type, arg_names
+					FROM Methods 
+				WHERE declaring_type = '{0}' AND name = '{1}'", fullName, name);
+			string[][] rows = m_database.QueryRows(sql);
+			
+			var result = from r in rows
+				where r[1].Count(c => c == ':') == numArgs
+				select r[0];
+
+			return result.Count() == 1 ? result.First() : null;
+		}
+		
 		public string FindFieldType(string fullName, string name)
 		{
 			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
@@ -73,6 +90,20 @@ namespace AutoComplete
 			}
 			
 			return type;
+		}
+		
+		public string FindBaseType(string fullName)
+		{
+			if (fullName == "System.Object")
+				return null;
+				
+			string sql = string.Format(@"
+				SELECT DISTINCT base_type
+					FROM Types
+				WHERE type = '{0}' OR type GLOB '{0}<*'", fullName);
+			string[][] rows = m_database.QueryRows(sql);
+			
+			return rows.Length > 0 ? rows[0][0] : null;
 		}
 		
 		#region Private Methods

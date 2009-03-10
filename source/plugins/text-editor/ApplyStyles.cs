@@ -207,7 +207,7 @@ namespace TextEditor
 				m_origin = origin;
 			
 				Stopwatch watch = Stopwatch.StartNew();
-				m_workSet.Sort((lhs, rhs) =>							// note that the sort time appears to be insigificant compared to the setAttributes_range time
+				m_workSet.Sort((lhs, rhs) =>
 				{
 					// We want to sort the runs so that those closest to the origin
 					// are processed first.

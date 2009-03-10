@@ -551,6 +551,7 @@ namespace CoolLib
 		[Test]
 		public void Field2()
 		{
+Console.WriteLine("--------------------------");
 			string text = @"
 using System;
 
@@ -593,10 +594,46 @@ namespace CoolLib
 					{"System.Int64", "00-01"},
 					{"System.SomeBase", "00-02"},
 				},
+				BaseClasses = new Dictionary<string, string>
+				{
+					{"CoolLib.MyClass", "System.SomeBase"},
+				},
 				BaseFieldTypes = new Dictionary<string, string>
 				{
 					{"System.SomeBase+alpha", "System.Int32"},
 					{"System.SomeBase+beta", "System.Int32"},
+				}
+			});
+			Assert.IsTrue(found);
+			Assert.AreEqual("System.Int32", m_target.FullName);
+			Assert.IsNull(m_target.Type);
+		}
+		
+		[Test]
+		public void Property()
+		{
+Console.WriteLine("--------------------------");
+			string text = @"
+using System;
+
+namespace CoolLib
+{
+	internal sealed class MyClass
+	{
+		public int Alpha {get; set;}
+		
+		public void Work(int alpha, float beta)
+		{
+			ppp.
+		}
+	}
+}
+";
+			bool found = DoGetTarget(text, "Alpha", text.IndexOf("."), new MockTargetDatabase
+			{
+				Hashes = new Dictionary<string, string>
+				{
+					{"System.Int32", "00-01"},
 				}
 			});
 			Assert.IsTrue(found);

@@ -30,9 +30,16 @@ namespace AutoComplete
 	{
 		// Returns either null or the assembly hash the specified type is declared within.
 		string FindAssembly(string fullName);
-				
+		
+		// Returns either null or the full type name of the result type of the specified
+		// method.
+		string FindMethodType(string fullName, string name, int numArgs);
+		
 		// Returns either null or the full type name of a field defined in the fullName
 		// type or one of its base classes.
 		string FindFieldType(string fullName, string name);
+		
+		// Returns either null or the full name of the type's base class.
+		string FindBaseType(string fullName);
 	}
 }
