@@ -273,7 +273,7 @@ namespace CoolLib
 		}
 		
 		[Test]
-		public void GlobalNamespace()
+		public void Enums()
 		{
 			string text = @"
 using System;
@@ -315,7 +315,37 @@ namespace CoolLib
 			});
 			Assert.IsTrue(found);
 			Assert.AreEqual("Patterns", m_target.FullName);
-			Assert.AreEqual("Patterns", m_target.Type.Name);
+			Assert.IsNull(m_target.Type);
+		}
+
+		[Test]
+		public void Delegates()
+		{
+			string text = @"
+using System;
+
+namespace CoolLib
+{
+	internal delegate void Callback(int data);
+
+	internal sealed class MyClass
+	{
+		public void Work()
+		{
+		}
+	}
+}
+";
+			bool found = DoGetType(text, "Callback", new MockTargetDatabase
+			{
+				Hashes = new Dictionary<string, string>
+				{
+					{"Patterns", "00-01"},
+				}
+			});
+			Assert.IsTrue(found);
+			Assert.AreEqual("CoolLib.Callback", m_target.FullName);
+			Assert.AreEqual("Callback", m_target.Type.Name);
 		}
 		
 		private ResolvedTarget m_target;

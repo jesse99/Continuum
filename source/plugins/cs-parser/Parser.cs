@@ -144,7 +144,7 @@ namespace CsParser
 			else
 				throw new CsParserException("Expected 'get' or 'set' on line {0}, but found '{1}'", m_scanner.Token.Line, m_scanner.Token.Text());
 		}
-				
+		
 		// attributes:
 		//     attribute-sections
 		// 
@@ -174,7 +174,7 @@ namespace CsParser
 					target = DoParseIdentifier(ref last);
 					m_scanner.Advance();
 				}
-								
+				
 				DoParseAttributeList(first, target, attrs);
 				DoParsePunct("]");
 			}
@@ -661,15 +661,51 @@ namespace CsParser
 				baseType = DoParseIdentifier(ref last);
 			}
 			
-			Token open = m_scanner.Token;
-			DoSkipBody("{", "}", ref open, ref last);
-
+			DoParsePunct("{");
+			string[] names = DoParseEnumMemberDeclarations();
+			last = m_scanner.Token;
+			DoParsePunct("}");
+			
 			if (((int) modifiers & CsMember.AccessMask) == 0)
 				modifiers |= defaultAccess;
 			
-			return new CsEnum(nameOffset, baseType, attrs, modifiers, name, first.Offset, last.Offset + last.Length - first.Offset, first.Line);
+			return new CsEnum(names, nameOffset, baseType, attrs, modifiers, name, first.Offset, last.Offset + last.Length - first.Offset, first.Line);
 		}
-
+		
+		// enum-member-declarations:
+		//    enum-member-declaration
+		//    enum-member-declarations   ,   enum-member-declaration
+		// 
+		// enum-member-declaration:
+		//    attributes?   identifier
+		//    attributes?   identifier   =   constant-expression
+		private string[] DoParseEnumMemberDeclarations()
+		{
+			var names = new List<string>();
+			
+			Token last = m_scanner.Token;
+			while (m_scanner.Token.IsValid() && !m_scanner.Token.IsPunct("}"))
+			{
+				Unused.Value = DoParseAttributes();
+				
+				string name = DoParseIdentifier(ref last);
+				names.Add(name);
+				
+				if (m_scanner.Token.IsPunct("="))
+				{
+					m_scanner.Advance();
+					Unused.Value = DoParseExpression(",", ref last);
+				}
+				
+				if (m_scanner.Token.IsPunct(","))
+					m_scanner.Advance();
+				else
+					break;
+			}
+			
+			return names.ToArray();
+		}
+		
 		// event-declaration:
 		//     attributes?   event-modifiers?   event   type   variable-declarators   ;
 		//     attributes?   event-modifiers?   event   type   member-name   {   event-accessor-declarations   }
@@ -738,10 +774,10 @@ namespace CsParser
 		// to scan tokens until we hit a semi-colon or until we hit a comma not
 		// inside brackets. Another is to add a simple parser which ignores things 
 		// like precedence. If this is fixed also update DoParseEventDeclarator.
-		private string DoParseExpression(ref Token last)
+		private string DoParseExpression(string eol, ref Token last)
 		{
 			Token start = m_scanner.Token;
-			while (m_scanner.Token.IsValid() && !m_scanner.Token.IsPunct(";"))	
+			while (m_scanner.Token.IsValid() && !m_scanner.Token.IsPunct(eol))	
 			{
 				m_scanner.Advance();
 			}
@@ -806,8 +842,8 @@ namespace CsParser
 			string value = null;
 			if (m_scanner.Token.IsPunct("="))
 			{
-				DoParsePunct("=");								
-				value = DoParseExpression(ref last);
+				DoParsePunct("=");
+				value = DoParseExpression(";", ref last);
 			}
 			
 			members.Add(new CsField(nameOffset, type, value, attrs, modifiers, name, first.Offset, last.Offset + last.Length - first.Offset, first.Line));

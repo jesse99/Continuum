@@ -50,7 +50,11 @@ namespace AutoComplete
 			
 			// SomeType.
 			if (result == null)
+			{
 				result = m_resolveType.Resolve(target, globals, false);
+if (result != null)
+	Console.WriteLine("found type: {0}", result.FullName);
+			}
 			
 			// name. (where name is a local, argument, or field)
 			if (result == null)
@@ -69,7 +73,8 @@ namespace AutoComplete
 				if (member != null)
 				{
 					result = m_resolveType.Resolve(member.DeclaringType, true);
-//Console.WriteLine("this type: {0}", m_fullName);
+if (result != null)
+	Console.WriteLine("found this: {0}", result.FullName);
 				}
 			}
 			
@@ -101,6 +106,8 @@ namespace AutoComplete
 				if (type != null)
 				{
 					result = m_resolveType.Resolve(type, globals, true);
+if (result != null)
+	Console.WriteLine("found value: {0}", result.FullName);
 				}
 			}
 			
@@ -113,7 +120,6 @@ namespace AutoComplete
 			
 			if (member != null)
 			{
-		Console.WriteLine("member: {0}", member.Name);
 				if (result == null)
 					result = DoFindLocalType(text, globals, member, target, offset);
 				
@@ -141,6 +147,8 @@ namespace AutoComplete
 					{
 						string type = locals[i].Type;		// TODO: need to handle "var" types
 						result = m_resolveType.Resolve(type, globals, true);
+if (result != null)
+	Console.WriteLine("found local: {0}", result.FullName);
 					}
 				}
 			}
@@ -226,6 +234,8 @@ namespace AutoComplete
 			if (type != null)
 			{
 				result = m_resolveType.Resolve(type, globals, true);
+if (result != null)
+	Console.WriteLine("found arg: {0}", result.FullName);
 			}
 			
 			return result;
@@ -233,16 +243,16 @@ namespace AutoComplete
 		
 		private ResolvedTarget DoFindFieldType(CsGlobalNamespace globals, CsMember member, string name)
 		{
-			ResolvedTarget result = null;
+			string type = null;
 			
-			for (int i = 0; i < member.DeclaringType.Fields.Length && result == null; ++i)
+			for (int i = 0; i < member.DeclaringType.Fields.Length && type == null; ++i)
 			{
 				CsField field = member.DeclaringType.Fields[i];
 				if (field.Name == name)
-					result = m_resolveType.Resolve(field.Type, globals, true);
+					type = field.Type;
 			}
 			
-			if (result == null && member.DeclaringType.Bases.Names.Length > 0)
+			if (type == null && member.DeclaringType.Bases.Names.Length > 0)
 			{
 				string baseType = member.DeclaringType.Bases.Names[0];
 				if (baseType[0] != 'I' || baseType.Length == 1 || char.IsLower(baseType[1]))
@@ -250,11 +260,17 @@ namespace AutoComplete
 					ResolvedTarget baseTarget = m_resolveType.Resolve(baseType, globals, false);
 					if (baseTarget != null)
 					{
-						string fullName = m_database.FindFieldType(baseTarget.FullName, name);
-						if (fullName != null)
-							result = m_resolveType.Resolve(fullName, true);
+						type = m_database.FindFieldType(baseTarget.FullName, name);
 					}
 				}
+			}
+			
+			ResolvedTarget result = null;
+			if (type != null)
+			{
+				result = m_resolveType.Resolve(type, globals, true);
+if (result != null)
+	Console.WriteLine("found field: {0}", result.FullName);
 			}
 			
 			return result;

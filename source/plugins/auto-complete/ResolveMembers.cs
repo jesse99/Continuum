@@ -36,41 +36,54 @@ namespace AutoComplete
 			m_database = db;
 		}
 		
-		public string[] Resolve(ResolvedTarget target)
+		public string[] Resolve(ResolvedTarget target, CsUsingDirective[] uses)
 		{
 			var members = new List<string>();
+			var namespaces = (from u in uses select u.Namespace).ToList();
 			
 			// Get the members for the target type. Note that we don't use the
 			// database if we have the parsed type because it is likely out of date.
 			string fullName = target.FullName;
 			
-			if (target.Type != null)
+			string hash = target.Hash;
+			CsType type = target.Type;
+			if (type != null)
+			{
+				namespaces.Add(type.Namespace.Name);
 				DoGetParsedMembers(target, members);
+				
+				if (type is CsEnum)
+				{
+					fullName = "System.Enum";
+					hash = "dummy";
+					type = null;
+				}
+			}
 			
-			if (target.Hash != null && (target.Type == null || (target.Type.Modifiers & MemberModifiers.Partial) != 0))
-				DoGetDatabaseMembers(fullName, target.IsInstance, members);
+			if (hash != null && (type == null || (type.Modifiers & MemberModifiers.Partial) != 0))
+				DoGetDatabaseMembers(namespaces, fullName, target.IsInstance, members);
 			
 			// Get the members for the base types.			
-			while (target.Hash != null)
+			while (true)
 			{
 				fullName = DoGetBaseType(fullName);
 				if (fullName == null)
 					break;
 				
-				DoGetDatabaseMembers(fullName, target.IsInstance, members);
+				DoGetDatabaseMembers(namespaces, fullName, target.IsInstance, members);
 			}
 			
 			return members.ToArray();
 		}
 		
 		#region Private Methods		
-		private void DoGetDatabaseMembers(string fullName, bool instanceCall, List<string> members)
+		private void DoGetDatabaseMembers(List<string> namespaces, string fullName, bool instanceCall, List<string> members)
 		{
-			DoGetDatabaseMethods(fullName, instanceCall, members);
+			DoGetDatabaseMethods(namespaces, fullName, instanceCall, members);
 			DoGetDatabaseFields(fullName, instanceCall, members);
 		}
 		
-		private void DoGetDatabaseMethods(string fullName, bool instanceCall, List<string> members)
+		private void DoGetDatabaseMethods(List<string> namespaces, string fullName, bool instanceCall, List<string> members)
 		{
 			string sql = string.Format(@"
 				SELECT name, arg_types, arg_names, attributes
@@ -80,7 +93,7 @@ namespace AutoComplete
 			
 			var methods = from r in rows
 				where DoIsValidMethod(r[0], ushort.Parse(r[3]), instanceCall)
-				select DoGetMethodName(r[0], r[1], r[2]);
+				select DoGetMethodName(namespaces, r[0], r[1], r[2]);
 			
 			foreach (string name in methods)
 				members.AddIfMissing(name);
@@ -104,9 +117,14 @@ namespace AutoComplete
 		
 		private void DoGetParsedMembers(ResolvedTarget target, List<string> members)
 		{
-			DoGetParsedTypeMembers(target, members);
-				
-			// TODO: enum
+			CsEnum e = target.Type as CsEnum;
+			if (e != null)
+			{
+				if (!target.IsInstance)
+					members.AddRange(e.Names);
+			}
+			else
+				DoGetParsedTypeMembers(target, members);
 		}
 		
 		private void DoGetParsedTypeMembers(ResolvedTarget target, List<string> members)
@@ -163,6 +181,9 @@ namespace AutoComplete
 			if (valid && name.Contains(".ctor"))
 				valid = false;
 			
+			if (valid && name.Contains(".cctor"))
+				valid = false;
+			
 			if (valid && name.Contains("set_"))
 				valid = false;
 			
@@ -193,7 +214,7 @@ namespace AutoComplete
 			return valid;
 		}
 		
-		private string DoGetMethodName(string mname, string argTypes, string argNames)
+		private string DoGetMethodName(List<string> namespaces, string mname, string argTypes, string argNames)
 		{
 			var builder = new StringBuilder(mname.Length + argTypes.Length + argNames.Length);
 			
@@ -213,6 +234,8 @@ namespace AutoComplete
 					string type = types[i];
 					if (ms_aliases.ContainsKey(type))
 						type = ms_aliases[type];
+					else
+						type = DoTrimType(namespaces, type);
 					builder.Append(type);
 					
 					builder.Append(' ');
@@ -227,6 +250,17 @@ namespace AutoComplete
 			}
 			
 			return builder.ToString();
+		}
+		
+		private string DoTrimType(List<string> namespaces, string type)
+		{
+			foreach (string ns in namespaces)
+			{
+				if (type.StartsWith(ns + ".") && type.IndexOf('.', ns.Length + 1) < 0)
+					return type.Substring(ns.Length + 1);
+			}
+			
+			return type;
 		}
 		#endregion
 		

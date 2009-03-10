@@ -244,19 +244,19 @@ namespace CsParser
 			Assert.AreEqual(1, globals.Namespaces.Length);
 			CsNamespace top = globals.Namespaces[0];
 			Assert.AreEqual("Foo.Bar", top.Name);
-	
+			
 			Assert.AreEqual(1, top.Uses.Length);
 			Assert.AreEqual("System.Collections", top.Uses[0].Namespace);
-	
-	
+			
+			
 			Assert.AreEqual(1, top.Namespaces.Length);
 			CsNamespace nested = top.Namespaces[0];
 			Assert.AreEqual("Internal", nested.Name);
-	
+			
 			Assert.AreEqual(1, nested.Uses.Length);
 			Assert.AreEqual("Mono.Posix", nested.Uses[0].Namespace);
 		}
-	
+		
 		[Test]
 		public void Enum1()
 		{
@@ -266,11 +266,16 @@ namespace CsParser
 			
 			var parser = new Parser();
 			var globals = parser.Parse(text);
-	
+			
 			Assert.AreEqual(1, globals.Enums.Length);
 			CsEnum type = globals.Enums[0];
 			Assert.AreEqual("Greek", type.Name);
 			Assert.AreEqual(MemberModifiers.Public, type.Modifiers);
+			
+			Assert.AreEqual(3, type.Names.Length);
+			Assert.AreEqual("alpha", type.Names[0]);
+			Assert.AreEqual("beta", type.Names[1]);
+			Assert.AreEqual("gamma", type.Names[2]);
 		}
 	
 		[Test]
@@ -289,7 +294,7 @@ namespace CsParser
 			CsEnum type = globals.Enums[0];
 			Assert.AreEqual("Greek", type.Name);
 			Assert.AreEqual(MemberModifiers.Public, type.Modifiers);
-	
+			
 			Assert.AreEqual(2, globals.Enums[0].Attributes.Length);
 			Assert.AreEqual("Foobar", globals.Enums[0].Attributes[0].Name);
 			Assert.AreEqual("Barbar", globals.Enums[0].Attributes[1].Name);
@@ -310,12 +315,12 @@ namespace CsParser
 			var parser = new Parser();
 			var globals = parser.Parse(text);
 			var ns = globals.Namespaces[0];
-	
+			
 			Assert.AreEqual(1, ns.Enums.Length);
 			CsEnum type = ns.Enums[0];
 			Assert.AreEqual("Greek", type.Name);
 			Assert.AreEqual(MemberModifiers.Public, type.Modifiers);
-	
+			
 			Assert.AreEqual(2, ns.Enums[0].Attributes.Length);
 			Assert.AreEqual("Foobar", ns.Enums[0].Attributes[0].Name);
 			Assert.AreEqual("Barbar", ns.Enums[0].Attributes[1].Name);
@@ -330,7 +335,7 @@ namespace CsParser
 			
 			var parser = new Parser();
 			var globals = parser.Parse(text);
-	
+			
 			Assert.AreEqual(1, globals.Delegates.Length);
 			CsDelegate type = globals.Delegates[0];
 			Assert.AreEqual("Foo", type.Name);
@@ -1050,15 +1055,15 @@ namespace CsParser
 			
 			var parser = new Parser();
 			var globals = parser.Parse(text);
-	
+			
 			Assert.AreEqual(1, globals.Classes.Length);
-	
+			
 			// class
 			CsClass klass = globals.Classes[0];		
 			Assert.AreEqual("Database", klass.Name);
 			Assert.AreEqual(1, klass.Bases.Names.Length);
 			Assert.AreEqual("IDisposable", klass.Bases.Names[0]);
-	
+			
 			// methods
 			Assert.AreEqual(5, klass.Methods.Length);
 			Assert.AreEqual("~Database", klass.Methods[0].Name);
@@ -1066,39 +1071,39 @@ namespace CsParser
 			Assert.AreEqual("Update", klass.Methods[2].Name);
 			Assert.AreEqual("QueryRows", klass.Methods[3].Name);
 			Assert.AreEqual("sqlite3_open_v2", klass.Methods[4].Name);
-	
+			
 			Assert.AreEqual("void", klass.Methods[0].ReturnType);
 			Assert.AreEqual("void", klass.Methods[1].ReturnType);
 			Assert.AreEqual("void", klass.Methods[2].ReturnType);
 			Assert.AreEqual("string[][]", klass.Methods[3].ReturnType);
 			Assert.AreEqual("Error", klass.Methods[4].ReturnType);
-	
+			
 			Assert.AreEqual(0, klass.Methods[0].Parameters.Length);
 			Assert.AreEqual(1, klass.Methods[1].Parameters.Length);
 			Assert.AreEqual(1, klass.Methods[2].Parameters.Length);
 			Assert.AreEqual(1, klass.Methods[3].Parameters.Length);
 			Assert.AreEqual(4, klass.Methods[4].Parameters.Length);
-	
+			
 			Assert.IsFalse(klass.Methods[0].IsConstructor);
 			Assert.IsTrue(klass.Methods[1].IsConstructor);
 			Assert.IsFalse(klass.Methods[2].IsConstructor);
 			Assert.IsFalse(klass.Methods[3].IsConstructor);
 			Assert.IsFalse(klass.Methods[4].IsConstructor);
-	
+			
 			Assert.IsTrue(klass.Methods[0].IsFinalizer);
 			Assert.IsFalse(klass.Methods[1].IsFinalizer);
 			Assert.IsFalse(klass.Methods[2].IsFinalizer);
 			Assert.IsFalse(klass.Methods[3].IsFinalizer);
 			Assert.IsFalse(klass.Methods[4].IsFinalizer);
-	
+			
 			// delegates
 			Assert.AreEqual(2, klass.Delegates.Length);
 			Assert.AreEqual("RowCallback", klass.Delegates[0].Name);
 			Assert.AreEqual("SelectCallback", klass.Delegates[1].Name);
-	
+			
 			Assert.AreEqual("bool", klass.Delegates[0].ReturnType);
 			Assert.AreEqual("Error", klass.Delegates[1].ReturnType);
-	
+			
 			Assert.AreEqual(1, klass.Delegates[0].Parameters.Length);
 			Assert.AreEqual(4, klass.Delegates[1].Parameters.Length);
 			
@@ -1111,10 +1116,10 @@ namespace CsParser
 			Assert.AreEqual(2, klass.Fields.Length);
 			Assert.AreEqual("m_database", klass.Fields[0].Name);
 			Assert.AreEqual("m_disposed", klass.Fields[1].Name);
-	
+			
 			Assert.AreEqual("IntPtr", klass.Fields[0].Type);
 			Assert.AreEqual("bool", klass.Fields[1].Type);
-	
+			
 			Assert.IsNull(klass.Fields[0].Value);
 			Assert.IsNull(klass.Fields[1].Value);
 		}
@@ -1155,11 +1160,11 @@ namespace CsParser
 		public void ReadOnlyField()
 		{
 			string text = @"
-	public sealed class Foo
-	{
-		internal static readonly Selector Alloc = new Selector(""alloc"");
-	}
-	";
+public sealed class Foo
+{
+	internal static readonly Selector Alloc = new Selector(""alloc"");
+}
+";
 			
 			var parser = new Parser();
 			var globals = parser.Parse(text);
@@ -1170,6 +1175,58 @@ namespace CsParser
 			Assert.AreEqual(1, klass.Fields.Length);
 			Assert.AreEqual("Alloc", klass.Fields[0].Name);
 			Assert.AreEqual("Selector", klass.Fields[0].Type);
+		}
+		
+		[Test]
+		public void Enum4()
+		{
+			string text = @"
+public enum Greek 
+{
+	alpha = 0x0001, 
+	beta = 0x0002, 
+	gamma = 0x0003,
+}
+";
+			
+			var parser = new Parser();
+			var globals = parser.Parse(text);
+			
+			Assert.AreEqual(1, globals.Enums.Length);
+			CsEnum type = globals.Enums[0];
+			Assert.AreEqual("Greek", type.Name);
+			Assert.AreEqual(MemberModifiers.Public, type.Modifiers);
+			
+			Assert.AreEqual(3, type.Names.Length);
+			Assert.AreEqual("alpha", type.Names[0]);
+			Assert.AreEqual("beta", type.Names[1]);
+			Assert.AreEqual("gamma", type.Names[2]);
+		}
+		
+		[Test]
+		public void Enum5()
+		{
+			string text = @"
+public enum Greek 
+{
+	alpha = 0x0001, 
+	beta = 0x0002, 
+	gamma = 0x0003,
+}
+";
+			
+			var parser = new Parser();
+			var globals = parser.Parse(text);
+			
+			Assert.AreEqual(1, globals.Enums.Length);
+			CsEnum type = globals.Enums[0];
+			Assert.AreEqual("Greek", type.Name);
+			Assert.AreEqual(MemberModifiers.Public, type.Modifiers);
+			
+			Assert.AreEqual(3, type.Names.Length);
+			Assert.AreEqual("alpha", type.Names[0]);
+			Assert.AreEqual("beta", type.Names[1]);
+			Assert.AreEqual("gamma", type.Names[2]);
 		}
 	}
 }

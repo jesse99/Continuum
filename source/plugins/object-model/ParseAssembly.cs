@@ -276,7 +276,8 @@ namespace ObjectModel
 		{
 			string fileName = string.Empty;
 			
-			if (!DoIsGeneratedCode(method))
+			// Note that auto-prop methods count as generated code.
+			if (method.IsGetter || method.IsSetter || !DoIsGeneratedCode(method))
 			{
 				var location = DoGetSourceAndLine(method);
 				fileName = Path.GetFileName(location.First);
@@ -348,7 +349,7 @@ namespace ObjectModel
 					if (DoHasGeneratedAtribute(type.CustomAttributes))
 						return true;
 			
-			switch (type.Name [0])
+			switch (type.Name[0])
 			{
 				case '<': 			// e.g. <Module>, <PrivateImplementationDetails>
 				case '$': 			// e.g. $ArrayType$1 nested inside <PrivateImplementationDetails>

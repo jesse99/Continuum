@@ -105,7 +105,7 @@ namespace AutoComplete
 									ResolvedTarget target = m_target.Resolve(m_text.Text, expr, range.location, globals);
 									if (target != null)
 									{
-										string[] methods = m_members.Resolve(target);
+										string[] methods = m_members.Resolve(target, globals.Uses);
 										if (methods.Length > 0)
 										{
 											if (m_controller == null)	

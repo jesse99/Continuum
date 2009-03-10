@@ -79,10 +79,17 @@ namespace AutoComplete
 			CsType type = DoFindLocalType(globals, target);
 			if (type != null)
 			{
-				m_type = type;
-				m_fullName = DoGetTypeName(m_type.FullName);
-				m_hash = m_database.FindAssembly(m_fullName);
-Console.WriteLine("local type: {0}", m_fullName);
+				if (type is CsDelegate)
+				{
+					m_fullName = "System.Delegate";
+					m_hash = m_database.FindAssembly(m_fullName);
+				}
+				else
+				{
+					m_type = type;
+					m_fullName = DoGetTypeName(m_type.FullName);
+					m_hash = m_database.FindAssembly(m_fullName);
+				}
 			}
 		}
 		
@@ -90,14 +97,12 @@ Console.WriteLine("local type: {0}", m_fullName);
 		{
 			string fullName, hash;
 			DoFindFullNameAndHash(globals, target, out fullName, out hash);
-	Console.WriteLine("{0} => {1} {2}", target, fullName, hash);
 			
 			if (hash != null)
 			{
 				m_fullName = DoGetTypeName(fullName);
 				m_hash = hash;
 				m_type = DoFindLocalType(globals, m_fullName);
-Console.WriteLine("global type: {0}", m_fullName);
 			}
 		}
 		
@@ -186,14 +191,6 @@ Console.WriteLine("global type: {0}", m_fullName);
 			
 			for (int i = 0; i < scope.Types.Length && result == null; ++i)
 				result = DoFindType(scope.Types[i], target);
-			
-			for (int i = 0; i < scope.Enums.Length && result == null; ++i)
-				if (scope.Enums[i].Name == target || scope.Enums[i].FullName == target)
-					result = candidate;
-			
-			for (int i = 0; i < scope.Delegates.Length && result == null; ++i)
-				if (scope.Delegates[i].Name == target || scope.Delegates[i].FullName == target)
-					result = candidate;
 							
 			return result;
 		}

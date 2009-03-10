@@ -151,16 +151,20 @@ namespace Shared
 	// public enum Greek {alpha, beta, gamma}
 	public sealed class CsEnum : CsType
 	{
-		public CsEnum(int nameOffset, string baseType, CsAttribute[] attrs, MemberModifiers modifiers, string name, int offset, int length, int line)
+		public CsEnum(string[] names, int nameOffset, string baseType, CsAttribute[] attrs, MemberModifiers modifiers, string name, int offset, int length, int line)
 			: base(nameOffset, null, new CsBases(offset, line), new CsMember[0], new CsType[0], attrs, modifiers, null, null, name, offset, length, line)
 		{
+			Trace.Assert(names != null, "names is null");
 			Trace.Assert(!string.IsNullOrEmpty(baseType), "baseType is null or empty");
 			
+			Names = names;
 			BaseType = baseType;
 		}
 		
 		// Will be an integral type name, e.g. "int".
 		public string BaseType {get; private set;}
+
+		public string[] Names {get; private set;}
 	}
 	
 	// event bool Signaled;
