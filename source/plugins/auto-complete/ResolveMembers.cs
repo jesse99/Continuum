@@ -43,19 +43,49 @@ namespace AutoComplete
 			// Get members of the type.
 			string fullName = DoGetMembers(target, globals, members, true);
 			
-			// Get the members for the base types.			
+			// Get the members for the base types.	
 			var resolveType = new ResolveType(new TargetDatabase(m_database));
-			foreach (string name in resolveType.GetBases(globals, fullName))
+			IEnumerable<ResolvedTarget> bases = resolveType.GetBases(globals, fullName, target.IsInstance);
+			foreach (ResolvedTarget t in bases)
 			{
-				ResolvedTarget b = resolveType.Resolve(name, globals, target.IsInstance);
-				if (b != null)
-					DoGetMembers(b, globals, members, false);
+				DoGetMembers(t, globals, members, false);
+				if (target.IsInstance)
+					DoGetExtensionMethods(t.FullName, globals, members);
+			}
+			
+			// Get extension methods.
+			if (target.IsInstance)
+			{
+				DoGetExtensionMethods(target.FullName, globals, members);
+				
+				foreach (string name in resolveType.GetAllInterfaces(globals, fullName, bases, target.IsInstance))
+				{
+					DoGetExtensionMethods(name, globals, members);
+				}
 			}
 			
 			return members.ToArray();
 		}
 		
-		#region Private Methods		
+		#region Private Methods
+		private void DoGetExtensionMethods(string fullName, CsGlobalNamespace globals, List<string> members)
+		{
+			string sql = string.Format(@"
+				SELECT name, arg_types, arg_names, attributes, namespace
+					FROM Methods 
+				INNER JOIN ExtensionMethods
+					ON Methods.method = ExtensionMethods.method AND Methods.hash = ExtensionMethods.hash
+				WHERE type = '{0}'", fullName);
+			string[][] rows = m_database.QueryRows(sql);
+			
+			var methods = from r in rows
+				where DoIsValidExtensionMethod(r[4], ushort.Parse(r[3]), globals)
+				select DoGetMethodName(r[0], r[1], r[2], 1);
+			
+			foreach (string name in methods)
+				members.AddIfMissing(name);
+		}
+		
 		private string DoGetMembers(ResolvedTarget target, CsGlobalNamespace globals, List<string> members, bool includePrivates)
 		{
 			// Get the members for the target type. Note that we don't use the
@@ -98,7 +128,7 @@ namespace AutoComplete
 			
 			var methods = from r in rows
 				where DoIsValidMethod(r[0], ushort.Parse(r[3]), instanceCall, includePrivates)
-				select DoGetMethodName(r[0], r[1], r[2]);
+				select DoGetMethodName(r[0], r[1], r[2], 0);
 			
 			foreach (string name in methods)
 				members.AddIfMissing(name);
@@ -198,7 +228,22 @@ namespace AutoComplete
 				
 			return valid;
 		}
-		
+
+		private bool DoIsValidExtensionMethod(string ns, ushort attributes, CsGlobalNamespace globals)
+		{
+			bool valid = false;
+			
+			for (int i = 0; i < globals.Uses.Length && !valid; ++i)
+			{
+				valid = globals.Uses[i].Namespace == ns;
+			}
+			
+			if (valid)
+				valid = (attributes & 0x0001) == 0;	// no private methods
+				
+			return valid;
+		}
+
 		private bool DoIsValidField(string name, ushort attributes, bool instanceCall, bool includePrivates)
 		{
 			bool valid;
@@ -214,7 +259,7 @@ namespace AutoComplete
 			return valid;
 		}
 		
-		private string DoGetMethodName(string mname, string argTypes, string argNames)
+		private string DoGetMethodName(string mname, string argTypes, string argNames, int firstArg)
 		{
 			var builder = new StringBuilder(mname.Length + argTypes.Length + argNames.Length);
 			
@@ -229,7 +274,7 @@ namespace AutoComplete
 				builder.Append('(');
 				string[] types = argTypes.Split(new char[]{':'}, StringSplitOptions.RemoveEmptyEntries);
 				string[] names = argNames.Split(new char[]{':'}, StringSplitOptions.RemoveEmptyEntries);
-				for (int i = 0; i < types.Length; ++i)
+				for (int i = firstArg; i < types.Length; ++i)
 				{
 					string type = types[i];
 					if (ms_aliases.ContainsKey(type))
@@ -257,11 +302,21 @@ namespace AutoComplete
 			return builder.ToString();
 		}
 		
+		// System.Collections.Generic.IEnumerable`1<TSource>:System.Func`2<TSource,System.Boolean>
 		private string DoTrimNamespace(string type)
 		{
-			int i = type.LastIndexOf('.');
-			if (i >= 0)
-				type = type.Substring(i + 1);
+			while (true)
+			{
+				int j = type.IndexOf('.');
+				if (j < 0)
+					break;
+					
+				int i = j;
+				while (i > 0 && char.IsLetter(type[i - 1]))
+					--i;
+					
+				type = type.Substring(0, i) + type.Substring(j + 1);
+			}
 			
 			return type;
 		}

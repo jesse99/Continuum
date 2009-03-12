@@ -110,6 +110,17 @@ namespace ObjectModel
 					)");
 				
 				m_database.Update(@"
+					CREATE TABLE IF NOT EXISTS ExtensionMethods(
+						method TEXT NOT NULL
+							CONSTRAINT no_empty_method CHECK(length(method) > 0),
+						hash TEXT NOT NULL REFERENCES Assemblies(hash), 
+						type TEXT NOT NULL REFERENCES Types(type),
+						namespace TEXT NOT NULL
+							CONSTRAINT no_empty_namespace CHECK(length(namespace) > 0),
+						PRIMARY KEY(method, hash)
+					)");
+				
+				m_database.Update(@"
 					CREATE TABLE IF NOT EXISTS Fields(
 						name TEXT NOT NULL
 							CONSTRAINT no_empty_name CHECK(length(name) > 0),
@@ -167,7 +178,7 @@ namespace ObjectModel
 							m_database.Insert("Implements",
 								type.FullName,
 								hash,
-								i.FullName);
+								i.FullName.GetTypeName());
 						}
 					}
 					
@@ -302,7 +313,7 @@ namespace ObjectModel
 					m_database.Insert("Methods",
 						method.ToString(),
 						hash,
-						method.ReturnType.ReturnType.FullName,
+						method.ReturnType.ReturnType.FullName.GetTypeName(),
 						method.Name,
 						argTypes.ToString(),
 						argNames.ToString(),
@@ -319,6 +330,13 @@ namespace ObjectModel
 							fileName,
 							method.Name,
 							"0");
+							
+					if (DoHasExtensionAtribute(method.CustomAttributes))
+						m_database.InsertOrIgnore("ExtensionMethods",
+							method.ToString(),
+							hash,
+							method.Parameters[0].ParameterType.FullName.GetTypeName(),
+							type.Namespace);
 				}
 			}
 			
@@ -333,9 +351,9 @@ namespace ObjectModel
 				{
 					m_database.Insert("Fields",
 						field.Name,
-						field.DeclaringType.FullName,
+						field.DeclaringType.FullName.GetTypeName(),
 						hash,
-						field.FieldType.FullName,
+						field.FieldType.FullName.GetTypeName(),
 						((ushort) field.Attributes).ToString());
 				}
 			}
@@ -389,6 +407,18 @@ namespace ObjectModel
 					return true;
 				
 				else if (fullName == "System.Runtime.CompilerServices.CompilerGeneratedAttribute")
+					return true;
+			}
+			
+			return false;
+		}
+		
+		private bool DoHasExtensionAtribute(CustomAttributeCollection attrs)	// theaded
+		{
+			foreach (CustomAttribute attr in attrs)
+			{
+				string fullName = attr.Constructor.DeclaringType.FullName;
+				if (fullName == "System.Runtime.CompilerServices.ExtensionAttribute")
 					return true;
 			}
 			

@@ -41,5 +41,8 @@ namespace AutoComplete
 		
 		// Returns either null or the full name of the type's base class.
 		string FindBaseType(string fullName);
+		
+		// Returns the interfaces directly implemented by the type.
+		string[] FindInterfaces(string fullName);
 	}
 }

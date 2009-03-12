@@ -24,6 +24,7 @@ using Shared;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace CsParser
 {
@@ -179,7 +180,7 @@ namespace CsParser
 				ok = DoParseLocalDeclarator(type, candidates);
 			}
 			
-			if (ok && m_scanner.Token.IsPunct(";"))
+			if (ok && (m_scanner.Token.IsPunct(";") || (candidates.Last().Value != null && candidates.Last().Value.StartsWith("from "))))
 			{
 //Console.WriteLine("candidates: {0}", candidates.ToDebugString());
 				m_scanner.Advance();

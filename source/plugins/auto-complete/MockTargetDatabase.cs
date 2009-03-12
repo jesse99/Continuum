@@ -72,6 +72,11 @@ namespace AutoComplete
 			return type;
 		}
 		
+		public string[] FindInterfaces(string fullName)
+		{
+			return new string[0];
+		}
+		
 		public Dictionary<string, string> Hashes {get; set;}
 		
 		public Dictionary<string, string> BaseClasses {get; set;}

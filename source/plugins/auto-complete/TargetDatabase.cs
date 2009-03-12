@@ -106,6 +106,22 @@ namespace AutoComplete
 			return rows.Length > 0 ? rows[0][0] : null;
 		}
 		
+		public string[] FindInterfaces(string fullName)
+		{
+			if (fullName == "System.Object")
+				return new string[0];
+				
+			string sql = string.Format(@"
+				SELECT DISTINCT interface_type
+					FROM Implements
+				WHERE type = '{0}' OR type GLOB '{0}<*'", fullName);
+			string[][] rows = m_database.QueryRows(sql);
+			
+			var result = from r in rows select r[0];
+
+			return result.ToArray();
+		}
+		
 		#region Private Methods
 		private string DoFindBaseType(string fullName)
 		{

@@ -50,7 +50,7 @@ namespace ObjectModel
 			var editor = boss.Get<IDirectoryEditor>();
 			string name = Path.GetFileName(editor.Path);
 			
-			string path = Path.Combine(Paths.SupportPath, name + ".db");
+			string path = Path.Combine(Paths.SupportPath, name + "2.db");
 	
 			return path;
 		}
@@ -282,6 +282,8 @@ namespace ObjectModel
 					DoCascadeHash("Implements", row[0]);
 					DoCascadeHash("Methods", row[0]);
 					DoCascadeHash("NameInfo", row[0]);
+					DoCascadeHash("ExtensionMethods", row[0]);
+					DoCascadeHash("Fields", row[0]);
 					
 					m_database.Update(string.Format(@"
 						DELETE FROM Assemblies 
@@ -512,6 +514,10 @@ namespace ObjectModel
 						
 						m_database.Update(string.Format(@"
 							DELETE FROM Methods 
+								WHERE hash = '{0}'", r[4]));
+						
+						m_database.Update(string.Format(@"
+							DELETE FROM ExtensionMethods 
 								WHERE hash = '{0}'", r[4]));
 						
 						m_database.Update(string.Format(@"

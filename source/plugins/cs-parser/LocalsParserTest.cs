@@ -304,6 +304,17 @@ string name;
 			text = @"{int[,]? x;}";
 			DoCheck(text, new Local("int[,]?", "x", null));
 		}
+		
+		[Test]
+		public void Linq()
+		{
+			string text = @"
+{
+	var x = from a in alpha select a.ToString();
+}";
+			DoCheck(text,
+				new Local("var", "x", "from a in alpha"));
+		}
 	}
 }
 #endif	// TEST

@@ -23,6 +23,7 @@ using Gear;
 using Shared;
 using System;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace AutoComplete
 {
@@ -124,7 +125,7 @@ if (result != null)
 			if (member != null)
 			{
 				if (result == null)
-					result = DoFindLocalType(text, globals, member, target, offset);
+					result = DoFindLocalVarType(text, globals, member, target, offset);
 				
 				if (result == null)
 					result = DoFindArgType(globals, member, target);
@@ -148,15 +149,11 @@ if (result != null)
 				
 				if (result == null && member.DeclaringType.Bases.HasBaseClass)
 				{
-					foreach (string fullName in m_resolveType.GetBases(globals, member.DeclaringType.FullName))
+					foreach (ResolvedTarget t in m_resolveType.GetBases(globals, member.DeclaringType.FullName, true))
 					{
-						type = m_resolveType.Resolve(fullName, globals, true);
-						if (type != null)
-						{
-							result = DoFindProperty(globals, type, target);
-							if (result != null)
-								break;
-						}
+						result = DoFindProperty(globals, t, target);
+						if (result != null)
+							break;
 					}
 				}
 			
@@ -192,7 +189,7 @@ if (result != null)
 			return result;
 		}
 		
-		private ResolvedTarget DoFindLocalType(string text, CsGlobalNamespace globals, CsMember member, string name, int offset)
+		private ResolvedTarget DoFindLocalVarType(string text, CsGlobalNamespace globals, CsMember member, string name, int offset)
 		{
 			ResolvedTarget result = null;
 			
@@ -204,15 +201,84 @@ if (result != null)
 				{
 					if (locals[i].Name == name)
 					{
-						string type = locals[i].Type;		// TODO: need to handle "var" types
-						result = m_resolveType.Resolve(type, globals, true);
+						string type = locals[i].Type;
+						if (type == "var" && locals[i].Value != null)
+						{
+							string value = locals[i].Value;
+							if (value.StartsWith("new"))
+							{
+								value = DoGetNewValue(value);
+							}
+							else if (value.StartsWith("from "))
+							{
+								value = "System.Collections.Generic.IEnumerable`1";
+							}
+							else
+							{
+								Match m = m_getRE.Match(value);
+								if (m.Success)
+								{
+									value = m.Groups[1].Value;	// TODO: need something more general here
+								}
+							}
+							
+							result = Resolve(text, value, offset, globals);
+							
+if (result != null)
+	Console.WriteLine("found var local: {0}", result.FullName);
+						}
+						else
+						{
+							result = m_resolveType.Resolve(type, globals, true);
 if (result != null)
 	Console.WriteLine("found local: {0}", result.FullName);
+						}
 					}
 				}
 			}
 			
 			return result;
+		}
+
+		private Regex m_getRE = new Regex(@"\w+ \. Get \s* < \s* (\w+) \s* > \s* \( \s* \)", RegexOptions.IgnorePatternWhitespace);
+		
+		private string DoGetNewValue(string value)
+		{
+			int i = 3;
+			while (i < value.Length && char.IsWhiteSpace(value[i]))
+				++i;
+			
+			int count = 0;
+			while (i + count < value.Length)
+			{
+				if (char.IsLetterOrDigit(value[i + count]))
+				{
+					++count;
+				}
+				else if (value[i + count] == '_')
+				{
+					++count;
+				}
+				else if (value[i + count] == '<')
+				{
+					int num = 1;
+					++count;
+					
+					while (i + count < value.Length && num > 0)
+					{
+						if (value[i + count] == '<')
+							++num;
+						else if (value[i + count] == '>')
+							--num;
+						
+						++count;
+					}
+				}
+				else
+					break;
+			}
+			
+			return value.Substring(i, count);
 		}
 		
 		private CsBody DoGetBody(CsMember member, int offset)
@@ -312,15 +378,11 @@ if (result != null)
 				
 				if (result == null && member.DeclaringType.Bases.HasBaseClass)
 				{
-					foreach (string fullName in m_resolveType.GetBases(globals, member.DeclaringType.FullName))
+					foreach (ResolvedTarget t in m_resolveType.GetBases(globals, member.DeclaringType.FullName, true))
 					{
-						type = m_resolveType.Resolve(fullName, globals, true);
-						if (type != null)
-						{
-							result = DoFindField(globals, type, name);
-							if (result != null)
-								break;
-						}
+						result = DoFindField(globals, t, name);
+						if (result != null)
+							break;
 					}
 				}
 			

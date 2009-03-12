@@ -72,7 +72,7 @@ namespace AutoComplete
 				{
 					string name = System.IO.Path.GetFileName(editor.Path);
 					
-					string path = System.IO.Path.Combine(Paths.SupportPath, name + ".db");
+					string path = System.IO.Path.Combine(Paths.SupportPath, name + "2.db");
 					m_database = new Database(path);
 					
 					m_target = new ResolveTarget(new TargetDatabase(m_database), m_locals);

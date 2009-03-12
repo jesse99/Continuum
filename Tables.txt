@@ -7,6 +7,9 @@ Note that there is some tension here between exposing attributes to allow for cu
 and the database size/query times. Even with this relatively simple schema the size of the
 database can be 100+ megabytes.
 
+Unless otherwise indicated all of the type names omit the generic argument type names.
+
+
 -------------------
 Assemblies
 hash#		name		culture	major	minor	build	revision	
@@ -73,6 +76,7 @@ method#	hash#$		return_type	name	arg_types			arg_names	declaring_type$		file		li
 * name is the name of the method, e.g. "TryGetType". Note that the name will have a prefix for
   event, indexer, operator, and property methods. E.g. "set_Text" or "op_Add".
 * arg_types contains a colon separated list of the agument types, e.g. "System.String:System.Type&".
+   Note that these do include the generic argument type names.
 * arg_names contains a colon separated list of the agument names, e.g. "name:type".
 * declaring_type is from Types and is the full name of the declaring type.
 * return_type is the full name of the return type. It will usually be in TypeNames.
@@ -82,6 +86,16 @@ method#	hash#$		return_type	name	arg_types			arg_names	declaring_type$		file		li
 * semantics is the same as Cecil's MethodSemanticsAttributes.
 
 TODO: need to store custom attributes
+
+
+-------------------
+ExtensionMethods
+method#	hash#$		type	namespace
+
+* method is the full name of the method, e.g. "System.Int32 System.Linq.Enumerable::Max(System.Collections.Generic.IEnumerable`1<System.Int32>)".
+* hash is from the Assemblies table.
+* type is the full name of the type the extension method extends. It will normally be in Types.
+* namespace is the full name of the namespace which must be used to make the extension method available.
 
 -------------------
 Fields

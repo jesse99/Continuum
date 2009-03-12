@@ -12,14 +12,16 @@ mutating a local used in multiple lambdas (or for loop variable used with lambda
 
 might want a sample app
 
+* Complete doesn't always work after typing. May need to ensure IText is up to date.
+* Need to make sure window is on screen.
+* Method popup gets reset after adding spaces to the eol in a method.
+* What is System.CodeDom.Compiler.CodeParser?
 * Styles aren't getting applied reliably. Mostly member and type names.
 * Work on target completion:
 	- do a checkin
-	- get target working with array indexing, eg data[foo]
-	- get var working with new expressions, might want a separate var test
-	- get var working with select expressions
-	- get var working with *.Get<foo>() expressions
-	- add extension methods to names
+	- get above working
+	- build a new continuum
+	- get target working with array indexing, eg data[foo], also indexers
 	- add some logs
 	- get arg completion working
 	- complete new SomeType calls

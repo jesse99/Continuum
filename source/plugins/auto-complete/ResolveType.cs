@@ -80,39 +80,68 @@ namespace AutoComplete
 				: null;
 		}
 		
-		public IEnumerable<string> GetBases(CsGlobalNamespace globals, string fullName)
+		public IEnumerable<ResolvedTarget> GetBases(CsGlobalNamespace globals, string fullName, bool isInstance)
 		{
 			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
 			
-			while (fullName != "System.Object")
+			ResolvedTarget target = Resolve(fullName, globals, isInstance);
+			while (target != null && target.FullName != "System.Object")
 			{
-				ResolvedTarget target = Resolve(fullName, globals, true);
-				if (target == null)
-					break;
-					
 				if (target.Type != null)
 				{
 					if (target.Type.Bases.HasBaseClass)
-					{
-						target = Resolve(target.Type.Bases.Names[0], globals, true);
-						if (target == null)
-							break;
-							
-						fullName = target.FullName;
-					}
+						target = Resolve(target.Type.Bases.Names[0], globals, isInstance);
 					else
-						fullName = "System.Object";
+						target = null;
 				}
 				else if (target.Type == null && target.Hash != null)
 				{
-					fullName = m_database.FindBaseType(fullName);
-					if (string.IsNullOrEmpty(fullName))
-						break;
+					string name = m_database.FindBaseType(target.FullName);
+					if (!string.IsNullOrEmpty(name))
+						target = Resolve(name, globals, isInstance);
+					else
+						target = null;
 				}
 				else
-					break;
+					target = null;
+					
+				if (target != null)
+					yield return target;
+			}
+		}
+		
+		public IEnumerable<string> GetAllInterfaces(CsGlobalNamespace globals, string fullName, IEnumerable<ResolvedTarget> bases, bool isInstance)
+		{
+			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
+			
+			ResolvedTarget t = Resolve(fullName, globals, isInstance);
+			if (t != null)
+			{
+				var targets = new List<ResolvedTarget>();
+				targets.Add(t);
+				targets.AddRange(bases);
 				
-				yield return fullName;
+				foreach (ResolvedTarget target in targets)
+				{
+					if (target.Type != null)
+					{
+						for (int i = target.Type.Bases.HasBaseClass ? 1 : 0; i < target.Type.Bases.Names.Length; ++i)
+						{
+							t = Resolve(target.Type.Bases.Names[i], globals, isInstance);
+							if (t != null)
+							{
+								yield return t.FullName;
+							}
+						}
+					}
+					else if (target.Type == null && target.Hash != null)
+					{
+						foreach (string name in m_database.FindInterfaces(target.FullName))
+						{
+							yield return name;
+						}
+					}
+				}
 			}
 		}
 		
