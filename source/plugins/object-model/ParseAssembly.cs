@@ -300,7 +300,18 @@ namespace ObjectModel
 					for (int i = 0; i < method.Parameters.Count; ++i)
 					{
 						ParameterDefinition p = method.Parameters[i];
-						argTypes.Append(p.ParameterType.FullName);
+						string name = p.ParameterType.FullName;
+						
+						if (DoIsParams(p))
+							name = "params " + name;
+							
+						if (name.EndsWith("&"))
+						{
+							name = (p.IsOut ? "out " : "ref ") + name;
+							name = name.Remove(name.Length - 1);
+						}
+						
+						argTypes.Append(name);
 						argNames.Append(p.Name);
 						
 						if (i + 1 < method.Parameters.Count)
@@ -420,6 +431,20 @@ namespace ObjectModel
 				string fullName = attr.Constructor.DeclaringType.FullName;
 				if (fullName == "System.Runtime.CompilerServices.ExtensionAttribute")
 					return true;
+			}
+			
+			return false;
+		}
+		
+		private bool DoIsParams(ParameterDefinition param)
+		{
+			if (param.HasCustomAttributes)
+			{
+				foreach (CustomAttribute a in param.CustomAttributes)
+				{
+					if (a.Constructor.DeclaringType.Name == "ParamArrayAttribute")
+						return true;
+				}
 			}
 			
 			return false;

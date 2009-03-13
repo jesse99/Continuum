@@ -12,16 +12,9 @@ mutating a local used in multiple lambdas (or for loop variable used with lambda
 
 might want a sample app
 
-* Complete doesn't always work after typing. May need to ensure IText is up to date.
-* Need to make sure window is on screen.
-* Method popup gets reset after adding spaces to the eol in a method.
-* What is System.CodeDom.Compiler.CodeParser?
+* Build a new continuum
 * Styles aren't getting applied reliably. Mostly member and type names.
 * Work on target completion:
-	- do a checkin
-	- get above working
-	- build a new continuum
-	- get target working with array indexing, eg data[foo], also indexers
 	- add some logs
 	- get arg completion working
 	- complete new SomeType calls
@@ -35,6 +28,8 @@ might want a sample app
 		` complete
 	- member list needs to account for access
 	- member list needs to account for visibility
+	- need to work with namespace aliases
+	- get target working with array indexing, eg data[foo], also indexers
 * Database should only parse assemblies referenced by local assemblies, not
    all assemblies referenced.
 -rw-r--r--  1 jessejones  jessejones  60900352 Mar  4 12:34 Continuum.db

@@ -33,6 +33,6 @@ namespace Shared
 		void OnPathChanged();
 		
 		// Returns true if the event was handled.
-		bool HandleKey(NSTextView view, NSEvent evt);
+		bool HandleKey(NSTextView view, NSEvent evt, IComputeRuns computer);
 	}
 }

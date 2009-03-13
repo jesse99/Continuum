@@ -81,7 +81,7 @@ namespace AutoComplete
 			}
 		}
 		
-		public bool HandleKey(NSTextView view, NSEvent evt)
+		public bool HandleKey(NSTextView view, NSEvent evt, IComputeRuns computer)
 		{
 			bool handled = false;
 			
@@ -90,28 +90,27 @@ namespace AutoComplete
 				NSRange range = view.selectedRange();
 				
 				NSString chars = evt.characters();
-				if (range.length == 0 && chars.length() == 1)
+				if (range.length == 0 && chars.length() == 1 && chars[0] == '.')
 				{
+					DoUpdateCache(computer);
+					
 					if (!m_cachedCatalog.IsWithinComment(range.location) && !m_cachedCatalog.IsWithinString(range.location))
 					{
-						if (chars[0] == '.')
+						string expr = DoGetTargetExpr(range.location);
+						if (expr != null)
 						{
-							string expr = DoGetTargetExpr(range.location);
-							if (expr != null)
+							CsGlobalNamespace globals = m_cachedGlobals.Get();
+							if (globals != null)
 							{
-								CsGlobalNamespace globals = m_cachedGlobals.Get();
-								if (globals != null)
+								ResolvedTarget target = m_target.Resolve(m_text.Text, expr, range.location, globals);
+								if (target != null)
 								{
-									ResolvedTarget target = m_target.Resolve(m_text.Text, expr, range.location, globals);
-									if (target != null)
+									string[] methods = m_members.Resolve(target, globals);
+									if (methods.Length > 0)
 									{
-										string[] methods = m_members.Resolve(target, globals);
-										if (methods.Length > 0)
-										{
-											if (m_controller == null)	
-												m_controller = new CompletionsController();
-											m_controller.Show(view, target.FullName, methods);
-										}
+										if (m_controller == null)	
+											m_controller = new CompletionsController();
+										m_controller.Show(view, target.FullName, methods);
 									}
 								}
 							}
@@ -124,6 +123,18 @@ namespace AutoComplete
 		}
 		
 		#region Private Methods
+		private void DoUpdateCache(IComputeRuns computer)
+		{
+			int edit;
+			CsGlobalNamespace globals;
+			m_cachedGlobals.Get(out edit, out globals);
+			
+			if (edit != m_text.EditCount)
+			{
+				computer.ComputeRuns(m_text.Text, m_text.EditCount, m_boss);
+			}
+		}
+		
 		private string DoGetTargetExpr(int offset)
 		{
 			string text = m_text.Text;

@@ -163,6 +163,11 @@ namespace TextEditor
 			get {return !NSObject.IsNullOrNil(document().fileURL()) ? document().fileURL().path().description() : null;}	
 		}
 		
+		public IComputeRuns Computer
+		{
+			get {return m_computer;}
+		}
+		
 		public Boss GetDirEditorBoss()
 		{
 			Boss boss = ObjectModel.Create("DirectoryEditorPlugin");
@@ -654,7 +659,7 @@ namespace TextEditor
 						length = m_metrics.GetLineOffset(line + 1) - offset;
 					}
 				}
-								
+				
 				m_applier.HighlightLine(offset, length);
 			}
 			

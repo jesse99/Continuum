@@ -34,7 +34,7 @@ namespace TextEditor
 	internal sealed class TextEditorView : NSTextView
 	{
 		public TextEditorView(IntPtr instance) : base(instance)
-		{			
+		{
 			ActiveObjects.Add(this);
 		}
 		
@@ -46,7 +46,9 @@ namespace TextEditor
 		
 		public new void keyDown(NSEvent evt)
 		{
-			if (!m_autoComplete.HandleKey(this, evt))
+			IComputeRuns computer = ((TextController) window().windowController()).Computer;
+
+			if (!m_autoComplete.HandleKey(this, evt, computer))
 			{
 				Unused.Value = SuperCall("keyDown:", evt);
 				

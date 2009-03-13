@@ -63,18 +63,23 @@ namespace TextEditor
 		
 		public void textSelectionChanged()
 		{
-			NSRange selection = m_controller.TextView.selectedRange();
-			int offset = selection.location;
-			
-			// Find the last declaration the selection start intersects.
-			int index = -1;
-			for (int i = 0; i < m_declarations.Length; ++i)
+			if (m_edit == m_controller.EditCount)
 			{
-				if (m_declarations[i].Extent.Intersects(offset))
-					index = i;
+				NSRange selection = m_controller.TextView.selectedRange();
+				int offset = selection.location;
+				
+				// Find the last declaration the selection start intersects.
+				int index = -1;
+				for (int i = 0; i < m_declarations.Length; ++i)
+				{
+					if (m_declarations[i].Extent.Intersects(offset))
+						index = i;
+				}
+				
+				selectItemAtIndex(index);
 			}
-			
-			selectItemAtIndex(index);
+			else
+				selectItem(null);
 		}
 		
 		public void textWasStyled()
@@ -106,14 +111,16 @@ namespace TextEditor
 				var cachedGlobals = m_controller.Boss.Get<ICachedCsDeclarations>();
 				cachedGlobals.Get(out edit, out globals);
 				Trace.Assert(edit == m_controller.EditCount, "controller called us with a bad edit count1");
-
+				
 				var cachedRuns = m_controller.Boss.Get<ICachedStyleRuns>();
 				cachedRuns.Get(out edit, out runs);
 				Trace.Assert(edit == m_controller.EditCount, "controller called us with a bad edit count2");
 				
 				m_declarations = m_getter.Get(m_controller.Text, runs, globals);
+				m_edit = edit;
 				
 				DoBuildUsingOffsetsOrder();
+				textSelectionChanged();
 			}
 		}
 		
@@ -218,6 +225,7 @@ namespace TextEditor
 		private IDeclarations m_getter;
 		private Declaration[] m_declarations = new Declaration[0];
 		private Dictionary<int, Declaration> m_indexTable = new Dictionary<int, Declaration>();
+		private int m_edit;
 		#endregion
 	}
 }
