@@ -12,14 +12,15 @@ mutating a local used in multiple lambdas (or for loop variable used with lambda
 
 might want a sample app
 
-* Build a new continuum
+* Work on arg completion:
+	- label should have arg type/name
+	- label should truncate from the middle
+	- members should be locals, args, fields, and properties
+	- prune value type members
 * Styles aren't getting applied reliably. Mostly member and type names.
 * Work on target completion:
-	- add some logs
-	- get arg completion working
 	- complete new SomeType calls
 		` special case array types
-	- shouldn't auto-complete when in a comment or string
 	- local explicit interface implementation
 	- global explicit interface implementation
 	- add a context menu:
@@ -73,6 +74,7 @@ might want a sample app
 	  of the characters)
 	- might want to support completing names via F5, should also have a menu item
 	   for this
+	- arg completion should prune more types
 * OpenSelection isn't doing a case insensitive match, try nsview.cs
 * Is ChangeAccess correct?
 * Search witin "…" isn't finding verbatim strings. E.g. search for Methods should

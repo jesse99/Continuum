@@ -53,8 +53,8 @@ namespace AutoComplete
 			if (result == null)
 			{
 				result = m_resolveType.Resolve(target, globals, false);
-if (result != null)
-	Console.WriteLine("found type: {0}", result.FullName);
+				if (result != null)
+					Log.WriteLine("AutoComplete", "found type: {0}", result.FullName);
 			}
 			
 			// name. (where name is a local, argument, or field)
@@ -77,8 +77,8 @@ if (result != null)
 				if (member != null)
 				{
 					result = m_resolveType.Resolve(member.DeclaringType, true);
-if (result != null)
-	Console.WriteLine("found this: {0}", result.FullName);
+					if (result != null)
+						Log.WriteLine("AutoComplete", "found this: {0}", result.FullName);
 				}
 			}
 			
@@ -110,8 +110,8 @@ if (result != null)
 				if (type != null)
 				{
 					result = m_resolveType.Resolve(type, globals, true);
-if (result != null)
-	Console.WriteLine("found value: {0}", result.FullName);
+					if (result != null)
+						Log.WriteLine("AutoComplete", "found value: {0}", result.FullName);
 				}
 			}
 			
@@ -156,9 +156,9 @@ if (result != null)
 							break;
 					}
 				}
-			
-if (result != null)
-	Console.WriteLine("found property: {0}", result.FullName);
+				
+				if (result != null)
+					Log.WriteLine("AutoComplete", "found property: {0}", result.FullName);
 			}
 			
 			return result;
@@ -224,14 +224,14 @@ if (result != null)
 							
 							result = Resolve(text, value, offset, globals);
 							
-if (result != null)
-	Console.WriteLine("found var local: {0}", result.FullName);
+							if (result != null)
+								Log.WriteLine("AutoComplete", "found var local: {0}", result.FullName);
 						}
 						else
 						{
 							result = m_resolveType.Resolve(type, globals, true);
-if (result != null)
-	Console.WriteLine("found local: {0}", result.FullName);
+							if (result != null)
+								Log.WriteLine("AutoComplete", "found local: {0}", result.FullName);
 						}
 					}
 				}
@@ -359,8 +359,8 @@ if (result != null)
 			if (type != null)
 			{
 				result = m_resolveType.Resolve(type, globals, true);
-if (result != null)
-	Console.WriteLine("found arg: {0}", result.FullName);
+				if (result != null)
+					Log.WriteLine("AutoComplete", "found arg: {0}", result.FullName);
 			}
 			
 			return result;
@@ -385,9 +385,9 @@ if (result != null)
 							break;
 					}
 				}
-			
-if (result != null)
-	Console.WriteLine("found field: {0}", result.FullName);
+				
+				if (result != null)
+					Log.WriteLine("AutoComplete", "found field: {0}", result.FullName);
 			}
 			
 			return result;
