@@ -22,6 +22,7 @@
 using Gear;
 using Shared;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 
@@ -39,15 +40,16 @@ namespace AutoComplete
 		}
 		
 		// May return null.
-		public ResolvedTarget Resolve(string text, string target, int offset, CsGlobalNamespace globals)
+		public Tuple2<ResolvedTarget, Variable[]> Resolve(string text, string target, int offset, CsGlobalNamespace globals)
 		{
 			// this.
 			CsMember member = DoFindMember(globals, offset);
+			Variable[] vars = DoGetVariables(text, member, globals, offset);
 			ResolvedTarget result = DoHandleThis(member, target);
 			
 			// value. (special case for setters)
-			if (result == null)
-				result = DoHandleValue(globals, member, target, offset);
+			if (result == null && target == "value")
+				result = DoHandleVariable(text, offset, target, vars, globals);
 			
 			// SomeType.
 			if (result == null)
@@ -57,17 +59,160 @@ namespace AutoComplete
 					Log.WriteLine("AutoComplete", "found type: {0}", result.FullName);
 			}
 			
-			// name. (where name is a local, argument, or field)
+			// name. (where name is a local, argument, field, or property)
 			if (result == null)
-				result = DoHandleVariable(text, globals, member, target, offset);
-
-			if (result == null)
-				result = DoHandleProperty(globals, member, target);
+				result = DoHandleVariable(text, offset, target, vars, globals);
 			
-			return result;
+			return Tuple.Make(result, vars);
 		}
 		
 		#region Private Methods
+		// This is a bit overkill if all we want to do is identify the target, but we also
+		// need this info to do arg completion.
+		private Variable[] DoGetVariables(string text, CsMember member, CsGlobalNamespace globals, int offset)
+		{
+			var vars = new List<Variable>();
+			
+			if (member != null)
+			{
+				// this
+				if (member.DeclaringType != null)
+					if ((member.Modifiers & MemberModifiers.Static) == 0)
+						vars.Add(new Variable(member.DeclaringType.FullName, "this", null));
+				
+				// value
+				CsProperty prop = member as CsProperty;
+				if (prop != null && prop.HasSetter)
+				{
+					if (prop.SetterBody.First < offset && offset <= prop.SetterBody.Last)
+						vars.Add(new Variable(prop.ReturnType, "value", null));
+				}
+				
+				CsIndexer indexer = member as CsIndexer;
+				if (indexer != null && indexer.HasSetter)
+				{
+					if (indexer.SetterBody.First < offset && offset <= indexer.SetterBody.Last)
+						vars.Add(new Variable(indexer.ReturnType, "value", null));
+				}
+			}
+			
+			// locals
+			CsBody body = DoGetBody(member, offset);
+			if (body != null)
+			{
+				Local[] locals = m_locals.Parse(text, body.Start, offset);
+				for (int i = locals.Length - 1; i >= 0; --i)
+				{
+					if (!vars.Exists(v => v.Name == locals[i].Name))
+						vars.Add(new Variable(locals[i].Type, locals[i].Name, locals[i].Value));
+				}
+			}
+			
+			// args
+			CsParameter[] parms = DoGetParameters(member);
+			if (parms != null)
+			{
+				foreach (CsParameter p in parms)
+				{
+					if (!vars.Exists(v => v.Name == p.Name))
+						vars.Add(new Variable(p.Type, p.Name, null));
+				}
+			}
+			
+			// fields and properties
+			if (member != null && member.DeclaringType != null)
+			{
+				ResolvedTarget type = m_resolveType.Resolve(member.DeclaringType.FullName, globals, true);
+				if (type != null)
+				{
+					DoFindFields(globals, type, vars);
+					DoFindProperties(globals, type, vars);
+				}
+				
+				if (member.DeclaringType.Bases.HasBaseClass)
+				{
+					foreach (ResolvedTarget t in m_resolveType.GetBases(globals, member.DeclaringType.FullName, true))
+					{
+						DoFindFields(globals, t, vars);
+						DoFindProperties(globals, t, vars);
+					}
+				}
+			}
+			
+			if (Log.IsEnabled(TraceLevel.Verbose, "AutoComplete"))
+			{
+				Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "Variables:");
+				foreach (Variable v in vars)
+				{
+					Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "    {0}   {1}", v.Type, v.Name);
+				}
+			}
+			
+			return vars.ToArray();
+		}
+		
+		private void DoFindFields(CsGlobalNamespace globals, ResolvedTarget type, List<Variable> vars)
+		{
+			if (type.Type != null)
+			{
+				for (int i = 0; i < type.Type.Fields.Length; ++i)
+				{
+					CsField field = type.Type.Fields[i];
+					if (!vars.Exists(v => v.Name == field.Name))
+						vars.Add(new Variable(field.Type, field.Name, null));
+				}
+			}
+			else if (type.Hash != null)
+			{
+				var names = m_database.FindFields(type.FullName);
+				foreach (var name in names)
+				{
+					if (!vars.Exists(v => v.Name == name.Second))
+						vars.Add(new Variable(name.First, name.Second, null));
+				}
+			}
+		}
+		
+		private void DoFindProperties(CsGlobalNamespace globals, ResolvedTarget type, List<Variable> vars)
+		{
+			if (type.Type != null)
+			{
+				for (int i = 0; i < type.Type.Properties.Length; ++i)
+				{
+					CsProperty prop = type.Type.Properties[i];
+					if (prop.HasGetter)
+						if (!vars.Exists(v => v.Name == prop.Name))
+							vars.Add(new Variable(prop.ReturnType, prop.Name, null));
+				}
+			}
+			else if (type.Hash != null)
+			{
+				var names = m_database.FindMethodsWithPrefix(type.FullName, "get_", 0);
+				foreach (var name in names)
+				{
+					if (!vars.Exists(v => v.Name == name.Second))
+						vars.Add(new Variable(name.First, name.Second, null));
+				}
+			}
+		}
+		
+		private CsParameter[] DoGetParameters(CsMember member)
+		{
+			CsIndexer indexer = member as CsIndexer;
+			if (indexer != null)
+				return indexer.Parameters;
+			
+			CsMethod method = member as CsMethod;
+			if (method != null)
+				return method.Parameters;
+			
+			CsOperator op = member as CsOperator;
+			if (op != null)
+				return op.Parameters;
+				
+			return null;
+		}
+		
 		private ResolvedTarget DoHandleThis(CsMember member, string target)
 		{
 			ResolvedTarget result = null;
@@ -85,162 +230,51 @@ namespace AutoComplete
 			return result;
 		}
 		
-		private ResolvedTarget DoHandleValue(CsGlobalNamespace globals, CsMember member, string target, int offset)
+		private ResolvedTarget DoHandleVariable(string text, int offset, string target, Variable[] vars, CsGlobalNamespace globals)
 		{
 			ResolvedTarget result = null;
 			
-			if (target == "value")
+			for (int i = 0; i < vars.Length && result == null; ++i)
 			{
-				string type = null;
-				
-				CsProperty prop = member as CsProperty;
-				if (prop != null && prop.HasSetter)
+				if (vars[i].Name == target)
 				{
-					if (prop.SetterBody.First < offset && offset <= prop.SetterBody.Last)
-						type = prop.ReturnType;
-				}
-				
-				CsIndexer i = member as CsIndexer;
-				if (type == null && i != null && i.HasSetter)
-				{
-					if (i.SetterBody.First < offset && offset <= i.SetterBody.Last)
-						type = i.ReturnType;
-				}
-				
-				if (type != null)
-				{
-					result = m_resolveType.Resolve(type, globals, true);
-					if (result != null)
-						Log.WriteLine("AutoComplete", "found value: {0}", result.FullName);
-				}
-			}
-			
-			return result;
-		}
-		
-		private ResolvedTarget DoHandleVariable(string text, CsGlobalNamespace globals, CsMember member, string target, int offset)
-		{
-			ResolvedTarget result = null;
-			
-			if (member != null)
-			{
-				if (result == null)
-					result = DoFindLocalVarType(text, globals, member, target, offset);
-				
-				if (result == null)
-					result = DoFindArgType(globals, member, target);
-				
-				if (result == null)
-					result = DoFindFieldType(globals, member, target);
-			}
-			
-			return result;
-		}
-		
-		private ResolvedTarget DoHandleProperty(CsGlobalNamespace globals, CsMember member, string target)
-		{
-			ResolvedTarget result = null;
-			
-			if (member != null && member.DeclaringType != null)
-			{
-				ResolvedTarget type = m_resolveType.Resolve(member.DeclaringType.FullName, globals, true);
-				if (type != null)
-					result = DoFindProperty(globals, type, target);
-				
-				if (result == null && member.DeclaringType.Bases.HasBaseClass)
-				{
-					foreach (ResolvedTarget t in m_resolveType.GetBases(globals, member.DeclaringType.FullName, true))
+					string type = vars[i].Type;
+					if (type == "var" && vars[i].Value != null)
 					{
-						result = DoFindProperty(globals, t, target);
-						if (result != null)
-							break;
-					}
-				}
-				
-				if (result != null)
-					Log.WriteLine("AutoComplete", "found property: {0}", result.FullName);
-			}
-			
-			return result;
-		}
-		
-		private ResolvedTarget DoFindProperty(CsGlobalNamespace globals, ResolvedTarget type, string target)
-		{
-			ResolvedTarget result = null;
-			
-			if (type.Type != null)
-			{
-				for (int i = 0; i < type.Type.Properties.Length && result == null; ++i)
-				{
-					CsProperty prop = type.Type.Properties[i];
-					if (prop.HasGetter && prop.Name == target)
-					{
-						result = m_resolveType.Resolve(prop.ReturnType, globals, true);
-					}
-				}
-			}
-			else if (type.Hash != null)
-			{
-				string fullName = m_database.FindMethodType(type.FullName, "get_" + target, 0);
-				if (fullName != null)
-					result = m_resolveType.Resolve(fullName, globals, true);
-			}
-			
-			return result;
-		}
-		
-		private ResolvedTarget DoFindLocalVarType(string text, CsGlobalNamespace globals, CsMember member, string name, int offset)
-		{
-			ResolvedTarget result = null;
-			
-			CsBody body = DoGetBody(member, offset);
-			if (body != null)
-			{
-				Local[] locals = m_locals.Parse(text, body.Start, offset);
-				for (int i = locals.Length - 1; i >= 0 && result == null; --i)		// note that we want to use the last match
-				{
-					if (locals[i].Name == name)
-					{
-						string type = locals[i].Type;
-						if (type == "var" && locals[i].Value != null)
+						string value = vars[i].Value;
+						if (value.StartsWith("new"))
 						{
-							string value = locals[i].Value;
-							if (value.StartsWith("new"))
-							{
-								value = DoGetNewValue(value);
-							}
-							else if (value.StartsWith("from "))
-							{
-								value = "System.Collections.Generic.IEnumerable`1";
-							}
-							else
-							{
-								Match m = m_getRE.Match(value);
-								if (m.Success)
-								{
-									value = m.Groups[1].Value;	// TODO: need something more general here
-								}
-							}
-							
-							result = Resolve(text, value, offset, globals);
-							
-							if (result != null)
-								Log.WriteLine("AutoComplete", "found var local: {0}", result.FullName);
+							value = DoGetNewValue(value);
+						}
+						else if (value.StartsWith("from "))
+						{
+							value = "System.Collections.Generic.IEnumerable`1";
 						}
 						else
 						{
-							result = m_resolveType.Resolve(type, globals, true);
-							if (result != null)
-								Log.WriteLine("AutoComplete", "found local: {0}", result.FullName);
+							Match m = ms_getRE.Match(value);
+							if (m.Success)
+							{
+								value = m.Groups[1].Value;	// TODO: need something more general here
+							}
 						}
+						
+						result = Resolve(text, value, offset, globals).First;
+						
+						if (result != null)
+							Log.WriteLine("AutoComplete", "found var local: {0}", result.FullName);
+					}
+					else
+					{
+						result = m_resolveType.Resolve(type, globals, true);
+						if (result != null)
+							Log.WriteLine("AutoComplete", "found local: {0}", result.FullName);
 					}
 				}
 			}
 			
 			return result;
 		}
-
-		private Regex m_getRE = new Regex(@"\w+ \. Get \s* < \s* (\w+) \s* > \s* \( \s* \)", RegexOptions.IgnorePatternWhitespace);
 		
 		private string DoGetNewValue(string value)
 		{
@@ -326,109 +360,6 @@ namespace AutoComplete
 			return body;
 		}
 		
-		private ResolvedTarget DoFindArgType(CsGlobalNamespace globals, CsMember member, string name)
-		{
-			string type = null;
-			
-			do
-			{
-				CsIndexer i = member as CsIndexer;
-				if (i != null)
-				{
-					type = DoFindParamType(i.Parameters, name);
-					break;
-				}
-				
-				CsMethod m = member as CsMethod;
-				if (m != null)
-				{
-					type = DoFindParamType(m.Parameters, name);
-					break;
-				}
-				
-				CsOperator o = member as CsOperator;
-				if (o != null)
-				{
-					type = DoFindParamType(o.Parameters, name);
-					break;
-				}
-			}
-			while (false);
-			
-			ResolvedTarget result = null;
-			if (type != null)
-			{
-				result = m_resolveType.Resolve(type, globals, true);
-				if (result != null)
-					Log.WriteLine("AutoComplete", "found arg: {0}", result.FullName);
-			}
-			
-			return result;
-		}
-		
-		private ResolvedTarget DoFindFieldType(CsGlobalNamespace globals, CsMember member, string name)
-		{
-			ResolvedTarget result = null;
-			
-			if (member != null && member.DeclaringType != null)
-			{
-				ResolvedTarget type = m_resolveType.Resolve(member.DeclaringType.FullName, globals, true);
-				if (type != null)
-					result = DoFindField(globals, type, name);
-				
-				if (result == null && member.DeclaringType.Bases.HasBaseClass)
-				{
-					foreach (ResolvedTarget t in m_resolveType.GetBases(globals, member.DeclaringType.FullName, true))
-					{
-						result = DoFindField(globals, t, name);
-						if (result != null)
-							break;
-					}
-				}
-				
-				if (result != null)
-					Log.WriteLine("AutoComplete", "found field: {0}", result.FullName);
-			}
-			
-			return result;
-		}
-		
-		private ResolvedTarget DoFindField(CsGlobalNamespace globals, ResolvedTarget type, string target)
-		{
-			ResolvedTarget result = null;
-		
-			if (type.Type != null)
-			{
-				for (int i = 0; i < type.Type.Fields.Length && result == null; ++i)
-				{
-					CsField field = type.Type.Fields[i];
-					if (field.Name == target)
-					{
-						result = m_resolveType.Resolve(field.Type, globals, true);
-					}
-				}
-			}
-			else if (type.Hash != null)
-			{
-				string fullName = m_database.FindFieldType(type.FullName, target);
-				if (fullName != null)
-					result = m_resolveType.Resolve(fullName, globals, true);
-			}
-			
-			return result;
-		}
-		
-		private string DoFindParamType(CsParameter[] parms, string name)
-		{
-			foreach (CsParameter p in parms)
-			{
-				if (p.Name == name)
-					return p.Type;
-			}
-			
-			return null;
-		}
-		
 		// Find the last member offset intersects.
 		private CsMember DoFindMember(CsNamespace ns, int offset)
 		{
@@ -459,6 +390,8 @@ namespace AutoComplete
 		private ITargetDatabase m_database;
 		private ICsLocalsParser m_locals;
 		private ResolveType m_resolveType;
+
+		private Regex ms_getRE = new Regex(@"\w+ \. Get \s* < \s* (\w+) \s* > \s* \( \s* \)", RegexOptions.IgnorePatternWhitespace);
 		#endregion
 	}
 }

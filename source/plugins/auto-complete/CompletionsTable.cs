@@ -26,6 +26,7 @@ using Shared;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text;
 
 namespace AutoComplete
 {
@@ -42,21 +43,20 @@ namespace AutoComplete
 			ActiveObjects.Add(this);
 		}
 		
-		public void Open(NSTextView text, string[] names)
+		public void Open(NSTextView text, Member[] members, Variable[] vars)
 		{
 			m_text = text;
-			m_names = new List<string>(names);
+			m_members = new List<Member>(members);
+			m_variables = new List<Variable>(vars);
 			m_completed = string.Empty;
+			m_currentArg = -1;
+			m_argTypes = new string[0];
+			m_argNames = new string[0];
 			
-			m_names.Sort();
+			m_members.Sort((lhs, rhs) => lhs.Text.CompareTo(rhs.Text));
+			m_variables.Sort((lhs, rhs) => lhs.Name.CompareTo(rhs.Name));
 			reloadData();
-			
-			if (m_names.Count > 0)
-			{
-				var indexes = NSIndexSet.indexSetWithIndex(0);
-				selectRowIndexes_byExtendingSelection(indexes, false);
-				scrollRowToVisible(0);
-			}
+			DoResetSelection(null);
 		}
 		
 		public new void keyDown(NSEvent evt)
@@ -111,34 +111,49 @@ namespace AutoComplete
 		
 		public void doubleClicked(NSObject sender)
 		{
-			if (selectedRow() >= 0)
+			int row = selectedRow();
+			if (row >= 0)
 			{
-				string name = m_names[selectedRow()];
-				int i = name.IndexOf('(');
-				if (i > 0)
-					if (i + 1 < name.Length && name[i + 1] == ')')
-						name = name.Substring(0, i + 2);
-					else
-						name = name.Substring(0, i + 1);
-				m_text.insertText(NSString.Create(name));
+				string text = DoGetInsertText();
+				m_text.insertText(NSString.Create(text));
+				
+				if (m_currentArg == -1)
+				{
+					m_argTypes = m_members[row].ArgTypes;
+					m_argNames = m_members[row].ArgNames;
+					m_completed = string.Empty;
+				}
+				
+				if (m_currentArg + 1 < m_argNames.Length)
+				{
+					++m_currentArg;
+					
+					if (m_currentArg == 0)
+						reloadData();
+					
+					DoUpdateLabel();
+					DoResetSelection(m_argNames[m_currentArg]);
+				}
+				else
+				{
+					m_text = null;
+					window().windowController().Call("hide");
+				}
 			}
 			else
 				Functions.NSBeep();
-			
-			m_text = null;
-			window().windowController().Call("hide");
 		}
 		
 		public int numberOfRowsInTableView(NSTableView table)
 		{
-			return m_names.Count;
+			return m_currentArg < 0 ? m_members.Count : m_variables.Count;
 		}
 		
 		public NSObject tableView_objectValueForTableColumn_row(NSTableView table, NSTableColumn col, int row)
 		{
 			NSObject result;
 			
-			string name = m_names[row];
+			string name = m_currentArg < 0 ? m_members[row].Text : m_variables[row].Name;
 			int n = DoCountMatching(name);
 			if (n > 0)
 			{
@@ -163,20 +178,102 @@ namespace AutoComplete
 		}
 		
 		#region Private Methods
+		private void DoUpdateLabel()
+		{
+			var builder = new StringBuilder();
+			NSRange range = NSRange.Empty;
+			
+			builder.Append('(');
+			for (int i = 0; i < m_argNames.Length; ++i)
+			{
+				builder.Append(m_argTypes[i]);
+				builder.Append(' ');
+				if (i == m_currentArg)
+					range = new NSRange(builder.Length, m_argNames[i].Length);
+				builder.Append(m_argNames[i]);
+				
+				if (i + 1 < m_argNames.Length)
+					builder.Append(", ");
+			}
+			builder.Append(')');
+			
+			var style = NSMutableParagraphStyle.Create();
+			style.setParagraphStyle(NSParagraphStyle.defaultParagraphStyle());
+			style.setAlignment(Enums.NSCenterTextAlignment);
+			
+			var str = NSMutableAttributedString.Create(builder.ToString(), Externs.NSParagraphStyleAttributeName, style);
+			var dict = NSDictionary.dictionaryWithObject_forKey(NSNumber.Create(-3.0f), Externs.NSStrokeWidthAttributeName);
+			str.addAttributes_range(dict, range);
+			
+			window().windowController().Call("updateLabel:", str);
+		}
+		
+		private void DoResetSelection(string name)
+		{
+			int row = -1;
+			
+			if (name != null)
+			{
+				for (int i = 0; i < (m_currentArg < 0 ? m_members.Count : m_variables.Count) && row < 0; ++i)
+				{
+					if (name == (m_currentArg < 0 ? m_members[i].Text : m_variables[i].Name))
+						row = i;
+				}
+			}
+			
+			if ((m_currentArg < 0 ? m_members.Count : m_variables.Count) > 0)
+			{
+				row = Math.Max(row, 0);
+				var indexes = NSIndexSet.indexSetWithIndex((uint) row);
+				selectRowIndexes_byExtendingSelection(indexes, false);
+				scrollRowToVisible(row);
+			}
+			else
+			{
+				deselectAll(this);
+			}
+		}
+		
+		private string DoGetInsertText()
+		{
+			int row = selectedRow();
+			string text = m_currentArg < 0 ? m_members[row].Text : m_variables[row].Name;
+			
+			if (m_currentArg < 0)
+			{
+				int i = text.IndexOf('(');
+				if (i > 0)
+					if (i + 1 < text.Length && text[i + 1] == ')')
+						text = text.Substring(0, i + 2);
+					else
+						text = text.Substring(0, i + 1);
+			}
+			else if (m_currentArg + 1 < m_argNames.Length)
+			{
+				text += ", ";
+			}
+			else if (m_currentArg + 1 == m_argNames.Length)
+			{
+				text += ")";
+			}
+			
+			return text;
+		}
+		
 		private int DoMatchName()
 		{
 			int index = -1;
 			int count = 0;
 			
-			for (int i = 1; i < m_names.Count; ++i)
+			for (int i = 1; i < m_members.Count; ++i)
 			{
-				int n = DoCountMatching(m_names[i]);
+				int n = DoCountMatching(m_members[i].Text);
 				if (n > count)
 				{
 					index = i;
 					count = n;
 				}
-				else if (count == 0 && m_completed.Length > 0 && char.ToLower(m_names[i][0]) < char.ToLower(m_completed[0]))	// if there's no match we still want to select a name near what the user typed
+				else if (count == 0 && m_completed.Length > 0 && char.ToLower(m_members[i].Text[0]) < char.ToLower(m_completed[0]))	// if there's no match we still want to select a name near what the user typed
 				{
 					index = i;
 				}
@@ -192,7 +289,7 @@ namespace AutoComplete
 				int row = Math.Max(index - 2, 0);
 				scrollRowToVisible(row);
 				
-				row = Math.Min(index + 2, m_names.Count - 1);
+				row = Math.Min(index + 2, m_members.Count - 1);
 				scrollRowToVisible(row);
 			}
 			else
@@ -216,8 +313,13 @@ namespace AutoComplete
 		
 		#region Fields
 		private NSTextView m_text;
-		private List<string> m_names = new List<string>();
+		private List<Member> m_members = new List<Member>();
+		private List<Variable> m_variables = new List<Variable>();
 		private string m_completed = string.Empty;
+		
+		private int m_currentArg;
+		private string[] m_argTypes = new string[0];
+		private string[] m_argNames = new string[0];
 		#endregion
 	}
 }

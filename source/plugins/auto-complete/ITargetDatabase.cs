@@ -33,11 +33,18 @@ namespace AutoComplete
 		
 		// Returns either null or the full type name of the result type of the specified
 		// method.
-		string FindMethodType(string fullName, string name, int numArgs);
+//		string FindMethodType(string fullName, string name, int numArgs);
+
+		// Returns all of the method return types/names in the specified type (but not 
+		// bases) which start with the specified prefix.
+		Tuple2<string, string>[] FindMethodsWithPrefix(string fullName, string prefix, int numArgs);
 		
 		// Returns either null or the full type name of a field defined in the fullName
 		// type or one of its base classes.
-		string FindFieldType(string fullName, string name);
+//		string FindFieldType(string fullName, string name);
+		
+		// Returns a list of field type/names for the specified type (but not its bases).
+		Tuple2<string, string>[] FindFields(string fullName);
 		
 		// Returns either null or the full name of the type's base class.
 		string FindBaseType(string fullName);

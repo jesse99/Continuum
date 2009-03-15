@@ -13,9 +13,6 @@ mutating a local used in multiple lambdas (or for loop variable used with lambda
 might want a sample app
 
 * Work on arg completion:
-	- label should have arg type/name
-	- label should truncate from the middle
-	- members should be locals, args, fields, and properties
 	- prune value type members
 * Styles aren't getting applied reliably. Mostly member and type names.
 * Work on target completion:

@@ -42,22 +42,29 @@ namespace AutoComplete
 			return hash;
 		}
 		
-		public string FindMethodType(string fullName, string name, int numArgs)
+		public Tuple2<string, string>[] FindMethodsWithPrefix(string fullName, string prefix, int numArgs)
 		{
-			return null;
+			return new Tuple2<string, string>[0];
 		}
-		
-		public string FindFieldType(string fullName, string name)
+				
+		public Tuple2<string, string>[] FindFields(string fullName)
 		{
 			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
-			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
 			
-			string type = null;
+			var fields = new List<Tuple2<string, string>>();
 			
 			if (BaseFieldTypes != null)
-				BaseFieldTypes.TryGetValue(fullName + "+" + name, out type);
+			{
+				foreach (var entry in BaseFieldTypes)
+				{
+					if (entry.Key.StartsWith(fullName + "+"))
+					{
+						fields.Add(Tuple.Make(entry.Value, entry.Key.Substring(fullName.Length + 1)));
+					}
+				}
+			}
 			
-			return type;
+			return fields.ToArray();
 		}
 		
 		public string FindBaseType(string fullName)

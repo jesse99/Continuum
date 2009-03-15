@@ -22,6 +22,7 @@
 using Gear;
 using Shared;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
@@ -47,49 +48,44 @@ namespace AutoComplete
 			return rows.Length > 0 ? rows[0][0] : null;
 		}
 		
-		public string FindMethodType(string fullName, string name, int numArgs)
+		public Tuple2<string, string>[] FindMethodsWithPrefix(string fullName, string prefix, int numArgs)
 		{
 			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
+			Trace.Assert(!string.IsNullOrEmpty(prefix), "prefix is null or empty");
+			Trace.Assert(numArgs >= 0, "numArgs is negative");
 			
 			string sql = string.Format(@"
-				SELECT return_type, arg_names
+				SELECT return_type, arg_names, name
 					FROM Methods 
-				WHERE declaring_type = '{0}' AND name = '{1}'", fullName, name);
+				WHERE declaring_type = '{0}' AND name GLOB '{0}*'", fullName, prefix);
 			string[][] rows = m_database.QueryRows(sql);
 			
 			var result = from r in rows
 				where r[1].Count(c => c == ':') == numArgs
-				select r[0];
+				select Tuple.Make(r[0], r[2]);
 
-			return result.Count() == 1 ? result.First() : null;
+			return result.ToArray();
 		}
 		
-		public string FindFieldType(string fullName, string name)
+		public Tuple2<string, string>[] FindFields(string fullName)
 		{
 			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
-			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
 			
-			string type = null;
+			var fields = new List<Tuple2<string, string>>();
 			
-			while (type == null && fullName != null && fullName != "Sytem.Object")
-			{				
-				string sql = string.Format(@"
-					SELECT name, type, attributes
-						FROM Fields 
-					WHERE declaring_type = '{0}'", fullName);
-				string[][] rows = m_database.QueryRows(sql);
-				
-				for (int i = 0; i < rows.Length && type == null; ++i)
-				{
-					if (rows[i][0] == name)
-						if ((ushort.Parse(rows[i][2]) & 1) == 0)	// no private base fields
-							type = rows[i][1];
-				}
-				
-				fullName = DoFindBaseType(fullName);
+			string sql = string.Format(@"
+				SELECT name, type, attributes
+					FROM Fields 
+				WHERE declaring_type = '{0}'", fullName);
+			string[][] rows = m_database.QueryRows(sql);
+			
+			for (int i = 0; i < rows.Length; ++i)
+			{
+				if ((ushort.Parse(rows[i][2]) & 1) == 0)				// no private base fields (declaring type fields will come from the parser)
+					fields.Add(Tuple.Make(rows[i][1], rows[i][0]));
 			}
 			
-			return type;
+			return fields.ToArray();
 		}
 		
 		public string FindBaseType(string fullName)
@@ -121,25 +117,7 @@ namespace AutoComplete
 
 			return result.ToArray();
 		}
-		
-		#region Private Methods
-		private string DoFindBaseType(string fullName)
-		{
-			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
-			
-			if (fullName == "System.Object")
-				return null;
 				
-			string sql = string.Format(@"
-				SELECT DISTINCT base_type
-					FROM Types
-				WHERE type = '{0}' OR type GLOB '{0}<*'", fullName);
-			string[][] rows = m_database.QueryRows(sql);
-			
-			return rows.Length > 0 ? rows[0][0] : null;
-		}
-		#endregion
-		
 		#region Fields
 		private Database m_database;
 		#endregion

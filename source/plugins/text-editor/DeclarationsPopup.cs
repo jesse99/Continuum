@@ -150,7 +150,7 @@ namespace TextEditor
 				dict.setObject_forKey(font, Externs.NSFontAttributeName);
 				
 				if (declarations[i].IsType)
-					dict.setObject_forKey(NSNumber.Create(-5.0f), Externs.NSStrokeWidthAttributeName);
+					dict.setObject_forKey(NSNumber.Create(-4.0f), Externs.NSStrokeWidthAttributeName);
 				
 				addItemWithTitle(NSString.Empty);
 				NSMenuItem item = itemAtIndex(i);

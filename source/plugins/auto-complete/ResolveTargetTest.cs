@@ -48,7 +48,7 @@ namespace AutoComplete
 			var parser = new CsParser.Parser();
 			CsGlobalNamespace globals = parser.Parse(text);
 			
-			m_target = resolver.Resolve(text, target, offset, globals);
+			m_target = resolver.Resolve(text, target, offset, globals).First;
 			return m_target != null;
 		}
 		
@@ -551,7 +551,6 @@ namespace CoolLib
 		[Test]
 		public void Field2()
 		{
-Console.WriteLine("--------------------------");
 			string text = @"
 using System;
 
@@ -612,7 +611,6 @@ namespace CoolLib
 		[Test]
 		public void Property()
 		{
-Console.WriteLine("--------------------------");
 			string text = @"
 using System;
 

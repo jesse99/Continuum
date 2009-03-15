@@ -32,7 +32,7 @@ namespace AutoComplete
 	{
 		public CompletionsController() : base(NSObject.AllocNative("CompletionsController"))
 		{
-			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("completions"), this);			
+			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("completions"), this);
 			Unused.Value = window().setFrameAutosaveName(NSString.Create("auto-complete window"));
 			
 			m_table = new IBOutlet<CompletionsTable>(this, "table");
@@ -41,14 +41,14 @@ namespace AutoComplete
 			ActiveObjects.Add(this);
 		}
 		
-		public void Show(NSTextView text, string type, string[] names)
+		public void Show(NSTextView text, string type, Member[] names, Variable[] vars)
 		{
 			var wind = (CompletionsWindow) window();
 			NSPoint loc = DoFindWindowLoc(text);
 			wind.SetLoc(loc);
 			
 			m_label.Value.setStringValue(NSString.Create(type));
-			m_table.Value.Open(text, names);
+			m_table.Value.Open(text, names, vars);
 			
 			NSApplication.sharedApplication().beginSheet_modalForWindow_modalDelegate_didEndSelector_contextInfo(
 				wind, text.window(), null, null, IntPtr.Zero);
@@ -58,6 +58,11 @@ namespace AutoComplete
 		{
 			NSApplication.sharedApplication().endSheet(window());
 			window().orderOut(this);
+		}
+		
+		public void updateLabel(NSObject text)
+		{
+			m_label.Value.setObjectValue(text);
 		}
 		
 		#region Private Methods

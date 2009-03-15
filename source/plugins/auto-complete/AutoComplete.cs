@@ -102,15 +102,15 @@ namespace AutoComplete
 							CsGlobalNamespace globals = m_cachedGlobals.Get();
 							if (globals != null)
 							{
-								ResolvedTarget target = m_target.Resolve(m_text.Text, expr, range.location, globals);
-								if (target != null)
+								var target = m_target.Resolve(m_text.Text, expr, range.location, globals);
+								if (target.First != null)
 								{
-									string[] methods = m_members.Resolve(target, globals);
-									if (methods.Length > 0)
+									Member[] members = m_members.Resolve(target.First, globals);
+									if (members.Length > 0)
 									{
 										if (m_controller == null)	
 											m_controller = new CompletionsController();
-										m_controller.Show(view, target.FullName, methods);
+										m_controller.Show(view, target.First.FullName, members, target.Second);
 									}
 								}
 							}

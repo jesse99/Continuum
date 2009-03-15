@@ -48,16 +48,10 @@ namespace AutoComplete
 			var parser = new CsParser.Parser();
 			CsGlobalNamespace globals = parser.Parse(text);
 			
-			m_target = resolver.Resolve(text, target, offset, globals);
+			m_target = resolver.Resolve(text, target, offset, globals).First;
 			return m_target != null;
 		}
-		
-//		private bool DoGetTarget(string text, string target, int offset)
-//		{
-//			var database = new MockTargetDatabase();
-//			return DoGetTarget(text, target, offset, database);
-//		}
-		
+				
 		[Test]
 		public void Arg()
 		{

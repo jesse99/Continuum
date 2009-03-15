@@ -36,9 +36,9 @@ namespace AutoComplete
 			m_database = db;
 		}
 		
-		public string[] Resolve(ResolvedTarget target, CsGlobalNamespace globals)
+		public Member[] Resolve(ResolvedTarget target, CsGlobalNamespace globals)
 		{
-			var members = new List<string>();
+			var members = new List<Member>();
 			
 			// Get members of the type.
 			string fullName = DoGetMembers(target, globals, members, true);
@@ -68,7 +68,7 @@ namespace AutoComplete
 		}
 		
 		#region Private Methods
-		private void DoGetExtensionMethods(string fullName, CsGlobalNamespace globals, List<string> members)
+		private void DoGetExtensionMethods(string fullName, CsGlobalNamespace globals, List<Member> members)
 		{
 			string sql = string.Format(@"
 				SELECT name, arg_types, arg_names, attributes, namespace
@@ -82,11 +82,11 @@ namespace AutoComplete
 				where DoIsValidExtensionMethod(r[4], ushort.Parse(r[3]), globals)
 				select DoGetMethodName(r[0], r[1], r[2], 1);
 			
-			foreach (string name in methods)
+			foreach (Member name in methods)
 				members.AddIfMissing(name);
 		}
 		
-		private string DoGetMembers(ResolvedTarget target, CsGlobalNamespace globals, List<string> members, bool includePrivates)
+		private string DoGetMembers(ResolvedTarget target, CsGlobalNamespace globals, List<Member> members, bool includePrivates)
 		{
 			// Get the members for the target type. Note that we don't use the
 			// database if we have the parsed type because it is likely out of date.
@@ -112,13 +112,13 @@ namespace AutoComplete
 			return fullName;
 		}
 		
-		private void DoGetDatabaseMembers(string fullName, bool instanceCall, List<string> members, bool includePrivates)
+		private void DoGetDatabaseMembers(string fullName, bool instanceCall, List<Member> members, bool includePrivates)
 		{
 			DoGetDatabaseMethods(fullName, instanceCall, members, includePrivates);
 			DoGetDatabaseFields(fullName, instanceCall, members, includePrivates);
 		}
 		
-		private void DoGetDatabaseMethods(string fullName, bool instanceCall, List<string> members, bool includePrivates)
+		private void DoGetDatabaseMethods(string fullName, bool instanceCall, List<Member> members, bool includePrivates)
 		{
 			string sql = string.Format(@"
 				SELECT name, arg_types, arg_names, attributes
@@ -130,11 +130,11 @@ namespace AutoComplete
 				where DoIsValidMethod(r[0], ushort.Parse(r[3]), instanceCall, includePrivates)
 				select DoGetMethodName(r[0], r[1], r[2], 0);
 			
-			foreach (string name in methods)
+			foreach (Member name in methods)
 				members.AddIfMissing(name);
 		}
 		
-		private void DoGetDatabaseFields(string fullName, bool instanceCall, List<string> members, bool includePrivates)
+		private void DoGetDatabaseFields(string fullName, bool instanceCall, List<Member> members, bool includePrivates)
 		{
 			string sql = string.Format(@"
 				SELECT name, attributes
@@ -147,28 +147,28 @@ namespace AutoComplete
 				select r[0];
 			
 			foreach (string name in fields)
-				members.AddIfMissing(name);
+				members.AddIfMissing(new Member(name));
 		}
 		
-		private void DoGetParsedMembers(ResolvedTarget target, List<string> members, bool includePrivates)
+		private void DoGetParsedMembers(ResolvedTarget target, List<Member> members, bool includePrivates)
 		{
 			CsEnum e = target.Type as CsEnum;
 			if (e != null)
 			{
 				if (!target.IsInstance)
-					members.AddRange(e.Names);
+					members.AddRange(from n in e.Names select new Member(n));
 			}
 			else
 				DoGetParsedTypeMembers(target, members, includePrivates);
 		}
 		
-		private void DoGetParsedTypeMembers(ResolvedTarget target, List<string> members, bool includePrivates)
+		private void DoGetParsedTypeMembers(ResolvedTarget target, List<Member> members, bool includePrivates)
 		{
 			foreach (CsField field in target.Type.Fields)
 			{
 				if (target.IsInstance == ((field.Modifiers & MemberModifiers.Static) == 0))
 					if (includePrivates || field.Access != MemberModifiers.Private)
-						members.AddIfMissing(field.Name);
+						members.AddIfMissing(new Member(field.Name));
 			}
 			
 			foreach (CsMethod method in target.Type.Methods)
@@ -177,7 +177,13 @@ namespace AutoComplete
 				{
 					if (target.IsInstance == ((method.Modifiers & MemberModifiers.Static) == 0))
 						if (includePrivates || method.Access != MemberModifiers.Private)
-							members.AddIfMissing(method.Name + "(" + string.Join(", ", (from p in method.Parameters select p.Type + " " + p.Name).ToArray()) + ")");
+						{
+							var atypes = from p in method.Parameters select p.Type;
+							var anames = from p in method.Parameters select p.Name;
+							string text = method.Name + "(" + string.Join(", ", (from p in method.Parameters select p.Type + " " + p.Name).ToArray()) + ")";
+							
+							members.AddIfMissing(new Member(text, atypes.ToArray(), anames.ToArray()));
+						}
 				}
 			}
 			
@@ -188,7 +194,7 @@ namespace AutoComplete
 				{
 					if (target.IsInstance == ((prop.Modifiers & MemberModifiers.Static) == 0))
 						if (includePrivates || prop.Access != MemberModifiers.Private)
-							members.AddIfMissing(prop.Name);
+							members.AddIfMissing(new Member(prop.Name));
 				}
 			}
 		}
@@ -259,9 +265,11 @@ namespace AutoComplete
 			return valid;
 		}
 		
-		private string DoGetMethodName(string mname, string argTypes, string argNames, int firstArg)
+		private Member DoGetMethodName(string mname, string argTypes, string argNames, int firstArg)
 		{
 			var builder = new StringBuilder(mname.Length + argTypes.Length + argNames.Length);
+			var atypes = new List<string>();
+			var anames = new List<string>();
 			
 			if (mname.StartsWith("get_"))
 			{
@@ -286,11 +294,13 @@ namespace AutoComplete
 						type = DoTrimNamespace(type);
 						type = DoTrimGeneric(type);
 					}
+					atypes.Add(type);
 					builder.Append(type);
 					
 					builder.Append(' ');
 					
 					string name = names[i];
+					anames.Add(name);
 					builder.Append(name);
 					
 					if (i + 1 < types.Length)
@@ -299,7 +309,7 @@ namespace AutoComplete
 				builder.Append(')');
 			}
 			
-			return builder.ToString();
+			return new Member(builder.ToString(), atypes.ToArray(), anames.ToArray());
 		}
 		
 		// System.Collections.Generic.IEnumerable`1<TSource>:System.Func`2<TSource,System.Boolean>
