@@ -69,7 +69,6 @@ namespace ObjectModel
 			// assemblies which are being used instead of the latest version of the assembly.
 			string path = Populate.GetDatabasePath(m_boss);
 			Log.WriteLine("ObjectModel", "'{0}' was opened", path);
-			Log.WriteLine("Database", "creating populate database");
 			m_database = new Database(path);
 			
 			Broadcaster.Register("opened directory", this, this.DoOnOpenDir);

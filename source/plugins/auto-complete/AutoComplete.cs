@@ -72,7 +72,6 @@ namespace AutoComplete
 				{
 					string name = System.IO.Path.GetFileName(editor.Path);
 			
-			Log.WriteLine("Database", "creating auto-complete database");
 					string path = System.IO.Path.Combine(Paths.SupportPath, name + "2.db");
 					m_database = new Database(path);
 					
