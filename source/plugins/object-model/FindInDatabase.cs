@@ -33,7 +33,7 @@ using System.Linq;
 namespace ObjectModel
 {
 	internal sealed class FindInDatabase : ITextContextCommands
-	{		
+	{
 		public void Instantiated(Boss boss)
 		{	
 			m_boss = boss;
@@ -43,7 +43,7 @@ namespace ObjectModel
 		{
 			get {return m_boss;}
 		}
-
+		
 		public void Get(Boss boss, string selection, List<TextContextItem> items)
 		{
 			if (boss != null)
@@ -79,8 +79,8 @@ namespace ObjectModel
 						addedSep = true;
 						
 						items.Add(new TextContextItem(
-							"Show Implementors", 
-							s => {DoShowImplementors(interfaces); return s;}, 
+							"Show Implementors",
+							s => {DoShowImplementors(interfaces); return s;},
 							0.4f));
 					}
 					
@@ -94,15 +94,15 @@ namespace ObjectModel
 						}
 						
 						items.Add(new TextContextItem(
-							"Show Short Form", 
-							s => {DoShowShort(types); return s;}, 
+							"Show Short Form",
+							s => {DoShowShort(types); return s;},
 							0.4f));
 								
 						var types2 = (from i in info where i.Third > 1 select i.First).Distinct();	// note that we can't mutate the types variable or it will screw up our lambda
 						if (types2.Any(t => t != "System.Object"))
 							items.Add(new TextContextItem(
-								"Show Base Classes", 
-								s => {DoShowBases(types2); return s;}, 
+								"Show Base Classes",
+								s => {DoShowBases(types2); return s;},
 								0.4f));
 					}
 					
@@ -116,8 +116,8 @@ namespace ObjectModel
 						}
 						
 						items.Add(new TextContextItem(
-							"Show Derived Classes", 
-							s => {DoShowDerived(unsealed); return s;}, 
+							"Show Derived Classes",
+							s => {DoShowDerived(unsealed); return s;},
 							0.4f));
 					}
 					
@@ -138,7 +138,7 @@ namespace ObjectModel
 				try
 				{
 					string file = fs.GetTempFile(fullName + " Short Form", ".cs");
-					using (StreamWriter writer = new StreamWriter(file)) 
+					using (StreamWriter writer = new StreamWriter(file))
 					{
 						var form = new ShortForm(m_dirBoss, writer);
 						form.Write(fullName);
@@ -160,20 +160,20 @@ namespace ObjectModel
 		private void DoShowBases(IEnumerable<string> fullNames)
 		{
 			var objects = m_dirBoss.Get<IObjectModel>();
-
+			
 			Boss boss = Gear.ObjectModel.Create("FileSystem");
 			var fs = boss.Get<IFileSystem>();
-
+			
 			foreach (string fullName in fullNames)
 			{
 				TypeAttributes[] attrs = objects.FindAttributes(fullName);
 				if (attrs.Length > 0)
 				{
-					Tuple2<string, TypeAttributes>[] bases = objects.FindBases(fullName);			
+					Tuple2<string, TypeAttributes>[] bases = objects.FindBases(fullName);
 					string file = fs.GetTempFile(fullName + " Base Classes", ".cs");
-		
+					
 					int i = 0;
-					using (StreamWriter writer = new StreamWriter(file)) 
+					using (StreamWriter writer = new StreamWriter(file))
 					{
 						foreach (var b in bases)
 						{
@@ -181,7 +181,7 @@ namespace ObjectModel
 						}
 						writer.WriteLine("{0}{1}{2}", new string('\t', i), ShortForm.GetModifiers(null, attrs[0]), fullName);
 					}
-		
+					
 					boss = Gear.ObjectModel.Create("Application");
 					var launcher = boss.Get<ILaunch>();
 					launcher.Launch(file, -1, -1, 1);
@@ -190,69 +190,69 @@ namespace ObjectModel
 		}
 		
 		private const int MaxDerived = 200;
-
+		
 		private void DoShowDerived(IEnumerable<string> fullNames)
 		{
 			var objects = m_dirBoss.Get<IObjectModel>();
-
+			
 			Boss boss = Gear.ObjectModel.Create("FileSystem");
 			var fs = boss.Get<IFileSystem>();
-
+			
 			foreach (string fullName in fullNames)
 			{
 				TypeAttributes[] attrs = objects.FindAttributes(fullName);
 				if (attrs.Length > 0)
 				{
 					Tuple2<string, TypeAttributes>[] derived = objects.FindDerived(fullName, MaxDerived + 1);
-
+					
 					string file = fs.GetTempFile(fullName + " Derived Classes", ".cs");
-					using (StreamWriter writer = new StreamWriter(file)) 
+					using (StreamWriter writer = new StreamWriter(file))
 					{
 						DoWriteTypes(writer, fullName, attrs[0], derived, string.Empty);
 					}
-		
+					
 					boss = Gear.ObjectModel.Create("Application");
 					var launcher = boss.Get<ILaunch>();
 					launcher.Launch(file, -1, -1, 1);
 				}
 			}
 		}
-
+		
 		private void DoShowImplementors(IEnumerable<string> fullNames)
 		{
 			Boss boss = Gear.ObjectModel.Create("FileSystem");
 			var fs = boss.Get<IFileSystem>();
-
+			
 			var objects = m_dirBoss.Get<IObjectModel>();
-
+			
 			foreach (string fullName in fullNames)
 			{
 				TypeAttributes[] attrs = objects.FindAttributes(fullName);
 				if (attrs.Length > 0)
 				{
 					Tuple2<string, TypeAttributes>[] derived = objects.FindImplementors(fullName);
-
+					
 					string file = fs.GetTempFile(fullName + " Implementors", ".cs");
-					using (StreamWriter writer = new StreamWriter(file)) 
+					using (StreamWriter writer = new StreamWriter(file))
 					{
 						DoWriteTypes(writer, fullName, attrs[0], derived, string.Empty);
 					}
-		
+					
 					boss = Gear.ObjectModel.Create("Application");
 					var launcher = boss.Get<ILaunch>();
 					launcher.Launch(file, -1, -1, 1);
 				}
 			}
 		}
-
+		
 		private void DoOpenFile(string fullName, bool isMethod)
 		{
 			Boss boss = Gear.ObjectModel.Create("Application");
 			var launcher = boss.Get<ILaunch>();
-
+			
 			var objects = m_dirBoss.Get<IObjectModel>();
 			SourceLine[] sources = isMethod ? objects.FindMethodSources(fullName) : objects.FindTypeSources(fullName);
-
+			
 			// If there is only one possibility then open it.
 			if (sources.Length == 1)
 			{
@@ -282,19 +282,19 @@ namespace ObjectModel
 		}
 		
 		private const int MaxOpenItems = 20;
- 		
- 		// full name/file name/kind
+		
+		// full name/file name/kind
 		public void DoAddOpenType(List<TextContextItem> items, Tuple3<string, string, int>[] info, float order)
 		{
 			var pairs = new List<Tuple2<string, string>>();		// full name/file name
 			foreach (var item in info)
 			{
 				if (item.Second.Length > 0 && item.Third > 0)
-					if (!pairs.Any(p => p.Second == item.Second))	// would be nice to use linq for this, but I'm not sure how we'd use Distinct for this part
+					if (!pairs.Any(p => p.Second == item.Second))		// would be nice to use linq for this, but I'm not sure how we'd use Distinct for this part
 						pairs.Add(Tuple.Make(item.First, item.Second));
 			}
 			pairs.Sort((lhs, rhs) => lhs.Second.CompareTo(rhs.Second));
-
+			
 			if (pairs.Count > 0)
 			{
 				items.Add(new TextContextItem(order));
@@ -303,8 +303,8 @@ namespace ObjectModel
 				{
 					int k = i;
 					items.Add(new TextContextItem(
-						"Open " + pairs[i].Second, 
-						s => {DoOpenFile(pairs[k].First, false); return s;}, 
+						"Open " + pairs[i].Second,
+						s => {DoOpenFile(pairs[k].First, false); return s;},
 						order));
 				}
 				
@@ -312,15 +312,15 @@ namespace ObjectModel
 					items.Add(new TextContextItem(Shared.Constants.Ellipsis, null, order));
 			}
 		}
-
- 		// full name/file name/kind
+		
+		// full name/file name/kind
 		public void DoAddOpenMethod(List<TextContextItem> items, Tuple3<string, string, int>[] info, float order)
 		{
-			var names = (from e in info 
-				where e.Third == 0 
-				orderby e.First 
+			var names = (from e in info
+				where e.Third == 0
+				orderby e.First
 				select e.First).Distinct();
-
+			
 			int count = names.Count();
 			if (count > 0)
 			{
@@ -330,15 +330,15 @@ namespace ObjectModel
 				foreach (string name in names)
 				{
 					string n = name;
-					string title = "Open " + name;					
-										
+					string title = "Open " + name;
+					
 					items.Add(new TextContextItem(
-						title, 
-						s => {DoOpenFile(n, true); return s;}, 
+						title,
+						s => {DoOpenFile(n, true); return s;},
 						order,
 						null,
 						DoGetAttrTitle(title)));
-
+					
 					if (++i >= MaxOpenItems)
 						break;
 				}
@@ -364,23 +364,23 @@ namespace ObjectModel
 				
 				atitle = NSMutableAttributedString.Create(title);
 				atitle.addAttribute_value_range(
-					Externs.NSFontAttributeName, 
-					NSFont.menuBarFontOfSize(0.0f), 
+					Externs.NSFontAttributeName,
+					NSFont.menuBarFontOfSize(0.0f),
 					new NSRange(0, title.Length));
-
+				
 				atitle.addAttribute_value_range(
-					Externs.NSForegroundColorAttributeName, 
-					NSColor.blueColor(), 
+					Externs.NSForegroundColorAttributeName,
+					NSColor.blueColor(),
 					new NSRange(k + 1, len));
 			}
 			
 			return atitle;
 		}
-
+		
 		private void DoWriteTypes(TextWriter writer, string fullName, TypeAttributes attrs, Tuple2<string, TypeAttributes>[] derived, string indent)
-		{			
+		{
 			var objects = m_dirBoss.Get<IObjectModel>();
-
+			
 			writer.WriteLine("{0}{1}{2}", indent, ShortForm.GetModifiers(null, attrs), fullName);
 			foreach (var entry in derived)
 			{
@@ -400,7 +400,7 @@ namespace ObjectModel
 				}
 			}
 		}
-								
+		
 		private string DoGetRealName(string name)
 		{
 			switch (name)
@@ -458,10 +458,10 @@ namespace ObjectModel
 			}
 		}								
 		#endregion
-
+		
 		#region Fields
 		private Boss m_boss;
-		private Boss m_dirBoss; 
+		private Boss m_dirBoss;
 		#endregion
-	} 
+	}
 }

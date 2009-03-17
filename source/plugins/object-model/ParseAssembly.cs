@@ -46,6 +46,7 @@ namespace ObjectModel
 		public void Opened()
 		{
 			string path = Populate.GetDatabasePath(m_boss);
+			Log.WriteLine("Database", "creating parse assembly database");
 			m_database = new Database(path);
 			
 			// TODO: once sqlite supports it the hash foreign keys should use ON DELETE CASCADE

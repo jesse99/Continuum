@@ -110,7 +110,7 @@ namespace TextEditor
 				m_watcher.Changed += this.DoDirChanged;	
 			}
 			else
-				((DeclarationsPopup) m_decPopup.Value).Init(this, null);			
+				((DeclarationsPopup) m_decPopup.Value).Init(this, null);
 		}
 		
 		public string Text

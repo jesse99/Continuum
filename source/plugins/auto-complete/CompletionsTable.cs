@@ -43,20 +43,15 @@ namespace AutoComplete
 			ActiveObjects.Add(this);
 		}
 		
-		public void Open(NSTextView text, Member[] members, Variable[] vars)
+		public void Open(NSTextView text, Member[] members)
 		{
 			m_text = text;
 			m_members = new List<Member>(members);
-			m_variables = new List<Variable>(vars);
 			m_completed = string.Empty;
-			m_currentArg = -1;
-			m_argTypes = new string[0];
-			m_argNames = new string[0];
 			
 			m_members.Sort((lhs, rhs) => lhs.Text.CompareTo(rhs.Text));
-			m_variables.Sort((lhs, rhs) => lhs.Name.CompareTo(rhs.Name));
 			reloadData();
-			DoResetSelection(null);
+			DoResetSelection();
 		}
 		
 		public new void keyDown(NSEvent evt)
@@ -114,31 +109,16 @@ namespace AutoComplete
 			int row = selectedRow();
 			if (row >= 0)
 			{
-				string text = DoGetInsertText();
+				string text;
+				NSRange range;
+				DoGetInsertText(row, out text, out range);
 				m_text.insertText(NSString.Create(text));
 				
-				if (m_currentArg == -1)
-				{
-					m_argTypes = m_members[row].ArgTypes;
-					m_argNames = m_members[row].ArgNames;
-					m_completed = string.Empty;
-				}
+				if (range.length > 0)
+					m_text.setSelectedRange(range);
 				
-				if (m_currentArg + 1 < m_argNames.Length)
-				{
-					++m_currentArg;
-					
-					if (m_currentArg == 0)
-						reloadData();
-					
-					DoUpdateLabel();
-					DoResetSelection(m_argNames[m_currentArg]);
-				}
-				else
-				{
-					m_text = null;
-					window().windowController().Call("hide");
-				}
+				m_text = null;
+				window().windowController().Call("hide");
 			}
 			else
 				Functions.NSBeep();
@@ -146,14 +126,14 @@ namespace AutoComplete
 		
 		public int numberOfRowsInTableView(NSTableView table)
 		{
-			return m_currentArg < 0 ? m_members.Count : m_variables.Count;
+			return m_members.Count;
 		}
 		
 		public NSObject tableView_objectValueForTableColumn_row(NSTableView table, NSTableColumn col, int row)
 		{
 			NSObject result;
 			
-			string name = m_currentArg < 0 ? m_members[row].Text : m_variables[row].Name;
+			string name = m_members[row].Text;
 			int n = DoCountMatching(name);
 			if (n > 0)
 			{
@@ -178,55 +158,13 @@ namespace AutoComplete
 		}
 		
 		#region Private Methods
-		private void DoUpdateLabel()
+		private void DoResetSelection()
 		{
-			var builder = new StringBuilder();
-			NSRange range = NSRange.Empty;
-			
-			builder.Append('(');
-			for (int i = 0; i < m_argNames.Length; ++i)
+			if (m_members.Count > 0)
 			{
-				builder.Append(m_argTypes[i]);
-				builder.Append(' ');
-				if (i == m_currentArg)
-					range = new NSRange(builder.Length, m_argNames[i].Length);
-				builder.Append(m_argNames[i]);
-				
-				if (i + 1 < m_argNames.Length)
-					builder.Append(", ");
-			}
-			builder.Append(')');
-			
-			var style = NSMutableParagraphStyle.Create();
-			style.setParagraphStyle(NSParagraphStyle.defaultParagraphStyle());
-			style.setAlignment(Enums.NSCenterTextAlignment);
-			
-			var str = NSMutableAttributedString.Create(builder.ToString(), Externs.NSParagraphStyleAttributeName, style);
-			var dict = NSDictionary.dictionaryWithObject_forKey(NSNumber.Create(-3.0f), Externs.NSStrokeWidthAttributeName);
-			str.addAttributes_range(dict, range);
-			
-			window().windowController().Call("updateLabel:", str);
-		}
-		
-		private void DoResetSelection(string name)
-		{
-			int row = -1;
-			
-			if (name != null)
-			{
-				for (int i = 0; i < (m_currentArg < 0 ? m_members.Count : m_variables.Count) && row < 0; ++i)
-				{
-					if (name == (m_currentArg < 0 ? m_members[i].Text : m_variables[i].Name))
-						row = i;
-				}
-			}
-			
-			if ((m_currentArg < 0 ? m_members.Count : m_variables.Count) > 0)
-			{
-				row = Math.Max(row, 0);
-				var indexes = NSIndexSet.indexSetWithIndex((uint) row);
+				var indexes = NSIndexSet.indexSetWithIndex(0);
 				selectRowIndexes_byExtendingSelection(indexes, false);
-				scrollRowToVisible(row);
+				scrollRowToVisible(0);
 			}
 			else
 			{
@@ -234,30 +172,37 @@ namespace AutoComplete
 			}
 		}
 		
-		private string DoGetInsertText()
+		private void DoGetInsertText(int row, out string text, out NSRange range)
 		{
-			int row = selectedRow();
-			string text = m_currentArg < 0 ? m_members[row].Text : m_variables[row].Name;
+			var builder = new StringBuilder();
 			
-			if (m_currentArg < 0)
+			range = m_text.selectedRange();
+			
+			int i = m_members[row].Text.IndexOf('(');
+			if (i > 0)
+				builder.Append(m_members[row].Text, 0, i + 1);
+			else
+				builder.Append(m_members[row].Text);
+			
+			string[] argNames = m_members[row].ArgNames;
+			if (argNames.Length > 0)
 			{
-				int i = text.IndexOf('(');
-				if (i > 0)
-					if (i + 1 < text.Length && text[i + 1] == ')')
-						text = text.Substring(0, i + 2);
-					else
-						text = text.Substring(0, i + 1);
-			}
-			else if (m_currentArg + 1 < m_argNames.Length)
-			{
-				text += ", ";
-			}
-			else if (m_currentArg + 1 == m_argNames.Length)
-			{
-				text += ")";
+				range.location += builder.Length;
+				range.length = argNames[0].Length;
+				
+				for (int j = 0; j < argNames.Length; ++j)
+				{
+					builder.Append(argNames[j]);
+					
+					if (j + 1 < argNames.Length)
+						builder.Append(", ");
+				}
 			}
 			
-			return text;
+			if (i > 0)
+				builder.Append(')');
+			
+			text = builder.ToString();
 		}
 		
 		private int DoMatchName()
@@ -314,12 +259,7 @@ namespace AutoComplete
 		#region Fields
 		private NSTextView m_text;
 		private List<Member> m_members = new List<Member>();
-		private List<Variable> m_variables = new List<Variable>();
 		private string m_completed = string.Empty;
-		
-		private int m_currentArg;
-		private string[] m_argTypes = new string[0];
-		private string[] m_argNames = new string[0];
 		#endregion
 	}
 }

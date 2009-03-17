@@ -41,14 +41,14 @@ namespace AutoComplete
 			ActiveObjects.Add(this);
 		}
 		
-		public void Show(NSTextView text, string type, Member[] names, Variable[] vars)
+		public void Show(NSTextView text, string type, Member[] names)
 		{
 			var wind = (CompletionsWindow) window();
 			NSPoint loc = DoFindWindowLoc(text);
 			wind.SetLoc(loc);
 			
 			m_label.Value.setStringValue(NSString.Create(type));
-			m_table.Value.Open(text, names, vars);
+			m_table.Value.Open(text, names);
 			
 			NSApplication.sharedApplication().beginSheet_modalForWindow_modalDelegate_didEndSelector_contextInfo(
 				wind, text.window(), null, null, IntPtr.Zero);

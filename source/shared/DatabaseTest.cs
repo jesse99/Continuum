@@ -131,5 +131,22 @@ public sealed class DatabaseTest
 			}
 		}
 	}
+	
+	[Test]
+	public void MultipleRollback()
+	{
+		string path = Path.GetTempFileName();
+		using (var database = new Database(path))
+		{
+			database.Begin("test");
+			database.Update("CREATE TABLE People(id INTEGER PRIMARY KEY, first_name, last_name, city)");
+			
+			database.Update("INSERT INTO People VALUES (1, 'joe', 'bob', 'houston')");
+			database.Update("INSERT INTO People VALUES (2, 'fred', 'hansen', 'atlanta')");
+			database.Update("INSERT INTO People VALUES (3, 'ted', 'bundy', 'houston')");
+			database.Rollback("test");
+			database.Rollback("test");
+		}
+	}
 }
 #endif	// TEST

@@ -233,7 +233,7 @@ namespace AutoComplete
 		
 		private void DoFindFullNameAndHash(CsGlobalNamespace globals, string target, out string fullName, out string hash)
 		{
-			fullName = DoGetAliasedName(target);
+			fullName = CsHelpers.GetRealName(target);
 			hash = m_database.FindAssembly(fullName);
 			
 			for (int i = 0; i < globals.Uses.Length && hash == null; ++i)
@@ -266,64 +266,6 @@ namespace AutoComplete
 				result = DoFindType(scope.Types[i], target);
 			
 			return result;
-		}
-		
-		// TODO: duplicate of FindInDatabase.DoGetRealName
-		private string DoGetAliasedName(string name)
-		{
-			switch (name)
-			{
-				case "bool":
-					return "System.Boolean";
-					
-				case "byte":
-					return "System.Byte";
-					
-				case "char":
-					return "System.Char";
-					
-				case "decimal":
-					return "System.Decimal";
-					
-				case "double":
-					return "System.Double";
-					
-				case "short":
-					return "System.Int16";
-					
-				case "int":
-					return "System.Int32";
-					
-				case "long":
-					return "System.Int64";
-				
-				case "sbyte":
-					return "System.SByte";
-					
-				case "object":
-					return "System.Object";
-					
-				case "float":
-					return "System.Single";
-					
-				case "string":
-					return "System.String";
-					
-				case "ushort":
-					return "System.UInt16";
-					
-				case "uint":
-					return "System.UInt32";
-					
-				case "ulong":
-					return "System.UInt64";
-					
-				case "void":
-					return "System.Void";
-					
-				default:
-					return name;
-			}
 		}
 		#endregion
 		

@@ -8,16 +8,29 @@ http://otx.osxninja.com/
 
 http://code.google.com/p/simple-assembly-explorer/
 can make readonly rule
-mutating a local used in multiple lambdas (or for loop variable used with lambda)
 
 might want a sample app
 
 * Work on arg completion:
-	- prune value type members
+	- tab with a selection should select next identifier
+	- tab before comma should select next identifier
+	- do a checkin
+	- build a new foreshadow
+	- member completion should show locals, args, fields, and methods
+	- need to replace selection instead of inserting
+	- enter should do member completion
+	- what about the label?
 * Styles aren't getting applied reliably. Mostly member and type names.
 * Work on target completion:
+	- var builder = new StringBuilder(); is broken (shows static members)
+	- complete table should support paste (i.e. add it to completion text)
+	- context menu should filter by class
+	- context menu should filter by access
 	- complete new SomeType calls
 		` special case array types
+	- get ctor calls completing
+	- support method call targets
+	- do some performance tuning, sqlite3_profile may help, also sqlite3_status, may want to use prepared statements too
 	- local explicit interface implementation
 	- global explicit interface implementation
 	- add a context menu:
@@ -28,6 +41,7 @@ might want a sample app
 	- member list needs to account for visibility
 	- need to work with namespace aliases
 	- get target working with array indexing, eg data[foo], also indexers
+	- prune value type members when completing args
 * Database should only parse assemblies referenced by local assemblies, not
    all assemblies referenced.
 -rw-r--r--  1 jessejones  jessejones  60900352 Mar  4 12:34 Continuum.db
@@ -38,29 +52,12 @@ might want a sample app
 -rw-r--r--  1 jessejones  jessejones  26219520 Feb 26 05:47 mobjc.db
 -rw-r--r--  1 jessejones  jessejones  11363328 Mar  4 14:18 Trivial.db
 * Work on tab completion:
-	- after completing a non-nullary target method call transition to arg completion
-		` first name should be a (disabled) arg name
-		` remaining names should be locals, args, fields
-		` when completing goto the next arg
-		` on last arg insert closing paren
-		` don't show names whose names won't work (should at least be able to
-		   prune the system value types)
 	- fair amount of duplicated code
 	- five versions target, call, arg, ctor arg, namespace completion
 	- IAutoComplete should be a repeated interface?
 	- call shows all methods of the target (but only if editing at the end of a name)
-	- arg shows most locals, args, fields for an arg position
-	- need to be able to get locals and args even if the method won't parse completely
 	- need to check access and visibility
 	- make sure private methods work (for local assemblies)
-	- need to be able to get the type of var locals for new expressions and simple
-	  (possibly generic) calls
-	- arg completion should show the method signature as the first (disabled) item
-	- arg completion should attempt to prune what it shows, eg if the arg expects
-	  a (non-generic?) value type we don't have to show any other value types
-	- escape hides the window? when do we show it again? when the identifier being
-	  edited starts at a different offset?
-	- need to handle extension methods too
 	- should the insert be a new undo command?
 	- can we show the comments for the selection? maybe in a second window? or
 	   maybe some sort of context help window that can also be shown if the text 
@@ -81,6 +78,7 @@ might want a sample app
 * Short form should show extension methods:
 	- maybe could use a comment like // System.Linq Extension Methods
 * Does time code refactor really need a finally block?
+* Popup should not bold delegates used as members.
 * Might want to expose CsEnum.Names to refactor.
 * Expose CsBases.HasBaseClass to refactor.
 * Don't do brace hiliting if insertion point is not within code.

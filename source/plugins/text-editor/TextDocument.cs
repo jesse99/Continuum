@@ -93,13 +93,14 @@ namespace TextEditor
 			
 			if (m_controller != null && url != m_url)
 			{
-				m_controller.OnPathChanged();
-				
 				if (m_url != null)
+				{
+					m_controller.OnPathChanged();
 					m_url.release();
-					
+				}
+				
 				m_url = url;
-
+				
 				if (m_url != null)
 					m_url.retain();
 			}

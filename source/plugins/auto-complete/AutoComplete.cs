@@ -71,7 +71,8 @@ namespace AutoComplete
 				if (editor.Path != null)
 				{
 					string name = System.IO.Path.GetFileName(editor.Path);
-					
+			
+			Log.WriteLine("Database", "creating auto-complete database");
 					string path = System.IO.Path.Combine(Paths.SupportPath, name + "2.db");
 					m_database = new Database(path);
 					
@@ -110,7 +111,7 @@ namespace AutoComplete
 									{
 										if (m_controller == null)	
 											m_controller = new CompletionsController();
-										m_controller.Show(view, target.First.FullName, members, target.Second);
+										m_controller.Show(view, target.First.FullName, members);
 									}
 								}
 							}

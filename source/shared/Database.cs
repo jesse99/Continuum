@@ -127,9 +127,9 @@ namespace Shared
 			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
 			Trace.Assert(action != null, "action is null");
 			
-			Begin(name);
 			try
 			{
+				Begin(name);
 				action();
 				Commit(name);
 			}
@@ -156,20 +156,28 @@ namespace Shared
 		public void Commit(string name)
 		{
 			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
-			Trace.Assert(name == m_lock, string.Format("m_lock is {0} but should be {1}", m_lock, name));
+			Trace.Assert(name == m_lock, string.Format("m_lock is '{0}' but should be '{1}'", m_lock, name));
 			
 			Update("COMMIT TRANSACTION");
 			Log.WriteLine(TraceLevel.Verbose, "Database", "{0} transaction took {1:0.000} seconds", m_lock, (DateTime.Now - m_lockTime).TotalMilliseconds/1000.0);
 			m_lock = null;
 		}
 		
+		// Will not throw and may be called multiple times.
 		public void Rollback(string name)
 		{
 			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
-			Trace.Assert(name == m_lock, string.Format("m_lock is {0} but should be {1}", m_lock, name));
+			Trace.Assert(m_lock == null || name == m_lock, string.Format("m_lock is '{0}' but should be '{1}'", m_lock, name));
 			
-			Update("ROLLBACK TRANSACTION");
-			Log.WriteLine("Database", "{0} transaction aborted after {1:0.000} seconds", m_lock, (DateTime.Now - m_lockTime).TotalMilliseconds/1000.0);
+			if (!m_disposed)
+			{
+				IntPtr errMesg;
+				Error err = sqlite3_exec(m_database, "ROLLBACK TRANSACTION", null, IntPtr.Zero, out errMesg);
+				if (err != Error.ERROR)			// this is the error returned if ROLLBACK is called twice
+					Log.WriteLine(TraceLevel.Warning, "Database", "ROLLBACK returned error {0}", err);
+			}
+			
+			Log.WriteLine(TraceLevel.Warning, "Database", "{0} transaction aborted after {1:0.000} seconds", name, (DateTime.Now - m_lockTime).TotalMilliseconds/1000.0);
 			m_lock = null;
 		}
 		

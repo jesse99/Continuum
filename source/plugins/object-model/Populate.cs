@@ -69,6 +69,7 @@ namespace ObjectModel
 			// assemblies which are being used instead of the latest version of the assembly.
 			string path = Populate.GetDatabasePath(m_boss);
 			Log.WriteLine("ObjectModel", "'{0}' was opened", path);
+			Log.WriteLine("Database", "creating populate database");
 			m_database = new Database(path);
 			
 			Broadcaster.Register("opened directory", this, this.DoOnOpenDir);
@@ -225,12 +226,12 @@ namespace ObjectModel
 				catch (Exception e)
 				{
 					Console.Error.WriteLine("{0}", e);
-					throw;			// TODO: trapping the exception makes ties up lots of cpu as the thread tries to redo the op
+					throw;			// TODO: trapping the exception ties up lots of cpu as the thread tries to redo the op
 				}
 			}
 //	Console.WriteLine("thread {0} is exiting", Thread.CurrentThread.ManagedThreadId);
 		}
-		
+				
 		private void DoPruneAssemblies()		// threaded
 		{
 			m_database.Update("prune assemblies", () =>
@@ -363,25 +364,33 @@ namespace ObjectModel
 			}
 		}
 		
-		private void DoUpdateAssemblies(string path, byte[] hash)		// threaded
+		// It shouldn't normally be necessary to do the query and insert within a transaction
+		// but it may be needed if both Continuum and Foreshadow are editing the same
+		// directory.
+		private AssemblyDefinition DoUpdateAssemby(string path, byte[] hash)		// threaded
 		{
-			// See if the assembly is one we have already processed.
-			string sql = string.Format(@"
-				SELECT name 
-					FROM Assemblies 
-				WHERE hash='{0}'", BitConverter.ToString(hash));
-			string[][] rows = m_database.QueryRows(sql);
-			Trace.Assert(rows.Length <= 1, string.Format("got {0} rows looking for hash {1}", rows.Length, BitConverter.ToString(hash)));
+			AssemblyDefinition assembly = null;
 			
-			// If not then,
-			if (rows.Length == 0)
+			string tname = "update assemblies for " + path;
+			try
 			{
-				// load the assembly,
-				AssemblyDefinition assembly = AssemblyCache.Load(path, true);	// TODO: there doesn't appear to be a way to use the contents array and still be able to load symbols
+				m_database.Begin(tname);
 				
-				// update the Assemblies table,
-				m_database.Update("update assemblies for " + path, () =>
+				// See if the assembly is one we have already processed.
+				string sql = string.Format(@"
+					SELECT name 
+						FROM Assemblies 
+					WHERE hash='{0}'", BitConverter.ToString(hash));
+				string[][] rows = m_database.QueryRows(sql);
+				Trace.Assert(rows.Length <= 1, string.Format("got {0} rows looking for hash {1}", rows.Length, BitConverter.ToString(hash)));
+				
+				// If not then,
+				if (rows.Length == 0)
 				{
+					// load the assembly,
+					assembly = AssemblyCache.Load(path, true);	// TODO: there doesn't appear to be a way to use the contents array and still be able to load symbols
+					
+					// update the Assemblies table.
 					m_database.Insert("Assemblies",
 						BitConverter.ToString(hash),
 						assembly.Name.Name,
@@ -390,8 +399,26 @@ namespace ObjectModel
 						assembly.Name.Version.Minor.ToString(),
 						assembly.Name.Version.Build.ToString(),
 						assembly.Name.Version.Revision.ToString());
-				});
+				}
 				
+				m_database.Commit(tname);
+			}
+			catch
+			{
+				m_database.Rollback(tname);
+				throw;
+			}
+			
+			return assembly;
+		}
+		
+		private void DoUpdateAssemblies(string path, byte[] hash)		// threaded
+		{
+			AssemblyDefinition assembly = DoUpdateAssemby(path, hash);
+			
+			// If we need to process the assembly then,
+			if (assembly != null)
+			{
 				// parse the assembly (we do this last so that the Types table
 				// can refer to the new row in the Assemblies table),
 				bool fullParse = !path.Contains("/gac/") && !path.Contains("/mscorlib.dll") && File.Exists(path + ".mdb");	// TODO: might want to optionally allow full parse of mscorlib and assemblies in the gac			
