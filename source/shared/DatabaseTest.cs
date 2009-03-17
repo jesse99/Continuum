@@ -28,7 +28,7 @@ using System.IO;
 using System.Linq;
 
 [TestFixture]
-public sealed class DatabaseTest 	
+public sealed class DatabaseTest
 {	
 	[TestFixtureSetUp]
 	public void Init()
@@ -37,14 +37,13 @@ public sealed class DatabaseTest
 	}
 	
 	[Test]
-	public void Basics()	 
+	public void Basics()
 	{
 		string path = Path.GetTempFileName();
-//Console.WriteLine("creating {0}", path);
 		using (var database = new Database(path))
 		{
 			database.Begin("test");
-			database.Update("CREATE TABLE People(id INTEGER PRIMARY KEY, first_name, last_name, city)");		
+			database.Update("CREATE TABLE People(id INTEGER PRIMARY KEY, first_name, last_name, city)");
 	
 			database.Update("INSERT INTO People VALUES (1, 'joe', 'bob', 'houston')");
 			database.Update("INSERT INTO People VALUES (2, 'fred', 'hansen', 'atlanta')");
@@ -55,17 +54,17 @@ public sealed class DatabaseTest
 			List<string[]> rows = new List<string[]>();
 			Database.HeaderCallback hc = (h) => {header = h;};
 			Database.RowCallback rc = (r) => {rows.Add(r); return true;};
-
-			database.Query("SELECT first_name, last_name FROM People WHERE city='houston'", hc, rc);		
-
+			
+			database.Query("SELECT first_name, last_name FROM People WHERE city='houston'", hc, rc);
+			
 			Assert.AreEqual(2, header.Length);
 			Assert.AreEqual("first_name", header[0]);
 			Assert.AreEqual("last_name", header[1]);
-
+			
 			Assert.AreEqual(2, rows.Count);
 			Assert.AreEqual(2, rows[0].Length);
 			Assert.AreEqual(2, rows[1].Length);
-
+			
 			rows.Sort((lhs, rhs) => lhs[0].CompareTo(rhs[0]));
 			Assert.AreEqual("joe", rows[0][0]);
 			Assert.AreEqual("bob", rows[0][1]);
@@ -75,14 +74,13 @@ public sealed class DatabaseTest
 	}
 	
 	[Test]
-	public void Abort()	 
+	public void Commit()
 	{
 		string path = Path.GetTempFileName();
-//Console.WriteLine("creating {0}", path);
 		using (var database = new Database(path))
 		{
 			database.Begin("test");
-			database.Update("CREATE TABLE People(id INTEGER PRIMARY KEY, first_name, last_name, city)");		
+			database.Update("CREATE TABLE People(id INTEGER PRIMARY KEY, first_name, last_name, city)");
 			
 			database.Update("INSERT INTO People VALUES (1, 'joe', 'bob', 'houston')");
 			database.Update("INSERT INTO People VALUES (2, 'fred', 'hansen', 'atlanta')");
@@ -91,9 +89,9 @@ public sealed class DatabaseTest
 			
 			List<string[]> rows = new List<string[]>();
 			Database.RowCallback rc = (r) => {rows.Add(r); return false;};
-
-			database.Query("SELECT first_name, last_name FROM People WHERE city='houston'", null, rc);		
-
+			
+			database.Query("SELECT first_name, last_name FROM People WHERE city='houston'", null, rc);
+			
 			Assert.AreEqual(1, rows.Count);
 			Assert.AreEqual(2, rows[0].Length);
 			Assert.IsTrue((rows[0][0] == "joe" && rows[0][1] == "bob") || (rows[0][0] == "ted" && rows[0][1] == "bundy"), "got " + rows[0][0] + rows[0][1]);
@@ -101,15 +99,14 @@ public sealed class DatabaseTest
 	}
 	
 	[Test]
-	public void Throw()	 
+	public void Throw()
 	{
 		string path = Path.GetTempFileName();
-//Console.WriteLine("creating {0}", path);
 		using (var database = new Database(path))
 		{
 			database.Begin("test");
-			database.Update("CREATE TABLE People(id INTEGER PRIMARY KEY, first_name, last_name, city)");		
-	
+			database.Update("CREATE TABLE People(id INTEGER PRIMARY KEY, first_name, last_name, city)");
+			
 			database.Update("INSERT INTO People VALUES (1, 'joe', 'bob', 'houston')");
 			database.Update("INSERT INTO People VALUES (2, 'fred', 'hansen', 'atlanta')");
 			database.Update("INSERT INTO People VALUES (3, 'ted', 'bundy', 'houston')");
@@ -117,7 +114,7 @@ public sealed class DatabaseTest
 			
 			List<string[]> rows = new List<string[]>();
 			Database.RowCallback rc = (r) => {rows.Add(r); throw new Exception("oops");};
-
+			
 			try
 			{
 				database.Query("SELECT first_name, last_name FROM People WHERE city='houston'", null, rc);
