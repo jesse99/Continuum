@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using MCocoa;
 using System;
 
 namespace Shared
@@ -32,7 +33,13 @@ namespace Shared
 		
 		bool IsWithinString(int offset);
 		
+		NSRange GetIdentifier(int offset);
+
+		NSRange GetNextIdentifier(int offset);
+		
+		NSRange GetPreviousIdentifier(int offset);
+		
 		// This is normally called from a worker thread.
-		void Reset(Token[] comments, Token[] strings);
+		void Reset(Token[] comments, Token[] strings, Token[] identifiers);
 	}
 }

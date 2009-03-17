@@ -731,17 +731,8 @@ namespace ObjectModel
 		
 		private string DoGetShortName(TypeReference type)
 		{
-			string tname = type.FullName;
-			if (tname.EndsWith("&"))
-				tname = tname.Remove(tname.Length - 1);
-			
-			string name;
-			if (ms_aliases.TryGetValue(tname, out name))
-			{
-				if (type.FullName.EndsWith("&"))
-					name += "&";
-			}
-			else
+			string name = CsHelpers.GetAliasedName(type.FullName);
+			if (name == type.FullName)
 				name = type.Name;
 			
 			return name;
@@ -909,43 +900,6 @@ namespace ObjectModel
 		private List<Member> m_staticMethods = new List<Member>();
 		private List<Member> m_instanceMethods = new List<Member>();
 		private List<Member> m_fields = new List<Member>();
-		
-		private static Dictionary<string, string> ms_aliases = new Dictionary<string, string>
-		{
-			{"System.Boolean", "bool"},
-			{"System.Byte", "byte"},
-			{"System.Char", "char"},
-			{"System.Decimal", "decimal"},
-			{"System.Double", "double"},
-			{"System.Int16", "short"},
-			{"System.Int32", "int"},
-			{"System.Int64", "long"},
-			{"System.SByte", "sbyte"},
-			{"System.Object", "object"},
-			{"System.Single", "float"},
-			{"System.String", "string"},
-			{"System.UInt16", "ushort"},
-			{"System.UInt32", "uint"},
-			{"System.UInt64", "ulong"},
-			{"System.Void", "void"},
-
-			{"System.Boolean[]", "bool[]"},
-			{"System.Byte[]", "byte[]"},
-			{"System.Char[]", "char[]"},
-			{"System.Decimal[]", "decimal[]"},
-			{"System.Double[]", "double[]"},
-			{"System.Int16[]", "short[]"},
-			{"System.Int32[]", "int[]"},
-			{"System.Int64[]", "long[]"},
-			{"System.SByte[]", "sbyte[]"},
-			{"System.Object[]", "object[]"},
-			{"System.Single[]", "float[]"},
-			{"System.String[]", "string[]"},
-			{"System.UInt16[]", "ushort[]"},
-			{"System.UInt32[]", "uint[]"},
-			{"System.UInt64[]", "ulong[]"},
-			{"System.Void[]", "void[]"},
-		};
 		#endregion
 	}
 }	

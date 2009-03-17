@@ -153,11 +153,11 @@ namespace CsParser
 			}
 			
 			// identifier
-			if (DoIsLetter(Current) || Current == '_')
+			if (CsHelpers.CanStartIdentifier(Current) || Current == '_')
 			{
 				DoScanIdentifier();
 			}
-			else if (Current == '@' && (DoIsLetter(Next) || Next == '_'))
+			else if (Current == '@' && (CsHelpers.CanStartIdentifier(Next) || Next == '_'))
 			{
 				++m_index;
 				DoScanIdentifier();
@@ -485,81 +485,12 @@ namespace CsParser
 		{
 			int offset = m_index;
 			
-			while (DoIsIdentifierPartChar())	
+			while (CsHelpers.CanContinueIdentifier(Current))	
 			{
 				++m_index;
 			}
 			
 			m_token = new Token(m_text, offset, m_index - offset, m_line, TokenKind.Identifier);
-		}
-		
-		// letter-character:
-		//       A Unicode character of class Lu, Ll, Lt, Lm, Lo, or Nl
-		//       A unicode-escape-sequence representing a character of class Lu, Ll, Lt, Lm, Lo, or Nl
-		private bool DoIsLetter(char ch)
-		{
-			if (char.IsLetter(ch))			// fast path
-				return true;
-				
-			UnicodeCategory cat = char.GetUnicodeCategory(ch);
-			switch (cat)
-			{
-				case UnicodeCategory.UppercaseLetter:
-				case UnicodeCategory.LowercaseLetter:
-				case UnicodeCategory.TitlecaseLetter:
-				case UnicodeCategory.ModifierLetter:
-				case UnicodeCategory.OtherLetter:
-				case UnicodeCategory.LetterNumber:
-					return true;
-			}
-			
-			return false;
-		}
-		
-		// identifier-part-character:
-		//      letter-character
-		//      decimal-digit-character
-		//      connecting-character
-		//      combining-character
-		//      formatting-character
-		//
-		// decimal-digit-character:
-		//     A Unicode character of the class Nd
-		//     A unicode-escape-sequence representing a character of class Nd
-		// 
-		// connecting-character:
-		//     A Unicode character of the class Pc
-		//     A unicode-escape-sequence representing a character of class Pc
-		// 
-		// combining-character:
-		//     A Unicode character of class Mn or Mc
-		//     A unicode-escape-sequence representing a character of class Mn or Mc
-		// 
-		// formatting-character:
-		//     A Unicode character of the class Cf
-		//     A unicode-escape-sequence representing a character of class Cf
-		private bool DoIsIdentifierPartChar()
-		{
-			if (char.IsLetterOrDigit(Current) || Current == '_')	// fast path
-				return true;
-			
-			if (Current == '\\' && (Next == 'u' || Next == 'U'))
-			{
-				throw new CsScannerException("Line {0} has a unicode escape in an identifier which the parser does not support.", m_line);
-			}
-				
-			UnicodeCategory cat = char.GetUnicodeCategory(Current);
-			switch (cat)
-			{
-				case UnicodeCategory.DecimalDigitNumber:
-				case UnicodeCategory.ConnectorPunctuation:
-				case UnicodeCategory.NonSpacingMark:
-				case UnicodeCategory.SpacingCombiningMark:
-				case UnicodeCategory.Format:
-					return true;
-			}
-			
-			return false;
 		}
 		
 		// operator-or-punctuator: one of
@@ -852,7 +783,7 @@ namespace CsParser
 			
 			// name
 			int offset = m_index;
-			while (DoIsIdentifierPartChar())	
+			while (CsHelpers.CanContinueIdentifier(Current))	
 			{
 				++m_index;
 			}

@@ -44,22 +44,44 @@ namespace TextEditor
 			m_autoComplete = m_boss.Get<IAutoComplete>();
 		}
 		
+		private const int TabKey = 0x30;
+		private const int DownArrowKey = 0x7D;
+		private const int UpArrowKey = 0x7E;
+		
 		public new void keyDown(NSEvent evt)
 		{
-			IComputeRuns computer = ((TextController) window().windowController()).Computer;
-
-			if (!m_autoComplete.HandleKey(this, evt, computer))
+			do
 			{
+				// Handle auto-complete initiated with '.'.
+				IComputeRuns computer = ((TextController) window().windowController()).Computer;
+				if (m_autoComplete.HandleKey(this, evt, computer))
+					break;
+				
+				// Tab (sometimes) selects the next identifier.
+				if (evt.keyCode() == TabKey)
+				{
+					if ((evt.modifierFlags() & Enums.NSShiftKeyMask) == 0)
+					{
+						if (DoSelectNextIdentifier())
+							break;
+					}
+					else
+					{
+						if (DoSelectPreviousIdentifier())
+							break;
+					}
+				}
+				
+				// Default key processing.
 				Unused.Value = SuperCall("keyDown:", evt);
 				
-				// If the user is moving up or down within the whitespace at the start
-				// of a line then set the insertion point to the start of the line (this
+				// For up and down arrow in the whitespace at the start of a line
+				// we want to set the insertion point to the start of the line (this
 				// makes it much nicer to do stuff like manually comment out lines).
 				NSRange range = selectedRange();
 				if (range.length == 0)
 				{
-					NSString chars = evt.characters();
-					if (chars.length() == 1 && (chars[0] == Enums.NSDownArrowFunctionKey || chars[0] == Enums.NSUpArrowFunctionKey))
+					if (evt.keyCode() == UpArrowKey || evt.keyCode() == DownArrowKey)
 					{
 						NSString text = string_();
 						int start = DoGetLineStart(text, range.location);
@@ -70,8 +92,9 @@ namespace TextEditor
 					}
 				}
 			}
+			while (false);
 		}
-		
+				
 #if false
 		// This is kind of nice, and BBEdit does something similar but it screws
 		// up things like drag selections.
@@ -229,7 +252,7 @@ namespace TextEditor
 				get {return m_item.UndoText ?? m_item.Name;}
 			}
 			
-			public NSAttributedString Title 
+			public NSAttributedString Title
 			{
 				get {return m_item.Title;}
 			}
@@ -309,6 +332,83 @@ namespace TextEditor
 		#endregion
 		
 		#region Private Methods
+		// need to ensure catalog is up to date
+		private bool DoSelectNextIdentifier()
+		{
+			bool handled = false;
+			
+			NSRange range = selectedRange();
+			var catalog = m_boss.Get<ICachedCsCatalog>();
+			
+			DoUpdateCache();
+			if (DoShouldSelectIdentifier(catalog, range))
+			{
+				NSRange next = catalog.GetNextIdentifier(range.location + range.length);
+				if (next.length > 0)
+				{
+					setSelectedRange(next);
+					handled = true;
+				}
+			}
+			
+			return handled;
+		}
+		
+		private bool DoSelectPreviousIdentifier()
+		{
+			bool handled = false;
+			
+			NSRange range = selectedRange();
+			var catalog = m_boss.Get<ICachedCsCatalog>();
+			
+			DoUpdateCache();
+			if (DoShouldSelectIdentifier(catalog, range))
+			{
+				NSRange previous = catalog.GetPreviousIdentifier(range.location);
+				if (previous.length > 0)
+				{
+					setSelectedRange(previous);
+					handled = true;
+				}
+			}
+			
+			return handled;
+		}
+		
+		// This special handling of the tab key is motivated by making argument completion
+		// easier. So, we want tab to select the next identifier if the current selection is an
+		// identifier or the selection is empty and just before a comma.
+		private bool DoShouldSelectIdentifier(ICachedCsCatalog catalog, NSRange range)
+		{
+			bool should = false;
+			
+			if (range.length > 0)
+			{
+				NSRange current = catalog.GetIdentifier(range.location);
+				should = current == range;
+			}
+			else if (range.location < string_().length())
+			{
+				should = string_()[range.location] == ',';
+			}
+			
+			return should;
+		}
+		
+		private void DoUpdateCache()
+		{
+			int edit;
+			CsGlobalNamespace globals;
+			var cache = m_boss.Get<ICachedCsDeclarations>();
+			cache.Get(out edit, out globals);
+			
+			TextController controller = (TextController) window().windowController();
+			if (edit != controller.EditCount)
+			{
+				controller.Computer.ComputeRuns(controller.Text, controller.EditCount, m_boss);
+			}
+		}
+		
 		private void DoGetEntries(string selection)
 		{
 			int group = 0;

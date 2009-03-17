@@ -82,7 +82,7 @@ namespace Styler
 			DoRegexMatch(text, runs);
 			
 			var cachedCatalog =  boss.Get<ICachedCsCatalog>();
-			cachedCatalog.Reset(new Token[0], new Token[0]);
+			cachedCatalog.Reset(new Token[0], new Token[0], new Token[0]);
 			
 			var cachedGlobals =  boss.Get<ICachedCsDeclarations>();
 			cachedGlobals.Reset(edit, null);

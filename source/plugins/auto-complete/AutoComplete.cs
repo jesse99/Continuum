@@ -140,54 +140,16 @@ namespace AutoComplete
 			string text = m_text.Text;
 			
 			int index = offset;
-			while (index > 0 && (text[index - 1] == '.' || DoIsIdentifierPartChar(text[index - 1])))
+			while (index > 0 && (text[index - 1] == '.' || CsHelpers.CanContinueIdentifier(text[index - 1])))
 				--index;
 			
 			string target = null;
-			if (text[index] == '_' || DoIsLetter(text[index]))
+			if (text[index] == '_' || CsHelpers.CanStartIdentifier(text[index]))
 				target = text.Substring(index, offset - index);
+				
+			Trace.Assert(target == null || target.Length > 0, "target is empty");
 			
 			return target;
-		}
-		
-		// TODO: these two are (mostly) duplicates of CsParser.Scanner.
-		private bool DoIsLetter(char ch)
-		{
-			if (char.IsLetter(ch))			// fast path
-				return true;
-			
-			UnicodeCategory cat = char.GetUnicodeCategory(ch);
-			switch (cat)
-			{
-				case UnicodeCategory.UppercaseLetter:
-				case UnicodeCategory.LowercaseLetter:
-				case UnicodeCategory.TitlecaseLetter:
-				case UnicodeCategory.ModifierLetter:
-				case UnicodeCategory.OtherLetter:
-				case UnicodeCategory.LetterNumber:
-					return true;
-			}
-			
-			return false;
-		}
-		
-		private bool DoIsIdentifierPartChar(char ch)
-		{
-			if (char.IsLetterOrDigit(ch) || ch == '_')	// fast path
-				return true;
-			
-			UnicodeCategory cat = char.GetUnicodeCategory(ch);
-			switch (cat)
-			{
-				case UnicodeCategory.DecimalDigitNumber:
-				case UnicodeCategory.ConnectorPunctuation:
-				case UnicodeCategory.NonSpacingMark:
-				case UnicodeCategory.SpacingCombiningMark:
-				case UnicodeCategory.Format:
-					return true;
-			}
-			
-			return false;
 		}
 		#endregion
 		

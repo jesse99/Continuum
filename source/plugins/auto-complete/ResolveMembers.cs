@@ -284,12 +284,8 @@ namespace AutoComplete
 				string[] names = argNames.Split(new char[]{':'}, StringSplitOptions.RemoveEmptyEntries);
 				for (int i = firstArg; i < types.Length; ++i)
 				{
-					string type = types[i];
-					if (ms_aliases.ContainsKey(type))
-					{
-						type = ms_aliases[type];
-					}
-					else
+					string type = CsHelpers.GetAliasedName(types[i]);
+					if (type == types[i])
 					{
 						type = DoTrimNamespace(type);
 						type = DoTrimGeneric(type);
@@ -355,43 +351,6 @@ namespace AutoComplete
 		
 		#region Fields
 		private Database m_database;
-		
-		private static Dictionary<string, string> ms_aliases = new Dictionary<string, string>	// TODO: ShortForm.cs has the same list
-		{
-			{"System.Boolean", "bool"},
-			{"System.Byte", "byte"},
-			{"System.Char", "char"},
-			{"System.Decimal", "decimal"},
-			{"System.Double", "double"},
-			{"System.Int16", "short"},
-			{"System.Int32", "int"},
-			{"System.Int64", "long"},
-			{"System.SByte", "sbyte"},
-			{"System.Object", "object"},
-			{"System.Single", "float"},
-			{"System.String", "string"},
-			{"System.UInt16", "ushort"},
-			{"System.UInt32", "uint"},
-			{"System.UInt64", "ulong"},
-			{"System.Void", "void"},
-			
-			{"System.Boolean[]", "bool[]"},
-			{"System.Byte[]", "byte[]"},
-			{"System.Char[]", "char[]"},
-			{"System.Decimal[]", "decimal[]"},
-			{"System.Double[]", "double[]"},
-			{"System.Int16[]", "short[]"},
-			{"System.Int32[]", "int[]"},
-			{"System.Int64[]", "long[]"},
-			{"System.SByte[]", "sbyte[]"},
-			{"System.Object[]", "object[]"},
-			{"System.Single[]", "float[]"},
-			{"System.String[]", "string[]"},
-			{"System.UInt16[]", "ushort[]"},
-			{"System.UInt32[]", "uint[]"},
-			{"System.UInt64[]", "ulong[]"},
-			{"System.Void[]", "void[]"},
-		};
 		#endregion
 	}
 }

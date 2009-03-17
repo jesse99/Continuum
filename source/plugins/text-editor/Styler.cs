@@ -71,7 +71,7 @@ namespace TextEditor
 					// TextController uses the call as a signal that it is OK to restore the
 					// scroller.
 					var cachedCatalog = m_boss.Get<ICachedCsCatalog>();
-					cachedCatalog.Reset(new Token[0], new Token[0]);
+					cachedCatalog.Reset(new Token[0], new Token[0], new Token[0]);
 					
 					var cachedGlobals = m_boss.Get<ICachedCsDeclarations>();
 					cachedGlobals.Reset(text.EditCount, null);

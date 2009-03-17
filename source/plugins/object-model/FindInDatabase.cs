@@ -59,7 +59,7 @@ namespace ObjectModel
 						timer.Start();
 					}
 					
-					string name = DoGetRealName(selection);
+					string name = CsHelpers.GetRealName(selection);
 					
 					var objects = m_dirBoss.Get<IObjectModel>();		// full name/file name/kind
 					Tuple3<string, string, int>[] info = objects.FindInfo(name, 2*MaxOpenItems);
@@ -400,63 +400,6 @@ namespace ObjectModel
 				}
 			}
 		}
-		
-		private string DoGetRealName(string name)
-		{
-			switch (name)
-			{
-				case "bool":
-					return "System.Boolean";
-					
-				case "byte":
-					return "System.Byte";
-					
-				case "char":
-					return "System.Char";
-					
-				case "decimal":
-					return "System.Decimal";
-					
-				case "double":
-					return "System.Double";
-					
-				case "short":
-					return "System.Int16";
-					
-				case "int":
-					return "System.Int32";
-					
-				case "long":
-					return "System.Int64";
-															
-				case "sbyte":
-					return "System.SByte";
-					
-				case "object":
-					return "System.Object";
-					
-				case "float":
-					return "System.Single";
-					
-				case "string":
-					return "System.String";
-					
-				case "ushort":
-					return "System.UInt16";
-					
-				case "uint":
-					return "System.UInt32";
-					
-				case "ulong":
-					return "System.UInt64";
-					
-				case "void":
-					return "System.Void";
-					
-				default:
-					return name;
-			}
-		}								
 		#endregion
 		
 		#region Fields

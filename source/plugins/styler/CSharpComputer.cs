@@ -58,14 +58,18 @@ namespace Styler
 		private void DoSetCatalog(string text, ICachedCsCatalog catalog)
 		{
 			var strings = new List<Token>();
+			var identifiers = new List<Token>();
 			
 			foreach (Token token in m_tokens)
 			{
 				if (token.Kind == TokenKind.String && token.Length > 2)
 					strings.Add(new Token(text, token.Offset + 1, token.Length - 2, token.Line, TokenKind.String));
+				
+				if (token.Kind == TokenKind.Identifier)
+					identifiers.Add(token);
 			}
 			
-			catalog.Reset(m_comments, strings.ToArray());
+			catalog.Reset(m_comments, strings.ToArray(), identifiers.ToArray());
 		}
 		
 		private void DoParseMatch(string text, List<StyleRun> runs)		// threaded

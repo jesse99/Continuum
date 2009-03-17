@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using MCocoa;
 using Shared;
 using System;
 using System.Collections.Generic;
@@ -49,10 +50,49 @@ namespace TextEditor
 			return DoIsWithin(m_strings, offset);
 		}
 		
-		public void Reset(Token[] comments, Token[] strings)
+		public NSRange GetIdentifier(int offset)
+		{
+			Token[] tokens = m_identifiers;	// use a copy so it doesn't change while we're in this method
+			
+			Token key = new Token(offset);
+			int i = Array.BinarySearch(tokens, key, new CompareRanges());
+			
+			return i >= 0 ? new NSRange(tokens[i].Offset, tokens[i].Length) : NSRange.Empty;
+		}
+		
+		public NSRange GetNextIdentifier(int offset)
+		{
+			Token[] tokens = m_identifiers;	// use a copy so it doesn't change while we're in this method
+			
+			Token key = new Token(offset);
+			int i = Array.BinarySearch(tokens, key, new CompareRanges());
+			if (i >= 0)
+				i += 1;
+			else
+				i = ~i;
+			
+			return i < tokens.Length ? new NSRange(tokens[i].Offset, tokens[i].Length) : NSRange.Empty;
+		}
+		
+		public NSRange GetPreviousIdentifier(int offset)
+		{
+			Token[] tokens = m_identifiers;	// use a copy so it doesn't change while we're in this method
+			
+			Token key = new Token(offset);
+			int i = Array.BinarySearch(tokens, key, new CompareRanges());
+			if (i >= 0)
+				i -= 1;
+			else
+				i = ~i - 1;
+			
+			return i >= 0 ? new NSRange(tokens[i].Offset, tokens[i].Length) : NSRange.Empty;
+		}
+		
+		public void Reset(Token[] comments, Token[] strings, Token[] identifiers)
 		{
 			Trace.Assert(comments != null, "comments is null");
 			Trace.Assert(strings != null, "strings is null");
+			Trace.Assert(identifiers != null, "identifiers is null");
 			
 			// .NET guarantees that these fields are atomically set but we need
 			// to ensure that the entire group is set atomically.
@@ -60,10 +100,13 @@ namespace TextEditor
 			{
 				m_comments = comments;
 				m_strings = strings;
+				m_identifiers = identifiers;
 			}
 		}
 		
 		#region Private Methods
+		// Note that we don't need a lock here because the array variable is
+		// read atomically and the array itself is not changed.
 		private bool DoIsWithin(Token[] tokens, int offset)
 		{
 			Token key = new Token(offset);
@@ -82,7 +125,7 @@ namespace TextEditor
 				if (lhs.Offset < rhs.Offset)
 					return -1;
 					
-				else if (lhs.Offset > rhs.Offset + rhs.Length)
+				else if (lhs.Offset >= rhs.Offset + rhs.Length)
 					return +1;
 					
 				else
@@ -96,6 +139,7 @@ namespace TextEditor
 		private object m_mutex = new object();
 			private Token[] m_comments = new Token[0];
 			private Token[] m_strings = new Token[0];
+			private Token[] m_identifiers = new Token[0];
 		#endregion
 	}
 }

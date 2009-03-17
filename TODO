@@ -10,10 +10,10 @@ http://code.google.com/p/simple-assembly-explorer/
 can make readonly rule
 
 might want a sample app
+down 125
+up 126
 
 * Work on arg completion:
-	- tab with a selection should select next identifier
-	- tab before comma should select next identifier
 	- do a checkin
 	- build a new foreshadow
 	- member completion should show locals, args, fields, and methods
@@ -29,7 +29,7 @@ might want a sample app
 	- complete new SomeType calls
 		` special case array types
 	- get ctor calls completing
-	- support method call targets
+	- support method call targets (but only if the . applies to the last completion)
 	- do some performance tuning, sqlite3_profile may help, also sqlite3_status, may want to use prepared statements too
 	- local explicit interface implementation
 	- global explicit interface implementation
@@ -77,7 +77,9 @@ might want a sample app
 * Short form should have a separate section for operators (see DateTime).
 * Short form should show extension methods:
 	- maybe could use a comment like // System.Linq Extension Methods
+* Add scripts to convert to decimal and hex. Maybe binary too.
 * Does time code refactor really need a finally block?
+* Make sure ComputeRuns is not called if runs are up to date.
 * Popup should not bold delegates used as members.
 * Might want to expose CsEnum.Names to refactor.
 * Expose CsBases.HasBaseClass to refactor.
@@ -179,6 +181,10 @@ might want a sample app
 * Look at startup times.
 * Add support for nant.
 * Add support for scons.
+* Might want to allow enter to complete types and statements:
+	- should be template files
+	- users can edit these to put braces where they want
+	- users can add new templates (e.g. to paste copyright clause)
 * Need a way to build weird projects like Cecil, probably a pref with a build
   command line which overrides make builder.
 * Add an assembly viewer
