@@ -36,7 +36,7 @@ namespace AutoComplete
 		}
 		
 		// May return null.
-		public ResolvedTarget Resolve(string type, CsGlobalNamespace globals, bool isInstance)
+		public ResolvedTarget Resolve(string type, CsGlobalNamespace globals, bool isInstance, bool isStatic)
 		{
 			Trace.Assert(!string.IsNullOrEmpty(type), "type is null or empty");
 			
@@ -53,11 +53,11 @@ namespace AutoComplete
 				DoHandleDatabaseType(globals, type);
 			
 			return m_hash != null || m_type != null
-				? new ResolvedTarget(m_fullName, m_type, m_hash, isInstance)
+				? new ResolvedTarget(m_fullName, m_type, m_hash, isInstance, isStatic)
 				: null;
 		}
 		
-		public ResolvedTarget Resolve(CsType type, bool isInstance)
+		public ResolvedTarget Resolve(CsType type, bool isInstance, bool isStatic)
 		{
 			Trace.Assert(type != null, "type is null or empty");
 			
@@ -65,10 +65,10 @@ namespace AutoComplete
 			m_fullName = DoGetTypeName(m_type.FullName);
 			m_hash = m_database.FindAssembly(m_fullName);
 			
-			return new ResolvedTarget(m_fullName, m_type, m_hash, isInstance);
+			return new ResolvedTarget(m_fullName, m_type, m_hash, isInstance, isStatic);
 		}
 		
-		public ResolvedTarget Resolve(string fullName, bool isInstance)
+		public ResolvedTarget Resolve(string fullName, bool isInstance, bool isStatic)
 		{
 			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
 
@@ -76,34 +76,34 @@ namespace AutoComplete
 			m_hash = m_database.FindAssembly(m_fullName);
 			
 			return m_hash != null
-				? new ResolvedTarget(m_fullName, null, m_hash, isInstance)
+				? new ResolvedTarget(m_fullName, null, m_hash, isInstance, isStatic)
 				: null;
 		}
 		
-		public IEnumerable<ResolvedTarget> GetBases(CsGlobalNamespace globals, string fullName, bool isInstance)
+		public IEnumerable<ResolvedTarget> GetBases(CsGlobalNamespace globals, string fullName, bool isInstance, bool isStatic)
 		{
 			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
 			
-			ResolvedTarget target = Resolve(fullName, globals, isInstance);
+			ResolvedTarget target = Resolve(fullName, globals, isInstance, isStatic);
 			while (target != null && target.FullName != "System.Object")
 			{
 				if (target.Type != null)
 				{
 					if (target.Type.Bases.HasBaseClass)
-						target = Resolve(target.Type.Bases.Names[0], globals, isInstance);
+						target = Resolve(target.Type.Bases.Names[0], globals, isInstance, isStatic);
 					else
-						target = null;
+						target = Resolve("System.Object", globals, isInstance, isStatic);
 				}
 				else if (target.Type == null && target.Hash != null)
 				{
 					string name = m_database.FindBaseType(target.FullName);
 					if (!string.IsNullOrEmpty(name))
-						target = Resolve(name, globals, isInstance);
+						target = Resolve(name, globals, isInstance, isStatic);
 					else
-						target = null;
+						target = Resolve("System.Object", globals, isInstance, isStatic);
 				}
 				else
-					target = null;
+					target = Resolve("System.Object", globals, isInstance, isStatic);
 					
 				if (target != null)
 					yield return target;
@@ -114,7 +114,7 @@ namespace AutoComplete
 		{
 			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
 			
-			ResolvedTarget t = Resolve(fullName, globals, isInstance);
+			ResolvedTarget t = Resolve(fullName, globals, isInstance, !isInstance);
 			if (t != null)
 			{
 				var targets = new List<ResolvedTarget>();
@@ -127,7 +127,7 @@ namespace AutoComplete
 					{
 						for (int i = target.Type.Bases.HasBaseClass ? 1 : 0; i < target.Type.Bases.Names.Length; ++i)
 						{
-							t = Resolve(target.Type.Bases.Names[i], globals, isInstance);
+							t = Resolve(target.Type.Bases.Names[i], globals, isInstance, !isInstance);
 							if (t != null)
 							{
 								yield return t.FullName;

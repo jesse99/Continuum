@@ -52,13 +52,13 @@ namespace TextEditor
 		{
 			do
 			{
-				// Handle auto-complete initiated with '.'.
+				// Handle auto-complete initiated with '.' or enter.
 				IComputeRuns computer = ((TextController) window().windowController()).Computer;
 				if (m_autoComplete.HandleKey(this, evt, computer))
 					break;
 				
-				// Tab (sometimes) selects the next identifier.
-				if (evt.keyCode() == TabKey)
+				// Option-tab selects the next identifier.
+				if (evt.keyCode() == TabKey && (evt.modifierFlags() & Enums.NSAlternateKeyMask) != 0)
 				{
 					if ((evt.modifierFlags() & Enums.NSShiftKeyMask) == 0)
 					{
@@ -341,14 +341,11 @@ namespace TextEditor
 			var catalog = m_boss.Get<ICachedCsCatalog>();
 			
 			DoUpdateCache();
-			if (DoShouldSelectIdentifier(catalog, range))
+			NSRange next = catalog.GetNextIdentifier(range.location + range.length);
+			if (next.length > 0)
 			{
-				NSRange next = catalog.GetNextIdentifier(range.location + range.length);
-				if (next.length > 0)
-				{
-					setSelectedRange(next);
-					handled = true;
-				}
+				setSelectedRange(next);
+				handled = true;
 			}
 			
 			return handled;
@@ -362,37 +359,14 @@ namespace TextEditor
 			var catalog = m_boss.Get<ICachedCsCatalog>();
 			
 			DoUpdateCache();
-			if (DoShouldSelectIdentifier(catalog, range))
+			NSRange previous = catalog.GetPreviousIdentifier(range.location);
+			if (previous.length > 0)
 			{
-				NSRange previous = catalog.GetPreviousIdentifier(range.location);
-				if (previous.length > 0)
-				{
-					setSelectedRange(previous);
-					handled = true;
-				}
+				setSelectedRange(previous);
+				handled = true;
 			}
 			
 			return handled;
-		}
-		
-		// This special handling of the tab key is motivated by making argument completion
-		// easier. So, we want tab to select the next identifier if the current selection is an
-		// identifier or the selection is empty and just before a comma.
-		private bool DoShouldSelectIdentifier(ICachedCsCatalog catalog, NSRange range)
-		{
-			bool should = false;
-			
-			if (range.length > 0)
-			{
-				NSRange current = catalog.GetIdentifier(range.location);
-				should = current == range;
-			}
-			else if (range.location < string_().length())
-			{
-				should = string_()[range.location] == ',';
-			}
-			
-			return should;
 		}
 		
 		private void DoUpdateCache()

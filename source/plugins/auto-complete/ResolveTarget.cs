@@ -54,7 +54,7 @@ namespace AutoComplete
 			// SomeType.
 			if (result == null)
 			{
-				result = m_resolveType.Resolve(target, globals, false);
+				result = m_resolveType.Resolve(target, globals, false, true);
 				if (result != null)
 					Log.WriteLine("AutoComplete", "found type: {0}", result.FullName);
 			}
@@ -65,7 +65,7 @@ namespace AutoComplete
 			
 			return Tuple.Make(result, vars);
 		}
-		
+				
 		#region Private Methods
 		// This is a bit overkill if all we want to do is identify the target, but we also
 		// need this info to do arg completion.
@@ -122,19 +122,19 @@ namespace AutoComplete
 			// fields and properties
 			if (member != null && member.DeclaringType != null)
 			{
-				ResolvedTarget type = m_resolveType.Resolve(member.DeclaringType.FullName, globals, true);
+				ResolvedTarget type = m_resolveType.Resolve(member.DeclaringType.FullName, globals, true, false);
 				if (type != null)
 				{
-					DoFindFields(globals, type, vars);
-					DoFindProperties(globals, type, vars);
+					DoFindFields(globals, type, vars, member);
+					DoFindProperties(globals, type, vars, member);
 				}
 				
 				if (member.DeclaringType.Bases.HasBaseClass)
 				{
-					foreach (ResolvedTarget t in m_resolveType.GetBases(globals, member.DeclaringType.FullName, true))
+					foreach (ResolvedTarget t in m_resolveType.GetBases(globals, member.DeclaringType.FullName, true, false))
 					{
-						DoFindFields(globals, t, vars);
-						DoFindProperties(globals, t, vars);
+						DoFindFields(globals, t, vars, member);
+						DoFindProperties(globals, t, vars, member);
 					}
 				}
 			}
@@ -151,20 +151,21 @@ namespace AutoComplete
 			return vars.ToArray();
 		}
 		
-		private void DoFindFields(CsGlobalNamespace globals, ResolvedTarget type, List<Variable> vars)
+		private void DoFindFields(CsGlobalNamespace globals, ResolvedTarget type, List<Variable> vars, CsMember member)
 		{
 			if (type.Type != null)
 			{
 				for (int i = 0; i < type.Type.Fields.Length; ++i)
 				{
 					CsField field = type.Type.Fields[i];
-					if (!vars.Exists(v => v.Name == field.Name))
-						vars.Add(new Variable(field.Type, field.Name, null));
+					if (member == null || (member.Modifiers & MemberModifiers.Static) == 0 || (field.Modifiers & MemberModifiers.Static) != 0)
+						if (!vars.Exists(v => v.Name == field.Name))
+							vars.Add(new Variable(field.Type, field.Name, null));
 				}
 			}
 			else if (type.Hash != null)
 			{
-				var names = m_database.FindFields(type.FullName);
+				var names = m_database.FindFields(type.FullName, member == null || (member.Modifiers & MemberModifiers.Static) == 0);
 				foreach (var name in names)
 				{
 					if (!vars.Exists(v => v.Name == name.Second))
@@ -173,7 +174,7 @@ namespace AutoComplete
 			}
 		}
 		
-		private void DoFindProperties(CsGlobalNamespace globals, ResolvedTarget type, List<Variable> vars)
+		private void DoFindProperties(CsGlobalNamespace globals, ResolvedTarget type, List<Variable> vars, CsMember member)
 		{
 			if (type.Type != null)
 			{
@@ -181,13 +182,14 @@ namespace AutoComplete
 				{
 					CsProperty prop = type.Type.Properties[i];
 					if (prop.HasGetter)
-						if (!vars.Exists(v => v.Name == prop.Name))
-							vars.Add(new Variable(prop.ReturnType, prop.Name, null));
+						if (member == null || (member.Modifiers & MemberModifiers.Static) == 0 || (prop.Modifiers & MemberModifiers.Static) != 0)
+							if (!vars.Exists(v => v.Name == prop.Name))
+								vars.Add(new Variable(prop.ReturnType, prop.Name, null));
 				}
 			}
 			else if (type.Hash != null)
 			{
-				var names = m_database.FindMethodsWithPrefix(type.FullName, "get_", 0);
+				var names = m_database.FindMethodsWithPrefix(type.FullName, "get_", 0, member == null || (member.Modifiers & MemberModifiers.Static) == 0);
 				foreach (var name in names)
 				{
 					if (!vars.Exists(v => v.Name == name.Second))
@@ -217,11 +219,14 @@ namespace AutoComplete
 		{
 			ResolvedTarget result = null;
 			
-			if (target == "this")
+			if (target == "this" || target == "<this>")
 			{
 				if (member != null)
 				{
-					result = m_resolveType.Resolve(member.DeclaringType, true);
+					bool isInstance = (member.Modifiers & MemberModifiers.Static) == 0;
+					bool isStatic = target == "<this>";
+					
+					result = m_resolveType.Resolve(member.DeclaringType, isInstance, isStatic);
 					if (result != null)
 						Log.WriteLine("AutoComplete", "found this: {0}", result.FullName);
 				}
@@ -266,7 +271,7 @@ namespace AutoComplete
 					}
 					else
 					{
-						result = m_resolveType.Resolve(type, globals, true);
+						result = m_resolveType.Resolve(type, globals, true, false);
 						if (result != null)
 							Log.WriteLine("AutoComplete", "found local: {0}", result.FullName);
 					}

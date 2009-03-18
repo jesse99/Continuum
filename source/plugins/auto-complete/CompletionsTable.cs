@@ -43,11 +43,12 @@ namespace AutoComplete
 			ActiveObjects.Add(this);
 		}
 		
-		public void Open(NSTextView text, Member[] members)
+		public void Open(NSTextView text, Member[] members, int prefixLen)
 		{
 			m_text = text;
 			m_members = new List<Member>(members);
 			m_completed = string.Empty;
+			m_prefixLen = prefixLen;
 			
 			m_members.Sort((lhs, rhs) => lhs.Text.CompareTo(rhs.Text));
 			reloadData();
@@ -112,10 +113,17 @@ namespace AutoComplete
 				string text;
 				NSRange range;
 				DoGetInsertText(row, out text, out range);
-				m_text.insertText(NSString.Create(text));
 				
-				if (range.length > 0)
-					m_text.setSelectedRange(range);
+				if (m_prefixLen < text.Length)
+				{
+					m_text.delete(this);
+					m_text.insertText(NSString.Create(text.Substring(m_prefixLen)));
+					
+					if (range.length > 0)
+						m_text.setSelectedRange(range);
+					else
+						m_text.setSelectedRange(new NSRange(range.location + text.Length - m_prefixLen, 0));
+				}
 				
 				m_text = null;
 				window().windowController().Call("hide");
@@ -177,6 +185,7 @@ namespace AutoComplete
 			var builder = new StringBuilder();
 			
 			range = m_text.selectedRange();
+			range.length = 0;
 			
 			int i = m_members[row].Text.IndexOf('(');
 			if (i > 0)
@@ -260,6 +269,7 @@ namespace AutoComplete
 		private NSTextView m_text;
 		private List<Member> m_members = new List<Member>();
 		private string m_completed = string.Empty;
+		private int m_prefixLen;
 		#endregion
 	}
 }

@@ -42,12 +42,12 @@ namespace AutoComplete
 			return hash;
 		}
 		
-		public Tuple2<string, string>[] FindMethodsWithPrefix(string fullName, string prefix, int numArgs)
+		public Tuple2<string, string>[] FindMethodsWithPrefix(string fullName, string prefix, int numArgs, bool includeInstanceMembers)
 		{
 			return new Tuple2<string, string>[0];
 		}
 				
-		public Tuple2<string, string>[] FindFields(string fullName)
+		public Tuple2<string, string>[] FindFields(string fullName, bool includeInstanceMembers)
 		{
 			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
 			

@@ -81,6 +81,8 @@ namespace AutoComplete
 			}
 		}
 		
+		private const int EnterKey = 0x4C;
+		
 		public bool HandleKey(NSTextView view, NSEvent evt, IComputeRuns computer)
 		{
 			bool handled = false;
@@ -95,25 +97,40 @@ namespace AutoComplete
 					DoUpdateCache(computer);
 					
 					if (!m_cachedCatalog.IsWithinComment(range.location) && !m_cachedCatalog.IsWithinString(range.location))
+						handled = DoCompleteTarget(view, range);
+				}
+				else if (evt.keyCode() == EnterKey)
+				{
+					DoUpdateCache(computer);
+					
+					if (!m_cachedCatalog.IsWithinComment(range.location) && !m_cachedCatalog.IsWithinString(range.location))
+						handled = DoCompleteExpression(view, range);
+				}
+			}
+			
+			return handled;
+		}
+		
+		#region Private Methods
+		public bool DoCompleteTarget(NSTextView view, NSRange range)
+		{
+			bool handled = false;
+			
+			string expr = DoGetTargetExpr(range.location);
+			if (expr != null)
+			{
+				CsGlobalNamespace globals = m_cachedGlobals.Get();
+				if (globals != null)
+				{
+					var target = m_target.Resolve(m_text.Text, expr, range.location, globals);
+					if (target.First != null)
 					{
-						string expr = DoGetTargetExpr(range.location);
-						if (expr != null)
+						Member[] members = m_members.Resolve(target.First, globals);
+						if (members.Length > 0)
 						{
-							CsGlobalNamespace globals = m_cachedGlobals.Get();
-							if (globals != null)
-							{
-								var target = m_target.Resolve(m_text.Text, expr, range.location, globals);
-								if (target.First != null)
-								{
-									Member[] members = m_members.Resolve(target.First, globals);
-									if (members.Length > 0)
-									{
-										if (m_controller == null)	
-											m_controller = new CompletionsController();
-										m_controller.Show(view, target.First.FullName, members);
-									}
-								}
-							}
+							if (m_controller == null)	
+								m_controller = new CompletionsController();
+							m_controller.Show(view, target.First.FullName, members, 0);
 						}
 					}
 				}
@@ -122,7 +139,44 @@ namespace AutoComplete
 			return handled;
 		}
 		
-		#region Private Methods
+		public bool DoCompleteExpression(NSTextView view, NSRange range)
+		{
+			CsGlobalNamespace globals = m_cachedGlobals.Get();
+			if (globals != null)
+			{
+				var target = m_target.Resolve(m_text.Text, "<this>", range.location, globals);
+				if (target.First != null)
+				{
+					var members = new List<Member>(m_members.Resolve(target.First, globals));
+					foreach (Variable v in target.Second)
+					{
+						members.AddIfMissing(new Member(v.Name));
+					}
+					
+					int prefixLen = 0;
+					if (range.length == 0)
+					{
+						string expr = DoGetTargetExpr(range.location);
+						if (expr != null)
+						{
+							members.RemoveAll(m => !m.Text.StartsWith(expr));
+							prefixLen = expr.Length;
+						}
+					}
+					
+					if (members.Count > 0)
+					{
+						if (m_controller == null)	
+							m_controller = new CompletionsController();
+							
+						m_controller.Show(view, target.First.FullName, members.ToArray(), prefixLen);
+					}
+				}
+			}
+			
+			return true;
+		}
+		
 		private void DoUpdateCache(IComputeRuns computer)
 		{
 			int edit;
@@ -134,7 +188,7 @@ namespace AutoComplete
 				computer.ComputeRuns(m_text.Text, m_text.EditCount, m_boss);
 			}
 		}
-		
+				
 		private string DoGetTargetExpr(int offset)
 		{
 			string text = m_text.Text;
@@ -143,13 +197,13 @@ namespace AutoComplete
 			while (index > 0 && (text[index - 1] == '.' || CsHelpers.CanContinueIdentifier(text[index - 1])))
 				--index;
 			
-			string target = null;
+			string expr = null;
 			if (text[index] == '_' || CsHelpers.CanStartIdentifier(text[index]))
-				target = text.Substring(index, offset - index);
+				expr = text.Substring(index, offset - index);
 				
-			Trace.Assert(target == null || target.Length > 0, "target is empty");
+			Trace.Assert(expr == null || expr.Length > 0, "expr is empty");
 			
-			return target;
+			return expr;
 		}
 		#endregion
 		

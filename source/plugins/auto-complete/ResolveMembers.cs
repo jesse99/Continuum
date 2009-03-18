@@ -45,7 +45,7 @@ namespace AutoComplete
 			
 			// Get the members for the base types.	
 			var resolveType = new ResolveType(new TargetDatabase(m_database));
-			IEnumerable<ResolvedTarget> bases = resolveType.GetBases(globals, fullName, target.IsInstance);
+			IEnumerable<ResolvedTarget> bases = resolveType.GetBases(globals, fullName, target.IsInstance, target.IsStatic);
 			foreach (ResolvedTarget t in bases)
 			{
 				DoGetMembers(t, globals, members, false);
@@ -107,18 +107,18 @@ namespace AutoComplete
 			}
 			
 			if (hash != null && (type == null || (type.Modifiers & MemberModifiers.Partial) != 0))
-				DoGetDatabaseMembers(fullName, target.IsInstance, members, includePrivates);
+				DoGetDatabaseMembers(fullName, target.IsInstance, target.IsStatic, members, includePrivates);
 				
 			return fullName;
 		}
 		
-		private void DoGetDatabaseMembers(string fullName, bool instanceCall, List<Member> members, bool includePrivates)
+		private void DoGetDatabaseMembers(string fullName, bool instanceCall, bool isStaticCall, List<Member> members, bool includePrivates)
 		{
-			DoGetDatabaseMethods(fullName, instanceCall, members, includePrivates);
-			DoGetDatabaseFields(fullName, instanceCall, members, includePrivates);
+			DoGetDatabaseMethods(fullName, instanceCall, isStaticCall, members, includePrivates);
+			DoGetDatabaseFields(fullName, instanceCall, isStaticCall, members, includePrivates);
 		}
 		
-		private void DoGetDatabaseMethods(string fullName, bool instanceCall, List<Member> members, bool includePrivates)
+		private void DoGetDatabaseMethods(string fullName, bool instanceCall, bool isStaticCall, List<Member> members, bool includePrivates)
 		{
 			string sql = string.Format(@"
 				SELECT name, arg_types, arg_names, attributes
@@ -127,14 +127,14 @@ namespace AutoComplete
 			string[][] rows = m_database.QueryRows(sql);
 			
 			var methods = from r in rows
-				where DoIsValidMethod(r[0], ushort.Parse(r[3]), instanceCall, includePrivates)
+				where DoIsValidMethod(r[0], ushort.Parse(r[3]), instanceCall, isStaticCall, includePrivates)
 				select DoGetMethodName(r[0], r[1], r[2], 0);
 			
 			foreach (Member name in methods)
 				members.AddIfMissing(name);
 		}
 		
-		private void DoGetDatabaseFields(string fullName, bool instanceCall, List<Member> members, bool includePrivates)
+		private void DoGetDatabaseFields(string fullName, bool instanceCall, bool isStaticCall, List<Member> members, bool includePrivates)
 		{
 			string sql = string.Format(@"
 				SELECT name, attributes
@@ -143,7 +143,7 @@ namespace AutoComplete
 			string[][] rows = m_database.QueryRows(sql);
 			
 			var fields = from r in rows
-				where DoIsValidField(r[0], ushort.Parse(r[1]), instanceCall, includePrivates)
+				where DoIsValidField(r[0], ushort.Parse(r[1]), instanceCall, isStaticCall, includePrivates)
 				select r[0];
 			
 			foreach (string name in fields)
@@ -155,18 +155,26 @@ namespace AutoComplete
 			CsEnum e = target.Type as CsEnum;
 			if (e != null)
 			{
-				if (!target.IsInstance)
+				if (target.IsStatic)
 					members.AddRange(from n in e.Names select new Member(n));
 			}
 			else
 				DoGetParsedTypeMembers(target, members, includePrivates);
 		}
 		
+		private bool DoShouldAdd(ResolvedTarget target, MemberModifiers modifiers)
+		{
+			if ((modifiers & MemberModifiers.Static) == 0)
+				return target.IsInstance;
+			else
+				return target.IsStatic;
+		}
+		
 		private void DoGetParsedTypeMembers(ResolvedTarget target, List<Member> members, bool includePrivates)
 		{
 			foreach (CsField field in target.Type.Fields)
 			{
-				if (target.IsInstance == ((field.Modifiers & MemberModifiers.Static) == 0))
+				if (DoShouldAdd(target, field.Modifiers))
 					if (includePrivates || field.Access != MemberModifiers.Private)
 						members.AddIfMissing(new Member(field.Name));
 			}
@@ -175,7 +183,8 @@ namespace AutoComplete
 			{
 				if (!method.IsConstructor && !method.IsFinalizer)
 				{
-					if (target.IsInstance == ((method.Modifiers & MemberModifiers.Static) == 0))
+					if (DoShouldAdd(target, method.Modifiers))
+					{
 						if (includePrivates || method.Access != MemberModifiers.Private)
 						{
 							var atypes = from p in method.Parameters select p.Type;
@@ -184,6 +193,7 @@ namespace AutoComplete
 							
 							members.AddIfMissing(new Member(text, atypes.ToArray(), anames.ToArray()));
 						}
+					}
 				}
 			}
 			
@@ -192,21 +202,22 @@ namespace AutoComplete
 			{
 				if (prop.HasGetter)
 				{
-					if (target.IsInstance == ((prop.Modifiers & MemberModifiers.Static) == 0))
+					if (DoShouldAdd(target, prop.Modifiers))
 						if (includePrivates || prop.Access != MemberModifiers.Private)
 							members.AddIfMissing(new Member(prop.Name));
 				}
 			}
 		}
 		
-		private bool DoIsValidMethod(string name, ushort attributes, bool instanceCall, bool includePrivates)
+		private bool DoIsValidMethod(string name, ushort attributes, bool instanceCall, bool isStaticCall, bool includePrivates)
 		{
-			bool valid;
+			bool valid = true;
 			
-			if (instanceCall)
-				valid = (attributes & 0x0010) == 0;
-			else
-				valid = (attributes & 0x0010) != 0;
+			if (!(instanceCall && isStaticCall))
+				if (instanceCall)
+					valid = (attributes & 0x0010) == 0;
+				else
+					valid = (attributes & 0x0010) != 0;
 			
 			if (valid && !includePrivates)
 				valid = (attributes & 0x0001) == 0;
@@ -234,7 +245,7 @@ namespace AutoComplete
 				
 			return valid;
 		}
-
+		
 		private bool DoIsValidExtensionMethod(string ns, ushort attributes, CsGlobalNamespace globals)
 		{
 			bool valid = false;
@@ -249,15 +260,16 @@ namespace AutoComplete
 				
 			return valid;
 		}
-
-		private bool DoIsValidField(string name, ushort attributes, bool instanceCall, bool includePrivates)
+		
+		private bool DoIsValidField(string name, ushort attributes, bool instanceCall, bool isStaticCall, bool includePrivates)
 		{
-			bool valid;
+			bool valid = true;
 			
-			if (instanceCall)
-				valid = (attributes & 0x0010) == 0;
-			else
-				valid = (attributes & 0x0010) != 0;
+			if (!(instanceCall && isStaticCall))
+				if (instanceCall)
+					valid = (attributes & 0x0010) == 0;
+				else
+					valid = (attributes & 0x0010) != 0;
 			
 			if (valid && !includePrivates)
 				valid = (attributes & 0x0001) == 0;

@@ -48,26 +48,26 @@ namespace AutoComplete
 			return rows.Length > 0 ? rows[0][0] : null;
 		}
 		
-		public Tuple2<string, string>[] FindMethodsWithPrefix(string fullName, string prefix, int numArgs)
+		public Tuple2<string, string>[] FindMethodsWithPrefix(string fullName, string prefix, int numArgs, bool includeInstanceMembers)
 		{
 			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
 			Trace.Assert(!string.IsNullOrEmpty(prefix), "prefix is null or empty");
 			Trace.Assert(numArgs >= 0, "numArgs is negative");
 			
 			string sql = string.Format(@"
-				SELECT return_type, arg_names, name
+				SELECT return_type, arg_names, name, attributes
 					FROM Methods 
 				WHERE declaring_type = '{0}' AND name GLOB '{0}*'", fullName, prefix);
 			string[][] rows = m_database.QueryRows(sql);
 			
 			var result = from r in rows
-				where r[1].Count(c => c == ':') == numArgs
+				where DoIncludeMethod(r[1], numArgs, ushort.Parse(r[3]), includeInstanceMembers)
 				select Tuple.Make(r[0], r[2]);
-
+			
 			return result.ToArray();
 		}
 		
-		public Tuple2<string, string>[] FindFields(string fullName)
+		public Tuple2<string, string>[] FindFields(string fullName, bool includeInstanceMembers)
 		{
 			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
 			
@@ -82,7 +82,8 @@ namespace AutoComplete
 			for (int i = 0; i < rows.Length; ++i)
 			{
 				if ((ushort.Parse(rows[i][2]) & 1) == 0)				// no private base fields (declaring type fields will come from the parser)
-					fields.Add(Tuple.Make(rows[i][1], rows[i][0]));
+					if (DoIncludeField(ushort.Parse(rows[i][2]), includeInstanceMembers))
+						fields.Add(Tuple.Make(rows[i][1], rows[i][0]));
 			}
 			
 			return fields.ToArray();
@@ -114,10 +115,32 @@ namespace AutoComplete
 			string[][] rows = m_database.QueryRows(sql);
 			
 			var result = from r in rows select r[0];
-
+			
 			return result.ToArray();
 		}
-				
+		
+		#region Private Methods
+		private bool DoIncludeMethod(string argNames, int numArgs, ushort attributes, bool includeInstanceMembers)
+		{
+			bool include = argNames.Count(c => c == ':') == numArgs;
+			
+			if (include && !includeInstanceMembers)
+				include = (attributes & 0x0010) != 0;
+			
+			return include;
+		}
+
+		private bool DoIncludeField(ushort attributes, bool includeInstanceMembers)
+		{
+			bool include = true;
+			
+			if (!includeInstanceMembers)
+				include = (attributes & 0x0010) != 0;
+			
+			return include;
+		}
+		#endregion
+		
 		#region Fields
 		private Database m_database;
 		#endregion

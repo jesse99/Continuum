@@ -29,15 +29,17 @@ namespace AutoComplete
 {
 	internal sealed class ResolvedTarget
 	{
-		public ResolvedTarget(string fullName, CsType type, string hash, bool isInstance)
+		public ResolvedTarget(string fullName, CsType type, string hash, bool isInstance, bool isStatic)
 		{
 			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
 			Trace.Assert(type != null || hash != null, "type and hash are both null");
+			Trace.Assert(isInstance || isStatic, "at least one of isInstance and isStatic should be true");
 			
 			FullName = fullName;
 			Type = type;
 			Hash = hash;
 			IsInstance = isInstance;
+			IsStatic = isStatic;
 		}
 		
 		// Will always be set.
@@ -49,9 +51,12 @@ namespace AutoComplete
 		// Set if the fullName was found in the database.
 		public string Hash {get; private set;}
 		
-		// True if the target is an instance of the type (as opposed to the
-		// type itself).
+		// True if the target is an instance of the type.
 		public bool IsInstance {get; private set;}
+		
+		// True if the target is the type. Note that IsInstance and IsStatic will both
+		// be true when completing expressions.
+		public bool IsStatic {get; private set;}
 		
 		public override string ToString()
 		{
@@ -64,8 +69,12 @@ namespace AutoComplete
 				builder.Append(Hash);
 			}
 			
-			if (IsInstance)
-				builder.Append(" instance");
+			if (IsInstance && IsStatic)
+				builder.Append(" [all]");
+			else if (IsInstance)
+				builder.Append(" [instance]");
+			else
+				builder.Append(" [statics]");
 				
 			return builder.ToString();
 		}

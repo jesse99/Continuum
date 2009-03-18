@@ -37,14 +37,14 @@ namespace AutoComplete
 
 		// Returns all of the method return types/names in the specified type (but not 
 		// bases) which start with the specified prefix.
-		Tuple2<string, string>[] FindMethodsWithPrefix(string fullName, string prefix, int numArgs);
+		Tuple2<string, string>[] FindMethodsWithPrefix(string fullName, string prefix, int numArgs, bool includeInstanceMembers);
 		
 		// Returns either null or the full type name of a field defined in the fullName
 		// type or one of its base classes.
 //		string FindFieldType(string fullName, string name);
 		
 		// Returns a list of field type/names for the specified type (but not its bases).
-		Tuple2<string, string>[] FindFields(string fullName);
+		Tuple2<string, string>[] FindFields(string fullName, bool includeInstanceMembers);
 		
 		// Returns either null or the full name of the type's base class.
 		string FindBaseType(string fullName);

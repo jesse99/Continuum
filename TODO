@@ -10,27 +10,42 @@ http://code.google.com/p/simple-assembly-explorer/
 can make readonly rule
 
 might want a sample app
-down 125
-up 126
 
-* Work on arg completion:
-	- do a checkin
-	- build a new foreshadow
-	- member completion should show locals, args, fields, and methods
-	- need to replace selection instead of inserting
-	- enter should do member completion
-	- what about the label?
+		// This special handling of the tab key is motivated by making argument completion
+		// easier. So, we want tab to select the next identifier if the current selection is an
+		// identifier or the selection is empty and just before a comma.
+		private bool DoShouldSelectIdentifier(ICachedCsCatalog catalog, NSRange range)
+		{
+			bool should = false;
+			
+			if (range.length > 0)
+			{
+				NSRange current = catalog.GetIdentifier(range.location);
+				should = current == range;
+			}
+			else if (range.location < string_().length())
+			{
+				should = string_()[range.location] == ',';
+			}
+			
+			return should;
+		}
+		
 * Styles aren't getting applied reliably. Mostly member and type names.
 * Work on target completion:
 	- var builder = new StringBuilder(); is broken (shows static members)
 	- complete table should support paste (i.e. add it to completion text)
 	- context menu should filter by class
+	- context menu should filter by extension method
 	- context menu should filter by access
 	- complete new SomeType calls
 		` special case array types
 	- get ctor calls completing
 	- support method call targets (but only if the . applies to the last completion)
-	- do some performance tuning, sqlite3_profile may help, also sqlite3_status, may want to use prepared statements too
+	- do some performance tuning
+		` don't think we need to get the hash for types
+		` extension methods are really slow, especially with a few base classes/interfaces
+		` sqlite3_profile may help, also sqlite3_status, may want to use prepared statements too
 	- local explicit interface implementation
 	- global explicit interface implementation
 	- add a context menu:
@@ -82,6 +97,7 @@ up 126
 * Make sure ComputeRuns is not called if runs are up to date.
 * Popup should not bold delegates used as members.
 * Might want to expose CsEnum.Names to refactor.
+* Got a crash trying to open a bundle.
 * Expose CsBases.HasBaseClass to refactor.
 * Don't do brace hiliting if insertion point is not within code.
 * Implement IDisposable added throw to a private method.
