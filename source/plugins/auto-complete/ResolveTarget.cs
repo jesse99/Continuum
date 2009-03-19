@@ -267,7 +267,10 @@ namespace AutoComplete
 						result = Resolve(text, value, offset, globals).First;
 						
 						if (result != null)
+						{
+							result = new ResolvedTarget(result.FullName, result.Type, result.Hash, true, false);	// we resolved a type, but it's used as an instance...
 							Log.WriteLine("AutoComplete", "found var local: {0}", result.FullName);
+						}
 					}
 					else
 					{

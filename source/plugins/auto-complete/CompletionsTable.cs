@@ -61,7 +61,7 @@ namespace AutoComplete
 			
 			if (chars == "\t" || chars == "\r")
 			{
-				doubleClicked(null);
+				DoComplete();
 			}
 			else if (chars == Constants.Escape)
 			{
@@ -107,29 +107,7 @@ namespace AutoComplete
 		
 		public void doubleClicked(NSObject sender)
 		{
-			int row = selectedRow();
-			if (row >= 0)
-			{
-				string text;
-				NSRange range;
-				DoGetInsertText(row, out text, out range);
-				
-				if (m_prefixLen < text.Length)
-				{
-					m_text.delete(this);
-					m_text.insertText(NSString.Create(text.Substring(m_prefixLen)));
-					
-					if (range.length > 0)
-						m_text.setSelectedRange(range);
-					else
-						m_text.setSelectedRange(new NSRange(range.location + text.Length - m_prefixLen, 0));
-				}
-				
-				m_text = null;
-				window().windowController().Call("hide");
-			}
-			else
-				Functions.NSBeep();
+			DoComplete();
 		}
 		
 		public int numberOfRowsInTableView(NSTableView table)
@@ -165,7 +143,50 @@ namespace AutoComplete
 			return result;
 		}
 		
+		public int CompletedIndex
+		{
+			get {return m_completedIndex;}
+		}
+		
+		public Member CompletedMember
+		{
+			get {return m_completedMember;}
+		}
+		
 		#region Private Methods
+		public void DoComplete()
+		{
+			int row = selectedRow();
+			if (row >= 0)
+			{
+				string text;
+				NSRange range;
+				DoGetInsertText(row, out text, out range);
+				
+				m_completedIndex = -1;
+				m_completedMember = null;
+				
+				if (m_prefixLen <= text.Length)
+				{
+					m_completedIndex = m_text.selectedRange().location - m_prefixLen;
+					m_completedMember = m_members[row];
+				
+					m_text.delete(this);
+					m_text.insertText(NSString.Create(text.Substring(m_prefixLen)));
+					
+					if (range.length > 0)
+						m_text.setSelectedRange(range);
+					else
+						m_text.setSelectedRange(new NSRange(range.location + text.Length - m_prefixLen, 0));
+				}
+				
+				m_text = null;
+				window().windowController().Call("hide");
+			}
+			else
+				Functions.NSBeep();
+		}
+		
 		private void DoResetSelection()
 		{
 			if (m_members.Count > 0)
@@ -270,6 +291,9 @@ namespace AutoComplete
 		private List<Member> m_members = new List<Member>();
 		private string m_completed = string.Empty;
 		private int m_prefixLen;
+
+		private int m_completedIndex = -1;
+		private Member m_completedMember;
 		#endregion
 	}
 }

@@ -27,28 +27,35 @@ namespace AutoComplete
 {
 	internal sealed class Member : IEquatable<Member>
 	{
-		public Member(string text)
+		public Member(string text, string type)
 		{
 			Trace.Assert(!string.IsNullOrEmpty(text), "text is null or empty");
+			Trace.Assert(!string.IsNullOrEmpty(type), "type is null or empty");
 			
 			Text = text;
+			Type = type;
 			ArgTypes = new string[0];
 			ArgNames = new string[0];
 		}
 		
-		public Member(string text, string[] argTypes, string[] argNames)
+		public Member(string text, string[] argTypes, string[] argNames, string type)
 		{
 			Trace.Assert(!string.IsNullOrEmpty(text), "text is null or empty");
+			Trace.Assert(!string.IsNullOrEmpty(type), "type is null or empty");
 			Trace.Assert(argTypes != null, "argTypes is null");
 			Trace.Assert(argNames != null, "argNames is null");
 			Trace.Assert(argTypes.Length == argNames.Length, "argNames and argTypes lengths differ");
 			
 			Text = text;
+			Type = type;
 			ArgTypes = argTypes;
 			ArgNames = argNames;
 		}
 		
 		public string Text {get; private set;}
+		
+		// Note that this may not be the full name.
+		public string Type {get; private set;}
 		
 		public string[] ArgTypes {get; private set;}
 		

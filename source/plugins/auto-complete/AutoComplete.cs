@@ -76,6 +76,7 @@ namespace AutoComplete
 					m_database = new Database(path);
 					
 					m_target = new ResolveTarget(new TargetDatabase(m_database), m_locals);
+					m_type = new ResolveType(new TargetDatabase(m_database));
 					m_members = new ResolveMembers(m_database);
 				}
 			}
@@ -112,34 +113,112 @@ namespace AutoComplete
 		}
 		
 		#region Private Methods
-		public bool DoCompleteTarget(NSTextView view, NSRange range)
-		{
-			bool handled = false;
-			
-			string expr = DoGetTargetExpr(range.location);
-			if (expr != null)
+		private bool DoCompleteTarget(NSTextView view, NSRange range)
+		{			
+			CsGlobalNamespace globals = m_cachedGlobals.Get();
+			if (globals != null)
 			{
-				CsGlobalNamespace globals = m_cachedGlobals.Get();
-				if (globals != null)
+				Member[] members = null;
+				string type = null;
+				
+				Member oldMember = DoMatchOldMethod(range);
+				if (oldMember != null)
 				{
-					var target = m_target.Resolve(m_text.Text, expr, range.location, globals);
-					if (target.First != null)
+					var target = m_type.Resolve(oldMember.Type, globals, true, false);
+					if (target != null)
 					{
-						Member[] members = m_members.Resolve(target.First, globals);
-						if (members.Length > 0)
+						type = target.FullName;
+						members = m_members.Resolve(target, globals);
+					}
+				}
+				else
+				{
+					string expr = DoGetTargetExpr(range.location);
+					if (expr != null)
+					{
+						var target = m_target.Resolve(m_text.Text, expr, range.location, globals);
+						if (target.First != null)
 						{
-							if (m_controller == null)	
-								m_controller = new CompletionsController();
-							m_controller.Show(view, target.First.FullName, members, 0);
+							type = target.First.FullName;
+							members = m_members.Resolve(target.First, globals);
+						}
+					}
+				}
+				
+				if (type != "System.Void")
+				{
+					if (members != null && members.Length > 0)
+					{
+						if (m_controller == null)	
+							m_controller = new CompletionsController();
+						m_controller.Show(view, type, members, 0);
+					}
+				}
+				else
+					Functions.NSBeep();
+			}
+			
+			return false;
+		}
+		
+		private Member DoMatchOldMethod(NSRange range)
+		{
+			if (m_controller != null)
+			{
+				string text = m_text.Text;
+				int oldIndex = m_controller.CompletedIndex;
+				
+				if (m_controller.CompletedMember != null && oldIndex < text.Length)
+				{
+					string oldText = m_controller.CompletedMember.Text;
+					int k = oldText.IndexOf('(');
+					
+					if (k >= 0)
+					{
+						// Alpha.Beta(actualArg).
+						if (string.Compare(oldText, 0, text, oldIndex, k) == 0)
+						{
+							int i = DoSkipParens(text, oldIndex + k);
+							if (range.location == i)
+								return m_controller.CompletedMember;
+						}
+					}
+					else
+					{
+						// Alpha.Beta.
+						if (range.location == oldIndex + oldText.Length)
+						{
+							if (string.Compare(oldText, 0, text, oldIndex, oldText.Length) == 0)
+								return m_controller.CompletedMember;
 						}
 					}
 				}
 			}
 			
-			return handled;
+			return null;
 		}
 		
-		public bool DoCompleteExpression(NSTextView view, NSRange range)
+		private int DoSkipParens(string text, int i)
+		{
+			Trace.Assert(text[i] == '(', "expected a '(' but found '" + text[i] + "'");
+			
+			int count = 1;
+			++i;
+			
+			while (i < text.Length && count > 0)
+			{
+				if (text[i] == '(')
+					++count;
+				else if (text[i] == ')')
+					--count;
+				
+				++i;
+			}
+			
+			return count == 0 ? i : -1;
+		}
+		
+		private bool DoCompleteExpression(NSTextView view, NSRange range)
 		{
 			CsGlobalNamespace globals = m_cachedGlobals.Get();
 			if (globals != null)
@@ -150,7 +229,7 @@ namespace AutoComplete
 					var members = new List<Member>(m_members.Resolve(target.First, globals));
 					foreach (Variable v in target.Second)
 					{
-						members.AddIfMissing(new Member(v.Name));
+						members.AddIfMissing(new Member(v.Name, v.Type));
 					}
 					
 					int prefixLen = 0;
@@ -188,7 +267,7 @@ namespace AutoComplete
 				computer.ComputeRuns(m_text.Text, m_text.EditCount, m_boss);
 			}
 		}
-				
+		
 		private string DoGetTargetExpr(int offset)
 		{
 			string text = m_text.Text;
@@ -216,6 +295,7 @@ namespace AutoComplete
 		private ICachedCsDeclarations m_cachedGlobals;
 		private ICsLocalsParser m_locals;
 		private ResolveTarget m_target;
+		private ResolveType m_type;
 		private ResolveMembers m_members;
 		#endregion
 	}

@@ -1,10 +1,11 @@
-https://home.comcast.net/~jesse98/public/Continuum-0.2.222.0.tar.gz
+	⁃	https://home.comcast.net/~jesse98/public/Continuum-0.2.222.0.tar.gz
 
 BMPN - flow charts
 http://code.google.com
 http://dev.mysql.com/tech-resources/articles/why-data-modeling.html
 SQL and it's Applications
 http://otx.osxninja.com/
+NRefactory
 
 http://code.google.com/p/simple-assembly-explorer/
 can make readonly rule
@@ -30,18 +31,35 @@ might want a sample app
 			
 			return should;
 		}
-		
-* Styles aren't getting applied reliably. Mostly member and type names.
+
+* Got an error after building:
+Shared.DatabaseLockedException: Failed to execute 'BEGIN IMMEDIATE TRANSACTION' (database is locked)
+  at Shared.Database.DoRaiseError (System.String command, Error err, IntPtr errMesg) [0x00055] in /Users/jessejones/Source/Continuum/source/shared/Database.cs:310 
+  at Shared.Database.Update (System.String command) [0x00080] in /Users/jessejones/Source/Continuum/source/shared/Database.cs:122 
+  at Shared.Database.Begin (System.String name) [0x00043] in /Users/jessejones/Source/Continuum/source/shared/Database.cs:153 
+  at Shared.Database.Update (System.String name, System.Action action) [0x00024] in /Users/jessejones/Source/Continuum/source/shared/Database.cs:132 
+
+Unhandled Exception: Shared.DatabaseLockedException: Failed to execute 'BEGIN IMMEDIATE TRANSACTION' (database is locked)
+  at Shared.Database.DoRaiseError (System.String command, Error err, IntPtr errMesg) [0x00055] in /Users/jessejones/Source/Continuum/source/shared/Database.cs:310 
+  at Shared.Database.Update (System.String command) [0x00080] in /Users/jessejones/Source/Continuum/source/shared/Database.cs:122 
+  at Shared.Database.Begin (System.String name) [0x00043] in /Users/jessejones/Source/Continuum/source/shared/Database.cs:153 
+  at Shared.Database.Update (System.String name, System.Action action) [0x00024] in /Users/jessejones/Source/Continuum/source/shared/Database.cs:132 
 * Work on target completion:
-	- var builder = new StringBuilder(); is broken (shows static members)
+	- support method call targets (but only if the . applies to the last completion)
+	- beep if . is used with System.Void
+	- get ctor calls completing: enter with new PartialTypeName
+	- ctor completion should work with dotted names
+	- ctor completion should work with just new
+	- completion should start a new undo action so undo only undoes one completion
+	  (instead of a whole chain of them)
 	- complete table should support paste (i.e. add it to completion text)
+	- member list needs to account for access
+	- member list needs to account for visibility
 	- context menu should filter by class
 	- context menu should filter by extension method
 	- context menu should filter by access
 	- complete new SomeType calls
 		` special case array types
-	- get ctor calls completing
-	- support method call targets (but only if the . applies to the last completion)
 	- do some performance tuning
 		` don't think we need to get the hash for types
 		` extension methods are really slow, especially with a few base classes/interfaces
@@ -52,8 +70,6 @@ might want a sample app
 		` find on site
 		` open file
 		` complete
-	- member list needs to account for access
-	- member list needs to account for visibility
 	- need to work with namespace aliases
 	- get target working with array indexing, eg data[foo], also indexers
 	- prune value type members when completing args
@@ -66,6 +82,7 @@ might want a sample app
 -rw-r--r--  1 jessejones  jessejones  43925504 Feb 25 21:52 mcocoa.db
 -rw-r--r--  1 jessejones  jessejones  26219520 Feb 26 05:47 mobjc.db
 -rw-r--r--  1 jessejones  jessejones  11363328 Mar  4 14:18 Trivial.db
+* Styles aren't getting applied reliably. Mostly member and type names.
 * Work on tab completion:
 	- fair amount of duplicated code
 	- five versions target, call, arg, ctor arg, namespace completion
@@ -95,6 +112,7 @@ might want a sample app
 * Add scripts to convert to decimal and hex. Maybe binary too.
 * Does time code refactor really need a finally block?
 * Make sure ComputeRuns is not called if runs are up to date.
+* Implement interface refactor.
 * Popup should not bold delegates used as members.
 * Might want to expose CsEnum.Names to refactor.
 * Got a crash trying to open a bundle.

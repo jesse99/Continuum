@@ -65,6 +65,16 @@ namespace AutoComplete
 			m_label.Value.setObjectValue(text);
 		}
 		
+		public int CompletedIndex
+		{
+			get {return m_table.Value.CompletedIndex;}
+		}
+		
+		public Member CompletedMember
+		{
+			get {return m_table.Value.CompletedMember;}
+		}
+		
 		#region Private Methods
 		// TODO: this isn't quite right. We want the base line of the line the glyph is in
 		// not the base line of the glyph itself. There doesn't seem to be a good way to

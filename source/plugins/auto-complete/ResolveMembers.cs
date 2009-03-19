@@ -71,7 +71,7 @@ namespace AutoComplete
 		private void DoGetExtensionMethods(string fullName, CsGlobalNamespace globals, List<Member> members)
 		{
 			string sql = string.Format(@"
-				SELECT name, arg_types, arg_names, attributes, namespace
+				SELECT name, arg_types, arg_names, attributes, namespace, return_type
 					FROM Methods 
 				INNER JOIN ExtensionMethods
 					ON Methods.method = ExtensionMethods.method AND Methods.hash = ExtensionMethods.hash
@@ -80,7 +80,7 @@ namespace AutoComplete
 			
 			var methods = from r in rows
 				where DoIsValidExtensionMethod(r[4], ushort.Parse(r[3]), globals)
-				select DoGetMethodName(r[0], r[1], r[2], 1);
+				select DoGetMethod(r[0], r[1], r[2], 1, r[5]);
 			
 			foreach (Member name in methods)
 				members.AddIfMissing(name);
@@ -121,14 +121,14 @@ namespace AutoComplete
 		private void DoGetDatabaseMethods(string fullName, bool instanceCall, bool isStaticCall, List<Member> members, bool includePrivates)
 		{
 			string sql = string.Format(@"
-				SELECT name, arg_types, arg_names, attributes
+				SELECT name, arg_types, arg_names, attributes, return_type
 					FROM Methods 
 				WHERE declaring_type = '{0}'", fullName);
 			string[][] rows = m_database.QueryRows(sql);
 			
 			var methods = from r in rows
 				where DoIsValidMethod(r[0], ushort.Parse(r[3]), instanceCall, isStaticCall, includePrivates)
-				select DoGetMethodName(r[0], r[1], r[2], 0);
+				select DoGetMethod(r[0], r[1], r[2], 0, r[4]);
 			
 			foreach (Member name in methods)
 				members.AddIfMissing(name);
@@ -137,17 +137,17 @@ namespace AutoComplete
 		private void DoGetDatabaseFields(string fullName, bool instanceCall, bool isStaticCall, List<Member> members, bool includePrivates)
 		{
 			string sql = string.Format(@"
-				SELECT name, attributes
+				SELECT name, attributes, type
 					FROM Fields 
 				WHERE declaring_type = '{0}'", fullName);
 			string[][] rows = m_database.QueryRows(sql);
 			
 			var fields = from r in rows
 				where DoIsValidField(r[0], ushort.Parse(r[1]), instanceCall, isStaticCall, includePrivates)
-				select r[0];
+				select Tuple.Make(r[0], r[2]);
 			
-			foreach (string name in fields)
-				members.AddIfMissing(new Member(name));
+			foreach (var field in fields)
+				members.AddIfMissing(new Member(field.First, field.Second));
 		}
 		
 		private void DoGetParsedMembers(ResolvedTarget target, List<Member> members, bool includePrivates)
@@ -156,7 +156,7 @@ namespace AutoComplete
 			if (e != null)
 			{
 				if (target.IsStatic)
-					members.AddRange(from n in e.Names select new Member(n));
+					members.AddRange(from n in e.Names select new Member(n, target.Type.FullName));
 			}
 			else
 				DoGetParsedTypeMembers(target, members, includePrivates);
@@ -176,7 +176,7 @@ namespace AutoComplete
 			{
 				if (DoShouldAdd(target, field.Modifiers))
 					if (includePrivates || field.Access != MemberModifiers.Private)
-						members.AddIfMissing(new Member(field.Name));
+						members.AddIfMissing(new Member(field.Name, field.Type));
 			}
 			
 			foreach (CsMethod method in target.Type.Methods)
@@ -191,7 +191,7 @@ namespace AutoComplete
 							var anames = from p in method.Parameters select p.Name;
 							string text = method.Name + "(" + string.Join(", ", (from p in method.Parameters select p.Type + " " + p.Name).ToArray()) + ")";
 							
-							members.AddIfMissing(new Member(text, atypes.ToArray(), anames.ToArray()));
+							members.AddIfMissing(new Member(text, atypes.ToArray(), anames.ToArray(), method.ReturnType));
 						}
 					}
 				}
@@ -204,7 +204,7 @@ namespace AutoComplete
 				{
 					if (DoShouldAdd(target, prop.Modifiers))
 						if (includePrivates || prop.Access != MemberModifiers.Private)
-							members.AddIfMissing(new Member(prop.Name));
+							members.AddIfMissing(new Member(prop.Name, prop.ReturnType));
 				}
 			}
 		}
@@ -277,7 +277,7 @@ namespace AutoComplete
 			return valid;
 		}
 		
-		private Member DoGetMethodName(string mname, string argTypes, string argNames, int firstArg)
+		private Member DoGetMethod(string mname, string argTypes, string argNames, int firstArg, string rtype)
 		{
 			var builder = new StringBuilder(mname.Length + argTypes.Length + argNames.Length);
 			var atypes = new List<string>();
@@ -317,7 +317,7 @@ namespace AutoComplete
 				builder.Append(')');
 			}
 			
-			return new Member(builder.ToString(), atypes.ToArray(), anames.ToArray());
+			return new Member(builder.ToString(), atypes.ToArray(), anames.ToArray(), rtype);
 		}
 		
 		// System.Collections.Generic.IEnumerable`1<TSource>:System.Func`2<TSource,System.Boolean>
