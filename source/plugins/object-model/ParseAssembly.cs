@@ -117,6 +117,11 @@ namespace ObjectModel
 						type TEXT NOT NULL REFERENCES Types(type),
 						namespace TEXT NOT NULL
 							CONSTRAINT no_empty_namespace CHECK(length(namespace) > 0),
+						return_type TEXT NOT NULL,
+						name TEXT NOT NULL
+							CONSTRAINT no_empty_name CHECK(length(name) > 0),
+						arg_types TEXT NOT NULL,
+						arg_names TEXT NOT NULL,
 						PRIMARY KEY(method, hash)
 					)");
 				
@@ -347,7 +352,11 @@ namespace ObjectModel
 							method.ToString(),
 							hash,
 							method.Parameters[0].ParameterType.FullName.GetTypeName(),
-							type.Namespace);
+							type.Namespace,
+							method.ReturnType.ReturnType.FullName.GetTypeName(),
+							method.Name,
+							argTypes.ToString(),
+							argNames.ToString());
 				}
 			}
 			

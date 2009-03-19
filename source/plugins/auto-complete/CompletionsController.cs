@@ -49,6 +49,7 @@ namespace AutoComplete
 			
 			m_label.Value.setStringValue(NSString.Create(type));
 			m_table.Value.Open(text, names, prefixLen);
+			Log.WriteLine("AutoComplete", "took {0:0.000} secs to open the window", AutoComplete.Watch.ElapsedMilliseconds/1000.0);
 			
 			NSApplication.sharedApplication().beginSheet_modalForWindow_modalDelegate_didEndSelector_contextInfo(
 				wind, text.window(), null, null, IntPtr.Zero);

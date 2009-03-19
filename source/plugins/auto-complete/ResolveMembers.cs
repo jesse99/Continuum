@@ -70,8 +70,25 @@ namespace AutoComplete
 		#region Private Methods
 		private void DoGetExtensionMethods(string fullName, CsGlobalNamespace globals, List<Member> members)
 		{
+			// It would be cleaner to do this with an inner join but that join is quite 
+			// slow with sqlite
 			string sql = string.Format(@"
-				SELECT name, arg_types, arg_names, attributes, namespace, return_type
+				SELECT name, arg_types, arg_names, return_type, namespace
+					FROM ExtensionMethods 
+				WHERE type = '{0}'", fullName);
+			string[][] rows = m_database.QueryRows(sql);
+			
+			foreach (string[] r in rows)
+			{
+				if (DoIsValidExtensionMethod(r[4], globals))
+				{
+					members.AddIfMissing(DoGetMethod(r[0], r[1], r[2], 1, r[3]));
+				}
+			}
+			
+#if false
+			string sql = string.Format(@"
+				SELECT name, arg_types, arg_names, namespace, return_type
 					FROM Methods 
 				INNER JOIN ExtensionMethods
 					ON Methods.method = ExtensionMethods.method AND Methods.hash = ExtensionMethods.hash
@@ -79,11 +96,12 @@ namespace AutoComplete
 			string[][] rows = m_database.QueryRows(sql);
 			
 			var methods = from r in rows
-				where DoIsValidExtensionMethod(r[4], ushort.Parse(r[3]), globals)
-				select DoGetMethod(r[0], r[1], r[2], 1, r[5]);
+				where DoIsValidExtensionMethod(r[3], globals)
+				select DoGetMethod(r[0], r[1], r[2], 1, r[4]);
 			
 			foreach (Member name in methods)
 				members.AddIfMissing(name);
+#endif
 		}
 		
 		private string DoGetMembers(ResolvedTarget target, CsGlobalNamespace globals, List<Member> members, bool includePrivates)
@@ -246,7 +264,7 @@ namespace AutoComplete
 			return valid;
 		}
 		
-		private bool DoIsValidExtensionMethod(string ns, ushort attributes, CsGlobalNamespace globals)
+		private bool DoIsValidExtensionMethod(string ns, CsGlobalNamespace globals)
 		{
 			bool valid = false;
 			
@@ -255,9 +273,6 @@ namespace AutoComplete
 				valid = globals.Uses[i].Namespace == ns;
 			}
 			
-			if (valid)
-				valid = (attributes & 0x0001) == 0;	// no private methods
-				
 			return valid;
 		}
 		

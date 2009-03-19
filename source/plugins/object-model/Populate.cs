@@ -50,7 +50,7 @@ namespace ObjectModel
 			var editor = boss.Get<IDirectoryEditor>();
 			string name = Path.GetFileName(editor.Path);
 			
-			string path = Path.Combine(Paths.SupportPath, name + "2.db");
+			string path = Path.Combine(Paths.SupportPath, name + "3.db");
 	
 			return path;
 		}

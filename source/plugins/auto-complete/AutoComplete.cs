@@ -72,7 +72,7 @@ namespace AutoComplete
 				{
 					string name = System.IO.Path.GetFileName(editor.Path);
 			
-					string path = System.IO.Path.Combine(Paths.SupportPath, name + "2.db");
+					string path = System.IO.Path.Combine(Paths.SupportPath, name + "3.db");
 					m_database = new Database(path);
 					
 					m_target = new ResolveTarget(new TargetDatabase(m_database), m_locals);
@@ -95,17 +95,11 @@ namespace AutoComplete
 				NSString chars = evt.characters();
 				if (range.length == 0 && chars.length() == 1 && chars[0] == '.')
 				{
-					DoUpdateCache(computer);
-					
-					if (!m_cachedCatalog.IsWithinComment(range.location) && !m_cachedCatalog.IsWithinString(range.location))
-						handled = DoCompleteTarget(view, range);
+					handled = DoComplete(this.DoCompleteTarget, view, range, computer);
 				}
 				else if (evt.keyCode() == EnterKey)
 				{
-					DoUpdateCache(computer);
-					
-					if (!m_cachedCatalog.IsWithinComment(range.location) && !m_cachedCatalog.IsWithinString(range.location))
-						handled = DoCompleteExpression(view, range);
+					handled = DoComplete(this.DoCompleteExpression, view, range, computer);
 				}
 			}
 			
@@ -113,8 +107,27 @@ namespace AutoComplete
 		}
 		
 		#region Private Methods
+		internal static Stopwatch Watch = new Stopwatch();
+		
+		private bool DoComplete(Func<NSTextView, NSRange, bool> completer, NSTextView view, NSRange range, IComputeRuns computer)
+		{
+			bool handled = false;
+			
+			Watch.Start();
+			Log.WriteLine("AutoComplete", "starting auto-complete");
+			
+			DoUpdateCache(computer);
+			
+			if (!m_cachedCatalog.IsWithinComment(range.location) && !m_cachedCatalog.IsWithinString(range.location))
+				handled = completer(view, range);
+				
+			Watch.Reset();
+			
+			return handled;
+		}
+		
 		private bool DoCompleteTarget(NSTextView view, NSRange range)
-		{			
+		{
 			CsGlobalNamespace globals = m_cachedGlobals.Get();
 			if (globals != null)
 			{

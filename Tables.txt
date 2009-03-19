@@ -68,7 +68,7 @@ type#$		hash#$		interface_type#
 
 -------------------
 Methods
-method#	hash#$		return_type	name	arg_types			arg_names	declaring_type$		file		line		attributes		semantics						
+method#	hash#$		return_type	name	arg_types			arg_names	declaring_type$		file		line		attributes		semantics	complete_text					
 
 * method is the full name of the method, e.g. "System.Boolean MObjc.Registrar::TryGetType(System.String,System.Type&)".
 * hash is from the Assemblies table.
@@ -90,12 +90,21 @@ TODO: need to store custom attributes
 
 -------------------
 ExtensionMethods
-method#	hash#$		type	namespace
+method#	hash#$		type	namespace		return_type	name	arg_types			arg_names
 
 * method is the full name of the method, e.g. "System.Int32 System.Linq.Enumerable::Max(System.Collections.Generic.IEnumerable`1<System.Int32>)".
 * hash is from the Assemblies table.
 * type is the full name of the type the extension method extends. It will normally be in Types.
 * namespace is the full name of the namespace which must be used to make the extension method available.
+* return_type is something like "System.Boolean".
+* name is the name of the method, e.g. "TryGetType". Note that the name will have a prefix for
+  event, indexer, operator, and property methods. E.g. "set_Text" or "op_Add".
+* arg_types contains a colon separated list of the agument types, e.g. "System.String:System.Type&".
+   Note that these do include the generic argument type names.
+* arg_names contains a colon separated list of the agument names, e.g. "name:type".
+
+Note that this table duplicates some of the Methods fields because doing so substantially
+speeds up auto-complete queries.
 
 -------------------
 Fields
