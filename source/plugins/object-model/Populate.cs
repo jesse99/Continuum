@@ -282,7 +282,7 @@ namespace ObjectModel
 					DoCascadeHash("Implements", row[0]);
 					DoCascadeHash("Methods", row[0]);
 					DoCascadeHash("NameInfo", row[0]);
-					DoCascadeHash("ExtensionMethods", row[0]);
+					DoCascadeHash("Members", row[0]);
 					DoCascadeHash("Fields", row[0]);
 					
 					m_database.Update(string.Format(@"
@@ -543,7 +543,7 @@ namespace ObjectModel
 								WHERE hash = '{0}'", r[4]));
 						
 						m_database.Update(string.Format(@"
-							DELETE FROM ExtensionMethods 
+							DELETE FROM Members 
 								WHERE hash = '{0}'", r[4]));
 						
 						m_database.Update(string.Format(@"

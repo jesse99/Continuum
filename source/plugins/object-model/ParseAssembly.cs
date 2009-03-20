@@ -110,19 +110,17 @@ namespace ObjectModel
 					)");
 				
 				m_database.Update(@"
-					CREATE TABLE IF NOT EXISTS ExtensionMethods(
-						method TEXT NOT NULL
-							CONSTRAINT no_empty_method CHECK(length(method) > 0),
-						hash TEXT NOT NULL REFERENCES Assemblies(hash), 
+					CREATE TABLE IF NOT EXISTS Members(
+						text TEXT NOT NULL
+							CONSTRAINT no_empty_text CHECK(length(text) > 0),
 						type TEXT NOT NULL REFERENCES Types(type),
-						namespace TEXT NOT NULL
-							CONSTRAINT no_empty_namespace CHECK(length(namespace) > 0),
+						namespace TEXT NOT NULL,
+						is_protected INTEGER NOT NULL,
+						is_static INTEGER NOT NULL,
 						return_type TEXT NOT NULL,
-						name TEXT NOT NULL
-							CONSTRAINT no_empty_name CHECK(length(name) > 0),
-						arg_types TEXT NOT NULL,
 						arg_names TEXT NOT NULL,
-						PRIMARY KEY(method, hash)
+						hash TEXT NOT NULL REFERENCES Assemblies(hash), 
+						PRIMARY KEY(text, type, namespace)
 					)");
 				
 				m_database.Update(@"
@@ -298,7 +296,7 @@ namespace ObjectModel
 				var location = DoGetSourceAndLine(method);
 				fileName = Path.GetFileName(location.First);
 				
-				if (fullParse || method.IsFamily || method.IsFamilyOrAssembly || method.IsPublic)
+				if (fullParse || method.IsFamily || method.IsFamilyAndAssembly || method.IsFamilyOrAssembly || method.IsPublic)
 				{
 					var argTypes = new StringBuilder();
 					var argNames = new StringBuilder();
@@ -339,6 +337,18 @@ namespace ObjectModel
 						((ushort) method.Attributes).ToString(),
 						((ushort) method.SemanticsAttributes).ToString());
 					
+					if (!method.IsPrivate && !method.IsAbstract && !method.IsAddOn && !method.IsConstructor && !method.IsFire && !method.IsOther && !method.IsRemoveOn && !method.IsSetter)
+						if (!method.Name.StartsWith("op_") && method.Name != "Finalize")
+							m_database.InsertOrIgnore("Members",
+								DoGetMethodText(method, 0),
+								method.DeclaringType.FullName,
+								string.Empty,								// not an extension method
+								method.IsFamilyAndAssembly || method.IsFamilyOrAssembly || method.IsFamily ? "1" : "0",
+								method.IsStatic ? "1" : "0",
+								method.ReturnType.ReturnType.FullName.GetTypeName(),
+								argNames.ToString(),
+								hash);
+					
 					if (!type.IsInterface)		// TODO: might want to remove this when we can get file/line for interfaces
 						m_database.InsertOrIgnore("NameInfo",
 							method.ToString(),
@@ -347,27 +357,104 @@ namespace ObjectModel
 							method.Name,
 							"0");
 							
-					if (DoHasExtensionAtribute(method.CustomAttributes))
-						m_database.InsertOrIgnore("ExtensionMethods",
-							method.ToString(),
-							hash,
+					if (method.IsPublic && DoHasExtensionAtribute(method.CustomAttributes))
+						m_database.InsertOrIgnore("Members",
+							DoGetMethodText(method, 1),
 							method.Parameters[0].ParameterType.FullName.GetTypeName(),
 							type.Namespace,
+							"0",
+							"0",					// extension methods are declared as statics, but not used that way
 							method.ReturnType.ReturnType.FullName.GetTypeName(),
-							method.Name,
-							argTypes.ToString(),
-							argNames.ToString());
+							argNames.ToString(),
+							hash);
 				}
 			}
 			
 			return fileName;
 		}
 		
+		private string DoGetMethodText(MethodDefinition method, int firstArg)
+		{
+			var builder = new StringBuilder();
+			
+			if (method.IsGetter)
+			{
+				builder.Append(method.Name.Substring(4));
+			}
+			else
+			{
+				builder.Append(method.Name);
+				
+				builder.Append('(');
+				for (int i = firstArg; i < method.Parameters.Count; ++i)
+				{
+					ParameterDefinition p = method.Parameters[i];
+					
+					string type = CsHelpers.GetAliasedName(p.ParameterType.FullName);
+					if (type == p.ParameterType.FullName)
+					{
+						type = DoTrimNamespace(type);
+						type = DoTrimGeneric(type);
+					}
+					builder.Append(type);
+					
+					builder.Append(' ');	
+					builder.Append(p.Name);
+					
+					if (i + 1 < method.Parameters.Count)
+						builder.Append(", ");
+				}
+				builder.Append(')');
+			}
+			
+			return builder.ToString();
+		}
+		
+		// System.Collections.Generic.IEnumerable`1<TSource>:System.Func`2<TSource,System.Boolean>
+		private string DoTrimNamespace(string type)
+		{
+			while (true)
+			{
+				int j = type.IndexOf('.');
+				if (j < 0)
+					break;
+					
+				int i = j;
+				while (i > 0 && char.IsLetter(type[i - 1]))
+					--i;
+					
+				type = type.Substring(0, i) + type.Substring(j + 1);
+			}
+			
+			return type;
+		}
+		
+		private string DoTrimGeneric(string type)
+		{
+			while (true)
+			{
+				int i = type.IndexOf('`');
+				if (i < 0)
+					break;
+					
+				int count = 1;
+				while (i + count < type.Length && char.IsDigit(type[i + count]))
+					++count;
+					
+				if (count > 1)
+				{
+					type = type.Substring(0, i) + type.Substring(i + count);
+				}
+			}
+			
+			return type;
+		}
+		
 		private void DoParseField(TypeDefinition type, FieldDefinition field, string hash, bool fullParse)		// threaded
 		{
 			if (!DoIsGeneratedCode(field))
 			{
-				if (fullParse || field.IsFamily || field.IsFamilyOrAssembly || field.IsPublic)
+				if (fullParse || field.IsFamily || field.IsFamilyOrAssembly || field.IsFamilyOrAssembly || field.IsPublic)
 				{
 					m_database.Insert("Fields",
 						field.Name,
@@ -375,6 +462,17 @@ namespace ObjectModel
 						hash,
 						field.FieldType.FullName.GetTypeName(),
 						((ushort) field.Attributes).ToString());
+					
+					if (!field.IsPrivate)
+						m_database.InsertOrIgnore("Members",
+							field.Name,
+							field.DeclaringType.FullName.GetTypeName(),
+							string.Empty,								// not an extension method
+							field.IsFamilyAndAssembly || field.IsFamilyOrAssembly || field.IsFamily ? "1" : "0",
+							field.IsStatic ? "1" : "0",
+							field.FieldType.FullName.GetTypeName(),
+							string.Empty,
+							hash);
 				}
 			}
 		}

@@ -34,21 +34,17 @@ namespace AutoComplete
 			
 			Text = text;
 			Type = type;
-			ArgTypes = new string[0];
 			ArgNames = new string[0];
 		}
 		
-		public Member(string text, string[] argTypes, string[] argNames, string type)
+		public Member(string text, string[] argNames, string type)
 		{
 			Trace.Assert(!string.IsNullOrEmpty(text), "text is null or empty");
 			Trace.Assert(!string.IsNullOrEmpty(type), "type is null or empty");
-			Trace.Assert(argTypes != null, "argTypes is null");
 			Trace.Assert(argNames != null, "argNames is null");
-			Trace.Assert(argTypes.Length == argNames.Length, "argNames and argTypes lengths differ");
 			
 			Text = text;
 			Type = type;
-			ArgTypes = argTypes;
 			ArgNames = argNames;
 		}
 		
@@ -56,9 +52,7 @@ namespace AutoComplete
 		
 		// Note that this may not be the full name.
 		public string Type {get; private set;}
-		
-		public string[] ArgTypes {get; private set;}
-		
+				
 		public string[] ArgNames {get; private set;}
 		
 		public override string ToString()

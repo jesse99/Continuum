@@ -68,7 +68,7 @@ type#$		hash#$		interface_type#
 
 -------------------
 Methods
-method#	hash#$		return_type	name	arg_types			arg_names	declaring_type$		file		line		attributes		semantics	complete_text					
+method#	hash#$		return_type	name	arg_types			arg_names	declaring_type$		file		line		attributes		semantics					
 
 * method is the full name of the method, e.g. "System.Boolean MObjc.Registrar::TryGetType(System.String,System.Type&)".
 * hash is from the Assemblies table.
@@ -87,24 +87,24 @@ method#	hash#$		return_type	name	arg_types			arg_names	declaring_type$		file		li
 
 TODO: need to store custom attributes
 
-
 -------------------
-ExtensionMethods
-method#	hash#$		type	namespace		return_type	name	arg_types			arg_names
+Members
+text#	type#	namespace#		is_protected	is_static	return_type	arg_names		hash$
 
-* method is the full name of the method, e.g. "System.Int32 System.Linq.Enumerable::Max(System.Collections.Generic.IEnumerable`1<System.Int32>)".
-* hash is from the Assemblies table.
-* type is the full name of the type the extension method extends. It will normally be in Types.
-* namespace is the full name of the namespace which must be used to make the extension method available.
-* return_type is something like "System.Boolean".
-* name is the name of the method, e.g. "TryGetType". Note that the name will have a prefix for
-  event, indexer, operator, and property methods. E.g. "set_Text" or "op_Add".
-* arg_types contains a colon separated list of the agument types, e.g. "System.String:System.Type&".
-   Note that these do include the generic argument type names.
+* text is the string that will appear in the completion window.
+* type is the type the member operates on.
+* namespace if non-empty indicates that the member is an extension method which can be used
+   if the namespace is in use.
+* is_protected is true if the member is protected. Note that private members will not appear in
+   this table.
+* is_static is true if the member is static.
+* return_type is the full name of the member's type.
 * arg_names contains a colon separated list of the agument names, e.g. "name:type".
+* hash is from the Assemblies table.
 
-Note that this table duplicates some of the Methods fields because doing so substantially
-speeds up auto-complete queries.
+This is the principal table used by auto-complete which needs to execute quickly. That is why the
+table includes presentation info (the text field) and duplicates some fields from other tables 
+(is_protected, is_static, and return_type).
 
 -------------------
 Fields

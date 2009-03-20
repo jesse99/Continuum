@@ -9,6 +9,7 @@ NRefactory
 
 http://code.google.com/p/simple-assembly-explorer/
 can make readonly rule
+ReferenceEquals used with value type
 
 might want a sample app
 
@@ -32,12 +33,6 @@ might want a sample app
 			return should;
 		}
 
-initial						3-4 secs (seems slower with verbose database logging)
-no join					2.0 secs
-big extension table 0.8 secs
-
-* Do some performance tuning:
-	- might want a single query to get all bases/interfaces for a type
 * Got an error after building:
 Shared.DatabaseLockedException: Failed to execute 'BEGIN IMMEDIATE TRANSACTION' (database is locked)
   at Shared.Database.DoRaiseError (System.String command, Error err, IntPtr errMesg) [0x00055] in /Users/jessejones/Source/Continuum/source/shared/Database.cs:310 

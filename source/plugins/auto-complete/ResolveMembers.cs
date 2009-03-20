@@ -49,18 +49,14 @@ namespace AutoComplete
 			foreach (ResolvedTarget t in bases)
 			{
 				DoGetMembers(t, globals, members, false);
-				if (target.IsInstance)
-					DoGetExtensionMethods(t.FullName, globals, members);
 			}
 			
-			// Get extension methods.
+			// Get extension methods for the interfaces.
 			if (target.IsInstance)
 			{
-				DoGetExtensionMethods(target.FullName, globals, members);
-				
 				foreach (string name in resolveType.GetAllInterfaces(globals, fullName, bases, target.IsInstance))
 				{
-					DoGetExtensionMethods(name, globals, members);
+					DoGetExtensionMethods(name, members, globals);
 				}
 			}
 			
@@ -68,42 +64,6 @@ namespace AutoComplete
 		}
 		
 		#region Private Methods
-		private void DoGetExtensionMethods(string fullName, CsGlobalNamespace globals, List<Member> members)
-		{
-			// It would be cleaner to do this with an inner join but that join is quite 
-			// slow with sqlite
-			string sql = string.Format(@"
-				SELECT name, arg_types, arg_names, return_type, namespace
-					FROM ExtensionMethods 
-				WHERE type = '{0}'", fullName);
-			string[][] rows = m_database.QueryRows(sql);
-			
-			foreach (string[] r in rows)
-			{
-				if (DoIsValidExtensionMethod(r[4], globals))
-				{
-					members.AddIfMissing(DoGetMethod(r[0], r[1], r[2], 1, r[3]));
-				}
-			}
-			
-#if false
-			string sql = string.Format(@"
-				SELECT name, arg_types, arg_names, namespace, return_type
-					FROM Methods 
-				INNER JOIN ExtensionMethods
-					ON Methods.method = ExtensionMethods.method AND Methods.hash = ExtensionMethods.hash
-				WHERE type = '{0}'", fullName);
-			string[][] rows = m_database.QueryRows(sql);
-			
-			var methods = from r in rows
-				where DoIsValidExtensionMethod(r[3], globals)
-				select DoGetMethod(r[0], r[1], r[2], 1, r[4]);
-			
-			foreach (Member name in methods)
-				members.AddIfMissing(name);
-#endif
-		}
-		
 		private string DoGetMembers(ResolvedTarget target, CsGlobalNamespace globals, List<Member> members, bool includePrivates)
 		{
 			// Get the members for the target type. Note that we don't use the
@@ -125,47 +85,52 @@ namespace AutoComplete
 			}
 			
 			if (hash != null && (type == null || (type.Modifiers & MemberModifiers.Partial) != 0))
-				DoGetDatabaseMembers(fullName, target.IsInstance, target.IsStatic, members, includePrivates);
+				DoGetDatabaseMembers(fullName, target.IsInstance, target.IsStatic, members, globals);
 				
 			return fullName;
 		}
 		
-		private void DoGetDatabaseMembers(string fullName, bool instanceCall, bool isStaticCall, List<Member> members, bool includePrivates)
+		private void DoGetDatabaseMembers(string fullName, bool instanceCall, bool isStaticCall, List<Member> members, CsGlobalNamespace globals)
 		{
-			DoGetDatabaseMethods(fullName, instanceCall, isStaticCall, members, includePrivates);
-			DoGetDatabaseFields(fullName, instanceCall, isStaticCall, members, includePrivates);
+			string sql;
+			if (instanceCall && isStaticCall)
+				sql = string.Format(@"
+					SELECT text, return_type, arg_names, namespace
+						FROM Members 
+					WHERE type = '{0}'", fullName);
+			else
+				sql = string.Format(@"
+					SELECT text, return_type, arg_names, namespace
+						FROM Members 
+					WHERE type = '{0}' AND is_static = '{1}'", fullName, isStaticCall ? "1" : "0");
+			
+			string[][] rows = m_database.QueryRows(sql);
+			foreach (string[] r in rows)
+			{
+				if (r[3].Length == 0 || DoIsValidExtensionMethod(r[3], globals))
+				{
+					string[] names = r[2].Split(new char[]{':'}, StringSplitOptions.RemoveEmptyEntries);
+					members.AddIfMissing(new Member(r[0], names, r[1]));
+				}
+			}
 		}
 		
-		private void DoGetDatabaseMethods(string fullName, bool instanceCall, bool isStaticCall, List<Member> members, bool includePrivates)
+		private void DoGetExtensionMethods(string fullName, List<Member> members, CsGlobalNamespace globals)
 		{
 			string sql = string.Format(@"
-				SELECT name, arg_types, arg_names, attributes, return_type
-					FROM Methods 
-				WHERE declaring_type = '{0}'", fullName);
+				SELECT text, return_type, arg_names, namespace
+					FROM Members 
+				WHERE type = '{0}' AND length(namespace) > 0", fullName);
+			
 			string[][] rows = m_database.QueryRows(sql);
-			
-			var methods = from r in rows
-				where DoIsValidMethod(r[0], ushort.Parse(r[3]), instanceCall, isStaticCall, includePrivates)
-				select DoGetMethod(r[0], r[1], r[2], 0, r[4]);
-			
-			foreach (Member name in methods)
-				members.AddIfMissing(name);
-		}
-		
-		private void DoGetDatabaseFields(string fullName, bool instanceCall, bool isStaticCall, List<Member> members, bool includePrivates)
-		{
-			string sql = string.Format(@"
-				SELECT name, attributes, type
-					FROM Fields 
-				WHERE declaring_type = '{0}'", fullName);
-			string[][] rows = m_database.QueryRows(sql);
-			
-			var fields = from r in rows
-				where DoIsValidField(r[0], ushort.Parse(r[1]), instanceCall, isStaticCall, includePrivates)
-				select Tuple.Make(r[0], r[2]);
-			
-			foreach (var field in fields)
-				members.AddIfMissing(new Member(field.First, field.Second));
+			foreach (string[] r in rows)
+			{
+				if (DoIsValidExtensionMethod(r[3], globals))
+				{
+					string[] names = r[2].Split(new char[]{':'}, StringSplitOptions.RemoveEmptyEntries);
+					members.AddIfMissing(new Member(r[0], names, r[1]));
+				}
+			}
 		}
 		
 		private void DoGetParsedMembers(ResolvedTarget target, List<Member> members, bool includePrivates)
@@ -205,11 +170,10 @@ namespace AutoComplete
 					{
 						if (includePrivates || method.Access != MemberModifiers.Private)
 						{
-							var atypes = from p in method.Parameters select p.Type;
 							var anames = from p in method.Parameters select p.Name;
 							string text = method.Name + "(" + string.Join(", ", (from p in method.Parameters select p.Type + " " + p.Name).ToArray()) + ")";
 							
-							members.AddIfMissing(new Member(text, atypes.ToArray(), anames.ToArray(), method.ReturnType));
+							members.AddIfMissing(new Member(text, anames.ToArray(), method.ReturnType));
 						}
 					}
 				}
@@ -226,44 +190,7 @@ namespace AutoComplete
 				}
 			}
 		}
-		
-		private bool DoIsValidMethod(string name, ushort attributes, bool instanceCall, bool isStaticCall, bool includePrivates)
-		{
-			bool valid = true;
-			
-			if (!(instanceCall && isStaticCall))
-				if (instanceCall)
-					valid = (attributes & 0x0010) == 0;
-				else
-					valid = (attributes & 0x0010) != 0;
-			
-			if (valid && !includePrivates)
-				valid = (attributes & 0x0001) == 0;
 				
-			if (valid && name.Contains(".ctor"))
-				valid = false;
-			
-			if (valid && name.Contains(".cctor"))
-				valid = false;
-			
-			if (valid && name.Contains("set_"))
-				valid = false;
-			
-			if (valid && name.Contains("op_"))
-				valid = false;
-				
-			if (valid && name.Contains("add_"))
-				valid = false;
-				
-			if (valid && name.Contains("remove_"))
-				valid = false;
-				
-			if (valid && name == "Finalize")
-				valid = false;
-				
-			return valid;
-		}
-		
 		private bool DoIsValidExtensionMethod(string ns, CsGlobalNamespace globals)
 		{
 			bool valid = false;
@@ -274,105 +201,6 @@ namespace AutoComplete
 			}
 			
 			return valid;
-		}
-		
-		private bool DoIsValidField(string name, ushort attributes, bool instanceCall, bool isStaticCall, bool includePrivates)
-		{
-			bool valid = true;
-			
-			if (!(instanceCall && isStaticCall))
-				if (instanceCall)
-					valid = (attributes & 0x0010) == 0;
-				else
-					valid = (attributes & 0x0010) != 0;
-			
-			if (valid && !includePrivates)
-				valid = (attributes & 0x0001) == 0;
-				
-			return valid;
-		}
-		
-		private Member DoGetMethod(string mname, string argTypes, string argNames, int firstArg, string rtype)
-		{
-			var builder = new StringBuilder(mname.Length + argTypes.Length + argNames.Length);
-			var atypes = new List<string>();
-			var anames = new List<string>();
-			
-			if (mname.StartsWith("get_"))
-			{
-				builder.Append(mname.Substring(4));
-			}
-			else
-			{
-				builder.Append(mname);
-				
-				builder.Append('(');
-				string[] types = argTypes.Split(new char[]{':'}, StringSplitOptions.RemoveEmptyEntries);
-				string[] names = argNames.Split(new char[]{':'}, StringSplitOptions.RemoveEmptyEntries);
-				for (int i = firstArg; i < types.Length; ++i)
-				{
-					string type = CsHelpers.GetAliasedName(types[i]);
-					if (type == types[i])
-					{
-						type = DoTrimNamespace(type);
-						type = DoTrimGeneric(type);
-					}
-					atypes.Add(type);
-					builder.Append(type);
-					
-					builder.Append(' ');
-					
-					string name = names[i];
-					anames.Add(name);
-					builder.Append(name);
-					
-					if (i + 1 < types.Length)
-						builder.Append(", ");
-				}
-				builder.Append(')');
-			}
-			
-			return new Member(builder.ToString(), atypes.ToArray(), anames.ToArray(), rtype);
-		}
-		
-		// System.Collections.Generic.IEnumerable`1<TSource>:System.Func`2<TSource,System.Boolean>
-		private string DoTrimNamespace(string type)
-		{
-			while (true)
-			{
-				int j = type.IndexOf('.');
-				if (j < 0)
-					break;
-					
-				int i = j;
-				while (i > 0 && char.IsLetter(type[i - 1]))
-					--i;
-					
-				type = type.Substring(0, i) + type.Substring(j + 1);
-			}
-			
-			return type;
-		}
-		
-		private string DoTrimGeneric(string type)
-		{
-			while (true)
-			{
-				int i = type.IndexOf('`');
-				if (i < 0)
-					break;
-					
-				int count = 1;
-				while (i + count < type.Length && char.IsDigit(type[i + count]))
-					++count;
-					
-				if (count > 1)
-				{
-					type = type.Substring(0, i) + type.Substring(i + count);
-				}
-			}
-			
-			return type;
 		}
 		#endregion
 		
