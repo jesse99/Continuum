@@ -27,6 +27,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Security.Permissions;
+using System.Threading;
 
 namespace Shared
 {
@@ -72,7 +73,8 @@ namespace Shared
 		}
 	}
 	
-	// Simple sqlite wrapper. Note that this class is fully thread safe.
+	// Simple sqlite wrapper. Note that this will work with multiple threads, but
+	// each thread should use its own Database object.
 	public sealed class Database	: IDisposable
 	{
 		~Database()
@@ -80,15 +82,21 @@ namespace Shared
 			DoDispose(false);
 		}
 		
-		// Opens a connection to an arbitrary database.
-		public Database(string path)
+		// Opens a connection to an arbitrary database. Name is arbitrary and used for
+		// debugging locking problems.
+		public Database(string path, string name)
 		{
 			Trace.Assert(!string.IsNullOrEmpty(path), "path is null or empty");
+			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
 			Log.WriteLine("Database", "connecting to database at {0}", path);
 			
 			if (sqlite3_threadsafe() == 0)
 				throw new InvalidOperationException("libsqlite3.dylib was built without thread support.");
-							
+			
+			m_name = name;
+			m_threadID = Thread.CurrentThread.ManagedThreadId;
+			DoSaveThis(this);
+			
 			OpenFlags flags = OpenFlags.READWRITE | OpenFlags.CREATE | OpenFlags.FULLMUTEX;
 			Error err = sqlite3_open_v2(path, out m_database, flags, IntPtr.Zero);
 			if (err != Error.OK)
@@ -110,23 +118,30 @@ namespace Shared
 		{
 			Trace.Assert(!string.IsNullOrEmpty(command), "command is null or empty");
 			Trace.Assert(m_lock != null, "update is not within a transaction");
+			Trace.Assert(Thread.CurrentThread.ManagedThreadId == m_threadID, m_name + " was used with multiple threads");
 			if (m_disposed)
 				throw new ObjectDisposedException(GetType().Name);
 			
 			Log.WriteLine(TraceLevel.Verbose, "Database", "update: {0}", command);
 			
-			IntPtr errMesg = IntPtr.Zero;
-			Error err = sqlite3_exec(m_database, command, null, IntPtr.Zero, out errMesg);
-			
-			if (err != Error.OK)
-				DoRaiseError(command, err, errMesg);
+			try
+			{
+				m_command = command;
+
+				IntPtr errMesg = IntPtr.Zero;
+				Error err = sqlite3_exec(m_database, command, null, IntPtr.Zero, out errMesg);
+				
+				if (err != Error.OK)
+					DoRaiseError(command, err, errMesg);
+			}
+			finally
+			{
+				m_command = null;
+			}
 		}
 		
 		public void Update(string name, Action action)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
-			Trace.Assert(action != null, "action is null");
-			
 			try
 			{
 				Begin(name);
@@ -147,6 +162,7 @@ namespace Shared
 		{
 			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
 			Trace.Assert(m_lock == null, "can't nest transaction, old transaction is " + m_lock);
+			Trace.Assert(Thread.CurrentThread.ManagedThreadId == m_threadID, m_name + " was used with multiple threads");
 			
 			m_lock = name;
 			m_lockTime = DateTime.Now;
@@ -157,6 +173,7 @@ namespace Shared
 		{
 			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
 			Trace.Assert(name == m_lock, string.Format("m_lock is '{0}' but should be '{1}'", m_lock, name));
+			Trace.Assert(Thread.CurrentThread.ManagedThreadId == m_threadID, m_name + " was used with multiple threads");
 			
 			Update("COMMIT TRANSACTION");
 			Log.WriteLine(TraceLevel.Verbose, "Database", "{0} transaction took {1:0.000} seconds", m_lock, (DateTime.Now - m_lockTime).TotalMilliseconds/1000.0);
@@ -168,6 +185,7 @@ namespace Shared
 		{
 			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
 			Trace.Assert(m_lock == null || name == m_lock, string.Format("m_lock is '{0}' but should be '{1}'", m_lock, name));
+			Trace.Assert(Thread.CurrentThread.ManagedThreadId == m_threadID, m_name + " was used with multiple threads");
 			
 			if (!m_disposed)
 			{
@@ -192,6 +210,7 @@ namespace Shared
 		{
 			Trace.Assert(!string.IsNullOrEmpty(command), "command is null or empty");
 			Trace.Assert(rc != null, "RowCallback is null");
+			Trace.Assert(Thread.CurrentThread.ManagedThreadId == m_threadID, m_name + " was used with multiple threads");
 			if (m_disposed)
 				throw new ObjectDisposedException(GetType().Name);
 			
@@ -238,23 +257,32 @@ namespace Shared
 				return result;
 			};
 			
-			// Note that the database uses a reader/writer lock so this will work even if other
-			// threads are trying to write to the database. Also note that this is why we don't
-			// return an object which users then use to read rows as ADO.NET does: we'd
-			// either have to read all the rows up front or give clients control of the database
-			// reader/writer lock.
-			IntPtr errMesg = IntPtr.Zero;
-			Error err = sqlite3_exec(m_database, command, callback, IntPtr.Zero, out errMesg);
-				
-			if (timer != null)
-				Log.WriteLine(TraceLevel.Verbose, "Database", "query took {0:0.000} secs", timer.ElapsedMilliseconds/1000.0);
-			
-			if (err != Error.OK && err != Error.ABORT)
-				DoRaiseError(command, err, errMesg);
-			if (exception != null)
+			try
 			{
-				string mesg = string.Format("Failed to execute '{0}'", command);
-				throw new DatabaseException(mesg, exception);
+				m_command = command;
+
+				// Note that the database uses a reader/writer lock so this will work even if other
+				// threads are trying to write to the database. Also note that this is why we don't
+				// return an object which users then use to read rows as ADO.NET does: we'd
+				// either have to read all the rows up front or give clients control of the database
+				// reader/writer lock.
+				IntPtr errMesg = IntPtr.Zero;
+				Error err = sqlite3_exec(m_database, command, callback, IntPtr.Zero, out errMesg);
+					
+				if (timer != null)
+					Log.WriteLine(TraceLevel.Verbose, "Database", "query took {0:0.000} secs", timer.ElapsedMilliseconds/1000.0);
+				
+				if (err != Error.OK && err != Error.ABORT)
+					DoRaiseError(command, err, errMesg);
+				if (exception != null)
+				{
+					string mesg = string.Format("Failed to execute '{0}'", command);
+					throw new DatabaseException(mesg, exception);
+				}
+			}
+			finally
+			{
+				m_command = null;
 			}
 		}
 		
@@ -306,8 +334,47 @@ namespace Shared
 			}
 			else
 				mesg += string.Format(" ({0})", err);
+				
+			if (err == Error.BUSY)
+				DoDumpState();
 			
 			throw (err != Error.BUSY ? new DatabaseException(mesg) : new DatabaseLockedException(mesg));
+		}
+		
+		[Conditional("DEBUG")]
+		private static void DoDumpState()
+		{
+			var details = new System.Text.StringBuilder();
+			
+			lock (ms_mutex)
+			{
+				foreach (WeakReference wr in ms_connections)
+				{
+					Database db = wr.Target as Database;
+					if (db != null && db.m_command != null)
+					{
+						if (db.m_lock != null)
+							details.AppendFormat("Thread {0} {1} locked {2} at {3}", db.m_threadID, db.m_name, db.m_lock, db.m_lockTime);
+						else
+							details.AppendFormat("Thread {0} {1}", db.m_threadID, db.m_name);
+						details.AppendLine();
+						
+						details.AppendLine(db.m_command);
+						details.AppendLine();
+					}
+				}
+			}
+			
+			Console.Error.WriteLine(details.ToString());
+		}
+		
+		[Conditional("DEBUG")]
+		private static void DoSaveThis(Database db)
+		{
+			lock (ms_mutex)
+			{
+				ms_connections.Add(new WeakReference(db));
+			}
 		}
 		#endregion
 		
@@ -315,7 +382,7 @@ namespace Shared
 		private delegate Error SelectCallback(
 			IntPtr param,
 			int numCols,
-			[MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] IntPtr[] values, 
+			[MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] IntPtr[] values,
 			[MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] IntPtr[] names);
 		
 		[Flags]
@@ -390,12 +457,20 @@ namespace Shared
 		[DllImport("sqlite3")]
 		private static extern int sqlite3_threadsafe();
 		#endregion
-		
+				
 		#region Fields
 		private IntPtr m_database;
 		private bool m_disposed;
 		private string m_lock;
 		private DateTime m_lockTime;
+		private string m_name;
+		private string m_command;
+		private int m_threadID;
+
+#if DEBUG
+		private static object ms_mutex = new object();
+		private static List<WeakReference> ms_connections = new List<WeakReference>();
+#endif
 		#endregion
 	}
 }

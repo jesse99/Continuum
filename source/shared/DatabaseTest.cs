@@ -40,7 +40,7 @@ public sealed class DatabaseTest
 	public void Basics()
 	{
 		string path = Path.GetTempFileName();
-		using (var database = new Database(path))
+		using (var database = new Database(path, "test"))
 		{
 			database.Begin("test");
 			database.Update("CREATE TABLE People(id INTEGER PRIMARY KEY, first_name, last_name, city)");
@@ -77,7 +77,7 @@ public sealed class DatabaseTest
 	public void Commit()
 	{
 		string path = Path.GetTempFileName();
-		using (var database = new Database(path))
+		using (var database = new Database(path, "test"))
 		{
 			database.Begin("test");
 			database.Update("CREATE TABLE People(id INTEGER PRIMARY KEY, first_name, last_name, city)");
@@ -102,7 +102,7 @@ public sealed class DatabaseTest
 	public void Throw()
 	{
 		string path = Path.GetTempFileName();
-		using (var database = new Database(path))
+		using (var database = new Database(path, "test"))
 		{
 			database.Begin("test");
 			database.Update("CREATE TABLE People(id INTEGER PRIMARY KEY, first_name, last_name, city)");
@@ -136,7 +136,7 @@ public sealed class DatabaseTest
 	public void MultipleRollback()
 	{
 		string path = Path.GetTempFileName();
-		using (var database = new Database(path))
+		using (var database = new Database(path, "test"))
 		{
 			database.Begin("test");
 			database.Update("CREATE TABLE People(id INTEGER PRIMARY KEY, first_name, last_name, city)");

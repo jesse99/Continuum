@@ -69,51 +69,11 @@ namespace ObjectModel
 			// assemblies which are being used instead of the latest version of the assembly.
 			string path = Populate.GetDatabasePath(m_boss);
 			Log.WriteLine("ObjectModel", "'{0}' was opened", path);
-			m_database = new Database(path);
 			
 			Broadcaster.Register("opened directory", this, this.DoOnOpenDir);
 			
-			// Setting this to NORMAL or OFF does not make much of a difference
-			// in the parse times because we're using transactions...
-//			m_database.Update("PRAGMA synchronous = NORMAL");
-			
-			// We could place an upper limit on some of the field sizes, but it won't
-			// do much good because sqlite stores just what is needed.
-			Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "creating tables");
-			m_database.Update("create tables", () =>
-			{
-				m_database.Update(@"
-					CREATE TABLE IF NOT EXISTS Assemblies(
-						hash TEXT NOT NULL PRIMARY KEY
-							CONSTRAINT hash_size CHECK(length(hash) >= 8),
-						name TEXT NOT NULL
-							CONSTRAINT no_empty_name CHECK(length(name) > 0),
-						culture TEXT NOT NULL
-							CONSTRAINT no_empty_culture CHECK(length(culture) > 0),
-						major INTEGER NOT NULL
-							CONSTRAINT sane_major CHECK(major >= 0),
-						minor INTEGER NOT NULL
-							CONSTRAINT sane_minor CHECK(minor >= 0),
-						build INTEGER NOT NULL
-							CONSTRAINT sane_build CHECK(build >= 0),
-						revision INTEGER NOT NULL
-							CONSTRAINT sane_revision CHECK(revision >= 0)
-					)");
-				
-				// TODO: we should probably be using an assembly_id instead of a hash
-				// for the foreign keys. That should be a bit faster and more space efficient.
-				m_database.Update(@"
-					CREATE TABLE IF NOT EXISTS AssemblyPaths(
-						path TEXT NOT NULL PRIMARY KEY
-							CONSTRAINT absolute_path CHECK(substr(path, 1, 1) = '/'),
-						hash TEXT NOT NULL REFERENCES Assemblies(hash),
-						write_time INTEGER NOT NULL
-							CONSTRAINT sane_time CHECK(write_time > 0)
-					)");
-			});
-			
 			Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "starting thread");
-			m_thread = new Thread(this.DoParseAssemblies);
+			m_thread = new Thread(() => DoParseAssemblies(path));
 			m_thread.Name = "parse assemblies";
 			m_thread.IsBackground = false;
 			m_thread.Priority = ThreadPriority.BelowNormal;		// this is ignored on Mono 2.0
@@ -190,8 +150,12 @@ namespace ObjectModel
 			}
 		}
 		
-		private void DoParseAssemblies()	// threaded
+		private void DoParseAssemblies(string path)	// threaded
 		{
+			m_database = new Database(path, "Populate-" + Path.GetFileNameWithoutExtension(path));
+			
+			DoCreateTables();
+			
 			while (true)
 			{
 				try
@@ -230,7 +194,45 @@ namespace ObjectModel
 			}
 //	Console.WriteLine("thread {0} is exiting", Thread.CurrentThread.ManagedThreadId);
 		}
+		
+		private void DoCreateTables()		// threaded
+		{
+			// We could place an upper limit on some of the field sizes, but it won't
+			// do much good because sqlite stores just what is needed.
+			Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "creating tables");
+			m_database.Update("create tables", () =>
+			{
+				m_database.Update(@"
+					CREATE TABLE IF NOT EXISTS Assemblies(
+						hash TEXT NOT NULL PRIMARY KEY
+							CONSTRAINT hash_size CHECK(length(hash) >= 8),
+						name TEXT NOT NULL
+							CONSTRAINT no_empty_name CHECK(length(name) > 0),
+						culture TEXT NOT NULL
+							CONSTRAINT no_empty_culture CHECK(length(culture) > 0),
+						major INTEGER NOT NULL
+							CONSTRAINT sane_major CHECK(major >= 0),
+						minor INTEGER NOT NULL
+							CONSTRAINT sane_minor CHECK(minor >= 0),
+						build INTEGER NOT NULL
+							CONSTRAINT sane_build CHECK(build >= 0),
+						revision INTEGER NOT NULL
+							CONSTRAINT sane_revision CHECK(revision >= 0)
+					)");
 				
+				// TODO: we should probably be using an assembly_id instead of a hash
+				// for the foreign keys. That should be a bit faster and more space efficient.
+				m_database.Update(@"
+					CREATE TABLE IF NOT EXISTS AssemblyPaths(
+						path TEXT NOT NULL PRIMARY KEY
+							CONSTRAINT absolute_path CHECK(substr(path, 1, 1) = '/'),
+						hash TEXT NOT NULL REFERENCES Assemblies(hash),
+						write_time INTEGER NOT NULL
+							CONSTRAINT sane_time CHECK(write_time > 0)
+					)");
+			});
+		}
+		
 		private void DoPruneAssemblies()		// threaded
 		{
 			m_database.Update("prune assemblies", () =>

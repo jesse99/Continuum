@@ -47,7 +47,7 @@ namespace ObjectModel
 		public void Opened()
 		{
 			string path = Populate.GetDatabasePath(m_boss);
-			m_database = new Database(path);
+			m_database = new Database(path, "ObjectModel-" + Path.GetFileNameWithoutExtension(path));
 			
 			Broadcaster.Register("mono_root changed", this, this.DoMonoRootChanged);
 		}

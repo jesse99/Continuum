@@ -45,9 +45,39 @@ namespace ObjectModel
 		
 		public void Opened()
 		{
-			string path = Populate.GetDatabasePath(m_boss);
-			m_database = new Database(path);
+			m_path = Populate.GetDatabasePath(m_boss);
+		}
+		
+		// Parsing the larger system assemblies takes 10s of seconds which is much 
+		// too long a period of time to keep the database locked so our transaction
+		// is around the types, not the assembly.
+		public void Parse(string path, AssemblyDefinition assembly, string hash, bool fullParse)		// threaded
+		{
+			if (m_database == null)
+			{
+				m_database = new Database(m_path, "ParseAssembly-" + Path.GetFileNameWithoutExtension(m_path));
+				DoCreateTables();
+			}
 			
+//	Console.WriteLine("    parsing {0} for thread {1}", assembly.Name.FullName, System.Threading.Thread.CurrentThread.ManagedThreadId);
+			Log.WriteLine("ObjectModel", "{0}parsing {1}", fullParse ? "fully " : string.Empty, assembly.Name.FullName);
+			
+			foreach (ModuleDefinition module in assembly.Modules)
+			{
+				foreach (TypeDefinition type in module.Types)
+				{
+					if (fullParse || type.IsPublic || type.IsNestedPublic || type.IsNestedFamily || type.IsNestedFamilyOrAssembly)
+					{
+						DoParseType(type, hash, fullParse);
+//						System.Threading.Thread.Sleep(50);	// this doesn't seem to help the main thread too much
+					}
+				}
+			}
+		}
+		
+		#region Private Methods
+		private void DoCreateTables()
+		{
 			// TODO: once sqlite supports it the hash foreign keys should use ON DELETE CASCADE
 			m_database.Update("create tables2", () =>
 			{
@@ -137,28 +167,6 @@ namespace ObjectModel
 			});
 		}
 		
-		// Parsing the larger system assemblies takes 10s of seconds which is much 
-		// too long a period of time to keep the database locked so our transaction
-		// is around the types, not the assembly.
-		public void Parse(string path, AssemblyDefinition assembly, string hash, bool fullParse)		// threaded
-		{
-//	Console.WriteLine("    parsing {0} for thread {1}", assembly.Name.FullName, System.Threading.Thread.CurrentThread.ManagedThreadId);
-			Log.WriteLine("ObjectModel", "{0}parsing {1}", fullParse ? "fully " : string.Empty, assembly.Name.FullName);
-			
-			foreach (ModuleDefinition module in assembly.Modules)
-			{
-				foreach (TypeDefinition type in module.Types)
-				{
-					if (fullParse || type.IsPublic || type.IsNestedPublic || type.IsNestedFamily || type.IsNestedFamilyOrAssembly)
-					{
-						DoParseType(type, hash, fullParse);
-//						System.Threading.Thread.Sleep(50);	// this doesn't seem to help the main thread too much
-					}
-				}
-			}
-		}
-		
-		#region Private Methods
 		private void DoParseType(TypeDefinition type, string hash, bool fullParse)		// threaded
 		{
 			if (!DoIsGeneratedCode(type))
@@ -561,6 +569,7 @@ namespace ObjectModel
 		#region Fields 
 		private Boss m_boss;
 		private Database m_database;
+		private string m_path;
 		#endregion
 	}
 }
