@@ -13,22 +13,7 @@ ReferenceEquals used with value type
 
 might want a sample app
 
-* Crash typing a dot:
-Unhandled Exception: System.ArgumentException: Destination array was not long enough. Check destIndex and length, and the array's lower bounds
-  at System.Array.Copy (System.Array sourceArray, Int32 sourceIndex, System.Array destinationArray, Int32 destinationIndex, Int32 length) [0x00219] in /private/tmp/monobuild/build/BUILD/mono-2.2/mcs/class/corlib/System/Array.cs:992 
-  at System.Array.Copy (System.Array sourceArray, System.Array destinationArray, Int32 length) [0x00022] in /private/tmp/monobuild/build/BUILD/mono-2.2/mcs/class/corlib/System/Array.cs:909 
-  at System.Collections.Generic.List`1[Shared.Token].ToArray () [0x0000c] in /private/tmp/monobuild/build/BUILD/mono-2.2/mcs/class/corlib/System.Collections.Generic/List.cs:590 
-  at CsParser.Scanner.get_Tokens () [0x00000] in /Users/jessejones/Source/Continuum/source/plugins/cs-parser/Scanner.cs:115 
-  at CsParser.Parser.TryParse (System.String text, System.Int32& offset, System.Int32& length, Shared.CsGlobalNamespace& globals, Shared.Token[]& tokens, Shared.Token[]& comments) [0x0006f] in /Users/jessejones/Source/Continuum/source/plugins/cs-parser/Parser.cs:76 
-  at Styler.CSharpComputer.DoParseMatch (System.String text, System.Collections.Generic.List`1 runs) [0x00000] in /Users/jessejones/Source/Continuum/source/plugins/styler/CSharpComputer.cs:78 
-  at Styler.CSharpComputer.OnComputeRuns (System.String text, Int32 edit, System.Collections.Generic.List`1 runs, Gear.Boss boss) [0x0000b] in /Users/jessejones/Source/Continuum/source/plugins/styler/CSharpComputer.cs:45 
-  at Styler.RegexComputer.ComputeRuns (System.String text, Int32 edit, Gear.Boss boss) [0x00047] in /Users/jessejones/Source/Continuum/source/plugins/styler/RegexComputer.cs:56 
-  at TextEditor.Styler.DoTimer () [0x00046] in /Users/jessejones/Source/Continuum/source/plugins/text-editor/Styler.cs:151 
-  at TextEditor.Styler.<Instantiated>m__6 (System.Object o) [0x00000] in /Users/jessejones/Source/Continuum/source/plugins/text-editor/Styler.cs:44 
-  at Shared.SafeTimer.DoThread () [0x00051] in /Users/jessejones/Source/Continuum/source/shared/SafeTimer.cs:124 
-* Use an Assemblies Databases dir.
 * Work on target completion:
-	- completing extension method added first argument
 	- label should show full member name
 	- get ctor calls completing: enter with new PartialTypeName
 	- ctor completion should work with dotted names

@@ -332,7 +332,11 @@ namespace TextEditor
 		#endregion
 		
 		#region Private Methods
-		// need to ensure catalog is up to date
+		// Another possibility here is that after completing a method we could set the
+		// find text to a regex which can be used to select the next identifier. This
+		// would allow command-G to be used instead of option-tab which might be
+		// a bit more natural. Although it would also zap the user's find text and screw
+		// up the find history popup.
 		private bool DoSelectNextIdentifier()
 		{
 			bool handled = false;

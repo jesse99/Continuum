@@ -47,6 +47,17 @@ namespace Shared
 			}
 		}
 		
+		public static string GetAssemblyDatabase(string name)
+		{
+			string path = Path.Combine(SupportPath, "databases");
+			if (!Directory.Exists(path))
+				Directory.CreateDirectory(path);
+			
+			path = Path.Combine(path, name + ".db");
+			
+			return path;
+		}
+		
 		// Compares paths and handles things like extra slashes and references
 		// to "." or "..".
 		public static bool AreEqual(string lhs, string rhs)

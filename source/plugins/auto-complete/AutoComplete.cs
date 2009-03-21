@@ -71,8 +71,8 @@ namespace AutoComplete
 				if (editor.Path != null)
 				{
 					string name = System.IO.Path.GetFileName(editor.Path);
-			
-					string path = System.IO.Path.Combine(Paths.SupportPath, name + "3.db");
+					
+					string path = Paths.GetAssemblyDatabase(name);
 					m_database = new Database(path, "AutoComplete-" + name);
 					
 					m_target = new ResolveTarget(new TargetDatabase(m_database), m_locals);

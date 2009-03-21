@@ -107,10 +107,17 @@ namespace AutoComplete
 			string[][] rows = m_database.QueryRows(sql);
 			foreach (string[] r in rows)
 			{
-				if (r[3].Length == 0 || DoIsValidExtensionMethod(r[3], globals))
+				string[] names = r[2].Split(new char[]{':'}, StringSplitOptions.RemoveEmptyEntries);
+				if (r[3].Length == 0)
 				{
-					string[] names = r[2].Split(new char[]{':'}, StringSplitOptions.RemoveEmptyEntries);
 					members.AddIfMissing(new Member(r[0], names, r[1]));
+				}
+				else if (DoIsValidExtensionMethod(r[3], globals))
+				{
+					string[] last = new string[names.Length - 1];
+					Array.Copy(names, 1, last, 0, last.Length);
+					
+					members.AddIfMissing(new Member(r[0], last, r[1]));
 				}
 			}
 		}
@@ -128,7 +135,11 @@ namespace AutoComplete
 				if (DoIsValidExtensionMethod(r[3], globals))
 				{
 					string[] names = r[2].Split(new char[]{':'}, StringSplitOptions.RemoveEmptyEntries);
-					members.AddIfMissing(new Member(r[0], names, r[1]));
+
+					string[] last = new string[names.Length - 1];
+					Array.Copy(names, 1, last, 0, last.Length);
+					
+					members.AddIfMissing(new Member(r[0], last, r[1]));
 				}
 			}
 		}

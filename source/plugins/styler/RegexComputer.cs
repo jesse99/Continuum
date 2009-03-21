@@ -26,7 +26,6 @@ using System;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-//using System.Threading;
 
 namespace Styler
 {
@@ -49,17 +48,20 @@ namespace Styler
 		{
 			var runs = new List<StyleRun>(text.Length/50);
 			
-			if (m_regex != null)
+			lock (m_mutex)
 			{
-				Log.WriteLine(TraceLevel.Verbose, "Styler", "computing runs for edit {0} and {1} characters", edit, text.Length);
+				if (m_regex != null)
+				{
+					Log.WriteLine(TraceLevel.Verbose, "Styler", "computing runs for edit {0} and {1} characters", edit, text.Length);
+					
+					OnComputeRuns(text, edit, runs, boss);
+					
+					Log.WriteLine(TraceLevel.Verbose, "Styler", "    done computing runs for edit {0}", edit);
+				}
 				
-				OnComputeRuns(text, edit, runs, boss);
-				
-				Log.WriteLine(TraceLevel.Verbose, "Styler", "    done computing runs for edit {0}", edit);
+				var cachedRuns =  boss.Get<ICachedStyleRuns>();
+				cachedRuns.Reset(edit, runs.ToArray());
 			}
-			
-			var cachedRuns =  boss.Get<ICachedStyleRuns>();
-			cachedRuns.Reset(edit, runs.ToArray());
 		}
 		
 		public bool StylesWhitespace
@@ -156,6 +158,7 @@ namespace Styler
 		private Language m_language;
 		private Regex m_regex;
 		private IWhitespace m_white;
+		private object m_mutex = new object();
 		#endregion
 	}
 }
