@@ -110,7 +110,7 @@ namespace Shared
 				throw new DatabaseException(mesg);
 			}
 			
-			Unused.Value = sqlite3_busy_timeout(m_database, 10*1000);
+			Unused.Value = sqlite3_busy_timeout(m_database, 5*1000);
 		}
 		
 		// Used for SQL commands which do not return a table.
@@ -127,7 +127,7 @@ namespace Shared
 			try
 			{
 				m_command = command;
-
+				
 				IntPtr errMesg = IntPtr.Zero;
 				Error err = sqlite3_exec(m_database, command, null, IntPtr.Zero, out errMesg);
 				
@@ -140,25 +140,60 @@ namespace Shared
 			}
 		}
 		
+		// When a connection calls BEGIN IMMEDIATE it will transition from UNLOCKED
+		// (can't read/write) to SHARED (can read) to RESERVED (the connection plans
+		// on writing). If BEGIN IMMEDIATE returns successfully other connections may
+		// be in SHARED but none will be in RESERVED (or higher).
+		//
+		// When a connection calls COMMIT it will transition to PENDING (it wants to
+		// write) to EXCLUSIVE (it will write). If a connection has the PENDING lock then
+		// no other connections can acquire a new lock.
+		//
+		// If a connection cannot acquire a lock it will normally do a busy wait using the
+		// handler we installed with sqlite3_busy_timeout. However if a thread is in the
+		// middle of BEGIN IMMEDIATE and another thread is in the middle of COMMIT
+		// it's possible that they will be deadlocked (see <http://www.sqlite.org/c3ref/busy_handler.html>).
+		// If this happens the first thread will return SQLITE_BUSY.
+		//
+		// In order to simplify life for our callers we'll address this by sleeping and 
+		// restarting the first transaction a few times. Because we're restarting the
+		// entire transaction we avoid the deadlock.
 		public void Update(string name, Action action)
 		{
-			try
+			int i = 0;
+			
+			while (true)
 			{
-				Begin(name);
-				action();
-				Commit(name);
-			}
-			catch
-			{
-				Rollback(name);
-				throw;
+				try
+				{
+					UnsafeBegin(name);
+					action();
+					UnsafeCommit(name);
+					break;
+				}
+				catch
+				{
+					UnsafeRollback(name);
+					if (++i < 10)
+					{
+						Thread.Sleep(100);		// max commit time is 400 msecs on a fast machine
+					}
+					else
+					{
+						Console.Error.WriteLine("Transactions deadlocked:");
+						DoDumpState();
+						throw;
+					}
+				}
 			}
 		}
 		
 		// In order to ensure that sqlite's lock escalation strategy does not cause deadlocks
 		// all calls to Update must be nested inside a transaction. Name is arbitrary, but
-		// must match the name used in Commit or Rollback.
-		public void Begin(string name)
+		// must match the name used in UnsafeCommit or UnsafeRollback.
+		// Note that this method is vulnerable to races so Update(string, Action) should
+		// normally be used instead.
+		public void UnsafeBegin(string name)
 		{
 			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
 			Trace.Assert(m_lock == null, "can't nest transaction, old transaction is " + m_lock);
@@ -169,7 +204,7 @@ namespace Shared
 			Update("BEGIN IMMEDIATE TRANSACTION");
 		}
 		
-		public void Commit(string name)
+		public void UnsafeCommit(string name)
 		{
 			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
 			Trace.Assert(name == m_lock, string.Format("m_lock is '{0}' but should be '{1}'", m_lock, name));
@@ -181,7 +216,7 @@ namespace Shared
 		}
 		
 		// Will not throw and may be called multiple times.
-		public void Rollback(string name)
+		public void UnsafeRollback(string name)
 		{
 			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
 			Trace.Assert(m_lock == null || name == m_lock, string.Format("m_lock is '{0}' but should be '{1}'", m_lock, name));
@@ -335,9 +370,6 @@ namespace Shared
 			else
 				mesg += string.Format(" ({0})", err);
 				
-			if (err == Error.BUSY)
-				DoDumpState();
-			
 			throw (err != Error.BUSY ? new DatabaseException(mesg) : new DatabaseLockedException(mesg));
 		}
 		

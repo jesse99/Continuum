@@ -6,15 +6,57 @@ http://dev.mysql.com/tech-resources/articles/why-data-modeling.html
 SQL and it's Applications
 http://otx.osxninja.com/
 NRefactory
+http://monodevelop.com/Proposal:_Code_Templates
+http://tirania.org/blog/archive/2009/Mar-19.html (cross-plaform IDE)
+http://tirania.org/blog/archive/2009/Mar-19.html 
 
 http://code.google.com/p/simple-assembly-explorer/
+http://www.slickedit.com/content/view/353/217/#surroundwith
+http://www.mono-project.com/StudentProjects#MonoDevelop
 can make readonly rule
 ReferenceEquals used with value type
 
 might want a sample app
 
+* Error typing a dot:
+  at Shared.AssertListener.Fail (System.String message) [0x00000] in /Users/jessejones/Source/Continuum/source/shared/AssertListener.cs:69 
+  at System.Diagnostics.TraceImpl.Fail (System.String message) [0x00028] in /private/tmp/monobuild/build/BUILD/mono-2.2/mcs/class/System/System.Diagnostics/TraceImpl.cs:247 
+  at System.Diagnostics.TraceImpl.Assert (Boolean condition, System.String message) [0x00006] in /private/tmp/monobuild/build/BUILD/mono-2.2/mcs/class/System/System.Diagnostics/TraceImpl.cs:219 
+  at System.Diagnostics.Trace.Assert (Boolean condition, System.String message) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.2/mcs/class/System/Assembly/AssemblyInfo.cs:1 
+  at AutoComplete.AutoComplete.DoGetTargetExpr (Int32 offset) [0x0006d] in /Users/jessejones/Source/Continuum/source/plugins/auto-complete/AutoComplete.cs:296 
+  at AutoComplete.AutoComplete.DoCompleteTarget (MCocoa.NSTextView view, NSRange range) [0x00063] in /Users/jessejones/Source/Continuum/source/plugins/auto-complete/AutoComplete.cs:149 
+  at AutoComplete.AutoComplete.DoComplete (System.Func`3 completer, MCocoa.NSTextView view, NSRange range, IComputeRuns computer) [0x00051] in /Users/jessejones/Source/Continuum/source/plugins/auto-complete/AutoComplete.cs:122 
+  at AutoComplete.AutoComplete.HandleKey (MCocoa.NSTextView view, MCocoa.NSEvent evt, IComputeRuns computer) [0x00041] in /Users/jessejones/Source/Continuum/source/plugins/auto-complete/AutoComplete.cs:98 
+  at TextEditor.TextEditorView.keyDown (MCocoa.NSEvent evt) [0x00016] in /Users/jessejones/Source/Continuum/source/plugins/text-editor/TextEditorView.cs:57 
+  at (wrapper managed-to-native) System.Reflection.MonoMethod:InternalInvoke (object,object[],System.Exception&)
+* Use a database for window frames.
+* Might want to nuke prefs.
 * Work on target completion:
 	- label should show full member name
+	- completing property with an enum type doesn't show the values
+	- window bottom is clipped to bottom of screen
+	- enter adds the text which has been typed?
+	- make sure we get a local for catch clause
+	- Unused.Value isn't auto completed
+* Work on argument completion:
+	- pop up a square window above the method name
+	- use a shadow?
+	- probably want to make this a child window
+	- close the window when method call is closed
+	- method and arg names in bold
+	- current formal arg name in hilite color
+	- when comma is typed redraw (don't count commas within braces)
+	- may want a context menu: close, show overloads, open, find on site
+	- need to handle nested calls
+	- handle scrolling the main window
+	- handle edits in the main window (may need a LiveRange class)
+	- close when the window is deactivated?
+	- allow the window to be dragged
+	- animate show and hide?
+	- arg completion could filter on formal arg type
+* Work more on target completion:
+	- window is a bit too high up
+	- doesn't work with IBOutlet<T>.Value
 	- get ctor calls completing: enter with new PartialTypeName
 	- ctor completion should work with dotted names
 	- ctor completion should work with just new
@@ -26,6 +68,9 @@ might want a sample app
 	- context menu should filter by class
 	- context menu should filter by extension method
 	- context menu should filter by access
+	- use an ITypeDatabase, should have parser databases for all windows that were open
+	- parse databases for closed windows are removed on a successful build
+	- would be nice to complete new expressions with ctors
 	- complete new SomeType calls
 		` special case array types
 	- do some performance tuning
@@ -43,6 +88,10 @@ might want a sample app
 	- prune value type members when completing args
 * FileStream.cs didn't parse right.
 * Dirty files aren't always being refreshed.
+* Can we do some sort of notification when assemblies finish parsing? Or to show parse
+   error message? Maybe a notifications window? 
+   - could say stuff like "parsing mscorlib...", "parsing mscorlib...done", "[parser]
+     expected '}' on line 56"
 * Database should only parse assemblies referenced by local assemblies, not
    all assemblies referenced.
 -rw-r--r--  1 jessejones  jessejones  60900352 Mar  4 12:34 Continuum.db
@@ -73,20 +122,28 @@ might want a sample app
 	- arg completion should prune more types
 * OpenSelection isn't doing a case insensitive match, try nsview.cs
 * Is ChangeAccess correct?
+* Add Convert to Decimal and Convert To Hex.
+* Couldn't use context menu to spellcheck with no database.
 * Search witin "…" isn't finding verbatim strings. E.g. search for Methods should
   find some.
 * Short form should not show internal members for mscorlib or gac assemblies.
 * Short form should have a separate section for operators (see DateTime).
 * Why doesn't WeakReference short form put ctors in bold?
 * Need to comment out the snk line in cecil's standalone make file.
+* AssemblyVersion.cs file(s) aren't being generated?
 * Might want a warning if /var/db/locate.database is missing.
+* Put a cap on transcript size.
 * Short form should show extension methods:
 	- maybe could use a comment like // System.Linq Extension Methods
 * Add scripts to convert to decimal and hex. Maybe binary too.
+* Make sure prefs size is bounded.
+* Should be able to get rid of NSTreatUnknownArgumentsAsOpen hack.
 * Does time code refactor really need a finally block?
 * Make sure ComputeRuns is not called if runs are up to date.
 * Implement interface refactor.
 * Popup should not bold delegates used as members.
+* Add Find in Spotlight.
+* Time Machine integration?
 * Might want to expose CsEnum.Names to refactor.
 * Got a crash trying to open a bundle.
 * Expose CsBases.HasBaseClass to refactor.
@@ -480,7 +537,7 @@ might want a sample app
 	- upload the new binary
 	- update the version number
 	- delete build_num
-	
-/Users/jessejones/Documents/Developer/c#.cs
-/Users/jessejones/Documents/Developer/Unix/UnixNotes.txt
+
+ /Users/jessejones/Documents/Developer/UnixNotes.sh
+ /Users/jessejones/Documents/Developer/c#.cs
 

@@ -85,8 +85,8 @@ namespace Shared
 			Log.WriteLine(TraceLevel.Verbose, "App", "created the directory watcher");
 		}
 		
-		// This will fire if files are added, removed, or changed from the specified directory 
-		// or any of its sub-directories.
+		// This will fire (on the main thread) if files are added, removed, or changed from 
+		// the specified directory or any of its sub-directories.
 		public event EventHandler<DirectoryWatcherEventArgs> Changed;
 		
 		public string Path {get; private set;}

@@ -68,7 +68,7 @@ namespace ObjectModel
 				{
 					if (fullParse || type.IsPublic || type.IsNestedPublic || type.IsNestedFamily || type.IsNestedFamilyOrAssembly)
 					{
-						DoParseType(type, hash, fullParse);
+						DoParseType(type, hash, fullParse);		// max time here is 0.8 secs on a fast machine for type System.Xml.Serialization.XmlSerializationReader
 //						System.Threading.Thread.Sleep(50);	// this doesn't seem to help the main thread too much
 					}
 				}

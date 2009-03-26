@@ -46,7 +46,7 @@ namespace AutoComplete
 			var parser = new CsParser.Parser();
 			CsGlobalNamespace globals = parser.Parse(text);
 			
-			m_target = resolver.Resolve(target, globals, true);
+			m_target = resolver.Resolve(target, globals, true, false);
 			return m_target != null;
 		}
 		

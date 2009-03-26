@@ -205,20 +205,6 @@ is a comment */
 		}
 		
 		[Test]
-		[ExpectedException(typeof(CsScannerException))]
-		public void BadIdentifier()
-		{
-			string text = @"alpha  epsi\u006Con";
-			
-			var scanner = new Scanner();
-			scanner.Init(text);
-			Assert.AreEqual("alpha", scanner.Token.Text());
-			Assert.AreEqual(TokenKind.Identifier, scanner.Token.Kind);
-			
-			scanner.Advance();
-		}
-		
-		[Test]
 		public void Preprocess()
 		{
 			string text = "alpha\n#region Your Name Here	\n#define Foo\n#endif\n#endregion\n";

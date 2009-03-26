@@ -24,8 +24,10 @@ using NUnit.Framework;
 using Shared;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 
 [TestFixture]
 public sealed class DatabaseTest
@@ -42,13 +44,13 @@ public sealed class DatabaseTest
 		string path = Path.GetTempFileName();
 		using (var database = new Database(path, "test"))
 		{
-			database.Begin("test");
+			database.UnsafeBegin("test");
 			database.Update("CREATE TABLE People(id INTEGER PRIMARY KEY, first_name, last_name, city)");
 	
 			database.Update("INSERT INTO People VALUES (1, 'joe', 'bob', 'houston')");
 			database.Update("INSERT INTO People VALUES (2, 'fred', 'hansen', 'atlanta')");
 			database.Update("INSERT INTO People VALUES (3, 'ted', 'bundy', 'houston')");
-			database.Commit("test");
+			database.UnsafeCommit("test");
 			
 			string[] header = null;
 			List<string[]> rows = new List<string[]>();
@@ -79,13 +81,13 @@ public sealed class DatabaseTest
 		string path = Path.GetTempFileName();
 		using (var database = new Database(path, "test"))
 		{
-			database.Begin("test");
+			database.UnsafeBegin("test");
 			database.Update("CREATE TABLE People(id INTEGER PRIMARY KEY, first_name, last_name, city)");
 			
 			database.Update("INSERT INTO People VALUES (1, 'joe', 'bob', 'houston')");
 			database.Update("INSERT INTO People VALUES (2, 'fred', 'hansen', 'atlanta')");
 			database.Update("INSERT INTO People VALUES (3, 'ted', 'bundy', 'houston')");
-			database.Commit("test");
+			database.UnsafeCommit("test");
 			
 			List<string[]> rows = new List<string[]>();
 			Database.RowCallback rc = (r) => {rows.Add(r); return false;};
@@ -104,13 +106,13 @@ public sealed class DatabaseTest
 		string path = Path.GetTempFileName();
 		using (var database = new Database(path, "test"))
 		{
-			database.Begin("test");
+			database.UnsafeBegin("test");
 			database.Update("CREATE TABLE People(id INTEGER PRIMARY KEY, first_name, last_name, city)");
 			
 			database.Update("INSERT INTO People VALUES (1, 'joe', 'bob', 'houston')");
 			database.Update("INSERT INTO People VALUES (2, 'fred', 'hansen', 'atlanta')");
 			database.Update("INSERT INTO People VALUES (3, 'ted', 'bundy', 'houston')");
-			database.Commit("test");
+			database.UnsafeCommit("test");
 			
 			List<string[]> rows = new List<string[]>();
 			Database.RowCallback rc = (r) => {rows.Add(r); throw new Exception("oops");};
@@ -138,14 +140,14 @@ public sealed class DatabaseTest
 		string path = Path.GetTempFileName();
 		using (var database = new Database(path, "test"))
 		{
-			database.Begin("test");
+			database.UnsafeBegin("test");
 			database.Update("CREATE TABLE People(id INTEGER PRIMARY KEY, first_name, last_name, city)");
 			
 			database.Update("INSERT INTO People VALUES (1, 'joe', 'bob', 'houston')");
 			database.Update("INSERT INTO People VALUES (2, 'fred', 'hansen', 'atlanta')");
 			database.Update("INSERT INTO People VALUES (3, 'ted', 'bundy', 'houston')");
-			database.Rollback("test");
-			database.Rollback("test");
+			database.UnsafeRollback("test");
+			database.UnsafeRollback("test");
 		}
 	}
 }

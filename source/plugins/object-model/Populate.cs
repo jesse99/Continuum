@@ -67,13 +67,13 @@ namespace ObjectModel
 			// the best results which is a bit painful.
 			// 3) Assembly versioning is a bit nicer because the queries run against the
 			// assemblies which are being used instead of the latest version of the assembly.
-			string path = Populate.GetDatabasePath(m_boss);
-			Log.WriteLine("ObjectModel", "'{0}' was opened", path);
+			m_path = Populate.GetDatabasePath(m_boss);
+			Log.WriteLine("ObjectModel", "'{0}' was opened", m_path);
 			
 			Broadcaster.Register("opened directory", this, this.DoOnOpenDir);
 			
-			Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "starting thread");
-			m_thread = new Thread(() => DoParseAssemblies(path));
+			Log.WriteLine(TraceLevel.Info, "ObjectModel", "starting thread for {0}", m_path);
+			m_thread = new Thread(() => DoParseAssemblies(m_path));
 			m_thread.Name = "parse assemblies";
 			m_thread.IsBackground = false;
 			m_thread.Priority = ThreadPriority.BelowNormal;		// this is ignored on Mono 2.0
@@ -193,6 +193,8 @@ namespace ObjectModel
 				}
 			}
 //	Console.WriteLine("thread {0} is exiting", Thread.CurrentThread.ManagedThreadId);
+
+			Log.WriteLine(TraceLevel.Info, "ObjectModel", "exiting thread for {0}", m_path);
 		}
 		
 		private void DoCreateTables()		// threaded
@@ -336,7 +338,7 @@ namespace ObjectModel
 					// and update the database with the new time (we have to do
 					// this after DoUpdateAssemblies so that the new row has a
 					// valid foreign key).
-					m_database.Update("update assembly path " + path, () =>
+					m_database.Update("update assembly paths " + path, () =>
 					{
 						m_database.InsertOrReplace("AssemblyPaths",
 							path, BitConverter.ToString(hash), currentTicks.ToString());
@@ -372,11 +374,8 @@ namespace ObjectModel
 		{
 			AssemblyDefinition assembly = null;
 			
-			string tname = "update assemblies for " + path;
-			try
+			m_database.Update("update assemblies for " + path, () =>
 			{
-				m_database.Begin(tname);
-				
 				// See if the assembly is one we have already processed.
 				string sql = string.Format(@"
 					SELECT name 
@@ -401,14 +400,7 @@ namespace ObjectModel
 						assembly.Name.Version.Build.ToString(),
 						assembly.Name.Version.Revision.ToString());
 				}
-				
-				m_database.Commit(tname);
-			}
-			catch
-			{
-				m_database.Rollback(tname);
-				throw;
-			}
+			});
 			
 			return assembly;
 		}
@@ -559,6 +551,7 @@ namespace ObjectModel
 		
 		#region Fields
 		private Thread m_thread;
+		private string m_path;
 		private Boss m_boss;
 		private MD5 m_hasher = MD5.Create();				// md5 isn't cryptographically secure any more, but that's OK: we just want a good hash to minimize duplicate work
 		private Database m_database;
