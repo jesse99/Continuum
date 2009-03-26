@@ -71,8 +71,9 @@ namespace ObjectModel
 			Log.WriteLine("ObjectModel", "'{0}' was opened", m_path);
 			
 			Broadcaster.Register("opened directory", this, this.DoOnOpenDir);
+			Broadcaster.Register("closing directory", this, (name, value) => OnShutdown());
 			
-			Log.WriteLine(TraceLevel.Info, "ObjectModel", "starting thread for {0}", m_path);
+			Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "starting thread for {0}", m_path);
 			m_thread = new Thread(() => DoParseAssemblies(m_path));
 			m_thread.Name = "parse assemblies";
 			m_thread.IsBackground = false;
@@ -194,7 +195,7 @@ namespace ObjectModel
 			}
 //	Console.WriteLine("thread {0} is exiting", Thread.CurrentThread.ManagedThreadId);
 
-			Log.WriteLine(TraceLevel.Info, "ObjectModel", "exiting thread for {0}", m_path);
+			Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "exiting thread for {0}", m_path);
 		}
 		
 		private void DoCreateTables()		// threaded

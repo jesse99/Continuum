@@ -147,7 +147,7 @@ namespace AutoComplete
 				else
 				{
 					string expr = DoGetTargetExpr(range.location);
-					if (expr != null)
+					if (!string.IsNullOrEmpty(expr))
 					{
 						var target = m_target.Resolve(m_text.Text, expr, range.location, globals);
 						if (target.First != null)
@@ -249,7 +249,7 @@ namespace AutoComplete
 					if (range.length == 0)
 					{
 						string expr = DoGetTargetExpr(range.location);
-						if (expr != null)
+						if (!string.IsNullOrEmpty(expr))
 						{
 							members.RemoveAll(m => !m.Text.StartsWith(expr));
 							prefixLen = expr.Length;
@@ -293,8 +293,6 @@ namespace AutoComplete
 			if (text[index] == '_' || CsHelpers.CanStartIdentifier(text[index]))
 				expr = text.Substring(index, offset - index);
 				
-			Trace.Assert(expr == null || expr.Length > 0, "expr is empty");
-			
 			return expr;
 		}
 		#endregion

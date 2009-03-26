@@ -100,6 +100,7 @@ namespace DirectoryEditor
 			var handler = m_boss.Get<IMenuHandler>();
 			handler.Deregister(this);
 			
+			Broadcaster.Invoke("closing directory", m_boss);
 			Broadcaster.Unregister(this);
 			
 			if (m_watcher != null)

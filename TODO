@@ -18,17 +18,6 @@ ReferenceEquals used with value type
 
 might want a sample app
 
-* Error typing a dot:
-  at Shared.AssertListener.Fail (System.String message) [0x00000] in /Users/jessejones/Source/Continuum/source/shared/AssertListener.cs:69 
-  at System.Diagnostics.TraceImpl.Fail (System.String message) [0x00028] in /private/tmp/monobuild/build/BUILD/mono-2.2/mcs/class/System/System.Diagnostics/TraceImpl.cs:247 
-  at System.Diagnostics.TraceImpl.Assert (Boolean condition, System.String message) [0x00006] in /private/tmp/monobuild/build/BUILD/mono-2.2/mcs/class/System/System.Diagnostics/TraceImpl.cs:219 
-  at System.Diagnostics.Trace.Assert (Boolean condition, System.String message) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.2/mcs/class/System/Assembly/AssemblyInfo.cs:1 
-  at AutoComplete.AutoComplete.DoGetTargetExpr (Int32 offset) [0x0006d] in /Users/jessejones/Source/Continuum/source/plugins/auto-complete/AutoComplete.cs:296 
-  at AutoComplete.AutoComplete.DoCompleteTarget (MCocoa.NSTextView view, NSRange range) [0x00063] in /Users/jessejones/Source/Continuum/source/plugins/auto-complete/AutoComplete.cs:149 
-  at AutoComplete.AutoComplete.DoComplete (System.Func`3 completer, MCocoa.NSTextView view, NSRange range, IComputeRuns computer) [0x00051] in /Users/jessejones/Source/Continuum/source/plugins/auto-complete/AutoComplete.cs:122 
-  at AutoComplete.AutoComplete.HandleKey (MCocoa.NSTextView view, MCocoa.NSEvent evt, IComputeRuns computer) [0x00041] in /Users/jessejones/Source/Continuum/source/plugins/auto-complete/AutoComplete.cs:98 
-  at TextEditor.TextEditorView.keyDown (MCocoa.NSEvent evt) [0x00016] in /Users/jessejones/Source/Continuum/source/plugins/text-editor/TextEditorView.cs:57 
-  at (wrapper managed-to-native) System.Reflection.MonoMethod:InternalInvoke (object,object[],System.Exception&)
 * Use a database for window frames.
 * Might want to nuke prefs.
 * Work on target completion:
