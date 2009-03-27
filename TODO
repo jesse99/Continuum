@@ -18,8 +18,8 @@ ReferenceEquals used with value type
 
 might want a sample app
 
-* Use a database for window frames.
 * Might want to nuke prefs.
+* Look at mono 2.2 snippets.
 * Work on target completion:
 	- label should show full member name
 	- completing property with an enum type doesn't show the values
@@ -31,6 +31,10 @@ might want a sample app
 	- pop up a square window above the method name
 	- use a shadow?
 	- probably want to make this a child window
+	- quickly typing a comment does arg completion, adding a period on the end seems to 
+	  fail too
+	- probably should not auto-complete if text to the right of the dot can continue an
+	  identifier
 	- close the window when method call is closed
 	- method and arg names in bold
 	- current formal arg name in hilite color
@@ -127,6 +131,7 @@ might want a sample app
 * Add scripts to convert to decimal and hex. Maybe binary too.
 * Make sure prefs size is bounded.
 * Should be able to get rid of NSTreatUnknownArgumentsAsOpen hack.
+* Mention option-tab somewhere.
 * Does time code refactor really need a finally block?
 * Make sure ComputeRuns is not called if runs are up to date.
 * Implement interface refactor.
@@ -134,6 +139,7 @@ might want a sample app
 * Add Find in Spotlight.
 * Time Machine integration?
 * Might want to expose CsEnum.Names to refactor.
+* Look at Windows.db size.
 * Got a crash trying to open a bundle.
 * Expose CsBases.HasBaseClass to refactor.
 * Don't do brace hiliting if insertion point is not within code.

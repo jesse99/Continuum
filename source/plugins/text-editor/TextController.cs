@@ -87,7 +87,9 @@ namespace TextEditor
 			{
 				DoGetStyler();
 				
-				Unused.Value = window().setFrameAutosaveName(NSString.Create(Path + "-doc window"));	// TODO: not sure it's good to stick all of these in prefs
+				NSRect frame = WindowDatabase.GetFrame(Path);
+				if (frame != NSRect.Empty)
+					window().setFrame_display(frame, true);		// note that Cocoa will ensure that windows with title bars are not moved off screen
 				
 				if (m_watcher != null)
 				{
@@ -185,7 +187,7 @@ namespace TextEditor
 		{
 			if (atEnd && m_finishedStyling && !m_opened && !m_scrolled && !m_closed)
 			{
-				DoRestoreScrollers();
+				DoRestoreView();
 				m_opened = true;
 			}
 		}
@@ -229,10 +231,10 @@ namespace TextEditor
 			
 			if (Path != null)
 			{
-				NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
-				NSPoint origin = m_scrollView.Value.contentView().bounds().origin;
-				defaults.setFloat_forKey(origin.x, NSString.Create(Path + "-origin.x"));
-				defaults.setFloat_forKey(origin.y, NSString.Create(Path + "-origin.y"));
+				NSRect frame = window().frame();
+				NSPoint scrollers = m_scrollView.Value.contentView().bounds().origin;
+				NSRange selection = m_textView.Value.selectedRange();
+				WindowDatabase.Set(Path, frame, scrollers, selection);
 				
 				if (Path.Contains("/var/") && Path.Contains("/-Tmp-/"))		// TODO: seems kind of fragile
 					DoDeleteFile(Path);
@@ -716,14 +718,20 @@ namespace TextEditor
 			NSApplication.sharedApplication().BeginInvoke(() => m_textView.Value.showFindIndicatorForRange(range));
 		}
 		
-		private void DoRestoreScrollers()
+		private void DoRestoreView()
 		{
-			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
-			float x = defaults.floatForKey(NSString.Create(Path + "-origin.x"));
-			float y = defaults.floatForKey(NSString.Create(Path + "-origin.y"));
-			
-			if (x != 0.0 || y != 0.0)
-				DoRestoreScrollers(x, y);
+			if (Path != null)
+			{
+				NSPoint origin = WindowDatabase.GetScrollerOrigin(Path);
+				if (origin != NSPoint.Zero)
+				{
+					DoRestoreScrollers(origin.x, origin.y);
+				}
+				
+				NSRange range = WindowDatabase.GetSelection(Path);
+				if (range != NSRange.Empty)
+					m_textView.Value.setSelectedRange(range);
+			}
 		}
 		
 		private void DoRestoreScrollers(float x, float y)

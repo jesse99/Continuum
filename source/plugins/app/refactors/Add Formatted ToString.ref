@@ -1,0 +1,57 @@
+# Adds ToString(string, IFormatProvider).
+define Run()
+	if Scope is TypeDeclaration then
+		Process(Scope)
+	
+	elif Scope is Method then
+		Process(Scope.DeclaringType)
+	
+	else
+		Raise("Selection is not within a type or method.")
+	end
+end
+
+define Process(type)
+	Globals.AddUsing("System")
+	
+	if not type.HasMember("ToString", []) then
+		type.AddMember(
+"public override string ToString()
+{
+	return ToString(""G"", null);
+}")
+	end
+	
+	type.AddMember(
+"public string ToString(string format)
+{
+	return ToString(format, null);
+}")
+	
+	type.AddMember(
+"public string ToString(string format, IFormatProvider provider)
+{
+	if (provider != null)
+	{
+		ICustomFormatter formatter = provider.GetFormat(GetType()) as ICustomFormatter;
+		if (formatter != null)
+			return formatter.Format(format, this, provider);
+	}
+	
+	switch (format)
+	{
+		// This should return the object in the general (or default)
+		// format. Other common standard format specifiers include
+		// r for round trip and f for full.
+		case """":
+		case null:
+		case ""g"":
+		case ""G"":
+			return string.Empty;
+		
+		default:
+			string message = string.Format(""{0} isn't a valid {1} format string"", format, GetType());
+			throw new FormatException(message);
+	}
+}")
+end
