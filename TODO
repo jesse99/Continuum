@@ -18,10 +18,13 @@ ReferenceEquals used with value type
 
 might want a sample app
 
-* Might want to nuke prefs.
-* Look at mono 2.2 snippets.
+* Adjust default position of:
+	- find windows?
+	- error window
+	- may need to adjust error window size as well
 * Work on target completion:
-	- label should show full member name
+	- start with nothing selected and label showing type
+	- once there is a selection the label should show the full member name
 	- completing property with an enum type doesn't show the values
 	- window bottom is clipped to bottom of screen
 	- enter adds the text which has been typed?
@@ -79,6 +82,7 @@ might want a sample app
 	- need to work with namespace aliases
 	- get target working with array indexing, eg data[foo], also indexers
 	- prune value type members when completing args
+	- try the profiler
 * FileStream.cs didn't parse right.
 * Dirty files aren't always being refreshed.
 * Can we do some sort of notification when assemblies finish parsing? Or to show parse
