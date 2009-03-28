@@ -133,15 +133,19 @@ namespace AutoComplete
 			{
 				Member[] members = null;
 				string type = null;
+				bool isInstance = false;
+				bool isStatic = false;
 				
 				Member oldMember = DoMatchOldMethod(range);
 				if (oldMember != null)
 				{
-					var target = m_type.Resolve(oldMember.Type, globals, true, false);
+					ResolvedTarget target = m_type.Resolve(oldMember.Type, globals, true, false);
 					if (target != null)
 					{
 						type = target.FullName;
 						members = m_members.Resolve(target, globals);
+						isInstance = target.IsInstance;
+						isStatic = target.IsStatic;
 					}
 				}
 				else
@@ -149,11 +153,14 @@ namespace AutoComplete
 					string expr = DoGetTargetExpr(range.location);
 					if (!string.IsNullOrEmpty(expr))
 					{
-						var target = m_target.Resolve(m_text.Text, expr, range.location, globals);
+						Tuple2<ResolvedTarget, Variable[]> target = m_target.Resolve(
+							m_text.Text, expr, range.location, globals);
 						if (target.First != null)
 						{
 							type = target.First.FullName;
 							members = m_members.Resolve(target.First, globals);
+							isInstance = target.First.IsInstance;
+							isStatic = target.First.IsStatic;
 						}
 					}
 				}
@@ -164,7 +171,7 @@ namespace AutoComplete
 					{
 						if (m_controller == null)	
 							m_controller = new CompletionsController();
-						m_controller.Show(view, type, members, 0);
+						m_controller.Show(view, type, members, 0, isInstance, isStatic);
 					}
 				}
 				else
@@ -261,7 +268,7 @@ namespace AutoComplete
 						if (m_controller == null)	
 							m_controller = new CompletionsController();
 							
-						m_controller.Show(view, target.First.FullName, members.ToArray(), prefixLen);
+						m_controller.Show(view, target.First.FullName, members.ToArray(), prefixLen, target.First.IsInstance, target.First.IsStatic);
 					}
 				}
 			}

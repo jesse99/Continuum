@@ -344,7 +344,7 @@
 											<nil key="NSDelegate"/>
 										</object>
 									</object>
-									<string key="NSFrameSize">{400, 100}</string>
+									<string key="NSFrameSize">{400, 49}</string>
 									<reference key="NSSuperview" ref="160036570"/>
 									<reference key="NSNextKeyView" ref="849698247"/>
 									<reference key="NSDocView" ref="849698247"/>
@@ -363,6 +363,7 @@
 									<int key="NSvFlags">256</int>
 									<string key="NSFrame">{{-100, -100}, {15, 135}}</string>
 									<reference key="NSSuperview" ref="160036570"/>
+									<bool key="NSEnabled">YES</bool>
 									<reference key="NSTarget" ref="160036570"/>
 									<string key="NSAction">_doScroller:</string>
 									<double key="NSPercent">7.500000e-01</double>
@@ -379,10 +380,10 @@
 									<double key="NSPercent">9.456522e-01</double>
 								</object>
 							</object>
-							<string key="NSFrame">{{0, -51}, {400, 100}}</string>
+							<string key="NSFrameSize">{400, 49}</string>
 							<reference key="NSSuperview" ref="483732277"/>
 							<reference key="NSNextKeyView" ref="426663474"/>
-							<int key="NSsFlags">0</int>
+							<int key="NSsFlags">64</int>
 							<reference key="NSVScroller" ref="588047640"/>
 							<reference key="NSHScroller" ref="552566982"/>
 							<reference key="NSContentView" ref="426663474"/>

@@ -18,18 +18,41 @@ ReferenceEquals used with value type
 
 might want a sample app
 
-* Adjust default position of:
-	- find windows?
-	- error window
-	- may need to adjust error window size as well
-* Work on target completion:
-	- start with nothing selected and label showing type
-	- once there is a selection the label should show the full member name
-	- completing property with an enum type doesn't show the values
-	- window bottom is clipped to bottom of screen
-	- enter adds the text which has been typed?
-	- make sure we get a local for catch clause
-	- Unused.Value isn't auto completed
+		private void DoGetInsertText(int row, out string text, out NSRange range)
+		{
+			var builder = new StringBuilder();
+			
+			range = m_text.selectedRange();
+			range.length = 0;
+			
+			int i = m_members[row].Text.IndexOf('(');
+			if (i > 0)
+				builder.Append(m_members[row].Text, 0, i + 1);
+			else
+				builder.Append(m_members[row].Text);
+			
+			string[] argNames = m_members[row].ArgNames;
+			if (argNames.Length > 0)
+			{
+				range.location += builder.Length;
+				range.length = argNames[0].Length;
+				
+				for (int j = 0; j < argNames.Length; ++j)
+				{
+					builder.Append(argNames[j]);
+					
+					if (j + 1 < argNames.Length)
+						builder.Append(", ");
+				}
+			}
+			
+			if (i > 0)
+				builder.Append(')');
+			
+			text = builder.ToString();
+		}
+
+* Build a new foreshadow.
 * Work on argument completion:
 	- pop up a square window above the method name
 	- use a shadow?
@@ -123,6 +146,7 @@ might want a sample app
 * Couldn't use context menu to spellcheck with no database.
 * Search witin "…" isn't finding verbatim strings. E.g. search for Methods should
   find some.
+* Last ignored target isn't ignored?
 * Short form should not show internal members for mscorlib or gac assemblies.
 * Short form should have a separate section for operators (see DateTime).
 * Why doesn't WeakReference short form put ctors in bold?
@@ -141,7 +165,7 @@ might want a sample app
 * Implement interface refactor.
 * Popup should not bold delegates used as members.
 * Add Find in Spotlight.
-* Time Machine integration?
+* Time Machine integration? Maybe show diffs?
 * Might want to expose CsEnum.Names to refactor.
 * Look at Windows.db size.
 * Got a crash trying to open a bundle.

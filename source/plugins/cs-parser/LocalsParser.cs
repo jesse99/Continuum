@@ -124,6 +124,8 @@ namespace CsParser
 				{
 					if (typeOrName == "foreach")
 						DoParseForEach(locals);
+					else if (typeOrName == "catch")
+						DoParseCatch(locals);
 					else
 						DoParseLocalVariable(locals, typeOrName);
 				}
@@ -148,6 +150,28 @@ namespace CsParser
 						
 //Console.WriteLine("type: {0}", type);
 //Console.WriteLine("    name: {0}", name);
+						locals.Add(new Local(type, name, null));
+					}
+				}
+			}
+		}
+		
+		// specific-catch-clause:
+		//     catch   (   class-type   identifier?   )   block
+		private void DoParseCatch(List<Local> locals)
+		{
+			if (m_scanner.Token.IsPunct("("))
+			{
+				m_scanner.Advance();
+				
+				string type = DoParseType();
+				if (type != null)
+				{
+					if (m_scanner.Token.Kind == TokenKind.Identifier)
+					{
+						string name = m_scanner.Token.Text();
+						m_scanner.Advance();
+						
 						locals.Add(new Local(type, name, null));
 					}
 				}
@@ -210,7 +234,8 @@ namespace CsParser
 				if (m_scanner.Token.IsPunct("="))
 				{
 					m_scanner.Advance();
-					value = DoParseExpression();
+					if (m_scanner.Token.IsValid())
+						value = DoParseExpression();
 //Console.WriteLine("    value: {0}", value);
 				}
 				

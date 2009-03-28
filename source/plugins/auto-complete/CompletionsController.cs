@@ -41,14 +41,22 @@ namespace AutoComplete
 			ActiveObjects.Add(this);
 		}
 		
-		public void Show(NSTextView text, string type, Member[] names, int prefixLen)
+		public void Show(NSTextView text, string type, Member[] names, int prefixLen, bool isInstance, bool isStatic)
 		{
 			var wind = (CompletionsWindow) window();
 			NSPoint loc = DoFindWindowLoc(text);
 			wind.SetLoc(loc);
 			
-			m_label.Value.setStringValue(NSString.Create(type));
-			m_table.Value.Open(text, names, prefixLen);
+			string defaultLabel = type;
+			if (isInstance && !isStatic)
+				defaultLabel += " Members";
+			else if (isInstance)
+				defaultLabel += " Instance Members";
+			else if (isStatic)
+				defaultLabel += " Static Members";
+			
+			m_label.Value.setStringValue(NSString.Create(defaultLabel));
+			m_table.Value.Open(text, names, prefixLen, m_label.Value, defaultLabel);
 			Log.WriteLine("AutoComplete", "took {0:0.000} secs to open the window", AutoComplete.Watch.ElapsedMilliseconds/1000.0);
 			
 			NSApplication.sharedApplication().beginSheet_modalForWindow_modalDelegate_didEndSelector_contextInfo(

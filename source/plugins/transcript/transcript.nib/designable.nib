@@ -84,7 +84,7 @@
 													<string>WebURLsWithTitlesPboardType</string>
 												</object>
 											</object>
-											<string key="NSFrameSize">{501, 84}</string>
+											<string key="NSFrameSize">{501, 257}</string>
 											<reference key="NSSuperview" ref="460035474"/>
 											<object class="NSTextContainer" key="NSTextContainer" id="130792739">
 												<object class="NSLayoutManager" key="NSLayoutManager">
@@ -338,13 +338,13 @@
 												</object>
 												<nil key="NSDefaultParagraphStyle"/>
 											</object>
-											<int key="NSTVFlags">6</int>
+											<int key="NSTVFlags">7</int>
 											<string key="NSMaxSize">{1017, 1e+07}</string>
-											<string key="NSMinize">{85, 0}</string>
+											<string key="NSMinize">{85, 85}</string>
 											<nil key="NSDelegate"/>
 										</object>
 									</object>
-									<string key="NSFrameSize">{501, 424}</string>
+									<string key="NSFrameSize">{501, 257}</string>
 									<reference key="NSSuperview" ref="715784645"/>
 									<reference key="NSNextKeyView" ref="653097932"/>
 									<reference key="NSDocView" ref="653097932"/>
@@ -358,7 +358,7 @@
 								<object class="NSScroller" id="693444717">
 									<reference key="NSNextResponder" ref="715784645"/>
 									<int key="NSvFlags">256</int>
-									<string key="NSFrame">{{501, 0}, {15, 409}}</string>
+									<string key="NSFrame">{{501, 0}, {15, 242}}</string>
 									<reference key="NSSuperview" ref="715784645"/>
 									<reference key="NSTarget" ref="715784645"/>
 									<string key="NSAction">_doScroller:</string>
@@ -376,7 +376,7 @@
 									<double key="NSPercent">9.456522e-01</double>
 								</object>
 							</object>
-							<string key="NSFrame">{{0, -167}, {516, 424}}</string>
+							<string key="NSFrameSize">{516, 257}</string>
 							<reference key="NSSuperview" ref="1006"/>
 							<reference key="NSNextKeyView" ref="460035474"/>
 							<int key="NSsFlags">16</int>

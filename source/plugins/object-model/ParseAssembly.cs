@@ -232,14 +232,14 @@ namespace ObjectModel
 						kind = type.IsSealed ? 3 : 2;
 					foreach (string file in files)
 					{
-						m_database.InsertOrIgnore("NameInfo",
+						m_database.InsertOrReplace("NameInfo",
 							type.FullName,
 							hash,
 							file,
 							type.Name,							// adds names like String or List`1
 							kind.ToString());
 						
-						m_database.InsertOrIgnore("NameInfo",
+						m_database.InsertOrReplace("NameInfo",
 							type.FullName,
 							hash,
 							file,
@@ -344,10 +344,10 @@ namespace ObjectModel
 						location.Second.ToString(),
 						((ushort) method.Attributes).ToString(),
 						((ushort) method.SemanticsAttributes).ToString());
-					
-					if (!method.IsPrivate && !method.IsAbstract && !method.IsAddOn && !method.IsConstructor && !method.IsFire && !method.IsOther && !method.IsRemoveOn && !method.IsSetter)
+						
+					if (!method.IsPrivate && !method.IsAbstract && !method.IsAddOn && !method.IsConstructor && !method.IsFire && !method.IsOther && !method.IsRemoveOn)
 						if (!method.Name.StartsWith("op_") && method.Name != "Finalize")
-							m_database.InsertOrIgnore("Members",
+							m_database.InsertOrReplace("Members",
 								DoGetMethodText(method, 0),
 								method.DeclaringType.FullName,
 								string.Empty,								// not an extension method
@@ -358,7 +358,7 @@ namespace ObjectModel
 								hash);
 					
 					if (!type.IsInterface)		// TODO: might want to remove this when we can get file/line for interfaces
-						m_database.InsertOrIgnore("NameInfo",
+						m_database.InsertOrReplace("NameInfo",
 							method.ToString(),
 							hash,
 							fileName,
@@ -366,7 +366,7 @@ namespace ObjectModel
 							"0");
 							
 					if (method.IsPublic && DoHasExtensionAtribute(method.CustomAttributes))
-						m_database.InsertOrIgnore("Members",
+						m_database.InsertOrReplace("Members",
 							DoGetMethodText(method, 1),
 							method.Parameters[0].ParameterType.FullName.GetTypeName(),
 							type.Namespace,
@@ -385,7 +385,7 @@ namespace ObjectModel
 		{
 			var builder = new StringBuilder();
 			
-			if (method.IsGetter)
+			if (method.IsGetter || method.IsSetter)
 			{
 				builder.Append(method.Name.Substring(4));
 			}
@@ -464,7 +464,7 @@ namespace ObjectModel
 			{
 				if (fullParse || field.IsFamily || field.IsFamilyOrAssembly || field.IsFamilyOrAssembly || field.IsPublic)
 				{
-					m_database.Insert("Fields",
+					m_database.InsertOrReplace("Fields",
 						field.Name,
 						field.DeclaringType.FullName.GetTypeName(),
 						hash,
@@ -472,7 +472,7 @@ namespace ObjectModel
 						((ushort) field.Attributes).ToString());
 					
 					if (!field.IsPrivate)
-						m_database.InsertOrIgnore("Members",
+						m_database.InsertOrReplace("Members",
 							field.Name,
 							field.DeclaringType.FullName.GetTypeName(),
 							string.Empty,								// not an extension method

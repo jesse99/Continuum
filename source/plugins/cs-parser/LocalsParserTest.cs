@@ -315,6 +315,27 @@ string name;
 			DoCheck(text,
 				new Local("var", "x", "from a in alpha"));
 		}
+		
+		[Test]
+		public void TryBlock()
+		{
+			string text = @"
+{
+	int x;
+	try
+	{
+		foo();
+	}
+	catch (Exception e)
+	{
+		z;
+	}
+}";
+			DoCheck(text, 0, text.IndexOf("z"),
+				new Local("int", "x", null),
+				new Local("Exception", "e", null)
+			);
+		}
 	}
 }
 #endif	// TEST

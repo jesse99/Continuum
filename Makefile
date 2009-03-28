@@ -198,7 +198,8 @@ help:
 	@echo " "
 	@echo "Variables include:"
 	@echo "RELEASE - define to enable release builds, defaults to not defined"
-	
+
+# Shouldn't this be removed?	
 tar:
 	tar --exclude \*/.svn --exclude \*/.svn/\* --create --compress --file=continuum-$(version).tar.gz Dictionary.txt MIT.X11 Makefile gen_version.sh get_version.sh source
 

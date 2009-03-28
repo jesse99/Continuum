@@ -39,19 +39,54 @@ namespace AutoComplete
 		{
 			m_loc = loc;
 		}
-				
-		// This is called by our parent's window_willPositionSheet_usingRect.
+		
+		// This is called by our parent's window_willPositionSheet_usingRect method.
 		public NSRect positionSheet(NSRect usingRect)
 		{
-			// TODO: this isn't quite right.
-			float x = usingRect.size.width/2.0f;
+			// This will center the sheet on the text we're completing. It might
+			// be better to align the left side of the sheet on the text instead,
+			// but this seems tricky to do.
+			float x = m_loc.x;
 			
 			return new NSRect(
-				x,					// this is the origin of the sheet in parent window coordinates
-				m_loc.y,
-				0.0f,				// this is reserved
-				1.0f);			// if this is smaller then the window the sheet genies out, else it slides out
+				x,						// this is the origin of the sheet in parent window coordinates
+				m_loc.y - 4.0f,
+				0.0f,					// this is reserved
+				1.0f);				// if this is smaller then the window the sheet genies out, else it slides out
 		}
+		
+		public new void setFrame_display(NSRect frame, bool display)
+		{
+			frame = DoConstrainToScreen(frame);
+			this.SuperCall("setFrame:display:", frame, display);
+		}
+		
+		#region Private Methods
+		// Cocoa doesn't provide a way to set the initial size of a sheet and
+		// it doesn't do a very good job when the sheet is near the edge of
+		// the screen so we'll try and fix things up here.
+		private NSRect DoConstrainToScreen(NSRect frame)
+		{
+			NSRect result = frame;
+			
+			NSScreen s = this.screen();
+			if (!NSObject.IsNullOrNil(s))
+			{
+				NSRect screen = s.frame();
+				
+				// The sheet cannot be larger than the screen.
+				result.size.width = Math.Min(result.size.width, screen.size.width);
+				result.size.height = Math.Min(result.size.height, screen.size.height);
+				
+				// The sheet's origin (aka the bottom-left corner) can't be
+				// off screen.
+				result.origin.x = Math.Max(result.origin.x, screen.origin.x);
+				result.origin.y = Math.Max(result.origin.y, screen.origin.y);
+			}
+			
+			return result;
+		}
+		#endregion
 		
 		#region Fields
 		private NSPoint m_loc;

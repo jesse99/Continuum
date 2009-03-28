@@ -39,20 +39,24 @@ namespace AutoComplete
 			
 			setDoubleAction("doubleClicked:");
 			setTarget(this);
+			setDelegate(this);
 			
 			ActiveObjects.Add(this);
 		}
 		
-		public void Open(NSTextView text, Member[] members, int prefixLen)
+		public void Open(NSTextView text, Member[] members, int prefixLen, NSTextField label, string defaultLabel)
 		{
 			m_text = text;
+			m_label = label;
+			m_defaultLabel = defaultLabel;
+			
 			m_members = new List<Member>(members);
 			m_completed = string.Empty;
 			m_prefixLen = prefixLen;
 			
 			m_members.Sort((lhs, rhs) => lhs.Text.CompareTo(rhs.Text));
 			reloadData();
-			DoResetSelection();
+			deselectAll(this);
 		}
 		
 		public new void keyDown(NSEvent evt)
@@ -61,7 +65,11 @@ namespace AutoComplete
 			
 			if (chars == "\t" || chars == "\r")
 			{
-				DoComplete();
+				DoComplete(false);
+			}
+			else if (evt.keyCode() == 76)		// enter key
+			{
+				DoComplete(true);
 			}
 			else if (chars == Constants.Escape)
 			{
@@ -107,7 +115,33 @@ namespace AutoComplete
 		
 		public void doubleClicked(NSObject sender)
 		{
-			DoComplete();
+			DoComplete(false);
+		}
+		
+		public void tableViewSelectionDidChange(NSNotification notification)
+		{
+			int row = selectedRow();
+			if (row >= 0)
+			{
+				Member member = m_members[row];
+
+				int i = member.Text.IndexOf('(');
+				if (i < 0)
+					i = member.Text.Length;
+				string text = member.Type + " " + member.Text;
+				var str = NSMutableAttributedString.Create(text);
+				
+				NSRange range = new NSRange(member.Type.Length + 1, i);
+				str.addAttribute_value_range(Externs.NSStrokeWidthAttributeName, NSNumber.Create(-3.0f), range);
+				
+				NSMutableParagraphStyle style = NSMutableParagraphStyle.Create();
+				style.setAlignment(Enums.NSCenterTextAlignment);
+				str.addAttribute_value_range(Externs.NSParagraphStyleAttributeName, style, new NSRange(0, text.Length));
+				
+				m_label.setObjectValue(str);
+			}
+			else
+				m_label.setStringValue(NSString.Create(m_defaultLabel));
 		}
 		
 		public int numberOfRowsInTableView(NSTableView table)
@@ -154,14 +188,14 @@ namespace AutoComplete
 		}
 		
 		#region Private Methods
-		public void DoComplete()
+		public void DoComplete(bool prefixOnly)
 		{
 			int row = selectedRow();
 			if (row >= 0)
 			{
 				string text;
 				NSRange range;
-				DoGetInsertText(row, out text, out range);
+				DoGetInsertText(row, prefixOnly, out text, out range);
 				
 				m_completedIndex = -1;
 				m_completedMember = null;
@@ -187,52 +221,26 @@ namespace AutoComplete
 				Functions.NSBeep();
 		}
 		
-		private void DoResetSelection()
+		private void DoGetInsertText(int row, bool prefixOnly, out string text, out NSRange range)
 		{
-			if (m_members.Count > 0)
-			{
-				var indexes = NSIndexSet.indexSetWithIndex(0);
-				selectRowIndexes_byExtendingSelection(indexes, false);
-				scrollRowToVisible(0);
-			}
-			else
-			{
-				deselectAll(this);
-			}
-		}
-		
-		private void DoGetInsertText(int row, out string text, out NSRange range)
-		{
-			var builder = new StringBuilder();
-			
 			range = m_text.selectedRange();
 			range.length = 0;
 			
-			int i = m_members[row].Text.IndexOf('(');
-			if (i > 0)
-				builder.Append(m_members[row].Text, 0, i + 1);
-			else
-				builder.Append(m_members[row].Text);
-			
-			string[] argNames = m_members[row].ArgNames;
-			if (argNames.Length > 0)
+			if (prefixOnly)
 			{
-				range.location += builder.Length;
-				range.length = argNames[0].Length;
-				
-				for (int j = 0; j < argNames.Length; ++j)
-				{
-					builder.Append(argNames[j]);
-					
-					if (j + 1 < argNames.Length)
-						builder.Append(", ");
-				}
+				text = m_completed;
 			}
-			
-			if (i > 0)
-				builder.Append(')');
-			
-			text = builder.ToString();
+			else
+			{
+				int i = m_members[row].Text.IndexOf('(');
+				if (i > 0)
+					if (m_members[row].ArgNames.Length > 0)
+						text = m_members[row].Text.Substring(0, i + 1);
+					else
+						text = m_members[row].Text.Substring(0, i + 2);
+				else
+					text = m_members[row].Text;
+			}
 		}
 		
 		private int DoMatchName()
@@ -268,8 +276,10 @@ namespace AutoComplete
 				scrollRowToVisible(row);
 			}
 			else
+			{
 				deselectAll(this);
-				
+			}
+			
 			return count;
 		}
 		
@@ -288,6 +298,8 @@ namespace AutoComplete
 		
 		#region Fields
 		private NSTextView m_text;
+		private NSTextField m_label;
+		private string m_defaultLabel;
 		private List<Member> m_members = new List<Member>();
 		private string m_completed = string.Empty;
 		private int m_prefixLen;

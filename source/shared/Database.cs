@@ -171,7 +171,7 @@ namespace Shared
 					UnsafeCommit(name);
 					break;
 				}
-				catch
+				catch (DatabaseLockedException)
 				{
 					UnsafeRollback(name);
 					if (++i < 10)
@@ -226,7 +226,7 @@ namespace Shared
 			{
 				IntPtr errMesg;
 				Error err = sqlite3_exec(m_database, "ROLLBACK TRANSACTION", null, IntPtr.Zero, out errMesg);
-				if (err != Error.ERROR)			// this is the error returned if ROLLBACK is called twice
+				if (err != Error.OK && err != Error.ERROR)			// this is the error returned if ROLLBACK is called twice
 					Log.WriteLine(TraceLevel.Warning, "Database", "ROLLBACK returned error {0}", err);
 			}
 			
