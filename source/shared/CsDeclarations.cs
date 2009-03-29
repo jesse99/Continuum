@@ -298,16 +298,16 @@ namespace Shared
 		
 		public bool HasSetter {get; private set;}
 		
-		// Will be null if the indexer does not have a getter.
+		// Will be null if the indexer does not have a getter (or has an abstract one).
 		public CsAttribute[] GetterAttributes {get; private set;}
 		
-		// Will be null if the indexer does not have a getter.
+		// Will be null if the indexer does not have a getter (or has an abstract one).
 		public CsBody GetterBody {get; private set;}
 		
-		// Will be null if the indexer does not have a setter.
+		// Will be null if the indexer does not have a setter (or has an abstract one).
 		public CsBody SetterBody {get; private set;}
 		
-		// Will be null if the indexer does not have a setter.
+		// Will be null if the indexer does not have a setter (or has an abstract one).
 		public CsAttribute[] SetterAttributes {get; private set;}
 		
 		// If non-zero then these override the indexer access.
@@ -464,7 +464,7 @@ namespace Shared
 		// Will be something like "where KEY : new(), where KEY : class". May be null.
 		public string Constraints {get; private set;}
 		
-		// May be null if the method is extern or declared within an interface.
+		// May be null if the method is extern, abstract, declared within an interface, etc.
 		public CsBody Body {get; private set;}
 		
 		public override string FullName
@@ -688,16 +688,16 @@ namespace Shared
 		
 		public bool HasSetter {get; private set;}
 		
-		// Will be null if the property does not have a getter.
+		// Will be null if the property does not have a getter (or has an abstract one).
 		public CsAttribute[] GetterAttributes {get; private set;}
 		
-		// Will be null if the indexer does not have a getter.
+		// Will be null if the indexer does not have a getter (or has an abstract one).
 		public CsBody GetterBody {get; private set;}
 		
-		// Will be null if the indexer does not have a setter.
+		// Will be null if the indexer does not have a setter (or has an abstract one).
 		public CsBody SetterBody {get; private set;}
 		
-		// Will be null if the property does not have a setter.
+		// Will be null if the property does not have a setter (or has an abstract one).
 		public CsAttribute[] SetterAttributes {get; private set;}
 		
 		// If non-zero then these override the property access.

@@ -68,7 +68,7 @@ if drag outside parent use a collpase or poof animation and close annotation
 	- probably should not auto-complete if text to the right of the dot can continue an
 	  identifier
 	- close the window when method call is closed
-	- position using a LiveTextRange class
+	- position using a LiveIndex class
 		` Shared has an abstract base class
 		` some text interface returns instances
 		` should have a Valid property (false if the range has been deleted)

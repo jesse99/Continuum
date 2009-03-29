@@ -82,14 +82,14 @@ namespace AutoComplete
 				
 				// value
 				CsProperty prop = member as CsProperty;
-				if (prop != null && prop.HasSetter)
+				if (prop != null && prop.SetterBody != null)
 				{
 					if (prop.SetterBody.First < offset && offset <= prop.SetterBody.Last)
 						vars.Add(new Variable(prop.ReturnType, "value", null));
 				}
 				
 				CsIndexer indexer = member as CsIndexer;
-				if (indexer != null && indexer.HasSetter)
+				if (indexer != null && indexer.SetterBody != null)
 				{
 					if (indexer.SetterBody.First < offset && offset <= indexer.SetterBody.Last)
 						vars.Add(new Variable(indexer.ReturnType, "value", null));
