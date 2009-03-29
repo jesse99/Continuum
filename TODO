@@ -51,17 +51,29 @@ might want a sample app
 			
 			text = builder.ToString();
 		}
+		
+change cursor to a hand
+click does a drag
+om drag use find hiliting on anchor
+if drag outside parent use a collpase or poof animation and close annotation
 
-* Build a new foreshadow.
 * Work on argument completion:
+	- maybe use a LabelWindow or TextAnnotation
+		` can set back color
+		` attached to a text index (or range)
+		` can set string or attributed string value
 	- pop up a square window above the method name
 	- use a shadow?
 	- probably want to make this a child window
-	- quickly typing a comment does arg completion, adding a period on the end seems to 
-	  fail too
 	- probably should not auto-complete if text to the right of the dot can continue an
 	  identifier
 	- close the window when method call is closed
+	- position using a LiveTextRange class
+		` Shared has an abstract base class
+		` some text interface returns instances
+		` should have a Valid property (false if the range has been deleted)
+		` need a GetPosition method on IText or something, should return -1 if
+		   the index is not visible
 	- method and arg names in bold
 	- current formal arg name in hilite color
 	- when comma is typed redraw (don't count commas within braces)
@@ -74,7 +86,8 @@ might want a sample app
 	- animate show and hide?
 	- arg completion could filter on formal arg type
 * Work more on target completion:
-	- window is a bit too high up
+	- quickly typing a comment does arg completion, adding a period on the end seems
+	   to fail too
 	- doesn't work with IBOutlet<T>.Value
 	- get ctor calls completing: enter with new PartialTypeName
 	- ctor completion should work with dotted names
@@ -105,11 +118,13 @@ might want a sample app
 	- need to work with namespace aliases
 	- get target working with array indexing, eg data[foo], also indexers
 	- prune value type members when completing args
+	- need a project pref for inserting a space before completed (
 	- try the profiler
 * FileStream.cs didn't parse right.
 * Dirty files aren't always being refreshed.
 * Can we do some sort of notification when assemblies finish parsing? Or to show parse
-   error message? Maybe a notifications window? 
+   error message? Maybe a notifications window? Or directory window can have a
+   label somewhere?
    - could say stuff like "parsing mscorlib...", "parsing mscorlib...done", "[parser]
      expected '}' on line 56"
 * Database should only parse assemblies referenced by local assemblies, not
@@ -140,12 +155,16 @@ might want a sample app
 	- might want to support completing names via F5, should also have a menu item
 	   for this
 	- arg completion should prune more types
+	- look at Code Templates file for ideas on statement completion
 * OpenSelection isn't doing a case insensitive match, try nsview.cs
 * Is ChangeAccess correct?
 * Add Convert to Decimal and Convert To Hex.
 * Couldn't use context menu to spellcheck with no database.
 * Search witin "…" isn't finding verbatim strings. E.g. search for Methods should
   find some.
+* Shouldn't open selection prefer local files? If so, why is it finding those plus those
+   on the external drive?
+* Build errors should use annotations.
 * Last ignored target isn't ignored?
 * Short form should not show internal members for mscorlib or gac assemblies.
 * Short form should have a separate section for operators (see DateTime).

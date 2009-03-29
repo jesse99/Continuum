@@ -232,9 +232,10 @@ namespace TextEditor
 			if (Path != null)
 			{
 				NSRect frame = window().frame();
+				int length = (int) m_textView.Value.string_().length();
 				NSPoint scrollers = m_scrollView.Value.contentView().bounds().origin;
 				NSRange selection = m_textView.Value.selectedRange();
-				WindowDatabase.Set(Path, frame, scrollers, selection);
+				WindowDatabase.Set(Path, frame, length, scrollers, selection);
 				
 				if (Path.Contains("/var/") && Path.Contains("/-Tmp-/"))		// TODO: seems kind of fragile
 					DoDeleteFile(Path);
@@ -722,15 +723,21 @@ namespace TextEditor
 		{
 			if (Path != null)
 			{
-				NSPoint origin = WindowDatabase.GetScrollerOrigin(Path);
-				if (origin != NSPoint.Zero)
-				{
-					DoRestoreScrollers(origin.x, origin.y);
-				}
+				int length = 0;
+				NSPoint origin = NSPoint.Zero;
+				NSRange range = NSRange.Empty;
 				
-				NSRange range = WindowDatabase.GetSelection(Path);
-				if (range != NSRange.Empty)
-					m_textView.Value.setSelectedRange(range);
+				if (WindowDatabase.GetViewSettings(Path, ref length, ref origin, ref range))
+				{
+					// If the file has been changed by another process we don't want
+					// to restore the origin and range since there is a good chance
+					// that that info is now invalid.
+					if (length == m_textView.Value.string_().length())
+					{
+						DoRestoreScrollers(origin.x, origin.y);
+						m_textView.Value.setSelectedRange(range);
+					}
+				}
 			}
 		}
 		

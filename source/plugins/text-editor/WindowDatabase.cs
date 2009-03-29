@@ -19,11 +19,9 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-//using Gear;
 using MCocoa;
 using Shared;
 using System;
-//using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 
@@ -52,6 +50,8 @@ namespace TextEditor
 					CREATE TABLE IF NOT EXISTS Windows(
 						path TEXT NOT NULL PRIMARY KEY
 							CONSTRAINT absolute_path CHECK(substr(path, 1, 1) = '/'),
+						length INTEGER NOT NULL
+							CONSTRAINT non_negative_length CHECK(length >= 0),
 						frame TEXT NOT NULL
 							CONSTRAINT no_empty_frame CHECK(length(frame) > 0),
 						scrollers TEXT NOT NULL
@@ -73,35 +73,32 @@ namespace TextEditor
 			return rows.Length > 0 ? NSRect.Parse(rows[0][0]) : NSRect.Empty;
 		}
 		
-		public static NSPoint GetScrollerOrigin(string path)
+		public static bool GetViewSettings(string path, ref int length, ref NSPoint origin, ref NSRange selection)
 		{
 			string sql = string.Format(@"
-				SELECT scrollers
+				SELECT length, scrollers, selection
 					FROM Windows
 				WHERE path = '{0}'", path.Replace("'", "''"));
 			string[][] rows = ms_database.QueryRows(sql);
 			
-			return rows.Length > 0 ? NSPoint.Parse(rows[0][0]) : NSPoint.Zero;
-		}
-		
-		public static NSRange GetSelection(string path)
-		{
-			string sql = string.Format(@"
-				SELECT selection
-					FROM Windows
-				WHERE path = '{0}'", path.Replace("'", "''"));
-			string[][] rows = ms_database.QueryRows(sql);
+			if (rows.Length > 0)
+			{
+				length = int.Parse(rows[0][0]);
+				origin = NSPoint.Parse(rows[0][1]);
+				selection = NSRange.Parse(rows[0][2]);
+			}
 			
-			return rows.Length > 0 ? NSRange.Parse(rows[0][0]) : NSRange.Empty;
+			return rows.Length > 0;
 		}
 		
-		public static void Set(string path, NSRect frame, NSPoint pos, NSRange selection)
+		public static void Set(string path, NSRect frame, int length, NSPoint pos, NSRange selection)
 		{
 			ms_database.Update("update frame for " + path, () =>
 			{
 				string sql = string.Format(@"
-					INSERT OR REPLACE INTO Windows VALUES ('{0}', '{1}', '{2}', '{3}')",
+					INSERT OR REPLACE INTO Windows VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')",
 						path.Replace("'", "''"),
+						length.ToString(),
 						frame.ToString("R"),
 						pos.ToString("R"),
 						selection.ToString("R"));
