@@ -146,6 +146,49 @@ namespace Shared
 			return false;
 		}
 		
+		// System.Collections.Generic.IEnumerable`1<TSource>:System.Func`2<TSource,System.Boolean>
+		// to IEnumerable`1<TSource>:Func`2<TSource,Boolean>
+		public static string TrimNamespace(string type)
+		{
+			while (true)
+			{
+				int j = type.IndexOf('.');
+				if (j < 0)
+					break;
+					
+				int i = j;
+				while (i > 0 && char.IsLetter(type[i - 1]))
+					--i;
+					
+				type = type.Substring(0, i) + type.Substring(j + 1);
+			}
+			
+			return type;
+		}
+		
+		// IEnumerable`1<TSource>:Func`2<TSource,Boolean>
+		// to IEnumerable<TSource>:Func<TSource,Boolean>
+		public static string TrimGeneric(string type)
+		{
+			while (true)
+			{
+				int i = type.IndexOf('`');
+				if (i < 0)
+					break;
+					
+				int count = 1;
+				while (i + count < type.Length && char.IsDigit(type[i + count]))
+					++count;
+					
+				if (count > 1)
+				{
+					type = type.Substring(0, i) + type.Substring(i + count);
+				}
+			}
+			
+			return type;
+		}
+		
 		#region Fields		
 		private static Dictionary<string, string> ms_aliases = new Dictionary<string, string>
 		{

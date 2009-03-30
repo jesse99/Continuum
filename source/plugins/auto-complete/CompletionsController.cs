@@ -41,10 +41,10 @@ namespace AutoComplete
 			ActiveObjects.Add(this);
 		}
 		
-		public void Show(NSTextView text, string type, Member[] names, int prefixLen, bool isInstance, bool isStatic)
+		public void Show(ITextEditor editor, NSTextView text, string type, Member[] names, int prefixLen, bool isInstance, bool isStatic)
 		{
 			var wind = (CompletionsWindow) window();
-			NSPoint loc = DoFindWindowLoc(text);
+			NSPoint loc = editor.GetCharacterPosition(text.selectedRange().location);
 			wind.SetLoc(loc);
 			
 			string defaultLabel = type;
@@ -56,7 +56,7 @@ namespace AutoComplete
 				defaultLabel += " Static Members";
 			
 			m_label.Value.setStringValue(NSString.Create(defaultLabel));
-			m_table.Value.Open(text, names, prefixLen, m_label.Value, defaultLabel);
+			m_table.Value.Open(editor, text, names, prefixLen, m_label.Value, defaultLabel);
 			Log.WriteLine("AutoComplete", "took {0:0.000} secs to open the window", AutoComplete.Watch.ElapsedMilliseconds/1000.0);
 			
 			NSApplication.sharedApplication().beginSheet_modalForWindow_modalDelegate_didEndSelector_contextInfo(
@@ -84,35 +84,6 @@ namespace AutoComplete
 			get {return m_table.Value.CompletedMember;}
 		}
 		
-		#region Private Methods
-		// TODO: this isn't quite right. We want the base line of the line the glyph is in
-		// not the base line of the glyph itself. There doesn't seem to be a good way to
-		// get this though so we may need to do something silly like get the glyphs for
-		// several characters and use the one with the smallest bottom edge.
-		private NSPoint DoFindWindowLoc(NSTextView text)
-		{
-			NSRange range = text.selectedRange();
-			
-			// Get the lower left corner for the character at the selection.
-			NSLayoutManager layout = text.layoutManager();
-			uint gindex = layout.glyphIndexForCharacterAtIndex((uint) range.location);
-			
-			NSRange erange;
-			NSRect fragmentRect = layout.lineFragmentRectForGlyphAtIndex_effectiveRange(gindex, out erange);
-			NSPoint loc = fragmentRect.origin;
-			
-			// Translate to view coordinates.
-			NSPoint origin = layout.locationForGlyphAtIndex(gindex);
-			loc.x += origin.x;
-			loc.y += origin.y;
-			
-			// Translate to window coordinates.
-			loc = text.convertPointToBase(loc);
-			
-			return loc;
-		}
-		#endregion
-
 		#region Fields
 		private IBOutlet<CompletionsTable> m_table;
 		private IBOutlet<NSTextField> m_label;

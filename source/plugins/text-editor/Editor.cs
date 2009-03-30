@@ -129,6 +129,72 @@ namespace TextEditor
 			}
 		}
 		
+		public ITextAnnotation GetAnnotation(int index)
+		{
+			TextController controller = (TextController) m_window.windowController();
+			NSTextView view = controller.TextView;
+			
+			NSMutableDictionary dict = NSMutableDictionary.Create();
+			dict.setObject_forKey(view, NSNib.NSNibOwner);
+			
+			NSMutableArray objects = NSMutableArray.Create();
+			dict.setObject_forKey(objects, NSNib.NSNibTopLevelObjects);
+			
+			bool loaded = NSBundle.mainBundle().loadNibFile_externalNameTable_withZone_i(
+				NSString.Create("Annotation.nib"),
+				dict,
+				view.zone());
+			if (!loaded)
+				throw new Exception("Couldn't load Annotation.nib");
+						
+			Annotation window = null;
+			for (int i = 0; i < objects.count() && window == null; ++i)
+			{
+				window = objects.objectAtIndex((uint) i) as Annotation;	// the window is sometimes at index 0 and soemtimes at index 1...
+			}
+			
+			if (window != null)
+			{
+				NSRange selection = view.selectedRange();
+				NSPoint origin = GetCharacterPosition(selection.location);
+				origin = view.window().convertBaseToScreen(origin);
+				
+				window.Init(view, origin);
+			}
+			else
+				throw new Exception("Couldn't get the Annotation window from the nib.");
+			
+			return window;
+		}
+		
+		// TODO: this isn't quite right. We want the base line of the line the glyph is in
+		// not the base line of the glyph itself. There doesn't seem to be a good way to
+		// get this though so we may need to do something silly like get the glyphs for
+		// several characters and use the one with the smallest bottom edge.
+		public NSPoint GetCharacterPosition(int index)
+		{
+			TextController controller = (TextController) m_window.windowController();
+			NSTextView view = controller.TextView;
+			
+			// Get the lower left corner for the character at the selection.
+			NSLayoutManager layout = view.layoutManager();
+			uint gindex = layout.glyphIndexForCharacterAtIndex((uint) index);
+			
+			NSRange erange;
+			NSRect fragmentRect = layout.lineFragmentRectForGlyphAtIndex_effectiveRange(gindex, out erange);
+			NSPoint pos = fragmentRect.origin;
+			
+			// Translate to view coordinates.
+			NSPoint origin = layout.locationForGlyphAtIndex(gindex);
+			pos.x += origin.x;
+			pos.y += origin.y;
+			
+			// Translate to window coordinates.
+			pos = view.convertPointToBase(pos);
+			
+			return pos;
+		}
+		
 		// IReload
 		public void Reload()
 		{

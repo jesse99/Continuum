@@ -401,8 +401,8 @@ namespace ObjectModel
 					string type = CsHelpers.GetAliasedName(p.ParameterType.FullName);
 					if (type == p.ParameterType.FullName)
 					{
-						type = DoTrimNamespace(type);
-						type = DoTrimGeneric(type);
+						type = CsHelpers.TrimNamespace(type);
+						type = CsHelpers.TrimGeneric(type);
 					}
 					builder.Append(type);
 					
@@ -416,46 +416,6 @@ namespace ObjectModel
 			}
 			
 			return builder.ToString();
-		}
-		
-		// System.Collections.Generic.IEnumerable`1<TSource>:System.Func`2<TSource,System.Boolean>
-		private string DoTrimNamespace(string type)
-		{
-			while (true)
-			{
-				int j = type.IndexOf('.');
-				if (j < 0)
-					break;
-					
-				int i = j;
-				while (i > 0 && char.IsLetter(type[i - 1]))
-					--i;
-					
-				type = type.Substring(0, i) + type.Substring(j + 1);
-			}
-			
-			return type;
-		}
-		
-		private string DoTrimGeneric(string type)
-		{
-			while (true)
-			{
-				int i = type.IndexOf('`');
-				if (i < 0)
-					break;
-					
-				int count = 1;
-				while (i + count < type.Length && char.IsDigit(type[i + count]))
-					++count;
-					
-				if (count > 1)
-				{
-					type = type.Substring(0, i) + type.Substring(i + count);
-				}
-			}
-			
-			return type;
 		}
 		
 		private void DoParseField(TypeDefinition type, FieldDefinition field, string hash, bool fullParse)		// threaded

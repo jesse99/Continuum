@@ -1,4 +1,4 @@
-// Copyright (C) 2008-2009 Jesse Jones
+// Copyright (C) 2009 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -20,31 +20,53 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
-using MCocoa;
+//using MCocoa;
+using Shared;
+//using System;
+//using System.Collections.Generic;
+//using System.Diagnostics;
+//using System.Globalization;
+//using System.Linq;
+//using System.Text;
 
-namespace Shared
+namespace AutoComplete
 {
-	// This is the primary interface for the text editor plugin.
-	public interface ITextEditor : IInterface
+	internal sealed class Annotation : IAnnotation
 	{
-		// Returns the full path to the file being edited. May be null if the document
-		// is not on disk.
-		string Path {get;}
+		public void Instantiated(Boss boss)
+		{
+			m_boss = boss;
+		}
 		
-		// If the line number is too large the last line will be shown.
-		// Insertion point will be col or the start of the line if col is -1.
-		// tabWidth is used for tools like gmcs which think tabs are 8 characters.
-		void ShowLine(int line, int col, int tabWidth);
+		public Boss Boss
+		{
+			get {return m_boss;}
+		}
 		
-		// Save any changes (if the document is on disk).
-		void Save();
+		public bool IsOpen
+		{
+			get {return m_annotation != null;}
+		}
 		
-		// Returns a new (and hidden) annotation window anchored to the specified
-		// character index.
-		ITextAnnotation GetAnnotation(int index);
+		public void Open(ITextAnnotation annotation)
+		{
+			if (m_annotation != null && m_annotation.Visible)
+				m_annotation.Visible = false;
+				
+			m_annotation = annotation;
+			
+			m_annotation.Visible = true;
+		}
 		
-		// Returns the location in window coordinates of the lower left corner of
-		// the character at index.
-		NSPoint GetCharacterPosition(int index);
+		public void Close()
+		{
+			m_annotation.Visible = false;
+			m_annotation = null;
+		}
+		
+		#region Fields
+		private Boss m_boss;
+		private ITextAnnotation m_annotation;
+		#endregion
 	}
 }

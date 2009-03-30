@@ -38,7 +38,7 @@
 				<int key="NSWindowStyleMask">9</int>
 				<int key="NSWindowBacking">2</int>
 				<string key="NSWindowRect">{{196, 355}, {356, 155}}</string>
-				<int key="NSWTFlags">1610617856</int>
+				<int key="NSWTFlags">536876032</int>
 				<string key="NSWindowTitle">Window</string>
 				<string key="NSWindowClass">CompletionsWindow</string>
 				<nil key="NSViewClass"/>

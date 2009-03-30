@@ -83,6 +83,7 @@ namespace AutoComplete
 		}
 		
 		private const int EnterKey = 0x4C;
+		private const int BackspaceKey = 0x35;
 		
 		public bool HandleKey(NSTextView view, NSEvent evt, IComputeRuns computer)
 		{
@@ -101,6 +102,15 @@ namespace AutoComplete
 				{
 					handled = DoComplete(this.DoCompleteExpression, view, range, computer);
 				}
+				else if (evt.keyCode() == BackspaceKey)
+				{
+					IAnnotation annotation = m_boss.Get<IAnnotation>();
+					if (annotation.IsOpen)
+					{
+						annotation.Close();
+						handled = true;
+					}
+				}
 			}
 			
 			return handled;
@@ -109,7 +119,7 @@ namespace AutoComplete
 		#region Private Methods
 		internal static Stopwatch Watch = new Stopwatch();
 		
-		private bool DoComplete(Func<NSTextView, NSRange, bool> completer, NSTextView view, NSRange range, IComputeRuns computer)
+		private bool DoComplete(Func<ITextEditor, NSTextView, NSRange, bool> completer, NSTextView view, NSRange range, IComputeRuns computer)
 		{
 			bool handled = false;
 			
@@ -119,14 +129,14 @@ namespace AutoComplete
 			DoUpdateCache(computer);
 			
 			if (!m_cachedCatalog.IsWithinComment(range.location) && !m_cachedCatalog.IsWithinString(range.location))
-				handled = completer(view, range);
+				handled = completer(m_boss.Get<ITextEditor>(), view, range);
 				
 			Watch.Reset();
 			
 			return handled;
 		}
 		
-		private bool DoCompleteTarget(NSTextView view, NSRange range)
+		private bool DoCompleteTarget(ITextEditor editor, NSTextView view, NSRange range)
 		{
 			CsGlobalNamespace globals = m_cachedGlobals.Get();
 			if (globals != null)
@@ -171,7 +181,7 @@ namespace AutoComplete
 					{
 						if (m_controller == null)	
 							m_controller = new CompletionsController();
-						m_controller.Show(view, type, members, 0, isInstance, isStatic);
+						m_controller.Show(m_boss.Get<ITextEditor>(), view, type, members, 0, isInstance, isStatic);
 					}
 				}
 				else
@@ -238,7 +248,7 @@ namespace AutoComplete
 			return count == 0 ? i : -1;
 		}
 		
-		private bool DoCompleteExpression(NSTextView view, NSRange range)
+		private bool DoCompleteExpression(ITextEditor editor, NSTextView view, NSRange range)
 		{
 			CsGlobalNamespace globals = m_cachedGlobals.Get();
 			if (globals != null)
@@ -268,7 +278,7 @@ namespace AutoComplete
 						if (m_controller == null)	
 							m_controller = new CompletionsController();
 							
-						m_controller.Show(view, target.First.FullName, members.ToArray(), prefixLen, target.First.IsInstance, target.First.IsStatic);
+						m_controller.Show(m_boss.Get<ITextEditor>(), view, target.First.FullName, members.ToArray(), prefixLen, target.First.IsInstance, target.First.IsStatic);
 					}
 				}
 			}
