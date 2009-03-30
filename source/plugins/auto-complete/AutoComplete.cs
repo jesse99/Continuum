@@ -81,10 +81,7 @@ namespace AutoComplete
 				}
 			}
 		}
-		
-		private const int EnterKey = 0x4C;
-		private const int BackspaceKey = 0x35;
-		
+				
 		public bool HandleKey(NSTextView view, NSEvent evt, IComputeRuns computer)
 		{
 			bool handled = false;
@@ -98,18 +95,15 @@ namespace AutoComplete
 				{
 					handled = DoComplete(this.DoCompleteTarget, view, range, computer);
 				}
-				else if (evt.keyCode() == EnterKey)
+				else if (evt.keyCode() == Constants.EnterKey)
 				{
 					handled = DoComplete(this.DoCompleteExpression, view, range, computer);
 				}
-				else if (evt.keyCode() == BackspaceKey)
+				
+				if (!handled)
 				{
 					IAnnotation annotation = m_boss.Get<IAnnotation>();
-					if (annotation.IsOpen)
-					{
-						annotation.Close();
-						handled = true;
-					}
+					handled = annotation.HandleKey(view, evt);
 				}
 			}
 			

@@ -53,8 +53,7 @@ might want a sample app
 		}
 		
 * Work on argument completion:
-	- close when call is closed
-	- use a shadow?
+	- build a new foreshadow
 	- probably should not auto-complete if text to the right of the dot can continue an
 	  identifier
 	- position using a LiveIndex class
@@ -66,7 +65,7 @@ might want a sample app
 	- method and arg names in bold
 	- current formal arg name in hilite color
 	- when comma is typed redraw (don't count commas within braces)
-	- make sure the annotation window gets cleaned up
+	- DoHandleArgKey should close the window only if the paren closes the method call
 	- click should drag the window:
 		` change cursor to a hand
 		` when dragging use the find hilite on the anchor
@@ -78,7 +77,7 @@ might want a sample app
 	- handle scrolling the main window
 	- handle edits in the main window (may need a LiveRange class)
 	- close when the window is deactivated?
-	- allow the window to be dragged
+	- tweak the back color
 	- animate show and hide?
 	- arg completion could filter on formal arg type
 * Work more on target completion:

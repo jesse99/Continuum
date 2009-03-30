@@ -20,7 +20,9 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using MCocoa;
 using Shared;
+using System;
 
 namespace AutoComplete
 {
@@ -28,7 +30,10 @@ namespace AutoComplete
 	{
 		bool IsOpen {get;}
 		
-		void Open(ITextAnnotation annotation);
+		void Open(ITextAnnotation annotation, Func<NSTextView, IAnnotation, NSEvent, bool> keyHandler);
+		
+		// Escape will close the window, otherwise keyHandler is called.
+		bool HandleKey(NSTextView view, NSEvent evt);
 		
 		void Close();
 	}

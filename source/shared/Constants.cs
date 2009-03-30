@@ -32,5 +32,7 @@ namespace Shared
 		public const string Escape = "\x001B";
 		public const string Delete = "\x007F";
 		
+		public const int EnterKey = 0x4C;
+		public const int EscapeKey = 0x35;
 	}
 }

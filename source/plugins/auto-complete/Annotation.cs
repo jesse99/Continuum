@@ -20,14 +20,9 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
-//using MCocoa;
+using MCocoa;
 using Shared;
-//using System;
-//using System.Collections.Generic;
-//using System.Diagnostics;
-//using System.Globalization;
-//using System.Linq;
-//using System.Text;
+using System;
 
 namespace AutoComplete
 {
@@ -48,25 +43,50 @@ namespace AutoComplete
 			get {return m_annotation != null;}
 		}
 		
-		public void Open(ITextAnnotation annotation)
+		public void Open(ITextAnnotation annotation, Func<NSTextView, IAnnotation, NSEvent, bool> keyHandler)
 		{
 			if (m_annotation != null && m_annotation.Visible)
 				m_annotation.Visible = false;
 				
 			m_annotation = annotation;
+			m_keyHandler = keyHandler;
 			
 			m_annotation.Visible = true;
+		}
+		
+		public bool HandleKey(NSTextView view, NSEvent evt)
+		{
+			bool handled = false;
+			
+			if (m_annotation != null)
+			{
+				if (evt.keyCode() == Constants.EscapeKey)
+				{
+					if (IsOpen)
+					{
+						Close();
+						handled = true;
+					}
+				}
+				
+				if (!handled && m_keyHandler != null)
+					handled = m_keyHandler(view, this, evt);
+			}
+			
+			return handled;
 		}
 		
 		public void Close()
 		{
 			m_annotation.Visible = false;
 			m_annotation = null;
+			m_keyHandler = null;
 		}
 		
 		#region Fields
 		private Boss m_boss;
 		private ITextAnnotation m_annotation;
+		private Func<NSTextView, IAnnotation, NSEvent, bool> m_keyHandler;
 		#endregion
 	}
 }

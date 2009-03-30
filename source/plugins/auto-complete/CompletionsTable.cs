@@ -189,7 +189,7 @@ namespace AutoComplete
 		}
 		
 		#region Private Methods
-		public void DoComplete(bool prefixOnly)
+		private void DoComplete(bool prefixOnly)
 		{
 			int row = selectedRow();
 			if (row >= 0)
@@ -224,14 +224,27 @@ namespace AutoComplete
 					annotation.String = DoGetAnnotateString(row);
 					
 					IAnnotation a = m_editor.Boss.Get<IAnnotation>();
-					a.Open(annotation);
+					a.Open(annotation, CompletionsTable.DoHandleArgKey);
 				}
 			}
 			else
 				Functions.NSBeep();
 		}
 		
-		public NSAttributedString DoGetAnnotateString(int row)
+		private static bool DoHandleArgKey(NSTextView view, IAnnotation annotation, NSEvent evt)
+		{
+			NSRange range = view.selectedRange();
+			
+			NSString chars = evt.characters();
+			if (range.length == 0 && chars.length() == 1 && chars[0] == ')')
+			{
+				annotation.Close();
+			}
+			
+			return false;
+		}
+		
+		private NSAttributedString DoGetAnnotateString(int row)
 		{
 			Member member = m_members[row];
 			
