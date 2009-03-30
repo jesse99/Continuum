@@ -99,13 +99,22 @@ namespace TextEditor
 			return result;
 		}
 		
-		public void Init(NSTextView text, NSPoint origin)
+		public void Init(ITextEditor editor, NSTextView text, int index)
 		{
+			m_editor = editor;
 			m_text = text;
-			m_origin = origin;
+			m_index = index;
 			m_view = this["view"].To<AnnotateView>();
 			
-			m_text.window().addChildWindow_ordered(this, Enums.NSWindowAbove);			
+			m_parent = m_text.window();
+			m_parent.addChildWindow_ordered(this, Enums.NSWindowAbove);
+			
+			NSNotificationCenter.defaultCenter().addObserver_selector_name_object(
+				this, "parentWillClose:", Externs.NSWindowWillCloseNotification, m_parent);
+			
+			m_text.superview().setPostsBoundsChangedNotifications(true);
+			NSNotificationCenter.defaultCenter().addObserver_selector_name_object(
+				this, "parentBoundsChanged:", Externs.NSViewBoundsDidChangeNotification, m_text.superview());
 		}
 		
 		public NSColor BackColor
@@ -138,46 +147,92 @@ namespace TextEditor
 			get {return isVisible();}
 			set
 			{
-				if (value)
-				{
-					orderFront(this);
-				}
-				else
-				{
-					m_text.window().removeChildWindow(this);	// need to do this or the orderOut/close affects the parent window
-					m_attrs.release();
-					close();
-					autorelease();
-				}
+				if (value != isVisible())
+					if (value)
+						orderFront(this);
+					else
+						DoClose();
 			}
 		}
 		
+		public void parentWillClose(NSObject data)
+		{
+			DoClose();
+		}
+				
+		public void parentBoundsChanged(NSObject data)
+		{
+			NSSize size = frame().size;
+			DoAdjustFrame(size);
+		}
+		
 		#region Private Methods
+		private void DoClose()
+		{
+			if (m_parent != null)
+			{
+				NSNotificationCenter.defaultCenter().removeObserver_name_object(
+					this, Externs.NSWindowWillCloseNotification, m_parent);
+				
+				NSNotificationCenter.defaultCenter().removeObserver_name_object(
+					this, Externs.NSViewFrameDidChangeNotification, m_text.superview());
+				
+				NSNotificationCenter.defaultCenter().removeObserver_name_object(
+					this, Externs.NSViewBoundsDidChangeNotification, m_text.superview());
+				
+				m_text.window().removeChildWindow(this);	// need to do this or the orderOut/close affects the parent window
+			}
+			
+			m_attrs.release();
+			close();
+			autorelease();
+		}
+		
 		private void DoSetString(NSAttributedString value)
 		{
-			DoAdjustFrame(value);
+			NSSize size = value.size();
+			size.width += 2*AnnotateView.LeftMargin;
+			
+			DoAdjustFrame(size);
 			m_view.SetText(value);
 			m_view.setNeedsDisplay(true);
 		}
 		
-		private void DoAdjustFrame(NSAttributedString text)
+		private void DoAdjustFrame(NSSize size)
 		{
-			NSSize size = text.size();
-			size.width += 2*AnnotateView.LeftMargin;
-			
 			// The origin is the bottom-left coordinate of the anchor character
 			// which should be the top-left of our window.
-			NSPoint origin = new NSPoint(m_origin.x, m_origin.y - size.height);
+			NSPoint origin = DoGetOrigin();
+			origin.y -= size.height;
 			NSRect rect = new NSRect(origin, size);
 			
-			setFrame_display(rect, false);			// this is in screen coordinates even though we are a child window
+			NSRect content = m_parent.contentRectForFrameRect(m_parent.frame());
+			if (content.Contains(rect))
+			{
+				setFrame_display(rect, false);			// this is in screen coordinates even though we are a child window
+			}
+			else
+			{
+				rect.origin.x -= 8000;
+				setFrame_display(rect, false);
+			}
+		}
+		
+		private NSPoint DoGetOrigin()
+		{
+			NSPoint origin = m_editor.GetCharacterPosition(m_index);
+			origin = m_parent.convertBaseToScreen(origin);
+			
+			return origin;
 		}
 		#endregion
 		
 		#region Fields
+		private ITextEditor m_editor;
+		private int m_index;
+		private NSWindow m_parent;
 		private NSTextView m_text;
 		private AnnotateView m_view;
-		private NSPoint m_origin;
 		private NSDictionary m_attrs;
 		#endregion
 	}

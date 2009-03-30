@@ -24,6 +24,7 @@ using MCocoa;
 using MObjc;
 using Shared;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 
@@ -40,14 +41,14 @@ namespace TextEditor
 		{
 			get {return m_boss;}
 		}
-
+		
 		// IWindow
 		public NSWindow Window
 		{
 			get {Trace.Assert(m_window != null, "window isn't set"); return m_window;}
 			set {Trace.Assert(value != null, "value is null"); Trace.Assert(m_window == null, "window isn't null"); m_window = (NSWindow) value;}
 		}
-
+		
 		// ITextEditor
 		public string Path
 		{
@@ -146,7 +147,7 @@ namespace TextEditor
 				view.zone());
 			if (!loaded)
 				throw new Exception("Couldn't load Annotation.nib");
-						
+			
 			Annotation window = null;
 			for (int i = 0; i < objects.count() && window == null; ++i)
 			{
@@ -156,10 +157,7 @@ namespace TextEditor
 			if (window != null)
 			{
 				NSRange selection = view.selectedRange();
-				NSPoint origin = GetCharacterPosition(selection.location);
-				origin = view.window().convertBaseToScreen(origin);
-				
-				window.Init(view, origin);
+				window.Init(this, view, selection.location);
 			}
 			else
 				throw new Exception("Couldn't get the Annotation window from the nib.");

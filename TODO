@@ -53,16 +53,14 @@ might want a sample app
 		}
 		
 * Work on argument completion:
-	- build a new foreshadow
-	- probably should not auto-complete if text to the right of the dot can continue an
-	  identifier
-	- position using a LiveIndex class
-		` Shared has an abstract base class
-		` some text interface returns instances
-		` should have a Valid property (false if the range has been deleted)
+	- use a LiveRange class
+		` ITextEditor returns instances
+		` need to maintain a weak list of LiveIndex's for update purposes
 		` need a GetPosition method on IText or something, should return -1 if
 		   the index is not visible
-	- method and arg names in bold
+		` make sure the window position is updated when the text window is edited
+		` make sure the window goes away if the anchor is deleted (or modified?)
+	- make sure text objects are still going away
 	- current formal arg name in hilite color
 	- when comma is typed redraw (don't count commas within braces)
 	- DoHandleArgKey should close the window only if the paren closes the method call
@@ -74,15 +72,11 @@ might want a sample app
 		   NSShowAnimationEffect poof animation
 	- may want a context menu: close, show overloads, open, find on site
 	- need to handle nested calls
-	- handle scrolling the main window
-	- handle edits in the main window (may need a LiveRange class)
-	- close when the window is deactivated?
 	- tweak the back color
-	- animate show and hide?
 	- arg completion could filter on formal arg type
 * Work more on target completion:
-	- quickly typing a comment does arg completion, adding a period on the end seems
-	   to fail too
+	- check for completion within a comment doesn't appear to be working
+	- also make sure string literals don't complete
 	- doesn't work with IBOutlet<T>.Value
 	- get ctor calls completing: enter with new PartialTypeName
 	- ctor completion should work with dotted names
@@ -110,6 +104,8 @@ might want a sample app
 		` find on site
 		` open file
 		` complete
+	- probably should not auto-complete if text to the right of the dot can continue an
+	  identifier
 	- need to work with namespace aliases
 	- get target working with array indexing, eg data[foo], also indexers
 	- prune value type members when completing args
@@ -162,8 +158,18 @@ might want a sample app
    on the external drive?
 * Build errors should use annotations.
 * Last ignored target isn't ignored?
+* Get gear unit test working.
 * Short form should not show internal members for mscorlib or gac assemblies.
 * Short form should have a separate section for operators (see DateTime).
+* Look at NSObject leaks again:
+	- try the mono profilers again
+	- might also want to look at the new performance counters
+	- make sure the little objects like strings aren't being leaked
+	- may want to add a debug flag to NSObject so it can store stack traces
+	- text windows
+	- editor windows
+	- method completion window
+	- argument completion window
 * Should spell check comments
 	- types and members should count as valid words
 * Why doesn't WeakReference short form put ctors in bold?
