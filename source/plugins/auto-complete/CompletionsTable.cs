@@ -222,60 +222,13 @@ namespace AutoComplete
 				{
 					range.length = text.Length;
 					ITextAnnotation annotation = m_editor.GetAnnotation(range);
-					annotation.String = DoGetAnnotateString(row);
 					
-					IAnnotation a = m_editor.Boss.Get<IAnnotation>();
-					a.Open(annotation, CompletionsTable.DoHandleArgKey);
+					IArgsAnnotation args = m_editor.Boss.Get<IArgsAnnotation>();
+					args.Open(annotation, m_members[row]);
 				}
 			}
 			else
 				Functions.NSBeep();
-		}
-		
-		private static bool DoHandleArgKey(NSTextView view, IAnnotation annotation, NSEvent evt)
-		{
-			NSRange range = view.selectedRange();
-			
-			NSString chars = evt.characters();
-			if (range.length == 0 && chars.length() == 1 && chars[0] == ')')
-			{
-				annotation.Close();
-			}
-			
-			return false;
-		}
-		
-		private NSAttributedString DoGetAnnotateString(int row)
-		{
-			Member member = m_members[row];
-			
-			string rtype = CsHelpers.GetAliasedName(m_members[row].Type);
-			rtype = CsHelpers.TrimNamespace(rtype);
-			rtype = CsHelpers.TrimGeneric(rtype);
-			string text = rtype + " " + m_members[row].Text;
-			
-			var str = NSMutableAttributedString.Create(text);
-			
-			int i = rtype.Length + member.Text.IndexOf('(');
-			DoMakeBold(str, rtype.Length + 1, i - (rtype.Length + 1));
-			
-			for (int j = 0; j < m_members[row].ArgNames.Length; ++j)
-			{
-				int k;
-				if (j + 1 < m_members[row].ArgNames.Length)
-					k = text.IndexOf(m_members[row].ArgNames[j] + ',');
-				else
-					k = text.IndexOf(m_members[row].ArgNames[j] + ')');
-				DoMakeBold(str, k, m_members[row].ArgNames[j].Length);
-			}
-			
-			return str;
-		}
-		
-		private void DoMakeBold(NSMutableAttributedString str, int index, int length)
-		{
-			NSRange range = new NSRange(index, length);
-			str.addAttribute_value_range(Externs.NSStrokeWidthAttributeName, NSNumber.Create(-3.0f), range);
 		}
 		
 		private void DoGetInsertText(int row, bool prefixOnly, out string text, out NSRange range)

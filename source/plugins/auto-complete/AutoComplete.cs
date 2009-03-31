@@ -102,7 +102,7 @@ namespace AutoComplete
 				
 				if (!handled)
 				{
-					IAnnotation annotation = m_boss.Get<IAnnotation>();
+					var annotation = m_boss.Get<IArgsAnnotation>();
 					handled = annotation.HandleKey(view, evt);
 				}
 			}

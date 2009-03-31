@@ -26,11 +26,11 @@ using System;
 
 namespace AutoComplete
 {
-	internal interface IAnnotation : IInterface
+	internal interface IArgsAnnotation : IInterface
 	{
 		bool IsOpen {get;}
 		
-		void Open(ITextAnnotation annotation, Func<NSTextView, IAnnotation, NSEvent, bool> keyHandler);
+		void Open(ITextAnnotation annotation, Member member);
 		
 		// Escape will close the window, otherwise keyHandler is called.
 		bool HandleKey(NSTextView view, NSEvent evt);

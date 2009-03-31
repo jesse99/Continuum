@@ -26,7 +26,7 @@ using System;
 
 namespace AutoComplete
 {
-	internal sealed class Annotation : IAnnotation
+	internal sealed class ArgsAnnotation : IArgsAnnotation
 	{
 		public void Instantiated(Boss boss)
 		{
@@ -43,13 +43,14 @@ namespace AutoComplete
 			get {return m_annotation != null;}
 		}
 		
-		public void Open(ITextAnnotation annotation, Func<NSTextView, IAnnotation, NSEvent, bool> keyHandler)
+		public void Open(ITextAnnotation annotation, Member member)
 		{
 			if (m_annotation != null && m_annotation.Visible)
 				m_annotation.Visible = false;
 				
 			m_annotation = annotation;
-			m_keyHandler = keyHandler;
+			m_member = member;
+			m_annotation.String = DoBuildString();
 			
 			m_annotation.Visible = true;
 		}
@@ -69,8 +70,16 @@ namespace AutoComplete
 					}
 				}
 				
-				if (!handled && m_keyHandler != null)
-					handled = m_keyHandler(view, this, evt);
+				if (!handled)
+				{
+					NSRange range = view.selectedRange();
+					
+					NSString chars = evt.characters();
+					if (range.length == 0 && chars.length() == 1 && chars[0] == ')')
+					{
+						Close();
+					}
+				}
 			}
 			
 			return handled;
@@ -80,13 +89,45 @@ namespace AutoComplete
 		{
 			m_annotation.Visible = false;
 			m_annotation = null;
-			m_keyHandler = null;
 		}
+		
+		#region Private Methods
+		private NSAttributedString DoBuildString()
+		{
+			string rtype = CsHelpers.GetAliasedName(m_member.Type);
+			rtype = CsHelpers.TrimNamespace(rtype);
+			rtype = CsHelpers.TrimGeneric(rtype);
+			string text = rtype + " " + m_member.Text;
+			
+			var str = NSMutableAttributedString.Create(text);
+			
+			int i = rtype.Length + m_member.Text.IndexOf('(');
+			DoMakeBold(str, rtype.Length + 1, i - (rtype.Length + 1));
+			
+			for (int j = 0; j < m_member.ArgNames.Length; ++j)
+			{
+				int k;
+				if (j + 1 < m_member.ArgNames.Length)
+					k = text.IndexOf(m_member.ArgNames[j] + ',');
+				else
+					k = text.IndexOf(m_member.ArgNames[j] + ')');
+				DoMakeBold(str, k, m_member.ArgNames[j].Length);
+			}
+			
+			return str;
+		}
+		
+		private void DoMakeBold(NSMutableAttributedString str, int index, int length)
+		{
+			NSRange range = new NSRange(index, length);
+			str.addAttribute_value_range(Externs.NSStrokeWidthAttributeName, NSNumber.Create(-5.0f), range);
+		}
+		#endregion
 		
 		#region Fields
 		private Boss m_boss;
 		private ITextAnnotation m_annotation;
-		private Func<NSTextView, IAnnotation, NSEvent, bool> m_keyHandler;
+		private Member m_member;
 		#endregion
 	}
 }

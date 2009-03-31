@@ -56,9 +56,11 @@ might want a sample app
 
 
 * Work on argument completion:
-	- need to push the window down a few pixels (should cover the next line)
-	- current formal arg name in hilite color
+	- hilite the current argument (use dumb arg counting code)
+	- would be nice of method targets worked when not chaining
+	- use smarter arg counting code
 	- when comma is typed redraw (don't count commas within braces)
+	- ITextAnnotation isn't completing?
 	- DoHandleArgKey should close the window only if the paren closes the method call
 	- click should drag the window:
 		` change cursor to a hand
@@ -69,7 +71,6 @@ might want a sample app
 	- may want a context menu: close, show overloads, open, find on site
 	- need to handle nested calls
 	- tweak the back color
-	- would be nice of method targets worked when not chaining
 	- arg completion could filter on formal arg type
 * Work more on target completion:
 	- check for completion within a comment doesn't appear to be working
