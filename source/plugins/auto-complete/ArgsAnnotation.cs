@@ -50,6 +50,7 @@ namespace AutoComplete
 				
 			m_annotation = annotation;
 			m_member = member;
+			m_currentArg = 0;
 			m_annotation.String = DoBuildString();
 			
 			m_annotation.Visible = true;
@@ -75,9 +76,17 @@ namespace AutoComplete
 					NSRange range = view.selectedRange();
 					
 					NSString chars = evt.characters();
-					if (range.length == 0 && chars.length() == 1 && chars[0] == ')')
+					if (range.length == 0 && chars.length() == 1)
 					{
-						Close();
+						if (chars[0] == ')')
+						{
+							Close();
+						}
+						else if (chars[0] == ',')
+						{
+							++m_currentArg;
+							m_annotation.String = DoBuildString();
+						}
 					}
 				}
 			}
@@ -99,28 +108,30 @@ namespace AutoComplete
 			rtype = CsHelpers.TrimGeneric(rtype);
 			string text = rtype + " " + m_member.Text;
 			
-			var str = NSMutableAttributedString.Create(text);
-			
-			int i = rtype.Length + m_member.Text.IndexOf('(');
-			DoMakeBold(str, rtype.Length + 1, i - (rtype.Length + 1));
-			
+			var str = NSMutableAttributedString.Create(text);			
 			for (int j = 0; j < m_member.ArgNames.Length; ++j)
 			{
-				int k;
-				if (j + 1 < m_member.ArgNames.Length)
-					k = text.IndexOf(m_member.ArgNames[j] + ',');
-				else
-					k = text.IndexOf(m_member.ArgNames[j] + ')');
-				DoMakeBold(str, k, m_member.ArgNames[j].Length);
+				if (j == m_currentArg)
+				{
+					int k;
+					if (j + 1 < m_member.ArgNames.Length)
+						k = text.IndexOf(m_member.ArgNames[j] + ',');
+					else
+						k = text.IndexOf(m_member.ArgNames[j] + ')');
+					
+					DoHilite(str, k, m_member.ArgNames[j].Length);
+				}
 			}
 			
 			return str;
 		}
 		
-		private void DoMakeBold(NSMutableAttributedString str, int index, int length)
+		// Not sure if it would be better to use but NSForegroundColorAttributeName
+		// isn't working for some reason.
+		private void DoHilite(NSMutableAttributedString str, int index, int length)
 		{
 			NSRange range = new NSRange(index, length);
-			str.addAttribute_value_range(Externs.NSStrokeWidthAttributeName, NSNumber.Create(-5.0f), range);
+			str.addAttribute_value_range(Externs.NSStrokeWidthAttributeName, NSNumber.Create(-4.0f), range);
 		}
 		#endregion
 		
@@ -128,6 +139,7 @@ namespace AutoComplete
 		private Boss m_boss;
 		private ITextAnnotation m_annotation;
 		private Member m_member;
+		private int m_currentArg;
 		#endregion
 	}
 }
