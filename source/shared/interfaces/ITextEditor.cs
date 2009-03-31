@@ -45,8 +45,8 @@ namespace Shared
 		// character range.
 		ITextAnnotation GetAnnotation(NSRange range);
 		
-		// Returns the location in window coordinates of the lower left corner of
-		// the character at index.
-		NSPoint GetCharacterPosition(int index);
+		// Returns a rectangle in window coordinates that encloses the characters
+		// in the range.
+		NSRect GetBoundingBox(NSRange range);
 	}
 }

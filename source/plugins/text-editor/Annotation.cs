@@ -77,8 +77,15 @@ namespace TextEditor
 		private Annotation(IntPtr obj) : base(obj)
 		{
 			var dict = NSMutableDictionary.Create();
-			dict.setObject_forKey(NSFont.labelFontOfSize(12.0f), Externs.NSFontAttributeName);
 			dict.setObject_forKey(NSColor.blackColor(), Externs.NSForegroundColorAttributeName);
+			
+			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
+			NSString fontName = defaults.stringForKey(NSString.Create("text default font name"));
+			float ptSize = defaults.floatForKey(NSString.Create("text default font size"));
+			if (!NSObject.IsNullOrNil(fontName))
+				dict.setObject_forKey(NSFont.fontWithName_size(fontName, ptSize), Externs.NSFontAttributeName);
+			else
+				dict.setObject_forKey(NSFont.labelFontOfSize(12.0f), Externs.NSFontAttributeName);
 			
 			m_attrs = dict.Retain();
 		}
@@ -184,24 +191,28 @@ namespace TextEditor
 		
 		private void DoClose()
 		{
-			if (m_parent != null)
+			if (m_attrs != null)
 			{
-				NSNotificationCenter.defaultCenter().removeObserver_name_object(
-					this, Externs.NSWindowWillCloseNotification, m_parent);
+				if (m_parent != null)
+				{
+					NSNotificationCenter.defaultCenter().removeObserver_name_object(
+						this, Externs.NSWindowWillCloseNotification, m_parent);
+					
+					NSNotificationCenter.defaultCenter().removeObserver_name_object(
+						this, Externs.NSViewFrameDidChangeNotification, m_text.superview());
+					
+					NSNotificationCenter.defaultCenter().removeObserver_name_object(
+						this, Externs.NSViewBoundsDidChangeNotification, m_text.superview());
+					
+					m_text.window().removeChildWindow(this);	// need to do this or the orderOut/close affects the parent window
+					m_parent = null;
+				}
 				
-				NSNotificationCenter.defaultCenter().removeObserver_name_object(
-					this, Externs.NSViewFrameDidChangeNotification, m_text.superview());
-				
-				NSNotificationCenter.defaultCenter().removeObserver_name_object(
-					this, Externs.NSViewBoundsDidChangeNotification, m_text.superview());
-				
-				m_text.window().removeChildWindow(this);	// need to do this or the orderOut/close affects the parent window
-				m_parent = null;
+				m_attrs.release();
+				close();
+				autorelease();
+				m_attrs = null;
 			}
-			
-			m_attrs.release();
-			close();
-			autorelease();
 		}
 		
 		private void DoSetString(NSAttributedString value)
@@ -236,8 +247,8 @@ namespace TextEditor
 		
 		private NSPoint DoGetOrigin()
 		{
-			NSPoint origin = m_editor.GetCharacterPosition(m_range.Index);
-			origin = m_parent.convertBaseToScreen(origin);
+			NSRect bbox = m_editor.GetBoundingBox(new NSRange(m_range.Index, m_range.Length));
+			NSPoint origin = m_parent.convertBaseToScreen(bbox.origin);
 			
 			return origin;
 		}

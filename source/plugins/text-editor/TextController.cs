@@ -236,11 +236,17 @@ namespace TextEditor
 			
 			if (Path != null)
 			{
-				NSRect frame = window().frame();
-				int length = (int) m_textView.Value.string_().length();
-				NSPoint scrollers = m_scrollView.Value.contentView().bounds().origin;
-				NSRange selection = m_textView.Value.selectedRange();
-				WindowDatabase.Set(Path, frame, length, scrollers, selection);
+				// If the document has changes but is not being saved then we don't
+				// want to persist this information because it will likely be wrong when
+				// the old text is loaded.
+				if (!document().isDocumentEdited())
+				{
+					NSRect frame = window().frame();
+					int length = (int) m_textView.Value.string_().length();
+					NSPoint scrollers = m_scrollView.Value.contentView().bounds().origin;
+					NSRange selection = m_textView.Value.selectedRange();
+					WindowDatabase.Set(Path, frame, length, scrollers, selection);
+				}
 				
 				if (Path.Contains("/var/") && Path.Contains("/-Tmp-/"))		// TODO: seems kind of fragile
 					DoDeleteFile(Path);

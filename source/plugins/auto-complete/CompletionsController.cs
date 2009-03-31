@@ -44,7 +44,7 @@ namespace AutoComplete
 		public void Show(ITextEditor editor, NSTextView text, string type, Member[] names, int prefixLen, bool isInstance, bool isStatic)
 		{
 			var wind = (CompletionsWindow) window();
-			NSPoint loc = editor.GetCharacterPosition(text.selectedRange().location);
+			NSPoint loc = editor.GetBoundingBox(text.selectedRange()).origin;
 			wind.SetLoc(loc);
 			
 			string defaultLabel = type;

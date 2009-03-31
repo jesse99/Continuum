@@ -51,10 +51,11 @@ might want a sample app
 			
 			text = builder.ToString();
 		}
-		
+
+
+
+
 * Work on argument completion:
-	- checkin mcocoa too
-	- use the default text font
 	- need to push the window down a few pixels (should cover the next line)
 	- current formal arg name in hilite color
 	- when comma is typed redraw (don't count commas within braces)
@@ -68,6 +69,7 @@ might want a sample app
 	- may want a context menu: close, show overloads, open, find on site
 	- need to handle nested calls
 	- tweak the back color
+	- would be nice of method targets worked when not chaining
 	- arg completion could filter on formal arg type
 * Work more on target completion:
 	- check for completion within a comment doesn't appear to be working
@@ -152,7 +154,8 @@ might want a sample app
 * Shouldn't open selection prefer local files? If so, why is it finding those plus those
    on the external drive?
 * Build errors should use annotations.
-* Should put databases in ~/Library/Caches.
+* Should put databases in ~/Library/Caches. Note that time machine skips this
+   directory. See /System/Library/CoreServices/backupd.bundle/Contents/Resources/StdExclusions.plist
 * Last ignored target isn't ignored?
 * Get gear unit test working.
 * Short form should not show internal members for mscorlib or gac assemblies.

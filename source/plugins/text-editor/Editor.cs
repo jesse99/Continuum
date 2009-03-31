@@ -27,6 +27,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Runtime.InteropServices;
 
 namespace TextEditor
 {
@@ -172,32 +173,39 @@ namespace TextEditor
 			return window;
 		}
 		
-		// TODO: this isn't quite right. We want the base line of the line the glyph is in
-		// not the base line of the glyph itself. There doesn't seem to be a good way to
-		// get this though so we may need to do something silly like get the glyphs for
-		// several characters and use the one with the smallest bottom edge.
-		public NSPoint GetCharacterPosition(int index)
+		public NSRect GetBoundingBox(NSRange range)
 		{
 			TextController controller = (TextController) m_window.windowController();
 			NSTextView view = controller.TextView;
-			
-			// Get the lower left corner for the character at the selection.
 			NSLayoutManager layout = view.layoutManager();
-			uint gindex = layout.glyphIndexForCharacterAtIndex((uint) index);
 			
-			NSRange erange;
-			NSRect fragmentRect = layout.lineFragmentRectForGlyphAtIndex_effectiveRange(gindex, out erange);
-			NSPoint pos = fragmentRect.origin;
+			// Get all of the rectangles in the range.
+			IntPtr nr = Marshal.AllocHGlobal(4);
+			IntPtr p = layout.rectArrayForCharacterRange_withinSelectedCharacterRange_inTextContainer_rectCount(
+				range,													// charRange
+				new NSRange(Enums.NSNotFound, 0),		// selCharRange
+				view.textContainer(), 								// container
+				nr);														// numRects
+			uint numRects = (uint) Marshal.PtrToStructure(nr, typeof(uint));
+			Marshal.FreeHGlobal(nr);
+			
+			// Get the union in container coordinates.
+			NSRect result = NSRect.Empty;
+			for (uint i = 0; i < numRects; ++i)
+			{
+				IntPtr ptr = new IntPtr(p.ToInt64() + 16*i);
+				NSRect r = (NSRect) Marshal.PtrToStructure(ptr, typeof(NSRect));
+				
+				result = result.Union(r);
+			}
 			
 			// Translate to view coordinates.
-			NSPoint origin = layout.locationForGlyphAtIndex(gindex);
-			pos.x += origin.x;
-			pos.y += origin.y;
+			result.origin += view.textContainerOrigin();
 			
 			// Translate to window coordinates.
-			pos = view.convertPointToBase(pos);
+			result = view.convertRectToBase(result);
 			
-			return pos;
+			return result;
 		}
 		
 		// IReload
