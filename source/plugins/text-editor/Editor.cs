@@ -130,7 +130,17 @@ namespace TextEditor
 			}
 		}
 		
-		public ITextAnnotation GetAnnotation(int index)
+		public LiveRange GetRange(NSRange range)
+		{
+			ConcreteLiveRange clr = new ConcreteLiveRange(m_boss, range.location, range.length);
+
+			TextController controller = (TextController) m_window.windowController();
+			controller.RegisterRange(clr);
+			
+			return clr;
+		}
+		
+		public ITextAnnotation GetAnnotation(NSRange range)
 		{
 			TextController controller = (TextController) m_window.windowController();
 			NSTextView view = controller.TextView;
@@ -155,10 +165,7 @@ namespace TextEditor
 			}
 			
 			if (window != null)
-			{
-				NSRange selection = view.selectedRange();
-				window.Init(this, view, selection.location);
-			}
+				window.Init(this, view, GetRange(range));
 			else
 				throw new Exception("Couldn't get the Annotation window from the nib.");
 			

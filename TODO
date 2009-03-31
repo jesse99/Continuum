@@ -53,14 +53,9 @@ might want a sample app
 		}
 		
 * Work on argument completion:
-	- use a LiveRange class
-		` ITextEditor returns instances
-		` need to maintain a weak list of LiveIndex's for update purposes
-		` need a GetPosition method on IText or something, should return -1 if
-		   the index is not visible
-		` make sure the window position is updated when the text window is edited
-		` make sure the window goes away if the anchor is deleted (or modified?)
-	- make sure text objects are still going away
+	- checkin mcocoa too
+	- use the default text font
+	- need to push the window down a few pixels (should cover the next line)
 	- current formal arg name in hilite color
 	- when comma is typed redraw (don't count commas within braces)
 	- DoHandleArgKey should close the window only if the paren closes the method call
@@ -157,6 +152,7 @@ might want a sample app
 * Shouldn't open selection prefer local files? If so, why is it finding those plus those
    on the external drive?
 * Build errors should use annotations.
+* Should put databases in ~/Library/Caches.
 * Last ignored target isn't ignored?
 * Get gear unit test working.
 * Short form should not show internal members for mscorlib or gac assemblies.

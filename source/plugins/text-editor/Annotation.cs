@@ -73,9 +73,7 @@ namespace TextEditor
 
 	[ExportClass("Annotation", "NSWindow", Outlets = "view")]
 	internal sealed class Annotation : NSWindow, ITextAnnotation
-	{
-		// TODO: finalizer removes reference?
-		
+	{		
 		private Annotation(IntPtr obj) : base(obj)
 		{
 			var dict = NSMutableDictionary.Create();
@@ -99,11 +97,11 @@ namespace TextEditor
 			return result;
 		}
 		
-		public void Init(ITextEditor editor, NSTextView text, int index)
+		public void Init(ITextEditor editor, NSTextView text, LiveRange range)
 		{
 			m_editor = editor;
 			m_text = text;
-			m_index = index;
+			m_range = range;
 			m_view = this["view"].To<AnnotateView>();
 			
 			m_parent = m_text.window();
@@ -115,6 +113,8 @@ namespace TextEditor
 			m_text.superview().setPostsBoundsChangedNotifications(true);
 			NSNotificationCenter.defaultCenter().addObserver_selector_name_object(
 				this, "parentBoundsChanged:", Externs.NSViewBoundsDidChangeNotification, m_text.superview());
+			
+			m_range.Changed += this.DoRangeChanged;
 		}
 		
 		public NSColor BackColor
@@ -144,9 +144,11 @@ namespace TextEditor
 		
 		public bool Visible
 		{
-			get {return isVisible();}
+			get {return m_parent != null && isVisible();}
 			set
 			{
+				Trace.Assert(m_parent != null, "m_parent is null");
+				
 				if (value != isVisible())
 					if (value)
 						orderFront(this);
@@ -159,7 +161,7 @@ namespace TextEditor
 		{
 			DoClose();
 		}
-				
+		
 		public void parentBoundsChanged(NSObject data)
 		{
 			NSSize size = frame().size;
@@ -167,6 +169,19 @@ namespace TextEditor
 		}
 		
 		#region Private Methods
+		private void DoRangeChanged(object sender, EventArgs e)
+		{
+			if (m_range.IsValid)
+			{
+				NSSize size = frame().size;
+				DoAdjustFrame(size);
+			}
+			else
+			{
+				DoClose();
+			}
+		}
+		
 		private void DoClose()
 		{
 			if (m_parent != null)
@@ -181,6 +196,7 @@ namespace TextEditor
 					this, Externs.NSViewBoundsDidChangeNotification, m_text.superview());
 				
 				m_text.window().removeChildWindow(this);	// need to do this or the orderOut/close affects the parent window
+				m_parent = null;
 			}
 			
 			m_attrs.release();
@@ -220,7 +236,7 @@ namespace TextEditor
 		
 		private NSPoint DoGetOrigin()
 		{
-			NSPoint origin = m_editor.GetCharacterPosition(m_index);
+			NSPoint origin = m_editor.GetCharacterPosition(m_range.Index);
 			origin = m_parent.convertBaseToScreen(origin);
 			
 			return origin;
@@ -229,7 +245,7 @@ namespace TextEditor
 		
 		#region Fields
 		private ITextEditor m_editor;
-		private int m_index;
+		private LiveRange m_range;
 		private NSWindow m_parent;
 		private NSTextView m_text;
 		private AnnotateView m_view;

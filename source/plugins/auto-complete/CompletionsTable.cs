@@ -220,7 +220,8 @@ namespace AutoComplete
 				
 				if (!prefixOnly && m_members[row].ArgNames.Length > 0)
 				{
-					ITextAnnotation annotation = m_editor.GetAnnotation(range.location);
+					range.length = text.Length;
+					ITextAnnotation annotation = m_editor.GetAnnotation(range);
 					annotation.String = DoGetAnnotateString(row);
 					
 					IAnnotation a = m_editor.Boss.Get<IAnnotation>();

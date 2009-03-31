@@ -185,10 +185,15 @@ namespace TextEditor
 		// how many lines there are until this happens).
 		public void layoutManager_didCompleteLayoutForTextContainer_atEnd(NSLayoutManager mgr, NSTextContainer container, bool atEnd)
 		{
-			if (atEnd && m_finishedStyling && !m_opened && !m_scrolled && !m_closed)
+			if (!m_closed)
 			{
-				DoRestoreView();
-				m_opened = true;
+				if (atEnd && m_finishedStyling && !m_opened && !m_scrolled)
+				{
+					DoRestoreView();
+					m_opened = true;
+				}
+				
+				DoFireRanges();
 			}
 		}
 		
@@ -566,6 +571,17 @@ namespace TextEditor
 			get {return m_editCount;}
 		}
 		
+		public void RegisterRange(ConcreteLiveRange range)
+		{
+			m_ranges.Add(new WeakReference(range));
+		}
+		
+		// editedRange is the range of the new text. For example if a character
+		// is typed it will be the range of the new character, if text is pasted it
+		// will be the range of the inserted text.
+		//
+		// changeInLength is the difference in length between the old selection
+		// and the new text.
 		public void textStorageDidProcessEditing(NSObject notification)
 		{
 			NSTextStorage storage = m_textView.Value.textStorage();
@@ -577,16 +593,18 @@ namespace TextEditor
 				string text = Text;										// TODO: this is slow for very large files
 				
 				NSRange range = storage.editedRange();
+				int lengthChange = storage.changeInLength();
 				
 				if (m_computer != null)
 					m_styler.Queue(m_computer, this.DoStylerFinished);
 				
 				DoUpdateLineLabel(text);
+				DoUpdateRanges(range, lengthChange);
 				m_applier.EditedRange(range);
 				
 				if (m_userEdit)
 				{
-					Broadcaster.Invoke("text range changed", Tuple.Make(Path, range, storage.changeInLength()));
+					Broadcaster.Invoke("text range changed", Tuple.Make(Path, range, lengthChange));
 					
 					// Let people who care know if the number of lines has changed
 					// (e.g. so build errors can be fixed up).
@@ -619,7 +637,7 @@ namespace TextEditor
 					}
 					
 					// Auto-indent new lines.
-					if (range.length == 1 && text[range.location] == '\n' && storage.changeInLength() > 0)
+					if (range.length == 1 && text[range.location] == '\n' && lengthChange > 0)
 					{
 						int i = range.location - 1;
 						while (i > 0 && text[i] != '\n')
@@ -836,6 +854,42 @@ namespace TextEditor
 			m_lineLabel.Value.setTitle(NSString.Create(label));
 		}
 		
+		private void DoUpdateRanges(NSRange edited, int lengthChange)
+		{
+			NSRange affectedRange = new NSRange(edited.location, edited.length - lengthChange);
+			for (int i = m_ranges.Count - 1; i >= 0; --i)
+			{
+				ConcreteLiveRange range = m_ranges[i].Target as ConcreteLiveRange;
+				if (range != null)
+				{
+					if (affectedRange.location + affectedRange.length < range.Index)
+					{
+						range.Reset(range.Index + lengthChange);
+					}
+					else if (affectedRange.Intersects(new NSRange(range.Index, range.Length)))
+					{
+						range.Reset(-1);
+					}
+				}
+				else
+				{
+					m_ranges.RemoveAt(i);
+				}
+			}
+		}
+		
+		private void DoFireRanges()
+		{
+			for (int i = m_ranges.Count - 1; i >= 0; --i)
+			{
+				ConcreteLiveRange range = m_ranges[i].Target as ConcreteLiveRange;
+				if (range != null)
+					range.LayoutCompleted();
+				else
+					m_ranges.RemoveAt(i);
+			}
+		}
+		
 		private void DoDirChanged(object sender, DirectoryWatcherEventArgs e)
 		{
 			foreach (string path in e.Paths)
@@ -887,6 +941,7 @@ namespace TextEditor
 		private bool m_opened;
 		private bool m_closed;
 		private bool m_scrolled;
+		private List<WeakReference> m_ranges = new List<WeakReference>();
 		
 		public static WarningWindow ms_warning;
 		#endregion
