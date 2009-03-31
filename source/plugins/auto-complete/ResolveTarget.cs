@@ -221,7 +221,7 @@ namespace AutoComplete
 			
 			if (target == "this" || target == "<this>")
 			{
-				if (member != null)
+				if (member != null && (member.Modifiers & MemberModifiers.Static) == 0)
 				{
 					bool isInstance = (member.Modifiers & MemberModifiers.Static) == 0;
 					bool isStatic = target == "<this>";

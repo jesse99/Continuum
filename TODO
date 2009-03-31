@@ -54,14 +54,15 @@ might want a sample app
 
 
 
-
 * Work on argument completion:
-	- hilite the current argument (use dumb arg counting code)
-	- would be nice of method targets worked when not chaining
-	- use smarter arg counting code
-	- when comma is typed redraw (don't count commas within braces)
-	- ITextAnnotation isn't completing?
+	- shift the window down if a return is added
+	- don't count commas in braces
+	- would be nice if method targets worked when not chaining
+	- complete args even when nested methods are used
+	- NSRect.Bottom isn't completing
+	- LiveRange and ITextAnnotation aren't completing
 	- DoHandleArgKey should close the window only if the paren closes the method call
+	- build a new foreshadow
 	- click should drag the window:
 		` change cursor to a hand
 		` when dragging use the find hilite on the anchor
@@ -102,8 +103,6 @@ might want a sample app
 		` find on site
 		` open file
 		` complete
-	- probably should not auto-complete if text to the right of the dot can continue an
-	  identifier
 	- need to work with namespace aliases
 	- get target working with array indexing, eg data[foo], also indexers
 	- prune value type members when completing args

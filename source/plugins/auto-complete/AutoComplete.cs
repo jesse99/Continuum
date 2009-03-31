@@ -117,15 +117,21 @@ namespace AutoComplete
 		{
 			bool handled = false;
 			
-			Watch.Start();
-			Log.WriteLine("AutoComplete", "starting auto-complete");
-			
-			DoUpdateCache(computer);
-			
-			if (!m_cachedCatalog.IsWithinComment(range.location) && !m_cachedCatalog.IsWithinString(range.location))
-				handled = completer(m_boss.Get<ITextEditor>(), view, range);
+			string text = m_boss.Get<IText>().Text;
+			if (range.location >= text.Length || !CsHelpers.CanStartIdentifier(text[range.location]))
+			{
+				Watch.Start();
+				Log.WriteLine("AutoComplete", "starting auto-complete");
 				
-			Watch.Reset();
+				DoUpdateCache(computer);
+				
+				if (!m_cachedCatalog.IsWithinComment(range.location) && !m_cachedCatalog.IsWithinString(range.location))
+				{
+					handled = completer(m_boss.Get<ITextEditor>(), view, range);
+				}
+				
+				Watch.Reset();
+			}
 			
 			return handled;
 		}

@@ -154,13 +154,16 @@ namespace TextEditor
 			get {return m_parent != null && isVisible();}
 			set
 			{
-				Trace.Assert(m_parent != null, "m_parent is null");
+				Trace.Assert(m_parent != null || !value, "m_parent is null");
 				
-				if (value != isVisible())
-					if (value)
-						orderFront(this);
-					else
-						DoClose();
+				if (m_parent != null)
+				{
+					if (value != isVisible())
+						if (value)
+							orderFront(this);
+						else
+							DoClose();
+				}
 			}
 		}
 		
@@ -232,9 +235,11 @@ namespace TextEditor
 			NSPoint origin = DoGetOrigin();
 			origin.y -= size.height;
 			NSRect rect = new NSRect(origin, size);
-			
+
+			// We'll allow the annonation to extend to the left or the right, but if it
+			// scrolls too far up or down we'll hide it.			
 			NSRect content = m_parent.contentRectForFrameRect(m_parent.frame());
-			if (content.Contains(rect))
+			if (rect.Bottom >= content.Bottom && rect.Top < content.Top)
 			{
 				setFrame_display(rect, false);			// this is in screen coordinates even though we are a child window
 			}
