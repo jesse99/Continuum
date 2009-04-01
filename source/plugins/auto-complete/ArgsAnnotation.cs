@@ -121,9 +121,9 @@ namespace AutoComplete
 				
 				int start = text.IndexOf('(', anchor.location, anchor.length);
 				Trace.Assert(start >= 0, "couldn't find '(' in the anchor: " + text.Substring(anchor.location, anchor.length));
-				
+		
 				int i = start + 1;
-				string[] braces = new string[]{"()", "[]", "{}", "<>"};
+				string[] braces = new string[]{"()", "[]", "{}"};
 				while (i < insertionPoint)
 				{
 					if (Array.Exists(braces, b => text[i] == b[0]))
@@ -157,10 +157,10 @@ namespace AutoComplete
 				
 				int start = text.IndexOf('(', anchor.location, anchor.length);
 				Trace.Assert(start >= 0, "couldn't find '(' in the anchor: " + text.Substring(anchor.location, anchor.length));
-				
+		
 				arg = 1;						// we start at 1 because the user has typed a comma (tho it will not show up yet)
 				int i = start + 1;
-				string[] braces = new string[]{"()", "[]", "{}", "<>"};
+				string[] braces = new string[]{"()", "[]", "{}"};
 				while (i < insertionPoint)
 				{
 					if (Array.Exists(braces, b => text[i] == b[0]))
@@ -168,6 +168,14 @@ namespace AutoComplete
 						i = TextHelpers.SkipBraces(text, i, insertionPoint, braces);
 						if (i == insertionPoint)
 							return -1;
+					}
+					else if (text[i] == '<')
+					{
+						int k = TextHelpers.SkipBraces(text, i, insertionPoint, "<>");
+						if (k < insertionPoint || text[k] == '>')
+							i = k;
+						else
+							++i;							// presumably the < was a less than instead of a generic brace
 					}
 					else
 					{

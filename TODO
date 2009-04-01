@@ -52,42 +52,7 @@ might want a sample app
 			text = builder.ToString();
 		}
 
-		private int DoSkipBraces(string text, int i, int max)
-		{
-		}
-		
-		private bool DoIsOpenBrace(char ch)
-		{
-			return ch == '(' || ch == '[' || ch == '{' || ch == '<';
-		}
-		
-		private bool DoIsCloseBrace(char ch)
-		{
-			return ch == ')' || ch == ']' || ch == '}' || ch == '>';
-		}
-		
-		private bool DoClosesBrace(char open, char ch)
-		{
-			if (open == '(')
-				return ch == ')';
-			
-			else if (open == '[')
-				return ch == ']';
-				
-			else if (open == '{')
-				return ch == '}';
-				
-			else if (open == '<')
-				return ch == '>';
-				
-			return false;
-		}
-		
-* Add a TextHelpers class
-	- need a SkipBraces method
-	- update existing code to use it
 * Work on argument completion:
-	- don't count commas in braces
 	- would be nice if method targets worked when not chaining
 	- complete args even when nested methods are used
 	- NSRect.Bottom isn't completing
