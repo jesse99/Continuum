@@ -23,6 +23,7 @@ using Gear;
 using MCocoa;
 using Shared;
 using System;
+using System.Diagnostics;
 
 namespace AutoComplete
 {
@@ -80,12 +81,17 @@ namespace AutoComplete
 					{
 						if (chars[0] == ')')
 						{
-							Close();
+							if (DoClosesAnchor(range.location))
+								Close();
 						}
 						else if (chars[0] == ',')
 						{
-							++m_currentArg;
-							m_annotation.String = DoBuildString();
+							int arg = DoGetArgIndex(range.location);
+							if (arg >= 0 && arg != m_currentArg)
+							{
+								m_currentArg = arg;
+								m_annotation.String = DoBuildString();
+							}
 						}
 					}
 				}
@@ -101,6 +107,80 @@ namespace AutoComplete
 		}
 		
 		#region Private Methods
+		private bool DoClosesAnchor(int insertionPoint)
+		{
+			bool closes = false;
+			
+			NSRange anchor = m_annotation.Anchor;
+			int delta = insertionPoint - (anchor.location + anchor.length);
+			if (delta > 0 && delta < 2048)			// quick sanity check
+			{
+				var it = m_boss.Get<IText>();
+				string text = it.Text;
+				Trace.Assert(insertionPoint < text.Length, "insertionPoint is too large");
+				
+				int start = text.IndexOf('(', anchor.location, anchor.length);
+				Trace.Assert(start >= 0, "couldn't find '(' in the anchor: " + text.Substring(anchor.location, anchor.length));
+				
+				int i = start + 1;
+				string[] braces = new string[]{"()", "[]", "{}", "<>"};
+				while (i < insertionPoint)
+				{
+					if (Array.Exists(braces, b => text[i] == b[0]))
+					{
+						i = TextHelpers.SkipBraces(text, i, insertionPoint, braces);
+						if (i == insertionPoint)
+							return false;
+					}
+					else
+					{
+						++i;
+					}
+				}
+				closes = true;
+			}
+			
+			return closes;
+		}
+		
+		private int DoGetArgIndex(int insertionPoint)
+		{
+			int arg = -1;
+			
+			NSRange anchor = m_annotation.Anchor;
+			int delta = insertionPoint - (anchor.location + anchor.length);
+			if (delta > 0 && delta < 2048)			// quick sanity check
+			{
+				var it = m_boss.Get<IText>();
+				string text = it.Text;
+				Trace.Assert(insertionPoint < text.Length, "insertionPoint is too large");
+				
+				int start = text.IndexOf('(', anchor.location, anchor.length);
+				Trace.Assert(start >= 0, "couldn't find '(' in the anchor: " + text.Substring(anchor.location, anchor.length));
+				
+				arg = 1;						// we start at 1 because the user has typed a comma (tho it will not show up yet)
+				int i = start + 1;
+				string[] braces = new string[]{"()", "[]", "{}", "<>"};
+				while (i < insertionPoint)
+				{
+					if (Array.Exists(braces, b => text[i] == b[0]))
+					{
+						i = TextHelpers.SkipBraces(text, i, insertionPoint, braces);
+						if (i == insertionPoint)
+							return -1;
+					}
+					else
+					{
+						if (text[i] == ',')
+							++arg;
+						++i;
+					}
+				}
+			}
+			
+			return arg;
+		}
+		
 		private NSAttributedString DoBuildString()
 		{
 			string rtype = CsHelpers.GetAliasedName(m_member.Type);
@@ -108,7 +188,7 @@ namespace AutoComplete
 			rtype = CsHelpers.TrimGeneric(rtype);
 			string text = rtype + " " + m_member.Text;
 			
-			var str = NSMutableAttributedString.Create(text);			
+			var str = NSMutableAttributedString.Create(text);
 			for (int j = 0; j < m_member.ArgNames.Length; ++j)
 			{
 				if (j == m_currentArg)
@@ -136,7 +216,7 @@ namespace AutoComplete
 		#endregion
 		
 		#region Fields
-		private Boss m_boss;
+		private Boss m_boss;								// text editor boss
 		private ITextAnnotation m_annotation;
 		private Member m_member;
 		private int m_currentArg;

@@ -28,6 +28,9 @@ namespace Shared
 	// a live index in a text window.
 	public interface ITextAnnotation
 	{
+		// The text the annotation is attached to.
+		NSRange Anchor {get;}
+		
 		// The color of the rounded rectangle.
 		NSColor BackColor {get; set;}
 		

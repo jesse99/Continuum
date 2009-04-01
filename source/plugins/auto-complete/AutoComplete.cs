@@ -206,7 +206,7 @@ namespace AutoComplete
 					if (k >= 0)
 					{
 						// Alpha.Beta(actualArg).
-						if (string.Compare(oldText, 0, text, oldIndex, k) == 0)
+						if (string.Compare(oldText, 0, text, oldIndex, k + 1) == 0)
 						{
 							int i = DoSkipParens(text, oldIndex + k);
 							if (range.location == i)

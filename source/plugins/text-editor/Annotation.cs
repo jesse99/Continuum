@@ -32,8 +32,18 @@ namespace TextEditor
 	{
 		internal const float LeftMargin = 4.0f;
 		
+		~AnnotateView()
+		{
+			if (!NSObject.IsNullOrNil(m_text))
+				m_text.release();
+			
+			if (!NSObject.IsNullOrNil(m_color))
+				m_color.release();
+		}
+		
 		private AnnotateView(IntPtr obj) : base(obj)
 		{
+			m_color = NSColor.yellowColor().Retain();
 		}
 		
 		public NSAttributedString GetText()
@@ -43,13 +53,32 @@ namespace TextEditor
 		
 		public void SetText(NSAttributedString text)
 		{
-			if (!NSObject.IsNullOrNil(m_text))
-				m_text.release();
+			if (text != m_text)
+			{
+				if (!NSObject.IsNullOrNil(m_text))
+					m_text.release();
+					
+				m_text = text;
 				
-			m_text = text;
-			
-			if (!NSObject.IsNullOrNil(m_text))
-				m_text.retain();
+				if (!NSObject.IsNullOrNil(m_text))
+					m_text.retain();
+			}
+		}
+		
+		public NSColor BackColor
+		{
+			get {return m_color;}
+			set
+			{
+				Trace.Assert(!NSObject.IsNullOrNil(value), "value is null or nil");
+				
+				if (value != m_color)
+				{
+					m_color.release();
+					m_color = value;
+					m_color.retain();
+				}
+			}
 		}
 		
 		public new void drawRect(NSRect dirtyRect)
@@ -59,7 +88,7 @@ namespace TextEditor
 			NSBezierPath path = NSBezierPath.Create();
 			path.appendBezierPathWithRoundedRect_xRadius_yRadius(rect, 7.0f, 7.0f);
 			
-			NSColor.yellowColor().setFill();
+			m_color.setFill();
 			path.fill();
 			
 			if (!NSObject.IsNullOrNil(m_text))
@@ -68,6 +97,7 @@ namespace TextEditor
 		
 		#region Fields
 		private NSAttributedString m_text;
+		private NSColor m_color;
 		#endregion
 	}
 
@@ -124,10 +154,15 @@ namespace TextEditor
 			m_range.Changed += this.DoRangeChanged;
 		}
 		
+		public NSRange Anchor
+		{
+			get {return new NSRange(m_range.Index, m_range.Length);}
+		}
+		
 		public NSColor BackColor
 		{
-			get {return null;}
-			set {}
+			get {return m_view.BackColor;}
+			set {m_view.BackColor = value;}
 		}
 		
 		public string Text
@@ -181,14 +216,17 @@ namespace TextEditor
 		#region Private Methods
 		private void DoRangeChanged(object sender, EventArgs e)
 		{
-			if (m_range.IsValid)
+			if (m_parent != null)
 			{
-				NSSize size = frame().size;
-				DoAdjustFrame(size);
-			}
-			else
-			{
-				DoClose();
+				if (m_range.IsValid)
+				{
+					NSSize size = frame().size;
+					DoAdjustFrame(size);
+				}
+				else
+				{
+					DoClose();
+				}
 			}
 		}
 		
