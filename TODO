@@ -53,6 +53,7 @@ might want a sample app
 		}
 
 * Work on argument completion:
+	- need to add a ReverseSkipBraces method
 	- would be nice if method targets worked when not chaining
 	- complete args even when nested methods are used
 	- NSRect.Bottom isn't completing
@@ -168,6 +169,7 @@ might want a sample app
 * Should spell check comments
 	- types and members should count as valid words
 * Why doesn't WeakReference short form put ctors in bold?
+* Might want to use NSFindPboard.
 * Need to comment out the snk line in cecil's standalone make file.
 * AssemblyVersion.cs file(s) aren't being generated?
 * Might want a warning if /var/db/locate.database is missing.

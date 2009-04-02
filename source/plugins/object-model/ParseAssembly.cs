@@ -345,7 +345,7 @@ namespace ObjectModel
 						((ushort) method.Attributes).ToString(),
 						((ushort) method.SemanticsAttributes).ToString());
 						
-					if (!method.IsPrivate && !method.IsAbstract && !method.IsAddOn && !method.IsConstructor && !method.IsFire && !method.IsOther && !method.IsRemoveOn)
+					if (!method.IsPrivate && !method.IsAddOn && !method.IsConstructor && !method.IsFire && !method.IsOther && !method.IsRemoveOn)
 						if (!method.Name.StartsWith("op_") && method.Name != "Finalize")
 							m_database.InsertOrReplace("Members",
 								DoGetMethodText(method, 0),
