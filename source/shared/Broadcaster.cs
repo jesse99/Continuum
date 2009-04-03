@@ -24,12 +24,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace Shared
-{	    
-    // Note that we don't use C# events because we want to decouple broadcasters
-    // from observers (so we can't have plugins maintain events) and we want to
-    // make broadcasting extensible without requiring changes to the shared plugin
-    // (so shared cannot have the events). NSNotificationCenter is a better fit
-    // but we'd like to avoid requiring observers to link with mcocoa.
+{
+	// Note that we don't use C# events because we want to decouple broadcasters
+	// from observers (so we can't have plugins maintain events) and we want to
+	// make broadcasting extensible without requiring changes to the shared plugin
+	// (so shared cannot have the events). NSNotificationCenter is a better fit
+	// but we'd like to avoid requiring observers to link with mcocoa.
 	public static class Broadcaster
 	{
 		public static void Register(string name, object key, Action<string, object> callback)
@@ -63,7 +63,7 @@ namespace Shared
 		public static void Invoke(string name, object value)
 		{
 			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
-
+			
 			List<Entry> callbacks;
 			if (ms_callbacks.TryGetValue(name, out callbacks))
 			{
@@ -73,7 +73,7 @@ namespace Shared
 				}
 			}
 		}
-	
+		
 		private static void DoInvoke(string name, Action<string, object> callback, object value)
 		{
 			try
@@ -86,7 +86,7 @@ namespace Shared
 				Log.WriteLine(TraceLevel.Warning, "Errors", e.ToString());
 			}
 		}
-	
+		
 		private struct Entry
 		{	
 			public Entry(object key, Action<string, object> callback)
@@ -98,7 +98,7 @@ namespace Shared
 			public object Key  {get; private set;}
 			public Action<string, object> Callback {get; private set;}												
 		}
-
+		
 		private static Dictionary<string, List<Entry>> ms_callbacks = new Dictionary<string, List<Entry>>();
-	} 
+	}
 }
