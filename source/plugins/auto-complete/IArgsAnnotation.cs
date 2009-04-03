@@ -27,9 +27,7 @@ using System;
 namespace AutoComplete
 {
 	internal interface IArgsAnnotation : IInterface
-	{
-		bool IsOpen {get;}
-		
+	{		
 		void Open(ITextAnnotation annotation, Member member);
 		
 		// Escape will close the window, otherwise keyHandler is called.

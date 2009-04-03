@@ -41,14 +41,19 @@ namespace AutoComplete
 			get {return m_boss;}
 		}
 		
-		public bool IsOpen
+		public bool IsValid
 		{
-			get {return m_annotation != null;}
+			get {return m_annotation != null && m_annotation.IsValid;}
+		}
+		
+		public bool IsVisible
+		{
+			get {return m_annotation != null && m_annotation.Visible;}
 		}
 		
 		public void Open(ITextAnnotation annotation, Member member)
 		{
-			if (m_annotation != null && m_annotation.Visible)
+			if (IsVisible)
 			{
 				m_oldStates.Add(new State(m_annotation, m_member));
 				m_annotation.Visible = false;
@@ -66,13 +71,10 @@ namespace AutoComplete
 		{
 			bool handled = false;
 			
-			if (m_annotation != null && evt.keyCode() == Constants.EscapeKey)
+			if (IsValid && evt.keyCode() == Constants.EscapeKey)
 			{
-				if (IsOpen)
-				{
-					Close();
-					handled = true;
-				}
+				Close();
+				handled = true;
 			}
 			
 			if (!handled)
@@ -82,7 +84,7 @@ namespace AutoComplete
 				NSString chars = evt.characters();
 				if (range.length == 0 && chars.length() == 1)
 				{
-					if (m_annotation != null && chars[0] == ')')
+					if (IsValid && chars[0] == ')')
 					{
 						if (DoClosesAnchor(range.location))
 							Close();
@@ -91,7 +93,7 @@ namespace AutoComplete
 					{
 						int arg = -1;
 						
-						if (m_annotation != null)
+						if (IsValid)
 						{
 							arg = DoGetArgIndex(m_boss, m_annotation, range.location);
 						}

@@ -51,14 +51,8 @@ might want a sample app
 			
 			text = builder.ToString();
 		}
-
+		
 * Work on argument completion:
-	- click should drag the window:
-		` change cursor to a hand
-		` when dragging use the find hilite on the anchor
-		` if drag completely outside parent close the window
-		` when doing a drag close using a collapse animation and then an
-		   NSShowAnimationEffect poof animation
 	- may want a context menu: close, show overloads, open, find on site
 	- tweak the back color
 * Work more on target completion:

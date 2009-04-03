@@ -45,7 +45,7 @@ namespace TextEditor
 		{
 			m_color = NSColor.yellowColor().Retain();
 		}
-		
+
 		public NSAttributedString GetText()
 		{
 			return m_text;
@@ -100,7 +100,7 @@ namespace TextEditor
 		private NSColor m_color;
 		#endregion
 	}
-
+	
 	[ExportClass("Annotation", "NSWindow", Outlets = "view")]
 	internal sealed class Annotation : NSWindow, ITextAnnotation
 	{		
@@ -127,9 +127,12 @@ namespace TextEditor
 			NSWindow result = SuperCall("initWithContentRect:styleMask:backing:defer:",
 				NSRect.Empty, (uint) Enums.NSBorderlessWindowMask, (uint) Enums.NSBackingStoreBuffered, false).To<NSWindow>();
 			
+			result.setAcceptsMouseMovedEvents(true);
 			result.setBackgroundColor(NSColor.clearColor());
+			result.setDelegate(result);
 			result.setExcludedFromWindowsMenu(true);
 			result.setOpaque(false);
+			result.setMovableByWindowBackground(true);
 			
 			return result;
 		}
@@ -153,9 +156,15 @@ namespace TextEditor
 			m_range.Changed += this.DoRangeChanged;
 		}
 		
+		// This is lame but the normal cursor handling goo doesn't work with child windows...
+		public new void mouseMoved(NSEvent theEvent)
+		{
+			NSCursor.openHandCursor().set();
+		}
+		
 		public bool IsValid
 		{
-			get {return m_range.IsValid;}
+			get {return m_parent != null && m_range.IsValid;}
 		}
 		
 		public NSRange Anchor
@@ -260,6 +269,32 @@ namespace TextEditor
 			DoAdjustFrame(size);
 		}
 		
+		public new void mouseDown(NSEvent theEvent)
+		{
+			m_text.showFindIndicatorForRange(Anchor);
+			SuperCall("mouseDown:", theEvent);
+		}
+		
+		public new void mouseUp(NSEvent theEvent)
+		{
+			NSRect currentFrame = frame();
+			NSRect content = m_parent.contentRectForFrameRect(m_parent.frame());
+			if (content.Intersects(currentFrame))
+			{
+				NSRect baseFrame = DoGetFrame(currentFrame.size);
+				m_offset = currentFrame.origin - baseFrame.origin;
+			
+				SuperCall("mouseUp:", theEvent);
+			}
+			else
+			{
+				Close();
+				
+				NSPoint centerPt = currentFrame.Center;
+				Functions.NSShowAnimationEffect(Enums.NSAnimationEffectPoof, centerPt);
+			}
+		}
+		
 		#region Private Methods
 		private void DoRangeChanged(object sender, EventArgs e)
 		{
@@ -289,32 +324,34 @@ namespace TextEditor
 		
 		private void DoAdjustFrame(NSSize size)
 		{
-			// The origin is the bottom-left coordinate of the anchor character
-			// which should be the top-left of our window.
-			NSPoint origin = DoGetOrigin();
-			origin.y -= size.height;
-			NSRect rect = new NSRect(origin, size);
-
-			// We'll allow the annonation to extend to the left or the right, but if it
+			NSRect frame = DoGetFrame(size);
+			frame.origin += m_offset;
+			
+			// We'll allow the annotation to extend to the left or the right, but if it
 			// scrolls too far up or down we'll hide it.			
 			NSRect content = m_parent.contentRectForFrameRect(m_parent.frame());
-			if (rect.Bottom >= content.Bottom && rect.Top < content.Top)
+			if (frame.Bottom >= content.Bottom && frame.Top < content.Top)
 			{
-				setFrame_display(rect, false);			// this is in screen coordinates even though we are a child window
+				setFrame_display(frame, false);			// this is in screen coordinates even though we are a child window
 			}
 			else
 			{
-				rect.origin.x -= 8000;
-				setFrame_display(rect, false);
+				frame.origin.x -= 8000;
+				setFrame_display(frame, false);
 			}
 		}
 		
-		private NSPoint DoGetOrigin()
+		private NSRect DoGetFrame(NSSize size)
 		{
 			NSRect bbox = m_editor.GetBoundingBox(new NSRange(m_range.Index, m_range.Length));
 			NSPoint origin = m_parent.convertBaseToScreen(bbox.origin);
 			
-			return origin;
+			// The origin is the bottom-left coordinate of the anchor character
+			// which should be the top-left of our window.
+			origin.y -= size.height;
+			NSRect frame = new NSRect(origin, size);
+			
+			return frame;
 		}
 		#endregion
 		
@@ -326,6 +363,7 @@ namespace TextEditor
 		private AnnotateView m_view;
 		private NSDictionary m_attrs;
 		private bool m_visible;
+		private NSPoint m_offset;
 		#endregion
 	}
 }
