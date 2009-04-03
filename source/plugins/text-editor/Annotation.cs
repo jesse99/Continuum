@@ -142,7 +142,6 @@ namespace TextEditor
 			m_view = this["view"].To<AnnotateView>();
 			
 			m_parent = m_text.window();
-			m_parent.addChildWindow_ordered(this, Enums.NSWindowAbove);
 			
 			NSNotificationCenter.defaultCenter().addObserver_selector_name_object(
 				this, "parentWillClose:", Externs.NSWindowWillCloseNotification, m_parent);
@@ -154,9 +153,18 @@ namespace TextEditor
 			m_range.Changed += this.DoRangeChanged;
 		}
 		
+		public bool IsValid
+		{
+			get {return m_range.IsValid;}
+		}
+		
 		public NSRange Anchor
 		{
-			get {return new NSRange(m_range.Index, m_range.Length);}
+			get
+			{
+				Trace.Assert(IsValid, "anchor is invalid");
+				return new NSRange(m_range.Index, m_range.Length);
+			}
 		}
 		
 		public NSColor BackColor
@@ -186,25 +194,64 @@ namespace TextEditor
 		
 		public bool Visible
 		{
-			get {return m_parent != null && isVisible();}
+			get {return m_parent != null && m_visible;}
 			set
 			{
 				Trace.Assert(m_parent != null || !value, "m_parent is null");
 				
 				if (m_parent != null)
 				{
-					if (value != isVisible())
+					// Note that we have to maintain this extra state and muck with add/removeChild
+					// because orderIn and orderOut affect the parent window instead of the child
+					// window if we don't...
+					if (value != m_visible)
+					{
 						if (value)
+						{
+							m_parent.addChildWindow_ordered(this, Enums.NSWindowAbove);
 							orderFront(this);
+						}
 						else
-							DoClose();
+						{
+							m_text.window().removeChildWindow(this);
+							orderOut(this);
+						}
+						m_visible = value;
+					}
 				}
+			}
+		}
+		
+		public void Close()
+		{
+			if (m_attrs != null)
+			{
+				if (m_parent != null)
+				{
+					NSNotificationCenter.defaultCenter().removeObserver_name_object(
+						this, Externs.NSWindowWillCloseNotification, m_parent);
+					
+					NSNotificationCenter.defaultCenter().removeObserver_name_object(
+						this, Externs.NSViewFrameDidChangeNotification, m_text.superview());
+					
+					NSNotificationCenter.defaultCenter().removeObserver_name_object(
+						this, Externs.NSViewBoundsDidChangeNotification, m_text.superview());
+					
+					if (Visible)
+						Visible = false;
+					m_parent = null;
+				}
+				
+				m_attrs.release();
+				close();
+				autorelease();
+				m_attrs = null;
 			}
 		}
 		
 		public void parentWillClose(NSObject data)
 		{
-			DoClose();
+			Close();
 		}
 		
 		public void parentBoundsChanged(NSObject data)
@@ -225,34 +272,8 @@ namespace TextEditor
 				}
 				else
 				{
-					DoClose();
+					Close();
 				}
-			}
-		}
-		
-		private void DoClose()
-		{
-			if (m_attrs != null)
-			{
-				if (m_parent != null)
-				{
-					NSNotificationCenter.defaultCenter().removeObserver_name_object(
-						this, Externs.NSWindowWillCloseNotification, m_parent);
-					
-					NSNotificationCenter.defaultCenter().removeObserver_name_object(
-						this, Externs.NSViewFrameDidChangeNotification, m_text.superview());
-					
-					NSNotificationCenter.defaultCenter().removeObserver_name_object(
-						this, Externs.NSViewBoundsDidChangeNotification, m_text.superview());
-					
-					m_text.window().removeChildWindow(this);	// need to do this or the orderOut/close affects the parent window
-					m_parent = null;
-				}
-				
-				m_attrs.release();
-				close();
-				autorelease();
-				m_attrs = null;
 			}
 		}
 		
@@ -304,6 +325,7 @@ namespace TextEditor
 		private NSTextView m_text;
 		private AnnotateView m_view;
 		private NSDictionary m_attrs;
+		private bool m_visible;
 		#endregion
 	}
 }

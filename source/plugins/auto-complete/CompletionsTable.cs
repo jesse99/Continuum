@@ -258,7 +258,7 @@ namespace AutoComplete
 			int index = -1;
 			int count = 0;
 			
-			for (int i = 1; i < m_members.Count; ++i)
+			for (int i = 0; i < m_members.Count; ++i)
 			{
 				int n = DoCountMatching(m_members[i].Text);
 				if (n > count)

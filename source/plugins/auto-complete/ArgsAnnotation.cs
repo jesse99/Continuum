@@ -23,7 +23,9 @@ using Gear;
 using MCocoa;
 using Shared;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace AutoComplete
 {
@@ -47,7 +49,10 @@ namespace AutoComplete
 		public void Open(ITextAnnotation annotation, Member member)
 		{
 			if (m_annotation != null && m_annotation.Visible)
+			{
+				m_oldStates.Add(new State(m_annotation, m_member));
 				m_annotation.Visible = false;
+			}
 				
 			m_annotation = annotation;
 			m_member = member;
@@ -61,37 +66,54 @@ namespace AutoComplete
 		{
 			bool handled = false;
 			
-			if (m_annotation != null)
+			if (m_annotation != null && evt.keyCode() == Constants.EscapeKey)
 			{
-				if (evt.keyCode() == Constants.EscapeKey)
+				if (IsOpen)
 				{
-					if (IsOpen)
-					{
-						Close();
-						handled = true;
-					}
+					Close();
+					handled = true;
 				}
+			}
+			
+			if (!handled)
+			{
+				NSRange range = view.selectedRange();
 				
-				if (!handled)
+				NSString chars = evt.characters();
+				if (range.length == 0 && chars.length() == 1)
 				{
-					NSRange range = view.selectedRange();
-					
-					NSString chars = evt.characters();
-					if (range.length == 0 && chars.length() == 1)
+					if (m_annotation != null && chars[0] == ')')
 					{
-						if (chars[0] == ')')
+						if (DoClosesAnchor(range.location))
+							Close();
+					}
+					else if (chars[0] == ',')
+					{
+						int arg = -1;
+						
+						if (m_annotation != null)
 						{
-							if (DoClosesAnchor(range.location))
-								Close();
+							arg = DoGetArgIndex(m_boss, m_annotation, range.location);
 						}
-						else if (chars[0] == ',')
+						else if (m_oldStates.Count > 0)
 						{
-							int arg = DoGetArgIndex(range.location);
-							if (arg >= 0 && arg != m_currentArg)
+							arg = DoGetArgIndex(m_boss, m_oldStates.Last().Annotation, range.location);
+							if (arg >= 0)
 							{
-								m_currentArg = arg;
-								m_annotation.String = DoBuildString();
+								m_annotation = m_oldStates.Last().Annotation;
+								m_member = m_oldStates.Last().Member;
+								m_currentArg = -1;
+								m_annotation.Visible = true;
+								m_oldStates.RemoveLast();
 							}
+							else
+								m_oldStates.Clear();		// states aren't synched up with what is being edited so clear them all
+						}
+						
+						if (arg >= 0 && arg != m_currentArg)
+						{
+							m_currentArg = arg;
+							m_annotation.String = DoBuildString();
 						}
 					}
 				}
@@ -102,7 +124,7 @@ namespace AutoComplete
 		
 		public void Close()
 		{
-			m_annotation.Visible = false;
+			m_annotation.Close();
 			m_annotation = null;
 		}
 		
@@ -111,77 +133,83 @@ namespace AutoComplete
 		{
 			bool closes = false;
 			
-			NSRange anchor = m_annotation.Anchor;
-			int delta = insertionPoint - (anchor.location + anchor.length);
-			if (delta > 0 && delta < 2048)			// quick sanity check
+			if (m_annotation.IsValid)
 			{
-				var it = m_boss.Get<IText>();
-				string text = it.Text;
-				Trace.Assert(insertionPoint < text.Length, "insertionPoint is too large");
-				
-				int start = text.IndexOf('(', anchor.location, anchor.length);
-				Trace.Assert(start >= 0, "couldn't find '(' in the anchor: " + text.Substring(anchor.location, anchor.length));
-		
-				int i = start + 1;
-				string[] braces = new string[]{"()", "[]", "{}"};
-				while (i < insertionPoint)
+				NSRange anchor = m_annotation.Anchor;
+				int delta = insertionPoint - (anchor.location + anchor.length);
+				if (delta > 0 && delta < 2048)			// quick sanity check
 				{
-					if (Array.Exists(braces, b => text[i] == b[0]))
+					var it = m_boss.Get<IText>();
+					string text = it.Text;
+					Trace.Assert(insertionPoint < text.Length, "insertionPoint is too large");
+					
+					int start = text.IndexOf('(', anchor.location, anchor.length);
+					Trace.Assert(start >= 0, "couldn't find '(' in the anchor: " + text.Substring(anchor.location, anchor.length));
+			
+					int i = start + 1;
+					string[] braces = new string[]{"()", "[]", "{}"};
+					while (i < insertionPoint)
 					{
-						i = TextHelpers.SkipBraces(text, i, insertionPoint, braces);
-						if (i == insertionPoint)
-							return false;
+						if (Array.Exists(braces, b => text[i] == b[0]))
+						{
+							i = TextHelpers.SkipBraces(text, i, insertionPoint, braces);
+							if (i == insertionPoint)
+								return false;
+						}
+						else
+						{
+							++i;
+						}
 					}
-					else
-					{
-						++i;
-					}
+					closes = true;
 				}
-				closes = true;
 			}
 			
 			return closes;
 		}
 		
-		private int DoGetArgIndex(int insertionPoint)
+		private static int DoGetArgIndex(Boss boss, ITextAnnotation annotation, int insertionPoint)
 		{
 			int arg = -1;
 			
-			NSRange anchor = m_annotation.Anchor;
-			int delta = insertionPoint - (anchor.location + anchor.length);
-			if (delta > 0 && delta < 2048)			// quick sanity check
+			if (annotation.IsValid)
 			{
-				var it = m_boss.Get<IText>();
-				string text = it.Text;
-				Trace.Assert(insertionPoint < text.Length, "insertionPoint is too large");
-				
-				int start = text.IndexOf('(', anchor.location, anchor.length);
-				Trace.Assert(start >= 0, "couldn't find '(' in the anchor: " + text.Substring(anchor.location, anchor.length));
-		
-				arg = 1;						// we start at 1 because the user has typed a comma (tho it will not show up yet)
-				int i = start + 1;
-				string[] braces = new string[]{"()", "[]", "{}"};
-				while (i < insertionPoint)
+				NSRange anchor = annotation.Anchor;
+				int delta = insertionPoint - (anchor.location + anchor.length);
+				if (delta > 0 && delta < 2048)			// quick sanity check
 				{
-					if (Array.Exists(braces, b => text[i] == b[0]))
+					var it = boss.Get<IText>();
+					string text = it.Text;
+					Trace.Assert(insertionPoint < text.Length, "insertionPoint is too large");
+					
+					int start = text.IndexOf('(', anchor.location, anchor.length);
+					Trace.Assert(start >= 0, "couldn't find '(' in the anchor: " + text.Substring(anchor.location, anchor.length));
+			
+					arg = 1;						// we start at 1 because the user has typed a comma (tho it will not show up yet)
+					int i = start + 1;
+					string[] braces = new string[]{"()", "[]", "{}"};
+					while (i < insertionPoint)
 					{
-						i = TextHelpers.SkipBraces(text, i, insertionPoint, braces);
-						if (i == insertionPoint)
-							return -1;
-					}
-					else if (text[i] == '<')
-					{
-						int k = TextHelpers.SkipBraces(text, i, insertionPoint, "<>");
-						if (k < insertionPoint || text[k] == '>')
-							i = k;
+						if (Array.Exists(braces, b => text[i] == b[0]))
+						{
+							i = TextHelpers.SkipBraces(text, i, insertionPoint, braces);
+							if (i == insertionPoint)
+								return -1;
+						}
+						else if (text[i] == '<')
+						{
+							int k = TextHelpers.SkipBraces(text, i, insertionPoint, "<>");
+							if (k < insertionPoint || text[k] == '>')
+								i = k;
+							else
+								++i;							// presumably the < was a less than instead of a generic brace
+						}
 						else
-							++i;							// presumably the < was a less than instead of a generic brace
-					}
-					else
-					{
-						if (text[i] == ',')
-							++arg;
-						++i;
+						{
+							if (text[i] == ',')
+								++arg;
+							++i;
+						}
 					}
 				}
 			}
@@ -223,11 +251,26 @@ namespace AutoComplete
 		}
 		#endregion
 		
+		#region Private Types
+		private sealed class State
+		{
+			public State(ITextAnnotation annotation, Member member)
+			{
+				Annotation = annotation;
+				Member = member;
+			}
+			
+			public ITextAnnotation Annotation {get; private set;}
+			public Member Member {get; private set;}
+		}
+		#endregion
+		
 		#region Fields
 		private Boss m_boss;								// text editor boss
 		private ITextAnnotation m_annotation;
 		private Member m_member;
 		private int m_currentArg;
+		private List<State> m_oldStates = new List<State>();
 		#endregion
 	}
 }

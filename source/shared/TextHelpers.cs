@@ -48,13 +48,13 @@ namespace Shared
 			Trace.Assert(start >= 0, "start is negative");
 			Trace.Assert(start < last, "start is too large");
 			Debug.Assert(braces.All(b => b.Length == 2), "brace strings should be two characters");
-			Debug.Assert(Array.Exists(braces, b => text[start] == b[0]), "start character isn't a brace");
+			Debug.Assert(Array.Exists(braces, b => text[start] == b[0]), "start character isn't an open brace");
 			
 			var openBraces = new List<char>();
 			openBraces.Add(text[start]);
 			
 			int index = start + 1;
-			while (index < last && openBraces.Count > 0)
+			while (index < last && index < text.Length && openBraces.Count > 0)
 			{
 				char ch = text[index];
 				if (DoIsOpenBrace(ch, braces))
@@ -77,7 +77,58 @@ namespace Shared
 					++index;
 			}
 			
-			return index;
+			return openBraces.Count == 0 ? index : last;
+		}
+		
+		// This is called with start pointing to an close brace in text and braces 
+		// consisting of pairs of open/close brace characters. The method will return 
+		// either -1 or the index of the character opening start. Note that nested
+		// braces are skipped as well.
+		public static int ReverseSkipBraces(string text, int start, params string[] braces)
+		{
+			return ReverseSkipBraces(text, start, text.Length, braces);
+		}
+		
+		// This is called with start pointing to an close brace in text and braces 
+		// consisting of pairs of open/close brace characters. The method will return 
+		// either first or the index of the character opening start. Note that nested
+		// braces are skipped as well.
+		public static int ReverseSkipBraces(string text, int start, int first, params string[] braces)
+		{
+			Trace.Assert(text != null, "text is null");
+			Trace.Assert(start >= 0, "start is negative");
+			Trace.Assert(start > first, "start is too small");
+			Debug.Assert(braces.All(b => b.Length == 2), "brace strings should be two characters");
+			Debug.Assert(Array.Exists(braces, b => text[start] == b[1]), "start character isn't a close brace");
+			
+			var closeBraces = new List<char>();
+			closeBraces.Add(text[start]);
+			
+			int index = start - 1;
+			while (index > first && index > 0 && closeBraces.Count > 0)
+			{
+				char ch = text[index];
+				if (DoIsCloseBrace(ch, braces))
+				{
+					closeBraces.Add(ch);
+					--index;
+				}
+				else if (DoIsOpenBrace(ch, braces))
+				{
+					if (closeBraces.Count > 0 && DoClosesBrace(ch, closeBraces.Last(), braces))
+					{
+						closeBraces.RemoveLast();
+					}
+					else
+					{
+						index = first;			// mismatched open brace so we have to give up
+					}
+				}
+				else
+					--index;
+			}
+			
+			return closeBraces.Count == 0 ? index : first;
 		}
 		
 		#region Private Methods

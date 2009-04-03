@@ -53,13 +53,6 @@ might want a sample app
 		}
 
 * Work on argument completion:
-	- need to add a ReverseSkipBraces method
-	- would be nice if method targets worked when not chaining
-	- complete args even when nested methods are used
-	- NSRect.Bottom isn't completing
-	- LiveRange and ITextAnnotation aren't completing
-	- DoHandleArgKey should close the window only if the paren closes the method call
-	- build a new foreshadow
 	- click should drag the window:
 		` change cursor to a hand
 		` when dragging use the find hilite on the anchor
@@ -67,12 +60,11 @@ might want a sample app
 		` when doing a drag close using a collapse animation and then an
 		   NSShowAnimationEffect poof animation
 	- may want a context menu: close, show overloads, open, find on site
-	- need to handle nested calls
 	- tweak the back color
-	- arg completion could filter on formal arg type
 * Work more on target completion:
 	- check for completion within a comment doesn't appear to be working
 	- also make sure string literals don't complete
+	- would be nice if method targets worked when not chaining (use a ResolveEpr class)
 	- doesn't work with IBOutlet<T>.Value
 	- get ctor calls completing: enter with new PartialTypeName
 	- ctor completion should work with dotted names
@@ -142,6 +134,7 @@ might want a sample app
 	   for this
 	- arg completion should prune more types
 	- look at Code Templates file for ideas on statement completion
+	- arg completion could filter on formal arg type
 * OpenSelection isn't doing a case insensitive match, try nsview.cs
 * Is ChangeAccess correct?
 * Add Convert to Decimal and Convert To Hex.

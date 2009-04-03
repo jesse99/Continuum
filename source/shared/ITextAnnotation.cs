@@ -27,7 +27,14 @@ namespace Shared
 	// A window which looks like a rounded rectangle with a label attached to
 	// a live index in a text window.
 	public interface ITextAnnotation
-	{
+	{		
+		// Shows/hides the window.
+		bool Visible {get; set;}
+		
+		void Close();
+		
+		bool IsValid {get;}
+		
 		// The text the annotation is attached to.
 		NSRange Anchor {get;}
 		
@@ -39,8 +46,5 @@ namespace Shared
 		
 		// The label text.
 		NSAttributedString String {get; set;}
-		
-		// Shows/hides the window.
-		bool Visible {get; set;}
 	}
 }
