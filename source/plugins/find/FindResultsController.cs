@@ -31,7 +31,7 @@ using System.Linq;
 namespace Find
 {
 	[ExportClass("FindResultsController", "NSWindowController", Outlets = "view")]
-	internal sealed class FindResultsController : NSWindowController
+	internal sealed class FindResultsController : NSWindowController, IObserver
 	{
 		public FindResultsController(FindAll find) : base("FindResultsController", "find-results")
 		{
@@ -54,8 +54,22 @@ namespace Find
 			if (superclass().respondsToSelector("awakeFromNib"))
 				Unused.Value = SuperCall("awakeFromNib");
 			
-			Broadcaster.Register("text range changed", this, this.DoDocChanged);
+			Broadcaster.Register("text range changed", this);
 			NSApplication.sharedApplication().BeginInvoke(this.DoUpdate, TimeSpan.FromMilliseconds(50));
+		}
+		
+		public void OnBroadcast(string name, object value)
+		{
+			switch (name)
+			{
+				case "text range changed":
+					DoDocChanged(name, value);
+					break;
+					
+				default:
+					Trace.Fail("bad name: " + name);
+					break;
+			}
 		}
 		
 		public void windowWillClose(NSNotification n)

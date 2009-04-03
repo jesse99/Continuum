@@ -32,7 +32,7 @@ using System.Linq;
 
 namespace ObjectModel
 {
-	internal sealed class Objects : IObjectModel, IOpened
+	internal sealed class Objects : IObjectModel, IOpened, IObserver
 	{
 		public void Instantiated(Boss boss)
 		{	
@@ -49,7 +49,21 @@ namespace ObjectModel
 			string path = Populate.GetDatabasePath(m_boss);
 			m_database = new Database(path, "ObjectModel-" + Path.GetFileNameWithoutExtension(path));
 			
-			Broadcaster.Register("mono_root changed", this, this.DoMonoRootChanged);
+			Broadcaster.Register("mono_root changed", this);
+		}
+		
+		public void OnBroadcast(string name, object value)
+		{
+			switch (name)
+			{
+				case "mono_root changed":
+					DoMonoRootChanged(name, value);
+					break;
+					
+				default:
+					Trace.Fail("bad name: " + name);
+					break;
+			}
 		}
 		
 		public long GetBuildTime(string hash)

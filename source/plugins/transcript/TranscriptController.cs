@@ -30,7 +30,7 @@ using System.Diagnostics;
 namespace Transcript
 {
 	[ExportClass("TranscriptController", "NSWindowController", Outlets = "output")]
-	internal sealed class TranscriptController : NSWindowController
+	internal sealed class TranscriptController : NSWindowController, IObserver
 	{			
 		public TranscriptController() : base("TranscriptController", "transcript")
 		{
@@ -41,15 +41,23 @@ namespace Transcript
 			
 			foreach (string name in new[]{"transcript command font changed", "transcript stdout font changed", "transcript stderr font changed"})
 			{
-				Broadcaster.Register(name, this, this.DoUpdateFont);
+				Broadcaster.Register(name, this);
 				m_attributes.Add(name, NSMutableDictionary.Create().Retain());
 				DoUpdateFont(name, null);
 			}
 			
-			Broadcaster.Register("transcript color changed", this, this.DoUpdateBackgroundColor);			
+			Broadcaster.Register("transcript color changed", this);
 			DoUpdateBackgroundColor(string.Empty, null);
 			
 			ActiveObjects.Add(this);
+		}
+		
+		public void OnBroadcast(string name, object value)
+		{
+			if (name == "transcript color changed")
+				DoUpdateBackgroundColor(name, value);
+			else
+				DoUpdateFont(name, value);
 		}
 		
 		public NSTextView TextView

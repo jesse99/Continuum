@@ -31,7 +31,7 @@ using System.Linq;
 namespace Find
 {
 	[ExportClass("FindInFilesController", "BaseFindController", Outlets = "dirPopup directoryList include includeList exclude excludeList")]
-	internal sealed class FindInFilesController : BaseFindController
+	internal sealed class FindInFilesController : BaseFindController, IObserver
 	{
 		public FindInFilesController() : base(NSObject.AllocNative("FindInFilesController"), "find-in-files")
 		{
@@ -77,7 +77,21 @@ namespace Find
 			this.addObserver_forKeyPath_options_context(
 				this, NSString.Create("exclude"), 0, IntPtr.Zero);
 			
-			Broadcaster.Register("opened directory", this, this.DoDirOpened);
+			Broadcaster.Register("opened directory", this);
+		}
+		
+		public void OnBroadcast(string name, object value)
+		{
+			switch (name)
+			{
+				case "opened directory":
+					DoDirOpened(name, value);
+					break;
+					
+				default:
+					Trace.Fail("bad name: " + name);
+					break;
+			}
 		}
 		
 		public void findAll(NSObject sender)

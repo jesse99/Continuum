@@ -52,12 +52,21 @@ might want a sample app
 			text = builder.ToString();
 		}
 		
+when parsing an assembly does the old info hang around?
+ParserPool
+IMegabase
+close context item
+checked overload context items
+
 * Work on argument completion:
-	- may want a context menu: close, show overloads, open, find on site
-	- tweak the back color
+	- tweak the back color, might want to use a darker version of line color
 * Work more on target completion:
 	- check for completion within a comment doesn't appear to be working
 	- also make sure string literals don't complete
+	- context menu should filter by class
+	- context menu should filter by extension method
+	- context menu should filter by access
+	- context menu should have open and find on site commands
 	- would be nice if method targets worked when not chaining (use a ResolveEpr class)
 	- doesn't work with IBOutlet<T>.Value
 	- get ctor calls completing: enter with new PartialTypeName
@@ -68,29 +77,23 @@ might want a sample app
 	- complete table should support paste (i.e. add it to completion text)
 	- member list needs to account for access
 	- member list needs to account for visibility
-	- context menu should filter by class
-	- context menu should filter by extension method
-	- context menu should filter by access
 	- use an ITypeDatabase, should have parser databases for all windows that were open
 	- parse databases for closed windows are removed on a successful build
 	- would be nice to complete new expressions with ctors
 	- complete new SomeType calls
 		` special case array types
 	- do some performance tuning
+		` try the mono profiler again
 		` don't think we need to get the hash for types
 		` extension methods are really slow, especially with a few base classes/interfaces
 		` sqlite3_profile may help, also sqlite3_status, may want to use prepared statements too
 	- local explicit interface implementation
 	- global explicit interface implementation
-	- add a context menu:
-		` find on site
-		` open file
-		` complete
 	- need to work with namespace aliases
+	- make sure completion works OK with spaces before open parens
 	- get target working with array indexing, eg data[foo], also indexers
 	- prune value type members when completing args
 	- need a project pref for inserting a space before completed (
-	- try the profiler
 * FileStream.cs didn't parse right.
 * Dirty files aren't always being refreshed.
 * Can we do some sort of notification when assemblies finish parsing? Or to show parse
@@ -108,12 +111,10 @@ might want a sample app
 -rw-r--r--  1 jessejones  jessejones  26219520 Feb 26 05:47 mobjc.db
 -rw-r--r--  1 jessejones  jessejones  11363328 Mar  4 14:18 Trivial.db
 * Styles aren't getting applied reliably. Mostly member and type names.
+* Make sure setting the default text font size works too.
 * Work on tab completion:
-	- fair amount of duplicated code
 	- five versions target, call, arg, ctor arg, namespace completion
 	- IAutoComplete should be a repeated interface?
-	- call shows all methods of the target (but only if editing at the end of a name)
-	- need to check access and visibility
 	- make sure private methods work (for local assemblies)
 	- should the insert be a new undo command?
 	- can we show the comments for the selection? maybe in a second window? or
@@ -129,7 +130,8 @@ might want a sample app
 	- arg completion should prune more types
 	- look at Code Templates file for ideas on statement completion
 	- arg completion could filter on formal arg type
-* OpenSelection isn't doing a case insensitive match, try nsview.cs
+	- might want to add a context menu to arg completion window: close and switch
+	   to an overload
 * Is ChangeAccess correct?
 * Add Convert to Decimal and Convert To Hex.
 * Couldn't use context menu to spellcheck with no database.
@@ -137,13 +139,16 @@ might want a sample app
   find some.
 * Shouldn't open selection prefer local files? If so, why is it finding those plus those
    on the external drive?
-* Build errors should use annotations.
+* Build errors should use annotations. What about the "Error 1 of 10" text?
 * Should put databases in ~/Library/Caches. Note that time machine skips this
    directory. See /System/Library/CoreServices/backupd.bundle/Contents/Resources/StdExclusions.plist
 * Last ignored target isn't ignored?
 * Get gear unit test working.
 * Short form should not show internal members for mscorlib or gac assemblies.
 * Short form should have a separate section for operators (see DateTime).
+* Short form should show extension methods:
+	- maybe could use a comment like // System.Linq Extension Methods
+* Why doesn't WeakReference short form put ctors in bold?
 * Look at NSObject leaks again:
 	- try the mono profilers again
 	- might also want to look at the new performance counters
@@ -155,14 +160,11 @@ might want a sample app
 	- argument completion window
 * Should spell check comments
 	- types and members should count as valid words
-* Why doesn't WeakReference short form put ctors in bold?
 * Might want to use NSFindPboard.
 * Need to comment out the snk line in cecil's standalone make file.
 * AssemblyVersion.cs file(s) aren't being generated?
 * Might want a warning if /var/db/locate.database is missing.
 * Put a cap on transcript size.
-* Short form should show extension methods:
-	- maybe could use a comment like // System.Linq Extension Methods
 * Add scripts to convert to decimal and hex. Maybe binary too.
 * Make sure prefs size is bounded.
 * Should be able to get rid of NSTreatUnknownArgumentsAsOpen hack.

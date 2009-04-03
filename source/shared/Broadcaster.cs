@@ -25,38 +25,60 @@ using System.Diagnostics;
 
 namespace Shared
 {
-	// Note that we don't use C# events because we want to decouple broadcasters
-	// from observers (so we can't have plugins maintain events) and we want to
-	// make broadcasting extensible without requiring changes to the shared plugin
-	// (so shared cannot have the events). NSNotificationCenter is a better fit
-	// but we'd like to avoid requiring observers to link with mcocoa.
-	public static class Broadcaster
+	// This should generally only be used with static observers. Note that a 
+	// strong reference to the trampoline must be retained and if the trampoline
+	// is unregistered the instance used must be identical to the one used when
+	// registering.
+	public sealed class ObserverTrampoline : IObserver
 	{
-		public static void Register(string name, object key, Action<string, object> callback)
+		public ObserverTrampoline(Action<string, object> callback)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
-			Trace.Assert(key != null, "key is null");
 			Trace.Assert(callback != null, "callback is null");
 			
-			List<Entry> callbacks;
-			if (!ms_callbacks.TryGetValue(name, out callbacks))
-			{
-				callbacks = new List<Entry>();
-				ms_callbacks.Add(name, callbacks);
-			}
-			
-			callbacks.Add(new Entry(key, callback));
+			m_callback = callback;
 		}
 		
-		// Removes all callbacks that match the key (which is usually a this pointer
-		// or string).
-		public static void Unregister(object key)
+		public void OnBroadcast(string name, object value)
 		{
-			Trace.Assert(key != null, "key is null");
+			m_callback(name, value);
+		}
+		
+		private Action<string, object> m_callback;
+	}
+	
+	// Note that we don't use C# events because we want to keep broadcasters and
+	// observers as decoupled as possible. And we don't use NSNotificationCenter
+	// because we'd like to be able to include arbitrary data in the broadcast: not
+	// just cocoa types. And we use an interface instead of a delegate because that
+	// allows us to use a WeakReference which means that clients don't need to
+	// explicitly unregister themselves (it can be painful to do that correctly and 
+	// mistakes often lead to hard to find leaks).
+	public static class Broadcaster
+	{
+		public static void Register(string name, IObserver observer)
+		{
+			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
+			Trace.Assert(observer != null, "observer is null");
 			
-			foreach (var callbacks in ms_callbacks.Values)
+			List<WeakReference> observers;
+			if (!ms_observers.TryGetValue(name, out observers))
 			{
-				Unused.Value = callbacks.RemoveAll((e) => e.Key == key);
+				observers = new List<WeakReference>();
+				ms_observers.Add(name, observers);
+			}
+			
+			if (!observers.Exists(o => object.ReferenceEquals(observer, o.Target)))
+				observers.Add(new WeakReference(observer));
+		}
+		
+		// Note that this generally does not have to be called.
+		public static void Unregister(IObserver observer)
+		{
+			Trace.Assert(observer != null, "observer is null");
+			
+			foreach (List<WeakReference> candidates in ms_observers.Values)
+			{
+				candidates.RemoveAll(c => object.ReferenceEquals(observer, c.Target));
 			}
 		}
 		
@@ -64,41 +86,20 @@ namespace Shared
 		{
 			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
 			
-			List<Entry> callbacks;
-			if (ms_callbacks.TryGetValue(name, out callbacks))
+			List<WeakReference> observers;
+			if (ms_observers.TryGetValue(name, out observers))
 			{
-				foreach (Entry entry in callbacks)
+				for (int i = observers.Count - 1; i >= 0; --i)
 				{
-					DoInvoke(name, entry.Callback, value);
+					IObserver observer = observers[i].Target as IObserver;
+					if (observer != null)
+						observer.OnBroadcast(name, value);
+					else
+						observers.RemoveAt(i);
 				}
 			}
 		}
 		
-		private static void DoInvoke(string name, Action<string, object> callback, object value)
-		{
-			try
-			{
-				callback(name, value);
-			}
-			catch (Exception e)
-			{
-				Log.WriteLine(TraceLevel.Warning, "Errors", "There was an error processing the {0} broadcast:", name);
-				Log.WriteLine(TraceLevel.Warning, "Errors", e.ToString());
-			}
-		}
-		
-		private struct Entry
-		{	
-			public Entry(object key, Action<string, object> callback)
-			{
-				Key = key;
-				Callback = callback;
-			}
-			
-			public object Key  {get; private set;}
-			public Action<string, object> Callback {get; private set;}												
-		}
-		
-		private static Dictionary<string, List<Entry>> ms_callbacks = new Dictionary<string, List<Entry>>();
+		private static Dictionary<string, List<WeakReference>> ms_observers = new Dictionary<string, List<WeakReference>>();
 	}
 }

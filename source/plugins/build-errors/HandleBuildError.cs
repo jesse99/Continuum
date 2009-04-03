@@ -29,7 +29,7 @@ using System.IO;
 
 namespace BuildErrors
 {
-	internal sealed class HandleBuildError : IHandleBuildError, IStartup, IFactoryPrefs, IBuildErrors
+	internal sealed class HandleBuildError : IHandleBuildError, IStartup, IFactoryPrefs, IBuildErrors, IObserver
 	{
 		public void Instantiated(Boss boss)
 		{
@@ -93,7 +93,21 @@ namespace BuildErrors
 			m_current = 0;
 			DoHandle();
 			
-			Broadcaster.Register("text lines changed", this, this.DoUpdateLines);
+			Broadcaster.Register("text lines changed", this);
+		}
+		
+		public void OnBroadcast(string name, object value)
+		{
+			switch (name)
+			{
+				case "text lines changed":
+					DoUpdateLines(name, value);
+					break;
+					
+				default:
+					Trace.Fail("bad name: " + name);
+					break;
+			}
 		}
 		
 		public void ShowCurrent()

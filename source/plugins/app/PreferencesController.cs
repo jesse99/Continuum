@@ -28,7 +28,7 @@ using System.Diagnostics;
 
 namespace App
 {
-	[ExportClass("PreferencesController", "NSWindowController", Outlets = "globsTable text_memberButton text_typeButton text_preprocessButton monoRoot lineWell transcriptWell errorsWell pathsController defaultWell spacesWell tabsWell contents tabs transcript_commandButton transcript_stdoutButton transcript_stderrButton errorsButton globalIgnores text_defaultButton text_keywordButton text_identifierButton text_stringButton text_numberButton text_commentButton text_other1Button text_other2Button")]
+	[ExportClass("PreferencesController", "NSWindowController", Outlets = "globsTable text_memberButton text_typeButton text_preprocessButton monoRoot lineWell transcriptWell errorsWell pathsController defaultWell spacesWell argsWell tabsWell contents tabs transcript_commandButton transcript_stdoutButton transcript_stderrButton errorsButton globalIgnores text_defaultButton text_keywordButton text_identifierButton text_stringButton text_numberButton text_commentButton text_other1Button text_other2Button")]
 	internal sealed class PreferencesController : NSWindowController
 	{
 		public PreferencesController() : base(NSObject.AllocNative("PreferencesController"))
@@ -69,6 +69,7 @@ namespace App
 			DoInitWell("selected line");
 			DoInitWell("transcript");
 			DoInitWell("errors");
+			DoInitWell("args");
 			
 			this["globsTable"].Call("reload");		// TODO: for some reason our table isn't created until we call a method on it...
 			
@@ -114,6 +115,12 @@ namespace App
 		{
 			NSColor color = sender.Call("color").To<NSColor>();
 			DoSetBackColor("text tabs", color, true);
+		}
+		
+		public void setArgsColor(NSObject sender)
+		{
+			NSColor color = sender.Call("color").To<NSColor>();
+			DoSetBackColor("args", color, false);
 		}
 		
 		public void setLineColor(NSObject sender)
@@ -256,6 +263,7 @@ namespace App
 			DoInitWell("selected line");
 			DoInitWell("transcript");
 			DoInitWell("errors");
+			DoInitWell("args");
 		}
 		
 		public void textDidChange(NSObject sender)

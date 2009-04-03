@@ -33,7 +33,7 @@ using System.Threading;
 
 namespace ObjectModel
 {
-	internal sealed class Populate : IOpened, IShutdown
+	internal sealed class Populate : IOpened, IShutdown, IObserver
 	{
 		public void Instantiated(Boss boss)
 		{
@@ -70,8 +70,8 @@ namespace ObjectModel
 			m_path = Populate.GetDatabasePath(m_boss);
 			Log.WriteLine("ObjectModel", "'{0}' was opened", m_path);
 			
-			Broadcaster.Register("opened directory", this, this.DoOnOpenDir);
-			Broadcaster.Register("closing directory", this, (name, value) => OnShutdown());
+			Broadcaster.Register("opened directory", this);
+			Broadcaster.Register("closing directory", this);
 			
 			Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "starting thread for {0}", m_path);
 			m_thread = new Thread(() => DoParseAssemblies(m_path));
@@ -80,6 +80,24 @@ namespace ObjectModel
 			m_thread.Priority = ThreadPriority.BelowNormal;		// this is ignored on Mono 2.0
 			m_thread.Start();
 //	Console.WriteLine("{0} is using thread {1}", Path.GetFileName(path), m_thread.ManagedThreadId);
+		}
+		
+		public void OnBroadcast(string name, object value)
+		{
+			switch (name)
+			{
+				case "opened directory":
+					DoOnOpenDir(name, value);
+					break;
+					
+				case "closing directory":
+					OnShutdown();
+					break;
+					
+				default:
+					Trace.Fail("bad name: " + name);
+					break;
+			}
 		}
 		
 		// Cleanly kill our threads so that they don't die as they are updating

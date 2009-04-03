@@ -33,7 +33,7 @@ namespace DirectoryEditor
 {
 	// TODO: need to get the path menu when command-click in title bar
 	[ExportClass("DirectoryController", "NSWindowController", Outlets = "table targets build cancel prefsController")]
-	internal sealed class DirectoryController : NSWindowController
+	internal sealed class DirectoryController : NSWindowController, IObserver
 	{
 		public DirectoryController(string path) : base(NSObject.AllocNative("DirectoryController"))
 		{	
@@ -70,7 +70,7 @@ namespace DirectoryEditor
 				handler.Register(this, 1000, this.DoShowPrefs);
 				
 				DoLoadPrefs(path);
-				Broadcaster.Register("global ignores changed", this, this.DoUpdateTargets);
+				Broadcaster.Register("global ignores changed", this);
 				DoUpdateTargets(string.Empty, null);
 			}
 			else
@@ -93,6 +93,20 @@ namespace DirectoryEditor
 			Broadcaster.Invoke("opened directory", m_boss);
 			
 			ActiveObjects.Add(this);
+		}
+		
+		public void OnBroadcast(string name, object value)
+		{
+			switch (name)
+			{
+				case "global ignores changed":
+					DoUpdateTargets(name, value);
+					break;
+					
+				default:
+					Trace.Fail("bad name: " + name);
+					break;
+			}
 		}
 		
 		public void windowWillClose(NSObject notification)

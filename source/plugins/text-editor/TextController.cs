@@ -32,7 +32,7 @@ using System.Text.RegularExpressions;
 namespace TextEditor
 {
 	[ExportClass("TextController", "NSWindowController", Outlets = "textView lineLabel decsPopup scrollView")]
-	internal sealed class TextController : NSWindowController
+	internal sealed class TextController : NSWindowController, IObserver
 	{
 		public TextController() : base("TextController", "text-editor")
 		{
@@ -49,12 +49,26 @@ namespace TextEditor
 			m_applier = new ApplyStyles(this, m_textView.Value, m_scrollView.Value);
 			DoSetTextOptions();
 			
-			Broadcaster.Register("text default color changed", this, this.DoUpdateDefaultColor);	
+			Broadcaster.Register("text default color changed", this);	
 			DoUpdateDefaultColor(string.Empty, null);
 			
 			m_textView.Value.Call("onOpened:", this);
 			
 			ActiveObjects.Add(this);
+		}
+		
+		public void OnBroadcast(string name, object value)
+		{
+			switch (name)
+			{
+				case "text default color changed":
+					DoUpdateDefaultColor(name, value);
+					break;
+					
+				default:
+					Trace.Fail("bad name: " + name);
+					break;
+			}
 		}
 		
 		public Boss Boss
@@ -254,7 +268,7 @@ namespace TextEditor
 			
 			var complete = m_boss.Get<IAutoComplete>();
 			complete.Close();
-
+			
 			if (m_watcher != null)
 			{
 				m_watcher.Dispose();
@@ -272,7 +286,7 @@ namespace TextEditor
 			// If the windows are closed very very quickly then if we don't do this
 			// we get a crash when Cocoa tries to call our delegate.
 			m_textView.Value.layoutManager().setDelegate(null);
-
+			
 			autorelease();
 		}
 		

@@ -43,9 +43,9 @@ namespace TextEditor
 		
 		private AnnotateView(IntPtr obj) : base(obj)
 		{
-			m_color = NSColor.yellowColor().Retain();
+			m_color = NSColor.colorWithDeviceRed_green_blue_alpha(246/255.0f, 245/255.0f, 168/255.0f, 1.0f).Retain();
 		}
-
+		
 		public NSAttributedString GetText()
 		{
 			return m_text;
@@ -179,7 +179,7 @@ namespace TextEditor
 		public NSColor BackColor
 		{
 			get {return m_view.BackColor;}
-			set {m_view.BackColor = value;}
+			set {m_view.BackColor = value; m_view.setNeedsDisplay(true);}
 		}
 		
 		public string Text

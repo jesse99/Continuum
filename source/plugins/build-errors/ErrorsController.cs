@@ -72,7 +72,7 @@ namespace BuildErrors
 	}
 
 	[ExportClass("ErrorsController", "NSWindowController", Outlets = "textView")]
-	internal sealed class ErrorsController : NSWindowController
+	internal sealed class ErrorsController : NSWindowController, IObserver
 	{
 		public ErrorsController() : base("ErrorsController", "build-errors")
 		{
@@ -83,12 +83,30 @@ namespace BuildErrors
 			
 			m_textView.Value.setEditable(false);
 			
-			Broadcaster.Register("errors font changed", this, this.DoUpdateFont);
-			Broadcaster.Register("errors color changed", this, this.DoUpdateBackgroundColor);
+			Broadcaster.Register("errors font changed", this);
+			Broadcaster.Register("errors color changed", this);
 			
 			m_defaultStyle = NSMutableDictionary.Create().Retain();
 			DoUpdateFont(string.Empty, null);
 			DoUpdateBackgroundColor(string.Empty, null);
+		}
+		
+		public void OnBroadcast(string name, object value)
+		{
+			switch (name)
+			{
+				case "errors font changed":
+					DoUpdateFont(name, value);
+					break;
+					
+				case "errors color changed":
+					DoUpdateBackgroundColor(name, value);
+					break;
+					
+				default:
+					Trace.Fail("bad name: " + name);
+					break;
+			}
 		}
 		
 		public void Clear()

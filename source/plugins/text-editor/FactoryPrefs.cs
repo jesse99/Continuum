@@ -80,6 +80,10 @@ namespace TextEditor
 			data = NSArchiver.archivedDataWithRootObject(color);
 			dict.setObject_forKey(data, NSString.Create("selected line color"));
 			
+			color = NSColor.colorWithDeviceRed_green_blue_alpha(246/255.0f, 245/255.0f, 168/255.0f, 1.0f);
+			data = NSArchiver.archivedDataWithRootObject(color);
+			dict.setObject_forKey(data, NSString.Create("args color"));
+			
 			dict.setObject_forKey(NSNumber.Create(20.0f), NSString.Create("tab stops"));
 			
 			var paths = NSMutableArray.Create("/System/Library/", "/usr/include/");

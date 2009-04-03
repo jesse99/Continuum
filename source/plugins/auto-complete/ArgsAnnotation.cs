@@ -21,6 +21,7 @@
 
 using Gear;
 using MCocoa;
+using MObjc;
 using Shared;
 using System;
 using System.Collections.Generic;
@@ -29,11 +30,12 @@ using System.Linq;
 
 namespace AutoComplete
 {
-	internal sealed class ArgsAnnotation : IArgsAnnotation
+	internal sealed class ArgsAnnotation : IArgsAnnotation, IObserver
 	{
 		public void Instantiated(Boss boss)
 		{
 			m_boss = boss;
+			Broadcaster.Register("args color changed", this);
 		}
 		
 		public Boss Boss
@@ -58,11 +60,12 @@ namespace AutoComplete
 				m_oldStates.Add(new State(m_annotation, m_member));
 				m_annotation.Visible = false;
 			}
-				
+			
 			m_annotation = annotation;
 			m_member = member;
 			m_currentArg = 0;
 			m_annotation.String = DoBuildString();
+			OnBroadcast("args color changed", null);
 			
 			m_annotation.Visible = true;
 		}
@@ -126,8 +129,20 @@ namespace AutoComplete
 		
 		public void Close()
 		{
+			Broadcaster.Unregister(this);
+			
 			m_annotation.Close();
 			m_annotation = null;
+		}
+		
+		public void OnBroadcast(string name, object value)
+		{
+			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
+			var data = defaults.objectForKey(NSString.Create("args color")).To<NSData>();
+			var color = NSUnarchiver.unarchiveObjectWithData(data).To<NSColor>();
+			
+			if (m_annotation != null)
+				m_annotation.BackColor = color;
 		}
 		
 		#region Private Methods

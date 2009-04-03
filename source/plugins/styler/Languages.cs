@@ -56,7 +56,8 @@ namespace Styler
 		{
 			try
 			{
-				Broadcaster.Register("language globs changed", typeof(Languages), Languages.DoLoadGlobs);
+				ms_observer = new ObserverTrampoline(Languages.DoLoadGlobs);
+				Broadcaster.Register("language globs changed", ms_observer);
 				DoLoadGlobs("language globs changed", null);
 				
 				DoLoadLanguages();
@@ -162,6 +163,7 @@ namespace Styler
 		
 		#region Fields
 		private static bool ms_inited;
+		private static ObserverTrampoline ms_observer;
 		private static Dictionary<string, string> ms_globs = new Dictionary<string, string>();					// glob => language name
 		private static Dictionary<string, Language> ms_languages = new Dictionary<string, Language>();	// language name => styler
 		#endregion

@@ -31,7 +31,7 @@ using System.Linq;
 namespace TextEditor
 {
 	// Color codes text using StyleRuns.
-	internal sealed class ApplyStyles
+	internal sealed class ApplyStyles : IObserver
 	{
 		public ApplyStyles(TextController controller, NSTextView text, NSScrollView scroller)
 		{
@@ -45,28 +45,48 @@ namespace TextEditor
 			
 			if (ms_attributes.Count == 0)
 			{
-				Broadcaster.Register("tab stops changed", "static styles", ApplyStyles.DoResetTabStops);
+				ms_tabObserver = new ObserverTrampoline(ApplyStyles.DoResetTabStops);
+				Broadcaster.Register("tab stops changed", ms_tabObserver);
 				DoResetTabStops("tab stops changed", null);
 				
+				ms_styleObserver = new ObserverTrampoline(ApplyStyles.DoResetFont);
 				foreach (string name in ms_names)
 				{
-					Broadcaster.Register(name, "static styles", ApplyStyles.DoResetFont);
+					Broadcaster.Register(name, ms_styleObserver);
 					ms_attributes.Add(name, NSMutableDictionary.Create().Retain());
 					DoResetFont(name, null);
 				}
 			}
 			
-			Broadcaster.Register("tab stops changed", this, this.DoUpdateTabStops);
+			Broadcaster.Register("tab stops changed", this);
 			foreach (string name in ms_names)
 			{
-				Broadcaster.Register(name, this, this.DoUpdateAttributes);
+				Broadcaster.Register(name, this);
 			}
 			
-			Broadcaster.Register("selected line color changed", this, this.DoUpdateSelectedLineAttrs);
+			Broadcaster.Register("selected line color changed", this);
 			if (ms_selectedLineColor == null)
 				DoSetTempAttrs();
 			
 			ActiveObjects.Add(this);
+		}
+		
+		public void OnBroadcast(string name, object value)
+		{
+			switch (name)
+			{
+				case "tab stops changed":
+					DoUpdateTabStops(name, value);
+					break;
+					
+				case "selected line color changed":
+					DoUpdateSelectedLineAttrs(name, value);
+					break;
+					
+				default:
+					DoUpdateAttributes(name, value);
+					break;
+			}
 		}
 		
 		public void Reset(string text)
@@ -510,6 +530,8 @@ namespace TextEditor
 		private StyleRun m_line;
 		private StyleRun m_error;
 		
+		private ObserverTrampoline ms_tabObserver;
+		private ObserverTrampoline ms_styleObserver;
 		private static NSColor ms_selectedLineColor;
 		private static NSColor ms_errorColor;
 		private static Dictionary<string, NSMutableDictionary> ms_attributes = new Dictionary<string, NSMutableDictionary>();
