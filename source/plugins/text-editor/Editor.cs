@@ -56,7 +56,8 @@ namespace TextEditor
 			get
 			{
 				Trace.Assert(m_window != null, "window isn't set");
-			
+				Trace.Assert(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
+				
 				TextController controller = (TextController) m_window.windowController();
 				return controller.Path;
 			}
@@ -133,8 +134,10 @@ namespace TextEditor
 		
 		public LiveRange GetRange(NSRange range)
 		{
+			Trace.Assert(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
+			
 			ConcreteLiveRange clr = new ConcreteLiveRange(m_boss, range.location, range.length);
-
+			
 			TextController controller = (TextController) m_window.windowController();
 			controller.RegisterRange(clr);
 			

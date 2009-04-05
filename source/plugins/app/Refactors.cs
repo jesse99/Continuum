@@ -77,21 +77,9 @@ namespace App
 			bool enabled = false;
 			if (boss != null)
 			{
-				var editor = boss.Get<ITextEditor>();
-				string fileName = System.IO.Path.GetFileName(editor.Path);
 				
-				boss = ObjectModel.Create("Stylers");
-				if (boss.Has<IFindLanguage>())
-				{
-					var find = boss.Get<IFindLanguage>();
-					while (find != null && !enabled)
-					{
-						Boss language = find.Find(fileName);
-						enabled = language.Name == "CsLanguage";
-						
-						find = boss.GetNext<IFindLanguage>(find);
-					}
-				}
+				var editor = boss.Get<ITextEditor>();
+				enabled = CsHelpers.IsCSharp(editor.Path);
 			}
 			
 			return enabled;
@@ -113,7 +101,7 @@ namespace App
 				{
 					var text = boss.Get<IText>();
 					NSRange range = text.Selection;
-					string newText = DoScript(Items[index], range.location, range.length, text.Text);
+					string newText = DoScript(Items[index], range.location, range.length, text);
 					if (newText != text.Text)
 					{
 						string undoText = Path.GetFileNameWithoutExtension(Items[index]);
@@ -136,9 +124,9 @@ namespace App
 		#endregion
 		
 		#region Private Methods		
-		private string DoScript(string path, int location, int length, string text)
+		private string DoScript(string path, int location, int length, IText text)
 		{
-			string result = text;
+			string result = text.Text;
 			
 			try
 			{

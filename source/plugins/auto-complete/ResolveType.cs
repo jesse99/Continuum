@@ -236,15 +236,15 @@ namespace AutoComplete
 			fullName = CsHelpers.GetRealName(target);
 			hash = m_database.FindAssembly(fullName);
 			
-			for (int i = 0; i < globals.Uses.Length && hash == null; ++i)
-			{
-				fullName = globals.Uses[i].Namespace + "." + target;
-				hash = m_database.FindAssembly(fullName);
-			}
-			
 			for (int i = 0; i < globals.Namespaces.Length && hash == null; ++i)
 			{
 				fullName = globals.Namespaces[i].Name + "." + target;
+				hash = m_database.FindAssembly(fullName);
+			}
+			
+			for (int i = 0; i < globals.Uses.Length && hash == null; ++i)
+			{
+				fullName = globals.Uses[i].Namespace + "." + target;
 				hash = m_database.FindAssembly(fullName);
 			}
 		}

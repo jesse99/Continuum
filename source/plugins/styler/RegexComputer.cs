@@ -44,7 +44,7 @@ namespace Styler
 			m_white = b.Get<IWhitespace>();
 		}
 		
-		public void ComputeRuns(string text, int edit, Boss boss)	// threaded
+		public void ComputeRuns(Boss boss, string path, string text, int edit)	// threaded
 		{
 			var runs = new List<StyleRun>(text.Length/50);
 			
@@ -54,7 +54,7 @@ namespace Styler
 				{
 					Log.WriteLine(TraceLevel.Verbose, "Styler", "computing runs for edit {0} and {1} characters", edit, text.Length);
 					
-					OnComputeRuns(text, edit, runs, boss);
+					OnComputeRuns(boss, path, text, edit, runs);
 					
 					Log.WriteLine(TraceLevel.Verbose, "Styler", "    done computing runs for edit {0}", edit);
 				}
@@ -79,15 +79,9 @@ namespace Styler
 		// TODO: This is a bit slow. The parser seems to be significantly faster than the mondo
 		// regex so we might get a speedup for c# by reusing the scanner. Note that we'd still
 		// have to use the regex for stuff like whitespace and preprocessor runs though.
-		protected virtual void OnComputeRuns(string text, int edit, List<StyleRun> runs, Boss boss)	// threaded
+		protected virtual void OnComputeRuns(Boss boss, string path, string text, int edit, List<StyleRun> runs)	// threaded
 		{
 			DoRegexMatch(text, runs);
-			
-			var cachedCatalog =  boss.Get<ICachedCsCatalog>();
-			cachedCatalog.Reset(new Token[0], new Token[0], new Token[0]);
-			
-			var cachedGlobals =  boss.Get<ICachedCsDeclarations>();
-			cachedGlobals.Reset(edit, null);
 		}
 		#endregion
 		

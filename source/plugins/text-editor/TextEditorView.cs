@@ -342,10 +342,9 @@ namespace TextEditor
 			bool handled = false;
 			
 			NSRange range = selectedRange();
-			var catalog = m_boss.Get<ICachedCsCatalog>();
+			var tokens = m_boss.Get<ISearchTokens>();
 			
-			DoUpdateCache();
-			NSRange next = catalog.GetNextIdentifier(range.location + range.length);
+			NSRange next = tokens.GetNextIdentifier(range.location + range.length);
 			if (next.length > 0)
 			{
 				setSelectedRange(next);
@@ -360,10 +359,9 @@ namespace TextEditor
 			bool handled = false;
 			
 			NSRange range = selectedRange();
-			var catalog = m_boss.Get<ICachedCsCatalog>();
+			var tokens = m_boss.Get<ISearchTokens>();
 			
-			DoUpdateCache();
-			NSRange previous = catalog.GetPreviousIdentifier(range.location);
+			NSRange previous = tokens.GetPreviousIdentifier(range.location);
 			if (previous.length > 0)
 			{
 				setSelectedRange(previous);
@@ -371,20 +369,6 @@ namespace TextEditor
 			}
 			
 			return handled;
-		}
-		
-		private void DoUpdateCache()
-		{
-			int edit;
-			CsGlobalNamespace globals;
-			var cache = m_boss.Get<ICachedCsDeclarations>();
-			cache.Get(out edit, out globals);
-			
-			TextController controller = (TextController) window().windowController();
-			if (edit != controller.EditCount)
-			{
-				controller.Computer.ComputeRuns(controller.Text, controller.EditCount, m_boss);
-			}
 		}
 		
 		private void DoGetEntries(string selection)

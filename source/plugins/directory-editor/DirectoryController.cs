@@ -163,7 +163,12 @@ namespace DirectoryEditor
 		
 		public string Path
 		{
-			get {return m_root.Path;}
+			get
+			{
+				Trace.Assert(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
+
+				return m_root.Path;
+			}
 		}
 		
 		public string[] IgnoredTargets

@@ -43,7 +43,7 @@ namespace TextEditor
 		
 		private AnnotateView(IntPtr obj) : base(obj)
 		{
-			m_color = NSColor.colorWithDeviceRed_green_blue_alpha(246/255.0f, 245/255.0f, 168/255.0f, 1.0f).Retain();
+			m_color = NSColor.whiteColor().Retain();
 		}
 		
 		public NSAttributedString GetText()
@@ -92,7 +92,13 @@ namespace TextEditor
 			path.fill();
 			
 			if (!NSObject.IsNullOrNil(m_text))
-				m_text.drawAtPoint(new NSPoint(LeftMargin, 0.0f));
+			{
+				// TODO: may need to use NSLineBreakByWordWrapping once we support
+				// multi-line annotations
+				int options = Enums.NSStringDrawingUsesLineFragmentOrigin | Enums.NSStringDrawingDisableScreenFontSubstitution;
+				NSRect r = new NSRect(rect.Left + LeftMargin, rect.Bottom + LeftMargin, rect.size.width - 2*LeftMargin, rect.size.height);
+				m_text.drawWithRect_options(r, options);
+			}
 		}
 		
 		#region Fields
@@ -112,10 +118,14 @@ namespace TextEditor
 			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
 			NSString fontName = defaults.stringForKey(NSString.Create("text default font name"));
 			float ptSize = defaults.floatForKey(NSString.Create("text default font size"));
+			NSFont font;
 			if (!NSObject.IsNullOrNil(fontName))
-				dict.setObject_forKey(NSFont.fontWithName_size(fontName, ptSize), Externs.NSFontAttributeName);
+				font = NSFont.fontWithName_size(fontName, ptSize);
 			else
-				dict.setObject_forKey(NSFont.labelFontOfSize(12.0f), Externs.NSFontAttributeName);
+				font = NSFont.labelFontOfSize(12.0f);
+			dict.setObject_forKey(font, Externs.NSFontAttributeName);
+			
+			m_fontHeight = font.ascender() + font.descender();
 			
 			m_attrs = dict.Retain();
 		}
@@ -314,8 +324,13 @@ namespace TextEditor
 		
 		private void DoSetString(NSAttributedString value)
 		{
+			// Unfortunately size is returning a value that is a bit too large so the 
+			// text isn't vertically centered when it is drawn. Not sure why this is,
+			// maybe it's adding in leading, but the leading() method on our font
+			// returns 0.0 so we can't use that to try to fix it up...
 			NSSize size = value.size();
 			size.width += 2*AnnotateView.LeftMargin;
+			size.height = 2*AnnotateView.LeftMargin + m_fontHeight;
 			
 			DoAdjustFrame(size);
 			m_view.SetText(value);
@@ -364,6 +379,7 @@ namespace TextEditor
 		private NSDictionary m_attrs;
 		private bool m_visible;
 		private NSPoint m_offset;
+		private float m_fontHeight;
 		#endregion
 	}
 }

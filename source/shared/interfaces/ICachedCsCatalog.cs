@@ -23,6 +23,7 @@ using Gear;
 using MCocoa;
 using System;
 
+#if false
 namespace Shared
 {
 	// Interface on the Text Editor boss which can be used to determine what sort
@@ -43,3 +44,4 @@ namespace Shared
 		void Reset(Token[] comments, Token[] strings, Token[] identifiers);
 	}
 }
+#endif

@@ -65,7 +65,7 @@ namespace AutoComplete
 			m_member = member;
 			m_currentArg = 0;
 			m_annotation.String = DoBuildString();
-			OnBroadcast("args color changed", null);
+			DoUpdateBackColor();
 			
 			m_annotation.Visible = true;
 		}
@@ -137,6 +137,21 @@ namespace AutoComplete
 		
 		public void OnBroadcast(string name, object value)
 		{
+			switch (name)
+			{
+				case "args color changed":
+					DoUpdateBackColor();
+					break;
+					
+				default:
+					Trace.Fail("bad name: " + name);
+					break;
+			}
+		}
+		
+		#region Private Methods
+		private void DoUpdateBackColor()
+		{
 			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
 			var data = defaults.objectForKey(NSString.Create("args color")).To<NSData>();
 			var color = NSUnarchiver.unarchiveObjectWithData(data).To<NSColor>();
@@ -145,7 +160,6 @@ namespace AutoComplete
 				m_annotation.BackColor = color;
 		}
 		
-		#region Private Methods
 		private bool DoClosesAnchor(int insertionPoint)
 		{
 			bool closes = false;
@@ -246,11 +260,16 @@ namespace AutoComplete
 			{
 				if (j == m_currentArg)
 				{
-					int k;
+					char delimiter;
 					if (j + 1 < m_member.ArgNames.Length)
-						k = text.IndexOf(m_member.ArgNames[j] + ',');
+						delimiter = ',';
 					else
-						k = text.IndexOf(m_member.ArgNames[j] + ')');
+						delimiter = ')';
+						
+					int k = text.IndexOf(m_member.ArgNames[j] + delimiter);
+					Trace.Assert(k >= 0, string.Format("couldn't find '{0}' in '{1}'", delimiter, text));
+					Trace.Assert(m_member.ArgNames[j].Length > 0, "arg is empty");
+					Trace.Assert(k + m_member.ArgNames[j].Length <= text.Length, "arg is too long");
 					
 					DoHilite(str, k, m_member.ArgNames[j].Length);
 				}

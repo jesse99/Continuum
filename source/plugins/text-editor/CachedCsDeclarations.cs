@@ -24,6 +24,7 @@ using Shared;
 using System;
 using System.Diagnostics;
 
+#if false
 namespace TextEditor
 {
 	internal sealed class CachedCsDeclarations : ICachedCsDeclarations
@@ -71,3 +72,4 @@ namespace TextEditor
 		#endregion
 	}
 }
+#endif

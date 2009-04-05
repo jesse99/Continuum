@@ -27,6 +27,6 @@ namespace Shared
 	public interface IRefactorScript : IInterface
 	{
 		// Returns the new source code.
-		string Execute(string script, string source, int selStart, int selLen);
-	} 
+		string Execute(string script, IText source, int selStart, int selLen);
+	}
 }

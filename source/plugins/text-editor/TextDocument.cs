@@ -53,6 +53,8 @@ namespace TextEditor
 		
 		public bool HasChangedOnDisk()
 		{
+			Trace.Assert(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
+			
 			bool changed = false;
 			
 			NSURL url = fileURL();

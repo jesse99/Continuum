@@ -57,6 +57,7 @@ namespace TextEditor
 				{
 					lock (m_mutex)
 					{
+						m_path = text.Boss.Get<ITextEditor>().Path;
 						m_text = text.Text;
 						m_edit = text.EditCount;
 						m_computer = computer;
@@ -70,12 +71,6 @@ namespace TextEditor
 					// We need to ensure that the callback is always called because
 					// TextController uses the call as a signal that it is OK to restore the
 					// scroller.
-					var cachedCatalog = m_boss.Get<ICachedCsCatalog>();
-					cachedCatalog.Reset(new Token[0], new Token[0], new Token[0]);
-					
-					var cachedGlobals = m_boss.Get<ICachedCsDeclarations>();
-					cachedGlobals.Reset(text.EditCount, null);
-					
 					var cachedRuns = m_boss.Get<ICachedStyleRuns>();
 					cachedRuns.Reset(text.EditCount, new StyleRun[0]);
 					
@@ -93,6 +88,7 @@ namespace TextEditor
 			
 			lock (m_mutex)
 			{
+				m_path = null;
 				m_text = null;
 				m_edit = 0;
 				m_computer = computer;
@@ -133,6 +129,7 @@ namespace TextEditor
 		
 		private void DoTimer()			// threaded		TODO: might be better to use a low priority thread (tho mono 2.2 doesn't support them)
 		{
+			string path = null;
 			string text = null;
 			int edit = 0;
 			IComputeRuns computer = null;
@@ -140,6 +137,7 @@ namespace TextEditor
 			
 			lock (m_mutex)	
 			{
+				path = m_path;
 				text = m_text;
 				edit = m_edit;
 				computer = m_computer;
@@ -148,8 +146,8 @@ namespace TextEditor
 			
 			if (text != null)
 			{
-				computer.ComputeRuns(text, edit, m_boss);
-								
+				computer.ComputeRuns(m_boss, path, text, edit);
+				
 				if (!m_closed)
 					NSApplication.sharedApplication().BeginInvoke(callback);
 			}
@@ -164,6 +162,7 @@ namespace TextEditor
 		private volatile bool m_closed;
 		
 		private object m_mutex = new object();
+			private string m_path;
 			private string m_text;
 			private int m_edit;
 			private IComputeRuns m_computer;

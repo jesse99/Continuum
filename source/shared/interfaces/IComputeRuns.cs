@@ -28,9 +28,9 @@ namespace Shared
 	// Primary interface on language bosses.
 	public interface IComputeRuns : IInterface
 	{		
-		// Computes style runs and updates ICachedCsCatalog, ICachedCsDeclarations,
-		// and ICachedStyleRuns on the boss. Note that this is called from a thread. 
-		void ComputeRuns(string text, int edit, Boss boss);
+		// Computes style runs and updates ICachedStyleRuns on the boss. 
+		// Note that this is called from a thread. 
+		void ComputeRuns(Boss boss, string path, string text, int edit);
 		
 		// Returns true if the language supports showing leading/trailing tabs and
 		// spaces.

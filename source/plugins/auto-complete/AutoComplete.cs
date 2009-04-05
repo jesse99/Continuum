@@ -37,11 +37,11 @@ namespace AutoComplete
 		{
 			m_boss = boss;
 			m_text = m_boss.Get<IText>();
-			m_cachedCatalog = m_boss.Get<ICachedCsCatalog>();
-			m_cachedGlobals = m_boss.Get<ICachedCsDeclarations>();
+			m_tokens = m_boss.Get<ISearchTokens>();
 			
 			boss = ObjectModel.Create("CsParser");
 			m_locals = boss.Get<ICsLocalsParser>();
+			m_parses = boss.Get<IParses>();
 		}
 		
 		public Boss Boss
@@ -123,11 +123,12 @@ namespace AutoComplete
 				Watch.Start();
 				Log.WriteLine("AutoComplete", "starting auto-complete");
 				
-				DoUpdateCache(computer);
+				var editor = m_boss.Get<ITextEditor>();
+				DoUpdateCache(editor, computer);
 				
-				if (!m_cachedCatalog.IsWithinComment(range.location) && !m_cachedCatalog.IsWithinString(range.location))
+				if (!m_tokens.IsWithinComment(range.location) && !m_tokens.IsWithinString(range.location))
 				{
-					handled = completer(m_boss.Get<ITextEditor>(), view, range);
+					handled = completer(editor, view, range);
 				}
 				
 				Watch.Reset();
@@ -138,7 +139,8 @@ namespace AutoComplete
 		
 		private bool DoCompleteTarget(ITextEditor editor, NSTextView view, NSRange range)
 		{
-			CsGlobalNamespace globals = m_cachedGlobals.Get();
+			Parse parse = m_parses.TryParse(editor.Path);
+			CsGlobalNamespace globals = parse != null ? parse.Globals : null;
 			if (globals != null)
 			{
 				Member[] members = null;
@@ -250,7 +252,8 @@ namespace AutoComplete
 		
 		private bool DoCompleteExpression(ITextEditor editor, NSTextView view, NSRange range)
 		{
-			CsGlobalNamespace globals = m_cachedGlobals.Get();
+			Parse parse = m_parses.TryParse(editor.Path);
+			CsGlobalNamespace globals = parse != null ? parse.Globals : null;
 			if (globals != null)
 			{
 				var target = m_target.Resolve(m_text.Text, "<this>", range.location, globals);
@@ -286,15 +289,13 @@ namespace AutoComplete
 			return true;
 		}
 		
-		private void DoUpdateCache(IComputeRuns computer)
+		private void DoUpdateCache(ITextEditor editor, IComputeRuns computer)
 		{
-			int edit;
-			CsGlobalNamespace globals;
-			m_cachedGlobals.Get(out edit, out globals);
+			Parse parse = m_parses.TryParse(editor.Path);
 			
-			if (edit != m_text.EditCount)
+			if (parse != null && parse.Edit != m_text.EditCount)
 			{
-				computer.ComputeRuns(m_text.Text, m_text.EditCount, m_boss);
+				computer.ComputeRuns(editor.Boss, editor.Path, m_text.Text, m_text.EditCount);
 			}
 		}
 		
@@ -319,8 +320,8 @@ namespace AutoComplete
 		private IText m_text;
 		private Database m_database;
 		private CompletionsController m_controller;
-		private ICachedCsCatalog m_cachedCatalog;
-		private ICachedCsDeclarations m_cachedGlobals;
+		private ISearchTokens m_tokens;
+		private IParses m_parses;
 		private ICsLocalsParser m_locals;
 		private ResolveTarget m_target;
 		private ResolveType m_type;

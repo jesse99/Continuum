@@ -40,9 +40,11 @@ namespace Styler
 			m_boss = boss;
 		}
 		
-		public Declaration[] Get(string text, StyleRun[] runs, CsGlobalNamespace globals)
+		public Declaration[] Get(IText itext, StyleRun[] runs)
 		{
 			Trace.Assert(runs != null, "runs is null");
+			
+			string text = itext.Text;
 			
 			var decs = new List<Declaration>();
 			string indent = string.Empty;

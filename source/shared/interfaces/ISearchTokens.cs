@@ -25,30 +25,18 @@ using System;
 
 namespace Shared
 {
-	public struct Declaration
+	// Interface on the Text Editor boss which can be used to determine what sort
+	// of code an offset is within.
+	public interface ISearchTokens : IInterface
 	{
-		public Declaration(string name, NSRange extent, bool isType, bool isDir)
-		{
-			Name = name;
-			Extent = extent;
-			IsType = isType;
-			IsDirective = isDir;
-		}
+		bool IsWithinComment(int offset);
 		
-		public string Name {get; private set;}
+		bool IsWithinString(int offset);
 		
-		public NSRange Extent {get; private set;}
+		NSRange GetIdentifier(int offset);
 		
-		public bool IsType {get; private set;}
+		NSRange GetNextIdentifier(int offset);
 		
-		public bool IsDirective {get; private set;}
-	}
-		
-	// Optional interface on language bosses.
-	public interface IDeclarations : IInterface
-	{
-		// Returns most of the declarations in the text. Note that this will return as
-		// many declarations as possible even for malformed text. 
-		Declaration[] Get(IText text, StyleRun[] runs);
+		NSRange GetPreviousIdentifier(int offset);
 	}
 }

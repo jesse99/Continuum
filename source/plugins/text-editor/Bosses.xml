@@ -16,8 +16,7 @@
 	<Extend name = "TextEditor">
 		<Implementation interfaces = "IWindow ITextEditor IText IReload" name = "Editor"/>
 		<Implementation interfaces = "IStyler" name = "Styler"/>
-		<Implementation interfaces = "ICachedCsCatalog" name = "CachedCsCatalog"/>
-		<Implementation interfaces = "ICachedCsDeclarations" name = "CachedCsDeclarations"/>
+		<Implementation interfaces = "ISearchTokens" name = "SearchTokens"/>
 		<Implementation interfaces = "ICachedStyleRuns" name = "CachedStyleRuns"/>
 	</Extend>
 </Bosses>

@@ -85,7 +85,9 @@ namespace AutoComplete
 			}
 			
 			if (hash != null && (type == null || (type.Modifiers & MemberModifiers.Partial) != 0))
+			{
 				DoGetDatabaseMembers(fullName, target.IsInstance, target.IsStatic, members, globals);
+			}
 				
 			return fullName;
 		}

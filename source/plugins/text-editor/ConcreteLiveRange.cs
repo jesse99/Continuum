@@ -46,17 +46,32 @@ namespace TextEditor
 		
 		public override bool IsValid
 		{
-			get {return m_index >= 0;}
+			get
+			{
+				Trace.Assert(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
+				
+				return m_index >= 0;
+			}
 		}
 		
 		public override int Index
 		{
-			get {return m_index;}
+			get
+			{
+				Trace.Assert(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
+				
+				return m_index;
+			}
 		}
 		
 		public override int Length
 		{
-			get {return m_length;}
+			get
+			{
+				Trace.Assert(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
+				
+				return m_length;
+			}
 		}
 		
 		internal void Reset(int index)

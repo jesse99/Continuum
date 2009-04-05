@@ -51,6 +51,7 @@ namespace DirectoryEditor
 			get
 			{
 				Trace.Assert(m_window != null, "window isn't set");
+				Trace.Assert(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 				
 				DirectoryController controller = (DirectoryController) m_window.windowController();
 				return controller.Path;
@@ -59,6 +60,8 @@ namespace DirectoryEditor
 		
 		public string[] SelectedPaths()
 		{
+			Trace.Assert(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
+
 			var paths = new List<string>();
 			
 			DirectoryController controller = (DirectoryController) m_window.windowController();
@@ -78,6 +81,7 @@ namespace DirectoryEditor
 			get
 			{
 				Trace.Assert(m_window != null, "window isn't set");
+				Trace.Assert(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 				
 				DirectoryController controller = (DirectoryController) m_window.windowController();
 				return controller.BuildStartTime;

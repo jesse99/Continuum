@@ -437,7 +437,7 @@ namespace CsRefactor
 			ICsScanner scanner = new CsParser.Scanner();
 #else
 			Boss boss = ObjectModel.Create("CsParser");
-			var scanner = boss.Get<ICsScanner>();
+			var scanner = boss.Get<IScanner>();
 #endif
 			scanner.Init(builder.ToString(), offset);
 			

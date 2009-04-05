@@ -24,6 +24,7 @@ using System;
 using System.Runtime.Serialization;
 using System.Security.Permissions;
 
+#if false
 namespace Shared
 {
 	[Serializable]
@@ -58,3 +59,4 @@ namespace Shared
 		void TryParse(string text, out int offset, out int length, out CsGlobalNamespace globals, out Token[] tokens, out Token[] comments);
 	}
 }
+#endif

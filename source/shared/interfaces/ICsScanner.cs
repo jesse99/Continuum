@@ -24,6 +24,7 @@ using System;
 using System.Runtime.Serialization;
 using System.Security.Permissions;
 
+#if false
 namespace Shared
 {
 	[Serializable]
@@ -80,3 +81,4 @@ namespace Shared
 		Token[] Tokens {get;}
 	}
 }
+#endif

@@ -35,51 +35,27 @@ namespace Styler
 			base.Instantiated(boss);
 			
 			Boss b = ObjectModel.Create("CsParser");
-			m_parser = b.Get<ICsParser>();
+			m_parses = b.Get<IParses>();
 		}
 		
-		protected override void OnComputeRuns(string text, int edit, List<StyleRun> runs, Boss boss)	// threaded
+		protected override void OnComputeRuns(Boss boss, string path, string text, int edit, List<StyleRun> runs)	// threaded
 		{
-			base.OnComputeRuns(text, edit, runs, boss);
+			base.OnComputeRuns(boss, path, text, edit, runs);
 			
-			DoParseMatch(text, runs);
-			
-			var cachedCatalog =  boss.Get<ICachedCsCatalog>();
-			DoSetCatalog(text, cachedCatalog);
-			
-			var cachedGlobals =  boss.Get<ICachedCsDeclarations>();
-			cachedGlobals.Reset(edit, m_globals);
-			
-			m_tokens = null;
-			m_comments = null;
+			Unused.Value = DoParseMatch(path, text, edit, runs);
 		}
 		
 		#region Private Methods
-		private void DoSetCatalog(string text, ICachedCsCatalog catalog)
+		private Parse DoParseMatch(string path, string text, int edit, List<StyleRun> runs)		// threaded
 		{
-			var strings = new List<Token>();
-			var identifiers = new List<Token>();
+			Parse parse = m_parses.Parse(path, edit, text);
 			
-			foreach (Token token in m_tokens)
-			{
-				if (token.Kind == TokenKind.String && token.Length > 2)
-					strings.Add(new Token(text, token.Offset + 1, token.Length - 2, token.Line, TokenKind.String));
-				
-				if (token.Kind == TokenKind.Identifier)
-					identifiers.Add(token);
-			}
-			
-			catalog.Reset(m_comments, strings.ToArray(), identifiers.ToArray());
-		}
-		
-		private void DoParseMatch(string text, List<StyleRun> runs)		// threaded
-		{
-			int offset, length;
-			m_parser.TryParse(text, out offset, out length, out m_globals, out m_tokens, out m_comments);
+			int length = parse.ErrorLength;
 			if (length > 0)
 			{
 				// We can't highlight control characters because they have zero width so 
 				// we'll grow to the left until we find a non-control character.
+				int offset = parse.ErrorIndex;
 				while (offset > 0 && offset < text.Length && char.IsControl(text, offset) && text[offset] != '\t')
 				{
 					--offset;
@@ -89,7 +65,9 @@ namespace Styler
 				runs.Add(new StyleRun(offset, length, StyleType.Error));
 			}
 			
-			DoMatchScope(m_globals, runs);
+			DoMatchScope(parse.Globals, runs);
+			
+			return parse;
 		}
 		
 		private void DoMatchScope(CsTypeScope scope, List<StyleRun> runs)		// threaded
@@ -122,10 +100,10 @@ namespace Styler
 		#endregion
 		
 		#region Fields
-		private ICsParser m_parser;
-		private CsGlobalNamespace m_globals;
-		private Token[] m_tokens;
-		private Token[] m_comments;
+		private IParses m_parses;
+//		private CsGlobalNamespace m_globals;
+//		private Token[] m_tokens;
+//		private Token[] m_comments;
 		#endregion
 	}
 }

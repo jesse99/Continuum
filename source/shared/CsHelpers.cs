@@ -19,6 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -44,6 +45,29 @@ namespace Shared
 				ms_realNames.Add(entry.Value + "?", entry.Key + "?");
 				ms_realNames.Add(entry.Value + "&", entry.Key + "&");
 			}
+		}
+		
+		// Returns true if the path points to a C# file.
+		public static bool IsCSharp(string path)
+		{
+			string fileName = System.IO.Path.GetFileName(path);
+			
+			bool found = false;
+			
+			Boss boss = ObjectModel.Create("Stylers");
+			if (boss.Has<IFindLanguage>())
+			{
+				var find = boss.Get<IFindLanguage>();
+				while (find != null && !found)
+				{
+					Boss language = find.Find(fileName);
+					found = language.Name == "CsLanguage";
+					
+					find = boss.GetNext<IFindLanguage>(find);
+				}
+			}
+			
+			return found;
 		}
 		
 		// Given a name like "System.Boolean" or "System.Boolean[]" return

@@ -25,14 +25,21 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Threading;
 
 namespace CsParser
 {
 	// It would be a bit cleaner if we returned TokenKind.Keyword for keywords but changing
 	// the code to so do is somewhat obnoxious and doesn't buy us a whole lot since we don't
-	// care if keywords are used as identifiers.
-	internal sealed unsafe class Scanner : ICsScanner
+	// care if keywords are used as identifiers. Note that instances are safe to use from a thread
+	// (but not from multiple threads).
+	internal sealed unsafe class Scanner : IScanner
 	{
+		public Scanner()
+		{
+			m_threadID = Thread.CurrentThread.ManagedThreadId;
+		}
+		
 		public void Instantiated(Boss boss)
 		{
 			m_boss = boss;
@@ -45,11 +52,15 @@ namespace CsParser
 		
 		public void Init(string text)
 		{
+			Trace.Assert(Thread.CurrentThread.ManagedThreadId == m_threadID, "can only be used with one thread");
+			
 			Init(text, 0);
 		}
 		
 		public void Init(string text, int offset)
 		{
+			Trace.Assert(Thread.CurrentThread.ManagedThreadId == m_threadID, "can only be used with one thread");
+			
 			m_text = text + '\x00';		// scanning is easier and faster with a sentinel value
 			m_index = offset;
 			m_comments.Clear();
@@ -373,7 +384,7 @@ namespace CsParser
 			}
 			else
 			{
-				throw new CsScannerException("Expected a terminating ''' for line {0}", m_line);
+				throw new ScannerException("Expected a terminating ''' for line {0}", m_line);
 			}
 		}
 		
@@ -413,7 +424,7 @@ namespace CsParser
 			}
 			else
 			{
-				throw new CsScannerException("Expected a terminating '\"' on line {0}", m_line);
+				throw new ScannerException("Expected a terminating '\"' on line {0}", m_line);
 			}
 		}
 		
@@ -460,7 +471,7 @@ namespace CsParser
 			}
 			else
 			{
-				throw new CsScannerException("Expected a terminating '\"' for line {0}", m_line);
+				throw new ScannerException("Expected a terminating '\"' for line {0}", m_line);
 			}
 		}
 		
@@ -884,7 +895,7 @@ namespace CsParser
 				}
 			}
 			
-			throw new CsScannerException("Expected a terminating '*/' for line {0}", line);
+			throw new ScannerException("Expected a terminating '*/' for line {0}", line);
 		}
 		#endregion
 		
@@ -898,6 +909,7 @@ namespace CsParser
 		private List<CsPreprocess> m_preprocess = new List<CsPreprocess>();
 		private List<Token> m_tokens = new List<Token>();
 		private List<Token> m_comments = new List<Token>();
+		private int m_threadID;
 		#endregion
 	}
 }

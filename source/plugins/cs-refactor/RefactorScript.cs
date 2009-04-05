@@ -38,25 +38,26 @@ namespace CsRefactor
 			get {return m_boss;}
 		}
 		
-		public string Execute(string rSource, string cSource, int selStart, int selLen)
+		public string Execute(string rSource, IText cSource, int selStart, int selLen)
 		{
-			// Parse the C# code. Note that we don't use ICachedCsDeclarations here because
-			// we want to ensure that the text is well formed. TODO: but it has a malformed
-			// flag now so we can use it if the editCount is current.
+			// Parse the C# code..
+			var editor = cSource.Boss.Get<ITextEditor>();
+			
 			Boss boss = ObjectModel.Create("CsParser");
-			var cParser = boss.Get<ICsParser>();
-			CsGlobalNamespace globals = cParser.Parse(cSource);
+			var parses = boss.Get<IParses>();
+			Parse parse = parses.Parse(editor.Path, cSource.EditCount, cSource.Text);
+			CsGlobalNamespace globals = parse.Globals;
 			
 			// Parse the refactor script.
 			var rParser = new CsRefactor.Script.Parser(rSource);
 			CsRefactor.Script.Script script = rParser.Parse();
 			
 			// Evaluate the script.
-			var context = new CsRefactor.Script.Context(script, globals, cSource, selStart, selLen);
+			var context = new CsRefactor.Script.Context(script, globals, cSource.Text, selStart, selLen);
 			RefactorCommand[] commands = script.Evaluate(context);
 			
 			// Execute the script.
-			Refactor refactor = new Refactor(cSource);
+			Refactor refactor = new Refactor(cSource.Text);
 			foreach (RefactorCommand command in commands)
 			{
 				refactor.Queue(command);

@@ -1,7 +1,7 @@
 <Bosses namespaces = "Gear Shared CsParser">
 	<Boss name = "CsParser" singleton = "true">
-		<Implementation interfaces = "ICsParser" name = "Parser"/>
 		<Implementation interfaces = "ICsLocalsParser" name = "LocalsParser"/>
-		<Implementation interfaces = "ICsScanner" name = "Scanner"/>
+		<Implementation interfaces = "IParses" name = "Parses"/>
+		<Implementation interfaces = "IScanner" name = "Scanner"/>
 	</Boss>
 </Bosses>

@@ -24,25 +24,46 @@ using Shared;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.Serialization;
+using System.Security.Permissions;
+using System.Threading;
 
 namespace CsParser
 {
-	// Note that this parser is a bit simplified because we only care whether the text is well-formed
-	// not if it is actually correct.
-	internal sealed class Parser : ICsParser
+	[Serializable]
+	public class CsParserException : Exception
 	{
-		public void Instantiated(Boss boss)
+		public CsParserException(string text) : base(text)
 		{
-			m_boss = boss;
 		}
 		
-		public Boss Boss
+		public CsParserException(string format, params object[] args) : base(string.Format(format, args)) 
 		{
-			get {return m_boss;}
+		}
+		
+		public CsParserException(string text, Exception inner) : base (text, inner)
+		{
+		}
+		
+		[SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+		protected CsParserException(SerializationInfo info, StreamingContext context) : base(info, context)
+		{
+		}
+	}
+	
+	// Note that this parser is a bit simplified because we only care whether the text is 
+	// well-formed not if it is actually correct. Note that instances are safe to use from
+	// a thread (but not from multiple threads).
+	internal sealed class Parser
+	{
+		public Parser()
+		{
+			m_threadID = Thread.CurrentThread.ManagedThreadId;
 		}
 		
 		public CsGlobalNamespace Parse(string text)
 		{
+			Trace.Assert(Thread.CurrentThread.ManagedThreadId == m_threadID, "can only be used with one thread");
 			DoInit(text);
 			
 			m_try = false;
@@ -54,6 +75,7 @@ namespace CsParser
 		// to lose all information about a type just because a brace is missing.
 		public void TryParse(string text, out int offset, out int length, out CsGlobalNamespace globals, out Token[] tokens, out Token[] comments)
 		{
+			Trace.Assert(Thread.CurrentThread.ManagedThreadId == m_threadID, "can only be used with one thread");
 			DoInit(text);
 			
 			m_try = true;
@@ -2014,11 +2036,11 @@ namespace CsParser
 		#endregion
 		
 		#region Fields
-		private Boss m_boss;
 		private string m_text;
 		private Scanner m_scanner;
 		private bool m_try;
 		private Token m_bad;
+		private int m_threadID;
 		#endregion
 	}
 }

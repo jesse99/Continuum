@@ -20,35 +20,52 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
-using MCocoa;
 using System;
+using System.Runtime.Serialization;
+using System.Security.Permissions;
 
 namespace Shared
 {
-	public struct Declaration
+	[Serializable]
+	public sealed class ScannerException : Exception
 	{
-		public Declaration(string name, NSRange extent, bool isType, bool isDir)
+		public ScannerException()
 		{
-			Name = name;
-			Extent = extent;
-			IsType = isType;
-			IsDirective = isDir;
 		}
 		
-		public string Name {get; private set;}
+		public ScannerException(string text) : base(text)
+		{
+		}
 		
-		public NSRange Extent {get; private set;}
+		public ScannerException(string format, params object[] args) : base(string.Format(format, args))
+		{
+		}
 		
-		public bool IsType {get; private set;}
+		public ScannerException(string text, Exception inner) : base (text, inner)
+		{
+		}
 		
-		public bool IsDirective {get; private set;}
+		[SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+		private ScannerException(SerializationInfo info, StreamingContext context) : base(info, context)
+		{
+		}
 	}
-		
-	// Optional interface on language bosses.
-	public interface IDeclarations : IInterface
+	
+	public interface IScanner : IInterface
 	{
-		// Returns most of the declarations in the text. Note that this will return as
-		// many declarations as possible even for malformed text. 
-		Declaration[] Get(IText text, StyleRun[] runs);
+		void Init(string text);
+		
+		void Init(string text, int offset);
+		
+		// Returns the current token. Once all the characters have been consumed 
+		// the token's kind will be invalid.
+		Token Token {get;}
+		
+		// Returns the nth token from the current token.
+		Token LookAhead(int delta);
+		
+		// Skips whitespace and comments and advances to the next token. Should 
+		// only be called if Token is valid.
+		void Advance();
 	}
 }

@@ -106,17 +106,13 @@ namespace TextEditor
 			{
 				int edit;
 				StyleRun[] runs;
-				CsGlobalNamespace globals;
-				
-				var cachedGlobals = m_controller.Boss.Get<ICachedCsDeclarations>();
-				cachedGlobals.Get(out edit, out globals);
-				Trace.Assert(edit == m_controller.EditCount, "controller called us with a bad edit count1");
 				
 				var cachedRuns = m_controller.Boss.Get<ICachedStyleRuns>();
 				cachedRuns.Get(out edit, out runs);
 				Trace.Assert(edit == m_controller.EditCount, "controller called us with a bad edit count2");
 				
-				m_declarations = m_getter.Get(m_controller.Text, runs, globals);
+				var text = m_controller.Boss.Get<IText>();
+				m_declarations = m_getter.Get(text, runs);
 				m_edit = edit;
 				
 				DoBuildUsingOffsetsOrder();

@@ -49,6 +49,9 @@ namespace TextEditor
 			m_applier = new ApplyStyles(this, m_textView.Value, m_scrollView.Value);
 			DoSetTextOptions();
 			
+			Boss boss = ObjectModel.Create("CsParser");
+			m_parses = boss.Get<IParses>();
+			
 			Broadcaster.Register("text default color changed", this);	
 			DoUpdateDefaultColor(string.Empty, null);
 			
@@ -133,6 +136,8 @@ namespace TextEditor
 		{
 			get
 			{
+				Trace.Assert(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
+				
 				if (m_editCount != m_cachedEditCount)
 				{
 					m_cachedText = m_textView.Value.textStorage().ToString();
@@ -171,12 +176,22 @@ namespace TextEditor
 		
 		public NSTextView TextView
 		{
-			get {return m_textView.Value;}
+			get
+			{
+				Trace.Assert(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
+			
+				return m_textView.Value;
+			}
 		}
 		
 		public string Path
 		{
-			get {return !NSObject.IsNullOrNil(document().fileURL()) ? document().fileURL().path().description() : null;}	
+			get
+			{
+				Trace.Assert(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
+				
+				return !NSObject.IsNullOrNil(document().fileURL()) ? document().fileURL().path().description() : null;
+			}	
 		}
 		
 		public IComputeRuns Computer
@@ -353,7 +368,7 @@ namespace TextEditor
 			if (index >= 0)
 			{
 				// If we found one then select it and,
-				range = new NSRange(index, 1);				
+				range = new NSRange(index, 1);
 				m_textView.Value.setSelectedRange(range);
 				m_textView.Value.scrollRangeToVisible(range);
 				m_textView.Value.showFindIndicatorForRange(range);
@@ -588,7 +603,12 @@ namespace TextEditor
 		
 		public int EditCount
 		{
-			get {return m_editCount;}
+			get
+			{
+				Trace.Assert(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
+				
+				return m_editCount;
+			}
 		}
 		
 		public void RegisterRange(ConcreteLiveRange range)
@@ -615,6 +635,8 @@ namespace TextEditor
 				NSRange range = storage.editedRange();
 				int lengthChange = storage.changeInLength();
 				
+				if (m_language != null)
+					m_parses.OnEdit(m_language, Path, EditCount, text);
 				if (m_computer != null)
 					m_styler.Queue(m_computer, this.DoStylerFinished);
 				
@@ -711,7 +733,8 @@ namespace TextEditor
 		#region Private Methods
 		private void DoGetStyler()
 		{
-			string fileName = System.IO.Path.GetFileName(Path);	
+			string fileName = System.IO.Path.GetFileName(Path);
+			m_language = null;
 			
 			IComputeRuns computer = null;
 			IDeclarations decs = null;
@@ -724,6 +747,7 @@ namespace TextEditor
 					Boss language = find.Find(fileName);
 					if (language != null)
 					{
+						m_language = language.Name;
 						computer = language.Get<IComputeRuns>();
 						
 						if (language.Has<IDeclarations>())
@@ -948,6 +972,7 @@ namespace TextEditor
 		private IBOutlet<NSScrollView> m_scrollView;
 		private Boss m_boss;
 		private IComputeRuns m_computer;
+		private IParses m_parses;
 		private IStyler m_styler;
 		private ApplyStyles m_applier;
 		private bool m_userEdit = true;
@@ -961,6 +986,7 @@ namespace TextEditor
 		private bool m_opened;
 		private bool m_closed;
 		private bool m_scrolled;
+		private string m_language;
 		private List<WeakReference> m_ranges = new List<WeakReference>();
 		
 		public static WarningWindow ms_warning;

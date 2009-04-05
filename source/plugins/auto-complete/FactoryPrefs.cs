@@ -1,4 +1,4 @@
-// Copyright (C) 2009 Jesse Jones
+// Copyright (C) 2008 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -21,34 +21,34 @@
 
 using Gear;
 using MCocoa;
+using MObjc;
+using Shared;
 using System;
+using System.Diagnostics;
 
-namespace Shared
+namespace AutoComplete
 {
-	public struct Declaration
+	internal sealed class FactoryPrefs : IFactoryPrefs
 	{
-		public Declaration(string name, NSRange extent, bool isType, bool isDir)
+		public void Instantiated(Boss boss)
 		{
-			Name = name;
-			Extent = extent;
-			IsType = isType;
-			IsDirective = isDir;
+			m_boss = boss;
 		}
 		
-		public string Name {get; private set;}
+		public Boss Boss
+		{
+			get {return m_boss;}
+		}
 		
-		public NSRange Extent {get; private set;}
+		public void OnInitFactoryPref(NSMutableDictionary dict)
+		{
+			NSColor color = NSColor.colorWithDeviceRed_green_blue_alpha(177/255.0f, 255/255.0f, 190/255.0f, 1.0f);
+			NSData data = NSArchiver.archivedDataWithRootObject(color);
+			dict.setObject_forKey(data, NSString.Create("args color"));
+		}
 		
-		public bool IsType {get; private set;}
-		
-		public bool IsDirective {get; private set;}
-	}
-		
-	// Optional interface on language bosses.
-	public interface IDeclarations : IInterface
-	{
-		// Returns most of the declarations in the text. Note that this will return as
-		// many declarations as possible even for malformed text. 
-		Declaration[] Get(IText text, StyleRun[] runs);
+		#region Fields
+		private Boss m_boss;
+		#endregion
 	}
 }

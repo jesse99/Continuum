@@ -52,17 +52,22 @@ might want a sample app
 			text = builder.ToString();
 		}
 		
-when parsing an assembly does the old info hang around?
-ParserPool
 IMegabase
 close context item
 checked overload context items
 
-* Work on argument completion:
-	- tweak the back color, might want to use a darker version of line color
+* Work on a IParses interface:
+	- styler needs to call a method which blocks until up to date info is returned
+	- on successful build clear any that are not attached to an open document
+	- auto complete needs to see if IParses has a type
+	- remove ICachedCsDeclarations, ICsParser, ICsScanner, CachedCsDeclarations,
+	  ICachedCsCatalog, CachedCsCatalog.
+	= may want to search for #if false
+	- may want to tweak ICachedCsCatalog
+	- review usages of Parse
 * Work more on target completion:
-	- check for completion within a comment doesn't appear to be working
-	- also make sure string literals don't complete
+	- arg completion needs to say out int instead of int&
+	- why doesn't Boss appear in members when completing interfaces?
 	- context menu should filter by class
 	- context menu should filter by extension method
 	- context menu should filter by access
@@ -127,6 +132,7 @@ checked overload context items
 	  of the characters)
 	- might want to support completing names via F5, should also have a menu item
 	   for this
+	- should prefer current namespace when searching for a type
 	- arg completion should prune more types
 	- look at Code Templates file for ideas on statement completion
 	- arg completion could filter on formal arg type

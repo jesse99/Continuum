@@ -79,7 +79,7 @@ namespace CsParser
 						m_scanner.Advance();
 				}
 			}
-			catch (CsScannerException)
+			catch (ScannerException)
 			{
 			}
 			

@@ -22,6 +22,7 @@
 using Gear;
 using System;
 
+#if false
 namespace Shared
 {
 	// Interface on the Text Editor boss which caches parsed C# declarations.
@@ -38,3 +39,4 @@ namespace Shared
 		void Reset(int edit, CsGlobalNamespace globals);
 	}
 }
+#endif

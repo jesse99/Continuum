@@ -51,29 +51,33 @@ namespace App
 		#region Private Methods
 		private void DoExecute(Boss boss)
 		{
-			var text = boss.Get<IText>();
-			NSRange range = text.Selection;
-			if (range.length == 0)
-				throw new OperationCanceledException("Selection is empty");
-			
-			// Note that we don't use ICachedCsDeclarations here because we want 
-			// to ensure that the text is well formed. TODO: there's a malformed
-			// flag now though so we can use this if the editCount is current.
-			Boss b = ObjectModel.Create("CsParser");
-			var cParser = b.Get<ICsParser>();
-			CsGlobalNamespace globals = cParser.Parse(text.Text);
-			CsDeclaration first = DoFindDeclaration(globals, range.location, range.length);
-			string name = DoGetName(first);
-			
 			var editor = boss.Get<ITextEditor>();
-			string path = DoGetPath(editor.Path, name + ".cs");
-			if (path != null)
+			if (editor.Path != null)
 			{
-				using (TextWriter writer = File.CreateText(path))
+				var text = boss.Get<IText>();
+				NSRange range = text.Selection;
+				if (range.length == 0)
+					throw new OperationCanceledException("Selection is empty");
+				
+				// Note that we don't use ICachedCsDeclarations here because we want 
+				// to ensure that the text is well formed. TODO: there's a malformed
+				// flag now though so we can use this if the editCount is current.
+				Boss b = ObjectModel.Create("CsParser");
+				var parses = b.Get<IParses>();
+				Parse parse = parses.Parse(editor.Path, text.EditCount, text.Text);
+				CsGlobalNamespace globals = parse.Globals;
+				CsDeclaration first = DoFindDeclaration(globals, range.location, range.length);
+				string name = DoGetName(first);
+				
+				string path = DoGetPath(editor.Path, name + ".cs");
+				if (path != null)
 				{
-					name = Path.GetFileNameWithoutExtension(path);
-					DoSave(name, globals, first, writer, text.Text, range.location, range.length);				
-					text.Replace(string.Empty, range.location, range.length, "Cut");
+					using (TextWriter writer = File.CreateText(path))
+					{
+						name = Path.GetFileNameWithoutExtension(path);
+						DoSave(name, globals, first, writer, text.Text, range.location, range.length);				
+						text.Replace(string.Empty, range.location, range.length, "Cut");
+					}
 				}
 			}
 		}
