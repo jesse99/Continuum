@@ -78,5 +78,8 @@ namespace Shared
 		// Blocks until the file is parsed and returns the result.Note that this is 
 		// thread safe.
 		Parse Parse(string path, int edit, string text);
+		
+		// Searches globals in each parse and returns a matching type or null.
+		CsType FindType(string fullName);
 	}
 }

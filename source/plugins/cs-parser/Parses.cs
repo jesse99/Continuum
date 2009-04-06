@@ -30,11 +30,13 @@ using System.Threading;
 
 namespace CsParser
 {
-	internal sealed class Parses : IParses
+	internal sealed class Parses : IParses, IObserver
 	{
 		public void Instantiated(Boss boss)
 		{	
 			m_boss = boss;
+			
+			Broadcaster.Register("built target", this);
 			
 			Thread thread = new Thread(this.DoThread);
 			thread.Name = "Parses.DoThread";
@@ -45,6 +47,20 @@ namespace CsParser
 		public Boss Boss
 		{
 			get {return m_boss;}
+		}
+		
+		public void OnBroadcast(string name, object value)
+		{
+			switch (name)
+			{
+				case "built target":
+					DoClearClosed();
+					break;
+					
+				default:
+					Trace.Fail("bad name: " + name);
+					break;
+			}
 		}
 		
 		public void OnEdit(string language, string path, int edit, string text)
@@ -101,7 +117,39 @@ namespace CsParser
 			return result;
 		}
 		
-		#region Private Methods
+		public CsType FindType(string fullName)
+		{
+			CsType type = null;
+			
+			lock (m_mutex)
+			{
+				foreach (Parse parse in m_parses.Values)
+				{
+					type = DoFindType(parse.Globals, fullName);
+					if (type != null)
+						break;
+				}
+			}
+			
+			return type;
+		}
+		
+		#region Private Methods		
+		private CsType DoFindType(CsTypeScope scope, string fullName)
+		{
+			CsType result = null;
+			
+			CsType candidate = scope as CsType;
+		
+			if (candidate != null && candidate.FullName == fullName)
+				result = candidate;
+			
+			for (int i = 0; i < scope.Types.Length && result == null; ++i)
+				result = DoFindType(scope.Types[i], fullName);
+			
+			return result;
+		}
+		
 		private void DoThread()		// threaded
 		{
 			Parser parser = new Parser();
@@ -147,6 +195,47 @@ namespace CsParser
 			parser.TryParse(job.Text, out index, out length, out globals, out tokens, out comments);
 			
 			return new Parse(job.Edit, index, length, globals, comments, tokens);
+		}
+		
+		// We want to hang onto parses until the assembly they are within is
+		// built so that auto-complete recognizes any edits that the user may
+		// have made. But eventually we need to clear parses for windows which
+		// are no longer open. For now we clear them when a build is done 
+		// successfully which isn't entirely correct because the assemblies which
+		// were built may not include all of the user's changes. TODO: might
+		// instead want to listen for notifications from the object-model that
+		// a type was parsed and clear the parses which include that type.
+		private void DoClearClosed()
+		{
+			Boss boss = ObjectModel.Create("TextEditorPlugin");
+			var windows = boss.Get<IWindows>();
+			
+			lock (m_mutex)
+			{
+				var deathRow = new List<string>();
+				foreach (string path in m_parses.Keys)
+				{
+					if (!DoIsOpen(windows, path))
+						deathRow.Add(path);
+				}
+				
+				foreach (string path in deathRow)
+				{
+					m_parses.Remove(path);
+				}
+			}
+		}
+		
+		private bool DoIsOpen(IWindows windows, string path)
+		{
+			foreach (Boss boss in windows.All())
+			{
+				var editor = boss.Get<ITextEditor>();
+				if (path == editor.Path)
+					return true;
+			}
+			
+			return false;
 		}
 		#endregion
 		

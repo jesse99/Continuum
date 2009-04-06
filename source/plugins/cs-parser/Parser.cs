@@ -626,6 +626,13 @@ namespace CsParser
 			if (((int) modifiers & CsMember.AccessMask) == 0)
 				modifiers |= defaultAccess;
 			
+			// ;?
+			if (m_scanner.Token.IsPunct(";"))
+			{
+				last = m_scanner.Token;
+				m_scanner.Advance();
+			}
+			
 			return new CsDelegate(nameOffset, constraints, parms.ToArray(), gargs, rtype, attrs, modifiers, name, first.Offset, last.Offset + last.Length - first.Offset, first.Line);
 		}
 		
@@ -690,6 +697,13 @@ namespace CsParser
 			
 			if (((int) modifiers & CsMember.AccessMask) == 0)
 				modifiers |= defaultAccess;
+			
+			// ;?
+			if (m_scanner.Token.IsPunct(";"))
+			{
+				last = m_scanner.Token;
+				m_scanner.Advance();
+			}
 			
 			return new CsEnum(names, nameOffset, baseType, attrs, modifiers, name, first.Offset, last.Offset + last.Length - first.Offset, first.Line);
 		}

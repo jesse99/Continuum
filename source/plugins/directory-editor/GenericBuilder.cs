@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Jesse Jones
+// Copyright (C) 2008-2009 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -32,8 +32,8 @@ using System.Text;
 namespace DirectoryEditor	
 {
 	[Serializable]
-	public enum State {Opened, Building, Built, Canceled};
-
+	public enum State {Opened, Building, Built, Canceled}
+	
 	internal sealed class GenericBuilder
 	{
 		public GenericBuilder(string path)
@@ -46,7 +46,7 @@ namespace DirectoryEditor
 					m_target = m_builder.DefaultTarget;
 				else if (m_builder.Targets.Length > 0)
 					m_target = m_builder.Targets[0];
-					
+			
 			Boss boss = ObjectModel.Create("Application");
 			m_results = boss.Get<IBuildStatus>();
 			
@@ -165,7 +165,7 @@ namespace DirectoryEditor
 			m_results.WriteOutput(e.Data);
 			m_results.WriteOutput(Environment.NewLine);
 		}
-	
+		
 		private void DoGotStderrData(object sender, DataReceivedEventArgs e)	// threaded
 		{
 			if (NSApplication.sharedApplication().InvokeRequired)
@@ -179,7 +179,7 @@ namespace DirectoryEditor
 			
 			m_errors.AppendLine(e.Data);
 		}
-	
+		
 		private void DoProcessExited(object sender, EventArgs e)	// threaded
 		{
 			if (NSApplication.sharedApplication().InvokeRequired)
@@ -189,14 +189,16 @@ namespace DirectoryEditor
 			}
 			
 			m_results.OnStopped();
-		
-			string errors = m_errors.ToString();				
+			
+			string errors = m_errors.ToString();
 			if (m_process.ExitCode == 0 && errors.Length == 0)	// poorly written makefiles may return OK even if there were errors...
 			{
 				TimeSpan elapsed = DateTime.Now - m_startTime;
 				m_results.WriteOutput(string.Format("built in {0:0.0} secs", elapsed.TotalSeconds));
 				m_results.WriteOutput(Environment.NewLine);
 				m_results.WriteOutput(Environment.NewLine);
+				
+				Broadcaster.Invoke("built target", m_target);
 			}
 			else
 			{

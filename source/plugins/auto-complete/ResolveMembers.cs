@@ -19,6 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear;
 using Shared;
 using System;
 using System.Collections.Generic;
@@ -72,9 +73,16 @@ namespace AutoComplete
 			
 			string hash = target.Hash;
 			CsType type = target.Type;
+			if (type == null)
+			{
+				Boss boss = ObjectModel.Create("CsParser");
+				var parses = boss.Get<IParses>();
+				type = parses.FindType(fullName);
+			}
+			
 			if (type != null)
 			{
-				DoGetParsedMembers(target, members, includePrivates);
+				DoGetParsedMembers(type, target.IsInstance, target.IsStatic, members, includePrivates);
 				
 				if (type is CsEnum)
 				{
@@ -146,40 +154,40 @@ namespace AutoComplete
 			}
 		}
 		
-		private void DoGetParsedMembers(ResolvedTarget target, List<Member> members, bool includePrivates)
+		private void DoGetParsedMembers(CsType type, bool isInstance, bool isStatic, List<Member> members, bool includePrivates)
 		{
-			CsEnum e = target.Type as CsEnum;
+			CsEnum e = type as CsEnum;
 			if (e != null)
 			{
-				if (target.IsStatic)
-					members.AddRange(from n in e.Names select new Member(n, target.Type.FullName));
+				if (isStatic)
+					members.AddRange(from n in e.Names select new Member(n, type.FullName));
 			}
 			else
-				DoGetParsedTypeMembers(target, members, includePrivates);
+				DoGetParsedTypeMembers(type, isInstance, isStatic, members, includePrivates);
 		}
 		
-		private bool DoShouldAdd(ResolvedTarget target, MemberModifiers modifiers)
+		private bool DoShouldAdd(bool isInstance, bool isStatic, MemberModifiers modifiers)
 		{
 			if ((modifiers & MemberModifiers.Static) == 0)
-				return target.IsInstance;
+				return isInstance;
 			else
-				return target.IsStatic;
+				return isStatic;
 		}
 		
-		private void DoGetParsedTypeMembers(ResolvedTarget target, List<Member> members, bool includePrivates)
+		private void DoGetParsedTypeMembers(CsType type, bool isInstance, bool isStatic, List<Member> members, bool includePrivates)
 		{
-			foreach (CsField field in target.Type.Fields)
+			foreach (CsField field in type.Fields)
 			{
-				if (DoShouldAdd(target, field.Modifiers))
+				if (DoShouldAdd(isInstance, isStatic, field.Modifiers))
 					if (includePrivates || field.Access != MemberModifiers.Private)
 						members.AddIfMissing(new Member(field.Name, field.Type));
 			}
 			
-			foreach (CsMethod method in target.Type.Methods)
+			foreach (CsMethod method in type.Methods)
 			{
 				if (!method.IsConstructor && !method.IsFinalizer)
 				{
-					if (DoShouldAdd(target, method.Modifiers))
+					if (DoShouldAdd(isInstance, isStatic, method.Modifiers))
 					{
 						if (includePrivates || method.Access != MemberModifiers.Private)
 						{
@@ -193,11 +201,11 @@ namespace AutoComplete
 			}
 			
 			// Note that indexers are not counted because they are not preceded with a dot.
-			foreach (CsProperty prop in target.Type.Properties)
+			foreach (CsProperty prop in type.Properties)
 			{
 				if (prop.HasGetter)
 				{
-					if (DoShouldAdd(target, prop.Modifiers))
+					if (DoShouldAdd(isInstance, isStatic, prop.Modifiers))
 						if (includePrivates || prop.Access != MemberModifiers.Private)
 							members.AddIfMissing(new Member(prop.Name, prop.ReturnType));
 				}
