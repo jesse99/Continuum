@@ -404,6 +404,15 @@ namespace ObjectModel
 						type = CsHelpers.TrimNamespace(type);
 						type = CsHelpers.TrimGeneric(type);
 					}
+					if (type.EndsWith("&"))
+					{
+						type = type.Remove(type.Length - 1);
+						
+						if (p.IsOut)
+							type = "out " + type;
+						else
+							type = "ref " + type;
+					}
 					builder.Append(type);
 					
 					builder.Append(' ');	

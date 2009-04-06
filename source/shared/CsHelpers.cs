@@ -70,6 +70,14 @@ namespace Shared
 			return found;
 		}
 		
+		public static bool IsInterface(string name)
+		{
+			int k = name.LastIndexOf('.');		// handle full names too
+			int i = k >= 0 ? k + 1: 0;
+			
+			return name.Length > 1 && name[i] == 'I' && char.IsUpper(name[i + 1]);
+		}
+		
 		// Given a name like "System.Boolean" or "System.Boolean[]" return
 		// "bool" or "bool[]". If there is no alias then returns the original name.
 		public static string GetAliasedName(string name)

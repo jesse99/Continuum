@@ -82,7 +82,7 @@ namespace Shared
 		
 		public bool HasBaseClass
 		{
-			get {return Names.Length > 0 && !(Names[0].Length > 1 && Names[0][0] == 'I' && char.IsUpper(Names[0][1]));}
+			get {return Names.Length > 0 && !CsHelpers.IsInterface(Names[0]);}
 		}
 	}
 	

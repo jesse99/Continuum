@@ -72,7 +72,7 @@ namespace CsRefactor
 			}
 			
 			// Base class always goes to the front.
-			else if (	m_name[0] != 'I' || (m_name.Length > 1 && char.IsLower(m_name[1])))
+			else if (!CsHelpers.IsInterface(m_name))
 			{
 				offset = m_type.Bases.Offset;
 				m_suffix = ", ";
@@ -109,13 +109,13 @@ namespace CsRefactor
 		{
 			return string.Format("{0}.AddBase({1})", m_type.Name, m_name);
 		}
-				
+		
 		#region Private Methods
 		private int DoFindSortedOffset(StringBuilder builder)
 		{
 			int offset = m_type.Bases.Offset;
 			
-			int start = m_type.Bases.Names[0][0] != 'I' ? 1 : 0;		// ignore base type if any
+			int start = CsHelpers.IsInterface(m_type.Bases.Names[0]) ? 0 : 1;		// ignore base type if any
 			for (int i = start; i < m_type.Bases.Names.Length; ++i)
 			{
 				if (m_type.Bases.Names[i].CompareTo(m_name) > 0)
@@ -133,7 +133,7 @@ namespace CsRefactor
 		
 		private bool DoIsSorted(string[] names)
 		{
-			int start = names[0][0] != 'I' ? 2 : 1;			// only interfaces affect sorting
+			int start = CsHelpers.IsInterface(names[0]) ? 1 : 2;		// only interfaces affect sorting
 			for (int i = start; i < names.Length; ++i)
 			{
 				if (names[i - 1].CompareTo(names[i]) > 0)

@@ -52,16 +52,12 @@ might want a sample app
 			text = builder.ToString();
 		}
 		
-IMegabase
-close context item
-checked overload context items
-
-* Work on a IParses interface:
-	- may want to tweak ICachedCsCatalog
-	- review usages of Parse
+* Add a context menu to arg window:
+	- close item
+	- all the overloads
+	- current overload should be checked
+	- selecting an overload should change the view's text
 * Work more on target completion:
-	- arg completion needs to say out int instead of int&
-	- why doesn't Boss appear in members when completing interfaces?
 	- context menu should filter by class
 	- context menu should filter by extension method
 	- context menu should filter by access

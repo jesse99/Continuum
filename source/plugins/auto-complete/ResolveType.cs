@@ -85,28 +85,47 @@ namespace AutoComplete
 			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
 			
 			ResolvedTarget target = Resolve(fullName, globals, isInstance, isStatic);
-			while (target != null && target.FullName != "System.Object")
+			if (target != null && CsHelpers.IsInterface(target.FullName))
 			{
-				if (target.Type != null)
+				var names = new List<string>();
+				names.AddRange(m_database.FindInterfaces(target.FullName));
+				names.Add("System.Object");
+				
+				while (names.Count > 0)
 				{
-					if (target.Type.Bases.HasBaseClass)
-						target = Resolve(target.Type.Bases.Names[0], globals, isInstance, isStatic);
-					else
-						target = Resolve("System.Object", globals, isInstance, isStatic);
-				}
-				else if (target.Type == null && target.Hash != null)
-				{
-					string name = m_database.FindBaseType(target.FullName);
-					if (!string.IsNullOrEmpty(name))
-						target = Resolve(name, globals, isInstance, isStatic);
-					else
-						target = Resolve("System.Object", globals, isInstance, isStatic);
-				}
-				else
-					target = Resolve("System.Object", globals, isInstance, isStatic);
+					string name = names[names.Count - 1];
+					names.RemoveLast();
+					names.AddRange(m_database.FindInterfaces(name));
 					
-				if (target != null)
+					target = Resolve(name, globals, isInstance, isStatic);
 					yield return target;
+				}
+			}
+			else
+			{
+				while (target != null && target.FullName != "System.Object")
+				{
+					if (target.Type != null)
+					{
+						if (target.Type.Bases.HasBaseClass)
+							target = Resolve(target.Type.Bases.Names[0], globals, isInstance, isStatic);
+						else
+							target = Resolve("System.Object", globals, isInstance, isStatic);
+					}
+					else if (target.Type == null && target.Hash != null)
+					{
+						string name = m_database.FindBaseType(target.FullName);
+						if (!string.IsNullOrEmpty(name))
+							target = Resolve(name, globals, isInstance, isStatic);
+						else
+							target = Resolve("System.Object", globals, isInstance, isStatic);
+					}
+					else
+						target = Resolve("System.Object", globals, isInstance, isStatic);
+						
+					if (target != null)
+						yield return target;
+				}
 			}
 		}
 		
@@ -136,9 +155,16 @@ namespace AutoComplete
 					}
 					else if (target.Type == null && target.Hash != null)
 					{
-						foreach (string name in m_database.FindInterfaces(target.FullName))
+						var names = new List<string>(m_database.FindInterfaces(target.FullName));
+						
+						// This may (rarely) return duplicate names, but our caller should handle that.
+						while (names.Count > 0)
 						{
+							string name = names[names.Count - 1];
+							names.RemoveLast();
+							
 							yield return name;
+							names.AddRange(m_database.FindInterfaces(name));
 						}
 					}
 				}
