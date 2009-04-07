@@ -325,7 +325,7 @@ namespace CsParser
 					{
 						if (m_bad.Length == 0)
 						{
-							Log.WriteLine(TraceLevel.Warning, "Errors", "{0}", e.Message);
+							Log.WriteLine(TraceLevel.Info, "Errors", "{0}", e.Message);
 							m_bad = m_scanner.Token;
 						}
 						
@@ -561,7 +561,7 @@ namespace CsParser
 				{
 					if (m_bad.Length == 0)
 					{
-						Log.WriteLine(TraceLevel.Warning, "Errors", "{0}", e.Message);
+						Log.WriteLine(TraceLevel.Info, "Errors", "{0}", e.Message);
 						m_bad = m_scanner.Token;
 					}
 				}
@@ -1059,7 +1059,7 @@ namespace CsParser
 					{
 						if (m_bad.Length == 0)
 						{
-							Log.WriteLine(TraceLevel.Warning, "Errors", "{0}", e.Message);
+							Log.WriteLine(TraceLevel.Info, "Errors", "{0}", e.Message);
 							m_bad = m_scanner.Token;
 						}
 						

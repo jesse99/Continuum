@@ -19,9 +19,16 @@ ReferenceEquals used with value type
 
 might want a sample app
 
+* Work on a ResolveEpr class:
+	- names: locals, fields, properties, etc
+	- qualified types
+	- method calls
+	- indexors
+	- remove ResolveTarget and ResolveTargetTest
 * Work more on target completion:
 	- would be nice if method targets worked when not chaining (use a ResolveEpr class)
 	- doesn't work with IBOutlet<T>.Value
+	- profile
 	- get ctor calls completing: enter with new PartialTypeName
 	- ctor completion should work with dotted names
 	- ctor completion should work with just new

@@ -75,8 +75,7 @@ namespace AutoComplete
 					string path = Paths.GetAssemblyDatabase(name);
 					m_database = new Database(path, "AutoComplete-" + name);
 					
-					m_target = new ResolveTarget(new TargetDatabase(m_database), m_locals);
-					m_type = new ResolveType(new TargetDatabase(m_database));
+					m_typeResolver = new ResolveType(new TargetDatabase(m_database));
 					m_members = new ResolveMembers(m_database);
 				}
 			}
@@ -151,7 +150,7 @@ namespace AutoComplete
 				Member oldMember = DoMatchOldMethod(range);
 				if (oldMember != null)
 				{
-					ResolvedTarget target = m_type.Resolve(oldMember.Type, globals, true, false);
+					ResolvedTarget target = m_typeResolver.Resolve(oldMember.Type, globals, true, false);
 					if (target != null)
 					{
 						type = target.FullName;
@@ -165,14 +164,15 @@ namespace AutoComplete
 					string expr = DoGetTargetExpr(range.location);
 					if (!string.IsNullOrEmpty(expr))
 					{
-						Tuple2<ResolvedTarget, Variable[]> target = m_target.Resolve(
-							m_text.Text, expr, range.location, globals);
-						if (target.First != null)
+						var nameResolver = new ResolveName(new TargetDatabase(m_database), m_locals, m_text.Text, range.location, globals);
+
+						ResolvedTarget target = nameResolver.Resolve(expr);
+						if (target != null)
 						{
-							type = target.First.FullName;
-							members = m_members.Resolve(target.First, globals);
-							isInstance = target.First.IsInstance;
-							isStatic = target.First.IsStatic;
+							type = target.FullName;
+							members = m_members.Resolve(target, globals);
+							isInstance = target.IsInstance;
+							isStatic = target.IsStatic;
 						}
 					}
 				}
@@ -256,11 +256,12 @@ namespace AutoComplete
 			CsGlobalNamespace globals = parse != null ? parse.Globals : null;
 			if (globals != null)
 			{
-				var target = m_target.Resolve(m_text.Text, "<this>", range.location, globals);
-				if (target.First != null)
+				var nameResolver = new ResolveName(new TargetDatabase(m_database), m_locals, m_text.Text, range.location, globals);
+				var target = nameResolver.Resolve("<this>");
+				if (target != null)
 				{
-					var members = new List<Member>(m_members.Resolve(target.First, globals));
-					foreach (Variable v in target.Second)
+					var members = new List<Member>(m_members.Resolve(target, globals));
+					foreach (Variable v in nameResolver.Variables)
 					{
 						members.AddIfMissing(new Member(v.Name, v.Type));
 					}
@@ -281,7 +282,7 @@ namespace AutoComplete
 						if (m_controller == null)	
 							m_controller = new CompletionsController();
 							
-						m_controller.Show(m_boss.Get<ITextEditor>(), view, target.First.FullName, members.ToArray(), prefixLen, target.First.IsInstance, target.First.IsStatic);
+						m_controller.Show(m_boss.Get<ITextEditor>(), view, target.FullName, members.ToArray(), prefixLen, target.IsInstance, target.IsStatic);
 					}
 				}
 			}
@@ -323,8 +324,7 @@ namespace AutoComplete
 		private ISearchTokens m_tokens;
 		private IParses m_parses;
 		private ICsLocalsParser m_locals;
-		private ResolveTarget m_target;
-		private ResolveType m_type;
+		private ResolveType m_typeResolver;
 		private ResolveMembers m_members;
 		#endregion
 	}

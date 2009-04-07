@@ -19,7 +19,6 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#if false
 #if TEST
 using NUnit.Framework;
 using Shared;
@@ -29,7 +28,7 @@ using System.Collections.Generic;
 namespace AutoComplete
 {
 	[TestFixture]
-	public sealed class ResolveTargetTest
+	public sealed class ResolveNameTest
 	{	
 		[TestFixtureSetUp]
 		public void Init()
@@ -37,26 +36,26 @@ namespace AutoComplete
 			AssertListener.Install();
 		}
 		
-		private bool DoGetTarget(string text, string target, int offset, MockTargetDatabase database)
+		private bool DoGetTarget(string text, string name, int offset, MockTargetDatabase database)
 		{
 //Console.WriteLine("------------------------------------");
-//Console.WriteLine(target);
+//Console.WriteLine(name);
 //Console.WriteLine(text);
-			
-			var locals = new CsParser.LocalsParser();
-			var resolver = new ResolveTarget(database, locals);
 			
 			var parser = new CsParser.Parser();
 			CsGlobalNamespace globals = parser.Parse(text);
 			
-			m_target = resolver.Resolve(text, target, offset, globals).First;
+			var locals = new CsParser.LocalsParser();
+			var resolver = new ResolveName(database, locals, text, offset, globals);
+			
+			m_target = resolver.Resolve(name);
 			return m_target != null;
 		}
 		
-		private bool DoGetTarget(string text, string target, int offset)
+		private bool DoGetTarget(string text, string name, int offset)
 		{
 			var database = new MockTargetDatabase();
-			return DoGetTarget(text, target, offset, database);
+			return DoGetTarget(text, name, offset, database);
 		}
 		
 		[Test]
@@ -644,4 +643,3 @@ namespace CoolLib
 	}
 }
 #endif	// TEST
-#endif

@@ -42,13 +42,13 @@ namespace AutoComplete
 //Console.WriteLine(target);
 //Console.WriteLine(text);
 			
-			var locals = new CsParser.LocalsParser();
-			var resolver = new ResolveTarget(database, locals);
-			
 			var parser = new CsParser.Parser();
 			CsGlobalNamespace globals = parser.Parse(text);
 			
-			m_target = resolver.Resolve(text, target, offset, globals).First;
+			var locals = new CsParser.LocalsParser();
+			var resolver = new ResolveName(database, locals, text, offset, globals);
+			
+			m_target = resolver.Resolve(target);
 			return m_target != null;
 		}
 				

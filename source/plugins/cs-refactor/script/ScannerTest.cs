@@ -43,7 +43,7 @@ public sealed class ScannerTest
 	if Scope is Type then
 		Process(scope)
 ";
-		var scanner = new Scanner(text); 
+		var scanner = new Scanner(text);
 		var tokens = new List<Token>();
 		while (scanner.Token.IsValid())
 		{
@@ -99,13 +99,13 @@ text
 		scanner.Advance(); Assert.AreEqual(TokenKind.Invalid, scanner.Token.Kind);
 
 		text = "aa \"bb\"\"cc\" dd";
-		scanner = new Scanner(text); 
+		scanner = new Scanner(text);
 		Assert.AreEqual("aa", scanner.Token.Text());
 		
-		scanner.Advance(); 
+		scanner.Advance();
 		Assert.AreEqual("\"bb\"\"cc\"", scanner.Token.Text());
 
-		scanner.Advance(); 
+		scanner.Advance();
 		Assert.AreEqual("dd", scanner.Token.Text());
 	}
 	
@@ -125,25 +125,25 @@ some more # foo";
 	{
 		string text = @"alpha _beta";
 		
-		var scanner = new Scanner(text); 
+		var scanner = new Scanner(text);
 		Assert.AreEqual("alpha", scanner.Token.Text());
 		Assert.AreEqual(TokenKind.Identifier, scanner.Token.Kind);
 				
-		scanner.Advance(); 
+		scanner.Advance();
 		Assert.AreEqual("_beta", scanner.Token.Text());
 		Assert.AreEqual(TokenKind.Identifier, scanner.Token.Kind);
 				
-		scanner.Advance(); 
+		scanner.Advance();
 		Assert.AreEqual(TokenKind.Invalid, scanner.Token.Kind);
 	}
 	
 	[Test]
-	[ExpectedException(typeof(ScannerException))]
+	[ExpectedException(typeof(CsRefactor.Script.ScannerException))]
 	public void BadEol()
 	{
 		string text = "alpha  epsi\n\rfoo";
 		
-		var scanner = new Scanner(text); 
+		var scanner = new Scanner(text);
 		while (scanner.Token.IsValid())
 		{
 			scanner.Advance();
