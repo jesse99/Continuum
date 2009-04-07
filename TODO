@@ -24,7 +24,6 @@ might want a sample app
 	- qualified types
 	- method calls
 	- indexors
-	- remove ResolveTarget and ResolveTargetTest
 * Work more on target completion:
 	- would be nice if method targets worked when not chaining (use a ResolveEpr class)
 	- doesn't work with IBOutlet<T>.Value
