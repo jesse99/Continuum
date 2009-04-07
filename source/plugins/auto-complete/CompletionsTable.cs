@@ -52,13 +52,66 @@ namespace AutoComplete
 			m_label = label;
 			m_defaultLabel = defaultLabel;
 			
+			m_candidates = new List<Member>(members);
 			m_members = new List<Member>(members);
 			m_completed = string.Empty;
 			m_prefixLen = prefixLen;
+			m_hasExtensions = m_candidates.Exists(m => m.IsExtensionMethod);
+			m_showExtensions = true;
+			
+			m_visibleClasses.Clear();
+			string[] classes = DoGetClasses();
+			foreach (string klass in classes)
+			{
+				m_visibleClasses.Add(klass, true);
+			}
 			
 			m_members.Sort((lhs, rhs) => lhs.Text.CompareTo(rhs.Text));
 			reloadData();
 			deselectAll(this);
+		}
+		
+		public new NSMenu menuForEvent(NSEvent evt)
+		{
+			NSMenu menu = NSMenu.Alloc().initWithTitle(NSString.Empty);
+			menu.autorelease();
+			
+			var classes = new List<string>(m_visibleClasses.Keys);
+			classes.Sort();
+			
+			foreach (string klass in classes)
+			{
+				string title = (m_visibleClasses[klass] ? "Hide " : "Show ") + klass;
+				NSMenuItem item = NSMenuItem.Create(title, "toggleClass:");
+				menu.addItem(item);
+			}
+			
+			if (m_hasExtensions)
+			{
+				menu.addItem(NSMenuItem.separatorItem());
+				
+				string title = m_showExtensions ? "Hide  Extension Methods" : "Show Extension Methods";
+				NSMenuItem item = NSMenuItem.Create(title, "toggleExtensions:");
+				menu.addItem(item);
+			}
+			
+			return menu;
+		}
+		
+		public void toggleClass(NSMenuItem sender)
+		{
+			string name = sender.title().description();
+			int i = name.IndexOf(' ');
+			name = name.Substring(i + 1);
+			m_visibleClasses[name] = !m_visibleClasses[name];
+			
+			DoRebuildMembers();
+		}
+		
+		public void toggleExtensions(NSMenuItem sender)
+		{
+			m_showExtensions = !m_showExtensions;
+			DoRebuildMembers();
 		}
 		
 		public new void keyDown(NSEvent evt)
@@ -190,6 +243,43 @@ namespace AutoComplete
 		}
 		
 		#region Private Methods
+		private void DoRebuildMembers()
+		{
+			m_members.Clear();
+			
+			foreach (Member member in m_candidates)
+			{
+				if (member.IsExtensionMethod)
+				{
+					if (m_showExtensions)
+						m_members.Add(member);
+				}
+				else
+				{
+					if (member.DeclaringType == null)
+						m_members.Add(member);
+					else if (m_visibleClasses[member.DeclaringType])
+						m_members.Add(member);
+				}
+			}
+			
+			m_members.Sort((lhs, rhs) => lhs.Text.CompareTo(rhs.Text));
+			reloadData();
+		}
+		
+		private string[] DoGetClasses()
+		{
+			var classes = new List<string>();
+			
+			foreach (Member member in m_candidates)
+			{
+				if (member.DeclaringType != null)
+					classes.AddIfMissing(member.DeclaringType);
+			}
+			
+			return classes.ToArray();
+		}
+		
 		private void DoComplete(bool prefixOnly)
 		{
 			int row = selectedRow();
@@ -316,9 +406,13 @@ namespace AutoComplete
 		private NSTextView m_text;
 		private NSTextField m_label;
 		private string m_defaultLabel;
+		private List<Member> m_candidates = new List<Member>();
 		private List<Member> m_members = new List<Member>();
 		private string m_completed = string.Empty;
 		private int m_prefixLen;
+		private Dictionary<string, bool> m_visibleClasses = new Dictionary<string, bool>();
+		private bool m_hasExtensions;
+		private bool m_showExtensions;
 
 		private int m_completedIndex = -1;
 		private Member m_completedMember;

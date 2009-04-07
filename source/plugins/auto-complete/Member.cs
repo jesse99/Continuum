@@ -37,23 +37,42 @@ namespace AutoComplete
 			ArgNames = new string[0];
 		}
 		
-		public Member(string text, string[] argNames, string type)
+		public Member(string text, string type, string declaringType)
+		{
+			Trace.Assert(!string.IsNullOrEmpty(text), "text is null or empty");
+			Trace.Assert(!string.IsNullOrEmpty(type), "type is null or empty");
+			Trace.Assert(!string.IsNullOrEmpty(declaringType), "declaringType is null or empty");
+			
+			Text = text;
+			Type = type;
+			ArgNames = new string[0];
+			DeclaringType = declaringType;
+		}
+		
+		public Member(string text, string[] argNames, string type, string declaringType)
 		{
 			Trace.Assert(!string.IsNullOrEmpty(text), "text is null or empty");
 			Trace.Assert(!string.IsNullOrEmpty(type), "type is null or empty");
 			Trace.Assert(argNames != null, "argNames is null");
+			Trace.Assert(!string.IsNullOrEmpty(declaringType), "declaringType is null or empty");
 			
 			Text = text;
 			Type = type;
 			ArgNames = argNames;
+			DeclaringType = declaringType;
 		}
 		
 		public string Text {get; private set;}
 		
 		// Note that this may not be the full name.
 		public string Type {get; private set;}
-				
+		
 		public string[] ArgNames {get; private set;}
+		
+		// Non-null if the member is a method (as opposed to a variable, local, etc).
+		public string DeclaringType {get; private set;}
+
+		public bool IsExtensionMethod {get; set;}
 		
 		public override string ToString()
 		{

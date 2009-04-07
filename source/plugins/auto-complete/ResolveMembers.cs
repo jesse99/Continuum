@@ -120,14 +120,16 @@ namespace AutoComplete
 				string[] names = r[2].Split(new char[]{':'}, StringSplitOptions.RemoveEmptyEntries);
 				if (r[3].Length == 0)
 				{
-					members.AddIfMissing(new Member(r[0], names, r[1]));
+					members.AddIfMissing(new Member(r[0], names, r[1], fullName));
 				}
 				else if (DoIsValidExtensionMethod(r[3], globals))
 				{
 					string[] last = new string[names.Length - 1];
 					Array.Copy(names, 1, last, 0, last.Length);
 					
-					members.AddIfMissing(new Member(r[0], last, r[1]));
+					Member member = new Member(r[0], last, r[1], fullName);
+					member.IsExtensionMethod = true;
+					members.AddIfMissing(member);
 				}
 			}
 		}
@@ -145,11 +147,13 @@ namespace AutoComplete
 				if (DoIsValidExtensionMethod(r[3], globals))
 				{
 					string[] names = r[2].Split(new char[]{':'}, StringSplitOptions.RemoveEmptyEntries);
-
+					
 					string[] last = new string[names.Length - 1];
 					Array.Copy(names, 1, last, 0, last.Length);
 					
-					members.AddIfMissing(new Member(r[0], last, r[1]));
+					Member member = new Member(r[0], last, r[1], fullName);
+					member.IsExtensionMethod = true;
+					members.AddIfMissing(member);
 				}
 			}
 		}
@@ -160,7 +164,7 @@ namespace AutoComplete
 			if (e != null)
 			{
 				if (isStatic)
-					members.AddRange(from n in e.Names select new Member(n, type.FullName));
+					members.AddRange(from n in e.Names select new Member(n, type.FullName, type.FullName));
 			}
 			else
 				DoGetParsedTypeMembers(type, isInstance, isStatic, members, includePrivates);
@@ -180,7 +184,7 @@ namespace AutoComplete
 			{
 				if (DoShouldAdd(isInstance, isStatic, field.Modifiers))
 					if (includePrivates || field.Access != MemberModifiers.Private)
-						members.AddIfMissing(new Member(field.Name, field.Type));
+						members.AddIfMissing(new Member(field.Name, field.Type, type.FullName));
 			}
 			
 			foreach (CsMethod method in type.Methods)
@@ -194,7 +198,7 @@ namespace AutoComplete
 							var anames = from p in method.Parameters select p.Name;
 							string text = method.Name + "(" + string.Join(", ", (from p in method.Parameters select p.Type + " " + p.Name).ToArray()) + ")";
 							
-							members.AddIfMissing(new Member(text, anames.ToArray(), method.ReturnType));
+							members.AddIfMissing(new Member(text, anames.ToArray(), method.ReturnType, type.FullName));
 						}
 					}
 				}
@@ -207,7 +211,7 @@ namespace AutoComplete
 				{
 					if (DoShouldAdd(isInstance, isStatic, prop.Modifiers))
 						if (includePrivates || prop.Access != MemberModifiers.Private)
-							members.AddIfMissing(new Member(prop.Name, prop.ReturnType));
+							members.AddIfMissing(new Member(prop.Name, prop.ReturnType, type.FullName));
 				}
 			}
 		}

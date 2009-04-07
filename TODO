@@ -9,6 +9,7 @@ NRefactory
 http://monodevelop.com/Proposal:_Code_Templates
 http://tirania.org/blog/archive/2009/Mar-19.html (cross-plaform IDE)
 http://tirania.org/blog/archive/2009/Mar-19.html 
+Text Template Transformation Toolkit system: http://tirania.org/blog/archive/2009/Mar-10.htm
 
 http://code.google.com/p/simple-assembly-explorer/
 http://www.slickedit.com/content/view/353/217/#surroundwith
@@ -19,10 +20,6 @@ ReferenceEquals used with value type
 might want a sample app
 
 * Work more on target completion:
-	- context menu should filter by class
-	- context menu should filter by extension method
-	- context menu should filter by access
-	- context menu should have open and find on site commands
 	- would be nice if method targets worked when not chaining (use a ResolveEpr class)
 	- doesn't work with IBOutlet<T>.Value
 	- get ctor calls completing: enter with new PartialTypeName
