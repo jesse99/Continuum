@@ -18,45 +18,6 @@ ReferenceEquals used with value type
 
 might want a sample app
 
-		private void DoGetInsertText(int row, out string text, out NSRange range)
-		{
-			var builder = new StringBuilder();
-			
-			range = m_text.selectedRange();
-			range.length = 0;
-			
-			int i = m_members[row].Text.IndexOf('(');
-			if (i > 0)
-				builder.Append(m_members[row].Text, 0, i + 1);
-			else
-				builder.Append(m_members[row].Text);
-			
-			string[] argNames = m_members[row].ArgNames;
-			if (argNames.Length > 0)
-			{
-				range.location += builder.Length;
-				range.length = argNames[0].Length;
-				
-				for (int j = 0; j < argNames.Length; ++j)
-				{
-					builder.Append(argNames[j]);
-					
-					if (j + 1 < argNames.Length)
-						builder.Append(", ");
-				}
-			}
-			
-			if (i > 0)
-				builder.Append(')');
-			
-			text = builder.ToString();
-		}
-		
-* Add a context menu to arg window:
-	- close item
-	- all the overloads
-	- current overload should be checked
-	- selecting an overload should change the view's text
 * Work more on target completion:
 	- context menu should filter by class
 	- context menu should filter by extension method

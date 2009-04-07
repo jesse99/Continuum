@@ -28,7 +28,7 @@ namespace AutoComplete
 {
 	internal interface IArgsAnnotation : IInterface
 	{		
-		void Open(ITextAnnotation annotation, Member member);
+		void Open(ITextAnnotation annotation, Member[] members, int index);
 		
 		// Escape will close the window, otherwise keyHandler is called.
 		bool HandleKey(NSTextView view, NSEvent evt);

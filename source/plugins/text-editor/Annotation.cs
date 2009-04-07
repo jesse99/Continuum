@@ -23,6 +23,7 @@ using MCocoa;
 using MObjc;
 using Shared;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace TextEditor
@@ -79,6 +80,11 @@ namespace TextEditor
 					m_color.retain();
 				}
 			}
+		}
+		
+		public new NSMenu menuForEvent(NSEvent evt)
+		{
+			return window().Call("getContextMenu").To<NSMenu>();
 		}
 		
 		public new void drawRect(NSRect dirtyRect)
@@ -170,6 +176,75 @@ namespace TextEditor
 		public new void mouseMoved(NSEvent theEvent)
 		{
 			NSCursor.openHandCursor().set();
+		}
+		
+		public NSMenu getContextMenu()
+		{
+			NSMenu menu = NSMenu.Alloc().initWithTitle(NSString.Empty);
+			menu.autorelease();
+			
+			NSMenuItem item = NSMenuItem.Create("Close", "close:");
+			menu.addItem(item);
+			
+			if (m_items != null && m_items.Count > 0)
+			{
+				menu.addItem(NSMenuItem.separatorItem());
+				
+				for (int i = 0; i < m_items.Count; ++i)
+				{
+					AnnontationContextItem ai = m_items[i];
+					
+					if (ai.Name != null)
+					{
+						item = NSMenuItem.Create(ai.Name, "handleContextItem:");
+						item.setTag(i);
+						menu.addItem(item);
+					}
+					else
+						menu.addItem(NSMenuItem.separatorItem());
+				}
+			}
+			
+			return menu;
+		}
+		
+		public void close(NSObject sender)
+		{
+			Close();
+		}
+		
+		public new bool validateUserInterfaceItem(NSObject item)
+		{		
+			Selector sel = (Selector) item.Call("action");
+			
+			bool valid = false;
+			if (sel.Name == "handleContextItem:")
+			{
+				int i = item.Call("tag").To<int>();
+				item.Call("setState:", m_items[i].State);
+				valid = true;
+			}
+			else if (respondsToSelector(sel))
+			{
+				valid = true;
+			}
+			else if (SuperCall("respondsToSelector:", new Selector("validateUserInterfaceItem:")).To<bool>())
+			{
+				valid = SuperCall("validateUserInterfaceItem:", item).To<bool>();
+			}
+			
+			return valid;
+		}
+		
+		public void handleContextItem(NSObject item)
+		{
+			int i = item.Call("tag").To<int>();
+			m_items[i].Handler();
+		}
+		
+		public void SetContext(List<AnnontationContextItem> items)
+		{
+			m_items = items;
 		}
 		
 		public bool IsValid
@@ -330,6 +405,8 @@ namespace TextEditor
 			// returns 0.0 so we can't use that to try to fix it up...
 			NSSize size = value.size();
 			size.width += 2*AnnotateView.LeftMargin;
+			if (value.length() > 0)
+				size.width += 0.2f*size.width/value.length();		// size isn't always quite large enough to display all of the text without this, e.g. for String.IndexOf(char)
 			size.height = 2*AnnotateView.LeftMargin + m_fontHeight;
 			
 			DoAdjustFrame(size);
@@ -380,6 +457,7 @@ namespace TextEditor
 		private bool m_visible;
 		private NSPoint m_offset;
 		private float m_fontHeight;
+		private List<AnnontationContextItem> m_items;
 		#endregion
 	}
 }

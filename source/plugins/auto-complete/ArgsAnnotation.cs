@@ -53,19 +53,29 @@ namespace AutoComplete
 			get {return m_annotation != null && m_annotation.Visible;}
 		}
 		
-		public void Open(ITextAnnotation annotation, Member member)
+		public void Open(ITextAnnotation annotation, Member[] members, int index)
 		{
+			Trace.Assert(annotation != null, "annotation is null");
+			Trace.Assert(members != null, "members is null");
+			Trace.Assert(index >= 0, "index is negative");
+			Trace.Assert(index < members.Length, "index is too large");
+			
 			if (IsVisible)
 			{
-				m_oldStates.Add(new State(m_annotation, m_member));
+				m_oldStates.Add(new State(m_annotation, m_members, m_index));
+				m_annotation.SetContext(null);
 				m_annotation.Visible = false;
 			}
 			
 			m_annotation = annotation;
-			m_member = member;
+			m_members = members;
+			m_index = index;
 			m_currentArg = 0;
 			m_annotation.String = DoBuildString();
 			DoUpdateBackColor();
+			
+			if (members.Length > 1)
+				DoResetContextMenu();
 			
 			m_annotation.Visible = true;
 		}
@@ -106,7 +116,8 @@ namespace AutoComplete
 							if (arg >= 0)
 							{
 								m_annotation = m_oldStates.Last().Annotation;
-								m_member = m_oldStates.Last().Member;
+								m_members = m_oldStates.Last().Members;
+								m_index = m_oldStates.Last().Index;
 								m_currentArg = -1;
 								m_annotation.Visible = true;
 								m_oldStates.RemoveLast();
@@ -150,6 +161,28 @@ namespace AutoComplete
 		}
 		
 		#region Private Methods
+		private void DoResetContextMenu()
+		{
+			var items = new List<AnnontationContextItem>();
+			for (int i = 0; i < m_members.Length; ++i)
+			{
+				string text = m_members[i].Type + " " + m_members[i].Text;
+				int state = i == m_index ? 1 : 0;
+				
+				int j = i;				// need this because we don't want the delegate using the mutated iteration variable
+				var item = new AnnontationContextItem(text, state, () => DoUseOverload(j));
+				items.Add(item);
+			}
+			m_annotation.SetContext(items);
+		}
+		
+		private void DoUseOverload(int index)
+		{
+			m_index = index;
+			m_annotation.String = DoBuildString();
+			DoResetContextMenu();
+		}
+		
 		private void DoUpdateBackColor()
 		{
 			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
@@ -250,28 +283,30 @@ namespace AutoComplete
 		
 		private NSAttributedString DoBuildString()
 		{
-			string rtype = CsHelpers.GetAliasedName(m_member.Type);
+			Member member = m_members[m_index];
+			
+			string rtype = CsHelpers.GetAliasedName(member.Type);
 			rtype = CsHelpers.TrimNamespace(rtype);
 			rtype = CsHelpers.TrimGeneric(rtype);
-			string text = rtype + " " + m_member.Text;
+			string text = rtype + " " + member.Text;
 			
 			var str = NSMutableAttributedString.Create(text);
-			for (int j = 0; j < m_member.ArgNames.Length; ++j)
+			for (int j = 0; j < member.ArgNames.Length; ++j)
 			{
 				if (j == m_currentArg)
 				{
 					char delimiter;
-					if (j + 1 < m_member.ArgNames.Length)
+					if (j + 1 < member.ArgNames.Length)
 						delimiter = ',';
 					else
 						delimiter = ')';
 						
-					int k = text.IndexOf(m_member.ArgNames[j] + delimiter);
+					int k = text.IndexOf(member.ArgNames[j] + delimiter);
 					Trace.Assert(k >= 0, string.Format("couldn't find '{0}' in '{1}'", delimiter, text));
-					Trace.Assert(m_member.ArgNames[j].Length > 0, "arg is empty");
-					Trace.Assert(k + m_member.ArgNames[j].Length <= text.Length, "arg is too long");
+					Trace.Assert(member.ArgNames[j].Length > 0, "arg is empty");
+					Trace.Assert(k + member.ArgNames[j].Length <= text.Length, "arg is too long");
 					
-					DoHilite(str, k, m_member.ArgNames[j].Length);
+					DoHilite(str, k, member.ArgNames[j].Length);
 				}
 			}
 			
@@ -290,21 +325,24 @@ namespace AutoComplete
 		#region Private Types
 		private sealed class State
 		{
-			public State(ITextAnnotation annotation, Member member)
+			public State(ITextAnnotation annotation, Member[] members, int index)
 			{
 				Annotation = annotation;
-				Member = member;
+				Members = members;
+				Index = index;
 			}
 			
 			public ITextAnnotation Annotation {get; private set;}
-			public Member Member {get; private set;}
+			public Member[] Members {get; private set;}
+			public int Index {get; private set;}
 		}
 		#endregion
 		
 		#region Fields
 		private Boss m_boss;								// text editor boss
 		private ITextAnnotation m_annotation;
-		private Member m_member;
+		private Member[] m_members;
+		private int m_index;
 		private int m_currentArg;
 		private List<State> m_oldStates = new List<State>();
 		#endregion

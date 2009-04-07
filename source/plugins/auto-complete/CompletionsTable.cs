@@ -26,6 +26,7 @@ using Shared;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 
 namespace AutoComplete
@@ -205,7 +206,7 @@ namespace AutoComplete
 				{
 					m_completedIndex = m_text.selectedRange().location - m_prefixLen;
 					m_completedMember = m_members[row];
-				
+					
 					m_text.delete(this);
 					m_text.insertText(NSString.Create(text.Substring(m_prefixLen)));
 					
@@ -224,7 +225,11 @@ namespace AutoComplete
 					ITextAnnotation annotation = m_editor.GetAnnotation(range);
 					
 					IArgsAnnotation args = m_editor.Boss.Get<IArgsAnnotation>();
-					args.Open(annotation, m_members[row]);
+					int i = m_members[row].Text.IndexOf('(');
+					string name = i >= 0 ? m_members[row].Text.Substring(0, i + 1) : m_members[row].Text;
+					var members = (from m in m_members where m.Text.StartsWith(name) select m).ToArray();
+					int j = Array.FindIndex(members, m => m.Text == m_members[row].Text);
+					args.Open(annotation, members, j);
 				}
 			}
 			else
