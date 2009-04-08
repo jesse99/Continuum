@@ -23,36 +23,56 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
+using System.Reflection;
+using System.Runtime.Remoting;
 
 namespace Shared
-{    
+{
 	public static class Log
-	{			
+	{
 		static Log()
 		{
 			try
 			{
+#if TEST
+				// TestFixtureSetUp methods can override this via SetLevel.
+				ms_defaultLevel = TraceLevel.Info;
+				
+				ObjectHandle handle = Activator.CreateInstance(
+					"continuum",									// assemblyName
+					"Continuum.PrettyTraceListener",		// typeName
+					false,											// ignoreCase
+					BindingFlags.CreateInstance,			// bindingAttr,
+					null,												// binder
+					new object[]{"/tmp/test.log"},		// args (note that we can't rely on the working directory if we're running the tests via Continuum)
+					null,												// culture
+					null,												// activationAttributes
+					null);											// securityInfo
+				TextWriterTraceListener listener = (TextWriterTraceListener) (handle.Unwrap());
+				Trace.Listeners.Add(listener);
+				
+				Trace.AutoFlush = true;
+				Trace.IndentSize = 4;
+#else
 				var section = ConfigurationManager.GetSection("logger") as LoggerSection;
 				if (section != null)
 					DoInitCategories(section);
+#endif
 			}
 			catch (Exception e)
 			{
 				Console.Error.WriteLine("Couldn't initialize the logger: {0}", e.Message);	// typically this will be a bad config file
 			}
 		}
-
+		
 #if TEST
 		// Test because this code is dicy in the presence of threads.
-		public static void SetLevel(TraceLevel level, string name)
+		public static void SetLevel(TraceLevel level)
 		{
-			if (name != "*")
-				ms_levels[name] = level;
-			else
-				ms_defaultLevel = level;
+			ms_defaultLevel = level;
 		}
 #endif
-
+		
 		// Writing
 		[Conditional("TRACE")]
 		public static void WriteLine(string category)
@@ -135,6 +155,7 @@ namespace Shared
 		}
 		
 		#region Private Methods
+#if !TEST
 		private static void DoInitCategories(LoggerSection section)
 		{
 			for (int i = 0; i < section.Categories.Count; ++i)
@@ -161,7 +182,8 @@ namespace Shared
 				}
 			}
 		}
-				
+#endif
+		
 		private static void DoWriteLine(TraceLevel level, string category, string mesg)
 		{
 			Trace.WriteLine(mesg, category + " " + level);	// note that Trace is thread safe
@@ -178,7 +200,7 @@ namespace Shared
 				get {return (CategoriesCollection) base["categories"];}
 			}
 		}
-	
+		
 		[ConfigurationCollection(typeof(CategoryElement))]
 		private sealed class CategoriesCollection : ConfigurationElementCollection
 		{
@@ -213,7 +235,7 @@ namespace Shared
 			}
 		}
 		#endregion
-
+		
 		#region Fields
 		private static TraceLevel ms_defaultLevel = TraceLevel.Warning;
 		private static Dictionary<string, TraceLevel> ms_levels = new Dictionary<string, TraceLevel>();

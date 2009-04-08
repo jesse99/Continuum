@@ -43,5 +43,9 @@ namespace AutoComplete
 		
 		// Returns the interfaces directly implemented by the type.
 		string[] FindInterfaces(string fullName);
+		
+		Member[] GetMembers(string fullName, bool instanceCall, bool isStaticCall, CsGlobalNamespace globals);
+
+		Member[] GetExtensionMethods(string fullName, CsGlobalNamespace globals);
 	}
 }

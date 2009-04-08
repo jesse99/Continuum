@@ -119,7 +119,85 @@ namespace AutoComplete
 			return result.ToArray();
 		}
 		
+		public Member[] GetMembers(string fullName, bool instanceCall, bool isStaticCall, CsGlobalNamespace globals)
+		{
+			var members = new List<Member>();
+			
+			string sql;
+			if (instanceCall && isStaticCall)
+				sql = string.Format(@"
+					SELECT text, return_type, arg_names, namespace
+						FROM Members 
+					WHERE type = '{0}'", fullName);
+			else
+				sql = string.Format(@"
+					SELECT text, return_type, arg_names, namespace
+						FROM Members 
+					WHERE type = '{0}' AND is_static = '{1}'", fullName, isStaticCall ? "1" : "0");
+			
+			string[][] rows = m_database.QueryRows(sql);
+			foreach (string[] r in rows)
+			{
+				string[] names = r[2].Split(new char[]{':'}, StringSplitOptions.RemoveEmptyEntries);
+				if (r[3].Length == 0)
+				{
+					members.AddIfMissing(new Member(r[0], names, r[1], fullName));
+				}
+				else if (DoIsValidExtensionMethod(r[3], globals))
+				{
+					string[] last = new string[names.Length - 1];
+					Array.Copy(names, 1, last, 0, last.Length);
+					
+					Member member = new Member(r[0], last, r[1], fullName);
+					member.IsExtensionMethod = true;
+					members.AddIfMissing(member);
+				}
+			}
+			
+			return members.ToArray();
+		}
+		
+		public Member[] GetExtensionMethods(string fullName, CsGlobalNamespace globals)
+		{
+			var members = new List<Member>();
+			
+			string sql = string.Format(@"
+				SELECT text, return_type, arg_names, namespace
+					FROM Members 
+				WHERE type = '{0}' AND length(namespace) > 0", fullName);
+			
+			string[][] rows = m_database.QueryRows(sql);
+			foreach (string[] r in rows)
+			{
+				if (DoIsValidExtensionMethod(r[3], globals))
+				{
+					string[] names = r[2].Split(new char[]{':'}, StringSplitOptions.RemoveEmptyEntries);
+					
+					string[] last = new string[names.Length - 1];
+					Array.Copy(names, 1, last, 0, last.Length);
+					
+					Member member = new Member(r[0], last, r[1], fullName);
+					member.IsExtensionMethod = true;
+					members.AddIfMissing(member);
+				}
+			}
+			
+			return members.ToArray();
+		}
+		
 		#region Private Methods
+		private bool DoIsValidExtensionMethod(string ns, CsGlobalNamespace globals)
+		{
+			bool valid = false;
+			
+			for (int i = 0; i < globals.Uses.Length && !valid; ++i)
+			{
+				valid = globals.Uses[i].Namespace == ns;
+			}
+			
+			return valid;
+		}
+		
 		private bool DoIncludeMethod(string argNames, int numArgs, ushort attributes, bool includeInstanceMembers)
 		{
 			bool include = argNames.Count(c => c == ':') == numArgs;

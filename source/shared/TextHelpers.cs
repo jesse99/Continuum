@@ -118,6 +118,7 @@ namespace Shared
 					if (closeBraces.Count > 0 && DoClosesBrace(ch, closeBraces.Last(), braces))
 					{
 						closeBraces.RemoveLast();
+						--index;
 					}
 					else
 					{

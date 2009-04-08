@@ -84,11 +84,33 @@ namespace AutoComplete
 			return new string[0];
 		}
 		
+		public Member[] GetMembers(string fullName, bool instanceCall, bool isStaticCall, CsGlobalNamespace globals)
+		{
+			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
+			
+			Member[] members = null;
+			
+			if (Members != null)
+				Members.TryGetValue(fullName, out members);
+				
+			if (members == null)
+				members = new Member[0];
+			
+			return members;
+		}
+		
+		public Member[] GetExtensionMethods(string fullName, CsGlobalNamespace globals)
+		{
+			return new Member[0];
+		}
+		
 		public Dictionary<string, string> Hashes {get; set;}
 		
 		public Dictionary<string, string> BaseClasses {get; set;}
 		
 		public Dictionary<string, string> BaseFieldTypes {get; set;}
+
+		public Dictionary<string, Member[]> Members {get; set;}
 	}
 }
 #endif

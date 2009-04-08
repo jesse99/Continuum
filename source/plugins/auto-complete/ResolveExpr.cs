@@ -1,0 +1,257 @@
+// Copyright (C) 2009 Jesse Jones
+//
+// Permission is hereby granted, free of charge, to any person obtaining
+// a copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to
+// the following conditions:
+// 
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+using Shared;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+
+namespace AutoComplete
+{
+	// Used to resolve expressions into types. Note that this will not resolve all
+	// expressions, but should resolve the most common expressions (notably
+	// chained method calls).
+	internal sealed class ResolveExpr
+	{
+		public ResolveExpr(ITargetDatabase db, CsGlobalNamespace globals, ResolveName nameResolver)
+		{
+			m_globals = globals;
+			m_nameResolver = nameResolver;
+			m_typeResolver = new ResolveType(db);
+			m_memberResolver = new ResolveMembers(db);
+		}
+		
+		// Offset should point just after the expression to resolve. May return null.
+		public ResolvedTarget Resolve(string text, int offset)
+		{
+			Trace.Assert(offset >= 0, "offset is negative");
+			Trace.Assert(offset <= text.Length, "offset is too large");
+			
+			ResolvedTarget result = null;
+			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "text: '{0}'", text.Substring(Math.Max(0, offset - 48), offset - Math.Max(0, offset - 48)).EscapeAll());
+			
+			string expr = DoFindExpr(text, offset);
+			Log.WriteLine("AutoComplete", "    expr: '{0}'", expr);
+			if (!string.IsNullOrEmpty(expr))
+				result = m_nameResolver.Resolve(expr);
+				
+			if (result == null)
+			{
+				string[] operands = DoGetOperands(expr);
+				
+				foreach (string operand in operands)
+				{
+					result = DoResolveOperand(result, operand);
+					if (result == null)
+						break;
+				}
+				Log.WriteLine("AutoComplete", "    target: {0}", result);
+			}
+			
+			return result;
+		}
+		
+		#region Private Methods		
+		private string DoFindExpr(string text, int offset)
+		{
+			int i = offset;
+			while (i - 1 >= 0)
+			{
+				if (text[i - 1] == '.')
+				{
+					--i;
+				}
+				else if (CsHelpers.CanContinueIdentifier(text[i - 1]))
+				{
+					--i;
+				}
+				else if (text[i - 1] == ')')
+				{
+					const int MaxMethodCallLength = 256;
+					
+					int first = Math.Max(i - MaxMethodCallLength, -1);
+					i = TextHelpers.ReverseSkipBraces(text, i - 1, first, "()", "[]", "{}");	// technically we don't need to match square and curly braces, but that allows us to identify more syntax errors
+					if (i > first && i > 0 && DoCanContinueIdentifier(text, i - 1))
+						--i;					// skip the opening brace
+					else
+						break;
+				}
+				else
+					break;
+			}
+			
+			int count = CsHelpers.CanStartIdentifier(text[i]) ? offset - i : 0;
+			return text.Substring(i, count);
+		}
+		
+		private bool DoCanContinueIdentifier(string text, int i)
+		{
+			while (i >= 0 && char.IsWhiteSpace(text[i]))
+				--i;
+				
+			return i >= 0 ? CsHelpers.CanContinueIdentifier(text[i]) : false;
+		}
+		
+		// name.call(x, y).name
+		private string[] DoGetOperands(string expr)
+		{
+			var operands = new List<string>();
+			
+			int i = 0;
+			int j = 0;
+			while (j < expr.Length)
+			{
+				if (expr[j] == '.')
+				{
+					operands.Add(expr.Substring(i, j - i));
+					i = ++j;
+				}
+				else if ("([{".Contains(expr[j]))
+				{
+					j = TextHelpers.SkipBraces(expr, j, "()", "[]", "{}");
+					if (j == expr.Length)
+						return new string[0];
+				}
+				else
+					++j;
+			}
+			
+			if (i < j)
+				operands.Add(expr.Substring(i, j - i));
+			
+			return operands.ToArray();
+		}
+		
+		private ResolvedTarget DoResolveOperand(ResolvedTarget target, string operand)
+		{
+			ResolvedTarget result = null;
+			
+			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "    target: {0}, operand: '{1}'", target, operand);
+			
+			// Handle locals and args.
+			if (target == null)
+				result = m_nameResolver.Resolve(operand);
+			
+			// Handle this calls (this will work for static calls too).
+			if (target == null && result == null)
+				target = m_nameResolver.Resolve("this");
+			
+			if (target != null && result == null)
+			{
+				Member[] members = m_memberResolver.Resolve(target, m_globals);
+				int numArgs = DoGetNumArgs(operand);
+				string name = operand;
+				if (numArgs > 0)
+				{
+					int i = operand.IndexOfAny(new char[]{'(', ' ', '\t', '\n', '\r'});
+					name = i>= 0 ? operand.Substring(0, i) : null;
+				}
+				
+				if (name != null)
+				{
+					Member member = members.FirstOrDefault(m => DoMatch(m, name, numArgs));
+					if (member != null)
+					{
+						result = m_typeResolver.Resolve(member.Type, m_globals, target.IsInstance, target.IsStatic);
+					}
+				}
+			}
+			
+			if (result == null)
+				Log.WriteLine("AutoComplete", "failed to resolve {0}::{1}", target, operand);
+			
+			return result;
+		}
+		
+		private int DoGetNumArgs(string operand)
+		{
+			int count = 0;
+			
+			int i = operand.IndexOfAny(new char[]{'('});
+			if (i > 0)
+			{
+				++i;
+				while (i < operand.Length && char.IsWhiteSpace(operand[i]))
+					++i;
+					
+				if (operand[i] != ')')
+					++count;
+				
+				while (i < operand.Length)
+				{
+					if (operand[i] == ',')
+					{
+						++count;
+						++i;
+					}
+					else if ("([{".Contains(operand[i]))
+					{
+						i = TextHelpers.SkipBraces(operand, i, "()", "[]", "{}");
+						if (i == operand.Length)
+							count = -1;
+					}
+					else if (operand[i] == '<')
+					{
+						int j = TextHelpers.SkipBraces(operand, i, "<>");
+						if (j == operand.Length)
+							++i;
+						else
+							i = j + 1;
+					}
+					else
+						++i;
+				}
+			}
+			
+			return count;
+		}
+		
+		private bool DoMatch(Member member, string name, int numArgs)
+		{
+			bool matches = false;
+			
+			if (numArgs == 0)
+			{
+				matches = member.Text == name;
+			}
+			else if (member.ArgNames.Length == numArgs)
+			{
+				int i = member.Text.IndexOfAny(new char[]{'('});
+				if (i > 0)
+				{
+					string candidate = member.Text.Substring(0, i);
+					matches = candidate == name;
+				}
+			}
+			
+			return matches;
+		}
+		#endregion
+		
+		#region Fields
+		private CsGlobalNamespace m_globals;
+		private ResolveName m_nameResolver;
+		private ResolveMembers m_memberResolver;
+		private ResolveType m_typeResolver;
+		#endregion
+	}
+}

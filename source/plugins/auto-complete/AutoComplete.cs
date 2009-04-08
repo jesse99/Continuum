@@ -73,9 +73,9 @@ namespace AutoComplete
 					string name = System.IO.Path.GetFileName(editor.Path);
 					
 					string path = Paths.GetAssemblyDatabase(name);
-					m_database = new Database(path, "AutoComplete-" + name);
+					var database = new Database(path, "AutoComplete-" + name);
 					
-					m_typeResolver = new ResolveType(new TargetDatabase(m_database));
+					m_database = new TargetDatabase(database);
 					m_members = new ResolveMembers(m_database);
 				}
 			}
@@ -92,7 +92,7 @@ namespace AutoComplete
 				NSString chars = evt.characters();
 				if (range.length == 0 && chars.length() == 1 && chars[0] == '.')
 				{
-					handled = DoComplete(this.DoCompleteTarget, view, range, computer);
+					handled = DoComplete(this.DoCompleteMethodCall, view, range, computer);
 				}
 				else if (evt.keyCode() == Constants.EnterKey)
 				{
@@ -136,45 +136,29 @@ namespace AutoComplete
 			return handled;
 		}
 		
-		private bool DoCompleteTarget(ITextEditor editor, NSTextView view, NSRange range)
+		private bool DoCompleteMethodCall(ITextEditor editor, NSTextView view, NSRange range)
 		{
 			Parse parse = m_parses.TryParse(editor.Path);
 			CsGlobalNamespace globals = parse != null ? parse.Globals : null;
 			if (globals != null)
 			{
+				Boss boss = ObjectModel.Create("CsParser");
+				var locals = boss.Get<ICsLocalsParser>();
+				var nameResolver = new ResolveName(m_database, locals, m_text.Text, range.location, globals);
+				var exprResolver = new ResolveExpr(m_database, globals, nameResolver);
+				
 				Member[] members = null;
 				string type = null;
 				bool isInstance = false;
 				bool isStatic = false;
 				
-				Member oldMember = DoMatchOldMethod(range);
-				if (oldMember != null)
+				ResolvedTarget target = exprResolver.Resolve(m_text.Text, range.location);
+				if (target != null)
 				{
-					ResolvedTarget target = m_typeResolver.Resolve(oldMember.Type, globals, true, false);
-					if (target != null)
-					{
-						type = target.FullName;
-						members = m_members.Resolve(target, globals);
-						isInstance = target.IsInstance;
-						isStatic = target.IsStatic;
-					}
-				}
-				else
-				{
-					string expr = DoGetTargetExpr(range.location);
-					if (!string.IsNullOrEmpty(expr))
-					{
-						var nameResolver = new ResolveName(new TargetDatabase(m_database), m_locals, m_text.Text, range.location, globals);
-
-						ResolvedTarget target = nameResolver.Resolve(expr);
-						if (target != null)
-						{
-							type = target.FullName;
-							members = m_members.Resolve(target, globals);
-							isInstance = target.IsInstance;
-							isStatic = target.IsStatic;
-						}
-					}
+					type = target.FullName;
+					members = m_members.Resolve(target, globals);
+					isInstance = target.IsInstance;
+					isStatic = target.IsStatic;
 				}
 				
 				if (type != "System.Void")
@@ -193,70 +177,13 @@ namespace AutoComplete
 			return false;
 		}
 		
-		private Member DoMatchOldMethod(NSRange range)
-		{
-			if (m_controller != null)
-			{
-				string text = m_text.Text;
-				int oldIndex = m_controller.CompletedIndex;
-				
-				if (m_controller.CompletedMember != null && oldIndex < text.Length)
-				{
-					string oldText = m_controller.CompletedMember.Text;
-					int k = oldText.IndexOf('(');
-					
-					if (k >= 0)
-					{
-						// Alpha.Beta(actualArg).
-						if (string.Compare(oldText, 0, text, oldIndex, k + 1) == 0)
-						{
-							int i = DoSkipParens(text, oldIndex + k);
-							if (range.location == i)
-								return m_controller.CompletedMember;
-						}
-					}
-					else
-					{
-						// Alpha.Beta.
-						if (range.location == oldIndex + oldText.Length)
-						{
-							if (string.Compare(oldText, 0, text, oldIndex, oldText.Length) == 0)
-								return m_controller.CompletedMember;
-						}
-					}
-				}
-			}
-			
-			return null;
-		}
-		
-		private int DoSkipParens(string text, int i)
-		{
-			Trace.Assert(text[i] == '(', "expected a '(' but found '" + text[i] + "'");
-			
-			int count = 1;
-			++i;
-			
-			while (i < text.Length && count > 0)
-			{
-				if (text[i] == '(')
-					++count;
-				else if (text[i] == ')')
-					--count;
-				
-				++i;
-			}
-			
-			return count == 0 ? i : -1;
-		}
-		
 		private bool DoCompleteExpression(ITextEditor editor, NSTextView view, NSRange range)
 		{
 			Parse parse = m_parses.TryParse(editor.Path);
 			CsGlobalNamespace globals = parse != null ? parse.Globals : null;
 			if (globals != null)
 			{
-				var nameResolver = new ResolveName(new TargetDatabase(m_database), m_locals, m_text.Text, range.location, globals);
+				var nameResolver = new ResolveName(m_database, m_locals, m_text.Text, range.location, globals);
 				var target = nameResolver.Resolve("<this>");
 				if (target != null)
 				{
@@ -319,12 +246,11 @@ namespace AutoComplete
 		#region Fields
 		private Boss m_boss;
 		private IText m_text;
-		private Database m_database;
+		private TargetDatabase m_database;
 		private CompletionsController m_controller;
 		private ISearchTokens m_tokens;
 		private IParses m_parses;
 		private ICsLocalsParser m_locals;
-		private ResolveType m_typeResolver;
 		private ResolveMembers m_members;
 		#endregion
 	}

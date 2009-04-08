@@ -232,16 +232,6 @@ namespace AutoComplete
 			return result;
 		}
 		
-		public int CompletedIndex
-		{
-			get {return m_completedIndex;}
-		}
-		
-		public Member CompletedMember
-		{
-			get {return m_completedMember;}
-		}
-		
 		#region Private Methods
 		private void DoRebuildMembers()
 		{
@@ -289,14 +279,8 @@ namespace AutoComplete
 				NSRange range;
 				DoGetInsertText(row, prefixOnly, out text, out range);
 				
-				m_completedIndex = -1;
-				m_completedMember = null;
-				
 				if (m_prefixLen <= text.Length)
 				{
-					m_completedIndex = m_text.selectedRange().location - m_prefixLen;
-					m_completedMember = m_members[row];
-					
 					m_text.delete(this);
 					m_text.insertText(NSString.Create(text.Substring(m_prefixLen)));
 					
@@ -413,9 +397,6 @@ namespace AutoComplete
 		private Dictionary<string, bool> m_visibleClasses = new Dictionary<string, bool>();
 		private bool m_hasExtensions;
 		private bool m_showExtensions;
-
-		private int m_completedIndex = -1;
-		private Member m_completedMember;
 		#endregion
 	}
 }

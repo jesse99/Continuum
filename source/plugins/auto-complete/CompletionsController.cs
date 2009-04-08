@@ -74,16 +74,6 @@ namespace AutoComplete
 			m_label.Value.setObjectValue(text);
 		}
 		
-		public int CompletedIndex
-		{
-			get {return m_table.Value.CompletedIndex;}
-		}
-		
-		public Member CompletedMember
-		{
-			get {return m_table.Value.CompletedMember;}
-		}
-		
 		#region Fields
 		private IBOutlet<CompletionsTable> m_table;
 		private IBOutlet<NSTextField> m_label;

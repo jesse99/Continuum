@@ -18,14 +18,18 @@ can make readonly rule
 ReferenceEquals used with value type
 
 might want a sample app
+sudo fs_usage -f filesys
 
-* Work on a ResolveEpr class:
-	- names: locals, fields, properties, etc
-	- qualified types
-	- method calls
-	- indexors
 * Work more on target completion:
-	- would be nice if method targets worked when not chaining (use a ResolveEpr class)
+	- auto-complete is not using parses from other windows
+	- complete table needs to sort so overloads with fewer args appear before overloads
+	  with more args
+	- args completion window doesn't say "params"
+	- string literals should auto-complete
+	- array isn't getting linq overloads
+	- enums should default to hiding System.Enum and System.Object
+	- ResolveEpr should work with dictionary subscripting
+	- ResolveEpr should work with array subscripting
 	- doesn't work with IBOutlet<T>.Value
 	- profile
 	- get ctor calls completing: enter with new PartialTypeName
@@ -98,7 +102,8 @@ might want a sample app
 * Search witin "…" isn't finding verbatim strings. E.g. search for Methods should
   find some.
 * Shouldn't open selection prefer local files? If so, why is it finding those plus those
-   on the external drive?
+   on the external drive? Maybe the is loccal check is weak? It needs to check that the
+   file path starts with the local directory path.
 * Build errors should use annotations. What about the "Error 1 of 10" text?
 * Should put databases in ~/Library/Caches. Note that time machine skips this
    directory. See /System/Library/CoreServices/backupd.bundle/Contents/Resources/StdExclusions.plist

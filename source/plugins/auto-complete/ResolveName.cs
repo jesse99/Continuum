@@ -230,7 +230,7 @@ namespace AutoComplete
 				if (m_member != null && (m_member.Modifiers & MemberModifiers.Static) == 0)
 				{
 					bool isInstance = (m_member.Modifiers & MemberModifiers.Static) == 0;
-					bool isStatic = name == "<this>";
+					bool isStatic = name == "<this>" || (m_member.Modifiers & MemberModifiers.Static) != 0;
 					
 					result = m_typeResolver.Resolve(m_member.DeclaringType, isInstance, isStatic);
 					if (result != null)

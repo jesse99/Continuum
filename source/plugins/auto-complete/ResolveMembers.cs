@@ -32,7 +32,7 @@ namespace AutoComplete
 	// Resolves a target into a list of member names which may be used on it.
 	internal sealed class ResolveMembers
 	{
-		public ResolveMembers(Database db)
+		public ResolveMembers(ITargetDatabase db)
 		{
 			m_database = db;
 		}
@@ -45,7 +45,7 @@ namespace AutoComplete
 			string fullName = DoGetMembers(target, globals, members, true);
 			
 			// Get the members for the base types.	
-			var resolveType = new ResolveType(new TargetDatabase(m_database));
+			var resolveType = new ResolveType(m_database);
 			IEnumerable<ResolvedTarget> bases = resolveType.GetBases(globals, fullName, target.IsInstance, target.IsStatic);
 			foreach (ResolvedTarget t in bases)
 			{
@@ -102,59 +102,19 @@ namespace AutoComplete
 		
 		private void DoGetDatabaseMembers(string fullName, bool instanceCall, bool isStaticCall, List<Member> members, CsGlobalNamespace globals)
 		{
-			string sql;
-			if (instanceCall && isStaticCall)
-				sql = string.Format(@"
-					SELECT text, return_type, arg_names, namespace
-						FROM Members 
-					WHERE type = '{0}'", fullName);
-			else
-				sql = string.Format(@"
-					SELECT text, return_type, arg_names, namespace
-						FROM Members 
-					WHERE type = '{0}' AND is_static = '{1}'", fullName, isStaticCall ? "1" : "0");
-			
-			string[][] rows = m_database.QueryRows(sql);
-			foreach (string[] r in rows)
+			Member[] candidates = m_database.GetMembers(fullName, instanceCall, isStaticCall, globals);
+			foreach (Member member in candidates)
 			{
-				string[] names = r[2].Split(new char[]{':'}, StringSplitOptions.RemoveEmptyEntries);
-				if (r[3].Length == 0)
-				{
-					members.AddIfMissing(new Member(r[0], names, r[1], fullName));
-				}
-				else if (DoIsValidExtensionMethod(r[3], globals))
-				{
-					string[] last = new string[names.Length - 1];
-					Array.Copy(names, 1, last, 0, last.Length);
-					
-					Member member = new Member(r[0], last, r[1], fullName);
-					member.IsExtensionMethod = true;
-					members.AddIfMissing(member);
-				}
+				members.AddIfMissing(member);
 			}
 		}
 		
 		private void DoGetExtensionMethods(string fullName, List<Member> members, CsGlobalNamespace globals)
 		{
-			string sql = string.Format(@"
-				SELECT text, return_type, arg_names, namespace
-					FROM Members 
-				WHERE type = '{0}' AND length(namespace) > 0", fullName);
-			
-			string[][] rows = m_database.QueryRows(sql);
-			foreach (string[] r in rows)
+			Member[] candidates = m_database.GetExtensionMethods(fullName, globals);
+			foreach (Member member in candidates)
 			{
-				if (DoIsValidExtensionMethod(r[3], globals))
-				{
-					string[] names = r[2].Split(new char[]{':'}, StringSplitOptions.RemoveEmptyEntries);
-					
-					string[] last = new string[names.Length - 1];
-					Array.Copy(names, 1, last, 0, last.Length);
-					
-					Member member = new Member(r[0], last, r[1], fullName);
-					member.IsExtensionMethod = true;
-					members.AddIfMissing(member);
-				}
+				members.AddIfMissing(member);
 			}
 		}
 		
@@ -164,7 +124,13 @@ namespace AutoComplete
 			if (e != null)
 			{
 				if (isStatic)
-					members.AddRange(from n in e.Names select new Member(n, type.FullName, type.FullName));
+				{
+					var candidates = from n in e.Names select new Member(n, type.FullName, type.FullName);
+					foreach (Member member in candidates)
+					{
+						members.AddIfMissing(member);
+					}
+				}
 			}
 			else
 				DoGetParsedTypeMembers(type, isInstance, isStatic, members, includePrivates);
@@ -215,22 +181,10 @@ namespace AutoComplete
 				}
 			}
 		}
-				
-		private bool DoIsValidExtensionMethod(string ns, CsGlobalNamespace globals)
-		{
-			bool valid = false;
-			
-			for (int i = 0; i < globals.Uses.Length && !valid; ++i)
-			{
-				valid = globals.Uses[i].Namespace == ns;
-			}
-			
-			return valid;
-		}
 		#endregion
 		
 		#region Fields
-		private Database m_database;
+		private ITargetDatabase m_database;
 		#endregion
 	}
 }
