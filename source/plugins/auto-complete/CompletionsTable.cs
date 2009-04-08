@@ -45,7 +45,7 @@ namespace AutoComplete
 			ActiveObjects.Add(this);
 		}
 		
-		public void Open(ITextEditor editor, NSTextView text, Member[] members, int prefixLen, NSTextField label, string defaultLabel)
+		public void Open(string type, ITextEditor editor, NSTextView text, Member[] members, int prefixLen, NSTextField label, string defaultLabel)
 		{
 			m_editor = editor;
 			m_text = text;
@@ -53,7 +53,6 @@ namespace AutoComplete
 			m_defaultLabel = defaultLabel;
 			
 			m_candidates = new List<Member>(members);
-			m_members = new List<Member>(members);
 			m_completed = string.Empty;
 			m_prefixLen = prefixLen;
 			m_hasExtensions = m_candidates.Exists(m => m.IsExtensionMethod);
@@ -61,13 +60,23 @@ namespace AutoComplete
 			
 			m_visibleClasses.Clear();
 			string[] classes = DoGetClasses();
+			bool isEnum = classes.Any(k => k == "System.Enum");
 			foreach (string klass in classes)
 			{
-				m_visibleClasses.Add(klass, true);
+				if (isEnum)									// for enums default to showing only the enum values
+				{
+					if (klass == "System.Enum")
+						m_visibleClasses.Add(klass, false);
+					else if (klass == "System.Object")
+						m_visibleClasses.Add(klass, false);
+					else
+						m_visibleClasses.Add(klass, true);
+				}
+				else
+					m_visibleClasses.Add(klass, true);
 			}
 			
-			DoSortMembers();
-			reloadData();
+			DoRebuildMembers();
 			deselectAll(this);
 			NSApplication.sharedApplication().BeginInvoke(() => scrollRowToVisible(0));
 		}

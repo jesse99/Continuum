@@ -140,6 +140,9 @@ namespace AutoComplete
 				targets.Add(t);
 				targets.AddRange(bases);
 				
+				if (fullName == "System.Array")
+					yield return "System.Collections.Generic.IEnumerable`1";
+				
 				foreach (ResolvedTarget target in targets)
 				{
 					if (target.Type != null)

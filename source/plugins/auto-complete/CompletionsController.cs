@@ -56,7 +56,7 @@ namespace AutoComplete
 				defaultLabel += " Static Members";
 			
 			m_label.Value.setStringValue(NSString.Create(defaultLabel));
-			m_table.Value.Open(editor, text, names, prefixLen, m_label.Value, defaultLabel);
+			m_table.Value.Open(type, editor, text, names, prefixLen, m_label.Value, defaultLabel);
 			Log.WriteLine("AutoComplete", "took {0:0.000} secs to open the window", AutoComplete.Watch.ElapsedMilliseconds/1000.0);
 			
 			NSApplication.sharedApplication().beginSheet_modalForWindow_modalDelegate_didEndSelector_contextInfo(

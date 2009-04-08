@@ -107,7 +107,7 @@ namespace AutoComplete
 						--i;
 					}
 				}
-				else if (text[i - 1] == '"')
+				else if (text[i - 1] == '"')		// TODO: probably should have verbatim strings as well
 				{
 					i -= 2;
 					while (i >= 0)
