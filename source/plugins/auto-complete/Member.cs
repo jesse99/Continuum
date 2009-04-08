@@ -64,6 +64,15 @@ namespace AutoComplete
 		
 		public string Text {get; private set;}
 		
+		public string Name
+		{
+			get
+			{
+				int i = Text.IndexOfAny(new char[]{'(', '['});
+				return i >= 0 ? Text.Substring(0, i) : Text;
+			}
+		}
+		
 		// Note that this may not be the full name.
 		public string Type {get; private set;}
 		
@@ -73,7 +82,7 @@ namespace AutoComplete
 		public string DeclaringType {get; private set;}
 
 		public bool IsExtensionMethod {get; set;}
-		
+
 		public override string ToString()
 		{
 			return Text;

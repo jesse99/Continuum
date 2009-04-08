@@ -404,6 +404,8 @@ namespace ObjectModel
 						type = CsHelpers.TrimNamespace(type);
 						type = CsHelpers.TrimGeneric(type);
 					}
+					if (DoIsParams(p))
+						type = "params " + type;
 					if (type.EndsWith("&"))
 					{
 						type = type.Remove(type.Length - 1);

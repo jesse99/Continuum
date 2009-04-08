@@ -23,6 +23,7 @@ using Shared;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace AutoComplete
@@ -68,6 +69,29 @@ namespace AutoComplete
 			// name. (where name is a local, argument, field, or property)
 			if (result == null)
 				result = DoHandleVariable(name);
+				
+			// char literal (we don't complete integers because it's too annoying for the common case
+			// of the dot being a floating point indicator instead of a method call)
+			if (result == null)
+			{
+				if (name.Length >= 2 && name[0] == '\'' && name.Last() == '\'')
+				{
+					result = m_typeResolver.Resolve("System.Char", m_globals, true, false);
+					if (result != null)
+						Log.WriteLine("AutoComplete", "found char literal: {0}", result.FullName);
+				}
+			}
+				
+			// string literal
+			if (result == null)
+			{
+				if (name.Length >= 2 && name[0] == '"' && name.Last() == '"')
+				{
+					result = m_typeResolver.Resolve("System.String", m_globals, true, false);
+					if (result != null)
+						Log.WriteLine("AutoComplete", "found string literal: {0}", result.FullName);
+				}
+			}
 			
 			return result;
 		}

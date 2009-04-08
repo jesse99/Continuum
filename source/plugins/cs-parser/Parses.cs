@@ -146,6 +146,13 @@ namespace CsParser
 			
 			for (int i = 0; i < scope.Types.Length && result == null; ++i)
 				result = DoFindType(scope.Types[i], fullName);
+				
+			CsNamespace ns = scope as CsNamespace;
+			if (ns != null)
+			{
+				for (int i = 0; i < ns.Namespaces.Length && result == null; ++i)
+					result = DoFindType(ns.Namespaces[i], fullName);
+			}
 			
 			return result;
 		}

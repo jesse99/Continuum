@@ -95,12 +95,40 @@ namespace AutoComplete
 					else
 						break;
 				}
+				else if (text[i - 1] == '\'')
+				{
+					i -= 2;
+					while (i >= 0)
+					{
+						if (text[i] == '\'')
+							if (i == 0 || text[i - 1] != '\\')
+								break;
+							
+						--i;
+					}
+				}
+				else if (text[i - 1] == '"')
+				{
+					i -= 2;
+					while (i >= 0)
+					{
+						if (text[i] == '"')
+							if (i == 0 || text[i - 1] != '\\')
+								break;
+							
+						--i;
+					}
+				}
 				else
 					break;
 			}
 			
-			int count = CsHelpers.CanStartIdentifier(text[i]) ? offset - i : 0;
-			return text.Substring(i, count);
+			string result = string.Empty;
+			if (i >= 0)
+				if (CsHelpers.CanStartIdentifier(text[i]) || text[i] == '\'' || text[i] == '"')
+					result = text.Substring(i, offset - i);
+				
+			return result;
 		}
 		
 		private bool DoCanContinueIdentifier(string text, int i)
@@ -130,6 +158,36 @@ namespace AutoComplete
 					j = TextHelpers.SkipBraces(expr, j, "()", "[]", "{}");
 					if (j == expr.Length)
 						return new string[0];
+				}
+				else if (expr[j] == '\'')
+				{
+					++j;
+					while (j < expr.Length)
+					{
+						if (expr[j] == '\'')
+							if (expr[j - 1] != '\\')
+								break;
+							
+						++j;
+					}
+					if (j == expr.Length || expr[j] != '\'')
+						return new string[0];
+					++j;
+				}
+				else if (expr[j] == '"')
+				{
+					++j;
+					while (j < expr.Length)
+					{
+						if (expr[j] == '"')
+							if (expr[j - 1] != '\\')
+								break;
+						
+						++j;
+					}
+					if (j == expr.Length || expr[j] != '"')
+						return new string[0];
+					++j;
 				}
 				else
 					++j;
@@ -235,12 +293,7 @@ namespace AutoComplete
 			}
 			else if (member.ArgNames.Length == numArgs)
 			{
-				int i = member.Text.IndexOfAny(new char[]{'('});
-				if (i > 0)
-				{
-					string candidate = member.Text.Substring(0, i);
-					matches = candidate == name;
-				}
+				matches = member.Name == name;
 			}
 			
 			return matches;

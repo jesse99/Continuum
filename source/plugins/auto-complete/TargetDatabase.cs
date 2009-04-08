@@ -42,7 +42,7 @@ namespace AutoComplete
 			string sql = string.Format(@"
 				SELECT hash
 					FROM Types 
-				WHERE type = '{0}'", fullName);
+				WHERE type = '{0}'", fullName.Replace("'", "''"));
 			string[][] rows = m_database.QueryRows(sql);
 			
 			return rows.Length > 0 ? rows[0][0] : null;

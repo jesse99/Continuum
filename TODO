@@ -20,14 +20,12 @@ ReferenceEquals used with value type
 might want a sample app
 sudo fs_usage -f filesys
 
+"dd. dd".Any()
+
 * Work more on target completion:
-	- auto-complete is not using parses from other windows
-	- complete table needs to sort so overloads with fewer args appear before overloads
-	  with more args
-	- args completion window doesn't say "params"
-	- string literals should auto-complete
 	- array isn't getting linq overloads
 	- enums should default to hiding System.Enum and System.Object
+	- build a new foreshadow
 	- ResolveEpr should work with dictionary subscripting
 	- ResolveEpr should work with array subscripting
 	- doesn't work with IBOutlet<T>.Value

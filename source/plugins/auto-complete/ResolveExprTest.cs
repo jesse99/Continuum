@@ -38,10 +38,8 @@ namespace AutoComplete
 			Log.SetLevel(TraceLevel.Verbose);
 		}
 		
-		private bool DoGetTarget(string text, int offset, MockTargetDatabase database)
-		{
-			Log.WriteLine("AutoComplete", "{0} {1} {2}", new string('-', 10), new StackTrace().GetFrame(1).GetMethod().Name, new string('-', 10));
-			
+		private bool DoGetTheTarget(string text, int offset, MockTargetDatabase database)
+		{			
 			var parser = new CsParser.Parser();
 			CsGlobalNamespace globals = parser.Parse(text);
 			
@@ -53,10 +51,19 @@ namespace AutoComplete
 			return m_target != null;
 		}
 		
+		private bool DoGetTarget(string text, int offset, MockTargetDatabase database)
+		{
+			Log.WriteLine("AutoComplete", "{0} {1} {2}", new string('-', 10), new StackTrace().GetFrame(1).GetMethod().Name, new string('-', 10));
+			
+			return DoGetTheTarget(text, offset, database);
+		}
+		
 		private bool DoGetTarget(string text, int offset)
 		{
+			Log.WriteLine("AutoComplete", "{0} {1} {2}", new string('-', 10), new StackTrace().GetFrame(1).GetMethod().Name, new string('-', 10));
+			
 			var database = new MockTargetDatabase();
-			return DoGetTarget(text, offset, database);
+			return DoGetTheTarget(text, offset, database);
 		}
 		
 		[Test]
@@ -280,6 +287,108 @@ internal partial class MyClass
 			});
 			Assert.IsTrue(found);
 			Assert.AreEqual("System.Boolean", m_target.FullName);
+			Assert.IsNull(m_target.Type);
+		}
+		
+		[Test]
+		public void CharLiterals()
+		{
+			string text = @"
+internal sealed class MyClass
+{
+	public void Work(int alpha)
+	{
+		'x'-
+		'\xdeadbeef'!
+		'\''@
+	}
+}
+";
+			bool found = DoGetTarget(text, text.IndexOf("-"), new MockTargetDatabase
+			{
+				Hashes = new Dictionary<string, string>
+				{
+					{"System.Char", "00-01"},
+					{"System.String", "00-01"}
+				}
+			});
+			Assert.IsTrue(found);
+			Assert.AreEqual("System.Char", m_target.FullName);
+			Assert.IsNull(m_target.Type);
+
+			found = DoGetTarget(text, text.IndexOf("!"), new MockTargetDatabase
+			{
+				Hashes = new Dictionary<string, string>
+				{
+					{"System.Char", "00-01"},
+					{"System.String", "00-01"}
+				}
+			});
+			Assert.IsTrue(found);
+			Assert.AreEqual("System.Char", m_target.FullName);
+			Assert.IsNull(m_target.Type);
+
+			found = DoGetTarget(text, text.IndexOf("@"), new MockTargetDatabase
+			{
+				Hashes = new Dictionary<string, string>
+				{
+					{"System.Char", "00-01"},
+					{"System.String", "00-01"}
+				}
+			});
+			Assert.IsTrue(found);
+			Assert.AreEqual("System.Char", m_target.FullName);
+			Assert.IsNull(m_target.Type);
+		}
+		
+		[Test]
+		public void StringLiterals()
+		{
+			string text = @"
+internal sealed class MyClass
+{
+	public void Work(int alpha)
+	{
+		""x""-
+		""\xdeadbeef""!
+		""""@
+	}
+}
+";
+			bool found = DoGetTarget(text, text.IndexOf("-"), new MockTargetDatabase
+			{
+				Hashes = new Dictionary<string, string>
+				{
+					{"System.Char", "00-01"},
+					{"System.String", "00-01"}
+				}
+			});
+			Assert.IsTrue(found);
+			Assert.AreEqual("System.String", m_target.FullName);
+			Assert.IsNull(m_target.Type);
+			
+			found = DoGetTarget(text, text.IndexOf("!"), new MockTargetDatabase
+			{
+				Hashes = new Dictionary<string, string>
+				{
+					{"System.Char", "00-01"},
+					{"System.String", "00-01"}
+				}
+			});
+			Assert.IsTrue(found);
+			Assert.AreEqual("System.String", m_target.FullName);
+			Assert.IsNull(m_target.Type);
+			
+			found = DoGetTarget(text, text.IndexOf("@"), new MockTargetDatabase
+			{
+				Hashes = new Dictionary<string, string>
+				{
+					{"System.Char", "00-01"},
+					{"System.String", "00-01"}
+				}
+			});
+			Assert.IsTrue(found);
+			Assert.AreEqual("System.String", m_target.FullName);
 			Assert.IsNull(m_target.Type);
 		}
 		

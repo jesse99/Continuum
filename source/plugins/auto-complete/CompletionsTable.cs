@@ -66,9 +66,10 @@ namespace AutoComplete
 				m_visibleClasses.Add(klass, true);
 			}
 			
-			m_members.Sort((lhs, rhs) => lhs.Text.CompareTo(rhs.Text));
+			DoSortMembers();
 			reloadData();
 			deselectAll(this);
+			NSApplication.sharedApplication().BeginInvoke(() => scrollRowToVisible(0));
 		}
 		
 		public new NSMenu menuForEvent(NSEvent evt)
@@ -233,6 +234,22 @@ namespace AutoComplete
 		}
 		
 		#region Private Methods
+		private void DoSortMembers()
+		{
+			m_members.Sort((lhs, rhs) =>
+			{
+				int result = lhs.Name.CompareTo(rhs.Name);
+				
+				if (result == 0)
+					result = lhs.ArgNames.Length.CompareTo(rhs.ArgNames.Length);
+					
+				if (result == 0)
+					result = lhs.Text.CompareTo(rhs.Text);
+				
+				return result;
+			});
+		}
+		
 		private void DoRebuildMembers()
 		{
 			m_members.Clear();
@@ -253,7 +270,7 @@ namespace AutoComplete
 				}
 			}
 			
-			m_members.Sort((lhs, rhs) => lhs.Text.CompareTo(rhs.Text));
+			DoSortMembers();
 			reloadData();
 		}
 		
@@ -299,8 +316,7 @@ namespace AutoComplete
 					ITextAnnotation annotation = m_editor.GetAnnotation(range);
 					
 					IArgsAnnotation args = m_editor.Boss.Get<IArgsAnnotation>();
-					int i = m_members[row].Text.IndexOf('(');
-					string name = i >= 0 ? m_members[row].Text.Substring(0, i + 1) : m_members[row].Text;
+					string name =m_members[row].Name;
 					var members = (from m in m_members where m.Text.StartsWith(name) select m).ToArray();
 					int j = Array.FindIndex(members, m => m.Text == m_members[row].Text);
 					args.Open(annotation, members, j);
