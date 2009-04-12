@@ -41,81 +41,61 @@ namespace AutoComplete
 		{
 			var members = new List<Member>();
 			
-			// Get members of the type.
-			string fullName = DoGetMembers(target, globals, members, true);
+			var types = new List<CsType>();
+			var ids = new List<TypeId>();
+			TypeId[] allNames = DoGetBases(target.TypeName, types, ids);
 			
-			// Get the members for the base types.	
-			var resolveType = new ResolveType(m_database);
-			IEnumerable<ResolvedTarget> bases = resolveType.GetBases(globals, fullName, target.IsInstance, target.IsStatic);
-			foreach (ResolvedTarget t in bases)
+			foreach (CsType type in types)
 			{
-				DoGetMembers(t, globals, members, false);
+				DoGetParsedMembers(type, target.IsInstance, target.IsStatic, members, type.FullName == target.TypeName);
 			}
 			
-			// Get extension methods for the interfaces.
+			members.AddIfMissingRange(m_database.GetMembers(ids.ToArray(), target.IsInstance, target.IsStatic));
+			
 			if (target.IsInstance)
-			{
-				foreach (string name in resolveType.GetAllInterfaces(globals, fullName, bases, target.IsInstance))
-				{
-					DoGetExtensionMethods(name, members, globals);
-				}
-			}
+				members.AddIfMissingRange(m_database.GetExtensionMethods(allNames));
 			
 			return members.ToArray();
 		}
 		
 		#region Private Methods
-		private string DoGetMembers(ResolvedTarget target, CsGlobalNamespace globals, List<Member> members, bool includePrivates)
+		private TypeId[] DoGetBases(string typeName, List<CsType> types, List<TypeId> ids)
 		{
-			// Get the members for the target type. Note that we don't use the
-			// database if we have the parsed type because it is likely out of date.
-			string fullName = target.FullName;
+			Boss boss = ObjectModel.Create("CsParser");
+			var parses = boss.Get<IParses>();
 			
-			string hash = target.Hash;
-			CsType type = target.Type;
-			if (type == null)
-			{
-				Boss boss = ObjectModel.Create("CsParser");
-				var parses = boss.Get<IParses>();
-				type = parses.FindType(fullName);
-			}
+			var allNames = new List<TypeId>();
+			allNames.Add(new TypeId(typeName, 0));
 			
-			if (type != null)
+			int i = 0;
+			while (i < allNames.Count)
 			{
-				DoGetParsedMembers(type, target.IsInstance, target.IsStatic, members, includePrivates);
+				TypeId name = allNames[i];
+				
+				// Note that we want to use CsType instead of the database where possible
+				// because it should be more up to date.
+				CsType type = parses.FindType(name.FullName);
+				if (type != null)
+					types.Add(type);
 				
 				if (type is CsEnum)
 				{
-					fullName = "System.Enum";
-					hash = "dummy";
+					name = new TypeId("System.Enum", 0);
 					type = null;
 				}
+				
+				// If the type is partial then the parsed types (probably) do not include all
+				// of the members so we need to include both the parsed and database
+				// info to ensure we get everything.
+				if (type == null || (type.Modifiers & MemberModifiers.Partial) != 0)
+					ids.Add(name);
+					
+				// Note that we don't use CsType to get bases because it's difficult to get the
+				// full names for them. Note also that interface names can be repeated.
+				allNames.AddIfMissingRange(m_database.GetBases(name));
 			}
 			
-			if (hash != null && (type == null || (type.Modifiers & MemberModifiers.Partial) != 0))
-			{
-				DoGetDatabaseMembers(fullName, target.IsInstance, target.IsStatic, members, globals);
-			}
-				
-			return fullName;
-		}
-		
-		private void DoGetDatabaseMembers(string fullName, bool instanceCall, bool isStaticCall, List<Member> members, CsGlobalNamespace globals)
-		{
-			Member[] candidates = m_database.GetMembers(fullName, instanceCall, isStaticCall, globals);
-			foreach (Member member in candidates)
-			{
-				members.AddIfMissing(member);
-			}
-		}
-		
-		private void DoGetExtensionMethods(string fullName, List<Member> members, CsGlobalNamespace globals)
-		{
-			Member[] candidates = m_database.GetExtensionMethods(fullName, globals);
-			foreach (Member member in candidates)
-			{
-				members.AddIfMissing(member);
-			}
+			return allNames.ToArray();
 		}
 		
 		private void DoGetParsedMembers(CsType type, bool isInstance, bool isStatic, List<Member> members, bool includePrivates)

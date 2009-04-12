@@ -26,26 +26,53 @@ using System.Diagnostics;
 
 namespace AutoComplete
 {
+	internal sealed class TypeId
+	{
+		public TypeId(string fullName)
+		{
+			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
+			
+			FullName = fullName;
+			TypeName = -1;
+		}
+		
+		public TypeId(string fullName, int typeName)
+		{
+			FullName = fullName;
+			TypeName = typeName;
+		}
+		
+		public string FullName {get; private set;}
+		
+		public int TypeName {get; private set;}
+	}
+	
 	internal interface ITargetDatabase
 	{
-		// Returns either null or the assembly hash the specified type is declared within.
-		string FindAssembly(string fullName);
+		// Returns true if the name is a special or type name.
+		bool HasType(string typeName);
 		
 		// Returns all of the method return types/names in the specified type (but not 
 		// bases) which start with the specified prefix.
-		Tuple2<string, string>[] FindMethodsWithPrefix(string fullName, string prefix, int numArgs, bool includeInstanceMembers);
+//		Tuple2<string, string>[] FindMethodsWithPrefix(string fullName, string prefix, int numArgs, bool includeInstanceMembers);
 		
 		// Returns a list of field type/names for the specified type (but not its bases).
-		Tuple2<string, string>[] FindFields(string fullName, bool includeInstanceMembers);
+//		Tuple2<string, string>[] FindFields(string fullName, bool includeInstanceMembers);
 		
 		// Returns either null or the full name of the type's base class.
-		string FindBaseType(string fullName);
+//		string FindBaseType(string fullName);
 		
 		// Returns the interfaces directly implemented by the type.
-		string[] FindInterfaces(string fullName);
+//		string[] FindInterfaces(string fullName);
 		
-		Member[] GetMembers(string fullName, bool instanceCall, bool isStaticCall, CsGlobalNamespace globals);
-
-		Member[] GetExtensionMethods(string fullName, CsGlobalNamespace globals);
+		// Returns type names for the type's base class and any interfaces it directly
+		// implements.
+		TypeId[] GetBases(TypeId type);
+		
+		// Returns the (unique) members for all of the types, but not the methods
+		// which extend the types. 
+		Member[] GetMembers(TypeId[] types, bool instanceCall, bool isStaticCall);
+		
+		Member[] GetExtensionMethods(TypeId[] types);
 	}
 }

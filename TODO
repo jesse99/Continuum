@@ -126,19 +126,33 @@ window		menu			base line
 0.495		0.103
 
 	string StringExtensions::GetTypeName({this string name}int alpha, int beta)
-
-* Profile:
-	- get the queries working (try to do them one at a time and check that they are
-	  legit)
-	- update all the db queries
-		TargetDatabase.cs
+	6069248
+				
+* Get TargetDatabase working again:
+	- disable code until auto-complete compiles
+	- do a checkin
+	- get rid of the names table
+	- get Objects.cs working again
+	- work on TargetDatabase.cs
+	- need to remove the stuff at and before the :: in display text
+	- GetBases needs to special case arrays:
+				if (fullName == "System.Array")
+					yield return "System.Collections.Generic.IEnumerable`1";
+	- make sure extensions methods lose the {} text
 	- auto-complete should treat extension methods as non-static
+	- do something with ResolveType::GetBases
+	- do something with ResolveType::GetBases
+	- fix ResolveName::DoFindFields
+	- fix ResolveName::DoFindProperties
+* Profile:
 	- prune should check to see if a reparse is needed
 	- make sure assembly rebuild doesn't just delete, but deletes and adds
 	- look at overall speed
 	- look at query overhead
-	- PRAGMA cache_size can have a large effect on speed (see
-	  http://www.sqlite.org/pragma.html)
+	- PRAGMA cache_size can have a large effect on speed
+	  	` http://www.sqlite.org/pragma.html
+	  	` may want to keep aggregate query numbers
+	  	` could log these every 1000 queries or something
 	- sqlite3_profile may help, also sqlite3_status, may want to use prepared statements too
 	- add the new db size to tables.txt
 	- get the unit tests working
@@ -146,6 +160,8 @@ window		menu			base line
 	- get arrays completing
 	- get indexers completing
 	- should also be able to complete instantiated generics now
+* Replace Trace.Assert with Contract.RequireAlways
+* Replace Debug.Assert with Contract.Require
 * Work more on target completion:
 	- .txt files are completing
 	- VS uses tab tab to complete 2-3 character words

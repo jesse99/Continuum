@@ -35,6 +35,45 @@ namespace AutoComplete
 			m_database = database;
 		}
 		
+		public bool HasType(string typeName)
+		{
+			int id = DoFindId(new TypeId(typeName, 0));
+			
+			return id > 0;
+		}
+		
+		public TypeId[] GetBases(TypeId type)
+		{
+#if false
+			int id = DoFindId(type);
+
+			string sql = string.Format(@"
+				SELECT base_type_name, interface_type_names
+					FROM Types 
+				WHERE root_name = '{0}'", typeName);
+			string[][] rows = m_database.id(sql);
+			Trace.Assert(rows.Length <= 1, "too many rows");
+			
+			var types = new List<TypeId>();
+			
+			if (rows.Length > 0)
+			{
+				if (rows[0][0] != "0")
+					types.Add(int.Parse(rows[0][0]));
+				
+				string[] names = rows[0][1].Split(new char[]{' '}, StringSplitOptions.RemoveEmptyEntries);
+				foreach (string name in names)
+				{
+					types.AddIfMissing(int.Parse(name));
+				}
+			}
+			
+			return types.ToArray();
+#endif
+			return null;
+		}
+		
+#if false
 		public string FindAssembly(string fullName)
 		{
 			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
@@ -47,7 +86,9 @@ namespace AutoComplete
 			
 			return rows.Length > 0 ? rows[0][0] : null;
 		}
+#endif
 		
+#if false
 		public Tuple2<string, string>[] FindMethodsWithPrefix(string fullName, string prefix, int numArgs, bool includeInstanceMembers)
 		{
 			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
@@ -66,7 +107,9 @@ namespace AutoComplete
 			
 			return result.ToArray();
 		}
+#endif
 		
+#if false
 		public Tuple2<string, string>[] FindFields(string fullName, bool includeInstanceMembers)
 		{
 			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
@@ -88,7 +131,9 @@ namespace AutoComplete
 			
 			return fields.ToArray();
 		}
+#endif
 		
+#if false
 		public string FindBaseType(string fullName)
 		{
 			if (fullName == "System.Object")
@@ -102,7 +147,9 @@ namespace AutoComplete
 			
 			return rows.Length > 0 ? rows[0][0] : null;
 		}
+#endif
 		
+#if false
 		public string[] FindInterfaces(string fullName)
 		{
 			if (fullName == "System.Object")
@@ -118,11 +165,13 @@ namespace AutoComplete
 			
 			return result.ToArray();
 		}
+#endif
 		
-		public Member[] GetMembers(string fullName, bool instanceCall, bool isStaticCall, CsGlobalNamespace globals)
+		public Member[] GetMembers(TypeId[] types, bool instanceCall, bool isStaticCall)
 		{
 			var members = new List<Member>();
-			
+
+#if false
 			string sql;
 			if (instanceCall && isStaticCall)
 				sql = string.Format(@"
@@ -153,14 +202,16 @@ namespace AutoComplete
 					members.AddIfMissing(member);
 				}
 			}
-			
+#endif
+
 			return members.ToArray();
 		}
 		
-		public Member[] GetExtensionMethods(string fullName, CsGlobalNamespace globals)
+		public Member[] GetExtensionMethods(TypeId[] types)
 		{
 			var members = new List<Member>();
 			
+#if false
 			string sql = string.Format(@"
 				SELECT text, return_type, arg_names, namespace
 					FROM Members 
@@ -181,11 +232,32 @@ namespace AutoComplete
 					members.AddIfMissing(member);
 				}
 			}
+#endif
 			
 			return members.ToArray();
 		}
 		
 		#region Private Methods
+		private int DoFindId(TypeId type)
+		{
+			int id = type.TypeName;
+			
+			if (id < 1)
+			{
+				string sql = string.Format(@"
+					SELECT name
+						FROM Names
+					WHERE value = {0}", type.FullName.Replace("'", "''"));
+				string[][] rows = m_database.QueryRows(sql);
+				Trace.Assert(rows.Length <= 1, "too many rows");
+				
+				id = rows.Length > 0 ? int.Parse(rows[0][0]) : 0;
+			}
+			
+			return id;
+		}
+		
+#if false
 		private bool DoIsValidExtensionMethod(string ns, CsGlobalNamespace globals)
 		{
 			bool valid = false;
@@ -217,6 +289,7 @@ namespace AutoComplete
 			
 			return include;
 		}
+#endif
 		#endregion
 		
 		#region Fields

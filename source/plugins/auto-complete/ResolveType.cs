@@ -41,19 +41,18 @@ namespace AutoComplete
 			Trace.Assert(!string.IsNullOrEmpty(type), "type is null or empty");
 			
 			m_fullName = null;
-			m_hash = null;
 			m_type = null;
 			
 			type = DoGetTypeName(type);
 			
-			if (m_hash == null && m_type == null)
+			if (m_type == null)
 				DoHandleLocalType(globals, type);
 			
-			if (m_hash == null && m_type == null)
+			if (m_type == null)
 				DoHandleDatabaseType(globals, type);
 			
-			return m_hash != null || m_type != null
-				? new ResolvedTarget(m_fullName, m_type, m_hash, isInstance, isStatic)
+			return m_type != null
+				? new ResolvedTarget(m_fullName, m_type, isInstance, isStatic)
 				: null;
 		}
 		
@@ -63,29 +62,29 @@ namespace AutoComplete
 			
 			m_type = type;
 			m_fullName = DoGetTypeName(m_type.FullName);
-			m_hash = m_database.FindAssembly(m_fullName);
 			
-			return new ResolvedTarget(m_fullName, m_type, m_hash, isInstance, isStatic);
+			return new ResolvedTarget(m_fullName, m_type, isInstance, isStatic);
 		}
 		
 		public ResolvedTarget Resolve(string fullName, bool isInstance, bool isStatic)
 		{
 			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
-
-			m_fullName = DoGetTypeName(fullName);
-			m_hash = m_database.FindAssembly(m_fullName);
 			
-			return m_hash != null
-				? new ResolvedTarget(m_fullName, null, m_hash, isInstance, isStatic)
-				: null;
+			m_fullName = DoGetTypeName(fullName);
+			
+			return new ResolvedTarget(m_fullName, null, isInstance, isStatic);
 		}
 		
 		public IEnumerable<ResolvedTarget> GetBases(CsGlobalNamespace globals, string fullName, bool isInstance, bool isStatic)
 		{
+			if (fullName == "xxxx")
+				yield return null;
+				
+#if false
 			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
 			
 			ResolvedTarget target = Resolve(fullName, globals, isInstance, isStatic);
-			if (target != null && CsHelpers.IsInterface(target.FullName))
+			if (target != null && CsHelpers.IsInterface(target.TypeName))
 			{
 				var names = new List<string>();
 				names.AddRange(m_database.FindInterfaces(target.FullName));
@@ -127,51 +126,7 @@ namespace AutoComplete
 						yield return target;
 				}
 			}
-		}
-		
-		public IEnumerable<string> GetAllInterfaces(CsGlobalNamespace globals, string fullName, IEnumerable<ResolvedTarget> bases, bool isInstance)
-		{
-			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
-			
-			ResolvedTarget t = Resolve(fullName, globals, isInstance, !isInstance);
-			if (t != null)
-			{
-				var targets = new List<ResolvedTarget>();
-				targets.Add(t);
-				targets.AddRange(bases);
-				
-				if (fullName == "System.Array")
-					yield return "System.Collections.Generic.IEnumerable`1";
-				
-				foreach (ResolvedTarget target in targets)
-				{
-					if (target.Type != null)
-					{
-						for (int i = target.Type.Bases.HasBaseClass ? 1 : 0; i < target.Type.Bases.Names.Length; ++i)
-						{
-							t = Resolve(target.Type.Bases.Names[i], globals, isInstance, !isInstance);
-							if (t != null)
-							{
-								yield return t.FullName;
-							}
-						}
-					}
-					else if (target.Type == null && target.Hash != null)
-					{
-						var names = new List<string>(m_database.FindInterfaces(target.FullName));
-						
-						// This may (rarely) return duplicate names, but our caller should handle that.
-						while (names.Count > 0)
-						{
-							string name = names[names.Count - 1];
-							names.RemoveLast();
-							
-							yield return name;
-							names.AddRange(m_database.FindInterfaces(name));
-						}
-					}
-				}
-			}
+#endif
 		}
 		
 		#region Private Methods
@@ -183,28 +138,21 @@ namespace AutoComplete
 				if (type is CsDelegate)
 				{
 					m_fullName = "System.Delegate";
-					m_hash = m_database.FindAssembly(m_fullName);
 				}
 				else
 				{
 					m_type = type;
 					m_fullName = DoGetTypeName(m_type.FullName);
-					m_hash = m_database.FindAssembly(m_fullName);
 				}
 			}
 		}
 		
 		private void DoHandleDatabaseType(CsGlobalNamespace globals, string target)
 		{
-			string fullName, hash;
-			DoFindFullNameAndHash(globals, target, out fullName, out hash);
+			string fullName = DoFindFullName(globals, target);
 			
-			if (hash != null)
-			{
-				m_fullName = DoGetTypeName(fullName);
-				m_hash = hash;
-				m_type = DoFindLocalType(globals, m_fullName);
-			}
+			m_fullName = DoGetTypeName(fullName);
+			m_type = DoFindLocalType(globals, m_fullName);
 		}
 		
 		private string DoGetTypeName(string fullName)
@@ -260,22 +208,30 @@ namespace AutoComplete
 			return name;
 		}
 		
-		private void DoFindFullNameAndHash(CsGlobalNamespace globals, string target, out string fullName, out string hash)
+		private string  DoFindFullName(CsGlobalNamespace globals, string target)
 		{
-			fullName = CsHelpers.GetRealName(target);
-			hash = m_database.FindAssembly(fullName);
+			string fullName = null;
 			
-			for (int i = 0; i < globals.Namespaces.Length && hash == null; ++i)
+			target = CsHelpers.GetRealName(target);
+			
+			for (int i = 0; i < globals.Namespaces.Length && fullName == null; ++i)
 			{
-				fullName = globals.Namespaces[i].Name + "." + target;
-				hash = m_database.FindAssembly(fullName);
+				string candidate = globals.Namespaces[i].Name + "." + target;
+				if (m_database.HasType(candidate))
+					fullName = candidate;
 			}
 			
-			for (int i = 0; i < globals.Uses.Length && hash == null; ++i)
+			for (int i = 0; i < globals.Uses.Length && fullName == null; ++i)
 			{
-				fullName = globals.Uses[i].Namespace + "." + target;
-				hash = m_database.FindAssembly(fullName);
+				string candidate = globals.Uses[i].Namespace + "." + target;
+				if (m_database.HasType(candidate))
+					fullName = candidate;
 			}
+			
+			if (fullName == null)
+				fullName = target;
+			
+			return fullName;
 		}
 		
 		private CsType DoFindLocalType(CsNamespace outer, string target)
@@ -307,7 +263,6 @@ namespace AutoComplete
 		#region Fields
 		private ITargetDatabase m_database;
 		private string m_fullName;
-		private string m_hash;
 		private CsType m_type;
 		#endregion
 	}

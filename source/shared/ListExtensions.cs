@@ -32,9 +32,20 @@ namespace Shared
 		public static void AddIfMissing<T>(this List<T> data, T value)
 		{
 			Trace.Assert(data != null, "data is null");
-
+			
 			if (data.IndexOf(value) < 0)
 				data.Add(value);
+		}
+		
+		public static void AddIfMissingRange<T>(this List<T> data, IEnumerable<T> values)
+		{
+			Trace.Assert(data != null, "data is null");
+			Trace.Assert(values != null, "values is null");
+			
+			foreach (T value in values)
+			{
+				AddIfMissing(data, value);
+			}
 		}
 		
 		// Returns true if the lengths of the two lists are equal and each element

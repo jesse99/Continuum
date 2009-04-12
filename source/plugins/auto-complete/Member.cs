@@ -80,9 +80,9 @@ namespace AutoComplete
 		
 		// Non-null if the member is a method (as opposed to a variable, local, etc).
 		public string DeclaringType {get; private set;}
-
+		
 		public bool IsExtensionMethod {get; set;}
-
+		
 		public override string ToString()
 		{
 			return Text;

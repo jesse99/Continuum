@@ -33,7 +33,7 @@ namespace AutoComplete
 	{
 		public ResolveName(ITargetDatabase database, ICsLocalsParser locals, string text, int offset, CsGlobalNamespace globals)
 		{
-			m_database = database;
+//			m_database = database;
 			m_typeResolver = new ResolveType(database);
 			m_globals = globals;
 			m_offset = offset;
@@ -63,7 +63,7 @@ namespace AutoComplete
 			{
 				result = m_typeResolver.Resolve(name, m_globals, false, true);
 				if (result != null)
-					Log.WriteLine("AutoComplete", "found type: {0}", result.FullName);
+					Log.WriteLine("AutoComplete", "found type: {0}", result.TypeName);
 			}
 			
 			// name. (where name is a local, argument, field, or property)
@@ -78,7 +78,7 @@ namespace AutoComplete
 				{
 					result = m_typeResolver.Resolve("System.Char", m_globals, true, false);
 					if (result != null)
-						Log.WriteLine("AutoComplete", "found char literal: {0}", result.FullName);
+						Log.WriteLine("AutoComplete", "found char literal: {0}", result.TypeName);
 				}
 			}
 				
@@ -89,7 +89,7 @@ namespace AutoComplete
 				{
 					result = m_typeResolver.Resolve("System.String", m_globals, true, false);
 					if (result != null)
-						Log.WriteLine("AutoComplete", "found string literal: {0}", result.FullName);
+						Log.WriteLine("AutoComplete", "found string literal: {0}", result.TypeName);
 				}
 			}
 			
@@ -183,6 +183,7 @@ namespace AutoComplete
 		
 		private void DoFindFields(ResolvedTarget type, List<Variable> vars)
 		{
+#if false
 			if (type.Type != null)
 			{
 				for (int i = 0; i < type.Type.Fields.Length; ++i)
@@ -202,10 +203,12 @@ namespace AutoComplete
 						vars.Add(new Variable(name.First, name.Second, null));
 				}
 			}
+#endif
 		}
 		
 		private void DoFindProperties(ResolvedTarget type, List<Variable> vars)
 		{
+#if false
 			if (type.Type != null)
 			{
 				for (int i = 0; i < type.Type.Properties.Length; ++i)
@@ -226,6 +229,7 @@ namespace AutoComplete
 						vars.Add(new Variable(name.First, name.Second, null));
 				}
 			}
+#endif
 		}
 		
 		private CsParameter[] DoGetParameters()
@@ -258,7 +262,7 @@ namespace AutoComplete
 					
 					result = m_typeResolver.Resolve(m_member.DeclaringType, isInstance, isStatic);
 					if (result != null)
-						Log.WriteLine("AutoComplete", "found this: {0}", result.FullName);
+						Log.WriteLine("AutoComplete", "found this: {0}", result.TypeName);
 				}
 			}
 			
@@ -290,7 +294,7 @@ namespace AutoComplete
 							Match m = ms_getRE.Match(value);
 							if (m.Success)
 							{
-								value = m.Groups[1].Value;	// TODO: need something more general here
+								value = m.Groups[1].Value;	// TODO: need something more general here 
 							}
 						}
 						
@@ -298,15 +302,15 @@ namespace AutoComplete
 						
 						if (result != null)
 						{
-							result = new ResolvedTarget(result.FullName, result.Type, result.Hash, true, false);	// we resolved a type, but it's used as an instance...
-							Log.WriteLine("AutoComplete", "found var local: {0}", result.FullName);
+							result = new ResolvedTarget(result.TypeName, result.Type, true, false);	// we resolved a type, but it's used as an instance...
+							Log.WriteLine("AutoComplete", "found var local: {0}", result.TypeName);
 						}
 					}
 					else
 					{
 						result = m_typeResolver.Resolve(type, m_globals, true, false);
 						if (result != null)
-							Log.WriteLine("AutoComplete", "found local: {0}", result.FullName);
+							Log.WriteLine("AutoComplete", "found local: {0}", result.TypeName);
 					}
 				}
 			}
@@ -425,7 +429,7 @@ namespace AutoComplete
 		#endregion
 		
 		#region Fields
-		private ITargetDatabase m_database;
+//		private ITargetDatabase m_database;
 		private ResolveType m_typeResolver;
 		private Variable[] m_variables;
 		private int m_offset;

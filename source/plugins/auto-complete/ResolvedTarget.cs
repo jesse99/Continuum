@@ -29,27 +29,22 @@ namespace AutoComplete
 {
 	internal sealed class ResolvedTarget
 	{
-		public ResolvedTarget(string fullName, CsType type, string hash, bool isInstance, bool isStatic)
+		public ResolvedTarget(string typeName, CsType type, bool isInstance, bool isStatic)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
-			Trace.Assert(type != null || hash != null, "type and hash are both null");
+			Trace.Assert(!string.IsNullOrEmpty(typeName), "typeName is null or empty");
 			Trace.Assert(isInstance || isStatic, "at least one of isInstance and isStatic should be true");
 			
-			FullName = fullName;
+			TypeName = typeName;
 			Type = type;
-			Hash = hash;
 			IsInstance = isInstance;
 			IsStatic = isStatic;
 		}
 		
 		// Will always be set.
-		public string FullName {get; private set;}
+		public string TypeName {get; private set;}
 		
 		// The type will be null, a CsType, CsEnum, or CsDelegate.
 		public CsType Type {get; private set;}
-		
-		// Set if the fullName was found in the database.
-		public string Hash {get; private set;}
 		
 		// True if the target is an instance of the type.
 		public bool IsInstance {get; private set;}
@@ -62,12 +57,7 @@ namespace AutoComplete
 		{
 			var builder = new StringBuilder();
 			
-			builder.Append(FullName);
-			if (Hash != null)
-			{
-				builder.Append('+');
-				builder.Append(Hash);
-			}
+			builder.Append(TypeName);
 			
 			if (IsInstance && IsStatic)
 				builder.Append(" [all]");
@@ -75,7 +65,7 @@ namespace AutoComplete
 				builder.Append(" [instance]");
 			else
 				builder.Append(" [statics]");
-				
+			
 			return builder.ToString();
 		}
 	}

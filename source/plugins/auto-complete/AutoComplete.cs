@@ -155,7 +155,7 @@ namespace AutoComplete
 				ResolvedTarget target = exprResolver.Resolve(m_text.Text, range.location);
 				if (target != null)
 				{
-					type = target.FullName;
+					type = target.TypeName;
 					members = m_members.Resolve(target, globals);
 					isInstance = target.IsInstance;
 					isStatic = target.IsStatic;
@@ -209,7 +209,7 @@ namespace AutoComplete
 						if (m_controller == null)	
 							m_controller = new CompletionsController();
 							
-						m_controller.Show(m_boss.Get<ITextEditor>(), view, target.FullName, members.ToArray(), prefixLen, target.IsInstance, target.IsStatic);
+						m_controller.Show(m_boss.Get<ITextEditor>(), view, target.TypeName, members.ToArray(), prefixLen, target.IsInstance, target.IsStatic);
 					}
 				}
 			}
