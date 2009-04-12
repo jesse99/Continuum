@@ -51,13 +51,10 @@ namespace ObjectModel
 		// Parsing the larger system assemblies takes 10s of seconds which is much 
 		// too long a period of time to keep the database locked so our transaction
 		// is around the types, not the assembly.
-		public void Parse(string path, AssemblyDefinition assembly, string hash, bool fullParse)		// threaded
+		public void Parse(string path, AssemblyDefinition assembly, string id, bool fullParse)		// threaded
 		{
 			if (m_database == null)
-			{
 				m_database = new Database(m_path, "ParseAssembly-" + Path.GetFileNameWithoutExtension(m_path));
-				DoCreateTables();
-			}
 			
 //	Console.WriteLine("    parsing {0} for thread {1}", assembly.Name.FullName, System.Threading.Thread.CurrentThread.ManagedThreadId);
 			Log.WriteLine("ObjectModel", "{0}parsing {1}", fullParse ? "fully " : string.Empty, assembly.Name.FullName);
@@ -68,7 +65,7 @@ namespace ObjectModel
 				{
 					if (fullParse || type.IsPublic || type.IsNestedPublic || type.IsNestedFamily || type.IsNestedFamilyOrAssembly)
 					{
-						DoParseType(type, hash, fullParse);		// max time here is 0.8 secs on a fast machine for type System.Xml.Serialization.XmlSerializationReader
+						DoParseType(type, id, fullParse);			// max time here is 0.8 secs on a fast machine for type System.Xml.Serialization.XmlSerializationReader (with the old schema)
 //						System.Threading.Thread.Sleep(50);	// this doesn't seem to help the main thread too much
 					}
 				}
@@ -76,131 +73,142 @@ namespace ObjectModel
 		}
 		
 		#region Private Methods
-		private void DoCreateTables()
+		private string DoGetName(string value)
 		{
-			// TODO: once sqlite supports it the hash foreign keys should use ON DELETE CASCADE
-			m_database.Update("create tables2", () =>
+			string sql = string.Format(@"
+				SELECT name
+					FROM Names
+				WHERE value = '{0}'", value);
+			string[][] rows = m_database.QueryRows(sql);
+			
+			string name;
+			if (rows.Length > 0)
 			{
-				m_database.Update(@"
-					CREATE TABLE IF NOT EXISTS Types(
-						type TEXT NOT NULL
-							CONSTRAINT no_empty_type CHECK(length(type) > 0),
-						hash TEXT NOT NULL REFERENCES Assemblies(hash),
-						name TEXT NOT NULL
-							CONSTRAINT no_empty_name CHECK(length(name) > 0),
-						declaring_type TEXT NOT NULL, 
-						namespace TEXT NOT NULL, 
-						base_type TEXT NOT NULL, 
-						attributes INTEGER NOT NULL
-							CONSTRAINT sane_attributes CHECK(attributes >= 0),
-						PRIMARY KEY(type, hash)
-					)");
+				name = rows[0][0];
+			}
+			else
+			{
+				sql = "SELECT MAX(name) FROM Names";	// note that the table is seeded with one (empty) name
+				rows = m_database.QueryRows(sql);
+				name = (int.Parse(rows[0][0]) + 1).ToString();
 				
-				m_database.Update(@"
-					CREATE TABLE IF NOT EXISTS NameInfo(
-						full_name TEXT NOT NULL
-							CONSTRAINT no_empty_fullname CHECK(length(full_name) > 0),
-						hash TEXT NOT NULL REFERENCES Assemblies(hash),
-						file_name TEXT NOT NULL,
-						name TEXT NOT NULL
-							CONSTRAINT no_empty_name CHECK(length(name) > 0),
-						kind INTEGER NOT NULL
-							CONSTRAINT sane_kind CHECK(kind >= 0 AND kind <= 3),
-						PRIMARY KEY(full_name, hash, name)
-					)");
-				
-				m_database.Update(@"
-					CREATE TABLE IF NOT EXISTS Implements(
-						type TEXT NOT NULL REFERENCES Types(type),
-						hash TEXT NOT NULL REFERENCES Assemblies(hash), 
-						interface_type TEXT NOT NULL,
-						PRIMARY KEY(type, hash, interface_type)
-					)");
-				
-				m_database.Update(@"
-					CREATE TABLE IF NOT EXISTS Methods(
-						method TEXT NOT NULL
-							CONSTRAINT no_empty_method CHECK(length(method) > 0),
-						hash TEXT NOT NULL REFERENCES Assemblies(hash), 
-						return_type TEXT NOT NULL,
-						name TEXT NOT NULL
-							CONSTRAINT no_empty_name CHECK(length(name) > 0),
-						arg_types TEXT NOT NULL,
-						arg_names TEXT NOT NULL,
-						declaring_type TEXT NOT NULL REFERENCES Types(type),
-						file TEXT NOT NULL
-							CONSTRAINT sane_file CHECK(length(file) = 0 OR substr(file, 1, 1) = '/'),
-						line INTEGER NOT NULL
-							CONSTRAINT sane_line CHECK(line >= -1),
-						attributes INTEGER NOT NULL
-							CONSTRAINT sane_attributes CHECK(attributes >= 0),
-						semantics INTEGER NOT NULL
-							CONSTRAINT sane_semantics CHECK(semantics >= 0),
-						PRIMARY KEY(method, hash)
-					)");
-				
-				m_database.Update(@"
-					CREATE TABLE IF NOT EXISTS Members(
-						text TEXT NOT NULL
-							CONSTRAINT no_empty_text CHECK(length(text) > 0),
-						type TEXT NOT NULL REFERENCES Types(type),
-						namespace TEXT NOT NULL,
-						is_protected INTEGER NOT NULL,
-						is_static INTEGER NOT NULL,
-						return_type TEXT NOT NULL,
-						arg_names TEXT NOT NULL,
-						hash TEXT NOT NULL REFERENCES Assemblies(hash), 
-						PRIMARY KEY(text, type, namespace)
-					)");
-				
-				m_database.Update(@"
-					CREATE TABLE IF NOT EXISTS Fields(
-						name TEXT NOT NULL
-							CONSTRAINT no_empty_name CHECK(length(name) > 0),
-						declaring_type TEXT NOT NULL REFERENCES Types(type),
-						hash TEXT NOT NULL REFERENCES Assemblies(hash), 
-						type TEXT NOT NULL,
-						attributes INTEGER NOT NULL
-							CONSTRAINT sane_attributes CHECK(attributes >= 0),
-						PRIMARY KEY(name, declaring_type, hash)
-					)");
-			});
+				m_database.Insert("Names", value, name);
+			}
+			
+			return name;
 		}
 		
-		private void DoParseType(TypeDefinition type, string hash, bool fullParse)		// threaded
+		[Conditional("DEBUG")]
+		private void DoValidateRoot(string label, TypeReference type)
+		{
+			string mesg = null;
+			
+			if (type != null)
+			{
+				if (type is TypeSpecification)
+					mesg = string.Format("{0} is a {1} ({2})", label, type.GetType(), type.FullName);
+				
+				// Probably not neccesary to do these checks but it shouldn't hurt.
+				else if (type.FullName.Contains("["))
+					mesg = string.Format("{0} is an array ({1})", label, type.FullName);
+					
+				else if (type.FullName.Contains("<"))
+					mesg = string.Format("{0} has a generic argument ({1})", label, type.FullName);
+					
+				else if (type.FullName.Contains("*("))
+					mesg = string.Format("{0} is a function pointer ({1})", label, type.FullName);
+					
+				else if (type.FullName.Contains("*"))
+					mesg = string.Format("{0} is a pointer ({1})", label, type.FullName);
+					
+				else if (type.FullName.Contains("&"))
+					mesg = string.Format("{0} is a reference ({1})", label, type.FullName);
+			}
+			
+			if (mesg != null)
+				Trace.Fail(mesg);
+		}
+		
+		private void DoParseType(TypeDefinition type, string id, bool fullParse)		// threaded
 		{
 			if (!DoIsGeneratedCode(type))
 			{
+				int visibility = 0;
+				switch (type.Attributes & TypeAttributes.VisibilityMask)
+				{
+					case TypeAttributes.Public:
+					case TypeAttributes.NestedPublic:
+						visibility = 0;
+						break;
+					
+					case TypeAttributes.NestedFamily:
+					case TypeAttributes.NestedFamORAssem:
+						visibility = 1;
+						break;
+					
+					case TypeAttributes.NotPublic:
+					case TypeAttributes.NestedAssembly:
+					case TypeAttributes.NestedFamANDAssem:
+						visibility = 2;
+						break;
+					
+					case TypeAttributes.NestedPrivate:
+						visibility = 3;
+						break;
+					
+					default:
+						Trace.Fail("bad visibility: " + (type.Attributes & TypeAttributes.VisibilityMask));
+						break;
+				}
+				
+				uint attributes = 0;
+				if (type.IsAbstract)
+					attributes |= 0x01;
+				if (type.IsSealed)
+					attributes |= 0x02;
+				if (type.IsInterface)
+					attributes |= 0x04;
+				if (type.IsValueType)
+					attributes |= 0x08;
+				if (type.IsEnum)
+					attributes |= 0x10;
+				
 				m_database.Update("parse " + type.FullName, () =>
 				{
-					m_database.Insert("Types",
-						type.FullName,
-						hash,
-						type.Name.GetTypeName(),
-						type.DeclaringType != null ? type.DeclaringType.FullName : string.Empty,
-						!string.IsNullOrEmpty(type.Namespace) ? type.Namespace : string.Empty,
-						type.BaseType != null ? type.BaseType.FullName : string.Empty,
-						((uint) type.Attributes).ToString());
-						
+					var interfaces = new StringBuilder();
 					if (type.HasInterfaces)
 					{
-						foreach (TypeReference i in type.Interfaces)
+						for (int i = 0; i < type.Interfaces.Count; ++i)
 						{
-							m_database.Insert("Implements",
-								type.FullName,
-								hash,
-								i.FullName.GetTypeName());
+							DoAddSpecialType(type.Interfaces[i]);
+							interfaces.Append(DoGetName(type.Interfaces[i].FullName));
+							
+							if (i + 1 < type.Interfaces.Count)
+								interfaces.Append(' ');
 						}
 					}
 					
-					var files = new List<string>();
+					DoValidateRoot("root_name", type);
+					DoValidateRoot("declaring_root_name", type.DeclaringType);
+					DoAddSpecialType(type.BaseType);
+					
+					m_database.InsertOrReplace("Types",
+						DoGetName(type.FullName),
+						id,
+						DoGetName(!string.IsNullOrEmpty(type.Namespace) ? type.Namespace : string.Empty),
+						DoGetName(type.DeclaringType != null ? type.DeclaringType.FullName : string.Empty),
+						DoGetName(DoGetNameWithoutTick(type.Name.GetTypeName())),
+						DoGetName(type.BaseType != null ? type.BaseType.FullName : string.Empty),
+						interfaces.ToString(),
+						type.GenericParameters.Count.ToString(),
+						visibility.ToString(),
+						attributes.ToString());
+						
 					if (type.HasConstructors)
 					{
 						foreach (MethodDefinition method in type.Constructors)
 						{
-							string fileName = DoParseMethod(type, method, hash, fullParse);
-							if (fileName.Length > 0 && !files.Contains(fileName))
-								files.Add(fileName);
+							DoParseMethod(type, method, id, fullParse);
 						}
 					}
 					
@@ -208,9 +216,7 @@ namespace ObjectModel
 					{
 						foreach (MethodDefinition method in type.Methods)
 						{
-							string fileName = DoParseMethod(type, method, hash, fullParse);
-							if (fileName.Length > 0 && !files.Contains(fileName))
-								files.Add(fileName);
+							DoParseMethod(type, method, id, fullParse);
 						}
 					}
 					
@@ -218,36 +224,404 @@ namespace ObjectModel
 					{
 						foreach (FieldDefinition field in type.Fields)
 						{
-							DoParseField(type, field, hash, fullParse);
+							DoParseField(type, field, id, fullParse);
 						}
-					}
-					
-					if (files.Count == 0)
-						files.Add(string.Empty);
-					
-					int kind;
-					if (type.IsInterface)
-						kind = 1;
-					else
-						kind = type.IsSealed ? 3 : 2;
-					foreach (string file in files)
-					{
-						m_database.InsertOrReplace("NameInfo",
-							type.FullName,
-							hash,
-							file,
-							type.Name,							// adds names like String or List`1
-							kind.ToString());
-						
-						m_database.InsertOrReplace("NameInfo",
-							type.FullName,
-							hash,
-							file,
-							DoGetNameWithoutTick(type.Name),	// adds List
-							kind.ToString());
 					}
 				});
 			}
+		}
+		
+		private void DoAddSpecialType(TypeReference type)		// threaded
+		{
+			TypeSpecification spec = type as TypeSpecification;
+			if (spec != null)
+			{
+				ArrayType array = type as ArrayType;
+				GenericInstanceType generic = type as GenericInstanceType;
+				
+				var genericTypes = new StringBuilder();
+				if (generic != null && generic.HasGenericArguments)
+				{
+					for (int i = 0; i < generic.GenericArguments.Count; ++i)
+					{
+						genericTypes.Append(DoGetName(generic.GenericArguments[i].FullName));
+						
+						if (i + 1 < generic.GenericArguments.Count)
+							genericTypes.Append(' ');
+					}
+				}
+				
+				int kind = 3;
+				if (array != null)
+					kind = 0;
+				else if (generic != null)
+					kind = 1;
+				else if (type is PointerType)
+					kind = 2;
+				
+				m_database.InsertOrIgnore("SpecialTypes",
+					DoGetName(type.FullName),
+					DoGetName(spec.ElementType != null ? spec.ElementType.FullName : string.Empty),
+					array != null ? array.Rank.ToString() : "0",
+					genericTypes.ToString(),
+					kind.ToString());
+			}
+		}
+		
+		private void DoParseMethod(TypeDefinition type, MethodDefinition method, string id, bool fullParse)		// threaded
+		{
+			// Note that auto-prop methods count as generated code.
+			if (method.IsGetter || method.IsSetter || !DoIsGeneratedCode(method))
+			{
+				if (fullParse || method.IsFamily || method.IsFamilyAndAssembly || method.IsFamilyOrAssembly || method.IsPublic)
+				{
+					var location = DoGetSourceAndLine(method);
+				
+					string extendName = string.Empty;
+					if (method.IsPublic && DoHasExtensionAtribute(method.CustomAttributes))
+					{
+						extendName = method.Parameters[0].ParameterType.FullName;
+					}
+						
+					int access = 0;
+					switch (method.Attributes & MethodAttributes.MemberAccessMask)
+					{
+						case MethodAttributes.Public:
+							access = 0;
+							break;
+							
+						case MethodAttributes.Family:
+						case MethodAttributes.FamORAssem:
+							access = 1;
+							break;
+							
+						case MethodAttributes.Assem:
+						case MethodAttributes.FamANDAssem:
+							access = 2;
+							break;
+							
+						case MethodAttributes.Private:
+							access = 3;
+							break;
+							
+						default:
+							Trace.Fail("bad access: " + (method.Attributes & MethodAttributes.MemberAccessMask));
+							break;
+					}
+					
+					int kind = 0;
+					if (method.IsGetter)
+						if (method.Name == "get_Item")
+							kind = 3;
+						else
+							kind = 1;
+					
+					else if (method.IsSetter)
+						if (method.Name == "set_Item")
+							kind = 4;
+						else
+							kind = 2;
+							
+					else if (method.IsAddOn || method.IsRemoveOn || method.IsFire)
+						kind = 5;
+						
+					else if (method.IsConstructor)
+						kind = 6;
+						
+					else if (method.Name.StartsWith("op_"))
+						kind = 7;
+						
+					else if (extendName.Length > 0)
+						kind = 8;
+					
+					DoValidateRoot("root_name", method.DeclaringType);
+					DoAddSpecialType(type.BaseType);
+					DoAddSpecialType(method.ReturnType.ReturnType);
+					
+					m_database.InsertOrReplace("Methods",
+						DoGetDisplayText(method),
+						DoGetName(method.Name),
+						DoGetName(method.ReturnType.ReturnType.FullName),
+						DoGetName(method.DeclaringType.FullName),
+						method.Parameters.Count.ToString(),
+						method.GenericParameters.Count.ToString(),
+						id,
+						DoGetName(extendName),
+						access.ToString(),
+						method.IsStatic ? "1" : "0",
+						DoGetName(location.First),
+						location.Second.ToString(),
+						kind.ToString());
+				}
+			}
+		}
+		
+		private void DoParseField(TypeDefinition type, FieldDefinition field, string id, bool fullParse)		// threaded
+		{
+			if (!DoIsGeneratedCode(field))
+			{
+				if (fullParse || field.IsFamily || field.IsFamilyOrAssembly || field.IsFamilyOrAssembly || field.IsPublic)
+				{
+					int access = 0;
+					switch (field.Attributes & FieldAttributes.FieldAccessMask)
+					{
+						case FieldAttributes.Public:
+							access = 0;
+							break;
+							
+						case FieldAttributes.Family:
+						case FieldAttributes.FamORAssem:
+							access = 1;
+							break;
+							
+						case FieldAttributes.Assembly:
+						case FieldAttributes.FamANDAssem:
+							access = 2;
+							break;
+							
+						case FieldAttributes.Private:
+							access = 3;
+							break;
+							
+						default:
+							Trace.Fail("bad access: " + (field.Attributes & FieldAttributes.FieldAccessMask));
+							break;
+					}
+					
+					DoValidateRoot("root_name", field.DeclaringType);
+					
+					m_database.InsertOrReplace("Fields",
+						DoGetName(field.DeclaringType.FullName),
+						DoGetName(field.Name),
+						DoGetName(field.FieldType.FullName),
+						id,
+						access.ToString(),
+						field.IsStatic ? "1" : "0");
+				}
+			}
+		}
+		
+		private void DoAppendType(StringBuilder text, string name)
+		{
+			name = CsHelpers.TrimGeneric(name);
+			name = CsHelpers.GetAliasedName(name);
+			name = CsHelpers.TrimNamespace(name);
+			
+			text.Append(name);
+		}
+		
+		private string DoGetDisplayText(MethodDefinition method)
+		{
+			var text = new StringBuilder();
+			
+			DoAppendType(text, method.ReturnType.ReturnType.FullName);
+			text.Append(' ');
+			
+			text.Append(DoGetNameWithoutTick(method.DeclaringType.FullName));
+			text.Append("::");
+			text.Append(DoGetDisplayName(method));
+			
+			if (method.HasGenericParameters)
+			{
+				text.Append('<');
+				for (int i = 0; i < method.GenericParameters.Count; ++i)
+				{
+					DoAppendType(text, method.GenericParameters[i].FullName);
+					if (i + 1 < method.GenericParameters.Count)
+						text.Append(", ");
+				}
+				text.Append('>');
+			}
+			
+			bool indexer = method.Name == "get_Item" || method.Name == "set_Item";
+			if (indexer || (!method.IsGetter && !method.IsSetter))
+			{
+				text.Append(indexer ? '[' : '(');
+				if (method.HasParameters)
+				{
+					bool isExtension = DoHasExtensionAtribute(method.CustomAttributes);
+					for (int i = 0; i < method.Parameters.Count; ++i)
+					{
+						ParameterDefinition p = method.Parameters[i];
+						
+						if (isExtension && i == 0)
+							text.Append("{this ");					// hack to allow auto-complete to easily remove the this argument for extension methods
+						
+						if (DoIsParams(p))
+							text.Append("params ");
+						
+						string typeName = p.ParameterType.FullName;
+						Debug.Assert(!typeName.Contains("{"), "type has a '{':" + typeName);
+						Debug.Assert(!typeName.Contains("}"), "type has a '}':" + typeName);
+
+						if (typeName.EndsWith("&"))
+						{
+							if (p.IsOut)
+								text.Append("out ");
+							else
+								text.Append("ref ");
+							DoAppendType(text, typeName.Remove(typeName.Length - 1));
+						}
+						else
+							DoAppendType(text, typeName);
+						
+						text.Append(' ');
+						text.Append(p.Name);
+						
+						if (isExtension && i == 0)
+							text.Append('}');
+						else if (i + 1 < method.Parameters.Count)
+							text.Append(", ");
+					}
+				}
+				text.Append(indexer ? ']' : ')');
+			}
+			
+			return text.ToString();
+		}
+		
+		private string DoGetDisplayName(MethodDefinition method)
+		{
+			string name;
+			
+			if (method.IsGetter || method.IsSetter)
+				name = method.Name.Substring(4);
+			
+			else if (method.IsConstructor)
+				name = method.DeclaringType.Name;
+			
+			else if (method.Name == "Finalize")
+				name = "~" + method.DeclaringType.Name;
+			
+			else if (method.Name.StartsWith("op_"))
+				name = DoGetOperatorName(method);
+			
+			else
+				name = method.Name;
+			
+			return name;
+		}
+		
+		private string DoGetOperatorName(MethodDefinition method)
+		{
+			string name;
+			
+			switch (method.Name)
+			{
+				// conversion operators
+				case "op_Implicit":
+					name = "implicit operator " + method.DeclaringType.Name;
+					break;
+				
+				case "op_Explicit":
+					name = "explicit operator " + method.DeclaringType.Name;
+					break;
+				
+			// unary operators
+				case "op_Decrement":
+					name = "operator --";
+					break;
+					
+				case "op_Increment":
+					name = "operator ++";
+					break;
+					
+				case "op_Negation":
+					name = "operator !";
+					break;
+					
+				case "op_UnaryNegation":
+					name = "operator -";
+					break;
+					
+				case "op_UnaryPlus":
+					name = "operator +";
+					break;
+				
+				// binary operators
+				case "op_Addition":
+					name = "operator +";
+					break;
+					
+				case "op_Assign":
+					name = "operator =";
+					break;
+					
+				case "op_BitwiseAnd":
+					name = "operator &";
+					break;
+					
+				case "op_BitwiseOr":
+					name = "operator |";
+					break;
+					
+				case "op_Division":
+					name = "operator /";
+					break;
+					
+				case "op_Equality":
+					name = "operator ==";
+					break;
+					
+				case "op_ExclusiveOr":
+					name = "operator ^";
+					break;
+					
+				case "op_GreaterThan":
+					name = "operator >";
+					break;
+					
+				case "op_GreaterThanOrEqual":
+					name = "operator >=";
+					break;
+					
+				case "op_Inequality":
+					name = "operator !=";
+					break;
+					
+				case "op_LeftShift":
+					name = "operator <<";
+					break;
+					
+				case "op_LessThan":
+					name = "operator <";
+					break;
+					
+				case "op_LessThanOrEqual":
+					name = "operator op_LessThanOrEqual<=";
+					break;
+					
+				case "op_LogicalAnd":
+					name = "operator &&";
+					break;
+					
+				case "op_LogicalOr":
+					name = "operator ||";
+					break;
+					
+				case "op_Modulus":
+					name = "operator %";
+					break;
+					
+				case "op_Multiply":
+					name = "operator *";
+					break;
+					
+				case "op_RightShift":
+					name = "operator >>";
+					break;
+					
+				case "op_Subtraction":
+					name = "operator -";
+					break;
+					
+				default:
+					Log.WriteLine(TraceLevel.Error, "ObjectModel", "bad operator: {0}", method.Name);
+					name = method.Name;
+					break;
+			}
+			
+			return name;
 		}
 		
 		private string DoGetNameWithoutTick(string name)	// theaded
@@ -292,168 +666,6 @@ namespace ObjectModel
 			}
 			
 			return Tuple.Make(source, line);
-		}
-		
-		private string DoParseMethod(TypeDefinition type, MethodDefinition method, string hash, bool fullParse)		// threaded
-		{
-			string fileName = string.Empty;
-			
-			// Note that auto-prop methods count as generated code.
-			if (method.IsGetter || method.IsSetter || !DoIsGeneratedCode(method))
-			{
-				var location = DoGetSourceAndLine(method);
-				fileName = Path.GetFileName(location.First);
-				
-				if (fullParse || method.IsFamily || method.IsFamilyAndAssembly || method.IsFamilyOrAssembly || method.IsPublic)
-				{
-					var argTypes = new StringBuilder();
-					var argNames = new StringBuilder();
-					for (int i = 0; i < method.Parameters.Count; ++i)
-					{
-						ParameterDefinition p = method.Parameters[i];
-						string name = p.ParameterType.FullName;
-						
-						if (DoIsParams(p))
-							name = "params " + name;
-							
-						if (name.EndsWith("&"))
-						{
-							name = (p.IsOut ? "out " : "ref ") + name;
-							name = name.Remove(name.Length - 1);
-						}
-						
-						argTypes.Append(name);
-						argNames.Append(p.Name);
-						
-						if (i + 1 < method.Parameters.Count)
-						{
-							argTypes.Append(':');
-							argNames.Append(':');
-						}
-					}
-					
-					m_database.Insert("Methods",
-						method.ToString(),
-						hash,
-						method.ReturnType.ReturnType.FullName.GetTypeName(),
-						method.Name,
-						argTypes.ToString(),
-						argNames.ToString(),
-						method.DeclaringType.FullName,
-						location.First,
-						location.Second.ToString(),
-						((ushort) method.Attributes).ToString(),
-						((ushort) method.SemanticsAttributes).ToString());
-						
-					if (!method.IsPrivate && !method.IsAddOn && !method.IsConstructor && !method.IsFire && !method.IsOther && !method.IsRemoveOn)
-						if (!method.Name.StartsWith("op_") && method.Name != "Finalize")
-							m_database.InsertOrReplace("Members",
-								DoGetMethodText(method, 0),
-								method.DeclaringType.FullName,
-								string.Empty,								// not an extension method
-								method.IsFamilyAndAssembly || method.IsFamilyOrAssembly || method.IsFamily ? "1" : "0",
-								method.IsStatic ? "1" : "0",
-								method.ReturnType.ReturnType.FullName.GetTypeName(),
-								argNames.ToString(),
-								hash);
-					
-					if (!type.IsInterface)		// TODO: might want to remove this when we can get file/line for interfaces
-						m_database.InsertOrReplace("NameInfo",
-							method.ToString(),
-							hash,
-							fileName,
-							method.Name,
-							"0");
-							
-					if (method.IsPublic && DoHasExtensionAtribute(method.CustomAttributes))
-						m_database.InsertOrReplace("Members",
-							DoGetMethodText(method, 1),
-							method.Parameters[0].ParameterType.FullName.GetTypeName(),
-							type.Namespace,
-							"0",
-							"0",					// extension methods are declared as statics, but not used that way
-							method.ReturnType.ReturnType.FullName.GetTypeName(),
-							argNames.ToString(),
-							hash);
-				}
-			}
-			
-			return fileName;
-		}
-		
-		private string DoGetMethodText(MethodDefinition method, int firstArg)
-		{
-			var builder = new StringBuilder();
-			
-			if (method.IsGetter || method.IsSetter)
-			{
-				builder.Append(method.Name.Substring(4));
-			}
-			else
-			{
-				builder.Append(method.Name);
-				
-				builder.Append('(');
-				for (int i = firstArg; i < method.Parameters.Count; ++i)
-				{
-					ParameterDefinition p = method.Parameters[i];
-					
-					string type = CsHelpers.GetAliasedName(p.ParameterType.FullName);
-					if (type == p.ParameterType.FullName)
-					{
-						type = CsHelpers.TrimNamespace(type);
-						type = CsHelpers.TrimGeneric(type);
-					}
-					if (DoIsParams(p))
-						type = "params " + type;
-					if (type.EndsWith("&"))
-					{
-						type = type.Remove(type.Length - 1);
-						
-						if (p.IsOut)
-							type = "out " + type;
-						else
-							type = "ref " + type;
-					}
-					builder.Append(type);
-					
-					builder.Append(' ');	
-					builder.Append(p.Name);
-					
-					if (i + 1 < method.Parameters.Count)
-						builder.Append(", ");
-				}
-				builder.Append(')');
-			}
-			
-			return builder.ToString();
-		}
-		
-		private void DoParseField(TypeDefinition type, FieldDefinition field, string hash, bool fullParse)		// threaded
-		{
-			if (!DoIsGeneratedCode(field))
-			{
-				if (fullParse || field.IsFamily || field.IsFamilyOrAssembly || field.IsFamilyOrAssembly || field.IsPublic)
-				{
-					m_database.InsertOrReplace("Fields",
-						field.Name,
-						field.DeclaringType.FullName.GetTypeName(),
-						hash,
-						field.FieldType.FullName.GetTypeName(),
-						((ushort) field.Attributes).ToString());
-					
-					if (!field.IsPrivate)
-						m_database.InsertOrReplace("Members",
-							field.Name,
-							field.DeclaringType.FullName.GetTypeName(),
-							string.Empty,								// not an extension method
-							field.IsFamilyAndAssembly || field.IsFamilyOrAssembly || field.IsFamily ? "1" : "0",
-							field.IsStatic ? "1" : "0",
-							field.FieldType.FullName.GetTypeName(),
-							string.Empty,
-							hash);
-				}
-			}
 		}
 		
 		// Based on the gendarme code.

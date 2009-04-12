@@ -185,6 +185,11 @@ namespace Shared
 						throw;
 					}
 				}
+				catch
+				{
+					UnsafeRollback(name);
+					throw;
+				}
 			}
 		}
 		

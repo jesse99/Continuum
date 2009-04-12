@@ -376,8 +376,8 @@ namespace Shared
 		{
 			Trace.Assert(attrs != null, "attrs is null");
 			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
-			Trace.Assert(nameOffset > offset, "nameOffsetis too small");
-			Trace.Assert(nameOffset < offset + length, "nameOffsetis too large");
+			Trace.Assert(nameOffset > offset, "nameOffset is too small");
+			Trace.Assert(nameOffset < offset + length, "nameOffset is too large");
 			
 			Attributes = attrs;
 			Modifiers = modifiers;

@@ -36,7 +36,8 @@ namespace Shared
 		long GetBytes(string path);
 		
 		// Uses the locate command to find the path. The search is case insensitive
-		// and will match partial paths, e.g. "/Foo.cs" or "/Foo/".
+		// and will match partial paths, e.g. "/Foo.cs" or "/Foo/". Note that this will
+		// not return files within .svn or .Trashes directories.
 		string[] LocatePath(string path);
 		
 		// Returns a path to a temporary file where the file name starts with

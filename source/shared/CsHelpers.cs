@@ -86,6 +86,13 @@ namespace Shared
 			
 			string alias;
 			
+			if (name.StartsWith("Nullable<") || name.StartsWith("System.Nullable<"))
+			{
+				int i = name.IndexOf('<');
+				int j = name.LastIndexOf('>');
+				name = name.Substring(i + 1, j - i - 1) + '?';
+			}
+			
 			if (ms_aliases.TryGetValue(name, out alias))
 				return alias;
 			
@@ -94,7 +101,7 @@ namespace Shared
 				
 			return name;
 		}
-		
+				
 		// Given a name like "bool" or "bool[]" return "System.Boolean" or 
 		// "System.Boolean[]". If it is not an alias then returns the original name.
 		public static string GetRealName(string name)

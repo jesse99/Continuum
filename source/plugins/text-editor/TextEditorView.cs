@@ -179,13 +179,13 @@ namespace TextEditor
 				}
 				
 				// Get the commands.
-//		var watch = new Stopwatch();
-//		watch.Start();
+				var watch = new Stopwatch();
+				watch.Start();
 				DoGetEntries(m_selection);
 				
 				if (m_entries.Count == 0)
 					DoGetEntries(null);
-//		Console.WriteLine("secs: {0:0.000}", watch.ElapsedMilliseconds/1000.0);
+				Log.WriteLine("ContextMenu", "took {0:0.000} secs to open the menu", watch.ElapsedMilliseconds/1000.0);
 				
 				m_entries.Sort();
 				

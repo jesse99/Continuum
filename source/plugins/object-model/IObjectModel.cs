@@ -25,48 +25,49 @@ using Shared;
 using System.Collections.Generic;
 
 namespace ObjectModel
-{	
-	public sealed class SourceLine
+{
+	internal sealed class SourceLine
 	{
-		public SourceLine(string path, int line, string hash)
+		public SourceLine(string source, string path, int line)
 		{
+			Source = source;
 			Path = path;
 			Line = line;
-			AssemblyHash = hash;
 		}
+		
+		// File name for types, full method name for methods.
+		public string Source {get; private set;}
 		
 		// Absolute path to the compilation unit. May be empty.
 		public string Path {get; private set;}
-
+		
 		// Line number within the compilation unit. May be -1.
 		public int Line {get; private set;}
-
-		public string AssemblyHash {get; private set;}
 	}
 	
 	// Interface used to perform some standard queries against the type database.
 	internal interface IObjectModel : IInterface
-	{					
+	{
 		// Returns the time in ticks at which the assembly with the specified hash was built.
-		long GetBuildTime(string hash);
+		long GetBuildTime(int assembly);
 		
-		SourceLine[] FindMethodSources(string fullName);
+		SourceLine[] FindMethodSources(string name, int max);
 		
-		SourceLine[] FindTypeSources(string fullName);
-
+		SourceLine[] FindTypeSources(string name, int max);
+		
 		string[] FindTypeAssemblyPaths(string fullName);
 		
 		TypeAttributes[] FindAttributes(string fullName);
-
+		
 		Tuple2<string, TypeAttributes>[] FindImplementors(string fullName);
-
+		
 		Tuple2<string, TypeAttributes>[] FindBases(string fullName);
-
+		
 		// If there are more than maxResults results then the last tuple will be
 		// Ellipsis, 0.
 		Tuple2<string, TypeAttributes>[] FindDerived(string fullName, int maxResults);
 		
 		// Returns the full name, file name, kind of methods/types which are named name.
-		Tuple3<string, string, int>[] FindInfo(string name, int maxResults);
-	} 
+//		Tuple3<string, string, int>[] FindInfo(string name, int maxResults);
+	}
 }

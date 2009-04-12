@@ -1,3 +1,5 @@
+http://msdn.microsoft.com/en-us/devlabs/dd491992.aspx
+
 	⁃	https://home.comcast.net/~jesse98/public/Continuum-0.2.222.0.tar.gz
 
 BMPN - flow charts
@@ -20,11 +22,134 @@ ReferenceEquals used with value type
 might want a sample app
 sudo fs_usage -f filesys
 
+http://www.technipages.com/os-x-leopard-enabledisable-spotlight.html
+
+		private string DoGetMethodText(MethodDefinition method, int firstArg)
+		{
+			var builder = new StringBuilder();
+			
+			if (method.IsGetter || method.IsSetter)
+			{
+				builder.Append(method.Name.Substring(4));
+			}
+			else
+			{
+				builder.Append(method.Name);
+				
+				builder.Append('(');
+				for (int i = firstArg; i < method.Parameters.Count; ++i)
+				{
+					ParameterDefinition p = method.Parameters[i];
+					
+					string type = CsHelpers.GetAliasedName(p.ParameterType.FullName);
+					if (type == p.ParameterType.FullName)
+					{
+						type = CsHelpers.TrimNamespace(type);
+						type = CsHelpers.TrimGeneric(type);
+					}
+					if (DoIsParams(p))
+						type = "params " + type;
+					if (type.EndsWith("&"))
+					{
+						type = type.Remove(type.Length - 1);
+						
+						if (p.IsOut)
+							type = "out " + type;
+						else
+							type = "ref " + type;
+					}
+					builder.Append(type);
+					
+					builder.Append(' ');	
+					builder.Append(p.Name);
+					
+					if (i + 1 < method.Parameters.Count)
+						builder.Append(", ");
+				}
+				builder.Append(')');
+			}
+			
+			return builder.ToString();
+		}
+		
+Menu Query
+	SELECT DISTINCT full_name, file_name, kind
+		FROM NameInfo
+	WHERE name = 'NSMenu' OR full_name = 'NSMenu' OR full_name GLOB 'NSMenu<*'
+	LIMIT 40
+Database Verbose   query took 0.103 secs
+
+Auto-Complete Query
+	SELECT return_type, arg_names, name, attributes   (used by DoFindProperties)
+		FROM Methods 
+	WHERE declaring_type = 'System.Object' AND name GLOB 'System.Object*'
+	Database Verbose   query took 2*0.098 secs
+	
+	SELECT text, return_type, arg_names, namespace
+		FROM Members 
+	WHERE type = 'MObjc.NSObject' AND is_static = '0'
+	Database Verbose   query took 3*0.064 secs
+	
+	SELECT text, return_type, arg_names, namespace
+		FROM Members 
+	WHERE type = 'System.IEquatable`1' AND length(namespace) > 0
+	Database Verbose   query took 3*0.046 secs
+
+
+-rw-r--r--  1 jessejones  staff  67759104 Mar 28 10:20 gendarme.db
+-rw-r--r--  1 jessejones  staff  67338240 Apr  9 07:32 Continuum.db
+-rw-r--r--  1 jessejones  staff  53890048 Apr  5 09:43 mcocoa.db
+-rw-r--r--  1 jessejones  staff  51709952 Apr  8 10:58 shuffler.db
+-rw-r--r--  1 jessejones  staff  17373184 Apr  8 12:02 Trivial.db
+-rw-r--r--  1 jessejones  staff  27526144 Apr  8 10:54 mobjc.db
+
+  c TEXT UNIQUE        -- index created
+  GLOB is expensive (can't use index, can replace trailing glob with compares)
+  INSERT INTO t1 VALUES((SELECT max(a) FROM t1)+1,123)
+  elect Names.value from Names, Types where Names.name = Types.full_name limit 1000
+  
+declaring_type		Types foreign key or zero if the type is not nested.
+file_name			Names foreign key for the file name (not path) the type is declared
+					within. Zero if the assembly was compiled without debug info.
+
+param_type_names		Space separated list of Names integers of the type names of each
+							type in the method's parameter list. Empty if the method is nullary.
+param_names				Space separated list of Names integers of the names of each
+							argument in the method's parameter list. Empty if the method is 
+							nullary.
+param_modifiers			Space separated list of integers: 0 for in parameter, 1 for out, 2
+							for ref, and 3 for params.
+
+3 cycles of NSNumber auto-complete, Action context
+then auto-complete NSMenuItem and context menu NSApplication
+window		menu			base line
+0.495		0.103
+
+	string StringExtensions::GetTypeName({this string name}int alpha, int beta)
+
+* Profile:
+	- get the queries working (try to do them one at a time and check that they are
+	  legit)
+	- update all the db queries
+		Objects.cs
+		TargetDatabase.cs
+	- auto-complete should treat extension methods as non-static
+	- prune should check to see if a reparse is needed
+	- make sure assembly rebuild doesn't just delete, but deletes and adds
+	- look at overall speed
+	- look at query overhead
+	- PRAGMA cache_size can have a large effect on speed (see
+	  http://www.sqlite.org/pragma.html)
+	- sqlite3_profile may help, also sqlite3_status, may want to use prepared statements too
+	- add the new db size to tables.txt
+	- get the unit tests working
+	- get pointers completing
+	- get arrays completing
+	- get indexers completing
+	- should also be able to complete instantiated generics now
 * Work more on target completion:
-	- ResolveEpr should work with dictionary subscripting
-	- ResolveEpr should work with array subscripting
-	- doesn't work with IBOutlet<T>.Value
-	- profile
+	- .txt files are completing
+	- VS uses tab tab to complete 2-3 character words
 	- get ctor calls completing: enter with new PartialTypeName
 	- ctor completion should work with dotted names
 	- ctor completion should work with just new
@@ -38,11 +163,6 @@ sudo fs_usage -f filesys
 	- would be nice to complete new expressions with ctors
 	- complete new SomeType calls
 		` special case array types
-	- do some performance tuning
-		` try the mono profiler again
-		` don't think we need to get the hash for types
-		` extension methods are really slow, especially with a few base classes/interfaces
-		` sqlite3_profile may help, also sqlite3_status, may want to use prepared statements too
 	- local explicit interface implementation
 	- global explicit interface implementation
 	- need to work with namespace aliases
@@ -89,8 +209,13 @@ sudo fs_usage -f filesys
 	- arg completion could filter on formal arg type
 	- might want to add a context menu to arg completion window: close and switch
 	   to an overload
+* Work on auto-complete:
+	- doesn't work with IBOutlet<T>.Value
+	- ResolveEpr should work with dictionary subscripting
+	- ResolveEpr should work with array subscripting
 * Is ChangeAccess correct?
 * Add Convert to Decimal and Convert To Hex.
+* Use Contract instead of Trace.
 * Couldn't use context menu to spellcheck with no database.
 * Search witin "…" isn't finding verbatim strings. E.g. search for Methods should
   find some.

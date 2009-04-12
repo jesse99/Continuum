@@ -28,7 +28,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Threading;
 
 namespace ObjectModel
@@ -171,15 +170,14 @@ namespace ObjectModel
 		
 		private void DoParseAssemblies(string path)	// threaded
 		{
-			m_database = new Database(path, "Populate-" + Path.GetFileNameWithoutExtension(path));
-			
+			m_database = new Database(path, "Populate-" + Path.GetFileNameWithoutExtension(path));			
 			DoCreateTables();
 			
 			while (true)
 			{
 				try
 				{
-					DoPruneAssemblies();
+					DoDeleteAssemblies();
 					Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "pruned assemblies");
 					
 					string root;
@@ -188,7 +186,7 @@ namespace ObjectModel
 						while (m_files.Count == 0 && m_running)
 						{
 //	Console.WriteLine("thread {0} is blocking", Thread.CurrentThread.ManagedThreadId);
-							Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "waiting");
+							Log.WriteLine(TraceLevel.Info, "ObjectModel", "waiting");
 							Unused.Value = Monitor.Wait(m_lock);
 						}
 						
@@ -201,7 +199,7 @@ namespace ObjectModel
 					
 					if (!root.Contains(".app/") && !root.Contains("/.svn"))
 					{
-						DoUpdateAssemblyPaths(root);
+						DoUpdateAssemblies(root);
 						Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "updated assemblies for '{0}'", root);
 					}
 				}
@@ -223,145 +221,170 @@ namespace ObjectModel
 			Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "creating tables");
 			m_database.Update("create tables", () =>
 			{
+				// TODO: once sqlite supports it the hash foreign keys should use ON DELETE CASCADE
 				m_database.Update(@"
 					CREATE TABLE IF NOT EXISTS Assemblies(
-						hash TEXT NOT NULL PRIMARY KEY
-							CONSTRAINT hash_size CHECK(length(hash) >= 8),
+						path TEXT NOT NULL PRIMARY KEY
+							CONSTRAINT absolute_path CHECK(substr(path, 1, 1) = '/'),
 						name TEXT NOT NULL
 							CONSTRAINT no_empty_name CHECK(length(name) > 0),
 						culture TEXT NOT NULL
 							CONSTRAINT no_empty_culture CHECK(length(culture) > 0),
-						major INTEGER NOT NULL
-							CONSTRAINT sane_major CHECK(major >= 0),
-						minor INTEGER NOT NULL
-							CONSTRAINT sane_minor CHECK(minor >= 0),
-						build INTEGER NOT NULL
-							CONSTRAINT sane_build CHECK(build >= 0),
-						revision INTEGER NOT NULL
-							CONSTRAINT sane_revision CHECK(revision >= 0)
+						version TEXT NOT NULL,
+						write_time INTEGER NOT NULL
+							CONSTRAINT sane_time CHECK(write_time > 0),
+						assembly INTEGER NOT NULL
+							CONSTRAINT no_zero_assembly CHECK(assembly != 0)
+					)");
+
+				m_database.Update(@"
+					CREATE TABLE IF NOT EXISTS Names(
+						value TEXT PRIMARY KEY NOT NULL,
+						name INTEGER UNIQUE NOT NULL
+					)");
+				m_database.InsertOrIgnore("Names", string.Empty, "0");
+				
+				m_database.Update(@"
+					CREATE TABLE IF NOT EXISTS Types(
+						root_name INTEGER PRIMARY KEY NOT NULL 
+							REFERENCES Names(name),
+						assembly INTEGER NOT NULL 
+							REFERENCES Assemblies(assembly),
+						namespace INTEGER NOT NULL 
+							REFERENCES Names(name),
+						declaring_root_name INTEGER NOT NULL 
+							REFERENCES Names(name),
+						name INTEGER NOT NULL 
+							REFERENCES Names(name),
+						base_type_name TEXT NOT NULL,
+						interface_type_names TEXT NOT NULL,
+						generic_arg_count INTEGER NOT NULL
+							CONSTRAINT non_negative_arg_count CHECK(generic_arg_count >= 0),
+						visibility INTEGER NOT NULL,
+						attributes INTEGER NOT NULL
 					)");
 				
-				// TODO: we should probably be using an assembly_id instead of a hash
-				// for the foreign keys. That should be a bit faster and more space efficient.
 				m_database.Update(@"
-					CREATE TABLE IF NOT EXISTS AssemblyPaths(
-						path TEXT NOT NULL PRIMARY KEY
-							CONSTRAINT absolute_path CHECK(substr(path, 1, 1) = '/'),
-						hash TEXT NOT NULL REFERENCES Assemblies(hash),
-						write_time INTEGER NOT NULL
-							CONSTRAINT sane_time CHECK(write_time > 0)
+					CREATE TABLE IF NOT EXISTS SpecialTypes(
+						special_name INTEGER PRIMARY KEY NOT NULL 
+							REFERENCES Names(name),
+						element_type_name INTEGER NOT NULL 
+							REFERENCES Names(name),
+						rank INTEGER NOT NULL 
+							CONSTRAINT non_negative_rank CHECK(rank >= 0),
+						generic_type_names TEXT NOT NULL,
+						kind INTEGER NOT NULL
+							CONSTRAINT valid_kind CHECK(kind >= 0 AND kind <= 3)
+					)");
+				
+				m_database.Update(@"
+					CREATE TABLE IF NOT EXISTS Methods(
+						display_text TEXT NOT NULL PRIMARY KEY,
+						name INTEGER NOT NULL 
+							REFERENCES Names(name),
+						return_type_name INTEGER NOT NULL 
+							REFERENCES Names(name),
+						declaring_root_name INTEGER NOT NULL 
+							REFERENCES Types(root_name) REFERENCES Names(name),
+						params_count INTEGER NOT NULL
+							CONSTRAINT non_negative_params_count CHECK(params_count >= 0),
+						generic_arg_count INTEGER NOT NULL
+							CONSTRAINT non_negative_generic_count CHECK(generic_arg_count >= 0),
+						assembly INTEGER NOT NULL 
+							REFERENCES Assemblies(assembly),
+						extend_type_name INTEGER NOT NULL 
+							REFERENCES Names(name),
+						access INTEGER NOT NULL,
+						static INTEGER NOT NULL
+							CONSTRAINT valid_static CHECK(static >= 0 AND static <= 1),
+						file_path INTEGER NOT NULL 
+							REFERENCES Names(name),
+						line INTEGER NOT NULL
+							CONSTRAINT valid_line CHECK(line >= -1),
+						kind INTEGER NOT NULL
+							CONSTRAINT valid_kind CHECK(kind >= 0 AND kind <= 8)
+					)");
+				
+				m_database.Update(@"
+					CREATE TABLE IF NOT EXISTS Fields(
+						declaring_root_name INTEGER NOT NULL 
+							REFERENCES Types(root_name) REFERENCES Names(name),
+						name INTEGER NOT NULL 
+							REFERENCES Names(name),
+						type_name INTEGER NOT NULL 
+							REFERENCES Names(name),
+						assembly INTEGER NOT NULL 
+							REFERENCES Assemblies(assembly),
+						access INTEGER NOT NULL,
+						static INTEGER NOT NULL
+							CONSTRAINT valid_static CHECK(static >= 0 AND static <= 1),
+						PRIMARY KEY(declaring_root_name, name)
 					)");
 			});
 		}
 		
-		private void DoPruneAssemblies()		// threaded
+		private void DoDeleteAssemblies()		// threaded
 		{
 			m_database.Update("prune assemblies", () =>
 			{
-				// Remove every row in AssemblyPaths where the path is no longer valid.
+				// Remove every row in Assemblies where the path is no longer valid.
 				string sql = @"
-					SELECT path, hash 
-						FROM AssemblyPaths";
+					SELECT path, assembly, name, culture, version
+						FROM Assemblies";
 				string[][] rows = m_database.QueryRows(sql);
 				
 				foreach (string[] row in rows)
 				{
 					if (!File.Exists(row[0]))
 					{
-						Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "removing '{0}' from AssemblyPaths", row[0]);
+						Log.WriteLine(TraceLevel.Info, "ObjectModel", "pruning {0} {1} {2}", row[2], row[3], row[4]);
 						
 						m_database.Update(string.Format(@"
-							DELETE FROM AssemblyPaths 
-								WHERE path = '{0}' AND hash = '{1}'", row[0], row[1]));
+							DELETE FROM Assemblies 
+								WHERE path = '{0}'", row[0]));
+								
+						DoDeleteAssemblyReferences(row[1]);
 					}
-				}
-				
-				// Remove every row in Assemblies which no longer has a path.
-				sql = @"
-					SELECT DISTINCT hash 
-						FROM Assemblies
-					EXCEPT SELECT hash
-						FROM AssemblyPaths";
-				rows = m_database.QueryRows(sql);
-				
-				foreach (string[] row in rows)
-				{
-					if (Log.IsEnabled(TraceLevel.Info, "ObjectModel"))
-					{
-						sql = string.Format(@"
-							SELECT DISTINCT name, major, minor, build, revision 
-								FROM Assemblies
-							WHERE hash = '{0}'", row[0]);
-						string[][] temp = m_database.QueryRows(sql);
-						
-						if (temp.Length > 0)
-						{
-							string name = string.Format("{0} {1}.{2}.{3}.{4}", temp[0][0], temp[0][1], temp[0][2], temp[0][3], temp[0][4]);	
-							Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "removing '{0}' from Assemblies (no assemblies with its hash exist)", name);
-						}
-					}
-					
-					DoCascadeHash("Types", row[0]);
-					DoCascadeHash("Implements", row[0]);
-					DoCascadeHash("Methods", row[0]);
-					DoCascadeHash("NameInfo", row[0]);
-					DoCascadeHash("Members", row[0]);
-					DoCascadeHash("Fields", row[0]);
-					
-					m_database.Update(string.Format(@"
-						DELETE FROM Assemblies 
-							WHERE hash = '{0}'", row[0]));
 				}
 			});
 		}
 		
-		// sqlite does not support foreign key constraints so we need to do it ourselves.
-		private void DoCascadeHash(string table, string hash)
+		private void DoDeleteAssemblyReferences(string id)		// threaded
 		{
 			m_database.Update(string.Format(@"
-				DELETE FROM {0} 
-					WHERE hash = '{1}'", table, hash));
+				DELETE FROM Types 
+					WHERE assembly = '{0}'", id));
+			
+			m_database.Update(string.Format(@"
+				DELETE FROM Methods 
+					WHERE assembly = '{0}'", id));
+			
+			m_database.Update(string.Format(@"
+				DELETE FROM Fields 
+					WHERE assembly = '{0}'", id));
 		}
 		
-		private void DoUpdateAssemblyPaths(string path)		// threaded
+		private void DoUpdateAssemblies(string path)		// threaded
 		{
 			try
 			{
-				Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "checking parse date for '{0}'", path);
+				AssemblyDefinition assembly = null;
+				string id = "0";
+				DoTryAddAssembly(path, ref assembly, ref id);
 				
-				// Find out when (or if we ever) processed the file.
-				string sql = string.Format(@"
-					SELECT write_time 
-						FROM AssemblyPaths 
-					WHERE path='{0}'", path);
-				string[][] rows = m_database.QueryRows(sql);
-				Trace.Assert(rows.Length <= 1, string.Format("got {0} rows looking for {1}", rows.Length, path));
-				
-				// If we've never processed the file or it has changed since we
-				// last processed it then,
-				bool dirty = rows.Length == 0;
-				long currentTicks = File.GetLastWriteTime(path).Ticks;
-				if (!dirty)
+				// If we need to process the assembly then,
+				if (assembly != null)
 				{
-					long cachedTicks = long.Parse(rows[0][0]);
-					dirty = currentTicks > cachedTicks;
-				}
-				
-				if (dirty)
-				{
-					// update the database using the contents of the assembly,
-					byte[] contents = File.ReadAllBytes(path);
-					byte[] hash = m_hasher.ComputeHash(contents);
-					DoUpdateAssemblies(path, hash);
+					// parse the assembly (we do this last so that the Types table
+					// can refer to the new row in the Assemblies table),
+					bool fullParse = !path.Contains("/gac/") && !path.Contains("/mscorlib.dll") && File.Exists(path + ".mdb");	// TODO: might want to optionally allow full parse of mscorlib and assemblies in the gac			
+					DoParseAssembly(path, assembly, id, fullParse);
 					
-					// and update the database with the new time (we have to do
-					// this after DoUpdateAssemblies so that the new row has a
-					// valid foreign key).
-					m_database.Update("update assembly paths " + path, () =>
-					{
-						m_database.InsertOrReplace("AssemblyPaths",
-							path, BitConverter.ToString(hash), currentTicks.ToString());
-					});
+					// and queue up any assemblies it references (but only for local assemblies:
+					// the database are already large and transitively parsing all assemblies isn't
+					// that useful).
+					if (fullParse)
+						DoQueueReferencedAssemblies(assembly, path);
 				}
 			}
 			catch (BadImageFormatException)
@@ -386,185 +409,142 @@ namespace ObjectModel
 			}
 		}
 		
-		// It shouldn't normally be necessary to do the query and insert within a transaction
-		// but it may be needed if both Continuum and Foreshadow are editing the same
-		// directory.
-		private AssemblyDefinition DoUpdateAssemby(string path, byte[] hash)		// threaded
+		private void DoQueueReferencedAssemblies(AssemblyDefinition assembly, string path)		// threaded
 		{
-			AssemblyDefinition assembly = null;
+			var resolver = (BaseAssemblyResolver) assembly.Resolver;
+			resolver.AddSearchDirectory(Path.GetDirectoryName(path));
 			
-			m_database.Update("update assemblies for " + path, () =>
+			foreach (ModuleDefinition module in assembly.Modules)
 			{
-				// See if the assembly is one we have already processed.
-				string sql = string.Format(@"
-					SELECT name 
-						FROM Assemblies 
-					WHERE hash='{0}'", BitConverter.ToString(hash));
-				string[][] rows = m_database.QueryRows(sql);
-				Trace.Assert(rows.Length <= 1, string.Format("got {0} rows looking for hash {1}", rows.Length, BitConverter.ToString(hash)));
-				
-				// If not then,
-				if (rows.Length == 0)
+				foreach (AssemblyNameReference nr in module.AssemblyReferences)
 				{
-					// load the assembly,
-					assembly = AssemblyCache.Load(path, true);	// TODO: there doesn't appear to be a way to use the contents array and still be able to load symbols
-					
-					// update the Assemblies table.
-					m_database.Insert("Assemblies",
-						BitConverter.ToString(hash),
-						assembly.Name.Name,
-						string.IsNullOrEmpty(assembly.Name.Culture) ? "neutral" : assembly.Name.Culture.ToLower(),
-						assembly.Name.Version.Major.ToString(),
-						assembly.Name.Version.Minor.ToString(),
-						assembly.Name.Version.Build.ToString(),
-						assembly.Name.Version.Revision.ToString());
-				}
-			});
-			
-			return assembly;
-		}
-		
-		private void DoUpdateAssemblies(string path, byte[] hash)		// threaded
-		{
-			AssemblyDefinition assembly = DoUpdateAssemby(path, hash);
-			
-			// If we need to process the assembly then,
-			if (assembly != null)
-			{
-				// parse the assembly (we do this last so that the Types table
-				// can refer to the new row in the Assemblies table),
-				bool fullParse = !path.Contains("/gac/") && !path.Contains("/mscorlib.dll") && File.Exists(path + ".mdb");	// TODO: might want to optionally allow full parse of mscorlib and assemblies in the gac			
-				DoParseAssembly(path, assembly, BitConverter.ToString(hash), fullParse);
-				
-				// and queue up any assemblies it references (but only for local assemblies:
-				// the database are already large and transitively parsing all assemblies isn't
-				// that useful).
-				if (fullParse)
-				{
-					var resolver = (BaseAssemblyResolver) assembly.Resolver;
-					resolver.AddSearchDirectory(Path.GetDirectoryName(path));
-					
-					foreach (ModuleDefinition module in assembly.Modules)
+					try
 					{
-						foreach (AssemblyNameReference nr in module.AssemblyReferences)
+						if (!m_resolvedAssemblies.Contains(nr.FullName))
 						{
-							try
+							AssemblyDefinition ad = resolver.Resolve(nr);	// this is a little inefficient because we load the assembly twice, but the load is not the bottleneck...
+							m_resolvedAssemblies.Add(nr.FullName);
+							
+							Image image = ad.MainModule.Image;
+							Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "resolved {0} at {1}", nr.FullName, image.FileInformation.FullName);
+							
+							lock (m_lock)
 							{
-								if (!m_resolvedAssemblies.Contains(nr.FullName))
-								{
-									AssemblyDefinition ad = resolver.Resolve(nr);	// this is a little inefficient because we load the assembly twice, but the load is not the bottleneck...
-									m_resolvedAssemblies.Add(nr.FullName);
-									
-									Image image = ad.MainModule.Image;
-									Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "resolved {0} at {1}", nr.FullName, image.FileInformation.FullName);
-									
-									lock (m_lock)
-									{
 //		Console.WriteLine("adding referenced file {0} for thread {1}", image.FileInformation.FullName, Thread.CurrentThread.ManagedThreadId);
-										m_files.Add(image.FileInformation.FullName);	// note that we don't need to pulse because we execute within the thread
-									}
-								}
-							}
-							catch
-							{
-								Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "Couldn't resolve {0}", nr.FullName);	// this is fairly common with intermediate build steps when packaging bundles
+								m_files.Add(image.FileInformation.FullName);	// note that we don't need to pulse because we execute within the thread
 							}
 						}
 					}
-				}
-			}
-		}
-		
-		private void DoParseAssembly(string path, AssemblyDefinition assembly, string hash, bool fullParse)		// threaded
-		{
-			int order = DoCompareAssembly(assembly.Name, hash);
-			
-			// Only parse assemblies that have the same or a newer version numbers as
-			// assemblies we have already parsed. TODO: we do this to avoid matching
-			// old types, but it would be better to be smarter about the assemblies we
-			// try to match.
-			if (order >= 0)
-			{
-				m_boss.CallRepeated<IParseAssembly>(i => i.Parse(path, assembly, hash, fullParse));
-				
-				// If the assembly is newer then remove the old assemblies types and methods.
-				if (order == 1)
-					DoPruneOldVersions(assembly.Name, hash);
-			}
-			else
-				Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "skipping {0} {1} (it's an older version)", assembly.Name.Name, assembly.Name.Version);
-		}
-		
-		// Return +1 if the specified assembly has a higher version than all the other assemblies,
-		// 0 if it is as high as the other highest assembly, and -1 otherwise.
-		private int DoCompareAssembly(AssemblyNameReference name, string hash)	// theaded
-		{
-			string sql = string.Format(@"
-				SELECT DISTINCT major, minor, build, revision
-					FROM Assemblies
-				WHERE name = '{0}' AND culture = '{1}' AND hash != '{2}'", name.Name, string.IsNullOrEmpty(name.Culture) ? "neutral" : name.Culture.ToLower(), hash);
-			string[][] rows = m_database.QueryRows(sql);
-			
-			int result = -1;
-			if (rows.All(r =>					// note that All returns true if the sequence is empty
-			{
-				Version old = new Version(int.Parse(r[0]), int.Parse(r[1]), int.Parse(r[2]), int.Parse(r[3]));
-				return name.Version > old;
-			}))
-			{
-				result = +1;
-			}
-			else if (rows.All(r =>
-			{
-				Version old = new Version(int.Parse(r[0]), int.Parse(r[1]), int.Parse(r[2]), int.Parse(r[3]));
-				return name.Version >= old;
-			}))
-			{
-				result = 0;
-			}
-			
-			return result;
-		}
-		
-		private void DoPruneOldVersions(AssemblyNameReference name, string hash)	// theaded
-		{
-			m_database.Update("prune old versions of " + name.FullName, () =>
-			{
-				string sql = string.Format(@"
-					SELECT DISTINCT major, minor, build, revision, hash
-						FROM Assemblies
-					WHERE name = '{0}' AND culture = '{1}' AND hash != '{2}'", name.Name, string.IsNullOrEmpty(name.Culture) ? "neutral" : name.Culture.ToLower(), hash);
-				string[][] rows = m_database.QueryRows(sql);
-				
-				foreach (string[] r in rows)
-				{
-					Version rhs = new Version(int.Parse(r[0]), int.Parse(r[1]), int.Parse(r[2]), int.Parse(r[3]));
-					if (name.Version > rhs)
+					catch
 					{
-						Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "pruning {0} {1}.{2}.{3}.{4} (there's a newer version)", name.Name, r[0], r[1], r[2], r[3]);
-						
-						m_database.Update(string.Format(@"
-							DELETE FROM Types 
-								WHERE hash = '{0}'", r[4]));
-						
-						m_database.Update(string.Format(@"
-							DELETE FROM Implements 
-								WHERE hash = '{0}'", r[4]));
-						
-						m_database.Update(string.Format(@"
-							DELETE FROM Methods 
-								WHERE hash = '{0}'", r[4]));
-						
-						m_database.Update(string.Format(@"
-							DELETE FROM Members 
-								WHERE hash = '{0}'", r[4]));
-						
-						m_database.Update(string.Format(@"
-							DELETE FROM Fields 
-								WHERE hash = '{0}'", r[4]));
+						Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "Couldn't resolve {0}", nr.FullName);	// this is fairly common with intermediate build steps when packaging bundles
 					}
 				}
+			}
+		}
+		
+		private void DoTryAddAssembly(string path, ref AssemblyDefinition assembly, ref string id)		// threaded
+		{
+			AssemblyDefinition candidate = AssemblyCache.Load(path, true);
+			string candidateID = null;
+			
+			m_database.Update("update assemblies for " + path, () =>
+			{
+				string culture = string.IsNullOrEmpty(candidate.Name.Culture) ? "neutral" : candidate.Name.Culture.ToLower();
+				string sql = string.Format(@"
+					SELECT version, write_time, assembly
+						FROM Assemblies
+					WHERE name = '{0}' AND culture = '{1}'", candidate.Name.Name, culture);
+				string[][] rows = m_database.QueryRows(sql);
+		
+				Version currentVersion = candidate.Name.Version;
+				long currentTicks = File.GetLastWriteTime(path).Ticks;
+				if (DoCurrentIsNewer(currentVersion, currentTicks, rows))
+				{
+					string oldID = DoFindNewest(rows);
+					if (oldID != null)
+						DoDeleteAssemblyReferences(oldID);
+					
+					sql = @"SELECT COALESCE(MAX(assembly), 1) FROM Assemblies";
+					rows = m_database.QueryRows(sql);
+					candidateID = (rows.Length > 0 ? int.Parse(rows[0][0]) + 1 : 1).ToString();
+					
+					m_database.InsertOrReplace("Assemblies",
+						path,
+						candidate.Name.Name,
+						culture,
+						currentVersion.ToString(),
+						currentTicks.ToString(),
+						candidateID);
+				}
+				else
+				{
+					Log.WriteLine(TraceLevel.Info, "ObjectModel", "Ignoring {0}", candidate);
+					candidate = null;
+				}
 			});
+			
+			assembly = candidate;
+			id = candidateID;
+		}
+		
+		private string DoFindNewest(string[][] rows)
+		{
+			string id = null;
+			
+			if (rows.Length > 0)
+			{
+				Version currentVersion = new Version(rows[0][0]);
+				long currentTicks = long.Parse(rows[0][1]);
+				id = rows[0][2];
+				
+				for (int i = 1; i < rows.Length; ++i)
+				{
+					if (!DoCurrentIsNewer(currentVersion, currentTicks, rows[i][0], rows[i][1]))
+					{
+						currentVersion = new Version(rows[i][0]);
+						currentTicks = long.Parse(rows[i][1]);
+						id = rows[i][2];
+					}
+				}
+			}
+			
+			return id;
+		}
+		
+		private bool DoCurrentIsNewer(Version currentVersion, long currentTicks, string[][] rows)
+		{
+			bool newer = true;
+			
+			for (int i = 0; i < rows.Length && newer; ++i)
+			{
+				newer = DoCurrentIsNewer(currentVersion, currentTicks, rows[i][0], rows[i][1]);
+			}
+			
+			return newer;
+		}
+		
+		private bool DoCurrentIsNewer(Version currentVersion, long currentTicks, string oldVersion, string oldTicks)
+		{
+			bool newer = true;
+			
+			Version version = new Version(oldVersion);
+			if (version > currentVersion)
+			{
+				newer = false;
+			}
+			else if (version == currentVersion)
+			{
+				if (long.Parse(oldTicks) >= currentTicks)
+					newer = false;
+			}
+			
+			return newer;
+		}
+		
+		private void DoParseAssembly(string path, AssemblyDefinition assembly, string id, bool fullParse)		// threaded
+		{
+			m_boss.CallRepeated<IParseAssembly>(i => i.Parse(path, assembly, id, fullParse));
 		}
 		#endregion
 		
@@ -572,7 +552,6 @@ namespace ObjectModel
 		private Thread m_thread;
 		private string m_path;
 		private Boss m_boss;
-		private MD5 m_hasher = MD5.Create();				// md5 isn't cryptographically secure any more, but that's OK: we just want a good hash to minimize duplicate work
 		private Database m_database;
 		private List<string> m_resolvedAssemblies = new List<string>();
 		private List<DirectoryWatcher> m_watchers = new List<DirectoryWatcher>();

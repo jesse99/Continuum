@@ -8,7 +8,7 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="313"/>
+			<integer value="219"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -997,7 +997,7 @@
 								<object class="NSTabViewItem" id="392444326">
 									<string key="NSIdentifier">1</string>
 									<object class="NSView" key="NSView" id="435762994">
-										<reference key="NSNextResponder" ref="103927451"/>
+										<nil key="NSNextResponder"/>
 										<int key="NSvFlags">256</int>
 										<object class="NSMutableArray" key="NSSubviews">
 											<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1252,7 +1252,6 @@
 											</object>
 										</object>
 										<string key="NSFrame">{{1, 1}, {540, 303}}</string>
-										<reference key="NSSuperview" ref="103927451"/>
 									</object>
 									<string key="NSLabel">Text Background</string>
 									<reference key="NSColor" ref="284092931"/>
@@ -1261,7 +1260,7 @@
 								<object class="NSTabViewItem" id="126363962">
 									<string key="NSIdentifier">5</string>
 									<object class="NSView" key="NSView" id="822356911">
-										<nil key="NSNextResponder"/>
+										<reference key="NSNextResponder" ref="103927451"/>
 										<int key="NSvFlags">256</int>
 										<object class="NSMutableArray" key="NSSubviews">
 											<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1437,6 +1436,7 @@
 											</object>
 										</object>
 										<string key="NSFrame">{{1, 1}, {540, 303}}</string>
+										<reference key="NSSuperview" ref="103927451"/>
 									</object>
 									<string key="NSLabel">Open Selection</string>
 									<reference key="NSColor" ref="284092931"/>
@@ -39195,14 +39195,14 @@ AAgAAQABAAEAAQ</bytes>
 									<reference key="NSTabView" ref="103927451"/>
 								</object>
 							</object>
-							<reference key="NSSelectedTabViewItem" ref="392444326"/>
+							<reference key="NSSelectedTabViewItem" ref="126363962"/>
 							<reference key="NSFont" ref="26355228"/>
 							<int key="NSTvFlags">5</int>
 							<bool key="NSAllowTruncatedLabels">YES</bool>
 							<bool key="NSDrawsBackground">YES</bool>
 							<object class="NSMutableArray" key="NSSubviews">
 								<bool key="EncodedWithXMLCoder">YES</bool>
-								<reference ref="435762994"/>
+								<reference ref="822356911"/>
 							</object>
 						</object>
 						<object class="NSScrollView" id="825834731">
@@ -41317,7 +41317,7 @@ AAgAAQABAAEAAQ</bytes>
 						<object class="IBToolTipAttribute" key="NS.object.0">
 							<string key="name">ToolTip</string>
 							<reference key="object" ref="370649698"/>
-							<string key="toolTip">When using Open Selection to open a path paths within an open directory are preferred, then paths within this list, then paths anywhere.</string>
+							<string key="toolTip">When using Open Selection to open a path paths within an open directory are preferred, then the mono root, then paths within this list, then paths anywhere.</string>
 						</object>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>

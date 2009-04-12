@@ -59,17 +59,18 @@ namespace ObjectModel
 						timer.Start();
 					}
 					
-					string name = CsHelpers.GetRealName(selection);
+//					string name = CsHelpers.GetRealName(selection);
 					
 					var objects = m_dirBoss.Get<IObjectModel>();		// full name/file name/kind
-					Tuple3<string, string, int>[] info = objects.FindInfo(name, 2*MaxOpenItems);
+//					Tuple3<string, string, int>[] info = objects.FindInfo(name, 2*MaxOpenItems);
 					
 					// Add open types.
-					DoAddOpenType(items, info, 0.2f);
+					DoAddOpenType(items, objects, selection, 0.2f);
 					
 					// Add open methods.
-					DoAddOpenMethod(items, info, 0.3f);
+					DoAddOpenMethod(items, objects, selection, 0.3f);
 					
+#if false
 					// Add type info commands. 
 					bool addedSep = false;
 					var interfaces = (from i in info where i.Third == 1 select i.First).Distinct();
@@ -120,14 +121,16 @@ namespace ObjectModel
 							s => {DoShowDerived(unsealed); return s;},
 							0.4f));
 					}
-					
+#endif
+
 					if (timer != null)
 						Log.WriteLine(TraceLevel.Verbose, "FindInDatabase", "get took {0:0.000} secs", timer.ElapsedMilliseconds/1000.0);
 				}
 			}
 		}
 		
-		#region Private Methods		
+		#region Private Methods
+#if false
 		private void DoShowShort(IEnumerable<string> fullNames)
 		{
 			Boss boss = Gear.ObjectModel.Create("FileSystem");
@@ -244,106 +247,118 @@ namespace ObjectModel
 				}
 			}
 		}
-		
-		private void DoOpenFile(string fullName, bool isMethod)
+#endif
+
+		private void DoOpenFile(string path, int line)
 		{
 			Boss boss = Gear.ObjectModel.Create("Application");
 			var launcher = boss.Get<ILaunch>();
-			
-			var objects = m_dirBoss.Get<IObjectModel>();
-			SourceLine[] sources = isMethod ? objects.FindMethodSources(fullName) : objects.FindTypeSources(fullName);
-			
-			// If there is only one possibility then open it.
-			if (sources.Length == 1)
-			{
-				launcher.Launch(sources[0].Path, sources[0].Line, -1, 1);
-			}
-			
-			// If there are multiple possibilities that means that two or more assemblies
-			// reference the same method name and file but think the method is at
-			// different locations. So, what we want to do is use the information from
-			// the newest assemblies because that is most likely to be correct. 
-			else
-			{
-				var temp = from c in sources select new {Path = c.Path, Line = c.Line, Time = objects.GetBuildTime(c.AssemblyHash)};			
-				var ordered = from o in temp
-					orderby o.Time descending
-					select o;
-					
-				long time = ordered.First().Time;
-				foreach (var o in ordered)
-				{
-					if (o.Time == time)
-						launcher.Launch(o.Path, o.Line, -1, 1);
-					else
-						break;
-				}
-			}
+			launcher.Launch(path, line, -1, 1);
 		}
 		
 		private const int MaxOpenItems = 20;
 		
-		// full name/file name/kind
-		public void DoAddOpenType(List<TextContextItem> items, Tuple3<string, string, int>[] info, float order)
-		{
-			var pairs = new List<Tuple2<string, string>>();		// full name/file name
-			foreach (var item in info)
+		public void DoAddOpenType(List<TextContextItem> items, IObjectModel objects, string selection, float order)
+		{			
+			// First check the database to see if we can find a type.
+			SourceLine[] sources = objects.FindTypeSources(selection, MaxOpenItems + 1);
+			if (sources.Length == 0)
 			{
-				if (item.Second.Length > 0 && item.Third > 0)
-					if (!pairs.Any(p => p.Second == item.Second))		// would be nice to use linq for this, but I'm not sure how we'd use Distinct for this part
-						pairs.Add(Tuple.Make(item.First, item.Second));
-			}
-			pairs.Sort((lhs, rhs) => lhs.Second.CompareTo(rhs.Second));
-			
-			if (pairs.Count > 0)
-			{
-				items.Add(new TextContextItem(order));
+				// If the database doesn't have the type then see if we can find a local or mono
+				// file with that name (this is helpful because mdb files do not have source files
+				// for enums and interfaces).
+				Boss boss = Gear.ObjectModel.Create("FileSystem");
+				var fs = boss.Get<IFileSystem>();
+				string[] candidates = fs.LocatePath("/" + selection + ".cs");
+				string[] local = DoGetLocalPaths();
 				
-				for (int i = 0; i < Math.Min(pairs.Count, MaxOpenItems); ++i)
+				var defaults = NSUserDefaults.standardUserDefaults();
+				string mono = defaults.objectForKey(NSString.Create("mono_root")).To<NSString>().description();
+				
+				var temp = new List<SourceLine>();
+				foreach (string candidate in candidates)
 				{
-					int k = i;
-					items.Add(new TextContextItem(
-						"Open " + pairs[i].Second,
-						s => {DoOpenFile(pairs[k].First, false); return s;},
-						order));
+					if (Array.Exists(local, l => candidate.StartsWith(l)) || candidate.StartsWith(mono))
+						temp.Add(new SourceLine(Path.GetFileName(candidate), candidate, 1));
+				}
+				sources = temp.ToArray();
+			}
+			
+			// If we found some files then add them to the context menu.
+			if (sources.Length > 0)
+			{
+				Array.Sort(sources, (lhs, rhs) => lhs.Source.CompareTo(rhs.Source));
+				
+				items.Add(new TextContextItem(order));
+				for (int i = 0; i < Math.Min(sources.Length, MaxOpenItems); ++i)
+				{
+					if (sources[i].Path != null)
+					{
+						string title = sources[i].Source;
+						if (sources.Count(s => s.Source == title) > 1)		// see if the name is ambiguous
+						{
+							title = Path.GetFileName(Path.GetDirectoryName(sources[i].Path));
+							title = Path.Combine(title, sources[i].Source);
+						}
+						
+						int k = i;											// need this for the delegate (or the for loop will mutate the value)
+						items.Add(new TextContextItem(
+							"Open " + title,
+							s => {DoOpenFile(sources[k].Path, sources[k].Line); return s;},
+							order));
+					}
 				}
 				
-				if (pairs.Count > MaxOpenItems)
+				if (sources.Length > MaxOpenItems)
 					items.Add(new TextContextItem(Shared.Constants.Ellipsis, null, order));
 			}
 		}
 		
-		// full name/file name/kind
-		public void DoAddOpenMethod(List<TextContextItem> items, Tuple3<string, string, int>[] info, float order)
+		private string[] DoGetLocalPaths()
 		{
-			var names = (from e in info
-				where e.Third == 0
-				orderby e.First
-				select e.First).Distinct();
+			var localPaths = new List<string>();
 			
-			int count = names.Count();
-			if (count > 0)
+			Boss boss = Gear.ObjectModel.Create("DirectoryEditorPlugin");
+			var windows = boss.Get<IWindows>();
+			foreach (Boss b in windows.All())
 			{
-				items.Add(new TextContextItem(order));
+				var editor = b.Get<IDirectoryEditor>();
+				localPaths.Add(editor.Path);
+			}
+			
+			return localPaths.ToArray();
+		}
 				
-				int i = 0;
-				foreach (string name in names)
+		public void DoAddOpenMethod(List<TextContextItem> items, IObjectModel objects, string selection, float order)
+		{
+			SourceLine[] sources = objects.FindMethodSources(selection, MaxOpenItems + 1);
+			if (sources.Length > 0)
+			{
+				Array.Sort(sources, (lhs, rhs) => lhs.Source.CompareTo(rhs.Source));
+				
+				items.Add(new TextContextItem(order));
+				for (int i = 0; i < Math.Min(sources.Length, MaxOpenItems); ++i)
 				{
-					string n = name;
-					string title = "Open " + name;
-					
-					items.Add(new TextContextItem(
-						title,
-						s => {DoOpenFile(n, true); return s;},
-						order,
-						null,
-						DoGetAttrTitle(title)));
-					
-					if (++i >= MaxOpenItems)
-						break;
+					if (sources[i].Path != null)
+					{
+						int k = i;											// need this for the delegate (or the for loop will mutate the value)
+						string title = "Open " + sources[i].Source;
+						title = title.Replace("{", string.Empty);
+						if (title.Contains("})"))
+							title = title.Replace("}", string.Empty);
+						else
+							title = title.Replace("}", ", ");
+						
+						items.Add(new TextContextItem(
+							title,
+							s => {DoOpenFile(sources[k].Path, sources[k].Line); return s;},
+							order,
+							null,
+							DoGetAttrTitle(title)));
+					}
 				}
 				
-				if (count > MaxOpenItems)
+				if (sources.Length > MaxOpenItems)
 					items.Add(new TextContextItem(Shared.Constants.Ellipsis, null, order));
 			}
 		}
@@ -376,7 +391,8 @@ namespace ObjectModel
 			
 			return atitle;
 		}
-		
+
+#if false		
 		private void DoWriteTypes(TextWriter writer, string fullName, TypeAttributes attrs, Tuple2<string, TypeAttributes>[] derived, string indent)
 		{
 			var objects = m_dirBoss.Get<IObjectModel>();
@@ -400,6 +416,7 @@ namespace ObjectModel
 				}
 			}
 		}
+#endif
 		#endregion
 		
 		#region Fields

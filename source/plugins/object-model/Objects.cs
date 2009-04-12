@@ -66,45 +66,87 @@ namespace ObjectModel
 			}
 		}
 		
-		public long GetBuildTime(string hash)
+		// TODO: do we still need this?
+		public long GetBuildTime(int assembly)
 		{
 			string sql = string.Format(@"
 				SELECT DISTINCT write_time
-					FROM AssemblyPaths 
-				WHERE hash = '{0}'", hash);
+					FROM Assemblies 
+				WHERE assembly = '{0}'", assembly);
 			string[][] rows = m_database.QueryRows(sql);
 			
 			return rows.Length > 0 ? long.Parse(rows[0][0]) : 0;
 		}
-	
-		public SourceLine[] FindMethodSources(string fullName)
+		
+		public SourceLine[] FindMethodSources(string name, int max)
 		{
 			string sql = string.Format(@"
-				SELECT file, line, hash
-					FROM Methods 
-				WHERE method = '{0}' AND length(file) > 0 AND line != -1", fullName);
-			string[][] rows = m_database.QueryRows(sql);
+				SELECT Methods.display_text, Methods.file_path, Methods.line
+					FROM Methods, Names
+				WHERE (Names.value = '{0}' OR Names.value = '{2}') AND 
+					Names.name == Methods.name AND
+					Methods.file_path != 0
+				LIMIT {1}", name, max, "get_" + name);
+			var rows = new List<string[]>(m_database.QueryRows(sql));
 			
-			var sources = from r in rows 
-				select new SourceLine(DoGetPath(r[0]), int.Parse(r[1]), r[2]);
-
+			sql = string.Format(@"
+				SELECT Methods.display_text, Methods.file_path, Methods.line
+					FROM Methods, Names, Types
+				WHERE Names.value = '{0}' AND 
+					Methods.kind = 6 AND Names.name == Types.name AND Types.root_name = Methods.declaring_root_name AND
+					Methods.file_path != 0
+				LIMIT {1}", name, max);
+			rows.AddRange(m_database.QueryRows(sql));
+			
+			var sources = from r in rows
+				select new SourceLine(r[0], DoGetPath(r[1]), int.Parse(r[2]));
+			
 			return sources.ToArray();
 		}
 		
-		public SourceLine[] FindTypeSources(string fullName)
+		// TODO: might want to handle names that include generic args
+		public SourceLine[] FindTypeSources(string name, int max)
 		{
-			string name = fullName.GetTypeName();	// we want the unbound generic type
+			name = CsHelpers.GetRealName(name);
+			name = CsHelpers.TrimNamespace(name);
 			
+			// Get all of the file paths/lines for the type name.
 			string sql = string.Format(@"
-				SELECT hash, file, MIN(line)
-					FROM Methods 
-				WHERE (declaring_type = '{0}' OR declaring_type GLOB '{0}<*') AND length(file) > 0 AND line != -1
-				GROUP BY hash, file", name);
+				SELECT Methods.file_path, Methods.line
+					FROM Types, Methods, Names
+				WHERE Names.value = '{0}' AND Names.name == Types.name AND
+					Types.root_name = Methods.declaring_root_name AND
+					Methods.file_path != 0", name);
 			string[][] rows = m_database.QueryRows(sql);
-						
-			var sources = from r in rows 
-				select new SourceLine(DoGetPath(r[1]), int.Parse(r[2]), r[0]);
-
+			
+			// Get the smallest line number for each type.
+			var files = new Dictionary<string, int>();
+			foreach (string[] row in rows)
+			{
+				int line = int.Parse(row[1]);
+				if (line >= 1)
+				{
+					if (files.ContainsKey(row[0]))
+					{
+						if (line < files[row[0]])
+							files[row[0]] = line;
+					}
+					else
+						files.Add(row[0], line);
+				}
+			}
+			
+			// Build a SourceLine array.
+			var sources = new List<SourceLine>();
+			foreach (var entry in files)
+			{
+				string path = DoGetPath(entry.Key);
+				sources.Add(new SourceLine(Path.GetFileName(path), path, entry.Value));
+				
+				if (sources.Count == max)
+					break;
+			}
+			
 			return sources.ToArray();
 		}
 		
@@ -244,26 +286,39 @@ namespace ObjectModel
 		
 		// If users have the mono source, but are using the mono from the installer then
 		// the paths in the gac's mdb files will be wrong. So, we fix them up here.
-		private string DoGetPath(string path)
+		private string DoGetPath(string pathKey)
 		{
-			// Pre-built mono files will look like "/private/tmp/monobuild/build/BUILD/mono-2.2/mcs/class/corlib/System.IO/File.cs"
-			// Mono_root will usually look like "/foo/mono-2.2".
-			if (!File.Exists(path))
+			string path = null;
+			
+			string sql = string.Format(@"
+				SELECT value
+					FROM names
+				WHERE name = {0}", pathKey);
+			string[][] rows = m_database.QueryRows(sql);
+			
+			if (rows.Length > 0)
 			{
-				if (m_monoRoot == null)
-					DoMonoRootChanged("mono_root changed", null);
+				path = rows[0][0];
 				
-				if (m_monoRoot != null)
+				// Pre-built mono files will look like "/private/tmp/monobuild/build/BUILD/mono-2.2/mcs/class/corlib/System.IO/File.cs"
+				// Mono_root will usually look like "/foo/mono-2.2".
+				if (!File.Exists(path))
 				{
-					int i = path.IndexOf("/mcs/");
-					if (i >= 0)
+					if (m_monoRoot == null)
+						DoMonoRootChanged("mono_root changed", null);
+					
+					if (m_monoRoot != null)
 					{
-						string temp = path.Substring(i + 1);
-						path = Path.Combine(m_monoRoot, temp);
+						int i = path.IndexOf("/mcs/");
+						if (i >= 0)
+						{
+							string temp = path.Substring(i + 1);
+							path = Path.Combine(m_monoRoot, temp);
+						}
 					}
 				}
 			}
-			
+						
 			return path;
 		}
 		#endregion
