@@ -243,6 +243,7 @@ namespace ObjectModel
 						name INTEGER UNIQUE NOT NULL
 					)");
 				m_database.InsertOrIgnore("Names", string.Empty, "0");
+				m_database.InsertOrIgnore("Names", "System.Object", "1");
 				
 				m_database.Update(@"
 					CREATE TABLE IF NOT EXISTS Types(

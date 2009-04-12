@@ -29,6 +29,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace ObjectModel
 {
@@ -66,19 +67,55 @@ namespace ObjectModel
 			}
 		}
 		
-		// TODO: do we still need this?
-		public long GetBuildTime(int assembly)
+		public string FindName(int id)
 		{
 			string sql = string.Format(@"
-				SELECT DISTINCT write_time
-					FROM Assemblies 
-				WHERE assembly = '{0}'", assembly);
+				SELECT value
+					FROM Names
+				WHERE name = {0}", id);
 			string[][] rows = m_database.QueryRows(sql);
+			Trace.Assert(rows.Length <= 1, "too many rows");
 			
-			return rows.Length > 0 ? long.Parse(rows[0][0]) : 0;
+			return rows.Length > 0 ? rows[0][0] : null;
 		}
 		
-		public SourceLine[] FindMethodSources(string name, int max)
+		public TypeInfo[] FindTypes(string name, int max)
+		{
+			name = CsHelpers.GetRealName(name);
+			name = CsHelpers.TrimNamespace(name);
+			
+			int gargs = 0;
+			int i = name.IndexOf('`');
+			if (name.Contains("`"))
+			{
+				int k = name.IndexOf('<');
+				gargs = k > 0 ? int.Parse(name.Substring(i + 1, k - i - 1)) : int.Parse(name.Substring(i + 1));
+				name = name.Substring(0, i);
+			}
+			
+			string sql;
+			if (gargs > 0)
+				sql = string.Format(@"
+					SELECT Types.root_name, Types.attributes, Types.assembly, Types.visibility
+						FROM Types, Names
+					WHERE Names.value = '{0}' AND 
+						Names.name == Types.name AND Types.generic_arg_count = {2}
+					LIMIT {1}", name, max, gargs);
+			else
+				sql = string.Format(@"
+					SELECT Types.root_name, Types.attributes, Types.assembly, Types.visibility
+						FROM Types, Names
+					WHERE Names.value = '{0}' AND Names.name == Types.name
+					LIMIT {1}", name, max);
+			string[][] rows = m_database.QueryRows(sql);
+			
+			var types = from r in rows
+				select new TypeInfo(int.Parse(r[2]), int.Parse(r[0]), int.Parse(r[1]), int.Parse(r[3]));
+			
+			return types.ToArray();
+		}
+				
+		public SourceInfo[] FindMethodSources(string name, int max)
 		{
 			string sql = string.Format(@"
 				SELECT Methods.display_text, Methods.file_path, Methods.line
@@ -99,24 +136,31 @@ namespace ObjectModel
 			rows.AddRange(m_database.QueryRows(sql));
 			
 			var sources = from r in rows
-				select new SourceLine(r[0], DoGetPath(r[1]), int.Parse(r[2]));
+				select new SourceInfo(r[0], DoGetPath(r[1]), int.Parse(r[2]));
 			
 			return sources.ToArray();
 		}
 		
-		// TODO: might want to handle names that include generic args
-		public SourceLine[] FindTypeSources(string name, int max)
+		public SourceInfo[] FindTypeSources(int[] rootNames, int max)
 		{
-			name = CsHelpers.GetRealName(name);
-			name = CsHelpers.TrimNamespace(name);
+			Trace.Assert(rootNames.Length > 0);
+			
+			var roots = new StringBuilder();
+			for (int i = 0; i < rootNames.Length; ++i)
+			{
+				roots.AppendFormat("Types.root_name = {0}", rootNames[i]);
+				
+				if (i + 1 < rootNames.Length)
+					roots.Append(" OR ");
+			}
 			
 			// Get all of the file paths/lines for the type name.
 			string sql = string.Format(@"
 				SELECT Methods.file_path, Methods.line
-					FROM Types, Methods, Names
-				WHERE Names.value = '{0}' AND Names.name == Types.name AND
+					FROM Types, Methods
+				WHERE ({0}) AND
 					Types.root_name = Methods.declaring_root_name AND
-					Methods.file_path != 0", name);
+					Methods.file_path != 0", roots.ToString());
 			string[][] rows = m_database.QueryRows(sql);
 			
 			// Get the smallest line number for each type.
@@ -136,12 +180,12 @@ namespace ObjectModel
 				}
 			}
 			
-			// Build a SourceLine array.
-			var sources = new List<SourceLine>();
+			// Build a SourceInfo array.
+			var sources = new List<SourceInfo>();
 			foreach (var entry in files)
 			{
 				string path = DoGetPath(entry.Key);
-				sources.Add(new SourceLine(Path.GetFileName(path), path, entry.Value));
+				sources.Add(new SourceInfo(Path.GetFileName(path), path, entry.Value));
 				
 				if (sources.Count == max)
 					break;
@@ -150,127 +194,77 @@ namespace ObjectModel
 			return sources.ToArray();
 		}
 		
-		public string[] FindTypeAssemblyPaths(string fullName)
-		{
-			string name = fullName.GetTypeName();	// we want the unbound generic type
-			
-			string sql = string.Format(@"
-				SELECT DISTINCT AssemblyPaths.path 
-					FROM Types 
-				INNER JOIN AssemblyPaths 
-					ON Types.hash = AssemblyPaths.hash 
-				WHERE Types.type = '{0}'", name);
-			string[][] rows = m_database.QueryRows(sql);
-			
-			var result = from r in rows select r[0];
-
-			return result.ToArray();
-		}
-		
-		public TypeAttributes[] FindAttributes(string fullName)
-		{			
-			string name = fullName.GetTypeName();	// attributes are attached to the unbound type
-			
-			string sql = string.Format(@"
-				SELECT DISTINCT attributes
-					FROM Types 
-				WHERE type = '{0}' OR type GLOB '{0}<*'", name);
-			string[][] rows = m_database.QueryRows(sql);
-						
-			var attrs = from r in rows select (TypeAttributes) int.Parse(r[0]);
-
-			return attrs.ToArray();
-		}
-
-		public Tuple2<string, TypeAttributes>[] FindImplementors(string fullName)
+		public string FindAssemblyPath(int assembly)
 		{			
 			string sql = string.Format(@"
-				SELECT DISTINCT type,
-					(SELECT attributes FROM Types WHERE type = i.type AND hash = i.hash) attributes
-					FROM Implements i
-				WHERE interface_type = '{0}' OR interface_type GLOB '{0}<*'", fullName);
+				SELECT path 
+					FROM Assemblies 
+				WHERE assembly = {0}", assembly);
 			string[][] rows = m_database.QueryRows(sql);
-			
-			var types = from r in rows select Tuple.Make(r[0], (TypeAttributes) int.Parse(r[1]));
-
-			return types.ToArray();
-		}
-
-		public Tuple2<string, TypeAttributes>[] FindBases(string fullName)
-		{
-			var bases = new List<Tuple2<string, TypeAttributes>>();
-			
-			string name = fullName;
-			while (name != "System.Object")
-			{
-				name = DoFindBase(name);
-				if (name == null)
-					break;
-					
-				bases.Insert(0, Tuple.Make(name, DoFindAttrs(name, (TypeAttributes) uint.MaxValue)));
-			}
-			
-			return bases.ToArray();
-		}
-		
-		public Tuple2<string, TypeAttributes>[] FindDerived(string fullName, int maxResults)
-		{			
-			string sql = string.Format(@"
-				SELECT DISTINCT type, attributes
-					FROM Types
-				WHERE base_type = '{0}' OR base_type GLOB '{0}<*'
-				LIMIT {1}", fullName, maxResults + 1);
-			string[][] rows = m_database.QueryRows(sql);
-			
-			if (rows.Length > maxResults)
-				rows[maxResults] = new string[]{Shared.Constants.Ellipsis, "0"};
-			
-			var types = from r in rows select Tuple.Make(r[0], (TypeAttributes) int.Parse(r[1]));
-
-			return types.ToArray();
-		}
-		
-		public Tuple3<string, string, int>[] FindInfo(string name, int maxResults)
-		{
-			string sql = string.Format(@"
-				SELECT DISTINCT full_name, file_name, kind
-					FROM NameInfo
-				WHERE name = '{0}' OR full_name = '{0}' OR full_name GLOB '{0}<*'
-				LIMIT {1}", name, maxResults);
-			string[][] rows = m_database.QueryRows(sql);
-			
-			var result = from r in rows select Tuple.Make(r[0], r[1], int.Parse(r[2]));
-
-			return result.ToArray();
-		}
-		
-		#region Private Methods		
-		private string DoFindBase(string fullName)
-		{
-			string name = fullName.GetTypeName();	// base classes are attached to the unbound type
-			
-			string sql = string.Format(@"
-				SELECT DISTINCT base_type
-					FROM Types
-				WHERE type = '{0}' OR type GLOB '{0}<*'", name);
-			string[][] rows = m_database.QueryRows(sql);
+			Trace.Assert(rows.Length <= 1, "too many rows");
 			
 			return rows.Length > 0 ? rows[0][0] : null;
 		}
 		
-		private TypeAttributes DoFindAttrs(string fullName, TypeAttributes missing)
+		public TypeInfo[] FindBases(int rootName)
 		{
-			string name = fullName.GetTypeName();	// attributes are attached to the unbound type
+			var types = new List<TypeInfo>();
 			
-			string sql = string.Format(@"
-				SELECT DISTINCT attributes
-					FROM Types
-				WHERE type = '{0}' OR type GLOB '{0}<*'", name);
-			string[][] rows = m_database.QueryRows(sql);
+			while (rootName > 1)
+			{
+				string sql = string.Format(@"
+					SELECT t2.root_name, t2.attributes, t2.assembly, t2.visibility
+						FROM Types t1, Types t2
+					WHERE t1.root_name = {0} AND 
+						t1.base_type_name = t2.root_name", rootName);
+				string[][] rows = m_database.QueryRows(sql);
+				Trace.Assert(rows.Length <= 1, "too many rows");
 			
-			return rows.Length > 0 ? (TypeAttributes) int.Parse(rows[0][0]) : missing;
+				if (rows.Length > 0)
+				{
+					rootName = int.Parse(rows[0][0]);
+					types.Add(new TypeInfo(int.Parse(rows[0][2]), rootName, int.Parse(rows[0][1]), int.Parse(rows[0][3])));
+				}
+				else
+					rootName = -1;
+			}
+			
+			return types.ToArray();
 		}
 		
+		public TypeInfo[] FindDerived(int rootName, int max)
+		{
+			string sql = string.Format(@"
+				SELECT t2.root_name, t2.attributes, t2.assembly, t2.visibility
+					FROM Types t1, Types t2
+				WHERE t1.base_type_name = {0} AND 
+					t1.root_name = t2.root_name
+				LIMIT {1}", rootName, max);
+			string[][] rows = m_database.QueryRows(sql);
+		
+			var types = from r in rows
+				select new TypeInfo(int.Parse(r[2]), int.Parse(r[0]), int.Parse(r[1]), int.Parse(r[3]));
+			
+			return types.ToArray();
+		}
+		
+		public TypeInfo[] FindImplementors(int rootName, int max)
+		{
+			string sql = string.Format(@"
+				SELECT t2.root_name, t2.attributes, t2.assembly, t2.visibility
+					FROM Types t1, Types t2
+				WHERE  t1.interface_type_names GLOB '*{0} *' AND 
+					t1.root_name = t2.root_name
+				LIMIT {1}", rootName, max);
+			string[][] rows = m_database.QueryRows(sql);
+		
+			var types = from r in rows
+				select new TypeInfo(int.Parse(r[2]), int.Parse(r[0]), int.Parse(r[1]), int.Parse(r[3]));
+			
+			return types.ToArray();
+		}
+		
+		#region Private Methods
 		private void DoMonoRootChanged(string name, object value)
 		{
 			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
@@ -318,15 +312,15 @@ namespace ObjectModel
 					}
 				}
 			}
-						
+			
 			return path;
 		}
 		#endregion
 
 		#region Fields 
-		private Boss m_boss; 
+		private Boss m_boss;
 		private Database m_database;
 		private string m_monoRoot;
 		#endregion
-	} 
+	}
 }	

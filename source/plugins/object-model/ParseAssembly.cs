@@ -182,9 +182,7 @@ namespace ObjectModel
 						{
 							DoAddSpecialType(type.Interfaces[i]);
 							interfaces.Append(DoGetName(type.Interfaces[i].FullName));
-							
-							if (i + 1 < type.Interfaces.Count)
-								interfaces.Append(' ');
+							interfaces.Append(' ');
 						}
 					}
 					
@@ -245,9 +243,7 @@ namespace ObjectModel
 					for (int i = 0; i < generic.GenericArguments.Count; ++i)
 					{
 						genericTypes.Append(DoGetName(generic.GenericArguments[i].FullName));
-						
-						if (i + 1 < generic.GenericArguments.Count)
-							genericTypes.Append(' ');
+						genericTypes.Append(' ');
 					}
 				}
 				

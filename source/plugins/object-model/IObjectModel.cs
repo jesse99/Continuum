@@ -22,13 +22,14 @@
 using Gear;
 using Mono.Cecil;
 using Shared;
+using System;
 using System.Collections.Generic;
 
 namespace ObjectModel
 {
-	internal sealed class SourceLine
+	internal sealed class SourceInfo
 	{
-		public SourceLine(string source, string path, int line)
+		public SourceInfo(string source, string path, int line)
 		{
 			Source = source;
 			Path = path;
@@ -45,29 +46,60 @@ namespace ObjectModel
 		public int Line {get; private set;}
 	}
 	
+	internal enum TypeVisibility
+	{
+		Public,
+		Family,
+		Internal,
+		Private,
+	}
+	
+	[Flags]
+	internal enum TypeFlags
+	{
+		Abstract = 0x01,
+		Sealed = 0x02,
+		Interface = 0x04,
+		Value = 0x08,
+		Enum = 0x10,
+	}
+	
+	internal sealed class TypeInfo
+	{
+		public TypeInfo(int assembly, int rootName, int attributes, int visibility)
+		{
+			Assembly = assembly;
+			RootName = rootName;
+			Visibility = (TypeVisibility) visibility;
+			Flags = (TypeFlags) attributes;
+		}
+		
+		public int Assembly {get; private set;}
+		
+		public int RootName {get; private set;}
+		
+		public TypeVisibility Visibility {get; private set;}
+		
+		public TypeFlags Flags {get; private set;}
+	}
+	
 	// Interface used to perform some standard queries against the type database.
 	internal interface IObjectModel : IInterface
 	{
-		// Returns the time in ticks at which the assembly with the specified hash was built.
-		long GetBuildTime(int assembly);
+		string FindName(int id);
 		
-		SourceLine[] FindMethodSources(string name, int max);
+		TypeInfo[] FindTypes(string name, int max);
 		
-		SourceLine[] FindTypeSources(string name, int max);
+		SourceInfo[] FindMethodSources(string name, int max);
 		
-		string[] FindTypeAssemblyPaths(string fullName);
+		SourceInfo[] FindTypeSources(int[] rootNames, int max);
 		
-		TypeAttributes[] FindAttributes(string fullName);
+		string FindAssemblyPath(int assembly);
 		
-		Tuple2<string, TypeAttributes>[] FindImplementors(string fullName);
+		TypeInfo[] FindBases(int rootName);
 		
-		Tuple2<string, TypeAttributes>[] FindBases(string fullName);
+		TypeInfo[] FindDerived(int rootName, int max);
 		
-		// If there are more than maxResults results then the last tuple will be
-		// Ellipsis, 0.
-		Tuple2<string, TypeAttributes>[] FindDerived(string fullName, int maxResults);
-		
-		// Returns the full name, file name, kind of methods/types which are named name.
-//		Tuple3<string, string, int>[] FindInfo(string name, int maxResults);
+		TypeInfo[] FindImplementors(int rootName, int max);
 	}
 }

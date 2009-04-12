@@ -453,7 +453,7 @@ namespace TextEditor
 			if (NSCharacterSet.alphanumericCharacterSet().characterIsMember(ch))
 				return true;
 				
-			if (ch == '_' || ch == ':')
+			if (ch == '_' || ch == ':' || ch == '`')
 				return true;
 				
 			return false;

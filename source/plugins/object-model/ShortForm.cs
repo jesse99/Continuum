@@ -39,7 +39,7 @@ namespace ObjectModel
 			m_writer = writer;
 		}
 		
-		public void Write(string fullName)
+		public void Write(string fullName, int assembly)
 		{
 			TypeDefinition original = null;
 			
@@ -48,7 +48,7 @@ namespace ObjectModel
 			string name = fullName;
 			while (name != null)
 			{
-				TypeDefinition type = DoProcessType(name, name == fullName);
+				TypeDefinition type = DoProcessType(assembly, name, name == fullName);
 				if (type == null)
 					if (name != fullName)
 						break;
@@ -106,7 +106,7 @@ namespace ObjectModel
 					break;
 			}
 			
-			if (type != null && !type.IsInterface)				// interfaces normally have 'abstract'
+			if ((attrs & TypeAttributes.ClassSemanticMask) != TypeAttributes.Interface && !(type != null && type.IsValueType))
 			{
 				if ((attrs & TypeAttributes.Abstract) == TypeAttributes.Abstract)
 					result += "abstract ";
@@ -115,42 +115,32 @@ namespace ObjectModel
 					result += "sealed ";
 			}
 			
-			switch (attrs & TypeAttributes.ClassSemanticMask)
-			{
-				case TypeAttributes.Class:
-					result += "class ";
-					break;
-				
-				case TypeAttributes.Interface:
-					result += "interface ";
-					break;
-				
-				default:
-					Trace.Fail("bad semantics: " + (attrs & TypeAttributes.ClassSemanticMask));
-					break;
-			}
+			if ((attrs & TypeAttributes.ClassSemanticMask) == TypeAttributes.Interface)
+				result += "interface ";
+			else if (type != null && type.IsValueType)
+				result += "struct ";
+			else
+				result += "class ";
 			
 			return result;
 		}
 		
 		#region Private Methods
-		private TypeDefinition DoProcessType(string fullName, bool includeCtors)
+		private TypeDefinition DoProcessType(int assembly, string fullName, bool includeCtors)
 		{
 			TypeDefinition type = null;
 			
 			var objects = m_boss.Get<IObjectModel>();
-			
-			string[] paths = objects.FindTypeAssemblyPaths(fullName);
-			foreach (string path in paths)
+			string path = objects.FindAssemblyPath(assembly);
+			if (path != null)
 			{
-				AssemblyDefinition assembly = AssemblyCache.Load(path, false);
-				type = assembly.MainModule.Types[fullName];
+				AssemblyDefinition asm = AssemblyCache.Load(path, false);
+				type = asm.MainModule.Types[fullName];
 				if (type != null)
 				{
 					if (m_assembly == null)
 						m_assembly = path;
 					DoGetMembers(type, includeCtors);
-					break;
 				}
 			}
 			

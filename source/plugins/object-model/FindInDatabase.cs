@@ -29,6 +29,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace ObjectModel
 {
@@ -58,22 +59,18 @@ namespace ObjectModel
 						timer = new Stopwatch();
 						timer.Start();
 					}
-					
-//					string name = CsHelpers.GetRealName(selection);
-					
-					var objects = m_dirBoss.Get<IObjectModel>();		// full name/file name/kind
-//					Tuple3<string, string, int>[] info = objects.FindInfo(name, 2*MaxOpenItems);
-					
+										
 					// Add open types.
-					DoAddOpenType(items, objects, selection, 0.2f);
+					var objects = m_dirBoss.Get<IObjectModel>();
+					TypeInfo[] types = objects.FindTypes(selection, MaxOpenItems + 1);
+					DoAddOpenType(items, objects, types, selection, 0.2f);
 					
 					// Add open methods.
 					DoAddOpenMethod(items, objects, selection, 0.3f);
 					
-#if false
 					// Add type info commands. 
 					bool addedSep = false;
-					var interfaces = (from i in info where i.Third == 1 select i.First).Distinct();
+					var interfaces = from t in types where (t.Flags & TypeFlags.Interface) != 0 select t;
 					if (interfaces.Any())
 					{
 						items.Add(new TextContextItem(0.4f));
@@ -85,7 +82,6 @@ namespace ObjectModel
 							0.4f));
 					}
 					
-					var types = (from i in info where i.Third >= 1 select i.First).Distinct();
 					if (types.Any())
 					{
 						if (!addedSep)
@@ -98,16 +94,18 @@ namespace ObjectModel
 							"Show Short Form",
 							s => {DoShowShort(types); return s;},
 							0.4f));
-								
-						var types2 = (from i in info where i.Third > 1 select i.First).Distinct();	// note that we can't mutate the types variable or it will screw up our lambda
-						if (types2.Any(t => t != "System.Object"))
+						
+						var baseable = from t in types
+							where t.RootName != 1 && (t.Flags & TypeFlags.Interface) == 0
+							select t;
+						if (baseable.Any())
 							items.Add(new TextContextItem(
 								"Show Base Classes",
-								s => {DoShowBases(types2); return s;},
+								s => {DoShowBases(baseable); return s;},
 								0.4f));
 					}
 					
-					var unsealed = (from i in info where i.Third == 2 select i.First).Distinct();
+					var unsealed = from t in types where (t.Flags & TypeFlags.Sealed) == 0 select t;
 					if (unsealed.Any())
 					{
 						if (!addedSep)
@@ -121,8 +119,7 @@ namespace ObjectModel
 							s => {DoShowDerived(unsealed); return s;},
 							0.4f));
 					}
-#endif
-
+					
 					if (timer != null)
 						Log.WriteLine(TraceLevel.Verbose, "FindInDatabase", "get took {0:0.000} secs", timer.ElapsedMilliseconds/1000.0);
 				}
@@ -130,26 +127,31 @@ namespace ObjectModel
 		}
 		
 		#region Private Methods
-#if false
-		private void DoShowShort(IEnumerable<string> fullNames)
+		private void DoShowShort(TypeInfo[] types)
 		{
 			Boss boss = Gear.ObjectModel.Create("FileSystem");
 			var fs = boss.Get<IFileSystem>();
+			var objects = m_dirBoss.Get<IObjectModel>();
 			
-			foreach (string fullName in fullNames)
+			foreach (TypeInfo type in types)
 			{
+				string fullName = objects.FindName(type.RootName);
+					
 				try
 				{
-					string file = fs.GetTempFile(fullName + " Short Form", ".cs");
-					using (StreamWriter writer = new StreamWriter(file))
+					if (fullName != null)
 					{
-						var form = new ShortForm(m_dirBoss, writer);
-						form.Write(fullName);
+						string file = fs.GetTempFile(fullName + " Short Form", ".cs");
+						using (StreamWriter writer = new StreamWriter(file))
+						{
+							var form = new ShortForm(m_dirBoss, writer);
+							form.Write(fullName, type.Assembly);
+						}
+						
+						boss = Gear.ObjectModel.Create("Application");
+						var launcher = boss.Get<ILaunch>();
+						launcher.Launch(file, -1, -1, 1);
 					}
-					
-					boss = Gear.ObjectModel.Create("Application");
-					var launcher = boss.Get<ILaunch>();
-					launcher.Launch(file, -1, -1, 1);
 				}
 				catch (Exception e)
 				{
@@ -160,29 +162,29 @@ namespace ObjectModel
 			}
 		}
 		
-		private void DoShowBases(IEnumerable<string> fullNames)
+		private void DoShowBases(IEnumerable<TypeInfo> types)
 		{
 			var objects = m_dirBoss.Get<IObjectModel>();
 			
 			Boss boss = Gear.ObjectModel.Create("FileSystem");
 			var fs = boss.Get<IFileSystem>();
 			
-			foreach (string fullName in fullNames)
+			foreach (TypeInfo type in types)
 			{
-				TypeAttributes[] attrs = objects.FindAttributes(fullName);
-				if (attrs.Length > 0)
+				TypeInfo[] bases = objects.FindBases(type.RootName);
+				if (bases.Length > 0)
 				{
-					Tuple2<string, TypeAttributes>[] bases = objects.FindBases(fullName);
+					string fullName = objects.FindName(type.RootName);
 					string file = fs.GetTempFile(fullName + " Base Classes", ".cs");
 					
 					int i = 0;
 					using (StreamWriter writer = new StreamWriter(file))
 					{
-						foreach (var b in bases)
+						foreach (TypeInfo b in bases)
 						{
-							writer.WriteLine("{0}{1}{2}", new string('\t', i++), ShortForm.GetModifiers(null, b.Second), b.First);
+							DoWriteType(writer, i++, b, objects);
 						}
-						writer.WriteLine("{0}{1}{2}", new string('\t', i), ShortForm.GetModifiers(null, attrs[0]), fullName);
+						DoWriteType(writer, i, type, objects);
 					}
 					
 					boss = Gear.ObjectModel.Create("Application");
@@ -194,24 +196,25 @@ namespace ObjectModel
 		
 		private const int MaxDerived = 200;
 		
-		private void DoShowDerived(IEnumerable<string> fullNames)
+		private void DoShowDerived(IEnumerable<TypeInfo> types)
 		{
 			var objects = m_dirBoss.Get<IObjectModel>();
 			
 			Boss boss = Gear.ObjectModel.Create("FileSystem");
 			var fs = boss.Get<IFileSystem>();
 			
-			foreach (string fullName in fullNames)
+			foreach (TypeInfo type in types)
 			{
-				TypeAttributes[] attrs = objects.FindAttributes(fullName);
-				if (attrs.Length > 0)
+				TypeInfo[] derived = objects.FindDerived(type.RootName, MaxDerived);
+				if (derived.Length > 0)
 				{
-					Tuple2<string, TypeAttributes>[] derived = objects.FindDerived(fullName, MaxDerived + 1);
-					
+					string fullName = objects.FindName(type.RootName);
 					string file = fs.GetTempFile(fullName + " Derived Classes", ".cs");
+					
+					int count = 0;
 					using (StreamWriter writer = new StreamWriter(file))
 					{
-						DoWriteTypes(writer, fullName, attrs[0], derived, string.Empty);
+						DoWriteTypes(writer, type, derived, 0, ref count);
 					}
 					
 					boss = Gear.ObjectModel.Create("Application");
@@ -221,24 +224,25 @@ namespace ObjectModel
 			}
 		}
 		
-		private void DoShowImplementors(IEnumerable<string> fullNames)
+		private void DoShowImplementors(IEnumerable<TypeInfo> types)
 		{
 			Boss boss = Gear.ObjectModel.Create("FileSystem");
 			var fs = boss.Get<IFileSystem>();
 			
 			var objects = m_dirBoss.Get<IObjectModel>();
 			
-			foreach (string fullName in fullNames)
+			foreach (TypeInfo type in types)
 			{
-				TypeAttributes[] attrs = objects.FindAttributes(fullName);
-				if (attrs.Length > 0)
+				TypeInfo[] derived = objects.FindImplementors(type.RootName, MaxDerived);
+				if (derived.Length > 0)
 				{
-					Tuple2<string, TypeAttributes>[] derived = objects.FindImplementors(fullName);
-					
+					string fullName = objects.FindName(type.RootName);
 					string file = fs.GetTempFile(fullName + " Implementors", ".cs");
+					
+					int count = 0;
 					using (StreamWriter writer = new StreamWriter(file))
 					{
-						DoWriteTypes(writer, fullName, attrs[0], derived, string.Empty);
+						DoWriteTypes(writer, type, derived, 0, ref count);
 					}
 					
 					boss = Gear.ObjectModel.Create("Application");
@@ -247,8 +251,7 @@ namespace ObjectModel
 				}
 			}
 		}
-#endif
-
+		
 		private void DoOpenFile(string path, int line)
 		{
 			Boss boss = Gear.ObjectModel.Create("Application");
@@ -258,59 +261,63 @@ namespace ObjectModel
 		
 		private const int MaxOpenItems = 20;
 		
-		public void DoAddOpenType(List<TextContextItem> items, IObjectModel objects, string selection, float order)
-		{			
+		public void DoAddOpenType(List<TextContextItem> items, IObjectModel objects, TypeInfo[] types, string selection, float order)
+		{
 			// First check the database to see if we can find a type.
-			SourceLine[] sources = objects.FindTypeSources(selection, MaxOpenItems + 1);
-			if (sources.Length == 0)
+			int[] roots = (from t in types select t.RootName).ToArray();
+			if (roots.Length > 0)
 			{
-				// If the database doesn't have the type then see if we can find a local or mono
-				// file with that name (this is helpful because mdb files do not have source files
-				// for enums and interfaces).
-				Boss boss = Gear.ObjectModel.Create("FileSystem");
-				var fs = boss.Get<IFileSystem>();
-				string[] candidates = fs.LocatePath("/" + selection + ".cs");
-				string[] local = DoGetLocalPaths();
-				
-				var defaults = NSUserDefaults.standardUserDefaults();
-				string mono = defaults.objectForKey(NSString.Create("mono_root")).To<NSString>().description();
-				
-				var temp = new List<SourceLine>();
-				foreach (string candidate in candidates)
+				SourceInfo[] sources = objects.FindTypeSources(roots, MaxOpenItems + 1);
+				if (sources.Length == 0)
 				{
-					if (Array.Exists(local, l => candidate.StartsWith(l)) || candidate.StartsWith(mono))
-						temp.Add(new SourceLine(Path.GetFileName(candidate), candidate, 1));
-				}
-				sources = temp.ToArray();
-			}
-			
-			// If we found some files then add them to the context menu.
-			if (sources.Length > 0)
-			{
-				Array.Sort(sources, (lhs, rhs) => lhs.Source.CompareTo(rhs.Source));
-				
-				items.Add(new TextContextItem(order));
-				for (int i = 0; i < Math.Min(sources.Length, MaxOpenItems); ++i)
-				{
-					if (sources[i].Path != null)
+					// If the database doesn't have the type then see if we can find a local or mono
+					// file with that name (this is helpful because mdb files do not have source files
+					// for enums and interfaces).
+					Boss boss = Gear.ObjectModel.Create("FileSystem");
+					var fs = boss.Get<IFileSystem>();
+					string[] candidates = fs.LocatePath("/" + selection + ".cs");
+					string[] local = DoGetLocalPaths();
+					
+					var defaults = NSUserDefaults.standardUserDefaults();
+					string mono = defaults.objectForKey(NSString.Create("mono_root")).To<NSString>().description();
+					
+					var temp = new List<SourceInfo>();
+					foreach (string candidate in candidates)
 					{
-						string title = sources[i].Source;
-						if (sources.Count(s => s.Source == title) > 1)		// see if the name is ambiguous
-						{
-							title = Path.GetFileName(Path.GetDirectoryName(sources[i].Path));
-							title = Path.Combine(title, sources[i].Source);
-						}
-						
-						int k = i;											// need this for the delegate (or the for loop will mutate the value)
-						items.Add(new TextContextItem(
-							"Open " + title,
-							s => {DoOpenFile(sources[k].Path, sources[k].Line); return s;},
-							order));
+						if (Array.Exists(local, l => candidate.StartsWith(l)) || candidate.StartsWith(mono))
+							temp.Add(new SourceInfo(Path.GetFileName(candidate), candidate, 1));
 					}
+					sources = temp.ToArray();
 				}
 				
-				if (sources.Length > MaxOpenItems)
-					items.Add(new TextContextItem(Shared.Constants.Ellipsis, null, order));
+				// If we found some files then add them to the context menu.
+				if (sources.Length > 0)
+				{
+					Array.Sort(sources, (lhs, rhs) => lhs.Source.CompareTo(rhs.Source));
+					
+					items.Add(new TextContextItem(order));
+					for (int i = 0; i < Math.Min(sources.Length, MaxOpenItems); ++i)
+					{
+						if (sources[i].Path != null)
+						{
+							string title = sources[i].Source;
+							if (sources.Count(s => s.Source == title) > 1)		// see if the name is ambiguous
+							{
+								title = Path.GetFileName(Path.GetDirectoryName(sources[i].Path));
+								title = Path.Combine(title, sources[i].Source);
+							}
+							
+							int k = i;											// need this for the delegate (or the for loop will mutate the value)
+							items.Add(new TextContextItem(
+								"Open " + title,
+								s => {DoOpenFile(sources[k].Path, sources[k].Line); return s;},
+								order));
+						}
+					}
+					
+					if (sources.Length > MaxOpenItems)
+						items.Add(new TextContextItem(Shared.Constants.Ellipsis, null, order));
+				}
 			}
 		}
 		
@@ -331,7 +338,7 @@ namespace ObjectModel
 				
 		public void DoAddOpenMethod(List<TextContextItem> items, IObjectModel objects, string selection, float order)
 		{
-			SourceLine[] sources = objects.FindMethodSources(selection, MaxOpenItems + 1);
+			SourceInfo[] sources = objects.FindMethodSources(selection, MaxOpenItems + 1);
 			if (sources.Length > 0)
 			{
 				Array.Sort(sources, (lhs, rhs) => lhs.Source.CompareTo(rhs.Source));
@@ -391,32 +398,85 @@ namespace ObjectModel
 			
 			return atitle;
 		}
-
-#if false		
-		private void DoWriteTypes(TextWriter writer, string fullName, TypeAttributes attrs, Tuple2<string, TypeAttributes>[] derived, string indent)
+		
+		private void DoWriteTypes(TextWriter writer, TypeInfo parent, TypeInfo[] derived, int indent, ref int count)
 		{
-			var objects = m_dirBoss.Get<IObjectModel>();
+			var objects = m_dirBoss.Get<IObjectModel>();			
+			DoWriteType(writer, indent, parent, objects);
 			
-			writer.WriteLine("{0}{1}{2}", indent, ShortForm.GetModifiers(null, attrs), fullName);
-			foreach (var entry in derived)
+			if (++count == MaxDerived)
 			{
-				if (entry.First == Shared.Constants.Ellipsis)
+				writer.WriteLine("	{0}{1}", new string('\t', indent), Shared.Constants.Ellipsis);
+			}
+			else
+			{
+				foreach (TypeInfo d in derived)
 				{
-					writer.WriteLine("	{0}{1}", indent, Shared.Constants.Ellipsis);
-				}
-				else if ((entry.Second & TypeAttributes.ClassSemanticMask) == TypeAttributes.Interface)
-				{
-					var temp = objects.FindImplementors(entry.First);
-					DoWriteTypes(writer, entry.First, entry.Second, temp, indent + "\t");
-				}
-				else
-				{
-					var temp = objects.FindDerived(entry.First, MaxDerived);
-					DoWriteTypes(writer, entry.First, entry.Second, temp, indent + "\t");
+					if ((d.Flags & TypeFlags.Interface) != 0)
+					{
+						TypeInfo[] children = objects.FindImplementors(d.RootName, MaxDerived);
+						DoWriteTypes(writer, d, children, indent + 1, ref count);
+					}
+					else
+					{
+						TypeInfo[] children = objects.FindDerived(d.RootName, MaxDerived);
+						DoWriteTypes(writer, d, children, indent + 1, ref count);
+					}
 				}
 			}
 		}
-#endif
+		
+		private void DoWriteType(TextWriter writer, int indent, TypeInfo info, IObjectModel objects)
+		{
+			string fullName = objects.FindName(info.RootName);
+			writer.WriteLine("{0}{1}{2}", new string('\t', indent), DoGetModifiers(info), fullName);
+		}
+		
+		private string DoGetModifiers(TypeInfo info)
+		{
+			var builder = new StringBuilder();
+			
+			switch (info.Visibility)
+			{
+				case TypeVisibility.Public:
+					builder.Append("public ");
+					break;
+					
+				case TypeVisibility.Family:
+					builder.Append("protected ");
+					break;
+					
+				case TypeVisibility.Internal:
+					builder.Append("internal ");
+					break;
+					
+				case TypeVisibility.Private:
+					builder.Append("private ");
+					break;
+					
+				default:
+					Trace.Fail("bad vis");
+					break;
+			}
+			
+			if ((info.Flags & TypeFlags.Interface) == 0)
+			{
+				if ((info.Flags & TypeFlags.Abstract) != 0)
+					builder.Append("abstract ");
+				
+				if ((info.Flags & TypeFlags.Sealed) != 0)
+					builder.Append("sealed ");
+			}
+			
+			if ((info.Flags & TypeFlags.Interface) != 0)
+				builder.Append("interface ");
+			else if ((info.Flags & TypeFlags.Value) == 0)
+				builder.Append("class ");
+			else
+				builder.Append("struct ");
+			
+			return builder.ToString();
+		}
 		#endregion
 		
 		#region Fields

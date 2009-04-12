@@ -131,7 +131,6 @@ window		menu			base line
 	- get the queries working (try to do them one at a time and check that they are
 	  legit)
 	- update all the db queries
-		Objects.cs
 		TargetDatabase.cs
 	- auto-complete should treat extension methods as non-static
 	- prune should check to see if a reparse is needed
