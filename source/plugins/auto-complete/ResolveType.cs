@@ -51,7 +51,7 @@ namespace AutoComplete
 			if (m_type == null)
 				DoHandleDatabaseType(globals, type);
 			
-			return m_type != null
+			return m_fullName != null || m_type != null
 				? new ResolvedTarget(m_fullName, m_type, isInstance, isStatic)
 				: null;
 		}
@@ -151,8 +151,11 @@ namespace AutoComplete
 		{
 			string fullName = DoFindFullName(globals, target);
 			
-			m_fullName = DoGetTypeName(fullName);
-			m_type = DoFindLocalType(globals, m_fullName);
+			if (fullName != null)
+			{
+				m_fullName = DoGetTypeName(fullName);
+				m_type = DoFindLocalType(globals, m_fullName);
+			}
 		}
 		
 		private string DoGetTypeName(string fullName)
@@ -214,6 +217,9 @@ namespace AutoComplete
 			
 			target = CsHelpers.GetRealName(target);
 			
+			if (m_database.HasType(target))
+				fullName = target;
+				
 			for (int i = 0; i < globals.Namespaces.Length && fullName == null; ++i)
 			{
 				string candidate = globals.Namespaces[i].Name + "." + target;
@@ -228,8 +234,8 @@ namespace AutoComplete
 					fullName = candidate;
 			}
 			
-			if (fullName == null)
-				fullName = target;
+			if (fullName != null)
+				Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "ResolveType is using full name {0}", fullName);
 			
 			return fullName;
 		}

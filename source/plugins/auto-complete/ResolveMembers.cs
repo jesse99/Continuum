@@ -28,7 +28,7 @@ using System.Linq;
 using System.Text;
 
 namespace AutoComplete
-{
+{	
 	// Resolves a target into a list of member names which may be used on it.
 	internal sealed class ResolveMembers
 	{
@@ -42,45 +42,61 @@ namespace AutoComplete
 			var members = new List<Member>();
 			
 			var types = new List<CsType>();
-			var ids = new List<TypeId>();
-			TypeId[] allNames = DoGetBases(target.TypeName, types, ids);
+			var baseNames = new List<string>();
+			var interfaceNames = new List<string>();
+			string[] allNames = DoGetBases(target.TypeName, types, baseNames, interfaceNames);
 			
 			foreach (CsType type in types)
 			{
 				DoGetParsedMembers(type, target.IsInstance, target.IsStatic, members, type.FullName == target.TypeName);
 			}
 			
-			members.AddIfMissingRange(m_database.GetMembers(ids.ToArray(), target.IsInstance, target.IsStatic));
+			// Note that we need to make two GetMembers queries to ensure that interface
+			// methods are not used in place of base methods (this gives us better results
+			// when the context menu is used to filter out methods associated with types).
+			members.AddIfMissingRange(m_database.GetFields(baseNames.ToArray(), target.IsInstance, target.IsStatic));
+			members.AddIfMissingRange(m_database.GetMembers(baseNames.ToArray(), target.IsInstance, target.IsStatic));
+			members.AddIfMissingRange(m_database.GetMembers(interfaceNames.ToArray(), target.IsInstance, target.IsStatic));
 			
 			if (target.IsInstance)
-				members.AddIfMissingRange(m_database.GetExtensionMethods(allNames));
+			{
+				var namespaces = new List<string>();
+				
+				for (int i = 0; i < globals.Namespaces.Length; ++i)
+					namespaces.Add(globals.Namespaces[i].Name);
+				
+				for (int i = 0; i < globals.Uses.Length; ++i)
+					namespaces.Add(globals.Uses[i].Namespace);
+				
+				members.AddIfMissingRange(m_database.GetExtensionMethods(target.TypeName, allNames, namespaces.ToArray()));
+			}
 			
 			return members.ToArray();
 		}
 		
 		#region Private Methods
-		private TypeId[] DoGetBases(string typeName, List<CsType> types, List<TypeId> ids)
+		private string[] DoGetBases(string typeName, List<CsType> types, List<string> baseNames, List<string> interfaceNames)
 		{
 			Boss boss = ObjectModel.Create("CsParser");
 			var parses = boss.Get<IParses>();
 			
-			var allNames = new List<TypeId>();
-			allNames.Add(new TypeId(typeName, 0));
+			var allNames = new List<string>();
+			allNames.Add(typeName);
 			
 			int i = 0;
 			while (i < allNames.Count)
 			{
-				TypeId name = allNames[i];
+				string name = allNames[i++];
 				
 				// Note that we want to use CsType instead of the database where possible
 				// because it should be more up to date.
-				CsType type = parses.FindType(name.FullName);
+				CsType type = parses.FindType(name);
 				if (type != null)
 					types.Add(type);
 				
 				if (type is CsEnum)
 				{
-					name = new TypeId("System.Enum", 0);
+					name = "System.Enum";
 					type = null;
 				}
 				
@@ -88,11 +104,15 @@ namespace AutoComplete
 				// of the members so we need to include both the parsed and database
 				// info to ensure we get everything.
 				if (type == null || (type.Modifiers & MemberModifiers.Partial) != 0)
-					ids.Add(name);
+					if (CsHelpers.IsInterface(name))
+						interfaceNames.AddIfMissing(name);
+					else
+						baseNames.AddIfMissing(name);
 					
 				// Note that we don't use CsType to get bases because it's difficult to get the
 				// full names for them. Note also that interface names can be repeated.
-				allNames.AddIfMissingRange(m_database.GetBases(name));
+				m_database.GetBases(name, baseNames, interfaceNames, allNames);
+				Contract.Assert(allNames.Count < 1000);
 			}
 			
 			return allNames.ToArray();
@@ -144,7 +164,7 @@ namespace AutoComplete
 							var anames = from p in method.Parameters select p.Name;
 							string text = method.Name + "(" + string.Join(", ", (from p in method.Parameters select p.Type + " " + p.Name).ToArray()) + ")";
 							
-							members.AddIfMissing(new Member(text, anames.ToArray(), method.ReturnType, type.FullName));
+							members.AddIfMissing(new Member(text, anames.Count(), method.ReturnType, type.FullName));
 						}
 					}
 				}

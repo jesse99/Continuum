@@ -283,14 +283,19 @@ namespace AutoComplete
 		
 		private NSAttributedString DoBuildString()
 		{
+			NSMutableAttributedString str;
+			
 			Member member = m_members[m_index];
 			
+			str = NSMutableAttributedString.Create(member.Text);
+
+#if false
 			string rtype = CsHelpers.GetAliasedName(member.Type);
 			rtype = CsHelpers.TrimNamespace(rtype);
 			rtype = CsHelpers.TrimGeneric(rtype);
 			string text = rtype + " " + member.Text;
 			
-			var str = NSMutableAttributedString.Create(text);
+			str = NSMutableAttributedString.Create(text);
 			for (int j = 0; j < member.ArgNames.Length; ++j)
 			{
 				if (j == m_currentArg)
@@ -309,17 +314,20 @@ namespace AutoComplete
 					DoHilite(str, k, member.ArgNames[j].Length);
 				}
 			}
+#endif
 			
 			return str;
 		}
 		
 		// Not sure if it would be better to use but NSForegroundColorAttributeName
 		// isn't working for some reason.
+#if false
 		private void DoHilite(NSMutableAttributedString str, int index, int length)
 		{
 			NSRange range = new NSRange(index, length);
 			str.addAttribute_value_range(Externs.NSStrokeWidthAttributeName, NSNumber.Create(-4.0f), range);
 		}
+#endif
 		#endregion
 		
 		#region Private Types

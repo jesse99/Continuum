@@ -291,7 +291,7 @@ namespace AutoComplete
 			{
 				matches = member.Text == name;
 			}
-			else if (member.ArgNames.Length == numArgs)
+			else if (member.Arity == numArgs)
 			{
 				matches = member.Name == name;
 			}

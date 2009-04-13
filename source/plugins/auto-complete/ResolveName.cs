@@ -51,6 +51,8 @@ namespace AutoComplete
 		// May return null.
 		public ResolvedTarget Resolve(string name)
 		{
+			Log.WriteLine("AutoComplete", "resolving name: {0}", name);
+
 			// this.
 			ResolvedTarget result = DoHandleThis(name);
 			
@@ -92,6 +94,9 @@ namespace AutoComplete
 						Log.WriteLine("AutoComplete", "found string literal: {0}", result.TypeName);
 				}
 			}
+			
+			if (result == null)
+				Log.WriteLine("AutoComplete", "failed to resolve name: {0}", name);
 			
 			return result;
 		}

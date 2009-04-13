@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 
 namespace AutoComplete
 {
@@ -37,46 +38,52 @@ namespace AutoComplete
 		
 		public bool HasType(string typeName)
 		{
-			int id = DoFindId(new TypeId(typeName, 0));
+			string sql = string.Format(@"
+				SELECT name
+					FROM Types 
+				WHERE root_name = '{0}'", typeName);
+			string[][] rows = m_database.QueryRows(sql);
+			Contract.Assert(rows.Length <= 1, "too many rows");
 			
-			return id > 0;
+			return rows.Length > 0;
 		}
 		
-		public TypeId[] GetBases(TypeId type)
+		public void GetBases(string typeName, List<string> baseNames, List<string> interfaceNames, List<string> allNames)
 		{
-#if false
-			int id = DoFindId(type);
-
 			string sql = string.Format(@"
 				SELECT base_type_name, interface_type_names
 					FROM Types 
 				WHERE root_name = '{0}'", typeName);
-			string[][] rows = m_database.id(sql);
-			Trace.Assert(rows.Length <= 1, "too many rows");
-			
-			var types = new List<TypeId>();
+			string[][] rows = m_database.QueryRows(sql);
+			Contract.Assert(rows.Length <= 1, "too many rows");
 			
 			if (rows.Length > 0)
 			{
-				if (rows[0][0] != "0")
-					types.Add(int.Parse(rows[0][0]));
+				if (rows[0][0].Length > 0)
+				{
+					baseNames.AddIfMissing(rows[0][0]);
+					allNames.AddIfMissing(rows[0][0]);
+				}
 				
-				string[] names = rows[0][1].Split(new char[]{' '}, StringSplitOptions.RemoveEmptyEntries);
+				string[] names = rows[0][1].Split(new char[]{':'}, StringSplitOptions.RemoveEmptyEntries);
 				foreach (string name in names)
 				{
-					types.AddIfMissing(int.Parse(name));
+					interfaceNames.AddIfMissing(name);
+					allNames.AddIfMissing(name);
+				}
+				
+				if (typeName == "System.Array")
+				{
+					interfaceNames.AddIfMissing("System.Collections.Generic.IEnumerable`1");
+					allNames.AddIfMissing("System.Collections.Generic.IEnumerable`1");
 				}
 			}
-			
-			return types.ToArray();
-#endif
-			return null;
 		}
 		
 #if false
 		public string FindAssembly(string fullName)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
+			Contract.Requires(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
 			
 			string sql = string.Format(@"
 				SELECT hash
@@ -91,9 +98,9 @@ namespace AutoComplete
 #if false
 		public Tuple2<string, string>[] FindMethodsWithPrefix(string fullName, string prefix, int numArgs, bool includeInstanceMembers)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
-			Trace.Assert(!string.IsNullOrEmpty(prefix), "prefix is null or empty");
-			Trace.Assert(numArgs >= 0, "numArgs is negative");
+			Contract.Requires(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
+			Contract.Requires(!string.IsNullOrEmpty(prefix), "prefix is null or empty");
+			Contract.Requires(numArgs >= 0, "numArgs is negative");
 			
 			string sql = string.Format(@"
 				SELECT return_type, arg_names, name, attributes
@@ -109,29 +116,39 @@ namespace AutoComplete
 		}
 #endif
 		
-#if false
-		public Tuple2<string, string>[] FindFields(string fullName, bool includeInstanceMembers)
+		public Member[] GetFields(string[] typeNames, bool instanceCall, bool isStaticCall)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
+			var members = new List<Member>();
 			
-			var fields = new List<Tuple2<string, string>>();
-			
-			string sql = string.Format(@"
-				SELECT name, type, attributes
-					FROM Fields 
-				WHERE declaring_type = '{0}'", fullName);
-			string[][] rows = m_database.QueryRows(sql);
-			
-			for (int i = 0; i < rows.Length; ++i)
+			var types = new StringBuilder();
+			for (int i = 0; i < typeNames.Length; ++i)
 			{
-				if ((ushort.Parse(rows[i][2]) & 1) == 0)				// no private base fields (declaring type fields will come from the parser)
-					if (DoIncludeField(ushort.Parse(rows[i][2]), includeInstanceMembers))
-						fields.Add(Tuple.Make(rows[i][1], rows[i][0]));
+				types.AppendFormat("declaring_root_name = '{0}'", typeNames[i]);
+				
+				if (i + 1 < typeNames.Length)
+					types.Append(" OR ");
 			}
 			
-			return fields.ToArray();
+			string sql;
+			if (instanceCall && isStaticCall)
+				sql = string.Format(@"
+					SELECT name, type_name, declaring_root_name
+						FROM Fields 
+					WHERE ({0}) AND access < 3", types.ToString());	// we exclude all private fields (note that this won't affect this methods since the parser will pick up those)
+			else
+				sql = string.Format(@"
+					SELECT name, type_name, declaring_root_name
+						FROM Fields 
+					WHERE ({0}) AND static = {1} AND access < 3", types.ToString(), isStaticCall ? "1" : "0");
+			
+			string[][] rows = m_database.QueryRows(sql);
+			foreach (string[] r in rows)
+			{
+				members.AddIfMissing(new Member(r[0], r[1], r[2]));
+			}
+			
+			return members.ToArray();
 		}
-#endif
 		
 #if false
 		public string FindBaseType(string fullName)
@@ -167,96 +184,94 @@ namespace AutoComplete
 		}
 #endif
 		
-		public Member[] GetMembers(TypeId[] types, bool instanceCall, bool isStaticCall)
+		public Member[] GetMembers(string[] typeNames, bool instanceCall, bool isStaticCall)
 		{
 			var members = new List<Member>();
-
-#if false
+			
+			var types = new StringBuilder();
+			for (int i = 0; i < typeNames.Length; ++i)
+			{
+				types.AppendFormat("declaring_root_name = '{0}'", typeNames[i]);
+				
+				if (i + 1 < typeNames.Length)
+					types.Append(" OR ");
+			}
+			
 			string sql;
 			if (instanceCall && isStaticCall)
 				sql = string.Format(@"
-					SELECT text, return_type, arg_names, namespace
-						FROM Members 
-					WHERE type = '{0}'", fullName);
+					SELECT display_text, return_type_name, params_count, declaring_root_name
+						FROM Methods 
+					WHERE kind <= 1 AND ({0})", types.ToString());
 			else
 				sql = string.Format(@"
-					SELECT text, return_type, arg_names, namespace
-						FROM Members 
-					WHERE type = '{0}' AND is_static = '{1}'", fullName, isStaticCall ? "1" : "0");
+					SELECT display_text, return_type_name, params_count, declaring_root_name
+						FROM Methods 
+					WHERE static = {1} AND kind <= 1 AND ({0})", types.ToString(), isStaticCall ? "1" : "0");
 			
 			string[][] rows = m_database.QueryRows(sql);
 			foreach (string[] r in rows)
 			{
-				string[] names = r[2].Split(new char[]{':'}, StringSplitOptions.RemoveEmptyEntries);
-				if (r[3].Length == 0)
-				{
-					members.AddIfMissing(new Member(r[0], names, r[1], fullName));
-				}
-				else if (DoIsValidExtensionMethod(r[3], globals))
-				{
-					string[] last = new string[names.Length - 1];
-					Array.Copy(names, 1, last, 0, last.Length);
-					
-					Member member = new Member(r[0], last, r[1], fullName);
-					member.IsExtensionMethod = true;
-					members.AddIfMissing(member);
-				}
+				string text = r[0];
+				int j = text.IndexOf("::");
+				text = text.Substring(j + 2);
+				
+				members.AddIfMissing(new Member(text, int.Parse(r[2]), r[1], r[3]));
 			}
-#endif
-
+			
 			return members.ToArray();
 		}
 		
-		public Member[] GetExtensionMethods(TypeId[] types)
+		public Member[] GetExtensionMethods(string targetType, string[] typeNames, string[] namespaces)
 		{
 			var members = new List<Member>();
 			
-#if false
+			var types = new StringBuilder();
+			for (int i = 0; i < typeNames.Length; ++i)
+			{
+				types.AppendFormat("Methods.extend_type_name = '{0}'", typeNames[i]);
+				
+				if (i + 1 < typeNames.Length)
+					types.Append(" OR ");
+			}
+			
+			var ns = new StringBuilder();
+			for (int i = 0; i < namespaces.Length; ++i)
+			{
+				ns.AppendFormat("Types.namespace = '{0}'", namespaces[i]);
+				
+				if (i + 1 < namespaces.Length)
+					ns.Append(" OR ");
+			}
+			
 			string sql = string.Format(@"
-				SELECT text, return_type, arg_names, namespace
-					FROM Members 
-				WHERE type = '{0}' AND length(namespace) > 0", fullName);
+				SELECT Methods.display_text, Methods.return_type_name, Methods.params_count
+					FROM Methods, Types
+				WHERE Methods.static = 1 AND Methods.kind = 8 AND
+					Methods.declaring_root_name = Types.root_name AND
+					({0}) AND ({1})", types.ToString(), ns.ToString());
 			
 			string[][] rows = m_database.QueryRows(sql);
 			foreach (string[] r in rows)
 			{
-				if (DoIsValidExtensionMethod(r[3], globals))
-				{
-					string[] names = r[2].Split(new char[]{':'}, StringSplitOptions.RemoveEmptyEntries);
-					
-					string[] last = new string[names.Length - 1];
-					Array.Copy(names, 1, last, 0, last.Length);
-					
-					Member member = new Member(r[0], last, r[1], fullName);
-					member.IsExtensionMethod = true;
-					members.AddIfMissing(member);
-				}
+				string text = r[0];
+				int j = text.IndexOf("::");
+				text = text.Substring(j + 2);
+				
+				j = text.IndexOf('{');
+				int k = text.IndexOf('}');
+				text = text.Substring(0, j) + text.Substring(k + 1);
+				
+				Member member = new Member(text, int.Parse(r[2]) - 1, r[1], targetType);
+				member.IsExtensionMethod = true;
+				
+				members.AddIfMissing(member);
 			}
-#endif
 			
 			return members.ToArray();
 		}
 		
 		#region Private Methods
-		private int DoFindId(TypeId type)
-		{
-			int id = type.TypeName;
-			
-			if (id < 1)
-			{
-				string sql = string.Format(@"
-					SELECT name
-						FROM Names
-					WHERE value = {0}", type.FullName.Replace("'", "''"));
-				string[][] rows = m_database.QueryRows(sql);
-				Trace.Assert(rows.Length <= 1, "too many rows");
-				
-				id = rows.Length > 0 ? int.Parse(rows[0][0]) : 0;
-			}
-			
-			return id;
-		}
-		
 #if false
 		private bool DoIsValidExtensionMethod(string ns, CsGlobalNamespace globals)
 		{

@@ -250,7 +250,7 @@ namespace AutoComplete
 				int result = lhs.Name.CompareTo(rhs.Name);
 				
 				if (result == 0)
-					result = lhs.ArgNames.Length.CompareTo(rhs.ArgNames.Length);
+					result = lhs.Arity.CompareTo(rhs.Arity);
 					
 				if (result == 0)
 					result = lhs.Text.CompareTo(rhs.Text);
@@ -319,7 +319,7 @@ namespace AutoComplete
 				m_text = null;
 				window().windowController().Call("hide");
 				
-				if (!prefixOnly && m_members[row].ArgNames.Length > 0)
+				if (!prefixOnly && m_members[row].Arity > 0)
 				{
 					range.length = text.Length;
 					ITextAnnotation annotation = m_editor.GetAnnotation(range);
@@ -348,7 +348,7 @@ namespace AutoComplete
 			{
 				int i = m_members[row].Text.IndexOf('(');
 				if (i > 0)
-					if (m_members[row].ArgNames.Length > 0)
+					if (m_members[row].Arity > 0)
 						text = m_members[row].Text.Substring(0, i + 1);
 					else
 						text = m_members[row].Text.Substring(0, i + 2);

@@ -300,7 +300,7 @@ namespace ObjectModel
 						line INTEGER NOT NULL
 							CONSTRAINT valid_line CHECK(line >= -1),
 						kind INTEGER NOT NULL
-							CONSTRAINT valid_kind CHECK(kind >= 0 AND kind <= 8)
+							CONSTRAINT valid_kind CHECK(kind >= 0 AND kind <= 9)
 					)");
 				
 				m_database.Update(@"

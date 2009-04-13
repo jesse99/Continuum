@@ -97,7 +97,8 @@ file_path				Names foreign key for the full path of the file the method is decla
 						within. Zero if the assembly was compiled without debug info.
 line						The 1-based line number of the start of the method. May be -1.
 kind					0 for normal, 1 for property getter, 2 for property setter, 3 for 
-						indexer getter, 4 for indexer setter, 5 for event (add, remove, or  						fire), 6 for constructor, 7 for operator, or 8 for extension method.
+						indexer getter, 4 for indexer setter, 5 for event (add, remove, or  						fire), 6 for constructor, 7 for operator, 8 for extension method, or 
+						9 for finalizer.
 
 --------------------------------------
 Fields

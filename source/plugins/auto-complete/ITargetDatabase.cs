@@ -22,31 +22,11 @@
 using Gear;
 using Shared;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace AutoComplete
 {
-	internal sealed class TypeId
-	{
-		public TypeId(string fullName)
-		{
-			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
-			
-			FullName = fullName;
-			TypeName = -1;
-		}
-		
-		public TypeId(string fullName, int typeName)
-		{
-			FullName = fullName;
-			TypeName = typeName;
-		}
-		
-		public string FullName {get; private set;}
-		
-		public int TypeName {get; private set;}
-	}
-	
 	internal interface ITargetDatabase
 	{
 		// Returns true if the name is a special or type name.
@@ -67,12 +47,14 @@ namespace AutoComplete
 		
 		// Returns type names for the type's base class and any interfaces it directly
 		// implements.
-		TypeId[] GetBases(TypeId type);
+		void GetBases(string typeName, List<string> baseNames, List<string> interfaceNames, List<string> allNames);
 		
 		// Returns the (unique) members for all of the types, but not the methods
 		// which extend the types. 
-		Member[] GetMembers(TypeId[] types, bool instanceCall, bool isStaticCall);
+		Member[] GetMembers(string[] typeNames, bool instanceCall, bool isStaticCall);
 		
-		Member[] GetExtensionMethods(TypeId[] types);
+		Member[] GetExtensionMethods(string targetType, string[] typeNames, string[] namespaces);
+
+		Member[] GetFields(string[] typeNames, bool instanceCall, bool isStaticCall);
 	}
 }

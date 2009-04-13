@@ -264,6 +264,7 @@ namespace Shared
 			
 			bool calledHeader = false;
 			Exception exception = null;
+			int count = 0;
 			SelectCallback callback = (IntPtr param, int numCols, IntPtr[] values, IntPtr[] names) => 
 			{
 				Error result = Error.ABORT;
@@ -286,6 +287,7 @@ namespace Shared
 						row[i] = Marshal.PtrToStringAuto(values[i]);
 					}
 					
+					++count;
 					if (rc(row))
 						result = Error.OK;
 				}
@@ -300,7 +302,7 @@ namespace Shared
 			try
 			{
 				m_command = command;
-
+				
 				// Note that the database uses a reader/writer lock so this will work even if other
 				// threads are trying to write to the database. Also note that this is why we don't
 				// return an object which users then use to read rows as ADO.NET does: we'd
@@ -310,7 +312,7 @@ namespace Shared
 				Error err = sqlite3_exec(m_database, command, callback, IntPtr.Zero, out errMesg);
 					
 				if (timer != null)
-					Log.WriteLine(TraceLevel.Verbose, "Database", "query took {0:0.000} secs", timer.ElapsedMilliseconds/1000.0);
+					Log.WriteLine(TraceLevel.Verbose, "Database", "query took {0:0.000} secs and {1} rows were processed", timer.ElapsedMilliseconds/1000.0, count);
 				
 				if (err != Error.OK && err != Error.ABORT)
 					DoRaiseError(command, err, errMesg);

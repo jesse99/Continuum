@@ -158,7 +158,14 @@ namespace ObjectModel
 						for (int i = 0; i < type.Interfaces.Count; ++i)
 						{
 							DoAddSpecialType(type.Interfaces[i]);
-							interfaces.Append(type.Interfaces[i].FullName);
+							
+							string name;
+							if (type.Interfaces[i].IsSpecial())
+								name = type.Interfaces[i].FullName;
+							else
+								name = type.Interfaces[i].FullName.GetTypeName();
+							
+							interfaces.Append(name);
 							interfaces.Append(':');
 						}
 					}
@@ -167,12 +174,19 @@ namespace ObjectModel
 					DoValidateRoot("declaring_root_name", type.DeclaringType);
 					DoAddSpecialType(type.BaseType);
 					
+					string baseName = string.Empty;
+					if (type.BaseType != null)
+						if (type.BaseType.IsSpecial())
+							baseName = type.BaseType.FullName;
+						else
+							baseName = type.BaseType.FullName.GetTypeName();
+					
 					m_database.InsertOrReplace("Types",
 						type.FullName,
 						id,
 						!string.IsNullOrEmpty(type.Namespace) ? type.Namespace : string.Empty,
 						DoGetNameWithoutTick(type.Name.GetTypeName()),
-						type.BaseType != null ? type.BaseType.FullName : string.Empty,
+						baseName,
 						interfaces.ToString(),
 						type.GenericParameters.Count.ToString(),
 						visibility.ToString(),
@@ -252,9 +266,12 @@ namespace ObjectModel
 					string extendName = string.Empty;
 					if (method.IsPublic && DoHasExtensionAtribute(method.CustomAttributes))
 					{
-						extendName = method.Parameters[0].ParameterType.FullName;
+						if (method.Parameters[0].ParameterType.IsSpecial())
+							extendName = method.Parameters[0].ParameterType.FullName;
+						else
+							extendName = method.Parameters[0].ParameterType.FullName.GetTypeName();
 					}
-						
+					
 					int access = 0;
 					switch (method.Attributes & MethodAttributes.MemberAccessMask)
 					{
@@ -305,15 +322,24 @@ namespace ObjectModel
 						
 					else if (extendName.Length > 0)
 						kind = 8;
+						
+					else if (method.Name == "Finalize")
+						kind = 9;
 					
 					DoValidateRoot("root_name", method.DeclaringType);
 					DoAddSpecialType(type.BaseType);
 					DoAddSpecialType(method.ReturnType.ReturnType);
 					
+					string returnName;
+					if (method.ReturnType.ReturnType.IsSpecial())
+						returnName = method.ReturnType.ReturnType.FullName;
+					else
+						returnName = method.ReturnType.ReturnType.FullName.GetTypeName();
+					
 					m_database.InsertOrReplace("Methods",
 						DoGetDisplayText(method),
 						method.Name,
-						method.ReturnType.ReturnType.FullName,
+						returnName,
 						type.FullName,
 						method.Parameters.Count.ToString(),
 						method.GenericParameters.Count.ToString(),
@@ -362,10 +388,16 @@ namespace ObjectModel
 					
 					DoValidateRoot("root_name", field.DeclaringType);
 					
+					string fieldType;
+					if (field.FieldType.IsSpecial())
+						fieldType = field.FieldType.FullName;
+					else
+						fieldType = field.FieldType.FullName.GetTypeName();
+					
 					m_database.InsertOrReplace("Fields",
 						field.Name,
 						type.FullName,
-						field.FieldType.FullName,
+						fieldType,
 						id,
 						access.ToString(),
 						field.IsStatic ? "1" : "0");
