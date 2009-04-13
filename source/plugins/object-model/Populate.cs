@@ -214,6 +214,12 @@ namespace ObjectModel
 			Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "exiting thread for {0}", m_path);
 		}
 		
+		// The database sizes are a lot larger than I would like, but it's not clear
+		// how they can be reduced. I did experiment with using a Names table
+		// and storing integers instead of strings for everything but the display_text
+		// field, but that only reduced the db size by about 30% and makes the
+		// auto-complete queries rather painful because they want access to names
+		// for the parse cache.
 		private void DoCreateTables()		// threaded
 		{
 			// We could place an upper limit on some of the field sizes, but it won't
@@ -238,68 +244,59 @@ namespace ObjectModel
 					)");
 
 				m_database.Update(@"
-					CREATE TABLE IF NOT EXISTS Names(
-						value TEXT PRIMARY KEY NOT NULL,
-						name INTEGER UNIQUE NOT NULL
-					)");
-				m_database.InsertOrIgnore("Names", string.Empty, "0");
-				m_database.InsertOrIgnore("Names", "System.Object", "1");
-				
-				m_database.Update(@"
 					CREATE TABLE IF NOT EXISTS Types(
-						root_name INTEGER PRIMARY KEY NOT NULL 
-							REFERENCES Names(name),
+						root_name TEXT PRIMARY KEY NOT NULL 
+							CONSTRAINT no_empty_root CHECK(length(root_name) > 0),
 						assembly INTEGER NOT NULL 
 							REFERENCES Assemblies(assembly),
-						namespace INTEGER NOT NULL 
-							REFERENCES Names(name),
-						declaring_root_name INTEGER NOT NULL 
-							REFERENCES Names(name),
-						name INTEGER NOT NULL 
-							REFERENCES Names(name),
+						namespace TEXT NOT NULL,
+						name TEXT NOT NULL 
+							CONSTRAINT no_empty_name CHECK(length(name) > 0),
 						base_type_name TEXT NOT NULL,
-						interface_type_names TEXT NOT NULL,
+						interface_type_names TEXT NOT NULL
+							CONSTRAINT valid_interfaces CHECK(length(interface_type_names) = 0 OR substr(interface_type_names, -1) = ':'),
 						generic_arg_count INTEGER NOT NULL
 							CONSTRAINT non_negative_arg_count CHECK(generic_arg_count >= 0),
-						visibility INTEGER NOT NULL,
+						visibility INTEGER NOT NULL
+							CONSTRAINT valid_vis CHECK(visibility >= 0 AND visibility <= 3),
 						attributes INTEGER NOT NULL
+							CONSTRAINT valid_attributes CHECK(attributes >= 0 AND attributes < 4*16)
 					)");
 				
 				m_database.Update(@"
 					CREATE TABLE IF NOT EXISTS SpecialTypes(
-						special_name INTEGER PRIMARY KEY NOT NULL 
-							REFERENCES Names(name),
-						element_type_name INTEGER NOT NULL 
-							REFERENCES Names(name),
+						special_name TEXT PRIMARY KEY NOT NULL 
+							CONSTRAINT no_empty_name CHECK(length(special_name) > 0),
+						element_type_name TEXT NOT NULL,
 						rank INTEGER NOT NULL 
 							CONSTRAINT non_negative_rank CHECK(rank >= 0),
-						generic_type_names TEXT NOT NULL,
+						generic_type_names TEXT NOT NULL
+							CONSTRAINT valid_generics CHECK(length(generic_type_names) = 0 OR substr(generic_type_names, -1) = ':'),
 						kind INTEGER NOT NULL
 							CONSTRAINT valid_kind CHECK(kind >= 0 AND kind <= 3)
 					)");
 				
 				m_database.Update(@"
 					CREATE TABLE IF NOT EXISTS Methods(
-						display_text TEXT NOT NULL PRIMARY KEY,
-						name INTEGER NOT NULL 
-							REFERENCES Names(name),
-						return_type_name INTEGER NOT NULL 
-							REFERENCES Names(name),
-						declaring_root_name INTEGER NOT NULL 
-							REFERENCES Types(root_name) REFERENCES Names(name),
+						display_text TEXT NOT NULL PRIMARY KEY
+							CONSTRAINT valid_text CHECK(length(display_text) >= 4),
+						name TEXT NOT NULL 
+							CONSTRAINT no_empty_name CHECK(length(name) > 0),
+						return_type_name TEXT NOT NULL 
+							CONSTRAINT no_empty_return CHECK(length(return_type_name) > 0),
+						declaring_root_name TEXT NOT NULL 
+							REFERENCES Types(root_name),
 						params_count INTEGER NOT NULL
 							CONSTRAINT non_negative_params_count CHECK(params_count >= 0),
 						generic_arg_count INTEGER NOT NULL
 							CONSTRAINT non_negative_generic_count CHECK(generic_arg_count >= 0),
 						assembly INTEGER NOT NULL 
 							REFERENCES Assemblies(assembly),
-						extend_type_name INTEGER NOT NULL 
-							REFERENCES Names(name),
+						extend_type_name TEXT NOT NULL,
 						access INTEGER NOT NULL,
 						static INTEGER NOT NULL
 							CONSTRAINT valid_static CHECK(static >= 0 AND static <= 1),
-						file_path INTEGER NOT NULL 
-							REFERENCES Names(name),
+						file_path TEXT NOT NULL,
 						line INTEGER NOT NULL
 							CONSTRAINT valid_line CHECK(line >= -1),
 						kind INTEGER NOT NULL
@@ -308,18 +305,19 @@ namespace ObjectModel
 				
 				m_database.Update(@"
 					CREATE TABLE IF NOT EXISTS Fields(
-						declaring_root_name INTEGER NOT NULL 
-							REFERENCES Types(root_name) REFERENCES Names(name),
-						name INTEGER NOT NULL 
-							REFERENCES Names(name),
-						type_name INTEGER NOT NULL 
-							REFERENCES Names(name),
+						name TEXT NOT NULL 
+							CONSTRAINT no_empty_name CHECK(length(name) > 0),
+						declaring_root_name TEXT NOT NULL 
+							REFERENCES Types(root_name),
+						type_name TEXT NOT NULL 
+							CONSTRAINT no_empty_type CHECK(length(type_name) > 0),
 						assembly INTEGER NOT NULL 
 							REFERENCES Assemblies(assembly),
-						access INTEGER NOT NULL,
+						access INTEGER NOT NULL
+							CONSTRAINT valid_access CHECK(access >= 0 AND access <= 3),
 						static INTEGER NOT NULL
 							CONSTRAINT valid_static CHECK(static >= 0 AND static <= 1),
-						PRIMARY KEY(declaring_root_name, name)
+						PRIMARY KEY(name, declaring_root_name)
 					)");
 			});
 		}

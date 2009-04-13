@@ -66,7 +66,7 @@ namespace ObjectModel
 	
 	internal sealed class TypeInfo
 	{
-		public TypeInfo(int assembly, int rootName, int attributes, int visibility)
+		public TypeInfo(int assembly, string rootName, int attributes, int visibility)
 		{
 			Assembly = assembly;
 			RootName = rootName;
@@ -76,7 +76,7 @@ namespace ObjectModel
 		
 		public int Assembly {get; private set;}
 		
-		public int RootName {get; private set;}
+		public string RootName {get; private set;}
 		
 		public TypeVisibility Visibility {get; private set;}
 		
@@ -86,20 +86,18 @@ namespace ObjectModel
 	// Interface used to perform some standard queries against the type database.
 	internal interface IObjectModel : IInterface
 	{
-		string FindName(int id);
-		
 		TypeInfo[] FindTypes(string name, int max);
 		
 		SourceInfo[] FindMethodSources(string name, int max);
 		
-		SourceInfo[] FindTypeSources(int[] rootNames, int max);
+		SourceInfo[] FindTypeSources(string[] rootNames, int max);
 		
 		string FindAssemblyPath(int assembly);
 		
-		TypeInfo[] FindBases(int rootName);
+		TypeInfo[] FindBases(string rootName);
 		
-		TypeInfo[] FindDerived(int rootName, int max);
+		TypeInfo[] FindDerived(string rootName, int max);
 		
-		TypeInfo[] FindImplementors(int rootName, int max);
+		TypeInfo[] FindImplementors(string rootName, int max);
 	}
 }

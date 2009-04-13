@@ -59,7 +59,7 @@ namespace ObjectModel
 						timer = new Stopwatch();
 						timer.Start();
 					}
-										
+					
 					// Add open types.
 					var objects = m_dirBoss.Get<IObjectModel>();
 					TypeInfo[] types = objects.FindTypes(selection, MaxOpenItems + 1);
@@ -96,7 +96,7 @@ namespace ObjectModel
 							0.4f));
 						
 						var baseable = from t in types
-							where t.RootName != 1 && (t.Flags & TypeFlags.Interface) == 0
+							where t.RootName != "System.Object" && (t.Flags & TypeFlags.Interface) == 0
 							select t;
 						if (baseable.Any())
 							items.Add(new TextContextItem(
@@ -131,11 +131,10 @@ namespace ObjectModel
 		{
 			Boss boss = Gear.ObjectModel.Create("FileSystem");
 			var fs = boss.Get<IFileSystem>();
-			var objects = m_dirBoss.Get<IObjectModel>();
 			
 			foreach (TypeInfo type in types)
 			{
-				string fullName = objects.FindName(type.RootName);
+				string fullName = type.RootName;
 					
 				try
 				{
@@ -174,7 +173,7 @@ namespace ObjectModel
 				TypeInfo[] bases = objects.FindBases(type.RootName);
 				if (bases.Length > 0)
 				{
-					string fullName = objects.FindName(type.RootName);
+					string fullName = type.RootName;
 					string file = fs.GetTempFile(fullName + " Base Classes", ".cs");
 					
 					int i = 0;
@@ -208,7 +207,7 @@ namespace ObjectModel
 				TypeInfo[] derived = objects.FindDerived(type.RootName, MaxDerived);
 				if (derived.Length > 0)
 				{
-					string fullName = objects.FindName(type.RootName);
+					string fullName = type.RootName;
 					string file = fs.GetTempFile(fullName + " Derived Classes", ".cs");
 					
 					int count = 0;
@@ -236,7 +235,7 @@ namespace ObjectModel
 				TypeInfo[] derived = objects.FindImplementors(type.RootName, MaxDerived);
 				if (derived.Length > 0)
 				{
-					string fullName = objects.FindName(type.RootName);
+					string fullName = type.RootName;
 					string file = fs.GetTempFile(fullName + " Implementors", ".cs");
 					
 					int count = 0;
@@ -264,7 +263,7 @@ namespace ObjectModel
 		public void DoAddOpenType(List<TextContextItem> items, IObjectModel objects, TypeInfo[] types, string selection, float order)
 		{
 			// First check the database to see if we can find a type.
-			int[] roots = (from t in types select t.RootName).ToArray();
+			string[] roots = (from t in types select t.RootName).ToArray();
 			if (roots.Length > 0)
 			{
 				SourceInfo[] sources = objects.FindTypeSources(roots, MaxOpenItems + 1);
@@ -428,7 +427,7 @@ namespace ObjectModel
 		
 		private void DoWriteType(TextWriter writer, int indent, TypeInfo info, IObjectModel objects)
 		{
-			string fullName = objects.FindName(info.RootName);
+			string fullName = info.RootName;
 			writer.WriteLine("{0}{1}{2}", new string('\t', indent), DoGetModifiers(info), fullName);
 		}
 		

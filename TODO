@@ -129,10 +129,6 @@ window		menu			base line
 	6069248
 				
 * Get TargetDatabase working again:
-	- disable code until auto-complete compiles
-	- do a checkin
-	- get rid of the names table
-	- get Objects.cs working again
 	- work on TargetDatabase.cs
 	- need to remove the stuff at and before the :: in display text
 	- GetBases needs to special case arrays:
@@ -144,6 +140,7 @@ window		menu			base line
 	- do something with ResolveType::GetBases
 	- fix ResolveName::DoFindFields
 	- fix ResolveName::DoFindProperties
+	- when searching for a type by name/namespace needs to make sure it is not nested
 * Profile:
 	- prune should check to see if a reparse is needed
 	- make sure assembly rebuild doesn't just delete, but deletes and adds

@@ -73,31 +73,6 @@ namespace ObjectModel
 		}
 		
 		#region Private Methods
-		private string DoGetName(string value)
-		{
-			string sql = string.Format(@"
-				SELECT name
-					FROM Names
-				WHERE value = '{0}'", value);
-			string[][] rows = m_database.QueryRows(sql);
-			
-			string name;
-			if (rows.Length > 0)
-			{
-				name = rows[0][0];
-			}
-			else
-			{
-				sql = "SELECT MAX(name) FROM Names";	// note that the table is seeded with one (empty) name
-				rows = m_database.QueryRows(sql);
-				name = (int.Parse(rows[0][0]) + 1).ToString();
-				
-				m_database.Insert("Names", value, name);
-			}
-			
-			return name;
-		}
-		
 		[Conditional("DEBUG")]
 		private void DoValidateRoot(string label, TypeReference type)
 		{
@@ -172,6 +147,8 @@ namespace ObjectModel
 					attributes |= 0x08;
 				if (type.IsEnum)
 					attributes |= 0x10;
+				if (type.DeclaringType != null)
+					attributes |= 0x20;
 				
 				m_database.Update("parse " + type.FullName, () =>
 				{
@@ -181,8 +158,8 @@ namespace ObjectModel
 						for (int i = 0; i < type.Interfaces.Count; ++i)
 						{
 							DoAddSpecialType(type.Interfaces[i]);
-							interfaces.Append(DoGetName(type.Interfaces[i].FullName));
-							interfaces.Append(' ');
+							interfaces.Append(type.Interfaces[i].FullName);
+							interfaces.Append(':');
 						}
 					}
 					
@@ -191,12 +168,11 @@ namespace ObjectModel
 					DoAddSpecialType(type.BaseType);
 					
 					m_database.InsertOrReplace("Types",
-						DoGetName(type.FullName),
+						type.FullName,
 						id,
-						DoGetName(!string.IsNullOrEmpty(type.Namespace) ? type.Namespace : string.Empty),
-						DoGetName(type.DeclaringType != null ? type.DeclaringType.FullName : string.Empty),
-						DoGetName(DoGetNameWithoutTick(type.Name.GetTypeName())),
-						DoGetName(type.BaseType != null ? type.BaseType.FullName : string.Empty),
+						!string.IsNullOrEmpty(type.Namespace) ? type.Namespace : string.Empty,
+						DoGetNameWithoutTick(type.Name.GetTypeName()),
+						type.BaseType != null ? type.BaseType.FullName : string.Empty,
 						interfaces.ToString(),
 						type.GenericParameters.Count.ToString(),
 						visibility.ToString(),
@@ -242,8 +218,8 @@ namespace ObjectModel
 				{
 					for (int i = 0; i < generic.GenericArguments.Count; ++i)
 					{
-						genericTypes.Append(DoGetName(generic.GenericArguments[i].FullName));
-						genericTypes.Append(' ');
+						genericTypes.Append(generic.GenericArguments[i].FullName);
+						genericTypes.Append(':');
 					}
 				}
 				
@@ -256,8 +232,8 @@ namespace ObjectModel
 					kind = 2;
 				
 				m_database.InsertOrIgnore("SpecialTypes",
-					DoGetName(type.FullName),
-					DoGetName(spec.ElementType != null ? spec.ElementType.FullName : string.Empty),
+					type.FullName,
+					spec.ElementType != null ? spec.ElementType.FullName : string.Empty,
 					array != null ? array.Rank.ToString() : "0",
 					genericTypes.ToString(),
 					kind.ToString());
@@ -336,16 +312,16 @@ namespace ObjectModel
 					
 					m_database.InsertOrReplace("Methods",
 						DoGetDisplayText(method),
-						DoGetName(method.Name),
-						DoGetName(method.ReturnType.ReturnType.FullName),
-						DoGetName(method.DeclaringType.FullName),
+						method.Name,
+						method.ReturnType.ReturnType.FullName,
+						type.FullName,
 						method.Parameters.Count.ToString(),
 						method.GenericParameters.Count.ToString(),
 						id,
-						DoGetName(extendName),
+						extendName,
 						access.ToString(),
 						method.IsStatic ? "1" : "0",
-						DoGetName(location.First),
+						location.First,
 						location.Second.ToString(),
 						kind.ToString());
 				}
@@ -387,9 +363,9 @@ namespace ObjectModel
 					DoValidateRoot("root_name", field.DeclaringType);
 					
 					m_database.InsertOrReplace("Fields",
-						DoGetName(field.DeclaringType.FullName),
-						DoGetName(field.Name),
-						DoGetName(field.FieldType.FullName),
+						field.Name,
+						type.FullName,
+						field.FieldType.FullName,
 						id,
 						access.ToString(),
 						field.IsStatic ? "1" : "0");

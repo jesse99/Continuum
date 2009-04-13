@@ -67,18 +67,6 @@ namespace ObjectModel
 			}
 		}
 		
-		public string FindName(int id)
-		{
-			string sql = string.Format(@"
-				SELECT value
-					FROM Names
-				WHERE name = {0}", id);
-			string[][] rows = m_database.QueryRows(sql);
-			Trace.Assert(rows.Length <= 1, "too many rows");
-			
-			return rows.Length > 0 ? rows[0][0] : null;
-		}
-		
 		public TypeInfo[] FindTypes(string name, int max)
 		{
 			name = CsHelpers.GetRealName(name);
@@ -96,21 +84,20 @@ namespace ObjectModel
 			string sql;
 			if (gargs > 0)
 				sql = string.Format(@"
-					SELECT Types.root_name, Types.attributes, Types.assembly, Types.visibility
-						FROM Types, Names
-					WHERE Names.value = '{0}' AND 
-						Names.name == Types.name AND Types.generic_arg_count = {2}
+					SELECT root_name, attributes, assembly, visibility
+						FROM Types
+					WHERE name = '{0}' AND generic_arg_count = {2}
 					LIMIT {1}", name, max, gargs);
 			else
 				sql = string.Format(@"
-					SELECT Types.root_name, Types.attributes, Types.assembly, Types.visibility
-						FROM Types, Names
-					WHERE Names.value = '{0}' AND Names.name == Types.name
+					SELECT root_name, attributes, assembly, visibility
+						FROM Types
+					WHERE name = '{0}'
 					LIMIT {1}", name, max);
 			string[][] rows = m_database.QueryRows(sql);
 			
 			var types = from r in rows
-				select new TypeInfo(int.Parse(r[2]), int.Parse(r[0]), int.Parse(r[1]), int.Parse(r[3]));
+				select new TypeInfo(int.Parse(r[2]), r[0], int.Parse(r[1]), int.Parse(r[3]));
 			
 			return types.ToArray();
 		}
@@ -118,19 +105,17 @@ namespace ObjectModel
 		public SourceInfo[] FindMethodSources(string name, int max)
 		{
 			string sql = string.Format(@"
-				SELECT Methods.display_text, Methods.file_path, Methods.line
-					FROM Methods, Names
-				WHERE (Names.value = '{0}' OR Names.value = '{2}') AND 
-					Names.name == Methods.name AND
-					Methods.file_path != 0
+				SELECT display_text, file_path, line
+					FROM Methods
+				WHERE (name = '{0}' OR name = '{2}') AND Methods.file_path != 0
 				LIMIT {1}", name, max, "get_" + name);
 			var rows = new List<string[]>(m_database.QueryRows(sql));
 			
 			sql = string.Format(@"
 				SELECT Methods.display_text, Methods.file_path, Methods.line
-					FROM Methods, Names, Types
-				WHERE Names.value = '{0}' AND 
-					Methods.kind = 6 AND Names.name == Types.name AND Types.root_name = Methods.declaring_root_name AND
+					FROM Methods, Types
+				WHERE Types.name = '{0}' AND 
+					Methods.kind = 6 AND Types.root_name = Methods.declaring_root_name AND
 					Methods.file_path != 0
 				LIMIT {1}", name, max);
 			rows.AddRange(m_database.QueryRows(sql));
@@ -141,14 +126,14 @@ namespace ObjectModel
 			return sources.ToArray();
 		}
 		
-		public SourceInfo[] FindTypeSources(int[] rootNames, int max)
+		public SourceInfo[] FindTypeSources(string[] rootNames, int max)
 		{
 			Trace.Assert(rootNames.Length > 0);
 			
 			var roots = new StringBuilder();
 			for (int i = 0; i < rootNames.Length; ++i)
 			{
-				roots.AppendFormat("Types.root_name = {0}", rootNames[i]);
+				roots.AppendFormat("Types.root_name = '{0}'", rootNames[i]);
 				
 				if (i + 1 < rootNames.Length)
 					roots.Append(" OR ");
@@ -206,60 +191,62 @@ namespace ObjectModel
 			return rows.Length > 0 ? rows[0][0] : null;
 		}
 		
-		public TypeInfo[] FindBases(int rootName)
+		public TypeInfo[] FindBases(string rootName)
 		{
 			var types = new List<TypeInfo>();
 			
-			while (rootName > 1)
+			while (rootName != null && rootName != "System.Object")
 			{
 				string sql = string.Format(@"
 					SELECT t2.root_name, t2.attributes, t2.assembly, t2.visibility
 						FROM Types t1, Types t2
-					WHERE t1.root_name = {0} AND 
+					WHERE t1.root_name = '{0}' AND 
 						t1.base_type_name = t2.root_name", rootName);
 				string[][] rows = m_database.QueryRows(sql);
 				Trace.Assert(rows.Length <= 1, "too many rows");
 			
 				if (rows.Length > 0)
 				{
-					rootName = int.Parse(rows[0][0]);
+					rootName = rows[0][0];
 					types.Add(new TypeInfo(int.Parse(rows[0][2]), rootName, int.Parse(rows[0][1]), int.Parse(rows[0][3])));
 				}
 				else
-					rootName = -1;
+					rootName = null;
 			}
 			
-			return types.ToArray();
-		}
-		
-		public TypeInfo[] FindDerived(int rootName, int max)
-		{
-			string sql = string.Format(@"
-				SELECT t2.root_name, t2.attributes, t2.assembly, t2.visibility
-					FROM Types t1, Types t2
-				WHERE t1.base_type_name = {0} AND 
-					t1.root_name = t2.root_name
-				LIMIT {1}", rootName, max);
-			string[][] rows = m_database.QueryRows(sql);
-		
-			var types = from r in rows
-				select new TypeInfo(int.Parse(r[2]), int.Parse(r[0]), int.Parse(r[1]), int.Parse(r[3]));
+			types.Reverse();
 			
 			return types.ToArray();
 		}
 		
-		public TypeInfo[] FindImplementors(int rootName, int max)
+		public TypeInfo[] FindDerived(string rootName, int max)
 		{
 			string sql = string.Format(@"
 				SELECT t2.root_name, t2.attributes, t2.assembly, t2.visibility
 					FROM Types t1, Types t2
-				WHERE  t1.interface_type_names GLOB '*{0} *' AND 
+				WHERE t1.base_type_name = '{0}' AND 
 					t1.root_name = t2.root_name
 				LIMIT {1}", rootName, max);
 			string[][] rows = m_database.QueryRows(sql);
 		
 			var types = from r in rows
-				select new TypeInfo(int.Parse(r[2]), int.Parse(r[0]), int.Parse(r[1]), int.Parse(r[3]));
+				select new TypeInfo(int.Parse(r[2]), r[0], int.Parse(r[1]), int.Parse(r[3]));
+			
+			return types.ToArray();
+		}
+		
+		public TypeInfo[] FindImplementors(string rootName, int max)
+		{
+			string sql = string.Format(@"
+				SELECT t2.root_name, t2.attributes, t2.assembly, t2.visibility
+					FROM Types t1, Types t2
+				WHERE  t1.interface_type_names GLOB '*{0}:*' AND 
+					t1.root_name = t2.root_name
+				LIMIT {1}", rootName, max);
+			string[][] rows = m_database.QueryRows(sql);
+		
+			var types = from r in rows
+				select new TypeInfo(int.Parse(r[2]), r[0], int.Parse(r[1]), int.Parse(r[3]));
 			
 			return types.ToArray();
 		}
@@ -280,35 +267,22 @@ namespace ObjectModel
 		
 		// If users have the mono source, but are using the mono from the installer then
 		// the paths in the gac's mdb files will be wrong. So, we fix them up here.
-		private string DoGetPath(string pathKey)
+		private string DoGetPath(string path)
 		{
-			string path = null;
-			
-			string sql = string.Format(@"
-				SELECT value
-					FROM names
-				WHERE name = {0}", pathKey);
-			string[][] rows = m_database.QueryRows(sql);
-			
-			if (rows.Length > 0)
+			// Pre-built mono files will look like "/private/tmp/monobuild/build/BUILD/mono-2.2/mcs/class/corlib/System.IO/File.cs"
+			// Mono_root will usually look like "/foo/mono-2.2".
+			if (!File.Exists(path))
 			{
-				path = rows[0][0];
+				if (m_monoRoot == null)
+					DoMonoRootChanged("mono_root changed", null);
 				
-				// Pre-built mono files will look like "/private/tmp/monobuild/build/BUILD/mono-2.2/mcs/class/corlib/System.IO/File.cs"
-				// Mono_root will usually look like "/foo/mono-2.2".
-				if (!File.Exists(path))
+				if (m_monoRoot != null)
 				{
-					if (m_monoRoot == null)
-						DoMonoRootChanged("mono_root changed", null);
-					
-					if (m_monoRoot != null)
+					int i = path.IndexOf("/mcs/");
+					if (i >= 0)
 					{
-						int i = path.IndexOf("/mcs/");
-						if (i >= 0)
-						{
-							string temp = path.Substring(i + 1);
-							path = Path.Combine(m_monoRoot, temp);
-						}
+						string temp = path.Substring(i + 1);
+						path = Path.Combine(m_monoRoot, temp);
 					}
 				}
 			}
