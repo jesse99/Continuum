@@ -130,50 +130,54 @@ namespace ObjectModel
 		{
 			Trace.Assert(rootNames.Length > 0);
 			
-			var roots = new StringBuilder();
-			for (int i = 0; i < rootNames.Length; ++i)
-			{
-				roots.AppendFormat("Types.root_name = '{0}'", rootNames[i]);
-				
-				if (i + 1 < rootNames.Length)
-					roots.Append(" OR ");
-			}
-			
-			// Get all of the file paths/lines for the type name.
-			string sql = string.Format(@"
-				SELECT Methods.file_path, Methods.line
-					FROM Types, Methods
-				WHERE ({0}) AND
-					Types.root_name = Methods.declaring_root_name AND
-					Methods.file_path != 0", roots.ToString());
-			string[][] rows = m_database.QueryRows(sql);
-			
-			// Get the smallest line number for each type.
-			var files = new Dictionary<string, int>();
-			foreach (string[] row in rows)
-			{
-				int line = int.Parse(row[1]);
-				if (line >= 1)
-				{
-					if (files.ContainsKey(row[0]))
-					{
-						if (line < files[row[0]])
-							files[row[0]] = line;
-					}
-					else
-						files.Add(row[0], line);
-				}
-			}
-			
-			// Build a SourceInfo array.
 			var sources = new List<SourceInfo>();
-			foreach (var entry in files)
+
+			if (rootNames.Length > 0)
 			{
-				string path = DoGetPath(entry.Key);
-				sources.Add(new SourceInfo(Path.GetFileName(path), path, entry.Value));
+				var roots = new StringBuilder();
+				for (int i = 0; i < rootNames.Length; ++i)
+				{
+					roots.AppendFormat("Types.root_name = '{0}'", rootNames[i]);
+					
+					if (i + 1 < rootNames.Length)
+						roots.Append(" OR ");
+				}
 				
-				if (sources.Count == max)
-					break;
+				// Get all of the file paths/lines for the type name.
+				string sql = string.Format(@"
+					SELECT Methods.file_path, Methods.line
+						FROM Types, Methods
+					WHERE ({0}) AND
+						Types.root_name = Methods.declaring_root_name AND
+						Methods.file_path != 0", roots.ToString());
+				string[][] rows = m_database.QueryRows(sql);
+				
+				// Get the smallest line number for each type.
+				var files = new Dictionary<string, int>();
+				foreach (string[] row in rows)
+				{
+					int line = int.Parse(row[1]);
+					if (line >= 1)
+					{
+						if (files.ContainsKey(row[0]))
+						{
+							if (line < files[row[0]])
+								files[row[0]] = line;
+						}
+						else
+							files.Add(row[0], line);
+					}
+				}
+				
+				// Build a SourceInfo array.
+				foreach (var entry in files)
+				{
+					string path = DoGetPath(entry.Key);
+					sources.Add(new SourceInfo(Path.GetFileName(path), path, entry.Value));
+					
+					if (sources.Count == max)
+						break;
+				}
 			}
 			
 			return sources.ToArray();
@@ -201,7 +205,7 @@ namespace ObjectModel
 					SELECT t2.root_name, t2.attributes, t2.assembly, t2.visibility
 						FROM Types t1, Types t2
 					WHERE t1.root_name = '{0}' AND 
-						t1.base_type_name = t2.root_name", rootName);
+						t1.base_root_name = t2.root_name", rootName);
 				string[][] rows = m_database.QueryRows(sql);
 				Trace.Assert(rows.Length <= 1, "too many rows");
 			
@@ -224,7 +228,7 @@ namespace ObjectModel
 			string sql = string.Format(@"
 				SELECT t2.root_name, t2.attributes, t2.assembly, t2.visibility
 					FROM Types t1, Types t2
-				WHERE t1.base_type_name = '{0}' AND 
+				WHERE t1.base_root_name = '{0}' AND 
 					t1.root_name = t2.root_name
 				LIMIT {1}", rootName, max);
 			string[][] rows = m_database.QueryRows(sql);
@@ -240,7 +244,7 @@ namespace ObjectModel
 			string sql = string.Format(@"
 				SELECT t2.root_name, t2.attributes, t2.assembly, t2.visibility
 					FROM Types t1, Types t2
-				WHERE  t1.interface_type_names GLOB '*{0}:*' AND 
+				WHERE  t1.interface_root_names GLOB '*{0}:*' AND 
 					t1.root_name = t2.root_name
 				LIMIT {1}", rootName, max);
 			string[][] rows = m_database.QueryRows(sql);

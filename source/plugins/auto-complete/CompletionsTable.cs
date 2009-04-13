@@ -289,7 +289,7 @@ namespace AutoComplete
 			
 			foreach (Member member in m_candidates)
 			{
-				if (member.DeclaringType != null)
+				if (member.DeclaringType != null && !member.DeclaringType.Contains("-"))
 					classes.AddIfMissing(member.DeclaringType);
 			}
 			

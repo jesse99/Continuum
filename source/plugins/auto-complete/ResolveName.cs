@@ -51,36 +51,40 @@ namespace AutoComplete
 		// May return null.
 		public ResolvedTarget Resolve(string name)
 		{
-			Log.WriteLine("AutoComplete", "resolving name: {0}", name);
-
-			// this.
-			ResolvedTarget result = DoHandleThis(name);
+			ResolvedTarget result = null;
 			
-			// value. (special case for setter bodies)
-			if (result == null && name == "value")
-				result = DoHandleVariable(name);
+			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "---------------- resolving name");
+			Log.WriteLine("AutoComplete", "name: {0}", name);
+			
+			// this.
+			if (result == null)
+			{
+				Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "trying this name");
+				result = DoHandleThis(name);
+			}
 			
 			// SomeType.
 			if (result == null)
 			{
+				Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "trying type name");
 				result = m_typeResolver.Resolve(name, m_globals, false, true);
-				if (result != null)
-					Log.WriteLine("AutoComplete", "found type: {0}", result.TypeName);
 			}
 			
 			// name. (where name is a local, argument, field, or property)
 			if (result == null)
+			{
+				Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "trying variable name");
 				result = DoHandleVariable(name);
-				
+			}
+			
 			// char literal (we don't complete integers because it's too annoying for the common case
 			// of the dot being a floating point indicator instead of a method call)
 			if (result == null)
 			{
 				if (name.Length >= 2 && name[0] == '\'' && name.Last() == '\'')
 				{
+					Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "trying char literal name");
 					result = m_typeResolver.Resolve("System.Char", m_globals, true, false);
-					if (result != null)
-						Log.WriteLine("AutoComplete", "found char literal: {0}", result.TypeName);
 				}
 			}
 				
@@ -89,14 +93,12 @@ namespace AutoComplete
 			{
 				if (name.Length >= 2 && name[0] == '"' && name.Last() == '"')
 				{
+					Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "trying string literal name");
 					result = m_typeResolver.Resolve("System.String", m_globals, true, false);
-					if (result != null)
-						Log.WriteLine("AutoComplete", "found string literal: {0}", result.TypeName);
 				}
 			}
 			
-			if (result == null)
-				Log.WriteLine("AutoComplete", "failed to resolve name: {0}", name);
+			Log.WriteLine("AutoComplete", "---- name {0} -> {1}", name, result);
 			
 			return result;
 		}
@@ -266,8 +268,6 @@ namespace AutoComplete
 					bool isStatic = name == "<this>" || (m_member.Modifiers & MemberModifiers.Static) != 0;
 					
 					result = m_typeResolver.Resolve(m_member.DeclaringType, isInstance, isStatic);
-					if (result != null)
-						Log.WriteLine("AutoComplete", "found this: {0}", result.TypeName);
 				}
 			}
 			
@@ -308,14 +308,11 @@ namespace AutoComplete
 						if (result != null)
 						{
 							result = new ResolvedTarget(result.TypeName, result.Type, true, false);	// we resolved a type, but it's used as an instance...
-							Log.WriteLine("AutoComplete", "found var local: {0}", result.TypeName);
 						}
 					}
 					else
 					{
 						result = m_typeResolver.Resolve(type, m_globals, true, false);
-						if (result != null)
-							Log.WriteLine("AutoComplete", "found local: {0}", result.TypeName);
 					}
 				}
 			}

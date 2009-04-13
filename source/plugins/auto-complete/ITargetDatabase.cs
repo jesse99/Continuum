@@ -52,9 +52,11 @@ namespace AutoComplete
 		// Returns the (unique) members for all of the types, but not the methods
 		// which extend the types. 
 		Member[] GetMembers(string[] typeNames, bool instanceCall, bool isStaticCall);
+		Member[] GetMembers(string[] typeNames, bool instanceCall, bool isStaticCall, string name, int arity);
 		
 		Member[] GetExtensionMethods(string targetType, string[] typeNames, string[] namespaces);
-
+		Member[] GetExtensionMethods(string targetType, string[] typeNames, string[] namespaces, string name, int arity);
+		
 		Member[] GetFields(string[] typeNames, bool instanceCall, bool isStaticCall);
 	}
 }

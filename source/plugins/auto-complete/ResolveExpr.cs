@@ -47,10 +47,11 @@ namespace AutoComplete
 			Trace.Assert(offset <= text.Length, "offset is too large");
 			
 			ResolvedTarget result = null;
+			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "---------------- resolving expression");
 			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "text: '{0}'", text.Substring(Math.Max(0, offset - 48), offset - Math.Max(0, offset - 48)).EscapeAll());
 			
 			string expr = DoFindExpr(text, offset);
-			Log.WriteLine("AutoComplete", "    expr: '{0}'", expr);
+			Log.WriteLine("AutoComplete", "expression: '{0}'", expr);
 			if (!string.IsNullOrEmpty(expr))
 				result = m_nameResolver.Resolve(expr);
 				
@@ -64,8 +65,9 @@ namespace AutoComplete
 					if (result == null)
 						break;
 				}
-				Log.WriteLine("AutoComplete", "    target: {0}", result);
 			}
+			
+			Log.WriteLine("AutoComplete", "---- expression {0} -> {1}", expr, result);
 			
 			return result;
 		}
@@ -207,29 +209,35 @@ namespace AutoComplete
 			
 			// Handle locals and args.
 			if (target == null)
+			{
+				Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "trying local operand");
 				result = m_nameResolver.Resolve(operand);
+			}
 			
 			// Handle this calls (this will work for static calls too).
 			if (target == null && result == null)
+			{
 				target = m_nameResolver.Resolve("this");
+				Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "new target: {0}", target);
+			}
 			
 			if (target != null && result == null)
 			{
-				Member[] members = m_memberResolver.Resolve(target, m_globals);
 				int numArgs = DoGetNumArgs(operand);
-				string name = operand;
-				if (numArgs > 0)
-				{
-					int i = operand.IndexOfAny(new char[]{'(', ' ', '\t', '\n', '\r'});
-					name = i>= 0 ? operand.Substring(0, i) : null;
-				}
+				int i = operand.IndexOfAny(new char[]{'(', ' ', '\t', '\n', '\r'});
+				string name = i >= 0 ? operand.Substring(0, i) : operand;
 				
 				if (name != null)
 				{
-					Member member = members.FirstOrDefault(m => DoMatch(m, name, numArgs));
-					if (member != null)
+					Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "trying {0}({1} args) method operand", name, numArgs);
+					
+					Member[] members = m_memberResolver.Find(target, m_globals, name, numArgs);
+					if (members.Length > 0)
 					{
-						result = m_typeResolver.Resolve(member.Type, m_globals, target.IsInstance, target.IsStatic);
+						if (members.All(m => m.Type == members[0].Type))
+							result = m_typeResolver.Resolve(members[0].Type, m_globals, target.IsInstance, target.IsStatic);
+						else
+							Log.WriteLine("AutoComplete", "{0} has an ambiguous return type", name);
 					}
 				}
 			}
@@ -281,22 +289,6 @@ namespace AutoComplete
 			}
 			
 			return count;
-		}
-		
-		private bool DoMatch(Member member, string name, int numArgs)
-		{
-			bool matches = false;
-			
-			if (numArgs == 0)
-			{
-				matches = member.Text == name;
-			}
-			else if (member.Arity == numArgs)
-			{
-				matches = member.Name == name;
-			}
-			
-			return matches;
 		}
 		#endregion
 		

@@ -44,7 +44,8 @@ namespace Shared
 			
 			foreach (T value in values)
 			{
-				AddIfMissing(data, value);
+				if (data.IndexOf(value) < 0)
+					data.Add(value);
 			}
 		}
 		

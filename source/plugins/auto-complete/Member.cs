@@ -67,7 +67,12 @@ namespace AutoComplete
 			get
 			{
 				int i = Text.IndexOfAny(new char[]{'(', '['});
-				return i >= 0 ? Text.Substring(0, i) : Text;
+				string result = i >= 0 ? Text.Substring(0, i) : Text;
+
+				i = result.IndexOf('<');
+				result = i >= 0 ? result.Substring(0, i) : result;
+				
+				return result;
 			}
 		}
 		

@@ -122,20 +122,23 @@ param_modifiers			Space separated list of integers: 0 for in parameter, 1 for ou
 
 3 cycles of NSNumber auto-complete, Action context
 then auto-complete NSMenuItem and context menu NSApplication
-window		menu			base line
-0.495		0.103
+window		menu			
+0.495		0.103		base line
 
 * Get TargetDatabase working again:
-	- probably need to use root form of generic types for GetBases
+	- display_text should not include generic method args
 	- do something with ResolveType::GetBases
 	- do something with ResolveType::GetBases
 	- fix ResolveName::DoFindFields
 	- fix ResolveName::DoFindProperties
 	- make sure members shows fields
 	- when searching for a type by name/namespace needs to make sure it is not nested
-	- get ArgsAnnonation::DoBuildString hiliting the current argument name
+	- get ArgsAnnonation::DoBuildString hiliting the current argument name, maybe
+	  display_text should separate arguments using semi-colon
 	- DoBuildString can't assume the method has a parens (got a failure for 
 	  foo.set = xxx)
+	- complete table is inserting method generic args
+	- shouldn't ResolveType be using the parse cache?
 	- make sure expression completion still works
 * Profile:
 	- prune should check to see if a reparse is needed
@@ -157,8 +160,8 @@ window		menu			base line
 * Replace Debug.Assert with Contract.Require
 * Work more on target completion:
 	- .txt files are completing
-	- VS uses tab tab to complete 2-3 character words
-	- get ctor calls completing: enter with new PartialTypeName
+	- 2+ chars + 2 tabs should complete names and expressions
+	- get ctor calls completing
 	- ctor completion should work with dotted names
 	- ctor completion should work with just new
 	- completion should start a new undo action so undo only undoes one completion
@@ -168,7 +171,7 @@ window		menu			base line
 	- member list needs to account for visibility
 	- use an ITypeDatabase, should have parser databases for all windows that were open
 	- parse databases for closed windows are removed on a successful build
-	- would be nice to complete new expressions with ctors
+	- enter should complete snippets
 	- complete new SomeType calls
 		` special case array types
 	- local explicit interface implementation

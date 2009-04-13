@@ -40,39 +40,75 @@ namespace AutoComplete
 		{
 			Trace.Assert(!string.IsNullOrEmpty(type), "type is null or empty");
 			
+			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "---------------- resolving type");
+			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "type: {0}", type);
+			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "isInstance: {0}", isInstance);
+			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "isStatic: {0}", isStatic);
+			
+			ResolvedTarget result = null;
+			
 			m_fullName = null;
 			m_type = null;
 			
 			type = DoGetTypeName(type);
+			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "used type: {0}", type);
 			
 			if (m_type == null)
+			{
+				Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "trying local type");
 				DoHandleLocalType(globals, type);
+			}
 			
 			if (m_type == null)
+			{
+				Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "trying database type");
 				DoHandleDatabaseType(globals, type);
+			}
+				
+			if (m_fullName != null || m_type != null)
+				result = new ResolvedTarget(m_fullName, m_type, isInstance, isStatic);
 			
-			return m_fullName != null || m_type != null
-				? new ResolvedTarget(m_fullName, m_type, isInstance, isStatic)
-				: null;
+			Log.WriteLine("AutoComplete", "---- type {0} -> {1}", type, result);
+			
+			return result;
 		}
 		
 		public ResolvedTarget Resolve(CsType type, bool isInstance, bool isStatic)
 		{
 			Trace.Assert(type != null, "type is null or empty");
 			
+			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "---------------- resolving type");
+			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "cs type: {0}", type);
+			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "isInstance: {0}", isInstance);
+			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "isStatic: {0}", isStatic);
+			
 			m_type = type;
 			m_fullName = DoGetTypeName(m_type.FullName);
 			
-			return new ResolvedTarget(m_fullName, m_type, isInstance, isStatic);
+			ResolvedTarget result = new ResolvedTarget(m_fullName, m_type, isInstance, isStatic);
+			
+			Log.WriteLine("AutoComplete", "---- cs type {0} -> {1}", type, result);
+			
+			return result;
 		}
 		
 		public ResolvedTarget Resolve(string fullName, bool isInstance, bool isStatic)
 		{
 			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
 			
-			m_fullName = DoGetTypeName(fullName);
+			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "---------------- resolving type");
+			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "fullName: {0}", fullName);
+			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "isInstance: {0}", isInstance);
+			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "isStatic: {0}", isStatic);
 			
-			return new ResolvedTarget(m_fullName, null, isInstance, isStatic);
+			m_fullName = DoGetTypeName(fullName);
+			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "used type: {0}", m_fullName);
+			
+			ResolvedTarget result = new ResolvedTarget(m_fullName, null, isInstance, isStatic);
+			
+			Log.WriteLine("AutoComplete", "---- fullName type {0} -> {1}", fullName, result);
+			
+			return result;
 		}
 		
 		public IEnumerable<ResolvedTarget> GetBases(CsGlobalNamespace globals, string fullName, bool isInstance, bool isStatic)
@@ -161,10 +197,13 @@ namespace AutoComplete
 		private string DoGetTypeName(string fullName)
 		{
 			if (fullName.EndsWith("[]"))
-				return "System.Array";
+				return "array-type";
 			
 			else if (fullName.EndsWith("?"))
-				return "System.Nullable`1";
+				return "nullable-type";
+			
+			else if (fullName.EndsWith("*"))
+				return "pointer-type";
 			
 			// generic names should be Foo`1 not Foo`<T>
 			else if (fullName.Contains("`"))

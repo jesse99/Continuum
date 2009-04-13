@@ -74,6 +74,33 @@ namespace ObjectModel
 		
 		#region Private Methods
 		[Conditional("DEBUG")]
+		private void DoValidateRoot(string label, string type)
+		{
+			string mesg = null;
+			
+			if (type == null)
+				mesg = string.Format("{0} is an null", label);
+			
+			else if (type.Contains("["))
+				mesg = string.Format("{0} is an array ({1})", label, type);
+				
+			else if (type.Contains("<"))
+				mesg = string.Format("{0} has a generic argument ({1})", label, type);
+				
+			else if (type.Contains("*("))
+				mesg = string.Format("{0} is a function pointer ({1})", label, type);
+				
+			else if (type.Contains("*"))
+				mesg = string.Format("{0} is a pointer ({1})", label, type);
+				
+			else if (type.Contains("&"))
+				mesg = string.Format("{0} is a reference ({1})", label, type);
+			
+			if (mesg != null)
+				Trace.Fail(mesg);
+		}
+		
+		[Conditional("DEBUG")]
 		private void DoValidateRoot(string label, TypeReference type)
 		{
 			string mesg = null;
@@ -83,21 +110,9 @@ namespace ObjectModel
 				if (type is TypeSpecification)
 					mesg = string.Format("{0} is a {1} ({2})", label, type.GetType(), type.FullName);
 				
-				// Probably not neccesary to do these checks but it shouldn't hurt.
-				else if (type.FullName.Contains("["))
-					mesg = string.Format("{0} is an array ({1})", label, type.FullName);
-					
-				else if (type.FullName.Contains("<"))
-					mesg = string.Format("{0} has a generic argument ({1})", label, type.FullName);
-					
-				else if (type.FullName.Contains("*("))
-					mesg = string.Format("{0} is a function pointer ({1})", label, type.FullName);
-					
-				else if (type.FullName.Contains("*"))
-					mesg = string.Format("{0} is a pointer ({1})", label, type.FullName);
-					
-				else if (type.FullName.Contains("&"))
-					mesg = string.Format("{0} is a reference ({1})", label, type.FullName);
+				else
+					// Probably not neccesary to do these checks but it shouldn't hurt.
+					DoValidateRoot(label, type.FullName);
 			}
 			
 			if (mesg != null)
@@ -157,30 +172,15 @@ namespace ObjectModel
 					{
 						for (int i = 0; i < type.Interfaces.Count; ++i)
 						{
-							DoAddSpecialType(type.Interfaces[i]);
-							
-							string name;
-							if (type.Interfaces[i].IsSpecial())
-								name = type.Interfaces[i].FullName;
-							else
-								name = type.Interfaces[i].FullName.GetTypeName();
-							
-							interfaces.Append(name);
+							interfaces.Append(DoGetRootName(type.Interfaces[i]));
 							interfaces.Append(':');
 						}
 					}
 					
 					DoValidateRoot("root_name", type);
 					DoValidateRoot("declaring_root_name", type.DeclaringType);
-					DoAddSpecialType(type.BaseType);
 					
-					string baseName = string.Empty;
-					if (type.BaseType != null)
-						if (type.BaseType.IsSpecial())
-							baseName = type.BaseType.FullName;
-						else
-							baseName = type.BaseType.FullName.GetTypeName();
-					
+					string baseName = DoGetRootName(type.BaseType);
 					m_database.InsertOrReplace("Types",
 						type.FullName,
 						id,
@@ -193,28 +193,16 @@ namespace ObjectModel
 						attributes.ToString());
 						
 					if (type.HasConstructors)
-					{
 						foreach (MethodDefinition method in type.Constructors)
-						{
 							DoParseMethod(type, method, id, fullParse);
-						}
-					}
 					
 					if (type.HasMethods)
-					{
 						foreach (MethodDefinition method in type.Methods)
-						{
 							DoParseMethod(type, method, id, fullParse);
-						}
-					}
 					
 					if (type.HasFields)
-					{
 						foreach (FieldDefinition field in type.Fields)
-						{
 							DoParseField(type, field, id, fullParse);
-						}
-					}
 				});
 			}
 		}
@@ -237,20 +225,36 @@ namespace ObjectModel
 					}
 				}
 				
-				int kind = 3;
+				int kind;
+				string kn;
 				if (array != null)
+				{
 					kind = 0;
+					kn = "array-type";
+				}
 				else if (generic != null)
+				{
 					kind = 1;
+					kn = DoGetRootName(type);
+				}
 				else if (type is PointerType)
+				{
 					kind = 2;
+					kn = "pointer-type";
+				}
+				else
+				{
+					kind = 3;
+					kn = "other-type";
+				}
 				
 				m_database.InsertOrIgnore("SpecialTypes",
 					type.FullName,
 					spec.ElementType != null ? spec.ElementType.FullName : string.Empty,
 					array != null ? array.Rank.ToString() : "0",
 					genericTypes.ToString(),
-					kind.ToString());
+					kind.ToString(),
+					kn);
 			}
 		}
 		
@@ -267,9 +271,12 @@ namespace ObjectModel
 					if (method.IsPublic && DoHasExtensionAtribute(method.CustomAttributes))
 					{
 						if (method.Parameters[0].ParameterType.IsSpecial())
+						{
+							DoAddSpecialType(method.Parameters[0].ParameterType);
 							extendName = method.Parameters[0].ParameterType.FullName;
+						}
 						else
-							extendName = method.Parameters[0].ParameterType.FullName.GetTypeName();
+							extendName = DoGetRootName(method.Parameters[0].ParameterType);
 					}
 					
 					int access = 0;
@@ -327,14 +334,15 @@ namespace ObjectModel
 						kind = 9;
 					
 					DoValidateRoot("root_name", method.DeclaringType);
-					DoAddSpecialType(type.BaseType);
-					DoAddSpecialType(method.ReturnType.ReturnType);
 					
 					string returnName;
 					if (method.ReturnType.ReturnType.IsSpecial())
+					{
+						DoAddSpecialType(method.ReturnType.ReturnType);
 						returnName = method.ReturnType.ReturnType.FullName;
+					}
 					else
-						returnName = method.ReturnType.ReturnType.FullName.GetTypeName();
+						returnName = DoGetRootName(method.ReturnType.ReturnType);
 					
 					m_database.InsertOrReplace("Methods",
 						DoGetDisplayText(method),
@@ -390,9 +398,12 @@ namespace ObjectModel
 					
 					string fieldType;
 					if (field.FieldType.IsSpecial())
+					{
+						DoAddSpecialType(field.FieldType);
 						fieldType = field.FieldType.FullName;
+					}
 					else
-						fieldType = field.FieldType.FullName.GetTypeName();
+						fieldType = DoGetRootName(field.FieldType);
 					
 					m_database.InsertOrReplace("Fields",
 						field.Name,
@@ -626,6 +637,32 @@ namespace ObjectModel
 			}
 			
 			return name;
+		}
+				
+		private string DoGetRootName(TypeReference inType)
+		{
+			string root = string.Empty;
+			
+			if (inType is TypeSpecification)
+			{
+				TypeReference type = inType;
+				
+				while (type is TypeSpecification)
+				{
+					TypeSpecification spec = (TypeSpecification) type;
+					type = spec.ElementType;
+				}
+				
+				if (type != null)
+				{
+					root = type.FullName;
+					DoValidateRoot("manufactured root", root);
+				}
+			}
+			else if (inType != null)
+				root = inType.FullName;
+			
+			return root;
 		}
 		
 		private string DoGetNameWithoutTick(string name)	// theaded

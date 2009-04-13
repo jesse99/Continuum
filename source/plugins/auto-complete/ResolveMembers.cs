@@ -54,9 +54,9 @@ namespace AutoComplete
 			// Note that we need to make two GetMembers queries to ensure that interface
 			// methods are not used in place of base methods (this gives us better results
 			// when the context menu is used to filter out methods associated with types).
-			members.AddIfMissingRange(m_database.GetFields(baseNames.ToArray(), target.IsInstance, target.IsStatic));
-			members.AddIfMissingRange(m_database.GetMembers(baseNames.ToArray(), target.IsInstance, target.IsStatic));
-			members.AddIfMissingRange(m_database.GetMembers(interfaceNames.ToArray(), target.IsInstance, target.IsStatic));
+			DoAddIfMissingRange("Fields:", members, m_database.GetFields(baseNames.ToArray(), target.IsInstance, target.IsStatic));
+			DoAddIfMissingRange("Base Members:", members, m_database.GetMembers(baseNames.ToArray(), target.IsInstance, target.IsStatic));
+			DoAddIfMissingRange("Interface Members:", members, m_database.GetMembers(interfaceNames.ToArray(), target.IsInstance, target.IsStatic));
 			
 			if (target.IsInstance)
 			{
@@ -68,13 +68,83 @@ namespace AutoComplete
 				for (int i = 0; i < globals.Uses.Length; ++i)
 					namespaces.Add(globals.Uses[i].Namespace);
 				
-				members.AddIfMissingRange(m_database.GetExtensionMethods(target.TypeName, allNames, namespaces.ToArray()));
+				DoAddIfMissingRange("Extension Methods:", members, m_database.GetExtensionMethods(target.TypeName, allNames, namespaces.ToArray()));
+			}
+			
+			return members.ToArray();
+		}
+		
+		// Usually this will return zero or one name, but it can return more (eg for explicit interface
+		// implementations).
+		public Member[] Find(ResolvedTarget target, CsGlobalNamespace globals, string name, int arity)
+		{
+			var members = new List<Member>();
+			
+			var types = new List<CsType>();
+			var baseNames = new List<string>();
+			var interfaceNames = new List<string>();
+			string[] allNames = DoGetBases(target.TypeName, types, baseNames, interfaceNames);
+			
+			foreach (CsType type in types)
+			{
+				var candidates = new List<Member>();
+				DoGetParsedMembers(type, target.IsInstance, target.IsStatic, candidates, type.FullName == target.TypeName);
+				members = (from m in candidates where DoMatch(m, name, arity) select m).ToList();
+			}
+			
+			// Note that we need to make two GetMembers queries to ensure that interface
+			// methods are not used in place of base methods (this gives us better results
+			// when the context menu is used to filter out methods associated with types).
+			DoAddIfMissingRange("Fields:", members, m_database.GetFields(baseNames.ToArray(), target.IsInstance, target.IsStatic));
+			DoAddIfMissingRange("Base Members:", members, m_database.GetMembers(baseNames.ToArray(), target.IsInstance, target.IsStatic, name, arity));
+			DoAddIfMissingRange("Interface Members:", members, m_database.GetMembers(interfaceNames.ToArray(), target.IsInstance, target.IsStatic, name, arity));
+			
+			if (target.IsInstance)
+			{
+				var namespaces = new List<string>();
+				
+				for (int i = 0; i < globals.Namespaces.Length; ++i)
+					namespaces.Add(globals.Namespaces[i].Name);
+				
+				for (int i = 0; i < globals.Uses.Length; ++i)
+					namespaces.Add(globals.Uses[i].Namespace);
+				
+				DoAddIfMissingRange("Extension Methods:", members, m_database.GetExtensionMethods(target.TypeName, allNames, namespaces.ToArray(), name, arity));
 			}
 			
 			return members.ToArray();
 		}
 		
 		#region Private Methods
+		public static void DoAddIfMissingRange(string mesg, List<Member> data, IEnumerable<Member> values)
+		{
+//			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", mesg);
+			foreach (Member value in values)
+			{
+				if (data.IndexOf(value) < 0)
+				{
+//					Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "    {0}      {1}", value.ToString(), value.Name);
+					data.Add(value);
+				}
+			}
+		}
+		
+		private bool DoMatch(Member member, string name, int numArgs)
+		{
+			bool matches = false;
+			
+			if (numArgs == 0)
+			{
+				matches = member.Text == name;
+			}
+			else if (member.Arity == numArgs)
+			{
+				matches = member.Name == name;
+			}
+			
+			return matches;
+		}
+		
 		private string[] DoGetBases(string typeName, List<CsType> types, List<string> baseNames, List<string> interfaceNames)
 		{
 			Boss boss = ObjectModel.Create("CsParser");

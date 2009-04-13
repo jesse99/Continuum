@@ -252,9 +252,9 @@ namespace ObjectModel
 						namespace TEXT NOT NULL,
 						name TEXT NOT NULL 
 							CONSTRAINT no_empty_name CHECK(length(name) > 0),
-						base_type_name TEXT NOT NULL,
-						interface_type_names TEXT NOT NULL
-							CONSTRAINT valid_interfaces CHECK(length(interface_type_names) = 0 OR substr(interface_type_names, -1) = ':'),
+						base_root_name TEXT NOT NULL,
+						interface_root_names TEXT NOT NULL
+							CONSTRAINT valid_interfaces CHECK(length(interface_root_names) = 0 OR substr(interface_root_names, -1) = ':'),
 						generic_arg_count INTEGER NOT NULL
 							CONSTRAINT non_negative_arg_count CHECK(generic_arg_count >= 0),
 						visibility INTEGER NOT NULL
@@ -273,7 +273,9 @@ namespace ObjectModel
 						generic_type_names TEXT NOT NULL
 							CONSTRAINT valid_generics CHECK(length(generic_type_names) = 0 OR substr(generic_type_names, -1) = ':'),
 						kind INTEGER NOT NULL
-							CONSTRAINT valid_kind CHECK(kind >= 0 AND kind <= 3)
+							CONSTRAINT valid_kind CHECK(kind >= 0 AND kind <= 3),
+						kind_name TEXT NOT NULL
+							CONSTRAINT no_empty_kind_name CHECK(length(kind_name) > 0)
 					)");
 				
 				m_database.Update(@"
