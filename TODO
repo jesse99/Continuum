@@ -177,12 +177,7 @@ then auto-complete NSMenuItem and context menu NSApplication
 window		menu			
 0.495		0.103		base line
 
-* Get TargetDatabase working again:
-	- make sure expression completion still works
-	- clean up unused (I)TargetDatabase methods
 * Profile:
-	- prune should check to see if a reparse is needed
-	- make sure assembly rebuild doesn't just delete, but deletes and adds
 	- look at overall speed
 	- look at query overhead
 	- PRAGMA cache_size can have a large effect on speed
@@ -202,6 +197,8 @@ window		menu
 * Replace Debug.Assert with Contract.Require
 * Work more on target completion:
 	- .txt files are completing
+	- make sure var builder = new System.Text.StringBuilder(); completes when
+	  builder is used
 	- 2+ chars + 2 tabs should complete names and expressions
 	- get ctor calls completing
 	- ctor completion should work with dotted names

@@ -73,6 +73,102 @@ namespace Shared
 		}
 	}
 	
+	public struct NamedRow
+	{
+		internal NamedRow(Dictionary<string, int> names, string[] row)
+		{
+			m_names = names;
+			m_row = row;
+		}
+		
+		public int Arity
+		{
+			get {return m_names != null ? m_names.Count : 0;}
+		}
+		
+		public string this[string name]
+		{
+			get
+			{
+				int index = m_names[name];
+				return m_row[index];
+			}
+		}
+		
+		public string this[int index]
+		{
+			get
+			{
+				return m_row[index];
+			}
+		}
+		
+		public override string ToString()
+		{
+			var builder = new System.Text.StringBuilder();
+			builder.Append("{");
+			
+			int i = 0;
+			foreach (var entry in m_names)
+			{
+				builder.Append(entry.Key);
+				builder.Append(" = ");
+				builder.Append(m_row[entry.Value]);
+				
+				if (++i < m_names.Count)
+					builder.Append(", ");	
+			}
+			
+			builder.Append("}");
+			
+			return builder.ToString();
+		}
+		
+		private Dictionary<string, int> m_names;
+		private string[] m_row;
+	}
+	
+	public sealed class NamedRows
+	{
+		public NamedRows(Dictionary<string, int> names, string[][] rows)
+		{
+			Contract.Requires(names != null, "names is null");
+			Contract.Requires(rows != null, "rows is null");
+			Contract.Requires(rows.Length == 0 || names.Count == rows[0].Length, "names and row lengths don't match");
+			
+			m_names = names;
+			m_rows = rows;
+		}
+		
+		public int Length
+		{
+			get {return m_rows.Length;}
+		}
+		
+		public int Arity
+		{
+			get {return m_names.Count;}
+		}
+		
+		public NamedRow this[int index]
+		{
+			get
+			{
+				string[] row = m_rows[index];
+				return new NamedRow(m_names, row);
+			}
+		}
+		
+		public IEnumerator<NamedRow> GetEnumerator()
+		{
+			for (int i = 0; i < m_rows.Length; ++i)
+				yield return new NamedRow(m_names, m_rows[i]);
+		}
+		
+		private Dictionary<string, int> m_names;
+		private string[][] m_rows;
+	}
+	
 	// Simple sqlite wrapper. Note that this will work with multiple threads, but
 	// each thread should use its own Database object.
 	public sealed class Database	: IDisposable
@@ -86,9 +182,9 @@ namespace Shared
 		// debugging locking problems.
 		public Database(string path, string name)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(path), "path is null or empty");
-			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
-			Log.WriteLine("Database", "connecting to database at {0}", path);
+			Contract.Requires(!string.IsNullOrEmpty(path), "path is null or empty");
+			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
+			Log.WriteLine(TraceLevel.Verbose, "Database", "connecting to database at {0}", path);
 			
 			if (sqlite3_threadsafe() == 0)
 				throw new InvalidOperationException("libsqlite3.dylib was built without thread support.");
@@ -116,9 +212,9 @@ namespace Shared
 		// Used for SQL commands which do not return a table.
 		public void Update(string command)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(command), "command is null or empty");
-			Trace.Assert(m_lock != null, "update is not within a transaction");
-			Trace.Assert(Thread.CurrentThread.ManagedThreadId == m_threadID, m_name + " was used with multiple threads");
+			Contract.Requires(!string.IsNullOrEmpty(command), "command is null or empty");
+			Contract.Requires(m_lock != null, "update is not within a transaction");
+			Contract.Requires(Thread.CurrentThread.ManagedThreadId == m_threadID, m_name + " was used with multiple threads");
 			if (m_disposed)
 				throw new ObjectDisposedException(GetType().Name);
 			
@@ -173,20 +269,28 @@ namespace Shared
 				}
 				catch (DatabaseLockedException)
 				{
+					const int MaxTries = 5;
+					
 					UnsafeRollback(name);
-					if (++i < 10)
+					if (++i < MaxTries)
 					{
+						Log.WriteLine(TraceLevel.Info, "Database", "Transactions deadlocked:");
+						m_command = string.Format("failed to acquire a lock for {0}, try {1} of {2}", name, i, MaxTries);
+						DoDumpState(TraceLevel.Info);
+						
 						Thread.Sleep(100);		// max commit time is 400 msecs on a fast machine
 					}
 					else
 					{
-						Console.Error.WriteLine("Transactions deadlocked:");
-						DoDumpState();
+						Log.WriteLine(TraceLevel.Error, "Database", "Transactions deadlocked:");
+						m_command = "failed to acquire a lock for " + name;
+						DoDumpState(TraceLevel.Error);
 						throw;
 					}
 				}
-				catch
+				catch (Exception e)
 				{
+					Log.WriteLine(TraceLevel.Info, "Database", "{0} trying {1}", e.Message, name);
 					UnsafeRollback(name);
 					throw;
 				}
@@ -200,9 +304,9 @@ namespace Shared
 		// normally be used instead.
 		public void UnsafeBegin(string name)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
-			Trace.Assert(m_lock == null, "can't nest transaction, old transaction is " + m_lock);
-			Trace.Assert(Thread.CurrentThread.ManagedThreadId == m_threadID, m_name + " was used with multiple threads");
+			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
+			Contract.Requires(m_lock == null, "can't nest transaction, old transaction is " + m_lock);
+			Contract.Requires(Thread.CurrentThread.ManagedThreadId == m_threadID, m_name + " was used with multiple threads");
 			
 			m_lock = name;
 			m_lockTime = DateTime.Now;
@@ -211,9 +315,9 @@ namespace Shared
 		
 		public void UnsafeCommit(string name)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
-			Trace.Assert(name == m_lock, string.Format("m_lock is '{0}' but should be '{1}'", m_lock, name));
-			Trace.Assert(Thread.CurrentThread.ManagedThreadId == m_threadID, m_name + " was used with multiple threads");
+			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
+			Contract.Requires(name == m_lock, string.Format("m_lock is '{0}' but should be '{1}'", m_lock, name));
+			Contract.Requires(Thread.CurrentThread.ManagedThreadId == m_threadID, m_name + " was used with multiple threads");
 			
 			Update("COMMIT TRANSACTION");
 			Log.WriteLine(TraceLevel.Verbose, "Database", "{0} transaction took {1:0.000} seconds", m_lock, (DateTime.Now - m_lockTime).TotalMilliseconds/1000.0);
@@ -223,9 +327,9 @@ namespace Shared
 		// Will not throw and may be called multiple times.
 		public void UnsafeRollback(string name)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
-			Trace.Assert(m_lock == null || name == m_lock, string.Format("m_lock is '{0}' but should be '{1}'", m_lock, name));
-			Trace.Assert(Thread.CurrentThread.ManagedThreadId == m_threadID, m_name + " was used with multiple threads");
+			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
+			Contract.Requires(m_lock == null || name == m_lock, string.Format("m_lock is '{0}' but should be '{1}'", m_lock, name));
+			Contract.Requires(Thread.CurrentThread.ManagedThreadId == m_threadID, m_name + " was used with multiple threads");
 			
 			if (!m_disposed)
 			{
@@ -248,9 +352,9 @@ namespace Shared
 		// false then row retrieval will be aborted.
 		public void Query(string command, HeaderCallback hc, RowCallback rc)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(command), "command is null or empty");
-			Trace.Assert(rc != null, "RowCallback is null");
-			Trace.Assert(Thread.CurrentThread.ManagedThreadId == m_threadID, m_name + " was used with multiple threads");
+			Contract.Requires(!string.IsNullOrEmpty(command), "command is null or empty");
+			Contract.Requires(rc != null, "RowCallback is null");
+			Contract.Requires(Thread.CurrentThread.ManagedThreadId == m_threadID, m_name + " was used with multiple threads");
 			if (m_disposed)
 				throw new ObjectDisposedException(GetType().Name);
 			
@@ -283,7 +387,7 @@ namespace Shared
 					string[] row = new string[numCols];
 					for (int i = 0; i < numCols; ++i)
 					{
-						Trace.Assert(values[i] != IntPtr.Zero, "we don't support null values");
+						Contract.Assert(values[i] != IntPtr.Zero, "we don't support null values");
 						row[i] = Marshal.PtrToStringAuto(values[i]);
 					}
 					
@@ -340,6 +444,17 @@ namespace Shared
 			return rows.ToArray();
 		}
 		
+		//  The attribute names will be those which are listed in the SELECT clause of the command.
+		public NamedRows QueryNamedRows(string command)
+		{
+			var rows = new List<string[]>();
+			Database.RowCallback rc = (r) => {rows.Add(r); return true;};
+			
+			Query(command, null, rc);
+			
+			return new NamedRows(DoGetNames(command), rows.ToArray());
+		}
+		
 		// TODO: 
 		// probably want an async BeginQuery method
 		// may want to support linq, see:
@@ -360,6 +475,7 @@ namespace Shared
 				if (m_database != IntPtr.Zero)
 					Unused.Value = sqlite3_close(m_database);
 				
+				m_database = IntPtr.Zero;
 				m_disposed = true;
 			}
 		}
@@ -380,31 +496,63 @@ namespace Shared
 			throw (err != Error.BUSY ? new DatabaseException(mesg) : new DatabaseLockedException(mesg));
 		}
 		
-		[Conditional("DEBUG")]
-		private static void DoDumpState()
+		private Dictionary<string, int> DoGetNames(string command)
 		{
-			var details = new System.Text.StringBuilder();
+			int length = 0;
+			int i = DoFind(command, ref length, "SELECT DISTINCT ", "SELECT ");
+			Contract.Assert(i >= 0, "couldn't find select clause in " + command);
+			i += length;
 			
+			int j = DoFind(command, ref length, "FROM ", "WHERE ", "GROUP ");
+			Contract.Assert(j >= 0, "couldn't find from, where, or group clause in " + command);
+			Contract.Assert(i < j, "clauses are in the wrong order");
+			
+			string text = command.Substring(i, j - i).TrimAll();
+			string[] names = text.Split(',');
+			
+			var result = new Dictionary<string, int>();
+			for (int k = 0; k < names.Length; ++k)
+			{
+				result.Add(names[k], k);
+			}
+			
+			return result;
+		}
+		
+		private int DoFind(string text, ref int length, params string[] names)
+		{
+			foreach (string name in names)
+			{
+				int i = text.IndexOf(name);
+				if (i > 0)
+				{
+					length = name.Length;
+					return i;
+				}
+			}
+			
+			return -1;
+		}
+		
+		[Conditional("DEBUG")]
+		private static void DoDumpState(TraceLevel level)
+		{
 			lock (ms_mutex)
 			{
 				foreach (WeakReference wr in ms_connections)
 				{
 					Database db = wr.Target as Database;
-					if (db != null && db.m_command != null)
+					if (db != null && db.m_database != IntPtr.Zero)
 					{
 						if (db.m_lock != null)
-							details.AppendFormat("Thread {0} {1} locked {2} at {3}", db.m_threadID, db.m_name, db.m_lock, db.m_lockTime);
+							Log.WriteLine(level, "Database", "Thread {0} {1} is locked for {2} at {3}", db.m_threadID, db.m_name, db.m_lock, db.m_lockTime);
+						else if (db.m_command != null)
+							Log.WriteLine(level, "Database", "Thread {0} {1} {2}", db.m_threadID, db.m_name, db.m_command);
 						else
-							details.AppendFormat("Thread {0} {1}", db.m_threadID, db.m_name);
-						details.AppendLine();
-						
-						details.AppendLine(db.m_command);
-						details.AppendLine();
+							Log.WriteLine(level, "Database", "Thread {0} {1}", db.m_threadID, db.m_name);
 					}
 				}
 			}
-			
-			Console.Error.WriteLine(details.ToString());
 		}
 		
 		[Conditional("DEBUG")]

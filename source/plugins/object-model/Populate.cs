@@ -178,9 +178,8 @@ namespace ObjectModel
 				try
 				{
 					DoDeleteAssemblies();
-					Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "pruned assemblies");
 					
-					string root;
+					var files = new List<string>();
 					lock (m_lock)
 					{
 						while (m_files.Count == 0 && m_running)
@@ -192,16 +191,23 @@ namespace ObjectModel
 						
 						if (!m_running)
 							break;
-						
-						root = m_files[0];
-						m_files.RemoveAt(0);
+							
+						files.AddRange(m_files);
+						m_files.Clear();
 					}
 					
-					if (!root.Contains(".app/") && !root.Contains("/.svn"))
+					bool added = false;
+					foreach (string file in files)
 					{
-						DoUpdateAssemblies(root);
-						Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "updated assemblies for '{0}'", root);
+						if (!file.Contains(".app/") && !file.Contains("/.svn"))
+						{
+							if (DoAddAssembly(file))
+								added = true;
+						}
 					}
+					
+					if (added)
+						DoCheckAssemblyVersions();
 				}
 				catch (Exception e)
 				{
@@ -240,7 +246,9 @@ namespace ObjectModel
 						write_time INTEGER NOT NULL
 							CONSTRAINT sane_time CHECK(write_time > 0),
 						assembly INTEGER NOT NULL
-							CONSTRAINT no_zero_assembly CHECK(assembly != 0)
+							CONSTRAINT no_zero_assembly CHECK(assembly != 0),
+						in_use INTEGER NOT NULL
+							CONSTRAINT valid_in_use CHECK(in_use >= 0 AND in_use <= 1)
 					)");
 
 				m_database.Update(@"
@@ -326,28 +334,40 @@ namespace ObjectModel
 		
 		private void DoDeleteAssemblies()		// threaded
 		{
+			int count = 0;
+			
 			m_database.Update("prune assemblies", () =>
 			{
 				// Remove every row in Assemblies where the path is no longer valid.
 				string sql = @"
-					SELECT path, assembly, name, culture, version
+					SELECT version, assembly, path, name, culture, in_use
 						FROM Assemblies";
-				string[][] rows = m_database.QueryRows(sql);
+				NamedRows rows = m_database.QueryNamedRows(sql);
 				
-				foreach (string[] row in rows)
+				foreach (NamedRow row in rows)
 				{
-					if (!File.Exists(row[0]))
+					if (!File.Exists(row["path"]))
 					{
-						Log.WriteLine(TraceLevel.Info, "ObjectModel", "pruning {0} {1} {2}", row[2], row[3], row[4]);
+						Log.WriteLine(TraceLevel.Info, "ObjectModel", "removing deleted {0} {1} {2}", row["name"], row["culture"], row["version"]);
 						
 						m_database.Update(string.Format(@"
 							DELETE FROM Assemblies 
-								WHERE path = '{0}'", row[0]));
-								
-						DoDeleteAssemblyReferences(row[1]);
+								WHERE path = '{0}'", row["path"]));
+						DoDeleteAssemblyReferences(row["assembly"]);
+						
+						if (row["in_use"] == "1")
+							++count;
 					}
 				}
 			});
+			
+			// If we deleted an assembly which was in use then we need to check to
+			// see if there's an older version of that assembly we can use.
+			if (count > 0)
+			{
+				Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "{0} in-use assemblies were deleted", count);
+				DoCheckAssemblyVersions();
+			}
 		}
 		
 		private void DoDeleteAssemblyReferences(string id)		// threaded
@@ -365,28 +385,61 @@ namespace ObjectModel
 					WHERE assembly = '{0}'", id));
 		}
 		
-		private void DoUpdateAssemblies(string path)		// threaded
+		private bool DoAddAssembly(string path)
 		{
+			Contract.Requires(Path.IsPathRooted(path), path + " is not an absolute path");
+			
+			bool added = false;
+			
 			try
 			{
-				AssemblyDefinition assembly = null;
-				string id = "0";
-				DoTryAddAssembly(path, ref assembly, ref id);
-				
-				// If we need to process the assembly then,
-				if (assembly != null)
+				m_database.Update("add assembly " + path, () =>
 				{
-					// parse the assembly (we do this last so that the Types table
-					// can refer to the new row in the Assemblies table),
-					bool fullParse = !path.Contains("/gac/") && !path.Contains("/mscorlib.dll") && File.Exists(path + ".mdb");	// TODO: might want to optionally allow full parse of mscorlib and assemblies in the gac			
-					DoParseAssembly(path, assembly, id, fullParse);
+					string ticks = File.GetLastWriteTime(path).Ticks.ToString();
 					
-					// and queue up any assemblies it references (but only for local assemblies:
-					// the database are already large and transitively parsing all assemblies isn't
-					// that useful).
-					if (fullParse)
-						DoQueueReferencedAssemblies(assembly, path);
-				}
+					string sql = string.Format(@"
+						SELECT version, write_time, assembly, in_use
+							FROM Assemblies
+						WHERE path = '{0}'", path.Replace("'", "''"));
+					NamedRows rows = m_database.QueryNamedRows(sql);
+					Contract.Assert(rows.Length <= 1, "too many rows");
+					
+					// We don't check the version because if the assemblies version is newer then
+					// we want to use it, if it is equal then that doesn't tell us anything (because
+					// version numbers may not change when assemblies are built), and because
+					// if the version is somehow older then we want to record that fact. And, of
+					// course, we'd like to avoid loading the assembly if we don't need to use it.
+					if (rows.Length == 0 || rows[0]["write_time"] != ticks)
+					{
+						// Note that we want to do this before we delete the old references because
+						// the load may fail (e.g. if a build is in progress and files/directories are
+						// being deleted).
+						AssemblyDefinition assembly = AssemblyCache.Load(path, true);
+						string culture = string.IsNullOrEmpty(assembly.Name.Culture) ? "neutral" : assembly.Name.Culture.ToLower();
+						Version version = assembly.Name.Version;
+						
+						if (rows.Length > 0 && rows[0]["in_use"] == "1")
+							DoDeleteAssemblyReferences(rows[0]["assembly"]);
+						
+						sql = @"SELECT COALESCE(MAX(assembly), 0) FROM Assemblies";
+						string[][] rs = m_database.QueryRows(sql);
+						int id = int.Parse(rs[0][0]) + 1;
+						
+						Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "adding new {0} {1} {2}", assembly.Name.Name, culture, version);
+						m_database.InsertOrReplace("Assemblies",
+							path,
+							assembly.Name.Name,
+							culture,
+							version.ToString(),
+							ticks,
+							id.ToString(),
+							"0");
+							
+							added = true;
+					}
+					else
+						Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "ignoring {0}", Path.GetFileName(path));
+				});
 			}
 			catch (BadImageFormatException)
 			{
@@ -399,13 +452,162 @@ namespace ObjectModel
 			catch (IOException ie)
 			{
 				// the file system may change as we are trying to process assemblies
-				// so we'll ignore IO errors (in release anyway)
-				Log.WriteLine(TraceLevel.Info, "Errors", "error analyzing '{0}':", path);
+				// so we'll ignore IO errors
+				Log.WriteLine(TraceLevel.Info, "Errors", "error adding '{0}':", path);
 				Log.WriteLine(TraceLevel.Info, "Errors", ie.Message);
 			}
 			catch (Exception e)
 			{
-				Console.Error.WriteLine("error analyzing '{0}':", path);
+				Console.Error.WriteLine("error adding '{0}':", path);
+				Console.Error.WriteLine(e);
+			}
+			
+			return added;
+		}
+		
+		// Make sure the assembly which is in use is the newest version.
+		private void DoCheckAssemblyVersions()
+		{
+			string sql = @"
+				SELECT DISTINCT name, culture
+					FROM Assemblies";
+			NamedRows rows = m_database.QueryNamedRows(sql);
+			foreach (NamedRow row in rows)
+			{
+				NamedRow newest = DoGetNewestAssembly(row["name"], row["culture"]);
+				NamedRow current = DoGetUsedAssembly(row["name"], row["culture"]);
+				if (current.Arity == 0 || newest["path"] != current["path"])
+				{
+					if (current.Arity > 0)
+						DoUnparseAssembly(current);
+					
+					DoParseAssembly(newest);
+				}
+			}
+		}
+		
+		private NamedRow DoGetNewestAssembly(string name, string culture)
+		{
+			string sql = string.Format(@"
+				SELECT path, name, culture, version, write_time, assembly, in_use
+					FROM Assemblies
+				WHERE name = '{0}' AND culture = '{1}'", name, culture);
+			NamedRows rows = m_database.QueryNamedRows(sql);
+			
+			NamedRow newest = new NamedRow();
+			foreach (NamedRow row in rows)
+			{
+				if (newest.Arity == 0 || DoLhsIsNewer(row, newest))
+					newest = row;
+			}
+			Contract.Assert(newest.Arity > 0, "should have found at least one assembly named " + name);
+			
+			return newest;
+		}
+		
+		private NamedRow DoGetUsedAssembly(string name, string culture)
+		{
+			string sql = string.Format(@"
+				SELECT path, name, culture, version, write_time, assembly, in_use
+					FROM Assemblies
+				WHERE name = '{0}' AND culture = '{1}'", name, culture);
+			NamedRows rows = m_database.QueryNamedRows(sql);
+			
+			NamedRow used = new NamedRow();
+			foreach (NamedRow row in rows)
+			{
+				if (row["in_use"] == "1")
+				{
+					Contract.Assert(used.Arity == 0, string.Format("two assemblies named {0} {1} are both in use", name, culture));
+					used = row;						// there shouldn't be many assemblies named name so continuing won't have much of an impact on performance (and allows us to check part of the Assemblies invariant)
+				}
+			}
+			
+			return used;
+		}
+		
+		private bool DoLhsIsNewer(NamedRow lhs, NamedRow rhs)
+		{
+			bool newer = false;
+			
+			Version lhsVersion = new Version(lhs["version"]);
+			Version rhsVersion = new Version(rhs["version"]);
+			
+			if (lhsVersion > rhsVersion)
+			{
+				newer = true;
+			}
+			else if (lhsVersion == rhsVersion)
+			{
+				long lhsTicks = long.Parse(lhs["write_time"]);
+				long rhsTicks = long.Parse(rhs["write_time"]);
+				
+				if (lhsTicks > rhsTicks)
+					newer = true;
+			}
+			
+			return newer;
+		}
+		
+		private void DoUnparseAssembly(NamedRow row)
+		{
+			Contract.Requires(row["in_use"] == "1", "assembly is not in use");
+			
+			m_database.Update("unparsed", () =>
+			{
+				Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "unparsing {0} {1} {2}", row["name"], row["culture"], row["version"]);
+				DoDeleteAssemblyReferences(row["assembly"]);
+				
+				m_database.InsertOrReplace("Assemblies",
+					row["path"],
+					row["name"],
+					row["culture"],
+					row["version"],
+					row["write_time"],
+					row["assembly"],
+					"0");
+			});
+		}
+		
+		private void DoParseAssembly(NamedRow row)
+		{
+			Contract.Requires(row["in_use"] == "0", "assembly is already in use");
+			
+			string path = row["path"];
+			
+			try
+			{
+				bool fullParse = !path.Contains("/gac/") && !path.Contains("/mscorlib.dll") && File.Exists(path + ".mdb");	// TODO: might want to optionally allow full parse of mscorlib and assemblies in the gac
+				AssemblyDefinition assembly = AssemblyCache.Load(path, true);
+				
+				Log.WriteLine(TraceLevel.Info, "ObjectModel", "parsing {0} {1} {2}", row["name"], row["culture"], row["version"]);
+				m_boss.CallRepeated<IParseAssembly>(i => i.Parse(path, assembly, row["assembly"], fullParse));
+				
+				m_database.Update("parsed", () =>
+				{
+					m_database.InsertOrReplace("Assemblies",
+						path,
+						row["name"],
+						row["culture"],
+						row["version"],
+						row["write_time"],
+						row["assembly"],
+						"1");
+				});
+				
+				if (fullParse)
+					DoQueueReferencedAssemblies(assembly, path);
+			}
+			catch (IOException ie)
+			{
+				// the file system may change as we are trying to process assemblies
+				// so we'll ignore IO errors
+				Log.WriteLine(TraceLevel.Info, "Errors", "error parsing '{0}':", path);
+				Log.WriteLine(TraceLevel.Info, "Errors", ie.Message);
+			}
+			catch (Exception e)
+			{
+				Console.Error.WriteLine("error parsing '{0}':", path);
 				Console.Error.WriteLine(e);
 			}
 		}
@@ -427,7 +629,7 @@ namespace ObjectModel
 							m_resolvedAssemblies.Add(nr.FullName);
 							
 							Image image = ad.MainModule.Image;
-							Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "resolved {0} at {1}", nr.FullName, image.FileInformation.FullName);
+							Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "queuing referenced {0} {1} {2}", nr.Name, nr.Culture, nr.Version);
 							
 							lock (m_lock)
 							{
@@ -442,111 +644,7 @@ namespace ObjectModel
 					}
 				}
 			}
-		}
-		
-		private void DoTryAddAssembly(string path, ref AssemblyDefinition assembly, ref string id)		// threaded
-		{
-			AssemblyDefinition candidate = AssemblyCache.Load(path, true);
-			string candidateID = null;
-			
-			m_database.Update("update assemblies for " + path, () =>
-			{
-				string culture = string.IsNullOrEmpty(candidate.Name.Culture) ? "neutral" : candidate.Name.Culture.ToLower();
-				string sql = string.Format(@"
-					SELECT version, write_time, assembly
-						FROM Assemblies
-					WHERE name = '{0}' AND culture = '{1}'", candidate.Name.Name, culture);
-				string[][] rows = m_database.QueryRows(sql);
-		
-				Version currentVersion = candidate.Name.Version;
-				long currentTicks = File.GetLastWriteTime(path).Ticks;
-				if (DoCurrentIsNewer(currentVersion, currentTicks, rows))
-				{
-					string oldID = DoFindNewest(rows);
-					if (oldID != null)
-						DoDeleteAssemblyReferences(oldID);
-					
-					sql = @"SELECT COALESCE(MAX(assembly), 1) FROM Assemblies";
-					rows = m_database.QueryRows(sql);
-					candidateID = (rows.Length > 0 ? int.Parse(rows[0][0]) + 1 : 1).ToString();
-					
-					m_database.InsertOrReplace("Assemblies",
-						path,
-						candidate.Name.Name,
-						culture,
-						currentVersion.ToString(),
-						currentTicks.ToString(),
-						candidateID);
-				}
-				else
-				{
-					Log.WriteLine(TraceLevel.Info, "ObjectModel", "Ignoring {0}", candidate);
-					candidate = null;
-				}
-			});
-			
-			assembly = candidate;
-			id = candidateID;
-		}
-		
-		private string DoFindNewest(string[][] rows)
-		{
-			string id = null;
-			
-			if (rows.Length > 0)
-			{
-				Version currentVersion = new Version(rows[0][0]);
-				long currentTicks = long.Parse(rows[0][1]);
-				id = rows[0][2];
-				
-				for (int i = 1; i < rows.Length; ++i)
-				{
-					if (!DoCurrentIsNewer(currentVersion, currentTicks, rows[i][0], rows[i][1]))
-					{
-						currentVersion = new Version(rows[i][0]);
-						currentTicks = long.Parse(rows[i][1]);
-						id = rows[i][2];
-					}
-				}
-			}
-			
-			return id;
-		}
-		
-		private bool DoCurrentIsNewer(Version currentVersion, long currentTicks, string[][] rows)
-		{
-			bool newer = true;
-			
-			for (int i = 0; i < rows.Length && newer; ++i)
-			{
-				newer = DoCurrentIsNewer(currentVersion, currentTicks, rows[i][0], rows[i][1]);
-			}
-			
-			return newer;
-		}
-		
-		private bool DoCurrentIsNewer(Version currentVersion, long currentTicks, string oldVersion, string oldTicks)
-		{
-			bool newer = true;
-			
-			Version version = new Version(oldVersion);
-			if (version > currentVersion)
-			{
-				newer = false;
-			}
-			else if (version == currentVersion)
-			{
-				if (long.Parse(oldTicks) >= currentTicks)
-					newer = false;
-			}
-			
-			return newer;
-		}
-		
-		private void DoParseAssembly(string path, AssemblyDefinition assembly, string id, bool fullParse)		// threaded
-		{
-			m_boss.CallRepeated<IParseAssembly>(i => i.Parse(path, assembly, id, fullParse));
-		}
+		}		
 		#endregion
 		
 		#region Fields

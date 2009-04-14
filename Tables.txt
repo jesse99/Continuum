@@ -36,6 +36,7 @@ version			The version of the assembly as major.minor.build.revision, eg "0.4.44.
 write_time		The time at which the assembly was generated.
 assembly		Integer identifying the assembly. Will not be zero (but may be reused if
 				another assembly is deleted).
+in_use			1 if the assembly is in the Types table. 0 if not.
 
 --------------------------------------
 Types

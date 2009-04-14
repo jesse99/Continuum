@@ -57,7 +57,6 @@ namespace ObjectModel
 				m_database = new Database(m_path, "ParseAssembly-" + Path.GetFileNameWithoutExtension(m_path));
 			
 //	Console.WriteLine("    parsing {0} for thread {1}", assembly.Name.FullName, System.Threading.Thread.CurrentThread.ManagedThreadId);
-			Log.WriteLine("ObjectModel", "{0}parsing {1}", fullParse ? "fully " : string.Empty, assembly.Name.FullName);
 			
 			foreach (ModuleDefinition module in assembly.Modules)
 			{
