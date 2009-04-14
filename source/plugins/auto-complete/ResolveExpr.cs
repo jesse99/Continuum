@@ -229,15 +229,23 @@ namespace AutoComplete
 				
 				if (name != null)
 				{
-					Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "trying {0}({1} args) method operand", name, numArgs);
+					Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "trying {0}({1} args) member operand", name, numArgs);
 					
 					Member[] members = m_memberResolver.Find(target, m_globals, name, numArgs);
 					if (members.Length > 0)
 					{
 						if (members.All(m => m.Type == members[0].Type))
+						{
 							result = m_typeResolver.Resolve(members[0].Type, m_globals, target.IsInstance, target.IsStatic);
+						}
 						else
-							Log.WriteLine("AutoComplete", "{0} has an ambiguous return type", name);
+						{
+							Log.WriteLine("AutoComplete", "{0} has an ambiguous return type:", name);
+							foreach (Member member in members)
+							{
+								Log.WriteLine("AutoComplete", "    {0} {1}", member.Type, member);
+							}
+						}
 					}
 				}
 			}

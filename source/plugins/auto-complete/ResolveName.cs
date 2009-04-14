@@ -28,7 +28,7 @@ using System.Text.RegularExpressions;
 
 namespace AutoComplete
 {
-	// Used to resolve a simple name (e.g. locals in scope, arguments, fields, etc).
+	// Used to resolve a simple name (e.g. locals in scope, arguments, etc).
 	internal sealed class ResolveName
 	{
 		public ResolveName(ITargetDatabase database, ICsLocalsParser locals, string text, int offset, CsGlobalNamespace globals)
@@ -70,7 +70,7 @@ namespace AutoComplete
 				result = m_typeResolver.Resolve(name, m_globals, false, true);
 			}
 			
-			// name. (where name is a local, argument, field, or property)
+			// name. (where name is a local, argument, etc)
 			if (result == null)
 			{
 				Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "trying variable name");
@@ -98,7 +98,7 @@ namespace AutoComplete
 				}
 			}
 			
-			Log.WriteLine("AutoComplete", "---- name {0} -> {1}", name, result);
+			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "---- name {0} -> {1}", name, result);
 			
 			return result;
 		}
@@ -156,26 +156,6 @@ namespace AutoComplete
 				}
 			}
 			
-			// fields and properties
-			if (m_member != null && m_member.DeclaringType != null)
-			{
-				ResolvedTarget type = m_typeResolver.Resolve(m_member.DeclaringType.FullName, m_globals, true, false);
-				if (type != null)
-				{
-					DoFindFields(type, vars);
-					DoFindProperties(type, vars);
-				}
-				
-				if (m_member.DeclaringType.Bases.HasBaseClass)
-				{
-					foreach (ResolvedTarget t in m_typeResolver.GetBases(m_globals, m_member.DeclaringType.FullName, true, false))
-					{
-						DoFindFields(t, vars);
-						DoFindProperties(t, vars);
-					}
-				}
-			}
-			
 			if (Log.IsEnabled(TraceLevel.Verbose, "AutoComplete"))
 			{
 				Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "Variables:");
@@ -186,57 +166,6 @@ namespace AutoComplete
 			}
 			
 			return vars.ToArray();
-		}
-		
-		private void DoFindFields(ResolvedTarget type, List<Variable> vars)
-		{
-#if false
-			if (type.Type != null)
-			{
-				for (int i = 0; i < type.Type.Fields.Length; ++i)
-				{
-					CsField field = type.Type.Fields[i];
-					if (m_member == null || (m_member.Modifiers & MemberModifiers.Static) == 0 || (field.Modifiers & MemberModifiers.Static) != 0)
-						if (!vars.Exists(v => v.Name == field.Name))
-							vars.Add(new Variable(field.Type, field.Name, null));
-				}
-			}
-			else if (type.Hash != null)
-			{
-				var names = m_database.FindFields(type.FullName, m_member == null || (m_member.Modifiers & MemberModifiers.Static) == 0);
-				foreach (var name in names)
-				{
-					if (!vars.Exists(v => v.Name == name.Second))
-						vars.Add(new Variable(name.First, name.Second, null));
-				}
-			}
-#endif
-		}
-		
-		private void DoFindProperties(ResolvedTarget type, List<Variable> vars)
-		{
-#if false
-			if (type.Type != null)
-			{
-				for (int i = 0; i < type.Type.Properties.Length; ++i)
-				{
-					CsProperty prop = type.Type.Properties[i];
-					if (prop.HasGetter)
-						if (m_member == null || (m_member.Modifiers & MemberModifiers.Static) == 0 || (prop.Modifiers & MemberModifiers.Static) != 0)
-							if (!vars.Exists(v => v.Name == prop.Name))
-								vars.Add(new Variable(prop.ReturnType, prop.Name, null));
-				}
-			}
-			else if (type.Hash != null)
-			{
-				var names = m_database.FindMethodsWithPrefix(type.FullName, "get_", 0, m_member == null || (m_member.Modifiers & MemberModifiers.Static) == 0);
-				foreach (var name in names)
-				{
-					if (!vars.Exists(v => v.Name == name.Second))
-						vars.Add(new Variable(name.First, name.Second, null));
-				}
-			}
-#endif
 		}
 		
 		private CsParameter[] DoGetParameters()

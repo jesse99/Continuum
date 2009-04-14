@@ -32,19 +32,6 @@ namespace AutoComplete
 		// Returns true if the name is a special or type name.
 		bool HasType(string typeName);
 		
-		// Returns all of the method return types/names in the specified type (but not 
-		// bases) which start with the specified prefix.
-//		Tuple2<string, string>[] FindMethodsWithPrefix(string fullName, string prefix, int numArgs, bool includeInstanceMembers);
-		
-		// Returns a list of field type/names for the specified type (but not its bases).
-//		Tuple2<string, string>[] FindFields(string fullName, bool includeInstanceMembers);
-		
-		// Returns either null or the full name of the type's base class.
-//		string FindBaseType(string fullName);
-		
-		// Returns the interfaces directly implemented by the type.
-//		string[] FindInterfaces(string fullName);
-		
 		// Returns type names for the type's base class and any interfaces it directly
 		// implements.
 		void GetBases(string typeName, List<string> baseNames, List<string> interfaceNames, List<string> allNames);
@@ -58,5 +45,6 @@ namespace AutoComplete
 		Member[] GetExtensionMethods(string targetType, string[] typeNames, string[] namespaces, string name, int arity);
 		
 		Member[] GetFields(string[] typeNames, bool instanceCall, bool isStaticCall);
+		Member[] GetFields(string[] typeNames, bool instanceCall, bool isStaticCall, string name);
 	}
 }

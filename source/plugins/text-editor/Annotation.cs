@@ -406,7 +406,7 @@ namespace TextEditor
 			NSSize size = value.size();
 			size.width += 2*AnnotateView.LeftMargin;
 			if (value.length() > 0)
-				size.width += 0.2f*size.width/value.length();		// size isn't always quite large enough to display all of the text without this, e.g. for String.IndexOf(char)
+				size.width += 0.3f*size.width/value.length();		// size isn't always quite large enough to display all of the text without this, e.g. for String.IndexOf(char)
 			size.height = 2*AnnotateView.LeftMargin + m_fontHeight;
 			
 			DoAdjustFrame(size);

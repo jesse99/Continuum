@@ -121,7 +121,7 @@ namespace ObjectModel
 			rows.AddRange(m_database.QueryRows(sql));
 			
 			var sources = from r in rows
-				select new SourceInfo(r[0], DoGetPath(r[1]), int.Parse(r[2]));
+				select new SourceInfo(r[0].Replace(";", ", "), DoGetPath(r[1]), int.Parse(r[2]));
 			
 			return sources.ToArray();
 		}

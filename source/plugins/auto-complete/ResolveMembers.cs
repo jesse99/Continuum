@@ -95,7 +95,7 @@ namespace AutoComplete
 			// Note that we need to make two GetMembers queries to ensure that interface
 			// methods are not used in place of base methods (this gives us better results
 			// when the context menu is used to filter out methods associated with types).
-			DoAddIfMissingRange("Fields:", members, m_database.GetFields(baseNames.ToArray(), target.IsInstance, target.IsStatic));
+			DoAddIfMissingRange("Fields:", members, m_database.GetFields(baseNames.ToArray(), target.IsInstance, target.IsStatic, name));
 			DoAddIfMissingRange("Base Members:", members, m_database.GetMembers(baseNames.ToArray(), target.IsInstance, target.IsStatic, name, arity));
 			DoAddIfMissingRange("Interface Members:", members, m_database.GetMembers(interfaceNames.ToArray(), target.IsInstance, target.IsStatic, name, arity));
 			
@@ -135,7 +135,7 @@ namespace AutoComplete
 			
 			if (numArgs == 0)
 			{
-				matches = member.Text == name;
+				matches = member.Text == name || member.Text == (name + "()");
 			}
 			else if (member.Arity == numArgs)
 			{

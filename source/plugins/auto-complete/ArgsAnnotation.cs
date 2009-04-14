@@ -287,47 +287,49 @@ namespace AutoComplete
 			
 			Member member = m_members[m_index];
 			
-			str = NSMutableAttributedString.Create(member.Text);
-
-#if false
 			string rtype = CsHelpers.GetAliasedName(member.Type);
 			rtype = CsHelpers.TrimNamespace(rtype);
 			rtype = CsHelpers.TrimGeneric(rtype);
-			string text = rtype + " " + member.Text;
+			string text = rtype + " " + member.Text.Replace(";", ", ");
 			
 			str = NSMutableAttributedString.Create(text);
-			for (int j = 0; j < member.ArgNames.Length; ++j)
+			
+			if (member.Arity > 0)
 			{
-				if (j == m_currentArg)
+				string munged = member.Text.Replace(";", "; ");
+				int first = munged.IndexOfAny(new char[]{'(', '['}) + 1;
+				Contract.Assert(first > 0, "couldn't find ( or [ in " + munged);
+				
+				Contract.Assert(m_currentArg >= 0, "m_currentArg is negative");
+				Contract.Assert(m_currentArg < member.Arity, "m_currentArg is too large");
+				for (int j = 0; j <= m_currentArg; ++j)
 				{
-					char delimiter;
-					if (j + 1 < member.ArgNames.Length)
-						delimiter = ',';
-					else
-						delimiter = ')';
-						
-					int k = text.IndexOf(member.ArgNames[j] + delimiter);
-					Trace.Assert(k >= 0, string.Format("couldn't find '{0}' in '{1}'", delimiter, text));
-					Trace.Assert(member.ArgNames[j].Length > 0, "arg is empty");
-					Trace.Assert(k + member.ArgNames[j].Length <= text.Length, "arg is too long");
+					int next = munged.IndexOfAny(new char[]{';', ')', ']'}, first + 1);
+					Contract.Assert(next > 0, "couldn't find next ; or ) or ] in " + munged);
 					
-					DoHilite(str, k, member.ArgNames[j].Length);
+					if (j == m_currentArg)
+					{
+						int begin = munged.LastIndexOf(' ', next, next - first);
+						Contract.Assert(begin > 0, "couldn't find a space in " + munged.Substring(first, next - first));
+						
+						int offset = rtype.Length + 1;
+						DoHilite(str, offset + begin, next - begin);
+					}
+					
+					first = next + 2;
 				}
 			}
-#endif
 			
 			return str;
 		}
 		
 		// Not sure if it would be better to use but NSForegroundColorAttributeName
 		// isn't working for some reason.
-#if false
 		private void DoHilite(NSMutableAttributedString str, int index, int length)
 		{
 			NSRange range = new NSRange(index, length);
 			str.addAttribute_value_range(Externs.NSStrokeWidthAttributeName, NSNumber.Create(-4.0f), range);
 		}
-#endif
 		#endregion
 		
 		#region Private Types

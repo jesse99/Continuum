@@ -113,42 +113,6 @@ namespace AutoComplete
 			}
 		}
 		
-#if false
-		public string FindAssembly(string fullName)
-		{
-			Contract.Requires(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
-			
-			string sql = string.Format(@"
-				SELECT hash
-					FROM Types 
-				WHERE type = '{0}'", fullName.Replace("'", "''"));
-			string[][] rows = m_database.QueryRows(sql);
-			
-			return rows.Length > 0 ? rows[0][0] : null;
-		}
-#endif
-		
-#if false
-		public Tuple2<string, string>[] FindMethodsWithPrefix(string fullName, string prefix, int numArgs, bool includeInstanceMembers)
-		{
-			Contract.Requires(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
-			Contract.Requires(!string.IsNullOrEmpty(prefix), "prefix is null or empty");
-			Contract.Requires(numArgs >= 0, "numArgs is negative");
-			
-			string sql = string.Format(@"
-				SELECT return_type, arg_names, name, attributes
-					FROM Methods 
-				WHERE declaring_type = '{0}' AND name GLOB '{0}*'", fullName, prefix);
-			string[][] rows = m_database.QueryRows(sql);
-			
-			var result = from r in rows
-				where DoIncludeMethod(r[1], numArgs, ushort.Parse(r[3]), includeInstanceMembers)
-				select Tuple.Make(r[0], r[2]);
-			
-			return result.ToArray();
-		}
-#endif
-		
 		public Member[] GetFields(string[] typeNames, bool instanceCall, bool isStaticCall)
 		{
 			var members = new List<Member>();
@@ -186,39 +150,42 @@ namespace AutoComplete
 			return members.ToArray();
 		}
 		
-#if false
-		public string FindBaseType(string fullName)
+		public Member[] GetFields(string[] typeNames, bool instanceCall, bool isStaticCall, string name)
 		{
-			if (fullName == "System.Object")
-				return null;
+			var members = new List<Member>();
+			
+			if (typeNames.Length > 0)
+			{
+				var types = new StringBuilder();
+				for (int i = 0; i < typeNames.Length; ++i)
+				{
+					types.AppendFormat("declaring_root_name = '{0}'", typeNames[i].Replace("'", "''"));
+					
+					if (i + 1 < typeNames.Length)
+						types.Append(" OR ");
+				}
 				
-			string sql = string.Format(@"
-				SELECT DISTINCT base_type
-					FROM Types
-				WHERE type = '{0}' OR type GLOB '{0}<*'", fullName);
-			string[][] rows = m_database.QueryRows(sql);
-			
-			return rows.Length > 0 ? rows[0][0] : null;
-		}
-#endif
-		
-#if false
-		public string[] FindInterfaces(string fullName)
-		{
-			if (fullName == "System.Object")
-				return new string[0];
+				string sql;
+				if (instanceCall && isStaticCall)
+					sql = string.Format(@"
+						SELECT name, type_name, declaring_root_name
+							FROM Fields 
+						WHERE name = '{0}' AND access < 3 AND ({1})", name, types.ToString());	// we exclude all private fields (note that this won't affect this methods since the parser will pick up those)
+				else
+					sql = string.Format(@"
+						SELECT name, type_name, declaring_root_name
+							FROM Fields 
+						WHERE name = '{0}' AND static = {2} AND access < 3 AND ({1})", name, types.ToString(), isStaticCall ? "1" : "0");
 				
-			string sql = string.Format(@"
-				SELECT DISTINCT interface_type
-					FROM Implements
-				WHERE type = '{0}' OR type GLOB '{0}<*'", fullName);
-			string[][] rows = m_database.QueryRows(sql);
+				string[][] rows = m_database.QueryRows(sql);
+				foreach (string[] r in rows)
+				{
+					members.AddIfMissing(new Member(r[0], r[1], r[2]));
+				}
+			}
 			
-			var result = from r in rows select r[0];
-			
-			return result.ToArray();
+			return members.ToArray();
 		}
-#endif
 		
 		public Member[] GetMembers(string[] typeNames, bool instanceCall, bool isStaticCall)
 		{
@@ -342,9 +309,20 @@ namespace AutoComplete
 					int j = text.IndexOf("::");
 					text = text.Substring(j + 2);
 					
-					j = text.IndexOf('{');
-					int k = text.IndexOf('}');
-					text = text.Substring(0, j) + text.Substring(k + 1);
+					j = text.IndexOf('(');
+					Contract.Assert(j > 0, "couldn't find ( in " + text);
+					
+					int k = text.IndexOf(';', j + 1);
+					if (k > 0)
+					{
+						text = text.Substring(0, j + 1) + text.Substring(k + 1);
+					}
+					else
+					{
+						k = text.IndexOf(')', j + 1);
+						Contract.Assert(j < k, "couldn't find a second ; or ) in " + text);
+						text = text.Substring(0, j + 1) + text.Substring(k);
+					}
 					
 					Member member = new Member(text, int.Parse(r[2]) - 1, r[1], targetType);
 					member.IsExtensionMethod = true;
@@ -408,42 +386,6 @@ namespace AutoComplete
 			
 			return members.ToArray();
 		}
-		
-		#region Private Methods
-#if false
-		private bool DoIsValidExtensionMethod(string ns, CsGlobalNamespace globals)
-		{
-			bool valid = false;
-			
-			for (int i = 0; i < globals.Uses.Length && !valid; ++i)
-			{
-				valid = globals.Uses[i].Namespace == ns;
-			}
-			
-			return valid;
-		}
-		
-		private bool DoIncludeMethod(string argNames, int numArgs, ushort attributes, bool includeInstanceMembers)
-		{
-			bool include = argNames.Count(c => c == ':') == numArgs;
-			
-			if (include && !includeInstanceMembers)
-				include = (attributes & 0x0010) != 0;
-			
-			return include;
-		}
-
-		private bool DoIncludeField(ushort attributes, bool includeInstanceMembers)
-		{
-			bool include = true;
-			
-			if (!includeInstanceMembers)
-				include = (attributes & 0x0010) != 0;
-			
-			return include;
-		}
-#endif
-		#endregion
 		
 		#region Fields
 		private Database m_database;

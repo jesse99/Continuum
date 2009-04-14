@@ -193,7 +193,7 @@ namespace AutoComplete
 				int i = member.Text.IndexOf('(');
 				if (i < 0)
 					i = member.Text.Length;
-				string text = member.Type + " " + member.Text;
+				string text = member.Type + " " + member.Text.Replace(";", ", ");
 				var str = NSMutableAttributedString.Create(text);
 				
 				NSRange range = new NSRange(member.Type.Length + 1, i);
@@ -218,7 +218,7 @@ namespace AutoComplete
 		{
 			NSObject result;
 			
-			string name = m_members[row].Text;
+			string name = m_members[row].Text.Replace(";", ", ");
 			int n = DoCountMatching(name);
 			if (n > 0)
 			{
@@ -325,7 +325,7 @@ namespace AutoComplete
 					ITextAnnotation annotation = m_editor.GetAnnotation(range);
 					
 					IArgsAnnotation args = m_editor.Boss.Get<IArgsAnnotation>();
-					string name =m_members[row].Name;
+					string name = m_members[row].Name;
 					var members = (from m in m_members where m.Text.StartsWith(name) select m).ToArray();
 					int j = Array.FindIndex(members, m => m.Text == m_members[row].Text);
 					args.Open(annotation, members, j);

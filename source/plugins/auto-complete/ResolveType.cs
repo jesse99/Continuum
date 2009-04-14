@@ -68,7 +68,7 @@ namespace AutoComplete
 			if (m_fullName != null || m_type != null)
 				result = new ResolvedTarget(m_fullName, m_type, isInstance, isStatic);
 			
-			Log.WriteLine("AutoComplete", "---- type {0} -> {1}", type, result);
+			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "---- type {0} -> {1}", type, result);
 			
 			return result;
 		}
@@ -87,7 +87,7 @@ namespace AutoComplete
 			
 			ResolvedTarget result = new ResolvedTarget(m_fullName, m_type, isInstance, isStatic);
 			
-			Log.WriteLine("AutoComplete", "---- cs type {0} -> {1}", type, result);
+			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "---- cs type {0} -> {1}", type, result);
 			
 			return result;
 		}
@@ -106,63 +106,9 @@ namespace AutoComplete
 			
 			ResolvedTarget result = new ResolvedTarget(m_fullName, null, isInstance, isStatic);
 			
-			Log.WriteLine("AutoComplete", "---- fullName type {0} -> {1}", fullName, result);
+			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "---- fullName type {0} -> {1}", fullName, result);
 			
 			return result;
-		}
-		
-		public IEnumerable<ResolvedTarget> GetBases(CsGlobalNamespace globals, string fullName, bool isInstance, bool isStatic)
-		{
-			if (fullName == "xxxx")
-				yield return null;
-				
-#if false
-			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
-			
-			ResolvedTarget target = Resolve(fullName, globals, isInstance, isStatic);
-			if (target != null && CsHelpers.IsInterface(target.TypeName))
-			{
-				var names = new List<string>();
-				names.AddRange(m_database.FindInterfaces(target.FullName));
-				names.Add("System.Object");
-				
-				while (names.Count > 0)
-				{
-					string name = names[names.Count - 1];
-					names.RemoveLast();
-					names.AddRange(m_database.FindInterfaces(name));
-					
-					target = Resolve(name, globals, isInstance, isStatic);
-					yield return target;
-				}
-			}
-			else
-			{
-				while (target != null && target.FullName != "System.Object")
-				{
-					if (target.Type != null)
-					{
-						if (target.Type.Bases.HasBaseClass)
-							target = Resolve(target.Type.Bases.Names[0], globals, isInstance, isStatic);
-						else
-							target = Resolve("System.Object", globals, isInstance, isStatic);
-					}
-					else if (target.Type == null && target.Hash != null)
-					{
-						string name = m_database.FindBaseType(target.FullName);
-						if (!string.IsNullOrEmpty(name))
-							target = Resolve(name, globals, isInstance, isStatic);
-						else
-							target = Resolve("System.Object", globals, isInstance, isStatic);
-					}
-					else
-						target = Resolve("System.Object", globals, isInstance, isStatic);
-						
-					if (target != null)
-						yield return target;
-				}
-			}
-#endif
 		}
 		
 		#region Private Methods

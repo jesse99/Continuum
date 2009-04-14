@@ -349,11 +349,6 @@ namespace ObjectModel
 					{
 						int k = i;											// need this for the delegate (or the for loop will mutate the value)
 						string title = "Open " + sources[i].Source;
-						title = title.Replace("{", string.Empty);
-						if (title.Contains("})"))
-							title = title.Replace("}", string.Empty);
-						else
-							title = title.Replace("}", ", ");
 						
 						items.Add(new TextContextItem(
 							title,
@@ -400,7 +395,7 @@ namespace ObjectModel
 		
 		private void DoWriteTypes(TextWriter writer, TypeInfo parent, TypeInfo[] derived, int indent, ref int count)
 		{
-			var objects = m_dirBoss.Get<IObjectModel>();			
+			var objects = m_dirBoss.Get<IObjectModel>();
 			DoWriteType(writer, indent, parent, objects);
 			
 			if (++count == MaxDerived)

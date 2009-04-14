@@ -436,18 +436,6 @@ namespace ObjectModel
 			text.Append("::");
 			text.Append(DoGetDisplayName(method));
 			
-			if (method.HasGenericParameters)
-			{
-				text.Append('<');
-				for (int i = 0; i < method.GenericParameters.Count; ++i)
-				{
-					DoAppendType(text, method.GenericParameters[i].FullName);
-					if (i + 1 < method.GenericParameters.Count)
-						text.Append(", ");
-				}
-				text.Append('>');
-			}
-			
 			bool indexer = method.Name == "get_Item" || method.Name == "set_Item";
 			if (indexer || (!method.IsGetter && !method.IsSetter))
 			{
@@ -460,7 +448,7 @@ namespace ObjectModel
 						ParameterDefinition p = method.Parameters[i];
 						
 						if (isExtension && i == 0)
-							text.Append("{this ");					// hack to allow auto-complete to easily remove the this argument for extension methods
+							text.Append("this ");
 						
 						if (DoIsParams(p))
 							text.Append("params ");
@@ -483,10 +471,8 @@ namespace ObjectModel
 						text.Append(' ');
 						text.Append(p.Name);
 						
-						if (isExtension && i == 0)
-							text.Append('}');
-						else if (i + 1 < method.Parameters.Count)
-							text.Append(", ");
+						if (i + 1 < method.Parameters.Count)
+							text.Append(";");
 					}
 				}
 				text.Append(indexer ? ']' : ')');
