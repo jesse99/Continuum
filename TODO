@@ -200,12 +200,7 @@ param_names				Space separated list of Names integers of the names of each
 param_modifiers			Space separated list of integers: 0 for in parameter, 1 for out, 2
 							for ref, and 3 for params.
 
-* Work on refactor commands:
-	- make sure unit tests work
-	- check in
-* Build a new foreshadow.
 * Work more on target completion:
-	- static type resolve should include const fields (eg Constants type)
 	- replace Trace.Fail with Contract.Assert
 	- replace Debug.Fail with Contract.Assert
 	- make sure completion works OK with spaces before open parens

@@ -212,7 +212,7 @@ namespace AutoComplete
 		
 		private bool DoShouldAdd(bool isInstance, bool isStatic, MemberModifiers modifiers)
 		{
-			if ((modifiers & MemberModifiers.Static) == 0)
+			if ((modifiers & MemberModifiers.Static) == 0 && (modifiers & MemberModifiers.Const) == 0)
 				return isInstance;
 			else
 				return isStatic;
