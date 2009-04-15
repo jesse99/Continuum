@@ -79,12 +79,12 @@ namespace CoolLib
 ";
 			bool found = DoGetType(text, "MyClass");
 			Assert.IsTrue(found);
-			Assert.AreEqual("CoolLib.MyClass", m_target.FullName);
+			Assert.AreEqual("CoolLib.MyClass", m_target.TypeName);
 			Assert.AreEqual("MyClass", m_target.Type.Name);
 			
 			found = DoGetType(text, "Helper");
 			Assert.IsTrue(found);
-			Assert.AreEqual("CoolLib.Helper", m_target.FullName);
+			Assert.AreEqual("CoolLib.Helper", m_target.TypeName);
 			Assert.AreEqual("Helper", m_target.Type.Name);
 		}
 		
@@ -108,66 +108,66 @@ namespace CoolLib
 			// int
 			bool found = DoGetType(text, "int", new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Int32", "00-01"},
-					{"System.Text.StringBuilder", "00-02"}
+					"System.Int32",
+					"System.Text.StringBuilder",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int32", m_target.FullName);
+			Assert.AreEqual("System.Int32", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 			
 			// Int32
 			found = DoGetType(text, "Int32", new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Int32", "00-01"},
-					{"System.Text.StringBuilder", "00-02"}
+					"System.Int32",
+					"System.Text.StringBuilder",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int32", m_target.FullName);
+			Assert.AreEqual("System.Int32", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 			
 			// System.Int32
 			found = DoGetType(text, "System.Int32", new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Int32", "00-01"},
-					{"System.Text.StringBuilder", "00-02"}
+					"System.Int32",
+					"System.Text.StringBuilder",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int32", m_target.FullName);
+			Assert.AreEqual("System.Int32", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 			
 			// StringBuilder
 			found = DoGetType(text, "StringBuilder", new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Int32", "00-01"},
-					{"System.Text.StringBuilder", "00-02"}
+					"System.Int32",
+					"System.Text.StringBuilder",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Text.StringBuilder", m_target.FullName);
+			Assert.AreEqual("System.Text.StringBuilder", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 			
 			// System.Text.StringBuilder
 			found = DoGetType(text, "System.Text.StringBuilder", new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Int32", "00-01"},
-					{"System.Text.StringBuilder", "00-02"}
+					"System.Int32",
+					"System.Text.StringBuilder",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Text.StringBuilder", m_target.FullName);
+			Assert.AreEqual("System.Text.StringBuilder", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 		}
 		
@@ -190,10 +190,10 @@ namespace CoolLib
 			// StringBuilder
 			bool found = DoGetType(text, "StringBuilder", new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Int32", "00-01"},
-					{"System.Text.StringBuilder", "00-02"}
+					"System.Int32",
+					"System.Text.StringBuilder",
 				}
 			});
 			Assert.IsFalse(found);
@@ -201,14 +201,14 @@ namespace CoolLib
 			// System.Text.StringBuilder
 			found = DoGetType(text, "System.Text.StringBuilder", new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Int32", "00-01"},
-					{"System.Text.StringBuilder", "00-02"}
+					"System.Int32",
+					"System.Text.StringBuilder",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Text.StringBuilder", m_target.FullName);
+			Assert.AreEqual("System.Text.StringBuilder", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 		}
 		
@@ -230,13 +230,13 @@ namespace CoolLib
 ";
 			bool found = DoGetType(text, "int[]", new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Array", "00-01"},
+					"System.Array",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Array", m_target.FullName);
+			Assert.AreEqual("array-type", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 		}
 		
@@ -263,12 +263,12 @@ namespace CoolLib
 ";
 			bool found = DoGetType(text, "MyClass");
 			Assert.IsTrue(found);
-			Assert.AreEqual("CoolLib.MyClass", m_target.FullName);
+			Assert.AreEqual("CoolLib.MyClass", m_target.TypeName);
 			Assert.AreEqual("MyClass", m_target.Type.Name);
 			
 			found = DoGetType(text, "Helper");
 			Assert.IsTrue(found);
-			Assert.AreEqual("CoolLib.MyClass/Helper", m_target.FullName);
+			Assert.AreEqual("CoolLib.MyClass/Helper", m_target.TypeName);
 			Assert.AreEqual("Helper", m_target.Type.Name);
 		}
 		
@@ -297,24 +297,24 @@ namespace CoolLib
 ";
 			bool found = DoGetType(text, "Colors", new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"Patterns", "00-01"},
+					"Patterns",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("Colors", m_target.FullName);
+			Assert.AreEqual("Colors", m_target.TypeName);
 			Assert.AreEqual("Colors", m_target.Type.Name);
 			
 			found = DoGetType(text, "Patterns", new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"Patterns", "00-01"},
+					"Patterns",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("Patterns", m_target.FullName);
+			Assert.AreEqual("Patterns", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 		}
 		
@@ -338,14 +338,14 @@ namespace CoolLib
 ";
 			bool found = DoGetType(text, "Callback", new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"Patterns", "00-01"},
-					{"System.Delegate", "00-02"},
+					"Patterns",
+					"System.Delegate",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Delegate", m_target.FullName);
+			Assert.AreEqual("System.Delegate", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 		}
 		

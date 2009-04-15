@@ -75,6 +75,13 @@ namespace AutoComplete
 					string path = Paths.GetAssemblyDatabase(name);
 					var database = new Database(path, "AutoComplete-" + name);
 					
+					// TODO: this doesn't help for simple queries, but maybe it would
+					// for more complex queries (e.g. chained method calls)
+//					database.Update("cache size", () =>
+//					{
+//						database.Update("PRAGMA cache_size = 4000");
+//					});
+					
 					m_database = new TargetDatabase(database);
 					m_members = new ResolveMembers(m_database);
 				}

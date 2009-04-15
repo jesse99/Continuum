@@ -24,6 +24,7 @@ using NUnit.Framework;
 using Shared;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace AutoComplete
 {
@@ -33,14 +34,13 @@ namespace AutoComplete
 		[TestFixtureSetUp]
 		public void Init()
 		{
+			Log.SetLevel(TraceLevel.Verbose);
 			AssertListener.Install();
 		}
 		
 		private bool DoGetTarget(string text, string target, int offset, MockTargetDatabase database)
 		{
-//Console.WriteLine("------------------------------------");
-//Console.WriteLine(target);
-//Console.WriteLine(text);
+			Log.WriteLine("AutoComplete", "{0} {1} {2}", new string('*', 10), new StackTrace().GetFrame(1).GetMethod().Name, new string('*', 10));
 			
 			var parser = new CsParser.Parser();
 			CsGlobalNamespace globals = parser.Parse(text);
@@ -67,13 +67,13 @@ internal sealed class MyClass
 ";
 			bool found = DoGetTarget(text, "x", text.IndexOf("xxx"), new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Int32", "00-01"},
+					"System.Int32",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int32", m_target.FullName);
+			Assert.AreEqual("System.Int32", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 		}
 		
@@ -93,14 +93,14 @@ internal sealed class MyClass
 ";
 			bool found = DoGetTarget(text, "x", text.IndexOf("xxx"), new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Int32", "00-01"},
-					{"System.Int64", "00-01"},
+					"System.Int32",
+					"System.Int64",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int64", m_target.FullName);
+			Assert.AreEqual("System.Int64", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 		}
 		
@@ -121,14 +121,22 @@ internal sealed class MyClass
 ";
 			bool found = DoGetTarget(text, "x", text.IndexOf("xxx"), new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Int32", "00-01"},
-					{"System.Int64", "00-01"},
+					"System.Int32",
+					"System.Int64",
+				},
+				
+				Members = new Dictionary<string, Member[]>
+				{
+					{"MyClass", new Member[]
+					{
+						new Member("Weight", 0, "System.Int64", "MyClass"),
+					}}
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int64", m_target.FullName);
+			Assert.AreEqual("System.Int64", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 		}
 		
@@ -151,14 +159,14 @@ internal sealed class MyClass
 ";
 			bool found = DoGetTarget(text, "x", text.IndexOf("xxx"), new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Int32", "00-01"},
-					{"System.String", "00-01"},
+					"System.Int32",
+					"System.String",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.String", m_target.FullName);
+			Assert.AreEqual("System.String", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 		}
 		
@@ -181,14 +189,14 @@ internal sealed class MyClass
 ";
 			bool found = DoGetTarget(text, "x", text.IndexOf("xxx"), new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Int32", "00-01"},
-					{"System.String", "00-01"},
+					"System.Int32",
+					"System.String",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.String", m_target.FullName);
+			Assert.AreEqual("System.String", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 		}
 		
@@ -212,14 +220,14 @@ internal sealed class MyClass
 ";
 			bool found = DoGetTarget(text, "x", text.IndexOf("xxx"), new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Int32", "00-01"},
-					{"System.Collections.Generic.Dictionary`2", "00-01"},
+					"System.Int32",
+					"System.Collections.Generic.Dictionary`2",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Collections.Generic.Dictionary`2", m_target.FullName);
+			Assert.AreEqual("System.Collections.Generic.Dictionary`2", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 		}
 		
@@ -243,14 +251,14 @@ internal sealed class MyClass
 ";
 			bool found = DoGetTarget(text, "x", text.IndexOf("xxx"), new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Int32", "00-01"},
-					{"System.Collections.Generic.Dictionary`2", "00-01"},
+					"System.Int32",
+					"System.Collections.Generic.Dictionary`2",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Collections.Generic.Dictionary`2", m_target.FullName);
+			Assert.AreEqual("System.Collections.Generic.Dictionary`2", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 		}
 				
@@ -272,14 +280,14 @@ internal sealed class MyClass
 ";
 			bool found = DoGetTarget(text, "x", text.IndexOf("xxx"), new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Int32", "00-01"},
-					{"System.Collections.Generic.IEnumerable`1", "00-01"},
+					"System.Int32",
+					"System.Collections.Generic.IEnumerable`1",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Collections.Generic.IEnumerable`1", m_target.FullName);
+			Assert.AreEqual("System.Collections.Generic.IEnumerable`1", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 		}
 				
@@ -301,14 +309,14 @@ internal sealed class MyClass
 ";
 			bool found = DoGetTarget(text, "x", text.IndexOf("xxx"), new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Int32", "00-01"},
-					{"IFoo", "00-02"},
+					"System.Int32",
+					"IFoo", "00-02",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("IFoo", m_target.FullName);
+			Assert.AreEqual("IFoo", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 		}
 		

@@ -80,7 +80,7 @@ internal sealed class MyClass
 ";
 			bool found = DoGetTarget(text, text.IndexOf("."));
 			Assert.IsTrue(found);
-			Assert.AreEqual("MyClass", m_target.FullName);
+			Assert.AreEqual("MyClass", m_target.TypeName);
 			Assert.AreEqual("MyClass", m_target.Type.Name);
 		}
 		
@@ -114,42 +114,13 @@ internal sealed class MyClass
 ";
 			bool found = DoGetTarget(text, text.IndexOf("-"), new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Collections.List", "00-01"}
+					"System.Collections.List",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Collections.List", m_target.FullName);
-			Assert.IsNull(m_target.Type);
-		}
-		
-		[Test]
-		public void MethodCall()
-		{
-			string text = @"
-internal sealed class MyClass
-{
-	public void Work(int alpha)
-	{
-		Process(alpha).
-	}
-
-	public int Process(int alpha)
-	{
-		return alpha;
-	}
-}
-";
-			bool found = DoGetTarget(text, text.IndexOf("."), new MockTargetDatabase
-			{
-				Hashes = new Dictionary<string, string>
-				{
-					{"System.Int32", "00-01"}
-				}
-			});
-			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int32", m_target.FullName);
+			Assert.AreEqual("System.Collections.List", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 		}
 		
@@ -167,22 +138,22 @@ internal partial class MyClass
 ";
 			bool found = DoGetTarget(text, text.IndexOf("~"), new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Int32", "00-01"},
-					{"MyClass", "00-02"}
+					"System.Int32",
+					"MyClass",
 				},
 				
 				Members = new Dictionary<string, Member[]>
 				{
 					{"MyClass", new Member[]
 					{
-						new Member("Process(int x, int y)", new string[]{"x", "y"}, "System.Int32", "MyClass"),
+						new Member("Process(int x;int y)", 2, "System.Int32", "MyClass"),
 					}}
 				},
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int32", m_target.FullName);
+			Assert.AreEqual("System.Int32", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 		}
 		
@@ -200,22 +171,22 @@ internal partial class MyClass
 ";
 			bool found = DoGetTarget(text, text.IndexOf("~"), new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Int32", "00-01"},
-					{"MyClass", "00-02"}
+					"System.Int32",
+					"MyClass",
 				},
 				
 				Members = new Dictionary<string, Member[]>
 				{
 					{"MyClass", new Member[]
 					{
-						new Member("Process(int x, int y)", new string[]{"x", "y"}, "System.Int32", "MyClass"),
+						new Member("Process(int x;int y)", 2, "System.Int32", "MyClass"),
 					}}
 				},
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int32", m_target.FullName);
+			Assert.AreEqual("System.Int32", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 		}
 		
@@ -235,22 +206,22 @@ internal partial class MyClass
 ";
 			bool found = DoGetTarget(text, text.IndexOf("~"), new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Int32", "00-01"},
-					{"MyClass", "00-02"}
+					"System.Int32",
+					"MyClass",
 				},
 				
 				Members = new Dictionary<string, Member[]>
 				{
 					{"MyClass", new Member[]
 					{
-						new Member("Process(int x, int y)", new string[]{"x", "y"}, "System.Int32", "MyClass"),
+						new Member("Process(int x;int y)", 2, "System.Int32", "MyClass"),
 					}}
 				},
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int32", m_target.FullName);
+			Assert.AreEqual("System.Int32", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 		}
 		
@@ -268,25 +239,25 @@ internal partial class MyClass
 ";
 			bool found = DoGetTarget(text, text.IndexOf("~"), new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Int32", "00-01"},
-					{"System.Boolean", "00-01"},
-					{"MyClass", "00-02"}
+					"System.Int32",
+					"System.Boolean",
+					"MyClass",
 				},
 				
 				Members = new Dictionary<string, Member[]>
 				{
 					{"MyClass", new Member[]
 					{
-						new Member("Alpha(int x)", new string[]{"x"}, "MyClass", "MyClass"),
-						new Member("Beta(int x, int y)", new string[]{"x", "y"}, "MyClass", "MyClass"),
-						new Member("Gamma(object value)", new string[]{"value"}, "System.Boolean", "MyClass"),
+						new Member("Alpha(int x)", 1, "MyClass", "MyClass"),
+						new Member("Beta(int x;int y)", 2, "MyClass", "MyClass"),
+						new Member("Gamma(object value)", 1, "System.Boolean", "MyClass"),
 					}}
 				},
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Boolean", m_target.FullName);
+			Assert.AreEqual("System.Boolean", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 		}
 		
@@ -306,38 +277,38 @@ internal sealed class MyClass
 ";
 			bool found = DoGetTarget(text, text.IndexOf("-"), new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Char", "00-01"},
-					{"System.String", "00-01"}
+					"System.Char",
+					"System.String",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Char", m_target.FullName);
+			Assert.AreEqual("System.Char", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 
 			found = DoGetTarget(text, text.IndexOf("!"), new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Char", "00-01"},
-					{"System.String", "00-01"}
+					"System.Char",
+					"System.String",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Char", m_target.FullName);
+			Assert.AreEqual("System.Char", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 
 			found = DoGetTarget(text, text.IndexOf("@"), new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Char", "00-01"},
-					{"System.String", "00-01"}
+					"System.Char",
+					"System.String",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Char", m_target.FullName);
+			Assert.AreEqual("System.Char", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 		}
 		
@@ -357,38 +328,38 @@ internal sealed class MyClass
 ";
 			bool found = DoGetTarget(text, text.IndexOf("-"), new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Char", "00-01"},
-					{"System.String", "00-01"}
+					"System.Char",
+					"System.String",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.String", m_target.FullName);
+			Assert.AreEqual("System.String", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 			
 			found = DoGetTarget(text, text.IndexOf("!"), new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Char", "00-01"},
-					{"System.String", "00-01"}
+					"System.Char",
+					"System.String",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.String", m_target.FullName);
+			Assert.AreEqual("System.String", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 			
 			found = DoGetTarget(text, text.IndexOf("@"), new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Char", "00-01"},
-					{"System.String", "00-01"}
+					"System.Char",
+					"System.String",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.String", m_target.FullName);
+			Assert.AreEqual("System.String", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 		}
 		

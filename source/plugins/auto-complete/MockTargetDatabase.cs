@@ -30,87 +30,158 @@ namespace AutoComplete
 {
 	internal sealed class MockTargetDatabase : ITargetDatabase
 	{
-		public string FindAssembly(string fullName)
+		public bool HasType(string typeName)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
+			Contract.Requires(!string.IsNullOrEmpty(typeName), "typeName is null or empty");
 			
-			string hash = null;
+			bool has = false;
 			
-			if (Hashes != null)
-				Hashes.TryGetValue(fullName, out hash);
+			if (typeName == "array-type")
+			{
+				has = true;
+			}
+			else if (typeName == "nullable-type")
+			{
+				has = true;
+			}
+			else if (typeName == "pointer-type")
+			{
+				has = true;
+			}
+			else
+			{
+				has = Types != null && Types.Contains(typeName);
+			}
 			
-			return hash;
+			return has;
 		}
 		
-		public Tuple2<string, string>[] FindMethodsWithPrefix(string fullName, string prefix, int numArgs, bool includeInstanceMembers)
+		public void GetBases(string typeName, List<string> baseNames, List<string> interfaceNames, List<string> allNames)
 		{
-			return new Tuple2<string, string>[0];
-		}
-				
-		public Tuple2<string, string>[] FindFields(string fullName, bool includeInstanceMembers)
-		{
-			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
-			
-			var fields = new List<Tuple2<string, string>>();
-			
-			if (BaseFieldTypes != null)
+			if (typeName == "array-type")
 			{
-				foreach (var entry in BaseFieldTypes)
+				baseNames.AddIfMissing("System.Array");
+				allNames.AddIfMissing("System.Array");
+				
+				interfaceNames.AddIfMissing("System.Collections.Generic.IEnumerable`1");
+				allNames.AddIfMissing("System.Collections.Generic.IEnumerable`1");
+			}
+			else if (typeName == "nullable-type")
+			{
+				baseNames.AddIfMissing("System.Nullable`1");
+				allNames.AddIfMissing("System.Nullable`1");
+			}
+			else if (typeName == "pointer-type")
+			{
+				// can't use the . operator with pointers
+			}
+			else if (BaseClasses != null)
+			{
+				string b;
+				if (BaseClasses.TryGetValue(typeName, out b))
 				{
-					if (entry.Key.StartsWith(fullName + "+"))
+					baseNames.AddIfMissing(b);
+					allNames.AddIfMissing(b);
+				}
+			}
+		}
+		
+		public Member[] GetMembers(string[] typeNames, bool instanceCall, bool isStaticCall)
+		{
+			throw new NotImplementedException("GetMembers1 is not implemented");
+		}
+		
+		public Member[] GetMembers(string[] typeNames, bool instanceCall, bool isStaticCall, string name, int arity)
+		{
+			var result = new List<Member>();
+			
+			if (Members != null)
+			{
+				foreach (string typeName in typeNames)
+				{
+					Member[] members;
+					if (Members.TryGetValue(typeName, out members))
 					{
-						fields.Add(Tuple.Make(entry.Value, entry.Key.Substring(fullName.Length + 1)));
+						foreach (Member member in members)
+						{
+							if (member.Name == name && member.Arity == arity)
+								result.AddIfMissing(member);
+						}
 					}
 				}
 			}
 			
-			return fields.ToArray();
+			return result.ToArray();
 		}
 		
-		public string FindBaseType(string fullName)
+		public Member[] GetExtensionMethods(string targetType, string[] typeNames, string[] namespaces)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
-			
-			string type = null;
-			
-			if (BaseClasses != null)
-				BaseClasses.TryGetValue(fullName, out type);
-			
-			return type;
+			throw new NotImplementedException("GetExtensionMethods1 is not implemented");
 		}
 		
-		public string[] FindInterfaces(string fullName)
+		public Member[] GetExtensionMethods(string targetType, string[] typeNames, string[] namespaces, string name, int arity)
 		{
-			return new string[0];
+			var result = new List<Member>();
+			
+			if (ExtensionMethods != null)
+			{
+				foreach (string typeName in typeNames)
+				{
+					foreach (string ns in namespaces)
+					{
+						Member[] members;
+						if (ExtensionMethods.TryGetValue(ns + "." + typeName, out members))
+						{
+							foreach (Member member in members)
+							{
+								if (member.Name == name && member.Arity == arity)
+									result.AddIfMissing(member);
+							}
+						}
+					}
+				}
+			}
+			
+			return result.ToArray();
 		}
 		
-		public Member[] GetMembers(string fullName, bool instanceCall, bool isStaticCall, CsGlobalNamespace globals)
+		public Member[] GetFields(string[] typeNames, bool instanceCall, bool isStaticCall)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
-			
-			Member[] members = null;
-			
-			if (Members != null)
-				Members.TryGetValue(fullName, out members);
-				
-			if (members == null)
-				members = new Member[0];
-			
-			return members;
+			throw new NotImplementedException("GetFields1 is not implemented");
 		}
 		
-		public Member[] GetExtensionMethods(string fullName, CsGlobalNamespace globals)
+		public Member[] GetFields(string[] typeNames, bool instanceCall, bool isStaticCall, string name)
 		{
-			return new Member[0];
+			var result = new List<Member>();
+			
+			if (Fields != null)
+			{
+				foreach (string typeName in typeNames)
+				{
+					Member[] members;
+					if (Fields.TryGetValue(typeName, out members))
+					{
+						foreach (Member member in members)
+						{
+							if (member.Name == name)
+								result.AddIfMissing(member);
+						}
+					}
+				}
+			}
+			
+			return result.ToArray();
 		}
 		
-		public Dictionary<string, string> Hashes {get; set;}
+		public List<string> Types {get; set;}
 		
 		public Dictionary<string, string> BaseClasses {get; set;}
 		
-		public Dictionary<string, string> BaseFieldTypes {get; set;}
-
 		public Dictionary<string, Member[]> Members {get; set;}
+
+		public Dictionary<string, Member[]> ExtensionMethods {get; set;}
+
+		public Dictionary<string, Member[]> Fields {get; set;}
 	}
 }
 #endif

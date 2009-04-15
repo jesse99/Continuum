@@ -38,6 +38,8 @@ namespace AutoComplete
 		
 		public bool HasType(string typeName)
 		{
+			Contract.Requires(!string.IsNullOrEmpty(typeName), "typeName is null or empty");
+			
 			bool has = false;
 			
 			if (typeName == "array-type")

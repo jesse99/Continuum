@@ -277,7 +277,7 @@ namespace AutoComplete
 					}
 				}
 			}
-			
+						
 			return arg;
 		}
 		
@@ -294,17 +294,16 @@ namespace AutoComplete
 			
 			str = NSMutableAttributedString.Create(text);
 			
-			if (member.Arity > 0)
+			if (member.Arity > 0 && m_currentArg < member.Arity)		// need the second check in case the user is typed something silly
 			{
 				string munged = member.Text.Replace(";", "; ");
 				int first = munged.IndexOfAny(new char[]{'(', '['}) + 1;
 				Contract.Assert(first > 0, "couldn't find ( or [ in " + munged);
 				
 				Contract.Assert(m_currentArg >= 0, "m_currentArg is negative");
-				Contract.Assert(m_currentArg < member.Arity, "m_currentArg is too large");
 				for (int j = 0; j <= m_currentArg; ++j)
 				{
-					int next = munged.IndexOfAny(new char[]{';', ')', ']'}, first + 1);
+					int next = munged.IndexOfAny(new char[]{';', ')', ']'}, first);
 					Contract.Assert(next > 0, "couldn't find next ; or ) or ] in " + munged);
 					
 					if (j == m_currentArg)

@@ -80,7 +80,7 @@ internal sealed class MyClass
 ";
 			bool found = DoGetTarget(text, "this", text.IndexOf("."));
 			Assert.IsTrue(found);
-			Assert.AreEqual("MyClass", m_target.FullName);
+			Assert.AreEqual("MyClass", m_target.TypeName);
 			Assert.AreEqual("MyClass", m_target.Type.Name);
 		}
 		
@@ -109,7 +109,7 @@ namespace CoolLib
 ";
 			bool found = DoGetTarget(text, "this", text.IndexOf("."));
 			Assert.IsTrue(found);
-			Assert.AreEqual("CoolLib.MyClass", m_target.FullName);
+			Assert.AreEqual("CoolLib.MyClass", m_target.TypeName);
 			Assert.AreEqual("MyClass", m_target.Type.Name);
 		}
 		
@@ -140,13 +140,13 @@ namespace CoolLib
 			
 			found = DoGetTarget(text, "value", text.LastIndexOf("."), new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Int32", "00-01"}
+					"System.Int32",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int32", m_target.FullName);
+			Assert.AreEqual("System.Int32", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 		}
 		
@@ -177,13 +177,13 @@ namespace CoolLib
 			
 			found = DoGetTarget(text, "value", text.LastIndexOf("."), new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Int32", "00-01"}
+					"System.Int32",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int32", m_target.FullName);
+			Assert.AreEqual("System.Int32", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 		}
 		
@@ -212,12 +212,12 @@ namespace CoolLib
 ";
 			bool found = DoGetTarget(text, "MyClass", text.IndexOf("."));
 			Assert.IsTrue(found);
-			Assert.AreEqual("CoolLib.MyClass", m_target.FullName);
+			Assert.AreEqual("CoolLib.MyClass", m_target.TypeName);
 			Assert.AreEqual("MyClass", m_target.Type.Name);
 			
 			found = DoGetTarget(text, "Helper", text.LastIndexOf("."));
 			Assert.IsTrue(found);
-			Assert.AreEqual("CoolLib.Helper", m_target.FullName);
+			Assert.AreEqual("CoolLib.Helper", m_target.TypeName);
 			Assert.AreEqual("Helper", m_target.Type.Name);
 		}
 		
@@ -242,66 +242,66 @@ namespace CoolLib
 			// int
 			bool found = DoGetTarget(text, "int", text.IndexOf("."), new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Int32", "00-01"},
-					{"System.Text.StringBuilder", "00-02"}
+					"System.Int32",
+					"System.Text.StringBuilder",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int32", m_target.FullName);
+			Assert.AreEqual("System.Int32", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 			
 			// Int32
 			found = DoGetTarget(text, "Int32", text.IndexOf("."), new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Int32", "00-01"},
-					{"System.Text.StringBuilder", "00-02"}
+					"System.Int32",
+					"System.Text.StringBuilder",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int32", m_target.FullName);
+			Assert.AreEqual("System.Int32", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 			
 			// System.Int32
 			found = DoGetTarget(text, "System.Int32", text.IndexOf("."), new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Int32", "00-01"},
-					{"System.Text.StringBuilder", "00-02"}
+					"System.Int32",
+					"System.Text.StringBuilder",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int32", m_target.FullName);
+			Assert.AreEqual("System.Int32", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 			
 			// StringBuilder
 			found = DoGetTarget(text, "StringBuilder", text.IndexOf("."), new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Int32", "00-01"},
-					{"System.Text.StringBuilder", "00-02"}
+					"System.Int32",
+					"System.Text.StringBuilder",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Text.StringBuilder", m_target.FullName);
+			Assert.AreEqual("System.Text.StringBuilder", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 			
 			// System.Text.StringBuilder
 			found = DoGetTarget(text, "System.Text.StringBuilder", text.IndexOf("."), new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Int32", "00-01"},
-					{"System.Text.StringBuilder", "00-02"}
+					"System.Int32",
+					"System.Text.StringBuilder",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Text.StringBuilder", m_target.FullName);
+			Assert.AreEqual("System.Text.StringBuilder", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 		}
 		
@@ -325,10 +325,10 @@ namespace CoolLib
 			// StringBuilder
 			bool found = DoGetTarget(text, "StringBuilder", text.IndexOf("."), new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Int32", "00-01"},
-					{"System.Text.StringBuilder", "00-02"}
+					"System.Int32",
+					"System.Text.StringBuilder",
 				}
 			});
 			Assert.IsFalse(found);
@@ -336,14 +336,14 @@ namespace CoolLib
 			// System.Text.StringBuilder
 			found = DoGetTarget(text, "System.Text.StringBuilder", text.IndexOf("."), new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Int32", "00-01"},
-					{"System.Text.StringBuilder", "00-02"}
+					"System.Int32",
+					"System.Text.StringBuilder",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Text.StringBuilder", m_target.FullName);
+			Assert.AreEqual("System.Text.StringBuilder", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 		}
 		
@@ -366,26 +366,26 @@ namespace CoolLib
 ";
 			bool found = DoGetTarget(text, "alpha", text.IndexOf("."), new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Int32", "00-01"},
-					{"System.Single", "00-01"}
+					"System.Int32",
+					"System.Single",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int32", m_target.FullName);
+			Assert.AreEqual("System.Int32", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 			
 			found = DoGetTarget(text, "beta", text.IndexOf("."), new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Int32", "00-01"},
-					{"System.Single", "00-01"}
+					"System.Int32",
+					"System.Single",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Single", m_target.FullName);
+			Assert.AreEqual("System.Single", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 		}
 		
@@ -411,15 +411,15 @@ namespace CoolLib
 ";
 			bool found = DoGetTarget(text, "zeta", text.IndexOf("."), new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Int32", "00-01"},
-					{"System.Int64", "00-01"},
-					{"System.Single", "00-01"}
+					"System.Int32",
+					"System.Int64",
+					"System.Single",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int64", m_target.FullName);
+			Assert.AreEqual("System.Int64", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 		}
 		
@@ -448,194 +448,58 @@ namespace CoolLib
 ";
 			bool found = DoGetTarget(text, "beta", text.IndexOf("if"), new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Int16", "00-01"},
-					{"System.Int32", "00-01"},
-					{"System.Int64", "00-01"},
-					{"System.Single", "00-01"}
+					"System.Int16",
+					"System.Int32",
+					"System.Int64",
+					"System.Single",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Single", m_target.FullName);
+			Assert.AreEqual("System.Single", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 			
 			found = DoGetTarget(text, "zeta", text.IndexOf("if"), new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Int16", "00-01"},
-					{"System.Int32", "00-01"},
-					{"System.Int64", "00-01"},
-					{"System.Single", "00-01"}
+					"System.Int16",
+					"System.Int32",
+					"System.Int64",
+					"System.Single",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int64", m_target.FullName);
+			Assert.AreEqual("System.Int64", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 			
 			found = DoGetTarget(text, "beta", text.IndexOf("."), new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Int16", "00-01"},
-					{"System.Int32", "00-01"},
-					{"System.Int64", "00-01"},
-					{"System.Single", "00-01"}
+					"System.Int16",
+					"System.Int32",
+					"System.Int64",
+					"System.Single",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int16", m_target.FullName);
+			Assert.AreEqual("System.Int16", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 			
 			found = DoGetTarget(text, "zeta", text.IndexOf("."), new MockTargetDatabase
 			{
-				Hashes = new Dictionary<string, string>
+				Types = new List<string>
 				{
-					{"System.Int16", "00-01"},
-					{"System.Int32", "00-01"},
-					{"System.Int64", "00-01"},
-					{"System.Single", "00-01"}
+					"System.Int16",
+					"System.Int32",
+					"System.Int64",
+					"System.Single",
 				}
 			});
 			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int16", m_target.FullName);
-			Assert.IsNull(m_target.Type);
-		}
-		
-		[Test]
-		public void Field1()
-		{
-			string text = @"
-using System;
-
-namespace CoolLib
-{
-	internal sealed class MyClass
-	{
-		public void Work(int alpha)
-		{
-			xxx.
-		}
-		
-		private long alpha;
-		private long beta;
-	}
-}
-";
-			bool found = DoGetTarget(text, "alpha", text.IndexOf("."), new MockTargetDatabase
-			{
-				Hashes = new Dictionary<string, string>
-				{
-					{"System.Int32", "00-01"},
-					{"System.Int64", "00-01"},
-				}
-			});
-			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int32", m_target.FullName);
-			Assert.IsNull(m_target.Type);
-			
-			found = DoGetTarget(text, "beta", text.IndexOf("."), new MockTargetDatabase
-			{
-				Hashes = new Dictionary<string, string>
-				{
-					{"System.Int32", "00-01"},
-					{"System.Int64", "00-01"},
-				}
-			});
-			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int64", m_target.FullName);
-			Assert.IsNull(m_target.Type);
-		}
-		
-		[Test]
-		public void Field2()
-		{
-			string text = @"
-using System;
-
-namespace CoolLib
-{
-	internal sealed class MyClass : System.SomeBase
-	{
-		public void Work()
-		{
-			xxx.
-		}
-		
-		private long alpha;
-	}
-}
-";
-			bool found = DoGetTarget(text, "alpha", text.LastIndexOf("."), new MockTargetDatabase
-			{
-				Hashes = new Dictionary<string, string>
-				{
-					{"System.Int32", "00-01"},
-					{"System.Int64", "00-01"},
-					{"System.SomeBase", "00-02"},
-				},
-				BaseFieldTypes = new Dictionary<string, string>
-				{
-					{"System.SomeBase+alpha", "System.Int32"},
-					{"System.SomeBase+beta", "System.Int32"},
-				}
-			});
-			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int64", m_target.FullName);
-			Assert.IsNull(m_target.Type);
-			
-			found = DoGetTarget(text, "beta", text.LastIndexOf("."), new MockTargetDatabase
-			{
-				Hashes = new Dictionary<string, string>
-				{
-					{"System.Int32", "00-01"},
-					{"System.Int64", "00-01"},
-					{"System.SomeBase", "00-02"},
-				},
-				BaseClasses = new Dictionary<string, string>
-				{
-					{"CoolLib.MyClass", "System.SomeBase"},
-				},
-				BaseFieldTypes = new Dictionary<string, string>
-				{
-					{"System.SomeBase+alpha", "System.Int32"},
-					{"System.SomeBase+beta", "System.Int32"},
-				}
-			});
-			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int32", m_target.FullName);
-			Assert.IsNull(m_target.Type);
-		}
-		
-		[Test]
-		public void Property()
-		{
-			string text = @"
-using System;
-
-namespace CoolLib
-{
-	internal sealed class MyClass
-	{
-		public int Alpha {get; set;}
-		
-		public void Work(int alpha, float beta)
-		{
-			ppp.
-		}
-	}
-}
-";
-			bool found = DoGetTarget(text, "Alpha", text.IndexOf("."), new MockTargetDatabase
-			{
-				Hashes = new Dictionary<string, string>
-				{
-					{"System.Int32", "00-01"},
-				}
-			});
-			Assert.IsTrue(found);
-			Assert.AreEqual("System.Int32", m_target.FullName);
+			Assert.AreEqual("System.Int16", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 		}
 		

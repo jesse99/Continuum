@@ -33,7 +33,7 @@ namespace AutoComplete
 	{
 		public ResolveName(ITargetDatabase database, ICsLocalsParser locals, string text, int offset, CsGlobalNamespace globals)
 		{
-//			m_database = database;
+			m_database = database;
 			m_typeResolver = new ResolveType(database);
 			m_globals = globals;
 			m_offset = offset;
@@ -217,22 +217,52 @@ namespace AutoComplete
 						string value = m_variables[i].Value;
 						if (value.StartsWith("new"))
 						{
+							// var result = new Type(...);
 							value = DoGetNewValue(value);
 						}
 						else if (value.StartsWith("from "))
 						{
+							// var result = from ...;
 							value = "System.Collections.Generic.IEnumerable`1";
+						}
+						else if (CsHelpers.IsIdentifier(value))
+						{
+							// var result = name; where name is a property or field.
+							ResolvedTarget target = m_typeResolver.Resolve(m_member.DeclaringType.FullName, m_globals, true, true);
+							if (target != null)
+							{
+								var resolveMembers = new ResolveMembers(m_database);
+								Member[] members = resolveMembers.Find(target, m_globals, value, 0);
+								if (members.Length > 0)
+								{
+									if (members.All(m => m.Type == members[0].Type))
+									{
+										result = m_typeResolver.Resolve(members[0].Type, m_globals, target.IsInstance, target.IsStatic);
+									}
+									else
+									{
+										Log.WriteLine("AutoComplete", "{0} has an ambiguous return type:", value);
+										foreach (Member member in members)
+										{
+											Log.WriteLine("AutoComplete", "    {0} {1}", member.Type, member);
+										}
+									}
+								}
+							}
 						}
 						else
 						{
+							// var result = Get<Type>();
+							// TODO: need something more general here 
 							Match m = ms_getRE.Match(value);
 							if (m.Success)
 							{
-								value = m.Groups[1].Value;	// TODO: need something more general here 
+								value = m.Groups[1].Value;	
 							}
 						}
 						
-						result = Resolve(value);
+						if (result == null)
+							result = Resolve(value);
 						
 						if (result != null)
 						{
@@ -360,13 +390,13 @@ namespace AutoComplete
 		#endregion
 		
 		#region Fields
-//		private ITargetDatabase m_database;
+		private ITargetDatabase m_database;
 		private ResolveType m_typeResolver;
 		private Variable[] m_variables;
 		private int m_offset;
 		private CsMember m_member;
 		private CsGlobalNamespace m_globals;
-
+		
 		private Regex ms_getRE = new Regex(@"\w+ \. Get \s* < \s* (\w+) \s* > \s* \( \s* \)", RegexOptions.IgnorePatternWhitespace);
 		#endregion
 	}

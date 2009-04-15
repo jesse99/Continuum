@@ -147,8 +147,12 @@ namespace AutoComplete
 		
 		private string[] DoGetBases(string typeName, List<CsType> types, List<string> baseNames, List<string> interfaceNames)
 		{
+#if TEST
+			var parses = new CsParser.Parses();
+#else
 			Boss boss = ObjectModel.Create("CsParser");
 			var parses = boss.Get<IParses>();
+#endif
 			
 			var allNames = new List<string>();
 			allNames.Add(typeName);
@@ -232,7 +236,7 @@ namespace AutoComplete
 						if (includePrivates || method.Access != MemberModifiers.Private)
 						{
 							var anames = from p in method.Parameters select p.Name;
-							string text = method.Name + "(" + string.Join(", ", (from p in method.Parameters select p.Type + " " + p.Name).ToArray()) + ")";
+							string text = method.Name + "(" + string.Join(";", (from p in method.Parameters select p.Type + " " + p.Name).ToArray()) + ")";
 							
 							members.AddIfMissing(new Member(text, anames.Count(), method.ReturnType, type.FullName));
 						}

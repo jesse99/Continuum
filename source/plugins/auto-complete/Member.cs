@@ -53,6 +53,7 @@ namespace AutoComplete
 			Contract.Requires(!string.IsNullOrEmpty(type), "type is null or empty");
 			Contract.Requires(arity >= 0, "arity is null");
 			Contract.Requires(!string.IsNullOrEmpty(declaringType), "declaringType is null or empty");
+			Contract.Requires(arity <= 1 || text.Contains(";"), text + " should have a ;");
 			
 			Text = text;
 			Type = type;

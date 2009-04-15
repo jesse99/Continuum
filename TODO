@@ -24,6 +24,34 @@ sudo fs_usage -f filesys
 
 http://www.technipages.com/os-x-leopard-enabledisable-spotlight.html
 
+		// fields and properties
+#if false
+		if (m_member != null && m_member.DeclaringType != null)
+		{
+			ResolvedTarget type = m_typeResolver.Resolve(m_member.DeclaringType, m_globals, true, false);
+			if (type != null)
+			{
+				DoFindFields(type, vars);
+				DoFindProperties(type, vars);
+			}
+			
+			var bases = new List<string>();
+			var interfaces = new List<string>();
+			var allNames = new List<string>();
+			m_database.GetBases(m_member.DeclaringType, bases, interfaces, allNames);
+			
+			if (bases.Count > 0)
+			{
+				foreach (string b in bases)
+				{
+					type = m_typeResolver.Resolve(b, m_globals, true, false);
+					DoFindFields(type, vars);
+					DoFindProperties(type, vars);
+				}
+			}
+		}
+#endif
+
 		public IEnumerable<ResolvedTarget> GetBases(CsGlobalNamespace globals, string fullName, bool isInstance, bool isStatic)
 		{
 			if (fullName == "xxxx")
@@ -172,34 +200,18 @@ param_names				Space separated list of Names integers of the names of each
 param_modifiers			Space separated list of integers: 0 for in parameter, 1 for out, 2
 							for ref, and 3 for params.
 
-3 cycles of NSNumber auto-complete, Action context
-then auto-complete NSMenuItem and context menu NSApplication
-window		menu			
-0.495		0.103		base line
-
-* Profile:
-	- look at overall speed
-	- look at query overhead
-	- PRAGMA cache_size can have a large effect on speed
-	  	` http://www.sqlite.org/pragma.html
-	  	` maybe try this with a fairly long chained method call
-	  	` may want to keep aggregate query numbers
-	  	` could log these every 1000 queries or something
-	- sqlite3_profile may help, also sqlite3_status, may want to use prepared statements too
-	- add the new db size to tables.txt
-	- build a new foreshadow
-	- get the unit tests working
-	- get pointers completing
-	- get arrays completing
-	- get indexers completing
-	- should also be able to complete instantiated generics now
 * Replace Trace.Assert with Contract.Require
 * Replace Debug.Assert with Contract.Require
 * Work more on target completion:
+	- make sure array-type return IList
 	- .txt files are completing
 	- make sure var builder = new System.Text.StringBuilder(); completes when
 	  builder is used
-	- 2+ chars + 2 tabs should complete names and expressions
+	- need a project pref for inserting a space before completed (
+	- make sure completion works OK with spaces before open parens
+	- 2+ chars + 2 tabs should complete names and expressions (with no ui where
+	  possible)
+	- add the new db size to tables.txt
 	- get ctor calls completing
 	- ctor completion should work with dotted names
 	- ctor completion should work with just new
@@ -208,18 +220,13 @@ window		menu
 	- complete table should support paste (i.e. add it to completion text)
 	- member list needs to account for access
 	- member list needs to account for visibility
-	- use an ITypeDatabase, should have parser databases for all windows that were open
-	- parse databases for closed windows are removed on a successful build
-	- enter should complete snippets
+	- enter should complete snippets (probably also partial expressions)
 	- complete new SomeType calls
 		` special case array types
 	- local explicit interface implementation
 	- global explicit interface implementation
 	- need to work with namespace aliases
-	- make sure completion works OK with spaces before open parens
-	- get target working with array indexing, eg data[foo], also indexers
 	- prune value type members when completing args
-	- need a project pref for inserting a space before completed (
 * FileStream.cs didn't parse right.
 * Dirty files aren't always being refreshed.
 * Can we do some sort of notification when assemblies finish parsing? Or to show parse
@@ -257,21 +264,15 @@ window		menu
 	- arg completion should prune more types
 	- look at Code Templates file for ideas on statement completion
 	- arg completion could filter on formal arg type
-	- might want to add a context menu to arg completion window: close and switch
-	   to an overload
-* Work on auto-complete:
-	- doesn't work with IBOutlet<T>.Value
-	- ResolveEpr should work with dictionary subscripting
-	- ResolveEpr should work with array subscripting
+	- get pointers completing
+	- get arrays completing
+	- get indexers completing
+	- should also be able to complete instantiated generics now
 * Is ChangeAccess correct?
 * Add Convert to Decimal and Convert To Hex.
-* Use Contract instead of Trace.
 * Couldn't use context menu to spellcheck with no database.
 * Search witin "…" isn't finding verbatim strings. E.g. search for Methods should
   find some.
-* Shouldn't open selection prefer local files? If so, why is it finding those plus those
-   on the external drive? Maybe the is loccal check is weak? It needs to check that the
-   file path starts with the local directory path.
 * Build errors should use annotations. What about the "Error 1 of 10" text?
 * Should put databases in ~/Library/Caches. Note that time machine skips this
    directory. See /System/Library/CoreServices/backupd.bundle/Contents/Resources/StdExclusions.plist

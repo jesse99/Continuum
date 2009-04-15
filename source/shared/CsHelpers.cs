@@ -116,6 +116,16 @@ namespace Shared
 			return name;
 		}
 		
+		public static bool IsIdentifier(string name)
+		{
+			bool valid = name != null && name.Length > 0 && CanStartIdentifier(name[0]);
+			
+			for (int i = 1; valid && i < name.Length; ++i)
+				valid = CanContinueIdentifier(name[i]);
+			
+			return valid;
+		}
+		
 		// Returns true if the character is one which can start a C# identifier.
 		public static bool CanStartIdentifier(char ch)
 		{
