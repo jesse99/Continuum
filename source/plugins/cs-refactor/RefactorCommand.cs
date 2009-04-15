@@ -19,6 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Shared;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -39,11 +40,11 @@ namespace CsRefactor
 		
 		public void Preflight(StringBuilder builder)
 		{
-			Trace.Assert(builder != null, "builder is null");
+			Contract.Requires(builder != null, "builder is null");
 			
 			int oldLen = builder.Length;
 			OnFindRange(builder, out m_offset, out m_length);
-			Trace.Assert(oldLen == builder.Length, "OnFindRange should not change the builder");
+			Contract.Ensures(oldLen == builder.Length, "OnFindRange should not change the builder");
 		}
 		
 		// Allows commands to change what they insert (but not where they insert) based on
@@ -51,14 +52,14 @@ namespace CsRefactor
 		// i are executed after this.
 		public virtual void PreExecute(RefactorCommand[] commands, int i)
 		{
-			Trace.Assert(commands != null, "commands is null");
+			Contract.Requires(commands != null, "commands is null");
 		}
 		
 		// Sequence is: 1) call Preflight for all commands 2) call PreExecute for all commands
 		// 3) call Execute for all commands.
 		public void Execute(StringBuilder builder)
 		{
-			Trace.Assert(builder != null, "builder is null");
+			Contract.Requires(builder != null, "builder is null");
 
 			if (Offset >= 0)
 			{
@@ -85,7 +86,7 @@ namespace CsRefactor
 		// returned offset is zero or it minus one is \n.
 		protected int FindLineStart(StringBuilder builder, int offset)
 		{
-			Trace.Assert(builder != null, "builder is null");
+			Contract.Requires(builder != null, "builder is null");
 
 			while (offset > 0)
 			{
@@ -132,8 +133,8 @@ namespace CsRefactor
 		
 		protected void AddLines(string[] lines)
 		{
-			Trace.Assert(lines != null, "lines is null");
-			Trace.Assert(Offset == 0 || m_builder[Offset - 1] == '\n', "offset is not at the start of a line");
+			Contract.Requires(lines != null, "lines is null");
+			Contract.Requires(Offset == 0 || m_builder[Offset - 1] == '\n', "offset is not at the start of a line");
 			
 			int previous = DoFindPrevLineStart(Offset);	// note that we can't use the current line because we can't safely peek past Offset
 			string indent = DoGetIndent(previous, m_builder.Length);
@@ -154,7 +155,7 @@ namespace CsRefactor
 		
 		protected string LinesToString(string[] lines)
 		{
-			Trace.Assert(lines != null, "lines is null");
+			Contract.Requires(lines != null, "lines is null");
 
 			string line1 = lines.Length > 0 ? lines[0] : string.Empty;
 			string line2 = lines.Length > 1 ? lines[1] : string.Empty;
@@ -197,8 +198,8 @@ namespace CsRefactor
 		
 		private string DoGetIndent(int start, int max)
 		{
-			Trace.Assert(start <= max, "trying to scan into characters that may have been edited");
-			Trace.Assert(start == 0 || m_builder[start - 1] == '\n', "start is not at the start of a line");
+			Contract.Requires(start <= max, "trying to scan into characters that may have been edited");
+			Contract.Requires(start == 0 || m_builder[start - 1] == '\n', "start is not at the start of a line");
 			
 			string indent = string.Empty;
 			
@@ -210,7 +211,7 @@ namespace CsRefactor
 				
 				indent = m_builder.ToString(start, index - start);
 			}
-			Trace.Assert(index <= max, "scanning into characters that may have been edited");
+			Contract.Assert(index <= max, "scanning into characters that may have been edited");
 			
 			// Line of whitespace with a { on the end.
 			if (index < m_builder.Length && m_builder[index] == '{')
@@ -232,7 +233,7 @@ namespace CsRefactor
 					if (index < m_builder.Length && m_builder[index] == '\n')
 						indent += "\t";
 				}
-				Trace.Assert(index <= max, "scanning into characters that may have been edited");
+				Contract.Assert(index <= max, "scanning into characters that may have been edited");
 			}
 			
 			return indent;

@@ -115,7 +115,7 @@ namespace CsRefactor.Script
 		public delegate object Nullary<T>(T instance);		
 		public void Register<T>(string name, Nullary<T> callback)
 		{
-			Trace.Assert(callback != null, "callback is null");
+			Contract.Requires(callback != null, "callback is null");
 
 			m_callbacks.Add(name, (int line, object instance, string method, object[] args) => 
 			{
@@ -133,7 +133,7 @@ namespace CsRefactor.Script
 		public delegate object Unary<T, A0>(T instance, A0 a0);
 		public void Register<T, A0>(string name, Unary<T, A0> callback)
 		{
-			Trace.Assert(callback != null, "callback is null");
+			Contract.Requires(callback != null, "callback is null");
 
 			m_callbacks.Add(name, (int line, object instance, string method, object[] args) => 
 			{
@@ -154,7 +154,7 @@ namespace CsRefactor.Script
 		public delegate object Binary<T, A0, A1>(T instance, A0 a0, A1 a1);
 		public void Register<T, A0, A1>(string name, Binary<T, A0, A1> callback)
 		{
-			Trace.Assert(callback != null, "callback is null");
+			Contract.Requires(callback != null, "callback is null");
 
 			m_callbacks.Add(name, (int line, object instance, string method, object[] args) => 
 			{
@@ -177,7 +177,7 @@ namespace CsRefactor.Script
 
 		public void Register(Context context, Method customMethod)
 		{
-			Trace.Assert(customMethod != null, "customMethod is null");
+			Contract.Requires(customMethod != null, "customMethod is null");
 			
 			if (m_callbacks.ContainsKey(customMethod.Name))
 				throw new EvaluateException(1, "The {0} method is already defined.", customMethod.Name);

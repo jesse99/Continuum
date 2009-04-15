@@ -26,13 +26,13 @@ using System.Diagnostics;
 using System.IO;
 
 namespace Shared
-{	    
+{
 	public static class AssemblyCache
 	{
 		// Note that this is thread safe.
 		public static AssemblyDefinition Load(string path, bool loadSymbols)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(path), "path is null or empty");
+			Contract.Requires(!string.IsNullOrEmpty(path), "path is null or empty");
 			
 			AssemblyDefinition assembly = null;
 			

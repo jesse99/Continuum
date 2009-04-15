@@ -33,9 +33,9 @@ namespace Shared
 	{
 		public static void Rename(string oldPath, string newPath)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(oldPath), "oldPath is null or empty");
-			Trace.Assert(!string.IsNullOrEmpty(newPath), "newPath is null or empty");
-			Trace.Assert(!Paths.AreEqual(oldPath, newPath), "oldPath equals newPath");
+			Contract.Requires(!string.IsNullOrEmpty(oldPath), "oldPath is null or empty");
+			Contract.Requires(!string.IsNullOrEmpty(newPath), "newPath is null or empty");
+			Contract.Requires(!Paths.AreEqual(oldPath, newPath), "oldPath equals newPath");
 			
 			try
 			{
@@ -69,7 +69,7 @@ namespace Shared
 		
 		public static void Duplicate(string path)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(path), "path is null or empty");
+			Contract.Requires(!string.IsNullOrEmpty(path), "path is null or empty");
 			
 			try
 			{
@@ -157,8 +157,8 @@ namespace Shared
 		// Executes the command for a single sccs.
 		public static void Execute(string command, string path)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(command), "command is null or empty");
-			Trace.Assert(!string.IsNullOrEmpty(path), "path is null or empty");
+			Contract.Requires(!string.IsNullOrEmpty(command), "command is null or empty");
+			Contract.Requires(!string.IsNullOrEmpty(path), "path is null or empty");
 			
 			try
 			{

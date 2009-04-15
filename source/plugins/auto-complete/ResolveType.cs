@@ -38,7 +38,7 @@ namespace AutoComplete
 		// May return null.
 		public ResolvedTarget Resolve(string type, CsGlobalNamespace globals, bool isInstance, bool isStatic)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(type), "type is null or empty");
+			Contract.Requires(!string.IsNullOrEmpty(type), "type is null or empty");
 			
 			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "---------------- resolving type");
 			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "type: {0}", type);
@@ -75,7 +75,7 @@ namespace AutoComplete
 		
 		public ResolvedTarget Resolve(CsType type, bool isInstance, bool isStatic)
 		{
-			Trace.Assert(type != null, "type is null or empty");
+			Contract.Requires(type != null, "type is null or empty");
 			
 			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "---------------- resolving type");
 			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "cs type: {0}", type);
@@ -94,7 +94,7 @@ namespace AutoComplete
 		
 		public ResolvedTarget Resolve(string fullName, bool isInstance, bool isStatic)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
+			Contract.Requires(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
 			
 			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "---------------- resolving type");
 			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "fullName: {0}", fullName);

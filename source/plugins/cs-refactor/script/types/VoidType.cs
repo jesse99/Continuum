@@ -33,14 +33,14 @@ namespace CsRefactor.Script
 	{
 		public VoidType()
 		{
-			Trace.Assert(ms_instance == null, "Types should only be instantiated once");
+			Contract.Requires(ms_instance == null, "Types should only be instantiated once");
 			
 			ms_instance = this;
 		}
 		
-		public static VoidType Instance 
+		public static VoidType Instance
 		{
-			get 
+			get
 			{
 				if (ms_instance == null)
 					ms_instance = new VoidType();

@@ -53,7 +53,7 @@ namespace TextEditor
 		
 		public bool HasChangedOnDisk()
 		{
-			Trace.Assert(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
+			Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 			
 			bool changed = false;
 			

@@ -30,9 +30,9 @@ namespace TextEditor
 	{
 		public ConcreteLiveRange(Boss boss, int index, int length)
 		{
-			Trace.Assert(boss != null, "boss is null");
-			Trace.Assert(index >= 0, "index is negative");
-			Trace.Assert(length >= 0, "length is negative");
+			Contract.Requires(boss != null, "boss is null");
+			Contract.Requires(index >= 0, "index is negative");
+			Contract.Requires(length >= 0, "length is negative");
 			
 			m_boss = boss;
 			m_index = index;
@@ -48,7 +48,7 @@ namespace TextEditor
 		{
 			get
 			{
-				Trace.Assert(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
+				Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 				
 				return m_index >= 0;
 			}
@@ -58,7 +58,7 @@ namespace TextEditor
 		{
 			get
 			{
-				Trace.Assert(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
+				Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 				
 				return m_index;
 			}
@@ -68,7 +68,7 @@ namespace TextEditor
 		{
 			get
 			{
-				Trace.Assert(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
+				Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 				
 				return m_length;
 			}
@@ -76,7 +76,7 @@ namespace TextEditor
 		
 		internal void Reset(int index)
 		{
-			Trace.Assert(index >= -1, "index is too negative");
+			Contract.Requires(index >= -1, "index is too negative");
 			
 			if (index != m_index)
 			{

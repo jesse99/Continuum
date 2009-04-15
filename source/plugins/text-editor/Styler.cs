@@ -46,8 +46,8 @@ namespace TextEditor
 		
 		public void Apply(IComputeRuns computer, Action callback)
 		{
-			Trace.Assert(computer != null, "computer is null");
-			Trace.Assert(callback != null, "callback is null");
+			Contract.Requires(computer != null, "computer is null");
+			Contract.Requires(callback != null, "callback is null");
 			
 			// This is called via a timer so sometimes it will be closed.
 			if (!m_closed)
@@ -82,9 +82,9 @@ namespace TextEditor
 		
 		public void Queue(IComputeRuns computer, Action callback)
 		{
-			Trace.Assert(computer != null, "computer is null");
-			Trace.Assert(callback != null, "callback is null");
-			Trace.Assert(!m_closed, "m_closed is true");
+			Contract.Requires(computer != null, "computer is null");
+			Contract.Requires(callback != null, "callback is null");
+			Contract.Requires(!m_closed, "m_closed is true");
 			
 			lock (m_mutex)
 			{

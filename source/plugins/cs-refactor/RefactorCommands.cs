@@ -33,8 +33,8 @@ namespace CsRefactor
 	{
 		public AddBaseType(CsType type, string name)	
 		{
-			Trace.Assert(type != null, "type is null");
-			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
+			Contract.Requires(type != null, "type is null");
+			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
 			
 			m_type = type;
 			m_name = name;
@@ -43,7 +43,7 @@ namespace CsRefactor
 		// This will execute after OnFindRange.
 		public override void PreExecute(RefactorCommand[] commands, int i)
 		{
-			Trace.Assert(commands != null, "commands is null");
+			Contract.Requires(commands != null, "commands is null");
 
 			// If there are no bases and we're the last AddBase command then we
 			// need to use a colon for the prefix, otherwise we need to use a comma.
@@ -310,8 +310,8 @@ namespace CsRefactor
 	{
 		public AddUsing(CsNamespace ns, string name)	
 		{
-			Trace.Assert(ns != null, "ns is null");
-			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
+			Contract.Requires(ns != null, "ns is null");
+			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
 			
 			m_namespace = ns;
 			m_name = name;
@@ -417,8 +417,8 @@ namespace CsRefactor
 	{
 		public ChangeAccess(CsMember member, string access)
 		{
-			Trace.Assert(member != null, "member is null");
-			Trace.Assert(!string.IsNullOrEmpty(access), "access is null or empty");
+			Contract.Requires(member != null, "member is null");
+			Contract.Requires(!string.IsNullOrEmpty(access), "access is null or empty");
 			
 			m_access = access;
 			m_member = member;
@@ -426,7 +426,7 @@ namespace CsRefactor
 		
 		protected override void OnFindRange(StringBuilder builder, out int offset, out int length)
 		{
-			Trace.Assert(builder != null, "builder is null");
+			Contract.Requires(builder != null, "builder is null");
 			
 			// Default to no accessor case which is just a simple insert.
 			offset = m_member.Offset;
@@ -482,9 +482,9 @@ namespace CsRefactor
 	{
 		public Indent(int offset, int len, string tabs)
 		{
-			Trace.Assert(offset >= 0, "offset is negative");
-			Trace.Assert(len >= 0, "len is negative");
-			Trace.Assert(tabs != null, "tabs is null");
+			Contract.Requires(offset >= 0, "offset is negative");
+			Contract.Requires(len >= 0, "len is negative");
+			Contract.Requires(tabs != null, "tabs is null");
 			
 			m_offset = offset;
 			m_len = len;

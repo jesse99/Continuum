@@ -71,7 +71,7 @@ namespace TextEditor
 			get {return m_color;}
 			set
 			{
-				Trace.Assert(!NSObject.IsNullOrNil(value), "value is null or nil");
+				Contract.Requires(!NSObject.IsNullOrNil(value), "value is null or nil");
 				
 				if (value != m_color)
 				{
@@ -256,7 +256,7 @@ namespace TextEditor
 		{
 			get
 			{
-				Trace.Assert(IsValid, "anchor is invalid");
+				Contract.Requires(IsValid, "anchor is invalid");
 				return new NSRange(m_range.Index, m_range.Length);
 			}
 		}
@@ -291,7 +291,7 @@ namespace TextEditor
 			get {return m_parent != null && m_visible;}
 			set
 			{
-				Trace.Assert(m_parent != null || !value, "m_parent is null");
+				Contract.Requires(m_parent != null || !value, "m_parent is null");
 				
 				if (m_parent != null)
 				{

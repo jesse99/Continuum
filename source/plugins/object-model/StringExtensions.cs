@@ -31,7 +31,7 @@ namespace ObjectModel
 		// to be able to compare them we ensure that they are in the first form.
 		public static string GetTypeName(this string name)
 		{
-			Trace.Assert(name != null, "name is null");
+			Contract.Requires(name != null, "name is null");
 
 			int i = name.IndexOf('`');
 			

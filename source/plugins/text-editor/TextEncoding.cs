@@ -42,7 +42,7 @@ namespace TextEditor
 
 		public Tuple2<NSString, uint> Decode(NSData data)	// threaded code
 		{			
-			Trace.Assert(data != null, "data is null");
+			Contract.Requires(data != null, "data is null");
 
 			// TODO: would be nice to also support utf16, but it looks like we'll 
 			// need to check the data for embedded nulls and/or a BOM because NSString 
@@ -63,8 +63,8 @@ namespace TextEditor
 		
 		public NSData Encode(NSString text, uint encoding)	// threaded code
 		{
-			Trace.Assert((object) text != null, "text is null");
-			Trace.Assert(encoding != 0, "encoding is zero");
+			Contract.Requires((object) text != null, "text is null");
+			Contract.Requires(encoding != 0, "encoding is zero");
 			
 			return text.dataUsingEncoding_allowLossyConversion(encoding, false);	// TODO: might want to popup a warning if we lose stuff like accents
 		}

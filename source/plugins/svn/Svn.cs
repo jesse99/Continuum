@@ -102,7 +102,7 @@ namespace Subversion
 		
 		public string[] GetCommands(IEnumerable<string> paths)
 		{
-			Trace.Assert(paths.Any(), "paths is empty");
+			Contract.Requires(paths.Any(), "paths is empty");
 			
 			List<string> commands = new List<string>(m_commands.Count);
 			
@@ -157,7 +157,7 @@ namespace Subversion
 		
 		public void Execute(string command, string path)
 		{
-			Trace.Assert(m_commands.ContainsKey(command), command + " is not an Svn command");
+			Contract.Requires(m_commands.ContainsKey(command), command + " is not an Svn command");
 			
 			m_commands[command](path);
 		}

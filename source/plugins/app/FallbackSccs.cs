@@ -99,7 +99,7 @@ namespace App
 		
 		public string[] GetCommands(IEnumerable<string> paths)
 		{
-			Trace.Assert(paths.Any(), "paths is empty");
+			Contract.Requires(paths.Any(), "paths is empty");
 			
 			var commands = new List<string>(m_commands.Count);
 			
@@ -129,7 +129,7 @@ namespace App
 		
 		public void Execute(string command, string path)
 		{
-			Trace.Assert(m_commands.ContainsKey(command), command + " is not a File command");
+			Contract.Requires(m_commands.ContainsKey(command), command + " is not a File command");
 			
 			m_commands[command](path);
 		}

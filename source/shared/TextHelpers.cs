@@ -44,9 +44,9 @@ namespace Shared
 		// braces are skipped as well.
 		public static int SkipBraces(string text, int start, int last, params string[] braces)
 		{
-			Trace.Assert(text != null, "text is null");
-			Trace.Assert(start >= 0, "start is negative");
-			Trace.Assert(start < last, "start is too large");
+			Contract.Requires(text != null, "text is null");
+			Contract.Requires(start >= 0, "start is negative");
+			Contract.Requires(start < last, "start is too large");
 			Debug.Assert(braces.All(b => b.Length == 2), "brace strings should be two characters");
 			Debug.Assert(Array.Exists(braces, b => text[start] == b[0]), "start character isn't an open brace");
 			
@@ -95,9 +95,9 @@ namespace Shared
 		// braces are skipped as well.
 		public static int ReverseSkipBraces(string text, int start, int first, params string[] braces)
 		{
-			Trace.Assert(text != null, "text is null");
-			Trace.Assert(start >= 0, "start is negative");
-			Trace.Assert(start > first, "start is too small");
+			Contract.Requires(text != null, "text is null");
+			Contract.Requires(start >= 0, "start is negative");
+			Contract.Requires(start > first, "start is too small");
 			Debug.Assert(braces.All(b => b.Length == 2), "brace strings should be two characters");
 			Debug.Assert(Array.Exists(braces, b => text[start] == b[1]), "start character isn't a close brace");
 			

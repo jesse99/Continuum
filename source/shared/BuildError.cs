@@ -28,11 +28,11 @@ namespace Shared
 	{
 		public BuildError(string tool, string file, string message, int line, int col, bool isError)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(tool), "tool is null or empty");
-			Trace.Assert(!string.IsNullOrEmpty(file), "file is null or empty");
-			Trace.Assert(!string.IsNullOrEmpty(message), "message is null or empty");
-			Trace.Assert(line > 0 || line == -1, "line is oor: " + line);
-			Trace.Assert(col > 0 || col == -1, "col is oor: " + col);
+			Contract.Requires(!string.IsNullOrEmpty(tool), "tool is null or empty");
+			Contract.Requires(!string.IsNullOrEmpty(file), "file is null or empty");
+			Contract.Requires(!string.IsNullOrEmpty(message), "message is null or empty");
+			Contract.Requires(line > 0 || line == -1, "line is oor: " + line);
+			Contract.Requires(col > 0 || col == -1, "col is oor: " + col);
 			
 			Tool = tool;
 			File = file;

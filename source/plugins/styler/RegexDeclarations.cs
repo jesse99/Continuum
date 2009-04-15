@@ -42,7 +42,7 @@ namespace Styler
 		
 		public Declaration[] Get(IText itext, StyleRun[] runs)
 		{
-			Trace.Assert(runs != null, "runs is null");
+			Contract.Requires(runs != null, "runs is null");
 			
 			string text = itext.Text;
 			

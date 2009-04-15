@@ -130,8 +130,8 @@ namespace Find
 				return m_finds[index];
 				
 			FindsForFile result = item as FindsForFile;
-			Trace.Assert(item != null, "item is null");
-			Trace.Assert(result != null, "item is a " + item.GetType());
+			Contract.Assert(item != null, "item is null");
+			Contract.Assert(result != null, "item is a " + item.GetType());
 			
 			return result[index];
 		}

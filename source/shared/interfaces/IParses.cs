@@ -28,11 +28,11 @@ namespace Shared
 	{
 		public Parse(int edit, int index, int length, CsGlobalNamespace globals, Token[] comments, Token[] tokens)
 		{
-			Trace.Assert(index >= 0, "index is negative");
-			Trace.Assert(length >= 0, "length is negative");
-			Trace.Assert(globals != null, "globals is null");
-			Trace.Assert(comments != null, "comments is null");
-			Trace.Assert(tokens != null, "tokens is null");
+			Contract.Requires(index >= 0, "index is negative");
+			Contract.Requires(length >= 0, "length is negative");
+			Contract.Requires(globals != null, "globals is null");
+			Contract.Requires(comments != null, "comments is null");
+			Contract.Requires(tokens != null, "tokens is null");
 			
 			Edit = edit;
 			ErrorIndex = index;

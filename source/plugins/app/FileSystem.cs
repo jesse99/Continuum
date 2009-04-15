@@ -45,7 +45,7 @@ namespace App
 
 		public void Launch(string path)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(path), "path is null or empty");
+			Contract.Requires(!string.IsNullOrEmpty(path), "path is null or empty");
 			
 			Unused.Value = NSWorkspace.sharedWorkspace().openFile(NSString.Create(path));
 		}
@@ -55,7 +55,7 @@ namespace App
 		// ignored.
 		public long GetBytes(string path)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(path), "path is null or empty");
+			Contract.Requires(!string.IsNullOrEmpty(path), "path is null or empty");
 
 			long bytes = 0;
 			
@@ -69,7 +69,7 @@ namespace App
 	
 		public string[] LocatePath(string path)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(path), "path is null or empty");
+			Contract.Requires(!string.IsNullOrEmpty(path), "path is null or empty");
 
 			string result = string.Empty;
 			
@@ -102,8 +102,8 @@ namespace App
 		
 		public string GetTempFile(string prefix, string extension)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(prefix), "prefix is null or empty");
-			Trace.Assert(extension != null, "extension is null");
+			Contract.Requires(!string.IsNullOrEmpty(prefix), "prefix is null or empty");
+			Contract.Requires(extension != null, "extension is null");
 			
 			prefix = prefix.Replace('/', '.');		// prefix is often a type name which causes problems if it is a nested type unless we do this
 

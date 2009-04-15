@@ -52,14 +52,14 @@ namespace CsParser
 		
 		public void Init(string text)
 		{
-			Trace.Assert(Thread.CurrentThread.ManagedThreadId == m_threadID, "can only be used with one thread");
+			Contract.Requires(Thread.CurrentThread.ManagedThreadId == m_threadID, "can only be used with one thread");
 			
 			Init(text, 0);
 		}
 		
 		public void Init(string text, int offset)
 		{
-			Trace.Assert(Thread.CurrentThread.ManagedThreadId == m_threadID, "can only be used with one thread");
+			Contract.Requires(Thread.CurrentThread.ManagedThreadId == m_threadID, "can only be used with one thread");
 			
 			m_text = text + '\x00';		// scanning is easier and faster with a sentinel value
 			m_index = offset;

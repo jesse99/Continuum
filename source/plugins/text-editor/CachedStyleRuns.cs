@@ -49,7 +49,7 @@ namespace TextEditor
 		
 		public void Reset(int edit, StyleRun[] runs)
 		{
-			Trace.Assert(runs != null, "runs is null");
+			Contract.Requires(runs != null, "runs is null");
 			
 			// .NET guarantees that these fields are atomically set but we need
 			// to ensure that the entire group is set atomically.

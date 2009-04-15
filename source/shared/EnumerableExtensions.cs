@@ -31,7 +31,7 @@ namespace Shared
 #if DEBUG
 		public static string ToDebugString(this System.Collections.IEnumerable list)
 		{
-			Trace.Assert(list != null, "list is null");
+			Contract.Requires(list != null, "list is null");
 			
 			var items = new List<string>();
 			
@@ -53,8 +53,8 @@ namespace Shared
 
 		public static string ToDebugString<T>(this IEnumerable<T> list, Converter<T> converter)
 		{
-			Trace.Assert(list != null, "list is null");
-			Trace.Assert(converter != null, "converter is null");
+			Contract.Requires(list != null, "list is null");
+			Contract.Requires(converter != null, "converter is null");
 						
 			var items = new List<string>();
 			

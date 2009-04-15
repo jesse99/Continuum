@@ -1018,7 +1018,7 @@ namespace CsParser
 		// Used for SQL commands which do not return a table.
 		public void Update(string command)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(command), ""command is null or empty"");
+			Contract.Requires(!string.IsNullOrEmpty(command), ""command is null or empty"");
 		}
 		
 		public delegate bool RowCallback(string[] row);

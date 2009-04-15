@@ -128,7 +128,7 @@ namespace ObjectModel
 		
 		public SourceInfo[] FindTypeSources(string[] rootNames, int max)
 		{
-			Trace.Assert(rootNames.Length > 0);
+			Contract.Requires(rootNames.Length > 0);
 			
 			var sources = new List<SourceInfo>();
 
@@ -190,7 +190,7 @@ namespace ObjectModel
 					FROM Assemblies 
 				WHERE assembly = {0}", assembly);
 			string[][] rows = m_database.QueryRows(sql);
-			Trace.Assert(rows.Length <= 1, "too many rows");
+			Contract.Assert(rows.Length <= 1, "too many rows");
 			
 			return rows.Length > 0 ? rows[0][0] : null;
 		}
@@ -207,7 +207,7 @@ namespace ObjectModel
 					WHERE t1.root_name = '{0}' AND 
 						t1.base_root_name = t2.root_name", rootName);
 				string[][] rows = m_database.QueryRows(sql);
-				Trace.Assert(rows.Length <= 1, "too many rows");
+				Contract.Assert(rows.Length <= 1, "too many rows");
 			
 				if (rows.Length > 0)
 				{

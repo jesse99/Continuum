@@ -63,7 +63,7 @@ namespace CsParser
 		
 		public CsGlobalNamespace Parse(string text)
 		{
-			Trace.Assert(Thread.CurrentThread.ManagedThreadId == m_threadID, "can only be used with one thread");
+			Contract.Requires(Thread.CurrentThread.ManagedThreadId == m_threadID, "can only be used with one thread");
 			DoInit(text);
 			
 			m_try = false;
@@ -75,7 +75,7 @@ namespace CsParser
 		// to lose all information about a type just because a brace is missing.
 		public void TryParse(string text, out int offset, out int length, out CsGlobalNamespace globals, out Token[] tokens, out Token[] comments)
 		{
-			Trace.Assert(Thread.CurrentThread.ManagedThreadId == m_threadID, "can only be used with one thread");
+			Contract.Requires(Thread.CurrentThread.ManagedThreadId == m_threadID, "can only be used with one thread");
 			DoInit(text);
 			
 			m_try = true;

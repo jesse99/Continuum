@@ -263,7 +263,7 @@ namespace Find
 				m_findInFiles = new FindInFilesController();
 				
 			IText text = DoFindTextWindow();
-			Trace.Assert(text != null, "text is null");
+			Contract.Assert(text != null, "text is null");
 			
 			string s = text.Text.Substring(text.Selection.location, text.Selection.length);
 			if (s.Length > 0)
@@ -283,7 +283,7 @@ namespace Find
 				m_findInFiles = new FindInFilesController();
 				
 			IText text = DoFindTextWindow();
-			Trace.Assert(text != null, "text is null");
+			Contract.Assert(text != null, "text is null");
 			
 			string s = text.Text.Substring(text.Selection.location, text.Selection.length);
 			if (s.Length > 0)

@@ -39,7 +39,7 @@ namespace Shared
 		
 		public SafeTimer(Action<object> callback)
 		{
-			Trace.Assert(callback != null, "callback is null");
+			Contract.Requires(callback != null, "callback is null");
 			
 			Thread thread = new Thread(this.DoThread);
 			thread.Name = "SafeTimer.DoThread";
@@ -70,8 +70,8 @@ namespace Shared
 		
 		public bool Change(TimeSpan dueTime, TimeSpan period)
 		{
-			Trace.Assert(dueTime.TotalMilliseconds >= -1, "bad dueTime");
-			Trace.Assert(period.TotalMilliseconds >= -1, "bad period");
+			Contract.Requires(dueTime.TotalMilliseconds >= -1, "bad dueTime");
+			Contract.Requires(period.TotalMilliseconds >= -1, "bad period");
 			
 			if (m_disposed)
 				throw new ObjectDisposedException(GetType().Name);

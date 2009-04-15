@@ -32,14 +32,14 @@ namespace CsRefactor
 	{
 		public Refactor(string text)	
 		{
-			Trace.Assert(text != null, "text is null");
+			Contract.Requires(text != null, "text is null");
 			
 			m_text = text;
 		}
 		
 		public void Queue(RefactorCommand command)
 		{
-			Trace.Assert(command != null, "command is null");
+			Contract.Requires(command != null, "command is null");
 			
 			m_commands.Add(command);
 		}

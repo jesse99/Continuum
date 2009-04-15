@@ -33,7 +33,7 @@ namespace Shared
 	{
 		public ObserverTrampoline(Action<string, object> callback)
 		{
-			Trace.Assert(callback != null, "callback is null");
+			Contract.Requires(callback != null, "callback is null");
 			
 			m_callback = callback;
 		}
@@ -57,9 +57,9 @@ namespace Shared
 	{
 		public static void Register(string name, IObserver observer)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
-			Trace.Assert(observer != null, "observer is null");
-			Trace.Assert(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
+			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
+			Contract.Requires(observer != null, "observer is null");
+			Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 			
 			List<WeakReference> observers;
 			if (!ms_observers.TryGetValue(name, out observers))
@@ -75,8 +75,8 @@ namespace Shared
 		// Note that this generally does not have to be called.
 		public static void Unregister(IObserver observer)
 		{
-			Trace.Assert(observer != null, "observer is null");
-			Trace.Assert(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
+			Contract.Requires(observer != null, "observer is null");
+			Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 			
 			foreach (List<WeakReference> candidates in ms_observers.Values)
 			{
@@ -86,8 +86,8 @@ namespace Shared
 		
 		public static void Invoke(string name, object value)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
-			Trace.Assert(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
+			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
+			Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 		
 			List<WeakReference> observers;
 			if (ms_observers.TryGetValue(name, out observers))

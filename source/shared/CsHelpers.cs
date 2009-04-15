@@ -82,7 +82,7 @@ namespace Shared
 		// "bool" or "bool[]". If there is no alias then returns the original name.
 		public static string GetAliasedName(string name)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
+			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
 			
 			string alias;
 			
@@ -106,7 +106,7 @@ namespace Shared
 		// "System.Boolean[]". If it is not an alias then returns the original name.
 		public static string GetRealName(string name)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
+			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
 			
 			string real;
 			

@@ -91,7 +91,7 @@ namespace TextEditor
 		{
 			if (a.Font != null)
 			{
-				Trace.Assert(a.Size > 0.0, "size is zero");
+				Contract.Assert(a.Size > 0.0, "size is zero");
 				
 				dict.setObject_forKey(NSString.Create(a.Font), NSString.Create(name + " font name"));
 				dict.setObject_forKey(NSNumber.Create(a.Size), NSString.Create(name + " font size"));
@@ -104,8 +104,8 @@ namespace TextEditor
 				
 				if (a.Color != null)
 				{
-					Trace.Assert(a.Color.Length == 3, "color does not have three components");
-					Trace.Assert(a.BackColor == null, "we don't support setting both the fore and back colors");
+					Contract.Assert(a.Color.Length == 3, "color does not have three components");
+					Contract.Assert(a.BackColor == null, "we don't support setting both the fore and back colors");
 					
 					NSColor color = NSColor.colorWithDeviceRed_green_blue_alpha(a.Color[0]/255.0f, a.Color[1]/255.0f, a.Color[2]/255.0f, 1.0f);
 					attrs.setObject_forKey(color, Externs.NSUnderlineColorAttributeName);
@@ -116,8 +116,8 @@ namespace TextEditor
 			}
 			else if (a.Color != null)
 			{
-				Trace.Assert(a.Color.Length == 3, "color does not have three components");
-				Trace.Assert(a.BackColor == null, "we don't support setting both the fore and back colors");
+				Contract.Assert(a.Color.Length == 3, "color does not have three components");
+				Contract.Assert(a.BackColor == null, "we don't support setting both the fore and back colors");
 				
 				NSColor color = NSColor.colorWithDeviceRed_green_blue_alpha(a.Color[0]/255.0f, a.Color[1]/255.0f, a.Color[2]/255.0f, 1.0f);
 				var attrs = NSDictionary.dictionaryWithObject_forKey(color, Externs.NSForegroundColorAttributeName);
@@ -126,7 +126,7 @@ namespace TextEditor
 			}
 			else if (a.BackColor != null)
 			{
-				Trace.Assert(a.BackColor.Length == 3, "back color does not have three components");
+				Contract.Assert(a.BackColor.Length == 3, "back color does not have three components");
 				
 				NSColor color = NSColor.colorWithDeviceRed_green_blue_alpha(a.BackColor[0]/255.0f, a.BackColor[1]/255.0f, a.BackColor[2]/255.0f, 1.0f);
 				var data = NSArchiver.archivedDataWithRootObject(color);

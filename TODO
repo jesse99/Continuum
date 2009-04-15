@@ -200,7 +200,6 @@ param_names				Space separated list of Names integers of the names of each
 param_modifiers			Space separated list of integers: 0 for in parameter, 1 for out, 2
 							for ref, and 3 for params.
 
-* Replace Trace.Assert with Contract.Require
 * Replace Debug.Assert with Contract.Require
 * Work more on target completion:
 	- make sure array-type return IList

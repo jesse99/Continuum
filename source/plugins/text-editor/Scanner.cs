@@ -34,9 +34,9 @@ namespace TextEditor
 		
 		public Scanner(string text, int startAt)
 		{	
-			Trace.Assert(text != null, "text is null");
-			Trace.Assert(startAt >= 0, "startAt is negative");
-			Trace.Assert(startAt <= text.Length, "startAt is too large");
+			Contract.Requires(text != null, "text is null");
+			Contract.Requires(startAt >= 0, "startAt is negative");
+			Contract.Requires(startAt <= text.Length, "startAt is too large");
 			
 			m_text = text;
 			m_startAt = startAt;

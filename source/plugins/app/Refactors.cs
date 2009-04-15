@@ -38,8 +38,8 @@ namespace App
 		
 		public void Add(string name, Action<Boss> callback)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
-			Trace.Assert(callback != null, "callback is null");
+			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
+			Contract.Requires(callback != null, "callback is null");
 			
 			m_refactors[name] = callback;
 			Rebuild();

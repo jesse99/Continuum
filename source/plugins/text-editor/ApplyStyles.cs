@@ -35,7 +35,7 @@ namespace TextEditor
 	{
 		public ApplyStyles(TextController controller, NSTextView text, NSScrollView scroller)
 		{
-			Trace.Assert(text.textStorage().layoutManagers().count() == 1, "expected one layout not " + text.textStorage().layoutManagers().count());
+			Contract.Requires(text.textStorage().layoutManagers().count() == 1, "expected one layout not " + text.textStorage().layoutManagers().count());
 			
 			m_controller = controller;
 			m_text = text;

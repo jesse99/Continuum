@@ -65,8 +65,8 @@ namespace CsParser
 		
 		public void OnEdit(string language, string path, int edit, string text)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(path), "path is null or empty");
-			Trace.Assert(text != null, "text is null");
+			Contract.Requires(!string.IsNullOrEmpty(path), "path is null or empty");
+			Contract.Requires(text != null, "text is null");
 			
 			if (language == "CsLanguage")
 			{
@@ -80,7 +80,7 @@ namespace CsParser
 		
 		public Parse TryParse(string path)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(path), "path is null or empty");
+			Contract.Requires(!string.IsNullOrEmpty(path), "path is null or empty");
 			
 			Parse parse;
 			lock (m_mutex)
@@ -93,8 +93,8 @@ namespace CsParser
 		
 		public Parse Parse(string path, int edit, string text)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(path), "path is null or empty");
-			Trace.Assert(text != null, "text is null");
+			Contract.Requires(!string.IsNullOrEmpty(path), "path is null or empty");
+			Contract.Requires(text != null, "text is null");
 			
 			Parse result = TryParse(path);
 			if (result == null || result.Edit != edit)

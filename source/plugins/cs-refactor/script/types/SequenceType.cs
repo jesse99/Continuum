@@ -33,14 +33,14 @@ namespace CsRefactor.Script
 	{
 		private SequenceType()
 		{
-			Trace.Assert(ms_instance == null, "Types should only be instantiated once");
+			Contract.Requires(ms_instance == null, "Types should only be instantiated once");
 			
 			ms_instance = this;
 		}
 		
-		public static SequenceType Instance 
+		public static SequenceType Instance
 		{
-			get 
+			get
 			{
 				if (ms_instance == null)
 					ms_instance = new SequenceType();

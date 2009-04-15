@@ -42,7 +42,7 @@ namespace Find
 		
 		public void Run()
 		{
-			Trace.Assert(m_thread == null, "can't restart");
+			Contract.Requires(m_thread == null, "can't restart");
 			
 			// Get a list of all the files we need to process.
 			DoGetFiles(m_directory);

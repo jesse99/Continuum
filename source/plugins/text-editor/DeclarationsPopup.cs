@@ -43,7 +43,7 @@ namespace TextEditor
 		
 		public void Init(TextController controller, IDeclarations getter)
 		{
-			Trace.Assert(controller != null, "controller is null");
+			Contract.Requires(controller != null, "controller is null");
 			
 			m_controller = controller;
 			m_getter = getter;
@@ -109,7 +109,7 @@ namespace TextEditor
 				
 				var cachedRuns = m_controller.Boss.Get<ICachedStyleRuns>();
 				cachedRuns.Get(out edit, out runs);
-				Trace.Assert(edit == m_controller.EditCount, "controller called us with a bad edit count2");
+				Contract.Assert(edit == m_controller.EditCount, "controller called us with a bad edit count2");
 				
 				var text = m_controller.Boss.Get<IText>();
 				m_declarations = m_getter.Get(text, runs);
@@ -182,7 +182,7 @@ namespace TextEditor
 			// plus the item name.
 			for (int i = 0; i < items.Count - 1; ++i)
 			{
-				Trace.Assert(DoCountSpaces(items[i].Name) == 0, items[i].Name + " is indented");
+				Contract.Assert(DoCountSpaces(items[i].Name) == 0, items[i].Name + " is indented");
 				
 				int numSpaces = DoCountSpaces(items[i + 1].Name);
 				for (int j = i + 1; j < items.Count && items[j].Name.Length > 0 && items[j].Name[0] == ' '; ++j)

@@ -32,9 +32,9 @@ namespace Shared
 	{
 		public CsAttribute(string target, string name, string args, int offset, int length, int line) : base(offset, length, line)
 		{
-			Trace.Assert(target == null || target.Length > 0, "target is empty");
-			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
-			Trace.Assert(args != null, "args is null");
+			Contract.Requires(target == null || target.Length > 0, "target is empty");
+			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
+			Contract.Requires(args != null, "args is null");
 			
 			Target = target;
 			Name = name;
@@ -68,7 +68,7 @@ namespace Shared
 		
 		public CsBases(string[] names, int offset, int length, int line) : base(offset, length, line)
 		{
-			Trace.Assert(names != null, "names is null");
+			Contract.Requires(names != null, "names is null");
 			
 			Names = names;
 		}
@@ -91,8 +91,8 @@ namespace Shared
 	{
 		public CsBody(string name, int length) : base(0, length, 1)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
-			Trace.Assert(length >= 0, "length is negative");
+			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
+			Contract.Requires(length >= 0, "length is negative");
 			
 			Name = name;
 			First = 0;
@@ -102,9 +102,9 @@ namespace Shared
 		
 		public CsBody(string name, int start, int first, int length, int line) : base(start, length, line)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
-			Trace.Assert(start < first, "start and first are not ordered properly");
-			Trace.Assert(length >= 2, "length is too small");
+			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
+			Contract.Requires(start < first, "start and first are not ordered properly");
+			Contract.Requires(length >= 2, "length is too small");
 			
 			Name = name;
 			Start = start;
@@ -139,8 +139,8 @@ namespace Shared
 		public CsDelegate(int nameOffset, string constraints, CsParameter[] parms, string gargs, string rtype, CsAttribute[] attrs, MemberModifiers modifiers, string name, int offset, int length, int line)
 			: base(nameOffset, null, new CsBases(offset, line), new CsMember[0], new CsType[0], attrs, modifiers, constraints, gargs, name, offset, length, line)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(rtype), "rtype is null or empty");
-			Trace.Assert(parms != null, "parms is null");
+			Contract.Requires(!string.IsNullOrEmpty(rtype), "rtype is null or empty");
+			Contract.Requires(parms != null, "parms is null");
 			
 			ReturnType = rtype.TrimAll();
 			Parameters = parms;
@@ -159,8 +159,8 @@ namespace Shared
 		public CsEnum(string[] names, int nameOffset, string baseType, CsAttribute[] attrs, MemberModifiers modifiers, string name, int offset, int length, int line)
 			: base(nameOffset, null, new CsBases(offset, line), new CsMember[0], new CsType[0], attrs, modifiers, null, null, name, offset, length, line)
 		{
-			Trace.Assert(names != null, "names is null");
-			Trace.Assert(!string.IsNullOrEmpty(baseType), "baseType is null or empty");
+			Contract.Requires(names != null, "names is null");
+			Contract.Requires(!string.IsNullOrEmpty(baseType), "baseType is null or empty");
 			
 			Names = names;
 			BaseType = baseType;
@@ -177,7 +177,7 @@ namespace Shared
 	{
 		public CsEvent(int nameOffset, string type, string name, CsAttribute[] attrs, MemberModifiers modifiers, int offset, int length, int line) : base(nameOffset, attrs, modifiers, name, offset, length, line)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(type), "type is null or empty");
+			Contract.Requires(!string.IsNullOrEmpty(type), "type is null or empty");
 			
 			Type = type.TrimAll();
 		}
@@ -203,7 +203,7 @@ namespace Shared
 	{
 		public CsExternAlias(string name, int offset, int length, int line) : base(offset, length, line)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
+			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
 			
 			Name = name;
 		}
@@ -222,8 +222,8 @@ namespace Shared
 	{
 		public CsField(int nameOffset, string type, string value, CsAttribute[] attrs, MemberModifiers modifiers, string name, int offset, int length, int line) : base(nameOffset, attrs, modifiers, name, offset, length, line)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(type), "type is null or empty");
-			Trace.Assert(value == null || value.Length > 0, "value is empty");
+			Contract.Requires(!string.IsNullOrEmpty(type), "type is null or empty");
+			Contract.Requires(value == null || value.Length > 0, "value is empty");
 			
 			Type = type.TrimAll();
 			Value = value;
@@ -248,8 +248,8 @@ namespace Shared
 	{
 		public CsGlobalNamespace(CsPreprocess[] preprocess, CsBody body, CsAttribute[] attrs, CsExternAlias[] externs, CsUsingAlias[] aliases, CsUsingDirective[] uses, CsNamespace[] namespaces, CsType[] types, int length) : base(body, "<globals>", externs, aliases, uses, namespaces, types, 0, length, 1)
 		{
-			Trace.Assert(attrs != null, "attrs is null");
-			Trace.Assert(preprocess != null, "preprocess is null");
+			Contract.Requires(attrs != null, "attrs is null");
+			Contract.Requires(preprocess != null, "preprocess is null");
 			
 			Attributes = attrs;
 			Preprocess = preprocess;
@@ -268,13 +268,13 @@ namespace Shared
 	{
 		public CsIndexer(int nameOffset, CsBody getterBody, CsBody setterBody, MemberModifiers getAccess, MemberModifiers setAccess, string name, CsAttribute[] getAttrs, CsAttribute[] setAttrs, bool hasGet, bool hasSet, CsParameter[] parms, string rtype, CsAttribute[] attrs, MemberModifiers modifiers, int offset, int length, int line) : base(nameOffset, attrs, modifiers, name, offset, length, line)
 		{
-			Trace.Assert(!hasGet || getAttrs != null, "getAttrs is null");
-			Trace.Assert(!hasSet || setAttrs != null, "setAttrs is null");
-			Trace.Assert(hasGet || hasSet, "not a getter and not a setter");
-			Trace.Assert(parms != null, "parms is null");
-			Trace.Assert(!string.IsNullOrEmpty(rtype), "rtype is null or empty");
-			Trace.Assert(((int) getAccess & ~CsMember.AccessMask) == 0, "getAccess has more than just acccess set");
-			Trace.Assert(((int) setAccess & ~CsMember.AccessMask) == 0, "setAccess has more than just acccess set");
+			Contract.Requires(!hasGet || getAttrs != null, "getAttrs is null");
+			Contract.Requires(!hasSet || setAttrs != null, "setAttrs is null");
+			Contract.Requires(hasGet || hasSet, "not a getter and not a setter");
+			Contract.Requires(parms != null, "parms is null");
+			Contract.Requires(!string.IsNullOrEmpty(rtype), "rtype is null or empty");
+			Contract.Requires(((int) getAccess & ~CsMember.AccessMask) == 0, "getAccess has more than just acccess set");
+			Contract.Requires(((int) setAccess & ~CsMember.AccessMask) == 0, "setAccess has more than just acccess set");
 			
 			HasGetter = hasGet;
 			HasSetter = hasSet;
@@ -374,17 +374,17 @@ namespace Shared
 		
 		public CsMember(int nameOffset, CsAttribute[] attrs, MemberModifiers modifiers, string name, int offset, int length, int line) : base(offset, length, line)
 		{
-			Trace.Assert(attrs != null, "attrs is null");
-			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
-			Trace.Assert(nameOffset > offset, "nameOffset is too small");
-			Trace.Assert(nameOffset < offset + length, "nameOffset is too large");
+			Contract.Requires(attrs != null, "attrs is null");
+			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
+			Contract.Requires(nameOffset > offset, "nameOffset is too small");
+			Contract.Requires(nameOffset < offset + length, "nameOffset is too large");
 			
 			Attributes = attrs;
 			Modifiers = modifiers;
 			Name = name;
 			NameOffset = nameOffset;
 			
-			Trace.Assert(Access != MemberModifiers.None, "access was not set");
+			Contract.Ensures(Access != MemberModifiers.None, "access was not set");
 		}
 		
 		// The type the member is declared within. Will be null for delegates and enums
@@ -432,9 +432,9 @@ namespace Shared
 	{
 		public CsMethod(int nameOffset, CsBody body, bool isCtor, bool isDtor, string constraints, CsParameter[] parms, string gargs, string rtype, CsAttribute[] attrs, MemberModifiers modifiers, string name, int offset, int length, int line) : base(nameOffset, attrs, modifiers, name, offset, length, line)
 		{
-			Trace.Assert(!(isCtor && isDtor), "can't be both a ctor and a dtor");
-			Trace.Assert(parms != null, "parms is null");
-			Trace.Assert(!string.IsNullOrEmpty(rtype), "rtype is null or empty");
+			Contract.Requires(!(isCtor && isDtor), "can't be both a ctor and a dtor");
+			Contract.Requires(parms != null, "parms is null");
+			Contract.Requires(!string.IsNullOrEmpty(rtype), "rtype is null or empty");
 			
 			Body = body;
 			IsConstructor = isCtor;
@@ -492,11 +492,11 @@ namespace Shared
 	{
 		public CsNamespace(CsBody body, string name, CsExternAlias[] externs, CsUsingAlias[] aliases, CsUsingDirective[] uses, CsNamespace[] namespaces, CsType[] types, int offset, int length, int line) : base(body, types, offset, length, line)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
-			Trace.Assert(externs != null, "externs is null");
-			Trace.Assert(aliases != null, "aliases is null");
-			Trace.Assert(uses != null, "uses is null");
-			Trace.Assert(namespaces != null, "namespaces is null");
+			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
+			Contract.Requires(externs != null, "externs is null");
+			Contract.Requires(aliases != null, "aliases is null");
+			Contract.Requires(uses != null, "uses is null");
+			Contract.Requires(namespaces != null, "namespaces is null");
 			
 			Name = name;
 			Externs = externs;
@@ -531,7 +531,7 @@ namespace Shared
 		{
 			base.SetDeclarations(decs);
 			
-			Trace.Assert(Declarations.Length == Namespaces.Length + Classes.Length + Delegates.Length + Enums.Length + Interfaces.Length + Structs.Length, "bad declarations length");
+			Contract.Assert(Declarations.Length == Namespaces.Length + Classes.Length + Delegates.Length + Enums.Length + Interfaces.Length + Structs.Length, "bad declarations length");
 		}
 		
 		public override string ToString()
@@ -545,7 +545,7 @@ namespace Shared
 	{
 		public CsOperator(int nameOffset, CsBody body, bool isImplicit, bool isExplicit, CsParameter[] parms, string rtype, CsAttribute[] attrs, MemberModifiers modifiers, string name, int offset, int length, int line) : base(nameOffset, attrs, modifiers, name, offset, length, line)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(rtype), "rtype is null or empty");
+			Contract.Requires(!string.IsNullOrEmpty(rtype), "rtype is null or empty");
 			
 			ReturnType = rtype.TrimAll();
 			Parameters = parms;
@@ -600,9 +600,9 @@ namespace Shared
 	{
 		public CsParameter(CsAttribute[] attrs, ParameterModifier modifier, bool isParams, string type, string name)
 		{
-			Trace.Assert(attrs != null, "attrs is null");
-			Trace.Assert(!string.IsNullOrEmpty(type), "type is null or empty");
-			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
+			Contract.Requires(attrs != null, "attrs is null");
+			Contract.Requires(!string.IsNullOrEmpty(type), "type is null or empty");
+			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
 			
 			Attributes = attrs;
 			Type = type.TrimAll();
@@ -635,8 +635,8 @@ namespace Shared
 	{
 		public CsPreprocess(string name, string text, int offset, int length, int line) : base(offset, length, line)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
-			Trace.Assert(text != null, "text is null");
+			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
+			Contract.Requires(text != null, "text is null");
 			
 			Name = name;
 			Text = text.Trim();
@@ -662,12 +662,12 @@ namespace Shared
 	{
 		public CsProperty(int nameOffset, CsBody getterBody, CsBody setterBody, MemberModifiers getAccess, MemberModifiers setAccess, string name, CsAttribute[] getAttrs, CsAttribute[] setAttrs, bool hasGet, bool hasSet, string rtype, CsAttribute[] attrs, MemberModifiers modifiers, int offset, int length, int line) : base(nameOffset, attrs, modifiers, name, offset, length, line)
 		{
-			Trace.Assert(!hasGet || getAttrs != null, "getAttrs is null");
-			Trace.Assert(!hasSet || setAttrs != null, "setAttrs is null");
-			Trace.Assert(hasGet || hasSet, "not a getter and not a setter");
-			Trace.Assert(!string.IsNullOrEmpty(rtype), "rtype is null or empty");
-			Trace.Assert(((int) getAccess & ~CsMember.AccessMask) == 0, "getAccess has more than just acccess set");
-			Trace.Assert(((int) setAccess & ~CsMember.AccessMask) == 0, "setAccess has more than just acccess set");
+			Contract.Requires(!hasGet || getAttrs != null, "getAttrs is null");
+			Contract.Requires(!hasSet || setAttrs != null, "setAttrs is null");
+			Contract.Requires(hasGet || hasSet, "not a getter and not a setter");
+			Contract.Requires(!string.IsNullOrEmpty(rtype), "rtype is null or empty");
+			Contract.Requires(((int) getAccess & ~CsMember.AccessMask) == 0, "getAccess has more than just acccess set");
+			Contract.Requires(((int) setAccess & ~CsMember.AccessMask) == 0, "setAccess has more than just acccess set");
 			
 			HasGetter = hasGet;
 			HasSetter = hasSet;
@@ -735,13 +735,13 @@ namespace Shared
 	{
 		public CsType(int nameOffset, CsBody body, CsBases bases, CsMember[] members, CsType[] types, CsAttribute[] attrs, MemberModifiers modifiers, string constraints, string gargs, string name, int offset, int length, int line) : base(body, types, offset, length, line)
 		{
-			Trace.Assert(members != null, "members is null");
-			Trace.Assert(types != null, "types is null");
-			Trace.Assert(attrs != null, "attrs is null");
-			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
-			Trace.Assert(bases != null, "bases is null");
-			Trace.Assert(nameOffset > offset, "nameOffsetis too small");
-			Trace.Assert(nameOffset < offset + length, "nameOffsetis too large");
+			Contract.Requires(members != null, "members is null");
+			Contract.Requires(types != null, "types is null");
+			Contract.Requires(attrs != null, "attrs is null");
+			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
+			Contract.Requires(bases != null, "bases is null");
+			Contract.Requires(nameOffset > offset, "nameOffsetis too small");
+			Contract.Requires(nameOffset < offset + length, "nameOffsetis too large");
 
 			Attributes = attrs;
 			Modifiers = modifiers;
@@ -759,7 +759,7 @@ namespace Shared
 			Methods = (from m in members let e = m as CsMethod where e != null select e).ToArray();
 			Operators = (from m in members let e = m as CsOperator where e != null select e).ToArray();
 			Properties = (from m in members let e = m as CsProperty where e != null select e).ToArray();
-			Trace.Assert(members.Length == Events.Length + Fields.Length + Indexers.Length + Methods.Length + Operators.Length + Properties.Length, "bad members length");
+			Contract.Assert(members.Length == Events.Length + Fields.Length + Indexers.Length + Methods.Length + Operators.Length + Properties.Length, "bad members length");
 			
 			Members = members;
 			
@@ -847,7 +847,7 @@ namespace Shared
 		{
 			base.SetDeclarations(decs);
 			
-			Trace.Assert(Declarations.Length == Classes.Length + Delegates.Length + Enums.Length + Events.Length + Fields.Length + Indexers.Length + Interfaces.Length + Methods.Length + Operators.Length + Properties.Length + Structs.Length, "bad declarations length");
+			Contract.Assert(Declarations.Length == Classes.Length + Delegates.Length + Enums.Length + Events.Length + Fields.Length + Indexers.Length + Interfaces.Length + Methods.Length + Operators.Length + Properties.Length + Structs.Length, "bad declarations length");
 		}
 	}
 	
@@ -856,7 +856,7 @@ namespace Shared
 	{
 		public CsTypeScope(CsBody body, CsType[] types, int offset, int length, int line) : base(offset, length, line)
 		{
-			Trace.Assert(types != null, "types is null");
+			Contract.Requires(types != null, "types is null");
 			
 			Body = body;
 			
@@ -868,7 +868,7 @@ namespace Shared
 			Structs = (from t in types let e = t as CsStruct where e != null select e).ToArray();
 			
 			Types = types;
-			Trace.Assert(Types.Length == Classes.Length + Interfaces.Length + Structs.Length + Delegates.Length + Enums.Length, "bad types length");
+			Contract.Assert(Types.Length == Classes.Length + Interfaces.Length + Structs.Length + Delegates.Length + Enums.Length, "bad types length");
 		}
 		
 		// The namespace this container is declared within. Will be null if it is
@@ -896,7 +896,7 @@ namespace Shared
 		
 		protected virtual void SetDeclarations(List<CsDeclaration> decs)
 		{
-			Trace.Assert(decs != null, "decs is null");
+			Contract.Requires(decs != null, "decs is null");
 			
 			decs.AddRange(Classes);
 			decs.AddRange(Delegates);
@@ -915,8 +915,8 @@ namespace Shared
 	{
 		public CsUsingAlias(string alias, string value, int offset, int length, int line) : base(offset, length, line)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(alias), "alias is null or empty");
-			Trace.Assert(!string.IsNullOrEmpty(value), "value is null or empty");
+			Contract.Requires(!string.IsNullOrEmpty(alias), "alias is null or empty");
+			Contract.Requires(!string.IsNullOrEmpty(value), "value is null or empty");
 			
 			Alias = alias;
 			Value = value.TrimAll();
@@ -939,7 +939,7 @@ namespace Shared
 	{
 		public CsUsingDirective(string name, int offset, int length, int line) : base(offset, length, line)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
+			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
 			
 			Namespace = name;
 		}

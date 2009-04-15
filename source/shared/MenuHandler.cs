@@ -61,7 +61,7 @@ namespace Shared
 		
 		public void Deregister(object owner)
 		{
-			Trace.Assert(owner != null, "owner is null");
+			Contract.Requires(owner != null, "owner is null");
 						
 			var deathRow = from entry in m_handlers 
 				where entry.Value.Owner == owner
@@ -78,7 +78,7 @@ namespace Shared
 
 		public void Register(object owner, int tag, Action handler, Func<bool> enabler)
 		{
-			Trace.Assert(!m_handlers.ContainsKey(tag), string.Format("a handler for tag {0} already exists", tag));
+			Contract.Requires(!m_handlers.ContainsKey(tag), string.Format("a handler for tag {0} already exists", tag));
 			
 			m_handlers.Add(tag, new Handlers(owner, handler, enabler));
 		}
@@ -88,9 +88,9 @@ namespace Shared
 		{
 			public Handlers(object owner, Action handler, Func<bool> enabler)
 			{
-				Trace.Assert(owner != null, "owner is null");
-				Trace.Assert(handler != null, "handler is null");
-				Trace.Assert(enabler != null, "enabler is null");
+				Contract.Requires(owner != null, "owner is null");
+				Contract.Requires(handler != null, "handler is null");
+				Contract.Requires(enabler != null, "enabler is null");
 				
 				Owner = owner;
 				Handler = handler;

@@ -31,7 +31,7 @@ namespace Shared
 		// Removes all whitespace from the string.
 		public static string TrimAll(this string s)
 		{
-			Trace.Assert(s != null, "s is null");
+			Contract.Requires(s != null, "s is null");
 			
 			string result;
 			
@@ -47,7 +47,7 @@ namespace Shared
 		// Escapes control characters and high ASCII.
 		public static string EscapeAll(this string s)
 		{
-			Trace.Assert(s != null, "s is null");
+			Contract.Requires(s != null, "s is null");
 			
 			var builder = new StringBuilder(s.Length);
 			

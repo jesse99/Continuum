@@ -71,9 +71,9 @@ namespace CsRefactor.Script
 	{
 		public Conditional(int line, Expression[] predicates, Statement[][] blocks) : base(line)
 		{
-			Trace.Assert(predicates != null, "predicates is null");
-			Trace.Assert(blocks != null, "blocks is null");
-			Trace.Assert(predicates.Length == blocks.Length, "lengths differ");
+			Contract.Requires(predicates != null, "predicates is null");
+			Contract.Requires(blocks != null, "blocks is null");
+			Contract.Requires(predicates.Length == blocks.Length, "lengths differ");
 			
 			m_predicates = predicates;
 			m_blocks = blocks;
@@ -126,16 +126,16 @@ namespace CsRefactor.Script
 		
 		private Expression[] m_predicates;
 		private Statement[][] m_blocks;
-	} 
+	}
 
 	// ---------------------------------------------------------------------------
 	internal sealed class For : Statement
 	{
 		public For(int line, string local, Expression elements, Expression filter, Statement[] block)	 : base(line)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(local), "local is null or null");
-			Trace.Assert(elements != null, "elements is null");
-			Trace.Assert(block != null, "block is null");
+			Contract.Requires(!string.IsNullOrEmpty(local), "local is null or null");
+			Contract.Requires(elements != null, "elements is null");
+			Contract.Requires(block != null, "block is null");
 			
 			m_local = local;
 			m_elements = elements;
@@ -221,17 +221,17 @@ namespace CsRefactor.Script
 		private Expression m_elements;
 		private Expression m_filter;
 		private Statement[] m_block;
-	} 
+	}
 
 	// ---------------------------------------------------------------------------
 	internal sealed class Let : Statement
 	{
 		public Let(int line, string[] locals, Expression[] values, Statement[] block)	 : base(line)
 		{
-			Trace.Assert(locals != null, "locals is null");
-			Trace.Assert(values != null, "value is null");
-			Trace.Assert(locals.Length == values.Length, "lengths don't match");
-			Trace.Assert(block != null, "block is null");
+			Contract.Requires(locals != null, "locals is null");
+			Contract.Requires(values != null, "value is null");
+			Contract.Requires(locals.Length == values.Length, "lengths don't match");
+			Contract.Requires(block != null, "block is null");
 			
 			m_locals = locals;
 			m_values = values;
@@ -283,18 +283,18 @@ namespace CsRefactor.Script
 				m_block[i].Print(buffer, indent);
 			}
 		}
-				
+		
 		private string[] m_locals;
 		private Expression[] m_values;
 		private Statement[] m_block;
-	} 
+	}
 
 	// ---------------------------------------------------------------------------
 	internal sealed class MethodCall : Statement
 	{
 		public MethodCall(int line, Expression invoke) : base(line)
 		{
-			Trace.Assert(invoke != null, "invoke is null");
+			Contract.Requires(invoke != null, "invoke is null");
 			
 			m_invoke = invoke;
 		}
@@ -313,21 +313,21 @@ namespace CsRefactor.Script
 		}
 		
 		public override void Print(System.Text.StringBuilder buffer, string indent)
-		{			
+		{
 			buffer.Append(indent);
 			m_invoke.Print(buffer);
 			buffer.AppendLine();
 		}
 		
 		private Expression m_invoke;
-	} 
+	}
 
 	// ---------------------------------------------------------------------------
 	internal sealed class Return : Statement
 	{
 		public Return(int line, Expression expr) : base(line)
 		{
-			Trace.Assert(expr != null, "expr is null");
+			Contract.Requires(expr != null, "expr is null");
 			
 			m_expr = expr;
 		}

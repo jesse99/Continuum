@@ -53,10 +53,10 @@ namespace CsParser
 		// fine for users.
 		public Local[] Parse(string text, int start, int stop)
 		{
-			Trace.Assert(text != null, "text is null");
-			Trace.Assert(start >= 0, "start is negative");
-			Trace.Assert(start <= text.Length, "start is too big");
-			Trace.Assert(start <= stop, "stop is too small");
+			Contract.Requires(text != null, "text is null");
+			Contract.Requires(start >= 0, "start is negative");
+			Contract.Requires(start <= text.Length, "start is too big");
+			Contract.Requires(start <= stop, "stop is too small");
 //Console.WriteLine("---------------------------");
 //Console.WriteLine(text.Substring(start, stop - start).EscapeAll());
 			

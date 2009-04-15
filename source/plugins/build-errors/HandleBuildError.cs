@@ -84,9 +84,9 @@ namespace BuildErrors
 		
 		public void Set(string dirPath, BuildError[] errors)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(dirPath), "dirPath is null or empty");
-			Trace.Assert(errors != null, "errors is null");
-			Trace.Assert(errors.Length > 0, "errors is empty");
+			Contract.Requires(!string.IsNullOrEmpty(dirPath), "dirPath is null or empty");
+			Contract.Requires(errors != null, "errors is null");
+			Contract.Requires(errors.Length > 0, "errors is empty");
 			
 			m_dirPath = dirPath;
 			m_errors = errors;

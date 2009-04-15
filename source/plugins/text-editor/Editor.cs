@@ -46,8 +46,8 @@ namespace TextEditor
 		// IWindow
 		public NSWindow Window
 		{
-			get {Trace.Assert(m_window != null, "window isn't set"); return m_window;}
-			set {Trace.Assert(value != null, "value is null"); Trace.Assert(m_window == null, "window isn't null"); m_window = (NSWindow) value;}
+			get {Contract.Requires(m_window != null, "window isn't set"); return m_window;}
+			set {Contract.Requires(value != null, "value is null"); Contract.Requires(m_window == null, "window isn't null"); m_window = (NSWindow) value;}
 		}
 		
 		// ITextEditor
@@ -55,8 +55,8 @@ namespace TextEditor
 		{
 			get
 			{
-				Trace.Assert(m_window != null, "window isn't set");
-				Trace.Assert(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
+				Contract.Requires(m_window != null, "window isn't set");
+				Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 				
 				TextController controller = (TextController) m_window.windowController();
 				return controller.Path;
@@ -72,9 +72,9 @@ namespace TextEditor
 		
 		public static int GetOffset(string text, int line, int col, int tabWidth)
 		{
-			Trace.Assert(line >= 1, "line is not positive");
-			Trace.Assert(col == -1 || col >= 1, "col is not -1 or a positive number");
-			Trace.Assert(tabWidth >= 1, "tabWidth is not positive");
+			Contract.Requires(line >= 1, "line is not positive");
+			Contract.Requires(col == -1 || col >= 1, "col is not -1 or a positive number");
+			Contract.Requires(tabWidth >= 1, "tabWidth is not positive");
 			
 			int begin = DoGetOffset(text, line - 1);	
 			
@@ -94,9 +94,9 @@ namespace TextEditor
 		
 		public void ShowLine(int line, int col, int tabWidth)
 		{
-			Trace.Assert(line >= 1, "line is not positive");
-			Trace.Assert(col == -1 || col >= 1, "col is not -1 or a positive number");
-			Trace.Assert(tabWidth >= 1, "tabWidth is not positive");
+			Contract.Requires(line >= 1, "line is not positive");
+			Contract.Requires(col == -1 || col >= 1, "col is not -1 or a positive number");
+			Contract.Requires(tabWidth >= 1, "tabWidth is not positive");
 			
 			string text = Text;
 			
@@ -134,7 +134,7 @@ namespace TextEditor
 		
 		public LiveRange GetRange(NSRange range)
 		{
-			Trace.Assert(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
+			Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 			
 			ConcreteLiveRange clr = new ConcreteLiveRange(m_boss, range.location, range.length);
 			

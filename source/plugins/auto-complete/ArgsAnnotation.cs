@@ -55,10 +55,10 @@ namespace AutoComplete
 		
 		public void Open(ITextAnnotation annotation, Member[] members, int index)
 		{
-			Trace.Assert(annotation != null, "annotation is null");
-			Trace.Assert(members != null, "members is null");
-			Trace.Assert(index >= 0, "index is negative");
-			Trace.Assert(index < members.Length, "index is too large");
+			Contract.Requires(annotation != null, "annotation is null");
+			Contract.Requires(members != null, "members is null");
+			Contract.Requires(index >= 0, "index is negative");
+			Contract.Requires(index < members.Length, "index is too large");
 			
 			if (IsVisible)
 			{
@@ -205,10 +205,10 @@ namespace AutoComplete
 				{
 					var it = m_boss.Get<IText>();
 					string text = it.Text;
-					Trace.Assert(insertionPoint < text.Length, "insertionPoint is too large");
+					Contract.Assert(insertionPoint < text.Length, "insertionPoint is too large");
 					
 					int start = text.IndexOf('(', anchor.location, anchor.length);
-					Trace.Assert(start >= 0, "couldn't find '(' in the anchor: " + text.Substring(anchor.location, anchor.length));
+					Contract.Assert(start >= 0, "couldn't find '(' in the anchor: " + text.Substring(anchor.location, anchor.length));
 			
 					int i = start + 1;
 					string[] braces = new string[]{"()", "[]", "{}"};
@@ -244,10 +244,10 @@ namespace AutoComplete
 				{
 					var it = boss.Get<IText>();
 					string text = it.Text;
-					Trace.Assert(insertionPoint < text.Length, "insertionPoint is too large");
+					Contract.Assert(insertionPoint < text.Length, "insertionPoint is too large");
 					
 					int start = text.IndexOf('(', anchor.location, anchor.length);
-					Trace.Assert(start >= 0, "couldn't find '(' in the anchor: " + text.Substring(anchor.location, anchor.length));
+					Contract.Assert(start >= 0, "couldn't find '(' in the anchor: " + text.Substring(anchor.location, anchor.length));
 			
 					arg = 1;						// we start at 1 because the user has typed a comma (tho it will not show up yet)
 					int i = start + 1;

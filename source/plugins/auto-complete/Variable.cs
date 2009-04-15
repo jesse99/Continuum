@@ -29,8 +29,8 @@ namespace AutoComplete
 	{
 		public Variable(string type, string name, string value)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(type), "type is null or empty");
-			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
+			Contract.Requires(!string.IsNullOrEmpty(type), "type is null or empty");
+			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
 			
 			Type = type;
 			Name = name;

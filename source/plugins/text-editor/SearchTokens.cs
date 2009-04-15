@@ -133,7 +133,7 @@ namespace TextEditor
 		{
 			public int Compare(Token lhs, Token rhs)
 			{
-				Trace.Assert(lhs.Length == 0, "lhs is not of zero length");
+				Contract.Requires(lhs.Length == 0, "lhs is not of zero length");
 				
 				if (lhs.Offset < rhs.Offset)
 					return -1;

@@ -209,7 +209,7 @@ namespace TextEditor
 					}
 					else if (i > 0)
 					{
-						Trace.Assert(m_entries[i].Handler == null, "names is null, but handlers is not");
+						Contract.Assert(m_entries[i].Handler == null, "names is null, but handlers is not");
 						item = NSMenuItem.separatorItem();
 					}
 					

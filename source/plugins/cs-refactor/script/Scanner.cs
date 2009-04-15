@@ -65,8 +65,8 @@ namespace CsRefactor.Script
 		
 		public Scanner(string text, int line)
 		{
-			Trace.Assert(text != null, "text is null");
-			Trace.Assert(line > 0, "line is not positive");
+			Contract.Requires(text != null, "text is null");
+			Contract.Requires(line > 0, "line is not positive");
 			
 			m_line = line;
 			m_text = text + '\x00';		// scanning is easier and faster with a sentinel value			

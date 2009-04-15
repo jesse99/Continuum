@@ -31,7 +31,7 @@ namespace Shared
 	{
 		public static void AddIfMissing<T>(this List<T> data, T value)
 		{
-			Trace.Assert(data != null, "data is null");
+			Contract.Requires(data != null, "data is null");
 			
 			if (data.IndexOf(value) < 0)
 				data.Add(value);
@@ -39,8 +39,8 @@ namespace Shared
 		
 		public static void AddIfMissingRange<T>(this List<T> data, IEnumerable<T> values)
 		{
-			Trace.Assert(data != null, "data is null");
-			Trace.Assert(values != null, "values is null");
+			Contract.Requires(data != null, "data is null");
+			Contract.Requires(values != null, "values is null");
 			
 			foreach (T value in values)
 			{
@@ -71,7 +71,7 @@ namespace Shared
 		
 		public static T Pop<T>(this IList<T> data)
 		{
-			Trace.Assert(data != null, "data is null");
+			Contract.Requires(data != null, "data is null");
 			
 			T result = data[data.Count - 1];
 			data.RemoveAt(data.Count - 1);
@@ -81,7 +81,7 @@ namespace Shared
 		
 		public static void RemoveLast<T>(this IList<T> data)
 		{
-			Trace.Assert(data != null, "data is null");
+			Contract.Requires(data != null, "data is null");
 			
 			data.RemoveAt(data.Count - 1);
 		}
@@ -90,7 +90,7 @@ namespace Shared
 		// and has very good performance if the data is already mostly sorted.
 		public static void StableSort<T>(this IList<T> data) where T : IComparable<T>
 		{
-			Trace.Assert(data != null, "data is null");
+			Contract.Requires(data != null, "data is null");
 			
 			for (int i = 1; i <= data.Count - 1; ++i)
 			{
@@ -109,8 +109,8 @@ namespace Shared
 		
 		public static void StableSort<T>(this IList<T> data, Func<T, T, int> compare)
 		{
-			Trace.Assert(data != null, "data is null");
-			Trace.Assert(compare != null, "compare is null");
+			Contract.Requires(data != null, "data is null");
+			Contract.Requires(compare != null, "compare is null");
 			
 			for (int i = 1; i <= data.Count - 1; ++i)
 			{

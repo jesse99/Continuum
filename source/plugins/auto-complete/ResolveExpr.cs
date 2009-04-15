@@ -43,8 +43,8 @@ namespace AutoComplete
 		// Offset should point just after the expression to resolve. May return null.
 		public ResolvedTarget Resolve(string text, int offset)
 		{
-			Trace.Assert(offset >= 0, "offset is negative");
-			Trace.Assert(offset <= text.Length, "offset is too large");
+			Contract.Requires(offset >= 0, "offset is negative");
+			Contract.Requires(offset <= text.Length, "offset is too large");
 			
 			ResolvedTarget result = null;
 			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "---------------- resolving expression");

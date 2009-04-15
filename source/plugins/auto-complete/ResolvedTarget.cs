@@ -31,8 +31,8 @@ namespace AutoComplete
 	{
 		public ResolvedTarget(string typeName, CsType type, bool isInstance, bool isStatic)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(typeName), "typeName is null or empty");
-			Trace.Assert(isInstance || isStatic, "at least one of isInstance and isStatic should be true");
+			Contract.Requires(!string.IsNullOrEmpty(typeName), "typeName is null or empty");
+			Contract.Requires(isInstance || isStatic, "at least one of isInstance and isStatic should be true");
 			
 			TypeName = typeName;
 			Type = type;

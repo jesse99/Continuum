@@ -59,14 +59,14 @@ namespace CsRefactor.Script
 	{
 		public Parser(string text)
 		{
-			Trace.Assert(text != null, "text is null");
+			Contract.Requires(text != null, "text is null");
 			
 			m_scanner = new Scanner(text);
 		}
 		
 		private Parser(string text, int line)
 		{
-			Trace.Assert(text != null, "text is null");
+			Contract.Requires(text != null, "text is null");
 			
 			m_scanner = new Scanner(text, line);
 		}
@@ -228,7 +228,7 @@ namespace CsRefactor.Script
 					methods.Add(DoParseMethodDeclaration(locals));
 				}
 			}
-			Trace.Assert(locals.Count == 0, "not all locals were cleaned up");
+			Contract.Requires(locals.Count == 0, "not all locals were cleaned up");
 			
 			for (int i = 0; i < methods.Count; ++i)
 			{
@@ -587,7 +587,7 @@ namespace CsRefactor.Script
 			string name = DoParseIdentifier("for the method's name");
 			string[] args = DoParseFormalArgs();
 			
-			Trace.Assert(locals.Count == 0, "locals was not reset");
+			Contract.Assert(locals.Count == 0, "locals was not reset");
 			foreach (string arg in args)
 			{
 				if (locals.Contains(arg))

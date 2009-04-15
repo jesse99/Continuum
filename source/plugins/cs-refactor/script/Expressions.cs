@@ -93,8 +93,8 @@ namespace CsRefactor.Script
 	{
 		public From(int line, string local, Expression elements, Expression filter, Expression map) : base(line)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(local), "local is null or empty");
-			Trace.Assert(elements != null, "elements is null");
+			Contract.Requires(!string.IsNullOrEmpty(local), "local is null or empty");
+			Contract.Requires(elements != null, "elements is null");
 			
 			m_local = local;
 			m_elements = elements;
@@ -184,9 +184,9 @@ namespace CsRefactor.Script
 	{
 		public InvokeMethod(int line, Expression target, string method, Expression[] args)	: base(line)
 		{
-			Trace.Assert(target != null, "target is null");
-			Trace.Assert(!string.IsNullOrEmpty(method), "method is null or empty");
-			Trace.Assert(args != null, "args is null");
+			Contract.Requires(target != null, "target is null");
+			Contract.Requires(!string.IsNullOrEmpty(method), "method is null or empty");
+			Contract.Requires(args != null, "args is null");
 			
 			m_target = target;
 			m_method = method;
@@ -287,7 +287,7 @@ namespace CsRefactor.Script
 	{
 		public SequenceLiteral(int line, Expression[] value) : base(line)
 		{
-			Trace.Assert(value != null, "value is null");
+			Contract.Requires(value != null, "value is null");
 			
 			m_value = value;
 		}
@@ -324,7 +324,7 @@ namespace CsRefactor.Script
 	{
 		public StringLiteral(int line, string value) : base(line)
 		{
-			Trace.Assert(value != null, "value is null");
+			Contract.Requires(value != null, "value is null");
 			
 			m_value = value;
 		}
@@ -350,7 +350,7 @@ namespace CsRefactor.Script
 	{
 		public TypeName(int line, string name)	: base(line)
 		{
-			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
+			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
 			
 			m_name = name;
 		}
@@ -373,9 +373,9 @@ namespace CsRefactor.Script
 	{
 		public When(int line, Expression predicate, Expression trueValue, Expression falseValue) : base(line)
 		{
-			Trace.Assert(predicate != null, "predicate is null");
-			Trace.Assert(trueValue != null, "trueValue is null");
-			Trace.Assert(falseValue != null, "falseValue is null");
+			Contract.Requires(predicate != null, "predicate is null");
+			Contract.Requires(trueValue != null, "trueValue is null");
+			Contract.Requires(falseValue != null, "falseValue is null");
 			
 			m_predicate = predicate;
 			m_trueValue = trueValue;

@@ -31,11 +31,11 @@ namespace CsRefactor.Script
 	{
 		public Context(Script script, CsGlobalNamespace globals, string text, int selStart, int selLen)
 		{
-			Trace.Assert(script != null, "script is null");
-			Trace.Assert(globals != null, "globals is null");
-			Trace.Assert(text != null, "text is null");
-			Trace.Assert(selStart >= 0, "selStart is negative");
-			Trace.Assert(selLen >= 0, "selLen is negative");
+			Contract.Requires(script != null, "script is null");
+			Contract.Requires(globals != null, "globals is null");
+			Contract.Requires(text != null, "text is null");
+			Contract.Requires(selStart >= 0, "selStart is negative");
+			Contract.Requires(selLen >= 0, "selLen is negative");
 			
 			Script = script;
 			Text = text;

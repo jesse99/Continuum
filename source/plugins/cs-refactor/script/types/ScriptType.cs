@@ -35,7 +35,7 @@ namespace CsRefactor.Script
 	{
 		private ScriptType()
 		{
-			Trace.Assert(ms_instance == null, "Types should only be instantiated once");
+			Contract.Requires(ms_instance == null, "Types should only be instantiated once");
 			
 			ms_instance = this;
 		}
@@ -78,7 +78,7 @@ namespace CsRefactor.Script
 		
 		public void SetWriter(TextWriter writer)
 		{
-			Trace.Assert(writer != null, "writer is null");
+			Contract.Requires(writer != null, "writer is null");
 			
 			m_writer = writer;
 		}

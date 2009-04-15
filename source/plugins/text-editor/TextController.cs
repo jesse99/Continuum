@@ -136,7 +136,7 @@ namespace TextEditor
 		{
 			get
 			{
-				Trace.Assert(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
+				Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 				
 				if (m_editCount != m_cachedEditCount)
 				{
@@ -178,7 +178,7 @@ namespace TextEditor
 		{
 			get
 			{
-				Trace.Assert(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
+				Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 			
 				return m_textView.Value;
 			}
@@ -188,7 +188,7 @@ namespace TextEditor
 		{
 			get
 			{
-				Trace.Assert(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
+				Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 				
 				return !NSObject.IsNullOrNil(document().fileURL()) ? document().fileURL().path().description() : null;
 			}	
@@ -605,7 +605,7 @@ namespace TextEditor
 		{
 			get
 			{
-				Trace.Assert(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
+				Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 				
 				return m_editCount;
 			}

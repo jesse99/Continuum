@@ -165,7 +165,7 @@ namespace DirectoryEditor
 		{
 			get
 			{
-				Trace.Assert(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
+				Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 
 				return m_root.Path;
 			}
@@ -478,7 +478,7 @@ namespace DirectoryEditor
 		private void DoShowPrefs()
 		{
 			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("dir-prefs"), this);
-			Trace.Assert(!NSObject.IsNullOrNil(m_prefs.Value), "nib didn't set prefsController");
+			Contract.Assert(!NSObject.IsNullOrNil(m_prefs.Value), "nib didn't set prefsController");
 			
 			m_prefs.Value.Open(this);
 		}

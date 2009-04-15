@@ -35,7 +35,7 @@ namespace MakeBuilder
 	{
 		public MakeParser(NSString contents)
 		{
-			Trace.Assert(!NSObject.IsNullOrNil(contents), "contents is null");
+			Contract.Requires(!NSObject.IsNullOrNil(contents), "contents is null");
 	
 			m_scanner = NSScanner.scannerWithString(contents);
 			m_scanner.setCharactersToBeSkipped(NSCharacterSet.whitespaceCharacterSet());	// does not include new lines

@@ -42,16 +42,16 @@ namespace DirectoryEditor
 		
 		public NSWindow Window
 		{
-			get {Trace.Assert(m_window != null, "window isn't set"); return m_window;}
-			set {Trace.Assert(value != null, "value is null"); Trace.Assert(m_window == null, "window isn't null"); m_window = (NSWindow) value;}
+			get {Contract.Requires(m_window != null, "window isn't set"); return m_window;}
+			set {Contract.Requires(value != null, "value is null"); Contract.Requires(m_window == null, "window isn't null"); m_window = (NSWindow) value;}
 		}
 		
 		public string Path
 		{
 			get
 			{
-				Trace.Assert(m_window != null, "window isn't set");
-				Trace.Assert(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
+				Contract.Requires(m_window != null, "window isn't set");
+				Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 				
 				DirectoryController controller = (DirectoryController) m_window.windowController();
 				return controller.Path;
@@ -60,7 +60,7 @@ namespace DirectoryEditor
 		
 		public string[] SelectedPaths()
 		{
-			Trace.Assert(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
+			Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 
 			var paths = new List<string>();
 			
@@ -80,8 +80,8 @@ namespace DirectoryEditor
 		{
 			get
 			{
-				Trace.Assert(m_window != null, "window isn't set");
-				Trace.Assert(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
+				Contract.Requires(m_window != null, "window isn't set");
+				Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 				
 				DirectoryController controller = (DirectoryController) m_window.windowController();
 				return controller.BuildStartTime;

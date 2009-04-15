@@ -33,10 +33,10 @@ namespace Shared
 		public static void Add(object o)
 		{
 #if DEBUG
-			Trace.Assert(o != null, "o is null");
-			Trace.Assert(!(o is IInterface), "o is a gear object");	// use dump bosses to track these
-			Trace.Assert(!(o is ValueType), "o is a struct");			// not much point in tracking structs
-			Trace.Assert(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
+			Contract.Requires(o != null, "o is null");
+			Contract.Requires(!(o is IInterface), "o is a gear object");	// use dump bosses to track these
+			Contract.Requires(!(o is ValueType), "o is a struct");			// not much point in tracking structs
+			Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 			
 			ms_objects.Add(o);
 #endif
@@ -45,7 +45,7 @@ namespace Shared
 #if DEBUG
 		public static object[] Snapshot()
 		{
-			Trace.Assert(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
+			Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 
 			return ms_objects.Snapshot();
 		}

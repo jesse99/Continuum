@@ -19,6 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Shared;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -30,9 +31,9 @@ namespace CsRefactor.Script
 	{
 		public Method(string name, string[] argNames, Statement[] statements)	
 		{
-			Trace.Assert(!string.IsNullOrEmpty(name), "name is null or empty");
-			Trace.Assert(argNames != null, "argNames is null");
-			Trace.Assert(statements != null, "statements is null");
+			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
+			Contract.Requires(argNames != null, "argNames is null");
+			Contract.Requires(statements != null, "statements is null");
 			
 			Name = name;
 			m_argNames = argNames;

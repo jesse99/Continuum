@@ -134,8 +134,8 @@ namespace App
 		
 		public NSObject tableView_objectValueForTableColumn_row(NSTableView table, NSTableColumn col, int row)
 		{
-			Trace.Assert(row >= 0, "row is negative");
-			Trace.Assert(row < m_globs.Count, "row is too big");
+			Contract.Requires(row >= 0, "row is negative");
+			Contract.Requires(row < m_globs.Count, "row is too big");
 			
 			switch (col.identifier().description())
 			{
@@ -153,8 +153,8 @@ namespace App
 		
 		public void tableView_setObjectValue_forTableColumn_row(NSTableView table, NSObject value, NSTableColumn col, int row)
 		{
-			Trace.Assert(row >= 0, "row is negative");
-			Trace.Assert(row < m_globs.Count, "row is too big");
+			Contract.Requires(row >= 0, "row is negative");
+			Contract.Requires(row < m_globs.Count, "row is too big");
 			
 			switch (col.identifier().description())
 			{
