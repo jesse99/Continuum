@@ -101,8 +101,10 @@ namespace CsRefactor
 		// Either the returned offset is builder.Length or it minus one is \n.
 		protected int FindNextLineStart(StringBuilder builder, int offset)
 		{
-			Debug.Assert(builder != null, "builder is null");
-
+#if DEBUG
+			Contract.Requires(builder != null, "builder is null");
+#endif
+			
 			int end = offset;
 			
 			while (end < builder.Length && builder[end] != '\n')
@@ -184,7 +186,9 @@ namespace CsRefactor
 		// Either the returned offset is zero or it minus one is \n.
 		private int DoFindPrevLineStart(int first)
 		{
-			Debug.Assert(first == 0 || m_builder[first - 1] == '\n', "first is not at the start of a line");
+#if DEBUG
+			Contract.Requires(first == 0 || m_builder[first - 1] == '\n', "first is not at the start of a line");
+#endif
 			
 			if (first > 0)
 			{

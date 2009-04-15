@@ -79,7 +79,9 @@ namespace CsParser
 		
 		public Token LookAhead(int delta)
 		{
-			Debug.Assert(delta >= 0, "delta is negative");
+#if DEBUG
+			Contract.Requires(delta >= 0, "delta is negative");
+#endif
 			
 			int oldIndex = m_index;
 			int oldLine = m_line;
@@ -103,7 +105,9 @@ namespace CsParser
 		
 		public void Advance()
 		{
-			Debug.Assert(Token.Kind != TokenKind.Invalid, "can't advance past the end of the text");
+#if DEBUG
+			Contract.Requires(Token.Kind != TokenKind.Invalid, "can't advance past the end of the text");
+#endif
 		
 			fixed (char* buffer = m_text) DoAdvance(buffer);
 			

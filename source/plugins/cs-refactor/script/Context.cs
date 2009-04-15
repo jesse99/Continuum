@@ -80,7 +80,9 @@ namespace CsRefactor.Script
 		
 		public void AddLocal(string name, object value)
 		{	
-			Debug.Assert(!m_locals.Last().ContainsKey(name), string.Format("The {0} local is already defined", name));
+#if DEBUG
+			Contract.Requires(!m_locals.Last().ContainsKey(name), string.Format("The {0} local is already defined", name));
+#endif
 			
 			m_locals.Last().Add(name, value);
 		}

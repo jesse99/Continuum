@@ -20,13 +20,8 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
-//using MCocoa;
-//using Shared;
 using System;
 using System.Diagnostics;
-//using System.Collections.Generic;
-//using System.Text.RegularExpressions;
-//using System.Threading;
 
 namespace Shared
 {		
@@ -55,8 +50,10 @@ namespace Shared
 	{
 		public StyleRun(int offset, int length, StyleType type)
 		{
-			Debug.Assert(offset >= 0, "offset is negative");
-			Debug.Assert(((type == StyleType.Line || type == StyleType.Error) && length >= 0) || length > 0, "length is not correct");
+#if DEBUG
+			Contract.Requires(offset >= 0, "offset is negative");
+			Contract.Requires(((type == StyleType.Line || type == StyleType.Error) && length >= 0) || length > 0, "length is not correct");
+#endif
 			
 			Offset = offset;
 			Length = length < ushort.MaxValue ? (ushort) length : ushort.MaxValue;	// length may be larger than max for weird cases like commenting out an entire large file

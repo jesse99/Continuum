@@ -545,7 +545,9 @@ namespace CsRefactor
 		
 		protected override void OnFindRange(StringBuilder builder, out int offset, out int length)
 		{
-			Debug.Assert(builder != null, "builder is null");
+#if DEBUG
+			Contract.Requires(builder != null, "builder is null");
+#endif
 			
 			int index = m_index > 0 && m_length > 0 && builder[m_index - 1] == '\n' ? m_index - 1 : m_index;
 			offset = FindNextLineStart(builder, index);

@@ -33,9 +33,11 @@ namespace Shared
 	{
 		protected CsDeclaration(int offset, int length, int line)	
 		{
-			Debug.Assert(offset >= 0, "offset is negative");
-			Debug.Assert(length >= 0, "length is negative");
-			Debug.Assert(line > 0, "length is not positive");
+#if DEBUG
+			Contract.Requires(offset >= 0, "offset is negative");
+			Contract.Requires(length >= 0, "length is negative");
+			Contract.Requires(line > 0, "length is not positive");
+#endif
 			
 			Offset = offset;
 			Length = length;

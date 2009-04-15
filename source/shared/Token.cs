@@ -42,7 +42,9 @@ namespace Shared
 	{
 		public Token(int offset)
 		{
-			Debug.Assert(offset >= 0, "offset is negative");
+#if DEBUG
+			Contract.Requires(offset >= 0, "offset is negative");
+#endif
 			
 			m_text = string.Empty;
 			Offset = offset;
@@ -53,8 +55,10 @@ namespace Shared
 		
 		public Token(string text, int line)
 		{
-			Debug.Assert(text != null, "text is null");
-			Debug.Assert(line >= 0, "text is negative");	// may be zero if the text is all whitespace
+#if DEBUG
+			Contract.Requires(text != null, "text is null");
+			Contract.Requires(line >= 0, "text is negative");	// may be zero if the text is all whitespace
+#endif
 			
 			m_text = text;
 			Offset = text.Length;
@@ -65,13 +69,15 @@ namespace Shared
 		
 		public Token(string text, int offset, int length, int line, TokenKind kind)
 		{
-			Debug.Assert(text != null, "text is null");
-			Debug.Assert(offset >= 0, "offset is negative");
-			Debug.Assert(offset < text.Length, "offset is too large");
-			Debug.Assert(length > 0, "length is not positive");
-			Debug.Assert(offset + length <= text.Length, "length is too large");
-			Debug.Assert(kind != TokenKind.Invalid, "kind is invalid");
-			Debug.Assert(line > 0, "line is not positive");
+#if DEBUG
+			Contract.Requires(text != null, "text is null");
+			Contract.Requires(offset >= 0, "offset is negative");
+			Contract.Requires(offset < text.Length, "offset is too large");
+			Contract.Requires(length > 0, "length is not positive");
+			Contract.Requires(offset + length <= text.Length, "length is too large");
+			Contract.Requires(kind != TokenKind.Invalid, "kind is invalid");
+			Contract.Requires(line > 0, "line is not positive");
+#endif
 			
 			m_text = text;
 			Offset = offset;

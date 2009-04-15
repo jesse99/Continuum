@@ -40,13 +40,13 @@ namespace CsRefactor.Script
 		
 		// The name of the type within the refactor language.
 		public abstract string Name {get;}
-
+		
 		// The base class of the refactor type. Note that the base of Object is null.
 		public abstract RefactorType Base {get;}
-
+		
 		// The type used when evaluating the refactor script.
 		public abstract Type ManagedType {get;}
-
+		
 		public object Execute(int line, object instance, string method, object[] args)
 		{
 			Callback callback;
@@ -79,7 +79,7 @@ namespace CsRefactor.Script
 			
 			return type;
 		}
-
+		
 		// Returns the name of the refactor type that matches the specified managed type.
 		public static string GetName(Type type)
 		{
@@ -96,14 +96,14 @@ namespace CsRefactor.Script
 				
 			return name;
 		}
-
+		
 		#region Protected Methods
 		protected abstract void RegisterMethods(RefactorType type);
 		
 		protected void RegisterAllMethods()
 		{
 			m_callbacks.Clear();
-	
+			
 			RefactorType type = this;
 			while (type != null)
 			{
@@ -116,11 +116,13 @@ namespace CsRefactor.Script
 		public void Register<T>(string name, Nullary<T> callback)
 		{
 			Contract.Requires(callback != null, "callback is null");
-
+			
 			m_callbacks.Add(name, (int line, object instance, string method, object[] args) => 
 			{
-				Debug.Assert(args != null, "args is null");
-		
+#if DEBUG
+				Contract.Requires(args != null, "args is null");
+#endif
+				
 				T target = (T) instance;		// this should always work
 				
 				if (args.Length != 0)
@@ -137,10 +139,12 @@ namespace CsRefactor.Script
 
 			m_callbacks.Add(name, (int line, object instance, string method, object[] args) => 
 			{
-				Debug.Assert(args != null, "args is null");
+#if DEBUG
+				Contract.Requires(args != null, "args is null");
+#endif
 				
 				T target = (T) instance;		// this should always work
-			
+				
 				if (args.Length != 1)
 					throw new EvaluateException(line, "{0}.{1} takes one argument.", Name, method);
 				
@@ -150,57 +154,61 @@ namespace CsRefactor.Script
 				return callback(target, (A0) args[0]);
 			});
 		}
-
+		
 		public delegate object Binary<T, A0, A1>(T instance, A0 a0, A1 a1);
 		public void Register<T, A0, A1>(string name, Binary<T, A0, A1> callback)
 		{
 			Contract.Requires(callback != null, "callback is null");
-
+			
 			m_callbacks.Add(name, (int line, object instance, string method, object[] args) => 
 			{
-				Debug.Assert(args != null, "args is null");
+#if DEBUG
+				Contract.Requires(args != null, "args is null");
+#endif
 				
 				T target = (T) instance;		// this should always work
-			
+				
 				if (args.Length != 2)
 					throw new EvaluateException(line, "{0}.{1} takes two arguments.", Name, method);
 				
 				if (args[0] != null && !(args[0] is A0))				// can't use as because we need to work with value types
 					throw new EvaluateException(line, "Expected a {0} for the first argument to {1}.{2}, not {3}.", GetName(typeof(A0)), Name, method, GetName(args[0].GetType()));
-
+				
 				if (args[1] != null && !(args[1] is A1))
 					throw new EvaluateException(line, "Expected a {0} for the second argument to {1}.{2}, not {3}.", GetName(typeof(A1)), Name, method, GetName(args[1].GetType()));
 				
 				return callback(target, (A0) args[0], (A1) args[1]);
 			});
 		}
-
+		
 		public void Register(Context context, Method customMethod)
 		{
 			Contract.Requires(customMethod != null, "customMethod is null");
 			
 			if (m_callbacks.ContainsKey(customMethod.Name))
 				throw new EvaluateException(1, "The {0} method is already defined.", customMethod.Name);
-
+			
 			m_callbacks.Add(customMethod.Name, (int line, object instance, string method, object[] args) => 
 			{
-				Debug.Assert(args != null, "args is null");
+#if DEBUG
+				Contract.Requires(args != null, "args is null");
+#endif
 				
 				return customMethod.Evaluate(line, context, args);
 			});
 		}
 		#endregion
-
+		
 		#region Private Members
 		private delegate object Callback(int line, object instance, string method, object[] args);
-
+		
 		#endregion
-
+		
 		#region Fields
 		private Dictionary<string, Callback> m_callbacks = new Dictionary<string, Callback>();
-
+		
 		private static Dictionary<string, RefactorType> ms_types = new Dictionary<string, RefactorType>();
 		private static Dictionary<Type, string> ms_names = new Dictionary<Type, string>();
 		#endregion
-	} 
+	}
 }

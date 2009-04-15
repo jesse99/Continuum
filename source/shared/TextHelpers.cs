@@ -47,8 +47,10 @@ namespace Shared
 			Contract.Requires(text != null, "text is null");
 			Contract.Requires(start >= 0, "start is negative");
 			Contract.Requires(start < last, "start is too large");
-			Debug.Assert(braces.All(b => b.Length == 2), "brace strings should be two characters");
-			Debug.Assert(Array.Exists(braces, b => text[start] == b[0]), "start character isn't an open brace");
+#if DEBUG
+			Contract.Requires(braces.All(b => b.Length == 2), "brace strings should be two characters");
+			Contract.Requires(Array.Exists(braces, b => text[start] == b[0]), "start character isn't an open brace");
+#endif
 			
 			var openBraces = new List<char>();
 			openBraces.Add(text[start]);
@@ -98,8 +100,10 @@ namespace Shared
 			Contract.Requires(text != null, "text is null");
 			Contract.Requires(start >= 0, "start is negative");
 			Contract.Requires(start > first, "start is too small");
-			Debug.Assert(braces.All(b => b.Length == 2), "brace strings should be two characters");
-			Debug.Assert(Array.Exists(braces, b => text[start] == b[1]), "start character isn't a close brace");
+#if DEBUG
+			Contract.Requires(braces.All(b => b.Length == 2), "brace strings should be two characters");
+			Contract.Requires(Array.Exists(braces, b => text[start] == b[1]), "start character isn't a close brace");
+#endif
 			
 			var closeBraces = new List<char>();
 			closeBraces.Add(text[start]);

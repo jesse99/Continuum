@@ -453,9 +453,11 @@ namespace ObjectModel
 							text.Append("params ");
 						
 						string typeName = p.ParameterType.FullName;
-						Debug.Assert(!typeName.Contains("{"), "type has a '{':" + typeName);
-						Debug.Assert(!typeName.Contains("}"), "type has a '}':" + typeName);
-
+#if DEBUG
+						Contract.Assert(!typeName.Contains("{"), "type has a '{':" + typeName);
+						Contract.Assert(!typeName.Contains("}"), "type has a '}':" + typeName);
+#endif
+						
 						if (typeName.EndsWith("&"))
 						{
 							if (p.IsOut)
