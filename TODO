@@ -201,8 +201,6 @@ param_modifiers			Space separated list of integers: 0 for in parameter, 1 for ou
 							for ref, and 3 for params.
 
 * Work on refactor commands:
-	- add a dir pref for putting open braces on their own line
-	- refactor needs to use the open brace location pref
 	- make sure unit tests work
 	- check in
 * Build a new foreshadow.

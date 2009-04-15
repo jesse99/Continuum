@@ -43,5 +43,8 @@ namespace Shared
 		
 		// True if spaces should be added before method arguments.
 		bool AddSpace {get;}
+		
+		// True if curly braces should be placed on their own lines.
+		bool AddBraceLine {get;}
 	}
 }

@@ -29,11 +29,9 @@ thread.Start•();")
 	method.AddMemberAfter(
 "private void #{name}•()
 {
-	try
-	{
-	}
-	catch (Exception)	// note that unhandled thread exceptions normally terminate the app
-	{
+	try•{
+	}•catch (Exception)•{
+		// note that unhandled thread exceptions normally terminate the app
 	}
 }")
 end
@@ -48,11 +46,9 @@ thread.Start•();")
 	method.AddMemberAfter(
 "private static void #{name}•()
 {
-	try
-	{
-	}
-	catch (Exception)	// note that unhandled thread exceptions normally terminate the app
-	{
+	try•{
+	}•catch (Exception)•{
+		// note that unhandled thread exceptions normally terminate the app
 	}
 }")
 end

@@ -68,8 +68,7 @@ define SealedAndManaged(type)
 	type.AddMember(
 "public void Dispose•()
 {
-	if (!Disposed)
-	{
+	if (!Disposed)•{
 		// Clean up the managed resources here.
 		
 		Disposed = true;
@@ -89,8 +88,7 @@ define UnealedAndManaged(type)
 	type.AddMember(
 "protected virtual void Dispose•(bool disposing)
 {
-	if (!Disposed)
-	{
+	if (!Disposed)•{
 		// Clean up the managed resources here.
 		
 		Disposed = true;
@@ -113,10 +111,8 @@ define SealedAndNative(type)
 	type.AddMember(
 "private void Dispose•(bool disposing)
 {
-	if (!Disposed)
-	{
-		if (disposing)
-		{
+	if (!Disposed)•{
+		if (disposing)•{
 			// This code will execute if we were called from Dispose()
 			// so we can call methods on our managed fields.
 		}
@@ -146,10 +142,8 @@ define UnealedAndNative(type)
 	type.AddMember(
 "protected virtual void Dispose•(bool disposing)
 {
-	if (!Disposed)
-	{
-		if (disposing)
-		{
+	if (!Disposed)•{
+		if (disposing)•{
 			// This code will execute if we were called from Dispose()
 			// so we can call methods on our managed fields.
 		}

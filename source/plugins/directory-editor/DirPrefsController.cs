@@ -28,7 +28,7 @@ using System.Diagnostics;
 
 namespace DirectoryEditor	
 {
-	[ExportClass("DirPrefsController", "NSWindowController", Outlets = "addSpace sheet ignoredItems ignoredTargets pathColor files1Color files2Color files3Color files4Color files5Color files6Color files1Globs files2Globs files3Globs files4Globs files5Globs files6Globs")]
+	[ExportClass("DirPrefsController", "NSWindowController", Outlets = "addBraceLine addSpace sheet ignoredItems ignoredTargets pathColor files1Color files2Color files3Color files4Color files5Color files6Color files1Globs files2Globs files3Globs files4Globs files5Globs files6Globs")]
 	internal sealed class DirPrefsController : NSWindowController
 	{
 		private DirPrefsController(IntPtr instance) : base(instance)
@@ -37,6 +37,7 @@ namespace DirectoryEditor
 			m_ignoredTargets = new IBOutlet<NSTextField>(this, "ignoredTargets");
 			m_ignoredItems = new IBOutlet<NSTextField>(this, "ignoredItems");
 			m_addSpace = new IBOutlet<NSButton>(this, "addSpace");
+			m_addBraceLine = new IBOutlet<NSButton>(this, "addBraceLine");
 			
 			ActiveObjects.Add(this);
 		}
@@ -55,6 +56,9 @@ namespace DirectoryEditor
 			
 			// set add space
 			m_addSpace.Value.setState(m_dir.AddSpace ? 1 : 0);
+			
+			// set add brace line
+			m_addBraceLine.Value.setState(m_dir.AddBraceLine ? 1 : 0);
 			
 			// set path color
 			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
@@ -98,6 +102,9 @@ namespace DirectoryEditor
 			// save add space
 			m_dir.AddSpace = m_addSpace.Value.state() == 1;
 			
+			// save add brace line
+			m_dir.AddBraceLine = m_addBraceLine.Value.state() == 1;
+			
 			// save path color
 			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
 			string path = m_dir.Path;
@@ -138,6 +145,7 @@ namespace DirectoryEditor
 		private IBOutlet<NSTextField> m_ignoredTargets;
 		private IBOutlet<NSTextField> m_ignoredItems;
 		private IBOutlet<NSButton> m_addSpace;
+		private IBOutlet<NSButton> m_addBraceLine;
 		private DirectoryController m_dir;
 		#endregion
 	}

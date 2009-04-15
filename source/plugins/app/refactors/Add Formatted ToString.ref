@@ -31,15 +31,13 @@ define Process(type)
 	type.AddMember(
 "public string ToString•(string format, IFormatProvider provider)
 {
-	if (provider != null)
-	{
+	if (provider != null)•{
 		ICustomFormatter formatter = provider.GetFormat•(GetType•()) as ICustomFormatter;
 		if (formatter != null)
 			return formatter.Format•(format, this, provider);
 	}
 	
-	switch (format)
-	{
+	switch (format)•{
 		// This should return the object in the general (or default)
 		// format. Other common standard format specifiers include
 		// r for round trip and f for full.

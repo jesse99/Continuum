@@ -212,6 +212,19 @@ namespace DirectoryEditor
 			}
 		}
 		
+		public bool AddBraceLine
+		{
+			get {return m_addBraceLine;}
+			set
+			{
+				if (value != m_addBraceLine)
+				{
+					m_addBraceLine = value;
+					DoSavePrefs();
+				}
+			}
+		}
+		
 		public DateTime BuildStartTime
 		{
 			get {return m_startTime;}
@@ -510,6 +523,11 @@ namespace DirectoryEditor
 			value = m_addSpace ? "1" : "0";
 			defaults.setObject_forKey(NSString.Create(value), NSString.Create(key));
 			
+			// add brace line
+			key = Path + "-add curly brace line";
+			value = m_addBraceLine ? "1" : "0";
+			defaults.setObject_forKey(NSString.Create(value), NSString.Create(key));
+			
 			// ignored targets
 			key = Path + "-ignored items";
 			value = Glob.Join(m_ignoredItems);
@@ -547,6 +565,14 @@ namespace DirectoryEditor
 			else
 				m_addSpace = false;
 			
+			// add brace line
+			key = path + "-add curly brace line";
+			value = defaults.stringForKey(NSString.Create(key)).To<NSString>();
+			if (!NSObject.IsNullOrNil(value))
+				m_addBraceLine = value.description() == "1";
+			else
+				m_addBraceLine = true;
+			
 			// default target
 			key = path + "-defaultTarget";
 			value = defaults.stringForKey(NSString.Create(key)).To<NSString>();
@@ -567,6 +593,7 @@ namespace DirectoryEditor
 		private string[] m_ignoredTargets = new string[0];
 		private string[] m_ignoredItems = new string[0];
 		private bool m_addSpace;
+		private bool m_addBraceLine = true;
 		private Boss m_boss;
 		private DirectoryItemStyler m_dirStyler;
 		private DirectoryWatcher m_watcher;

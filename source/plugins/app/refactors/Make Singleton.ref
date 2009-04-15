@@ -69,14 +69,10 @@ define InstanceMethod(type, threaded, fname)
 		return
 "public static #{type.Name} Instance
 {
-	get
-	{
-		if (#{fname} == null)
-		{
-			lock (ms_lock)
-			{
-				if (#{fname} == null)
-				{
+	get•{
+		if (#{fname} == null)•{
+			lock (ms_lock)•{
+				if (#{fname} == null)•{
 					#{fname} = new #{type.Name}•();
 				}
 			}
@@ -88,8 +84,7 @@ define InstanceMethod(type, threaded, fname)
 	else
 "public static #{type.Name} Instance
 {
-	get
-	{
+	get•{
 		if (#{fname} == null)
 			#{fname} = new #{type.Name}•();
 		

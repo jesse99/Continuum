@@ -24,11 +24,9 @@ define NormalClass(method, name)
 	method.AddMemberAfter(
 "private void #{name}•()
 {
-	try
-	{
-	}
-	catch (Exception)	// note that unhandled thread exceptions normally terminate the app
-	{
+	try•{
+	}•catch (Exception)•{
+		// note that unhandled thread exceptions normally terminate the app
 	}
 }")
 end
@@ -39,11 +37,9 @@ define StaticClass(method, name)
 	method.AddMemberAfter(
 "private static void #{name}•()
 {
-	try
-	{
-	}
-	catch (Exception)	// note that unhandled thread exceptions normally terminate the app
-	{
+	try•{
+	}•catch (Exception)•{
+		// note that unhandled thread exceptions normally terminate the app
 	}
 }")
 end

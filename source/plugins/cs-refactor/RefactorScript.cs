@@ -77,16 +77,52 @@ namespace CsRefactor
 			int i = text.IndexOf(Constants.Bullet);
 			while (i >= 0)
 			{
-				Contract.Assert(i < text.Length, "bullet is at the end of the text");
-				Contract.Assert(text[i + 1] == '(' || text[i + 1] == '[', "character after the bullet is not ( or [");
-				
-				if (m_addSpace)
-					text = text.Substring(0, i) + ' ' + text.Substring(i + 1);
+				if (i + 1 < text.Length && (text[i + 1] == '[' || text[i + 1] == '('))
+				{
+					if (m_addSpace)
+						text = text.Substring(0, i) + ' ' + text.Substring(i + 1);
+					else
+						text = text.Substring(0, i) + text.Substring(i + 1);
+				}
+				else if (i + 1 < text.Length && text[i + 1] == '{')
+				{
+					if (m_addLine)
+						text = text.Substring(0, i) + DoGetLineIndent(text, i) + text.Substring(i + 1);
+					else
+						text = text.Substring(0, i) + ' ' + text.Substring(i + 1);
+				}
+				else if (i > 0 && text[i - 1] == '}')
+				{
+					if (m_addLine)
+						text = text.Substring(0, i) + DoGetLineIndent(text, i) + text.Substring(i + 1);
+					else
+						text = text.Substring(0, i) + ' ' + text.Substring(i + 1);
+				}
 				else
-					text = text.Substring(0, i) + text.Substring(i + 1);
+				{
+					string section = text.Substring(Math.Max(i - 1, 0), Math.Min(32, text.Length - i - 1)).EscapeAll().Replace("\\x2022", Constants.Bullet);
+					string mesg = string.Format("Expected a {0} after the bullet or a {1} before the bullet in '{2}'.", "([{", "}", section);
+					throw new Exception(mesg);
+				}
 				
 				i = text.IndexOf(Constants.Bullet, i);
 			}
+			
+			return text;
+		}
+		
+		private string DoGetLineIndent(string text, int index)
+		{
+			int i = index;
+			while (i > 0 && text[i - 1] != '\n')
+				--i;
+			
+			int count = 0;
+			while (i + count < text.Length && (text[i + count] == ' ' || text[i + count] == '\t'))
+				++count;
+			
+			if (count > 0)
+				text = "\n" + text.Substring(i, count);
 			
 			return text;
 		}
@@ -99,12 +135,14 @@ namespace CsRefactor
 			
 			var editor = boss.Get<IDirectoryEditor>();
 			m_addSpace = editor.AddSpace;
+			m_addLine = editor.AddBraceLine;
 		}
 		#endregion
 		
 		#region Fields
 		private Boss m_boss;
 		private bool m_addSpace;
+		private bool m_addLine;
 		#endregion
 	}
 }

@@ -133,8 +133,7 @@ define ProcessClass(type)
 {
 	int hash = 0;
 	
-	unchecked
-	{
+	unchecked•{
 #{GetHashMembers(type)}
 	}
 	
@@ -232,8 +231,7 @@ define ProcessStruct(type)
 {
 	int hash = 0;
 	
-	unchecked
-	{
+	unchecked•{
 #{GetHashMembers(type)}
 	}
 	

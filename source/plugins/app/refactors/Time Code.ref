@@ -14,12 +14,9 @@ define Process()
 		# Use try/finally so that the code works even in the presence of exceptions
 		# or early returns.
 		InsertBeforeSelection("Stopwatch #{name} = Stopwatch.StartNew•();
-try
-{")
+try•{")
 		Indent("	")
-		InsertAfterSelection("}
-finally
-{
+		InsertAfterSelection("}•finally•{
 	Console.WriteLine•(""elapsed: {0:0.000} secs"", #{name}.ElapsedMilliseconds/1000.0);
 }")
 	end
