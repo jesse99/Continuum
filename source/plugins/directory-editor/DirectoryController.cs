@@ -199,6 +199,19 @@ namespace DirectoryEditor
 			}
 		}
 		
+		public bool AddSpace
+		{
+			get {return m_addSpace;}
+			set
+			{
+				if (value != m_addSpace)
+				{
+					m_addSpace = value;
+					DoSavePrefs();
+				}
+			}
+		}
+		
 		public DateTime BuildStartTime
 		{
 			get {return m_startTime;}
@@ -492,6 +505,11 @@ namespace DirectoryEditor
 			string value = Glob.Join(m_ignoredTargets);
 			defaults.setObject_forKey(NSString.Create(value), NSString.Create(key));
 			
+			// add space
+			key = Path + "-add space";
+			value = m_addSpace ? "1" : "0";
+			defaults.setObject_forKey(NSString.Create(value), NSString.Create(key));
+			
 			// ignored targets
 			key = Path + "-ignored items";
 			value = Glob.Join(m_ignoredItems);
@@ -521,6 +539,14 @@ namespace DirectoryEditor
 			else
 				m_ignoredItems = new string[]{".*", "*.o", "*.pyc", "MIT.X11", "CVS"};
 			
+			// add space
+			key = path + "-add space";
+			value = defaults.stringForKey(NSString.Create(key)).To<NSString>();
+			if (!NSObject.IsNullOrNil(value))
+				m_addSpace = value.description() == "1";
+			else
+				m_addSpace = false;
+			
 			// default target
 			key = path + "-defaultTarget";
 			value = defaults.stringForKey(NSString.Create(key)).To<NSString>();
@@ -540,6 +566,7 @@ namespace DirectoryEditor
 		private string m_name;
 		private string[] m_ignoredTargets = new string[0];
 		private string[] m_ignoredItems = new string[0];
+		private bool m_addSpace;
 		private Boss m_boss;
 		private DirectoryItemStyler m_dirStyler;
 		private DirectoryWatcher m_watcher;

@@ -292,7 +292,7 @@ namespace AutoComplete
 				{
 					++count;
 				}
-				else if (value[i + count] == '_')
+				else if (value[i + count] == '_' || value[i + count] == '.')
 				{
 					++count;
 				}

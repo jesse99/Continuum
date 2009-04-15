@@ -28,7 +28,7 @@ using System.Diagnostics;
 
 namespace DirectoryEditor	
 {
-	[ExportClass("DirPrefsController", "NSWindowController", Outlets = "sheet ignoredItems ignoredTargets pathColor files1Color files2Color files3Color files4Color files5Color files6Color files1Globs files2Globs files3Globs files4Globs files5Globs files6Globs")]
+	[ExportClass("DirPrefsController", "NSWindowController", Outlets = "addSpace sheet ignoredItems ignoredTargets pathColor files1Color files2Color files3Color files4Color files5Color files6Color files1Globs files2Globs files3Globs files4Globs files5Globs files6Globs")]
 	internal sealed class DirPrefsController : NSWindowController
 	{
 		private DirPrefsController(IntPtr instance) : base(instance)
@@ -36,11 +36,12 @@ namespace DirectoryEditor
 			m_sheet = new IBOutlet<NSWindow>(this, "sheet");
 			m_ignoredTargets = new IBOutlet<NSTextField>(this, "ignoredTargets");
 			m_ignoredItems = new IBOutlet<NSTextField>(this, "ignoredItems");
+			m_addSpace = new IBOutlet<NSButton>(this, "addSpace");
 			
 			ActiveObjects.Add(this);
 		}
 		
-		public void Open(DirectoryController dir)	
+		public void Open(DirectoryController dir)
 		{
 			m_dir = dir;
 			
@@ -51,6 +52,9 @@ namespace DirectoryEditor
 			// set ignored items
 			s = Glob.Join(m_dir.IgnoredItems);
 			m_ignoredItems.Value.setStringValue(NSString.Create(s));
+			
+			// set add space
+			m_addSpace.Value.setState(m_dir.AddSpace ? 1 : 0);
 			
 			// set path color
 			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
@@ -75,7 +79,7 @@ namespace DirectoryEditor
 			NSApplication.sharedApplication().beginSheet_modalForWindow_modalDelegate_didEndSelector_contextInfo(
 				m_sheet.Value, m_dir.window(), this, null, IntPtr.Zero);
 		}
-	
+		
 		public void okPressed(NSObject sender)
 		{
 			Unused.Value = sender;
@@ -90,6 +94,9 @@ namespace DirectoryEditor
 			// save ignored items
 			s = m_ignoredItems.Value.stringValue().description();
 			m_dir.IgnoredItems = Glob.Split(s);
+			
+			// save add space
+			m_dir.AddSpace = m_addSpace.Value.state() == 1;
 			
 			// save path color
 			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
@@ -112,6 +119,8 @@ namespace DirectoryEditor
 			
 			// force the table to reload
 			m_dir.Reload();
+			
+			Broadcaster.Invoke("directory prefs changed", m_dir.Boss);
 			m_dir = null;
 		}
 		
@@ -124,10 +133,11 @@ namespace DirectoryEditor
 			m_dir = null;
 		}
 		
-		#region Fields ------------------------------------------------------------
+		#region Fields
 		private IBOutlet<NSWindow> m_sheet;
 		private IBOutlet<NSTextField> m_ignoredTargets;
 		private IBOutlet<NSTextField> m_ignoredItems;
+		private IBOutlet<NSButton> m_addSpace;
 		private DirectoryController m_dir;
 		#endregion
 	}

@@ -296,7 +296,7 @@ namespace AutoComplete
 			
 			if (member.Arity > 0 && m_currentArg < member.Arity)		// need the second check in case the user is typed something silly
 			{
-				string munged = member.Text.Replace(";", "; ");
+				string munged = member.Text.Replace(";", "; ").Replace("[]", "--");
 				int first = munged.IndexOfAny(new char[]{'(', '['}) + 1;
 				Contract.Assert(first > 0, "couldn't find ( or [ in " + munged);
 				

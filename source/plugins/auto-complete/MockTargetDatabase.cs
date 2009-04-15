@@ -63,8 +63,11 @@ namespace AutoComplete
 				baseNames.AddIfMissing("System.Array");
 				allNames.AddIfMissing("System.Array");
 				
-				interfaceNames.AddIfMissing("System.Collections.Generic.IEnumerable`1");
-				allNames.AddIfMissing("System.Collections.Generic.IEnumerable`1");
+				interfaceNames.AddIfMissing("System.Collections.IList");
+				allNames.AddIfMissing("System.Collections.IList");
+				
+				interfaceNames.AddIfMissing("System.Collections.Generic.IList`1");
+				allNames.AddIfMissing("System.Collections.Generic.IList`1");
 			}
 			else if (typeName == "nullable-type")
 			{

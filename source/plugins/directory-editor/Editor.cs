@@ -61,7 +61,7 @@ namespace DirectoryEditor
 		public string[] SelectedPaths()
 		{
 			Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
-
+			
 			var paths = new List<string>();
 			
 			DirectoryController controller = (DirectoryController) m_window.windowController();
@@ -85,6 +85,18 @@ namespace DirectoryEditor
 				
 				DirectoryController controller = (DirectoryController) m_window.windowController();
 				return controller.BuildStartTime;
+			}
+		}
+		
+		public bool AddSpace
+		{
+			get
+			{
+				Contract.Requires(m_window != null, "window isn't set");
+				Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
+				
+				DirectoryController controller = (DirectoryController) m_window.windowController();
+				return controller.AddSpace;
 			}
 		}
 		

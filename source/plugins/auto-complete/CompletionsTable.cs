@@ -32,7 +32,7 @@ using System.Text;
 namespace AutoComplete
 {
 	[ExportClass("CompletionsTable", "NSTableView")]
-	internal sealed class CompletionsTable : NSTableView
+	internal sealed class CompletionsTable : NSTableView, IObserver
 	{
 		private CompletionsTable(IntPtr instance) : base(instance)
 		{
@@ -79,6 +79,23 @@ namespace AutoComplete
 			DoRebuildMembers();
 			deselectAll(this);
 			NSApplication.sharedApplication().BeginInvoke(() => scrollRowToVisible(0));
+			
+			DoGetAddSpace();
+			Broadcaster.Register("directory prefs changed", this);
+		}
+		
+		public void OnBroadcast(string name, object value)
+		{
+			switch (name)
+			{
+				case "directory prefs changed":
+					DoGetAddSpace();
+					break;
+					
+				default:
+					Trace.Fail("bad name: " + name);
+					break;
+			}
 		}
 		
 		public new NSMenu menuForEvent(NSEvent evt)
@@ -355,6 +372,13 @@ namespace AutoComplete
 				else
 					text = m_members[row].Text;
 			}
+			
+			if (m_addSpace)
+			{
+				int j = text.IndexOf('(');
+				if (j > 0)
+					text = text.Substring(0, j) + ' ' + text.Substring(j);
+			}
 		}
 		
 		private int DoMatchName()
@@ -408,6 +432,19 @@ namespace AutoComplete
 			
 			return count;
 		}
+		
+		private void DoGetAddSpace()
+		{
+			Boss boss = ObjectModel.Create("DirectoryEditorPlugin");
+			var find = boss.Get<IFindDirectoryEditor>();
+			boss = find.GetDirectoryEditor(m_editor.Boss);
+			
+			if (boss != null)
+			{
+				var editor = boss.Get<IDirectoryEditor>();
+				m_addSpace = editor.AddSpace;
+			}
+		}
 		#endregion
 		
 		#region Fields
@@ -422,6 +459,7 @@ namespace AutoComplete
 		private Dictionary<string, bool> m_visibleClasses = new Dictionary<string, bool>();
 		private bool m_hasExtensions;
 		private bool m_showExtensions;
+		private bool m_addSpace;
 		#endregion
 	}
 }

@@ -199,14 +199,12 @@ param_names				Space separated list of Names integers of the names of each
 							nullary.
 param_modifiers			Space separated list of integers: 0 for in parameter, 1 for out, 2
 							for ref, and 3 for params.
-
-* Replace Debug.Assert with Contract.Require
+														
 * Work more on target completion:
-	- make sure array-type return IList
-	- .txt files are completing
-	- make sure var builder = new System.Text.StringBuilder(); completes when
-	  builder is used
 	- need a project pref for inserting a space before completed (
+	- refactor commands should also use this pref
+	- replace Trace.Fail with Contract.Assert
+	- replace Debug.Fail with Contract.Assert
 	- make sure completion works OK with spaces before open parens
 	- 2+ chars + 2 tabs should complete names and expressions (with no ui where
 	  possible)
@@ -371,6 +369,11 @@ param_modifiers			Space separated list of integers: 0 for in parameter, 1 for ou
 * Need some way to install the continuum script.
 * Probably want an uninstall script.
 * May want to bundle cecil with the app.
+* Confirmation if opening a big file.
+* Confirmation if the user really wants to open a bunch of files
+	- open files
+	- return in dir editor
+	- return in find in files result
 * Do a release.
    
 * Add support for auto backing up files. keepBackupFile
@@ -386,7 +389,6 @@ param_modifiers			Space separated list of integers: 0 for in parameter, 1 for ou
 * Need to set file type for saved files.
 * Should be able to open locked files.
 * Should be able to run from read-only media.
-* Warn if opening a big file.
 * Database file names should probably include a hash or something for the dir path.
 * Might want to expose CsPreprocess to refactor.
 * Add ChangeLog support.
@@ -399,14 +401,10 @@ param_modifiers			Space separated list of integers: 0 for in parameter, 1 for ou
 	- full path
 * Add file get info:
 	- work with multiple selection
-	- do soemthing reasonable with both files and directories
+	- do something reasonable with both files and directories
 	- print bytes
 	- print directory valence
 	- print flags
-* Can we ask if the user really wants to open a bunch of files?
-	- open files
-	- return in dir editor
-	- return in find in files result
 * Open selection should use some sort of picker.
 * Look at startup times.
 * Add support for nant.
@@ -415,6 +413,13 @@ param_modifiers			Space separated list of integers: 0 for in parameter, 1 for ou
 	- should be template files
 	- users can edit these to put braces where they want
 	- users can add new templates (e.g. to paste copyright clause)
+* Work on extract method refactor. Should be able to handle this with the locals
+   parser and the scanner.
+* Work on rename refactor:
+	- if not private then do a make all
+	- use all of the local assemblies
+	- if the name cannot be found in an assembly emit an error (eg type isn't part of the
+	   build yet)
 * Need a way to build weird projects like Cecil, probably a pref with a build
   command line which overrides make builder.
 * Add an assembly viewer
@@ -444,7 +449,6 @@ param_modifiers			Space separated list of integers: 0 for in parameter, 1 for ou
 * Add support for refactoring:
 	dump fields (may require reflection)
 	dump args, locals, fields used in a method
-	extract code to file
 	rename arg, need some sort of minimal statement/expr parser
 	rename field, need table with fields used by each type
 	rename method

@@ -52,23 +52,27 @@ namespace TextEditor
 		{
 			do
 			{
-				// Handle auto-complete initiated with '.' or enter.
-				IComputeRuns computer = ((TextController) window().windowController()).Computer;
-				if (m_autoComplete.HandleKey(this, evt, computer))
-					break;
-				
-				// Option-tab selects the next identifier.
-				if (evt.keyCode() == TabKey && (evt.modifierFlags() & Enums.NSAlternateKeyMask) != 0)
+				TextController controller = (TextController) window().windowController();
+				if ("CsLanguage" == controller.Language)			// order is important: Language may be null
 				{
-					if ((evt.modifierFlags() & Enums.NSShiftKeyMask) == 0)
+					// Handle auto-complete initiated with '.' or enter.
+					IComputeRuns computer = controller.Computer;
+					if (m_autoComplete.HandleKey(this, evt, computer))
+						break;
+					
+					// Option-tab selects the next identifier.
+					if (evt.keyCode() == TabKey && (evt.modifierFlags() & Enums.NSAlternateKeyMask) != 0)
 					{
-						if (DoSelectNextIdentifier())
-							break;
-					}
-					else
-					{
-						if (DoSelectPreviousIdentifier())
-							break;
+						if ((evt.modifierFlags() & Enums.NSShiftKeyMask) == 0)
+						{
+							if (DoSelectNextIdentifier())
+								break;
+						}
+						else
+						{
+							if (DoSelectPreviousIdentifier())
+								break;
+						}
 					}
 				}
 				

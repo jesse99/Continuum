@@ -199,6 +199,11 @@ namespace TextEditor
 			get {return m_computer;}
 		}
 		
+		public string Language
+		{
+			get {return m_language;}
+		}
+		
 		public Boss GetDirEditorBoss()
 		{
 			Boss boss = ObjectModel.Create("DirectoryEditorPlugin");

@@ -40,5 +40,8 @@ namespace Shared
 		// session). If the directory was not built DateTime.MinValue is
 		// returned.
 		DateTime BuildStartTime {get;}
+		
+		// True if spaces should be added before method arguments.
+		bool AddSpace {get;}
 	}
 }
