@@ -30,7 +30,7 @@ namespace CsRefactor
 	// The class that does the actual work of refactoring C# code.
 	public sealed class Refactor
 	{
-		public Refactor(string text)	
+		public Refactor(string text)
 		{
 			Contract.Requires(text != null, "text is null");
 			
@@ -43,7 +43,7 @@ namespace CsRefactor
 			
 			m_commands.Add(command);
 		}
-
+		
 		// Executes the queued commands and returns the new text.
 		public string Process()
 		{
@@ -100,5 +100,5 @@ namespace CsRefactor
 		private string m_text;
 		private List<RefactorCommand> m_commands = new List<RefactorCommand>();
 		#endregion
-	} 
+	}
 }

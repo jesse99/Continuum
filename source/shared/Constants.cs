@@ -25,6 +25,7 @@ namespace Shared
 {
 	public static class Constants
 	{
+		public const string Bullet = "\x2022";
 		public const string Ellipsis = "\x2026";
 		public const string Replacement = "\xFFFD";
 		public const string ZeroWidthSpace = "\x200C";

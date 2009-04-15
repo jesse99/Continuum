@@ -25,7 +25,7 @@ define Process(type)
 	# assembly disables reflection on private members.
 	if not type.HasMember(type.Name, []) then
 		type.Body.InsertFirst(
-"public #{type.Name}()
+"public #{type.Name}•()
 {
 }
 ")
@@ -34,7 +34,7 @@ define Process(type)
 	# Convention dictates that these be present.
 	if not type.HasMember(type.Name, ["string"]) then
 		type.Body.InsertFirst(
-"public #{type.Name}(string message) : base(message)
+"public #{type.Name}•(string message) : base•(message)
 {
 }
 ")
@@ -42,7 +42,7 @@ define Process(type)
 	
 	if not type.HasMember(type.Name, ["string", "Exception"]) then
 		type.Body.InsertFirst(
-"public #{type.Name}(string message, Exception inner) : base(message)
+"public #{type.Name}•(string message, Exception inner) : base•(message)
 {
 }
 ")
@@ -53,7 +53,7 @@ define Process(type)
 		let access = "private" when type.IsSealed else "protected" in
 			type.Body.InsertFirst(
 "[SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
-#{access} #{type.Name}(SerializationInfo info, StreamingContext context) : base(info, context)
+#{access} #{type.Name}•(SerializationInfo info, StreamingContext context) : base•(info, context)
 {
 }
 ")

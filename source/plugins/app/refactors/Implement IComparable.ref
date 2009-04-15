@@ -31,29 +31,29 @@ end
 define ProcessClass(type)
 	if not type.HasMember("Equals", ["object"]) then
 		type.AddMember(
-"public override bool Equals(object obj)
+"public override bool Equals•(object obj)
 {
 	if (obj == null)
 		return false;
 	
 	#{type.Name} rhs = obj as #{type.Name};
-	return Compare(this, rhs) == 0;
+	return Compare•(this, rhs) == 0;
 }")
 	end
 
 	if not type.HasMember("Equals", [type.Name]) then
 		type.AddMember(
-"public bool Equals(#{type.Name} rhs)
+"public bool Equals•(#{type.Name} rhs)
 {
-	return Compare(this, rhs) == 0;
+	return Compare•(this, rhs) == 0;
 }")
 	end
 	
 	if not type.HasMember("Compare", [type.Name]) then
 		type.AddMember(
-"public static int Compare(#{type.Name} lhs, #{type.Name} rhs)
+"public static int Compare•(#{type.Name} lhs, #{type.Name} rhs)
 {
-	if (object.ReferenceEquals(lhs, rhs))
+	if (object.ReferenceEquals•(lhs, rhs))
 		return 0;
 	
 	if ((object) lhs == null)
@@ -73,63 +73,63 @@ define ProcessClass(type)
 
 	if not type.HasMember("CompareTo", [type.Name]) then
 		type.AddMember(
-"public int CompareTo(#{type.Name} rhs)
+"public int CompareTo•(#{type.Name} rhs)
 {
-	return Compare(this, rhs);
+	return Compare•(this, rhs);
 }")
 	end
 
 	if not type.HasMember("==", [type.Name, type.Name]) then
 		type.AddMember(
-"public static bool operator==(#{type.Name} lhs, #{type.Name} rhs)
+"public static bool operator==•(#{type.Name} lhs, #{type.Name} rhs)
 {
-	return Compare(lhs, rhs) == 0;
+	return Compare•(lhs, rhs) == 0;
 }")
 	end
 
 	if not type.HasMember("!=", [type.Name, type.Name]) then
 		type.AddMember(
-"public static bool operator!=(#{type.Name} lhs, #{type.Name} rhs)
+"public static bool operator!=•(#{type.Name} lhs, #{type.Name} rhs)
 {
-	return Compare(lhs, rhs) != 0;
+	return Compare•(lhs, rhs) != 0;
 }")
 	end
 
 	if not type.HasMember(">=", [type.Name, type.Name]) then
 		type.AddMember(
-"public static bool operator>=(#{type.Name} lhs, #{type.Name} rhs)
+"public static bool operator>=•(#{type.Name} lhs, #{type.Name} rhs)
 {
-	return Compare(lhs, rhs) >= 0;
+	return Compare•(lhs, rhs) >= 0;
 }")
 	end
 
 	if not type.HasMember(">", [type.Name, type.Name]) then
 		type.AddMember(
-"public static bool operator>(#{type.Name} lhs, #{type.Name} rhs)
+"public static bool operator>•(#{type.Name} lhs, #{type.Name} rhs)
 {
-	return Compare(lhs, rhs) > 0;
+	return Compare•(lhs, rhs) > 0;
 }")
 	end
 
 	if not type.HasMember("<=", [type.Name, type.Name]) then
 		type.AddMember(
-"public static bool operator<=(#{type.Name} lhs, #{type.Name} rhs)
+"public static bool operator<=•(#{type.Name} lhs, #{type.Name} rhs)
 {
-	return Compare(lhs, rhs) <= 0;
+	return Compare•(lhs, rhs) <= 0;
 }")
 	end
 
 	if not type.HasMember("<", [type.Name, type.Name]) then
 		type.AddMember(
-"public static bool operator<(#{type.Name} lhs, #{type.Name} rhs)
+"public static bool operator<•(#{type.Name} lhs, #{type.Name} rhs)
 {
-	return Compare(lhs, rhs) < 0;
+	return Compare•(lhs, rhs) < 0;
 }")
 	end
 
 	if not type.HasMember("GetHashCode", []) then
 		type.AddMember(
-"public override int GetHashCode()
+"public override int GetHashCode•()
 {
 	int hash = 0;
 	
@@ -146,30 +146,30 @@ end
 define ProcessStruct(type)
 	if not type.HasMember("Equals", ["object"]) then
 		type.AddMember(
-"public override bool Equals(object obj)
+"public override bool Equals•(object obj)
 {
 	if (obj == null)
 		return false;
 	
-	if (GetType() != obj.GetType())
+	if (GetType•() != obj.GetType•())
 		return false;
 	
 	#{type.Name} rhs = (#{type.Name}) obj;
-	return CompareTo(rhs) == 0;
+	return CompareTo•(rhs) == 0;
 }")
 	end
 
 	if not type.HasMember("Equals", [type.Name]) then
 		type.AddMember(
-"public bool Equals(#{type.Name} rhs)
+"public bool Equals•(#{type.Name} rhs)
 {
-	return CompareTo(rhs) == 0;
+	return CompareTo•(rhs) == 0;
 }")
 	end
 
 	if not type.HasMember("CompareTo", [type.Name]) then
 		type.AddMember(
-"public int CompareTo(#{type.Name} rhs)
+"public int CompareTo•(#{type.Name} rhs)
 {
 	int result = 0;
 	
@@ -180,55 +180,55 @@ define ProcessStruct(type)
 
 	if not type.HasMember("==", [type.Name, type.Name]) then
 		type.AddMember(
-"public static bool operator==(#{type.Name} lhs, #{type.Name} rhs)
+"public static bool operator==•(#{type.Name} lhs, #{type.Name} rhs)
 {
-	return lhs.CompareTo(rhs) == 0;
+	return lhs.CompareTo•(rhs) == 0;
 }")
 	end
 
 	if not type.HasMember("!=", [type.Name, type.Name]) then
 		type.AddMember(
-"public static bool operator!=(#{type.Name} lhs, #{type.Name} rhs)
+"public static bool operator!=•(#{type.Name} lhs, #{type.Name} rhs)
 {
-	return lhs.CompareTo(rhs) != 0;
+	return lhs.CompareTo•(rhs) != 0;
 }")
 	end
 
 	if not type.HasMember(">=", [type.Name, type.Name]) then
 		type.AddMember(
-"public static bool operator>=(#{type.Name} lhs, #{type.Name} rhs)
+"public static bool operator>=•(#{type.Name} lhs, #{type.Name} rhs)
 {
-	return lhs.CompareTo(rhs) >= 0;
+	return lhs.CompareTo•(rhs) >= 0;
 }")
 	end
 
 	if not type.HasMember(">", [type.Name, type.Name]) then
 		type.AddMember(
-"public static bool operator>(#{type.Name} lhs, #{type.Name} rhs)
+"public static bool operator>•(#{type.Name} lhs, #{type.Name} rhs)
 {
-	return lhs.CompareTo(rhs) > 0;
+	return lhs.CompareTo•(rhs) > 0;
 }")
 	end
 
 	if not type.HasMember("<=", [type.Name, type.Name]) then
 		type.AddMember(
-"public static bool operator<=(#{type.Name} lhs, #{type.Name} rhs)
+"public static bool operator<=•(#{type.Name} lhs, #{type.Name} rhs)
 {
-	return lhs.CompareTo(rhs) <= 0;
+	return lhs.CompareTo•(rhs) <= 0;
 }")
 	end
 
 	if not type.HasMember("<", [type.Name, type.Name]) then
 		type.AddMember(
-"public static bool operator<(#{type.Name} lhs, #{type.Name} rhs)
+"public static bool operator<•(#{type.Name} lhs, #{type.Name} rhs)
 {
-	return lhs.CompareTo(rhs) < 0;
+	return lhs.CompareTo•(rhs) < 0;
 }")
 	end
 
 	if not type.HasMember("GetHashCode", []) then
 		type.AddMember(
-"public override int GetHashCode()
+"public override int GetHashCode•()
 {
 	int hash = 0;
 	
@@ -261,7 +261,7 @@ define GetCompareProps(type)
 	let prefix = "lhs." when type is Class else "", props = (from prop in type.Properties 
 	where not prop.IsStatic and prop.HasGetter and prop.GetterBody == null # null body means it is an auto-property
 	select "	if (result == 0)
-		result = #{prefix}#{prop.Name}.CompareTo(rhs.#{prop.Name});
+		result = #{prefix}#{prop.Name}.CompareTo•(rhs.#{prop.Name});
 	") in
 		return "
 ".Join(props)
@@ -269,10 +269,10 @@ define GetCompareProps(type)
 end
 
 define GetCompareFields(type)
-	let prefix = "lhs." when type is Class else "", fields = (from field in type.Fields 
-	where not field.IsStatic and not field.IsConst 
+	let prefix = "lhs." when type is Class else "", fields = (from field in type.Fields
+	where not field.IsStatic and not field.IsConst
 	select "	if (result == 0)
-		result = #{prefix}#{field.Name}.CompareTo(rhs.#{field.Name});
+		result = #{prefix}#{field.Name}.CompareTo•(rhs.#{field.Name});
 	") in
 		return "
 ".Join(fields)
@@ -295,18 +295,18 @@ define GetHashMembers(type)
 end
 
 define GetHashProps(type)
-	let props = (from prop in type.Properties 
-	where not prop.IsStatic and prop.HasGetter and prop.GetterBody == null 
-	select "		hash += #{prop.Name}.GetHashCode();") in
+	let props = (from prop in type.Properties
+	where not prop.IsStatic and prop.HasGetter and prop.GetterBody == null
+	select "		hash += #{prop.Name}.GetHashCode•();") in
 		return "
 ".Join(props)
 	end
 end
 
 define GetHashFields(type)
-	let fields = (from field in type.Fields 
-	where not field.IsStatic and not field.IsConst 
-	select "		hash += #{field.Name}.GetHashCode();") in
+	let fields = (from field in type.Fields
+	where not field.IsStatic and not field.IsConst
+	select "		hash += #{field.Name}.GetHashCode•();") in
 		return "
 ".Join(fields)
 	end

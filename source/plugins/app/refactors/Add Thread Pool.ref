@@ -19,10 +19,10 @@ define Run()
 end
 
 define NormalClass(method, name)
-	InsertAfterSelection("ThreadPool.QueueUserWorkItem(o => #{name}());	// the pool uses background threads so the app will exit even if this thread is still running")
+	InsertAfterSelection("ThreadPool.QueueUserWorkItem•(o => #{name}•());	// the pool uses background threads so the app will exit even if this thread is still running")
 
 	method.AddMemberAfter(
-"private void #{name}()
+"private void #{name}•()
 {
 	try
 	{
@@ -34,10 +34,10 @@ define NormalClass(method, name)
 end
 
 define StaticClass(method, name)
-	InsertAfterSelection("ThreadPool.QueueUserWorkItem(o => #{name}());	// the pool uses background threads so the app will exit even if this thread is still running")
+	InsertAfterSelection("ThreadPool.QueueUserWorkItem•(o => #{name}•());	// the pool uses background threads so the app will exit even if this thread is still running")
 
 	method.AddMemberAfter(
-"private static void #{name}()
+"private static void #{name}•()
 {
 	try
 	{

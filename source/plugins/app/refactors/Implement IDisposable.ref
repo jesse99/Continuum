@@ -61,12 +61,12 @@ end
 define InsertThrow(body)
 	body.InsertFirst(
 "if (Disposed)
-	throw new ObjectDisposedException(GetType().Name);")
+	throw new ObjectDisposedException•(GetType•().Name);")
 end
 
 define SealedAndManaged(type)
 	type.AddMember(
-"public void Dispose()
+"public void Dispose•()
 {
 	if (!Disposed)
 	{
@@ -81,13 +81,13 @@ end
 
 define UnealedAndManaged(type)
 	type.AddMember(
-"public void Dispose()
+"public void Dispose•()
 {
-	Dispose(true);
+	Dispose•(true);
 }")
 
 	type.AddMember(
-"protected virtual void Dispose(bool disposing)
+"protected virtual void Dispose•(bool disposing)
 {
 	if (!Disposed)
 	{
@@ -104,14 +104,14 @@ define SealedAndNative(type)
 	AddFinalizerType(type)
 
 	type.AddMember(
-"public void Dispose()
+"public void Dispose•()
 {
-	Dispose(true);
-	GC.SuppressFinalize(this);
+	Dispose•(true);
+	GC.SuppressFinalize•(this);
 }")
 
 	type.AddMember(
-"private void Dispose(bool disposing)
+"private void Dispose•(bool disposing)
 {
 	if (!Disposed)
 	{
@@ -137,14 +137,14 @@ define UnealedAndNative(type)
 	AddFinalizerType(type)
 
 	type.AddMember(
-"public void Dispose()
+"public void Dispose•()
 {
-	Dispose(true);
-	GC.SuppressFinalize(this);
+	Dispose•(true);
+	GC.SuppressFinalize•(this);
 }")
 
 	type.AddMember(
-"protected virtual void Dispose(bool disposing)
+"protected virtual void Dispose•(bool disposing)
 {
 	if (!Disposed)
 	{
@@ -170,12 +170,12 @@ define AddFinalizerType(type)
 	let finalizers = (from method in type.Methods where method.IsFinalizer) in
 		if finalizers.IsEmpty then
 			type.AddMember(
-"~#{type.Name}()
+"~#{type.Name}•()
 {
 	// Note that this is called even if the ctor throws so it's important
 	// to check for null fields (if the finalizer throws your app will be
 	// torn down). Also note that this will execute within a worker thread.
-	Dispose(false);
+	Dispose•(false);
 }")
 		else
 			finalizers.Head.Body.InsertLast("Dispose(false);")

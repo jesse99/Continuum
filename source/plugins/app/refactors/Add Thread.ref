@@ -21,13 +21,13 @@ end
 # Note that it is not neccesary to retain a reference to the thread object.
 define NormalClass(type, method, name)
 	InsertAfterSelection(
-"Thread thread = new Thread(this.#{name});
+"Thread thread = new Thread•(this.#{name});
 thread.Name = ""#{type.Name}.#{name}"";
 thread.IsBackground = true;		// allow the app to quit even if the thread is still running
-thread.Start();")
+thread.Start•();")
 
 	method.AddMemberAfter(
-"private void #{name}()
+"private void #{name}•()
 {
 	try
 	{
@@ -40,13 +40,13 @@ end
 
 define StaticClass(type, method, name)
 	InsertAfterSelection(
-"Thread thread = new Thread(#{type.Name}.#{name});
+"Thread thread = new Thread•(#{type.Name}.#{name});
 thread.Name = ""#{type.Name}.#{name}"";
 thread.IsBackground = true;		// allow the app to quit even if the thread is still running
-thread.Start();")
+thread.Start•();")
 
 	method.AddMemberAfter(
-"private static void #{name}()
+"private static void #{name}•()
 {
 	try
 	{

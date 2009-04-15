@@ -30,7 +30,7 @@ end
 define ProcessClass(type)
 	if not type.HasMember("Equals", ["object"]) then
 		type.AddMember(
-"public override bool Equals(object obj)
+"public override bool Equals•(object obj)
 {
 	if (obj == null)
 		return false;
@@ -42,7 +42,7 @@ define ProcessClass(type)
 
 	if not type.HasMember("Equals", [type.Name]) then
 		type.AddMember(
-"public bool Equals(#{type.Name} rhs)
+"public bool Equals•(#{type.Name} rhs)
 {
 	return this == rhs;
 }")
@@ -50,9 +50,9 @@ define ProcessClass(type)
 
 	if not type.HasMember("==", [type.Name, type.Name]) then
 		type.AddMember(
-"public static bool operator==(#{type.Name} lhs, #{type.Name} rhs)
+"public static bool operator==•(#{type.Name} lhs, #{type.Name} rhs)
 {
-	if (object.ReferenceEquals(lhs, rhs))
+	if (object.ReferenceEquals•(lhs, rhs))
 		return true;
 	
 	if ((object) lhs == null || (object) rhs == null)
@@ -65,7 +65,7 @@ define ProcessClass(type)
 
 	if not type.HasMember("!=", [type.Name, type.Name]) then
 		type.AddMember(
-"public static bool operator!=(#{type.Name} lhs, #{type.Name} rhs)
+"public static bool operator!=•(#{type.Name} lhs, #{type.Name} rhs)
 {
 	return !(lhs == rhs);
 }")
@@ -73,7 +73,7 @@ define ProcessClass(type)
 	
 	if not type.HasMember("GetHashCode", []) then
 		type.AddMember(
-"public override int GetHashCode()
+"public override int GetHashCode•()
 {
 	int hash = 0;
 	
@@ -90,12 +90,12 @@ end
 define ProcessStruct(type)
 	if not type.HasMember("Equals", ["object"]) then
 		type.AddMember(
-"public override bool Equals(object obj)
+"public override bool Equals•(object obj)
 {
 	if (obj == null)
 		return false;
 	
-	if (GetType() != obj.GetType())
+	if (GetType•() != obj.GetType•())
 		return false;
 	
 	#{type.Name} rhs = (#{type.Name}) obj;
@@ -105,7 +105,7 @@ define ProcessStruct(type)
 
 	if not type.HasMember("Equals", [type.Name]) then
 		type.AddMember(
-"public bool Equals(#{type.Name} rhs)
+"public bool Equals•(#{type.Name} rhs)
 {
 	return this == rhs;
 }")
@@ -113,7 +113,7 @@ define ProcessStruct(type)
 
 	if not type.HasMember("==", [type.Name, type.Name]) then
 		type.AddMember(
-"public static bool operator==(#{type.Name} lhs, #{type.Name} rhs)
+"public static bool operator==•(#{type.Name} lhs, #{type.Name} rhs)
 {
 #{GetEqualMembers(type)}
 	return true;
@@ -122,7 +122,7 @@ define ProcessStruct(type)
 
 	if not type.HasMember("!=", [type.Name, type.Name]) then
 		type.AddMember(
-"public static bool operator!=(#{type.Name} lhs, #{type.Name} rhs)
+"public static bool operator!=•(#{type.Name} lhs, #{type.Name} rhs)
 {
 	return !(lhs == rhs);
 }")
@@ -130,7 +130,7 @@ define ProcessStruct(type)
 
 	if not type.HasMember("GetHashCode", []) then
 		type.AddMember(
-"public override int GetHashCode()
+"public override int GetHashCode•()
 {
 	int hash = 0;
 	
@@ -160,7 +160,7 @@ define GetEqualMembers(type)
 end
 
 define GetEqualProps(type)
-	let props = (from prop in type.Properties 
+	let props = (from prop in type.Properties
 	where not prop.IsStatic and prop.HasGetter and prop.GetterBody == null # null body means it is an auto-property
 	select "	if (lhs.#{prop.Name} != rhs.#{prop.Name})
 		return false;
@@ -171,8 +171,8 @@ define GetEqualProps(type)
 end
 
 define GetEqualFields(type)
-	let fields = (from field in type.Fields 
-	where not field.IsStatic and not field.IsConst 
+	let fields = (from field in type.Fields
+	where not field.IsStatic and not field.IsConst
 	select "	if (lhs.#{field.Name} != rhs.#{field.Name})
 		return false;
 	") in
@@ -197,18 +197,18 @@ define GetHashMembers(type)
 end
 
 define GetHashProps(type)
-	let props = (from prop in type.Properties 
-	where not prop.IsStatic and prop.HasGetter and prop.GetterBody == null 
-	select "		hash += #{prop.Name}.GetHashCode();") in
+	let props = (from prop in type.Properties
+	where not prop.IsStatic and prop.HasGetter and prop.GetterBody == null
+	select "		hash += #{prop.Name}.GetHashCode•();") in
 		return "
 ".Join(props)
 	end
 end
 
 define GetHashFields(type)
-	let fields = (from field in type.Fields 
-	where not field.IsStatic and not field.IsConst 
-	select "		hash += #{field.Name}.GetHashCode();") in
+	let fields = (from field in type.Fields
+	where not field.IsStatic and not field.IsConst
+	select "		hash += #{field.Name}.GetHashCode•();") in
 		return "
 ".Join(fields)
 	end

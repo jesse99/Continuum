@@ -35,7 +35,7 @@ end
 
 define MultiThreaded(type, fname)
 	ProcessCtors(type, true, fname)
-	type.Body.InsertLast("private static object ms_lock = new object();")
+	type.Body.InsertLast("private static object ms_lock = new object•();")
 	type.Body.InsertLast("private static #{type.Name} #{fname};")
 end
 
@@ -53,7 +53,7 @@ end
 
 define AddDefaultCtor(type)
 	type.Body.InsertFirst(
-"private #{type.Name}()
+"private #{type.Name}•()
 {
 }")
 end
@@ -77,7 +77,7 @@ define InstanceMethod(type, threaded, fname)
 			{
 				if (#{fname} == null)
 				{
-					#{fname} = new #{type.Name}();
+					#{fname} = new #{type.Name}•();
 				}
 			}
 		}
@@ -91,7 +91,7 @@ define InstanceMethod(type, threaded, fname)
 	get
 	{
 		if (#{fname} == null)
-			#{fname} = new #{type.Name}();
+			#{fname} = new #{type.Name}•();
 		
 		return #{fname};
 	}

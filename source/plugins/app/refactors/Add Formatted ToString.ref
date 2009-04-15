@@ -16,26 +16,26 @@ define Process(type)
 	
 	if not type.HasMember("ToString", []) then
 		type.AddMember(
-"public override string ToString()
+"public override string ToString•()
 {
-	return ToString(""G"", null);
+	return ToString•(""G"", null);
 }")
 	end
 	
 	type.AddMember(
-"public string ToString(string format)
+"public string ToString•(string format)
 {
-	return ToString(format, null);
+	return ToString•(format, null);
 }")
 	
 	type.AddMember(
-"public string ToString(string format, IFormatProvider provider)
+"public string ToString•(string format, IFormatProvider provider)
 {
 	if (provider != null)
 	{
-		ICustomFormatter formatter = provider.GetFormat(GetType()) as ICustomFormatter;
+		ICustomFormatter formatter = provider.GetFormat•(GetType•()) as ICustomFormatter;
 		if (formatter != null)
-			return formatter.Format(format, this, provider);
+			return formatter.Format•(format, this, provider);
 	}
 	
 	switch (format)
@@ -50,8 +50,8 @@ define Process(type)
 			return string.Empty;
 		
 		default:
-			string message = string.Format(""{0} isn't a valid {1} format string"", format, GetType());
-			throw new FormatException(message);
+			string message = string.Format•(""{0} isn't a valid {1} format string"", format, GetType•());
+			throw new FormatException•(message);
 	}
 }")
 end

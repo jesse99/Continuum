@@ -199,10 +199,15 @@ param_names				Space separated list of Names integers of the names of each
 							nullary.
 param_modifiers			Space separated list of integers: 0 for in parameter, 1 for out, 2
 							for ref, and 3 for params.
-														
+
+* Work on refactor commands:
+	- add a dir pref for putting open braces on their own line
+	- refactor needs to use the open brace location pref
+	- make sure unit tests work
+	- check in
+* Build a new foreshadow.
 * Work more on target completion:
-	- need a project pref for inserting a space before completed (
-	- refactor commands should also use this pref
+	- static type resolve should include const fields (eg Constants type)
 	- replace Trace.Fail with Contract.Assert
 	- replace Debug.Fail with Contract.Assert
 	- make sure completion works OK with spaces before open parens
@@ -218,6 +223,7 @@ param_modifiers			Space separated list of integers: 0 for in parameter, 1 for ou
 	- member list needs to account for access
 	- member list needs to account for visibility
 	- enter should complete snippets (probably also partial expressions)
+	- get rid of Create Exception refactor
 	- complete new SomeType calls
 		` special case array types
 	- local explicit interface implementation
@@ -420,6 +426,7 @@ param_modifiers			Space separated list of integers: 0 for in parameter, 1 for ou
 	- use all of the local assemblies
 	- if the name cannot be found in an assembly emit an error (eg type isn't part of the
 	   build yet)
+	- only change local files
 * Need a way to build weird projects like Cecil, probably a pref with a build
   command line which overrides make builder.
 * Add an assembly viewer

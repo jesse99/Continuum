@@ -64,11 +64,47 @@ namespace CsRefactor
 			}
 			string result = refactor.Process();
 			
+			// Expand bullet characters.
+			DoGetSettings(cSource.Boss);
+			result = DoExpandText(result);
+			
 			return result;
 		}
 		
+		#region Private Methods
+		private string DoExpandText(string text)
+		{
+			int i = text.IndexOf(Constants.Bullet);
+			while (i >= 0)
+			{
+				Contract.Assert(i < text.Length, "bullet is at the end of the text");
+				Contract.Assert(text[i + 1] == '(' || text[i + 1] == '[', "character after the bullet is not ( or [");
+				
+				if (m_addSpace)
+					text = text.Substring(0, i) + ' ' + text.Substring(i + 1);
+				else
+					text = text.Substring(0, i) + text.Substring(i + 1);
+				
+				i = text.IndexOf(Constants.Bullet, i);
+			}
+			
+			return text;
+		}
+		
+		private void DoGetSettings(Boss textBoss)
+		{
+			Boss boss = ObjectModel.Create("DirectoryEditorPlugin");
+			var find = boss.Get<IFindDirectoryEditor>();
+			boss = find.GetDirectoryEditor(textBoss);
+			
+			var editor = boss.Get<IDirectoryEditor>();
+			m_addSpace = editor.AddSpace;
+		}
+		#endregion
+		
 		#region Fields
 		private Boss m_boss;
+		private bool m_addSpace;
 		#endregion
 	}
 }

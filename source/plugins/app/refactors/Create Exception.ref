@@ -20,20 +20,20 @@ define Process(namespace)
 "[Serializable]
 public sealed class #{name} : Exception
 {
-	public #{name}()
+	public #{name}•()
 	{
 	}
 	
-	public #{name}(string message) : base(message)
+	public #{name}•(string message) : base•(message)
 	{
 	}
 	
-	public #{name}(string message, Exception inner) : base(message)
+	public #{name}•(string message, Exception inner) : base•(message)
 	{
 	}
 	
 	[SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
-	private #{name}(SerializationInfo info, StreamingContext context) : base(info, context)
+	private #{name}•(SerializationInfo info, StreamingContext context) : base•(info, context)
 	{
 	}
 }
