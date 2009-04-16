@@ -27,9 +27,45 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 
 namespace App
 {
+	internal static class StringBuilderExtensions
+	{
+		public static StringBuilder Write(this StringBuilder builder, string text)
+		{
+			builder.Append(text);
+			return builder;
+		}
+		
+		public static StringBuilder Write(this StringBuilder builder, string format, params object[] args)
+		{
+			string text = string.Format(format, args);
+			builder.Append(text);
+			return builder;
+		}
+		
+		public static StringBuilder WriteLine(this StringBuilder builder)
+		{
+			builder.AppendLine();
+			return builder;
+		}
+		
+		public static StringBuilder WriteLine(this StringBuilder builder, string text)
+		{
+			builder.AppendLine(text);
+			return builder;
+		}
+		
+		public static StringBuilder WriteLine(this StringBuilder builder, string format, params object[] args)
+		{
+			string text = string.Format(format, args);
+			builder.AppendLine(text);
+			return builder;
+		}
+	}
+	
 	internal sealed class MoveSelectionToFile : IStartup
 	{
 		public void Instantiated(Boss boss)
@@ -72,12 +108,16 @@ namespace App
 				string path = DoGetPath(editor.Path, name + ".cs");
 				if (path != null)
 				{
-					using (TextWriter writer = File.CreateText(path))
-					{
-						name = Path.GetFileNameWithoutExtension(path);
-						DoSave(name, globals, first, writer, text.Text, range.location, range.length);				
-						text.Replace(string.Empty, range.location, range.length, "Cut");
-					}
+					var builder = new StringBuilder();
+					name = Path.GetFileNameWithoutExtension(path);
+					
+					DoBuildNewFile(name, globals, first, builder, text.Text, range.location, range.length);
+					b = ObjectModel.Create("Refactor");
+					var script = b.Get<IRefactorScript>();
+					string contents = script.Expand(text.Boss, builder.ToString());
+					
+					File.WriteAllText(path, contents, Encoding.UTF8);
+					text.Replace(string.Empty, range.location, range.length, "Cut");
 				}
 			}
 		}
@@ -100,24 +140,23 @@ namespace App
 			return path;
 		}
 		
-		private void DoSave(string name, CsGlobalNamespace globals, CsDeclaration first, TextWriter writer, string text, int offset, int length)
+		private void DoBuildNewFile(string name, CsGlobalNamespace globals, CsDeclaration first, StringBuilder builder, string text, int offset, int length)
 		{
 			// If the file starts with a comment then write it out.
 			if (text.Length > 2 && text[0] == '/' && text[1] == '/')
-				DoWriteSingleLineComments(writer, text);
+				DoWriteSingleLineComments(builder, text);
 			else if (text.Length > 2 && text[0] == '/' && text[1] == '*')
-				DoWriteDelimitedComment(writer, text);
+				DoWriteDelimitedComment(builder, text);
 			
 			// Write the global using directives.
-			DoWriteUsing(writer, globals, string.Empty);
+			DoWriteUsing(builder, globals, string.Empty);
 			
 			// Write the namespace the declaration was in.
 			CsNamespace ns = DoGetNamespace(first);
 			if (ns != null && ns.Name != "<globals>")
 			{
-				writer.WriteLine("namespace {0}", ns.Name);
-				writer.WriteLine("{");
-				DoWriteUsing(writer, ns, "\t");
+				builder.WriteLine("namespace {0}{1}{2}", ns.Name, Constants.Bullet, "{");
+				DoWriteUsing(builder, ns, "\t");
 			}
 			
 			// If we're moving a member then create a dummy type.
@@ -139,19 +178,19 @@ namespace App
 					modifiers = member.Modifiers.ToString().ToLower();
 				modifiers = modifiers.Replace(",", string.Empty);
 				
-				writer.WriteLine("\t{0} {1} {2}", modifiers, keyword, name);
-				writer.WriteLine("\t{");
+				builder.WriteLine("\t{0} {1} {2}", modifiers, keyword, name);
+				builder.WriteLine("\t{");
 			}
 			
 			// Write the selection.
-			writer.Write(text.Substring(offset, length));
+			builder.Write(text.Substring(offset, length));
 			
 			// Close up type and namespaces.
 			if (member != null && member.DeclaringType != null)
-				writer.WriteLine("\t}");
+				builder.WriteLine("\t}");
 			
 			if (ns  != null && ns.Name != "<globals>")
-				writer.WriteLine("}");
+				builder.WriteLine("}");
 		}
 		
 		private CsNamespace DoGetNamespace(CsDeclaration first)
@@ -163,7 +202,7 @@ namespace App
 			CsTypeScope type = first as CsTypeScope;
 			if (type != null)
 			{
-				type = type.Namespace;
+				ns = type.Namespace;
 			}
 			else
 			{
@@ -171,7 +210,9 @@ namespace App
 				// its declaring type was declared in.
 				CsMember member = first as CsMember;
 				if (member != null && member.DeclaringType != null)
+				{
 					ns = member.DeclaringType.Namespace;
+				}
 				
 				// Special case enums and delegates declared in a namespace
 				// scope.
@@ -188,7 +229,7 @@ namespace App
 		}
 		
 		// Files often start with things like copyright notices which we want to preserve.
-		private void DoWriteSingleLineComments(TextWriter writer, string text)
+		private void DoWriteSingleLineComments(StringBuilder builder, string text)
 		{
 			int i = 0;
 			
@@ -197,34 +238,34 @@ namespace App
 				int j = text.IndexOf('\n', i);
 				if (j >= 0)
 				{
-					writer.WriteLine(text.Substring(i, j - i));
+					builder.WriteLine(text.Substring(i, j - i));
 					i = j + 1;
 				}
 				else
 					break;
 			}
-			writer.WriteLine();
+			builder.WriteLine();
 		}
 		
-		private void DoWriteDelimitedComment(TextWriter writer, string text)
+		private void DoWriteDelimitedComment(StringBuilder builder, string text)
 		{
 			int j = text.IndexOf("*/");
 			if (j >= 0)
 			{
-				writer.WriteLine(text.Substring(0, j + 2));
-				writer.WriteLine();
+				builder.WriteLine(text.Substring(0, j + 2));
+				builder.WriteLine();
 			}
 		}
 		
-		private void DoWriteUsing(TextWriter writer, CsNamespace ns, string indent)
+		private void DoWriteUsing(StringBuilder builder, CsNamespace ns, string indent)
 		{
 			if (ns.Uses.Length > 0)
 			{
 				foreach (CsUsingDirective u in ns.Uses)
 				{
-					writer.WriteLine("{0}using {1};", indent, u.Namespace);
+					builder.WriteLine("{0}using {1};", indent, u.Namespace);
 				}
-				writer.WriteLine();
+				builder.WriteLine();
 			}
 		}
 		
@@ -268,7 +309,7 @@ namespace App
 			
 			CsDeclaration result = null;
 			int resultLength = int.MinValue;
-						
+			
 			// For every declaration,
 			while (decs.Count > 0)
 			{

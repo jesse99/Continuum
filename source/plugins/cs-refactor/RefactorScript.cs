@@ -71,6 +71,12 @@ namespace CsRefactor
 			return result;
 		}
 		
+		public string Expand(Boss textBoss, string text)
+		{
+			DoGetSettings(textBoss);
+			return DoExpandText(text);
+		}
+		
 		#region Private Methods
 		private string DoExpandText(string text)
 		{
@@ -107,7 +113,7 @@ namespace CsRefactor
 				
 				i = text.IndexOf(Constants.Bullet, i);
 			}
-			
+		
 			return text;
 		}
 		
@@ -123,6 +129,8 @@ namespace CsRefactor
 			
 			if (count > 0)
 				text = "\n" + text.Substring(i, count);
+			else
+				text = "\n";
 			
 			return text;
 		}

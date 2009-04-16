@@ -30,7 +30,7 @@ using System.Runtime.InteropServices;
 namespace App
 {
 	internal sealed class Launcher : ILaunch
-	{		
+	{
 		public void Instantiated(Boss boss)
 		{	
 			m_boss = boss;
@@ -40,21 +40,21 @@ namespace App
 		{
 			get {return m_boss;}
 		}
-
+		
 		public void Launch(string path, int line, int col, int tabWidth)
-		{			
+		{
 			try
 			{
 				Boss boss = ObjectModel.Create("TextEditorPlugin");
 				var can = boss.Get<ICanOpen>();
 				if (can.Can(System.IO.Path.GetFileName(path)))
-				{					
+				{
 					NSError err;
 					NSURL url = NSURL.fileURLWithPath(NSString.Create(path));
 					Unused.Value = NSDocumentController.sharedDocumentController().openDocumentWithContentsOfURL_display_error(
 						url, true, out err);
 					
-					if (err != null)	
+					if (err != null)
 						err.Raise();
 					
 					if (line != -1)
@@ -77,19 +77,19 @@ namespace App
 		}
 		
 		public void Launch(string path, NSRange selection)
-		{			
+		{
 			try
 			{
 				Boss boss = ObjectModel.Create("TextEditorPlugin");
 				var can = boss.Get<ICanOpen>();
 				if (can.Can(System.IO.Path.GetFileName(path)))
-				{					
+				{
 					NSError err;
 					NSURL url = NSURL.fileURLWithPath(NSString.Create(path));
 					Unused.Value = NSDocumentController.sharedDocumentController().openDocumentWithContentsOfURL_display_error(
 						url, true, out err);
 					
-					if (err != null)	
+					if (err != null)
 						err.Raise();
 					
 					DoSetSelection(path, selection);
@@ -145,7 +145,7 @@ namespace App
 		#endregion
 
 		#region Fields
-		private Boss m_boss; 
+		private Boss m_boss;
 		#endregion
-	} 
+	}
 }

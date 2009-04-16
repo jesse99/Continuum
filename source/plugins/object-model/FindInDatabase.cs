@@ -271,7 +271,8 @@ namespace ObjectModel
 				{
 					// If the database doesn't have the type then see if we can find a local or mono
 					// file with that name (this is helpful because mdb files do not have source files
-					// for enums and interfaces).
+					// for enums and interfaces). TODO: might want to iterate local files so we find
+					// any new ones
 					Boss boss = Gear.ObjectModel.Create("FileSystem");
 					var fs = boss.Get<IFileSystem>();
 					string[] candidates = fs.LocatePath("/" + selection + ".cs");
@@ -284,7 +285,7 @@ namespace ObjectModel
 					foreach (string candidate in candidates)
 					{
 						if (Array.Exists(local, l => candidate.StartsWith(l)) || candidate.StartsWith(mono))
-							temp.Add(new SourceInfo(Path.GetFileName(candidate), candidate, 1));
+							temp.Add(new SourceInfo(Path.GetFileName(candidate), candidate, -1));
 					}
 					sources = temp.ToArray();
 				}
