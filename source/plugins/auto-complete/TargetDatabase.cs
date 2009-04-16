@@ -379,8 +379,11 @@ namespace AutoComplete
 					text = text.Substring(j + 2);
 					
 					j = text.IndexOf('{');
-					int k = text.IndexOf('}');
-					text = text.Substring(0, j) + text.Substring(k + 1);
+					if (j > 0)
+					{
+						int k = text.IndexOf('}');
+						text = text.Substring(0, j) + text.Substring(k + 1);
+					}
 					
 					Member member = new Member(text, int.Parse(r[2]) - 1, r[1], targetType);
 					member.IsExtensionMethod = true;

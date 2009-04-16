@@ -200,11 +200,6 @@ param_names				Space separated list of Names integers of the names of each
 param_modifiers			Space separated list of integers: 0 for in parameter, 1 for out, 2
 							for ref, and 3 for params.
 
-* Work on refactors:
-	- need to expose the expand string goo
-	- move selection needs to use StringBuilder
-	- move selection needs to expand the string
-	- test it (can just use trivial)
 * Work more on target completion:
 	- make sure completion works OK with spaces before open parens
 	- run the gendarme target
