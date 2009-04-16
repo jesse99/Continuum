@@ -200,9 +200,31 @@ param_names				Space separated list of Names integers of the names of each
 param_modifiers			Space separated list of integers: 0 for in parameter, 1 for out, 2
 							for ref, and 3 for params.
 
+* Update mobjc:
+	- add a helpers namespace
+	- put Unused in there
+	- also Contract
+	- start using Contract instead of trace
+	- make IsNullOrNil pure
+	- remove AssertListener
+* Work on mcocoa:
+	- removed Unused
+	- use the MObjc.Helpers goo
+	- make pure:
+		NSTableColumn::identifier
+	  NSTextView::textStorage
+	  NSURL::scheme
+* Remove AssertListener
+* Change PrettyListener so Fail writes to stderr (if there is only one active listener)
+* Make pure:
+	DeclarationsPopup::DoCountSpaces
+	Paths::AreEqual
+	RefactorCommand::LinesToString
+	StringExtensions::EscapeAll
+* Run gendarme again.
 * Work more on target completion:
-	- make sure completion works OK with spaces before open parens
-	- run the gendarme target
+	- parser thinks Globs.cs has a parse error
+	- base keyword needs to work
 	- 2+ chars + 2 tabs should complete names and expressions (with no ui where
 	  possible), but only if the second tab happens quickly
 	- add the new db size to tables.txt

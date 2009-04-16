@@ -37,8 +37,8 @@ namespace Shared
 		public DatabaseException()
 		{
 		}
-
-		public DatabaseException(string text) : base(text) 
+		
+		public DatabaseException(string text) : base(text)
 		{
 		}
 		
@@ -234,6 +234,8 @@ namespace Shared
 			{
 				m_command = null;
 			}
+			
+			GC.KeepAlive(this);
 		}
 		
 		// When a connection calls BEGIN IMMEDIATE it will transition from UNLOCKED
@@ -256,6 +258,11 @@ namespace Shared
 		// entire transaction we avoid the deadlock.
 		public void Update(string name, Action action)
 		{
+			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
+			Contract.Requires(action != null, "action is null");
+			if (m_disposed)
+				throw new ObjectDisposedException(GetType().Name);
+			
 			int i = 0;
 			
 			while (true)
@@ -307,6 +314,8 @@ namespace Shared
 			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
 			Contract.Requires(m_lock == null, "can't nest transaction, old transaction is " + m_lock);
 			Contract.Requires(Thread.CurrentThread.ManagedThreadId == m_threadID, m_name + " was used with multiple threads");
+			if (m_disposed)
+				throw new ObjectDisposedException(GetType().Name);
 			
 			m_lock = name;
 			m_lockTime = DateTime.Now;
@@ -318,6 +327,8 @@ namespace Shared
 			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
 			Contract.Requires(name == m_lock, string.Format("m_lock is '{0}' but should be '{1}'", m_lock, name));
 			Contract.Requires(Thread.CurrentThread.ManagedThreadId == m_threadID, m_name + " was used with multiple threads");
+			if (m_disposed)
+				throw new ObjectDisposedException(GetType().Name);
 			
 			Update("COMMIT TRANSACTION");
 			Log.WriteLine(TraceLevel.Verbose, "Database", "{0} transaction took {1:0.000} seconds", m_lock, (DateTime.Now - m_lockTime).TotalMilliseconds/1000.0);
@@ -330,6 +341,8 @@ namespace Shared
 			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
 			Contract.Requires(m_lock == null || name == m_lock, string.Format("m_lock is '{0}' but should be '{1}'", m_lock, name));
 			Contract.Requires(Thread.CurrentThread.ManagedThreadId == m_threadID, m_name + " was used with multiple threads");
+			if (m_disposed)
+				throw new ObjectDisposedException(GetType().Name);
 			
 			if (!m_disposed)
 			{
@@ -341,6 +354,8 @@ namespace Shared
 			
 			Log.WriteLine(TraceLevel.Warning, "Database", "{0} transaction aborted after {1:0.000} seconds", name, (DateTime.Now - m_lockTime).TotalMilliseconds/1000.0);
 			m_lock = null;
+			
+			GC.KeepAlive(this);
 		}
 		
 		public delegate void HeaderCallback(string[] header);
@@ -430,12 +445,16 @@ namespace Shared
 			{
 				m_command = null;
 			}
+			
+			GC.KeepAlive(this);
 		}
 		
 		// Note that this should not be used from the main thread if there is a chance that
 		// many rows may be returned.
 		public string[][] QueryRows(string command)
 		{
+			Contract.Requires(!string.IsNullOrEmpty(command), "command is null or empty");
+
 			var rows = new List<string[]>();
 			Database.RowCallback rc = (r) => {rows.Add(r); return true;};
 			
@@ -447,6 +466,8 @@ namespace Shared
 		//  The attribute names will be those which are listed in the SELECT clause of the command.
 		public NamedRows QueryNamedRows(string command)
 		{
+			Contract.Requires(!string.IsNullOrEmpty(command), "command is null or empty");
+
 			var rows = new List<string[]>();
 			Database.RowCallback rc = (r) => {rows.Add(r); return true;};
 			

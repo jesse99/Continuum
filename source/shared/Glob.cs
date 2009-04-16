@@ -41,6 +41,9 @@ namespace Shared
 	{
 		public static bool Match(string glob, string name)
 		{
+			Contract.Requires(glob != null, "glob is null");
+			Contract.Requires(name != null, "name is null");
+			
 			GlobFlags flags = GlobFlags.FNM_PATHNAME | GlobFlags.FNM_PERIOD | GlobFlags.FNM_CASEFOLD;
 			int result = fnmatch(glob, name, flags);
 			
@@ -50,6 +53,8 @@ namespace Shared
 		// Splits a list of globs separated by spaces with optional escaping of embeded spaces.
 		public static string[] Split(string inGlobs)
 		{
+			Contract.Requires(inGlobs != null, "inGlobs is null");
+			
 			string globs = inGlobs.Replace("\\ ", Constants.Replacement);
 			
 			string[] result = globs.Split(new char[]{' '}, StringSplitOptions.RemoveEmptyEntries);
@@ -67,6 +72,8 @@ namespace Shared
 		// Returns the globs as a space separated list with embedded spaces escaped.
 		public static string Join(string[] globs)
 		{
+			Contract.Requires(globs != null, "globs is null");
+			
 			var result = new StringBuilder(3*globs.Length);
 			
 			for (int i = 0; i < globs.Length; ++i)

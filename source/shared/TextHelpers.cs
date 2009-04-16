@@ -35,6 +35,9 @@ namespace Shared
 		// nested braces are skipped as well.
 		public static int SkipBraces(string text, int start, params string[] braces)
 		{
+			Contract.Requires(text != null, "text is null");
+			Contract.Requires(braces != null, "braces is null");
+
 			return SkipBraces(text, start, text.Length, braces);
 		}
 		
@@ -88,6 +91,9 @@ namespace Shared
 		// braces are skipped as well.
 		public static int ReverseSkipBraces(string text, int start, params string[] braces)
 		{
+			Contract.Requires(text != null, "text is null");
+			Contract.Requires(braces != null, "braces is null");
+			
 			return ReverseSkipBraces(text, start, text.Length, braces);
 		}
 		

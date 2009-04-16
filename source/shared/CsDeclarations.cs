@@ -372,7 +372,7 @@ namespace Shared
 	{
 		public static readonly int AccessMask	= 0x000F;			// can't define this in MemberModifiers or it messes up ToString
 		
-		public CsMember(int nameOffset, CsAttribute[] attrs, MemberModifiers modifiers, string name, int offset, int length, int line) : base(offset, length, line)
+		protected CsMember(int nameOffset, CsAttribute[] attrs, MemberModifiers modifiers, string name, int offset, int length, int line) : base(offset, length, line)
 		{
 			Contract.Requires(attrs != null, "attrs is null");
 			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
@@ -415,6 +415,9 @@ namespace Shared
 		
 		protected void AppendParameters(StringBuilder builder, CsParameter[] parms)
 		{
+			Contract.Requires(builder != null, "builder is null");
+			Contract.Requires(parms != null, "parms is null");
+			
 			for (int i = 0; i < parms.Length; ++i)
 			{
 				builder.Append(parms[i].Type);
@@ -733,7 +736,7 @@ namespace Shared
 	// Base class for CsInterface, CsClass, and CsStruct.
 	public abstract class CsType : CsTypeScope
 	{
-		public CsType(int nameOffset, CsBody body, CsBases bases, CsMember[] members, CsType[] types, CsAttribute[] attrs, MemberModifiers modifiers, string constraints, string gargs, string name, int offset, int length, int line) : base(body, types, offset, length, line)
+		protected CsType(int nameOffset, CsBody body, CsBases bases, CsMember[] members, CsType[] types, CsAttribute[] attrs, MemberModifiers modifiers, string constraints, string gargs, string name, int offset, int length, int line) : base(body, types, offset, length, line)
 		{
 			Contract.Requires(members != null, "members is null");
 			Contract.Requires(types != null, "types is null");
@@ -854,7 +857,7 @@ namespace Shared
 	// Derived classes are CsNamespace, CsClass, etc.
 	public abstract class CsTypeScope : CsDeclaration
 	{
-		public CsTypeScope(CsBody body, CsType[] types, int offset, int length, int line) : base(offset, length, line)
+		protected CsTypeScope(CsBody body, CsType[] types, int offset, int length, int line) : base(offset, length, line)
 		{
 			Contract.Requires(types != null, "types is null");
 			

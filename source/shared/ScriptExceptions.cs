@@ -60,12 +60,16 @@ namespace Shared
 			info.AddValue("Line", Line);
 		}
 	}
-
+	
 	// Used when a script cannot run.
 	[Serializable]
 	public sealed class ScriptAbortException : Exception
 	{
-		public ScriptAbortException(string text) : base(text) 
+		public ScriptAbortException()
+		{
+		}
+		
+		public ScriptAbortException(string text) : base(text)
 		{
 		}
 		

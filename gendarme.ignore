@@ -28,6 +28,16 @@ A: text-editor
 R: Gendarme.Rules.Design.AvoidVisibleNestedTypesRule
 A: shared
 
+# These exceptions aren't constructed with strings.
+R: Gendarme.Rules.Design.AvoidVisibleNestedTypesRule
+T: CsRefactor.Script.ReturnException
+T: CsRefactor.Script.ParserException
+T: CsRefactor.Script.EvaluateException
+T: CsRefactor.Script.EvaluateException
+T: CsRefactor.Script.ParserException
+T: Shared.ScriptException
+T: CsRefactor.Script.ScannerException
+
 # This rule is (almost always) lame.
 R: Gendarme.Rules.Performance.ConsiderCustomAccessorsForNonVisibleEventsRule
 A: text-editor
@@ -38,6 +48,8 @@ A: cs-refactor
 # This rule seems way too picky.
 R: Gendarme.Rules.Smells.AvoidCodeDuplicatedInSameClassRule
 A: app
+A: auto-complete
+A: cs-parser
 A: cs-refactor
 A: directory-editor
 A: file-system
@@ -59,12 +71,17 @@ A: shared
 # This is firing for unused arguments which makes it pretty much useless.
 R: Gendarme.Rules.Smells.AvoidSpeculativeGeneralityRule
 A: app
+A: auto-complete
+A: build-errors
 A: continuum
 A: cs-refactor
+A: cs-parser
 A: directory-editor
 A: find
+A: object-model
 A: shared
 A: text-editor
+A: transcript
 
 R: Gendarme.Rules.Maintainability.AvoidComplexMethodsRule
 A: cs-refactor
@@ -73,12 +90,17 @@ A: object-model
 # This rule would be a lot nicer if it didn't fire for private methods.
 R: Gendarme.Rules.Maintainability.AvoidUnnecessarySpecializationRule
 A: app
+A: auto-complete
 A: cs-refactor
+A: cs-parser
 A: object-model
+A: text-editor
 
 R: Gendarme.Rules.Smells.AvoidLongMethodsRule
+A: cs-parser
 A: cs-refactor
 A: object-model
+A: text-editor
 
 R: Gendarme.Rules.Naming.AvoidTypeInterfaceInconsistencyRule
 T: Shared.ISccs

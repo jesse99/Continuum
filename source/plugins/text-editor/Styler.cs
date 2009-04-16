@@ -30,14 +30,14 @@ using System.Threading;
 
 namespace TextEditor
 {
-	internal class Styler : IStyler
+	internal sealed class Styler : IStyler
 	{
 		public Boss Boss
 		{
 			get {return m_boss;}
 		}
 		
-		public virtual void Instantiated(Boss boss)
+		public void Instantiated(Boss boss)
 		{
 			m_boss = boss;
 			

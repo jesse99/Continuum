@@ -73,7 +73,6 @@ namespace AutoComplete
 					string name = System.IO.Path.GetFileName(editor.Path);
 					
 					string path = Paths.GetAssemblyDatabase(name);
-					var database = new Database(path, "AutoComplete-" + name);
 					
 					// TODO: this doesn't help for simple queries, but maybe it would
 					// for more complex queries (e.g. chained method calls)
@@ -82,7 +81,7 @@ namespace AutoComplete
 //						database.Update("PRAGMA cache_size = 4000");
 //					});
 					
-					m_database = new TargetDatabase(database);
+					m_database = new TargetDatabase(new Database(path, "AutoComplete-" + name));
 					m_members = new ResolveMembers(m_database);
 				}
 			}

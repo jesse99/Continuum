@@ -104,16 +104,28 @@ namespace Shared
 		
 		public bool IsIdentifier(string name)
 		{
+#if DEBUG
+			Contract.Requires(name != null, "name is null");
+#endif
+			
 			return Kind == TokenKind.Identifier && this == name;
 		}
 		
 		public bool IsKeyword(string name)
 		{
+#if DEBUG
+			Contract.Requires(name != null, "name is null");
+#endif
+			
 			return Kind == TokenKind.Keyword && this == name;
 		}
 		
 		public bool IsPunct(string name)
-		{			
+		{
+#if DEBUG
+			Contract.Requires(name != null, "name is null");
+#endif
+			
 			return Kind == TokenKind.Punct && this == name;
 		}
 		
@@ -173,6 +185,10 @@ namespace Shared
 		
 		public static bool operator==(Token lhs, string rhs)
 		{
+#if DEBUG
+			Contract.Requires(rhs != null, "rhs is null");
+#endif
+			
 			bool equals = lhs.Length == rhs.Length;
 			
 			for (int i = 0; i < lhs.Length && equals; ++i)
@@ -185,6 +201,10 @@ namespace Shared
 		
 		public static bool operator!=(Token lhs, string rhs)
 		{
+#if DEBUG
+			Contract.Requires(rhs != null, "rhs is null");
+#endif
+			
 			return !(lhs == rhs);
 		}
 		

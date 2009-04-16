@@ -46,6 +46,7 @@ namespace ObjectModel
 		public int Line {get; private set;}
 	}
 	
+	[Serializable]
 	internal enum TypeVisibility
 	{
 		Public,
@@ -55,6 +56,7 @@ namespace ObjectModel
 	}
 	
 	[Flags]
+	[Serializable]
 	internal enum TypeFlags
 	{
 		Abstract = 0x01,

@@ -30,7 +30,7 @@ namespace Continuum
 	// 1) We truncate the old log file instead of appending.
 	// 2) We align the category column.
 	// 3) We support the Timestamp and ThreadId TraceOptions in writes.
-	internal sealed class PrettyTraceListener : TextWriterTraceListener 
+	internal sealed class PrettyTraceListener : TextWriterTraceListener
 	{
 		public PrettyTraceListener(string path) : base(DoGetStream(path), string.Empty)
 		{
@@ -39,6 +39,9 @@ namespace Continuum
 		// This is the only Write method our logger calls.
 		public override void WriteLine(string message, string category)
 		{
+			if (m_disposed)
+				throw new ObjectDisposedException(GetType().Name);
+			
 			if (message.Length == 0)
 			{
 				WriteLine(string.Empty);
@@ -56,7 +59,16 @@ namespace Continuum
 		
 		public override void Fail(string message, string detailMessage)
 		{
+			if (m_disposed)
+				throw new ObjectDisposedException(GetType().Name);
+			
 			DoWrite("Assert: " + message, string.Empty);	// don't include details (which is normally a stack trace) because AssertListener will throw and we want the catcher to handle logging
+		}
+		
+		protected override void Dispose(bool disposing)
+		{
+			base.Dispose(disposing);
+			m_disposed = true;
 		}
 		
 		#region Private Methods
@@ -129,6 +141,7 @@ namespace Continuum
 		private DateTime m_startTime = DateTime.Now;
 		private int m_categoryWidth;
 		private char[] m_eolChars = new char[]{'\r', '\n'};
+		private bool m_disposed;
 		#endregion
 	}
 }

@@ -231,7 +231,7 @@ namespace App
 				string oldDir = Path.GetDirectoryName(path);
 				using (FileStream stream = File.Create(Path.Combine(oldDir, name)))
 				{
-					stream.Dispose();
+					// We just want to create it so there's nothing to do here.
 				}
 			}
 		}

@@ -50,6 +50,8 @@ namespace Shared
 		// Returns true if the path points to a C# file.
 		public static bool IsCSharp(string path)
 		{
+			Contract.Requires(path != null, "path is null");
+			
 			string fileName = System.IO.Path.GetFileName(path);
 			
 			bool found = false;
@@ -72,6 +74,8 @@ namespace Shared
 		
 		public static bool IsInterface(string name)
 		{
+			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
+			
 			int k = name.LastIndexOf('.');		// handle full names too
 			int i = k >= 0 ? k + 1: 0;
 			
@@ -118,6 +122,8 @@ namespace Shared
 		
 		public static bool IsIdentifier(string name)
 		{
+			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
+
 			bool valid = name != null && name.Length > 0 && CanStartIdentifier(name[0]);
 			
 			for (int i = 1; valid && i < name.Length; ++i)
@@ -199,6 +205,8 @@ namespace Shared
 		// to IEnumerable`1<TSource>:Func`2<TSource,Boolean>
 		public static string TrimNamespace(string type)
 		{
+			Contract.Requires(type != null, "type is null");
+
 			while (true)
 			{
 				int j = type.IndexOf('.');
@@ -219,6 +227,8 @@ namespace Shared
 		// to IEnumerable<TSource>:Func<TSource,Boolean>
 		public static string TrimGeneric(string type)
 		{
+			Contract.Requires(type != null, "type is null");
+
 			while (true)
 			{
 				int i = type.IndexOf('`');

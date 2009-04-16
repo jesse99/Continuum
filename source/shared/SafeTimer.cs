@@ -96,6 +96,8 @@ namespace Shared
 					m_disposed = true;
 					Monitor.Pulse(m_mutex);
 				}
+				
+				GC.SuppressFinalize(this);
 			}
 		}
 		
