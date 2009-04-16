@@ -274,6 +274,22 @@ namespace CsParser
 		}
 		
 		[Test]
+		public void LessExpr()
+		{
+			string text = @"
+{
+	int i = 10;
+	if (i < 10)
+	{
+		for (int j = 0; i < 20; ++j)
+		{
+		}";
+			DoCheck(text,
+				new Local("int", "i", "10"),
+				new Local("int", "j", "0"));
+		}
+		
+		[Test]
 		public void ArrayTypes()
 		{
 			string text = @"{int[] x;}";

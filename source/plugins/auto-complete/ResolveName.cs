@@ -63,18 +63,18 @@ namespace AutoComplete
 				result = DoHandleThis(name);
 			}
 			
-			// SomeType.
-			if (result == null)
-			{
-				Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "trying type name");
-				result = m_typeResolver.Resolve(name, m_globals, false, true);
-			}
-			
 			// name. (where name is a local, argument, etc)
 			if (result == null)
 			{
 				Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "trying variable name");
 				result = DoHandleVariable(name);
+			}
+			
+			// SomeType.
+			if (result == null)
+			{
+				Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "trying type name");
+				result = m_typeResolver.Resolve(name, m_globals, false, true);
 			}
 			
 			// char literal (we don't complete integers because it's too annoying for the common case
@@ -156,6 +156,23 @@ namespace AutoComplete
 				}
 			}
 			
+			// Fields and properties (note that we have to include these here so that the common
+			// case of a property named after a type resolves to the property instead of the type)
+			if (m_member != null && m_member.DeclaringType != null)
+			{
+				ResolvedTarget target = m_typeResolver.Resolve(m_member.DeclaringType.FullName, m_globals, true, true);
+				if (target != null)
+				{
+					var resolveMembers = new ResolveMembers(m_database);
+					Member[] members = resolveMembers.Resolve(target, m_globals);
+					foreach (Member member in members)
+					{
+						if (!vars.Exists(v => v.Name == member.Name))
+							vars.Add(new Variable(member.Type, member.Name, null));
+					}
+				}
+			}
+			
 			if (Log.IsEnabled(TraceLevel.Verbose, "AutoComplete"))
 			{
 				Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "Variables:");
@@ -224,31 +241,6 @@ namespace AutoComplete
 						{
 							// var result = from ...;
 							value = "System.Collections.Generic.IEnumerable`1";
-						}
-						else if (CsHelpers.IsIdentifier(value))
-						{
-							// var result = name; where name is a property or field.
-							ResolvedTarget target = m_typeResolver.Resolve(m_member.DeclaringType.FullName, m_globals, true, true);
-							if (target != null)
-							{
-								var resolveMembers = new ResolveMembers(m_database);
-								Member[] members = resolveMembers.Find(target, m_globals, value, 0);
-								if (members.Length > 0)
-								{
-									if (members.All(m => m.Type == members[0].Type))
-									{
-										result = m_typeResolver.Resolve(members[0].Type, m_globals, target.IsInstance, target.IsStatic);
-									}
-									else
-									{
-										Log.WriteLine("AutoComplete", "{0} has an ambiguous return type:", value);
-										foreach (Member member in members)
-										{
-											Log.WriteLine("AutoComplete", "    {0} {1}", member.Type, member);
-										}
-									}
-								}
-							}
 						}
 						else
 						{

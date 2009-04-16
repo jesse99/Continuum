@@ -91,7 +91,24 @@ namespace AutoComplete
 		
 		public Member[] GetMembers(string[] typeNames, bool instanceCall, bool isStaticCall)
 		{
-			throw new NotImplementedException("GetMembers1 is not implemented");
+			var result = new List<Member>();
+			
+			if (Members != null)
+			{
+				foreach (string typeName in typeNames)
+				{
+					Member[] members;
+					if (Members.TryGetValue(typeName, out members))
+					{
+						foreach (Member member in members)
+						{
+							result.AddIfMissing(member);
+						}
+					}
+				}
+			}
+			
+			return result.ToArray();
 		}
 		
 		public Member[] GetMembers(string[] typeNames, bool instanceCall, bool isStaticCall, string name, int arity)
@@ -119,7 +136,27 @@ namespace AutoComplete
 		
 		public Member[] GetExtensionMethods(string targetType, string[] typeNames, string[] namespaces)
 		{
-			throw new NotImplementedException("GetExtensionMethods1 is not implemented");
+			var result = new List<Member>();
+			
+			if (ExtensionMethods != null)
+			{
+				foreach (string typeName in typeNames)
+				{
+					foreach (string ns in namespaces)
+					{
+						Member[] members;
+						if (ExtensionMethods.TryGetValue(ns + "." + typeName, out members))
+						{
+							foreach (Member member in members)
+							{
+								result.AddIfMissing(member);
+							}
+						}
+					}
+				}
+			}
+			
+			return result.ToArray();
 		}
 		
 		public Member[] GetExtensionMethods(string targetType, string[] typeNames, string[] namespaces, string name, int arity)
@@ -150,7 +187,24 @@ namespace AutoComplete
 		
 		public Member[] GetFields(string[] typeNames, bool instanceCall, bool isStaticCall)
 		{
-			throw new NotImplementedException("GetFields1 is not implemented");
+			var result = new List<Member>();
+			
+			if (Fields != null)
+			{
+				foreach (string typeName in typeNames)
+				{
+					Member[] members;
+					if (Fields.TryGetValue(typeName, out members))
+					{
+						foreach (Member member in members)
+						{
+							result.AddIfMissing(member);
+						}
+					}
+				}
+			}
+			
+			return result.ToArray();
 		}
 		
 		public Member[] GetFields(string[] typeNames, bool instanceCall, bool isStaticCall, string name)

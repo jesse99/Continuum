@@ -31,7 +31,7 @@ using System.Linq;
 namespace TextEditor
 {
 	// Here are some test cases which should work:
-	// source/plugins/find/AssemblyInfo.cs															relative path
+	// source/plugins/find/Find.cs																		relative path
 	// DatabaseTest.cs																						local file
 	// <AppKit/NSResponder.h>																		non-local relative path
 	// /Users/jessejones/Source/Continuum/source/plugins/find/AssemblyInfo.cs		absolute path

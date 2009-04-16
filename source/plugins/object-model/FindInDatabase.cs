@@ -345,7 +345,7 @@ namespace ObjectModel
 				items.Add(new TextContextItem(order));
 				for (int i = 0; i < Math.Min(sources.Length, MaxOpenItems); ++i)
 				{
-					if (sources[i].Path != null)
+					if (!string.IsNullOrEmpty(sources[i].Path))
 					{
 						int k = i;											// need this for the delegate (or the for loop will mutate the value)
 						string title = "Open " + sources[i].Source;

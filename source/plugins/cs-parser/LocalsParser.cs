@@ -94,7 +94,7 @@ namespace CsParser
 			int count = locals.Count;
 			while (m_scanner.Token.IsValid())
 			{
-//Console.WriteLine("token = {0}", m_scanner.Token.Text());
+//Console.WriteLine("token = {0}, line {1}", m_scanner.Token.Text(), m_scanner.Token.Line);
 				if (m_scanner.Token.Kind == TokenKind.Identifier)
 				{
 					DoParseLocal(locals);
@@ -292,7 +292,7 @@ namespace CsParser
 						break;
 					
 					case "<":
-						body = DoScanBody("<", ">", ";", ref last);
+						body = DoScanBody("<", ">", ref last, ";", "(", "{", ")");
 						if (body == null)
 							scanning = false;
 						break;
@@ -333,7 +333,7 @@ namespace CsParser
 			{
 				if (m_scanner.Token.IsPunct("<"))
 				{
-					type += DoScanBody("<", ">", ";", ref last);
+					type += DoScanBody("<", ">", ref last, ";", "(", "{", ")");	// scan "<KEY, VALUE>" but skip (most of) "if (foo < xxx)"
 				}
 				else if (m_scanner.Token.IsPunct("["))
 				{
@@ -345,6 +345,9 @@ namespace CsParser
 					m_scanner.Advance();
 				}
 			}
+			
+			if (ms_nonTypeKeywords.Contains(type))
+				type = null;
 			
 			return type;
 		}
@@ -359,11 +362,11 @@ namespace CsParser
 		
 		private string DoScanBody(string open, string close, ref Token last)
 		{
-			return DoScanBody(open, close, null, ref last);
+			return DoScanBody(open, close, ref last, new string[0]);
 		}
 
 		// TODO: reset the scanner on failure?
-		private string DoScanBody(string open, string close, string bad, ref Token rlast)
+		private string DoScanBody(string open, string close, ref Token rlast, params string[] bad)
 		{
 			Token first = m_scanner.Token;
 			Token last = m_scanner.Token;
@@ -371,7 +374,7 @@ namespace CsParser
 			int count = 1;
 			m_scanner.Advance();
 			
-			while (m_scanner.Token.IsValid() && count > 0 && m_scanner.Token.Text() != bad)
+			while (m_scanner.Token.IsValid() && count > 0 && !bad.Contains(m_scanner.Token.Text()))
 			{
 				if (m_scanner.Token.IsPunct(open))
 					++count;
@@ -397,6 +400,88 @@ namespace CsParser
 		private Boss m_boss;
 		private Scanner m_scanner;
 		private string m_text;
+		private static string[] ms_nonTypeKeywords = new string[]
+		{
+			"abstract",
+			"as",
+			"ascending",
+			"base",
+			"break",
+			"by",
+			"case",
+			"catch",
+			"checked",
+			"class",
+			"const",
+			"continue",
+			"default",
+			"delegate",
+			"descending",
+			"do",
+			"else",
+			"enum",
+			"event",
+			"explicit",
+			"extern",
+			"false",
+			"finally",
+			"fixed",
+			"for",
+			"foreach",
+			"from",
+			"get",
+			"goto",
+			"group",
+			"if",
+			"implicit",
+			"in",
+			"interface",
+			"internal",
+			"into",
+			"is",
+			"join",
+			"let",
+			"lock",
+			"namespace",
+			"new",
+			"null",
+			"on",
+			"operator",
+			"orderby",
+			"out",
+			"override",
+			"params",
+			"partial",
+			"partial",
+			"private",
+			"protected",
+			"public",
+			"readonly",
+			"ref",
+			"return",
+			"sealed",
+			"select",
+			"set",
+			"sizeof",
+			"stackalloc",
+			"static",
+			"struct",
+			"switch",
+			"this",
+			"throw",
+			"true",
+			"try",
+			"typeof",
+			"unchecked",
+			"unsafe",
+			"using",
+			"virtual",
+			"volatile",
+			"where",
+			"where",
+			"while",
+			"yield",
+		};
 		#endregion
 	}
 }
