@@ -146,7 +146,7 @@ namespace App
 					return NSNumber.Create(m_globs[row].Second);
 				
 				default:
-					Trace.Fail("bad col: " + col.identifier());
+					Contract.Assert(false, "bad col: " + col.identifier());
 					return NSString.Empty;
 			}
 		}
@@ -167,7 +167,7 @@ namespace App
 					break;
 				
 				default:
-					Trace.Fail("bad col: " + col.identifier());
+					Contract.Assert(false, "bad col: " + col.identifier());
 					break;
 			}
 			

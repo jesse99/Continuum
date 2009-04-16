@@ -179,7 +179,7 @@ namespace Styler
 			else if (type is CsEnum)
 				return "enum ";
 			
-			Trace.Fail("bad type: " + type.GetType());
+			Contract.Assert(false, "bad type: " + type.GetType());
 			return "?";
 		}
 		
@@ -236,7 +236,7 @@ namespace Styler
 					break;
 				}
 				
-				Trace.Fail("Unexpected member type: " + member.GetType());
+				Contract.Assert(false, "Unexpected member type: " + member.GetType());
 				result = "?";
 			}
 			while (false);

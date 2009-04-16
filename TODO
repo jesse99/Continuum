@@ -201,8 +201,6 @@ param_modifiers			Space separated list of integers: 0 for in parameter, 1 for ou
 							for ref, and 3 for params.
 
 * Work more on target completion:
-	- replace Trace.Fail with Contract.Assert
-	- replace Debug.Fail with Contract.Assert
 	- move code into new file refactor may need to use the new prefs
 	- make sure completion works OK with spaces before open parens
 	- run the gendarme target

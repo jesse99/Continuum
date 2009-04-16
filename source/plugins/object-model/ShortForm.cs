@@ -102,7 +102,7 @@ namespace ObjectModel
 					break;
 					
 				default:
-					Trace.Fail("bad visibility: " + (attrs & TypeAttributes.VisibilityMask));
+					Contract.Assert(false, "bad visibility: " + (attrs & TypeAttributes.VisibilityMask));
 					break;
 			}
 			
@@ -763,7 +763,7 @@ namespace ObjectModel
 						break;
 					
 					default:
-						Trace.Fail("bad access: " + (attrs & MethodAttributes.MemberAccessMask));
+						Contract.Assert(false, "bad access: " + (attrs & MethodAttributes.MemberAccessMask));
 						break;
 				}
 				
@@ -819,7 +819,7 @@ namespace ObjectModel
 					break;
 				
 				default:
-					Trace.Fail("bad access: " + (attrs & FieldAttributes.FieldAccessMask));
+					Contract.Assert(false, "bad access: " + (attrs & FieldAttributes.FieldAccessMask));
 					break;
 			}
 			

@@ -374,7 +374,7 @@ namespace TextEditor
 					break;
 				
 				default:
-					Trace.Fail("Bad style type: " + run.Type);
+					Contract.Assert(false, "Bad style type: " + run.Type);
 					break;
 			}
 		}

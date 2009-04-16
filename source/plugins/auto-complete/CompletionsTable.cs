@@ -93,7 +93,7 @@ namespace AutoComplete
 					break;
 					
 				default:
-					Trace.Fail("bad name: " + name);
+					Contract.Assert(false, "bad name: " + name);
 					break;
 			}
 		}

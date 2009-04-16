@@ -96,7 +96,7 @@ namespace ObjectModel
 				mesg = string.Format("{0} is a reference ({1})", label, type);
 			
 			if (mesg != null)
-				Trace.Fail(mesg);
+				Contract.Assert(false, mesg);
 		}
 		
 		[Conditional("DEBUG")]
@@ -115,7 +115,7 @@ namespace ObjectModel
 			}
 			
 			if (mesg != null)
-				Trace.Fail(mesg);
+				Contract.Assert(false, mesg);
 		}
 		
 		private void DoParseType(TypeDefinition type, string id, bool fullParse)		// threaded
@@ -146,7 +146,7 @@ namespace ObjectModel
 						break;
 					
 					default:
-						Trace.Fail("bad visibility: " + (type.Attributes & TypeAttributes.VisibilityMask));
+						Contract.Assert(false, "bad visibility: " + (type.Attributes & TypeAttributes.VisibilityMask));
 						break;
 				}
 				
@@ -300,7 +300,7 @@ namespace ObjectModel
 							break;
 							
 						default:
-							Trace.Fail("bad access: " + (method.Attributes & MethodAttributes.MemberAccessMask));
+							Contract.Assert(false, "bad access: " + (method.Attributes & MethodAttributes.MemberAccessMask));
 							break;
 					}
 					
@@ -389,7 +389,7 @@ namespace ObjectModel
 							break;
 							
 						default:
-							Trace.Fail("bad access: " + (field.Attributes & FieldAttributes.FieldAccessMask));
+							Contract.Assert(false, "bad access: " + (field.Attributes & FieldAttributes.FieldAccessMask));
 							break;
 					}
 					

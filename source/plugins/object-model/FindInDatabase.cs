@@ -449,7 +449,7 @@ namespace ObjectModel
 					break;
 					
 				default:
-					Trace.Fail("bad vis");
+					Contract.Assert(false, "bad vis");
 					break;
 			}
 			

@@ -158,7 +158,7 @@ namespace Styler
 					return StyleType.Type;
 				
 				default:
-					Trace.Fail("Bad name: " + name);
+					Contract.Assert(false, "Bad name: " + name);
 					break;
 			}
 			

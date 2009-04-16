@@ -119,10 +119,10 @@ namespace MakeBuilder
 				m_newVariables[row] = new Variable(old.Name, old.DefaultValue, v.ToString());
 				
 			else
-				Trace.Fail("how did we get identifier: " + column.identifier());
+				Contract.Assert(false, "how did we get identifier: " + column.identifier());
 		}
 		
-		#region Fields ------------------------------------------------------------
+		#region Fields
 		private IBOutlet<NSTableView> m_table;
 		private List<Variable> m_docVariables;
 		private List<Variable> m_newVariables;

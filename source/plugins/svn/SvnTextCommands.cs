@@ -97,7 +97,7 @@ namespace Subversion
 					return svn;
 			}
 			
-			Trace.Fail("couldn't find an Svn implementation");
+			Contract.Assert(false, "couldn't find an Svn implementation");
 			
 			return null;
 		}

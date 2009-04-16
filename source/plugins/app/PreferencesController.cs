@@ -334,7 +334,7 @@ namespace App
 					return NSString.Create("Language Globs");
 				
 				default:
-					Trace.Fail("bad tag");
+					Contract.Assert(false, "bad tag");
 					return NSString.Empty;
 			}
 		}

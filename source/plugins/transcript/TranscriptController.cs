@@ -144,7 +144,7 @@ namespace Transcript
 					break;
 					
 				default:
-					Trace.Fail("bad type");
+					Contract.Assert(false, "bad type");
 					break;
 			}
 			
