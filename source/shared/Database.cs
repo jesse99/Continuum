@@ -454,7 +454,9 @@ namespace Shared
 		public string[][] QueryRows(string command)
 		{
 			Contract.Requires(!string.IsNullOrEmpty(command), "command is null or empty");
-
+			if (m_disposed)
+				throw new ObjectDisposedException(GetType().Name);
+			
 			var rows = new List<string[]>();
 			Database.RowCallback rc = (r) => {rows.Add(r); return true;};
 			
@@ -467,7 +469,9 @@ namespace Shared
 		public NamedRows QueryNamedRows(string command)
 		{
 			Contract.Requires(!string.IsNullOrEmpty(command), "command is null or empty");
-
+			if (m_disposed)
+				throw new ObjectDisposedException(GetType().Name);
+			
 			var rows = new List<string[]>();
 			Database.RowCallback rc = (r) => {rows.Add(r); return true;};
 			

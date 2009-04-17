@@ -28,15 +28,24 @@ A: text-editor
 R: Gendarme.Rules.Design.AvoidVisibleNestedTypesRule
 A: shared
 
+# We want to use strings here.
+R: Gendarme.Rules.Performance.PreferCharOverloadRule
+M: System.String CsRefactor.RefactorScript::DoExpandText(System.String)
+M: System.String[] Shared.Glob::Split(System.String)
+
+# This rule is for VB compatibility I think.
+R: Gendarme.Rules.Naming.ParameterNamesShouldMatchOverriddenMethodRule
+A: cs-refactor
+A: styler
+
 # These exceptions aren't constructed with strings.
-R: Gendarme.Rules.Design.AvoidVisibleNestedTypesRule
+R: Gendarme.Rules.Exceptions.MissingExceptionConstructorsRule
+T: CsParser.CsParserException
+T: CsRefactor.Script.EvaluateException
 T: CsRefactor.Script.ReturnException
 T: CsRefactor.Script.ParserException
-T: CsRefactor.Script.EvaluateException
-T: CsRefactor.Script.EvaluateException
-T: CsRefactor.Script.ParserException
-T: Shared.ScriptException
 T: CsRefactor.Script.ScannerException
+T: Shared.ScriptException
 
 # This rule is (almost always) lame.
 R: Gendarme.Rules.Performance.ConsiderCustomAccessorsForNonVisibleEventsRule
@@ -49,6 +58,7 @@ A: cs-refactor
 R: Gendarme.Rules.Smells.AvoidCodeDuplicatedInSameClassRule
 A: app
 A: auto-complete
+A: continuum
 A: cs-parser
 A: cs-refactor
 A: directory-editor
@@ -84,8 +94,11 @@ A: text-editor
 A: transcript
 
 R: Gendarme.Rules.Maintainability.AvoidComplexMethodsRule
+A: auto-complete
+A: cs-parser
 A: cs-refactor
 A: object-model
+A: shared
 
 # This rule would be a lot nicer if it didn't fire for private methods.
 R: Gendarme.Rules.Maintainability.AvoidUnnecessarySpecializationRule
@@ -94,6 +107,8 @@ A: auto-complete
 A: cs-refactor
 A: cs-parser
 A: object-model
+A: shared
+A: styler
 A: text-editor
 
 R: Gendarme.Rules.Smells.AvoidLongMethodsRule

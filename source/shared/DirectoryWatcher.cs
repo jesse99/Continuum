@@ -128,6 +128,8 @@ namespace Shared
 			var handler = Changed;
 			if (handler != null)
 				handler(this, new DirectoryWatcherEventArgs(paths));
+				
+			GC.KeepAlive(this);
 		}
 		
 		[Flags]
@@ -189,7 +191,7 @@ namespace Shared
 		private extern static void FSEventStreamRelease(
 			IntPtr   streamRef);
 		#endregion
-				
+		
 		#region Fields		
 		private IntPtr m_stream;
 		private FSEventStreamCallback m_callback;	// need to keep a reference around so that th	is isn't GCed

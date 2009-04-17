@@ -164,6 +164,7 @@ namespace TextEditor
 			DoBuild(m_declarations);
 		}
 		
+		[Pure]
 		private int DoCountSpaces(string s)
 		{
 			int count = 0;

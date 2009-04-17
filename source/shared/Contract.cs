@@ -44,7 +44,7 @@ namespace Shared
 	
 	// Signals that an abstract class or interface has an associated class
 	// which defines contracts. Usage is like this:
-	// [ContractClass(typeof(IFooContract))]
+	// [ContractClass(typeof(IFooContracts))]
 	// public interface IFoo
 	// {
 	// 		int Work(object data);
@@ -53,15 +53,18 @@ namespace Shared
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface, AllowMultiple = false)]
 	public sealed class ContractClassAttribute : Attribute
 	{
-		public ContractClassAttribute(Type otherClass)
+		public ContractClassAttribute(Type contracts)
 		{
+			Contracts = contracts;
 		}
+		
+		public Type Contracts {get; private set;}
 	}
 	
 	// Marks a class as containing contracts for an abstract class or interface. 
 	// Usage is like this:
 	// [ContractClassFor(typeof(IFoo))]
-	// public sealed class IFooContract : IFoo
+	// public sealed class IFooContracts : IFoo
 	// {
 	// 		int IFoo.Work(object data)
 	// 		{
@@ -73,9 +76,12 @@ namespace Shared
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 	public sealed class ContractClassForAttribute : Attribute
 	{
-		public ContractClassForAttribute(Type otherClass)
+		public ContractClassForAttribute(Type forClass)
 		{
+			ForClass = forClass;
 		}
+		
+		public Type ForClass {get; private set;}
 	}
 	
 	// Indicates that a method or delegate has no visible side effects (and 
