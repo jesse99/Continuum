@@ -60,6 +60,7 @@ namespace Shared
 		
 		// Compares paths and handles things like extra slashes and references
 		// to "." or "..".
+		[Pure]
 		public static bool AreEqual(string lhs, string rhs)
 		{
 			Contract.Requires(lhs != null, "lhs is null");

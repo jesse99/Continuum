@@ -29,6 +29,7 @@ namespace Shared
 	public static class StringExtensions
 	{
 		// Removes all whitespace from the string.
+		[Pure]
 		public static string TrimAll(this string s)
 		{
 			Contract.Requires(s != null, "s is null");
@@ -45,6 +46,7 @@ namespace Shared
 		}
 		
 		// Escapes control characters and high ASCII.
+		[Pure]
 		public static string EscapeAll(this string s)
 		{
 			Contract.Requires(s != null, "s is null");

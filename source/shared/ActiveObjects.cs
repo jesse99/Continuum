@@ -21,12 +21,13 @@
 
 using Gear;
 using MObjc;
+using MObjc.Helpers;
 using System;
 using System.Diagnostics;
 
 namespace Shared
-{	    
-    // Used to detect objects which should have gone away. 
+{
+	// Used to detect objects which should have gone away. 
 	public static class ActiveObjects
 	{
 		[Conditional("DEBUG")]
@@ -46,7 +47,7 @@ namespace Shared
 		public static object[] Snapshot()
 		{
 			Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
-
+			
 			return ms_objects.Snapshot();
 		}
 		

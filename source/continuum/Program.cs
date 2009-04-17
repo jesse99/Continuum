@@ -35,7 +35,6 @@ namespace Continuum
 	{
 		public static void Main(string[] args)
 		{
-			Shared.AssertListener.Install();
 			Log.WriteLine("Startup", "started up on {0}", DateTime.Now);
 			
 			// Note that we have to be careful not to use mobjc

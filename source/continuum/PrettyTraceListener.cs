@@ -24,7 +24,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 
-namespace Continuum	
+namespace Continuum
 {
 	// Like TextWriterTraceListener except:
 	// 1) We truncate the old log file instead of appending.
@@ -34,6 +34,7 @@ namespace Continuum
 	{
 		public PrettyTraceListener(string path) : base(DoGetStream(path), string.Empty)
 		{
+			m_path = path;
 		}
 		
 		// This is the only Write method our logger calls.
@@ -61,8 +62,25 @@ namespace Continuum
 		{
 			if (m_disposed)
 				throw new ObjectDisposedException(GetType().Name);
+				
+			var stack = new StackTrace(5);
+				
+			if (Trace.Listeners.Count == 1 && m_path != "stdout" && m_path != "stderr")
+			{
+				// We only do this if we are the only listener because if there are
+				// multiple listeners one is usually a console listener.
+				Console.Error.WriteLine("Assert: " + message);
+				if (!string.IsNullOrEmpty(detailMessage))
+					Console.Error.WriteLine(detailMessage);
+				Console.Error.WriteLine("{0}", stack);
+			}
 			
-			DoWrite("Assert: " + message, string.Empty);	// don't include details (which is normally a stack trace) because AssertListener will throw and we want the catcher to handle logging
+			DoWrite("Assert: " + message, string.Empty);
+			if (!string.IsNullOrEmpty(detailMessage))
+				DoWrite(detailMessage, string.Empty);
+			DoWrite(stack.ToString(), string.Empty);
+			
+			Flush();
 		}
 		
 		protected override void Dispose(bool disposing)
@@ -137,6 +155,7 @@ namespace Continuum
 		#endregion
 		
 		#region Fields
+		private string m_path;
 		private Thread m_mainThread = Thread.CurrentThread;
 		private DateTime m_startTime = DateTime.Now;
 		private int m_categoryWidth;

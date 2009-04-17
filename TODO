@@ -200,31 +200,11 @@ param_names				Space separated list of Names integers of the names of each
 param_modifiers			Space separated list of integers: 0 for in parameter, 1 for out, 2
 							for ref, and 3 for params.
 
-* Update mobjc:
-	- add a helpers namespace
-	- put Unused in there
-	- also Contract
-	- start using Contract instead of trace
-	- make IsNullOrNil pure
-	- remove AssertListener
-* Work on mcocoa:
-	- removed Unused
-	- use the MObjc.Helpers goo
-	- make pure:
-		NSTableColumn::identifier
-	  NSTextView::textStorage
-	  NSURL::scheme
-* Remove AssertListener
-* Change PrettyListener so Fail writes to stderr (if there is only one active listener)
-* Make pure:
-	DeclarationsPopup::DoCountSpaces
-	Paths::AreEqual
-	RefactorCommand::LinesToString
-	StringExtensions::EscapeAll
 * Run gendarme again.
 * Work more on target completion:
 	- parser thinks Globs.cs has a parse error
 	- base keyword needs to work
+	- Trace.Listeners. shouldn't treat the collection as static.
 	- 2+ chars + 2 tabs should complete names and expressions (with no ui where
 	  possible), but only if the second tab happens quickly
 	- add the new db size to tables.txt
@@ -246,6 +226,8 @@ param_modifiers			Space separated list of integers: 0 for in parameter, 1 for ou
 	- prune value type members when completing args
 * FileStream.cs didn't parse right.
 * Dirty files aren't always being refreshed.
+* Run command isn't always rebuilding. Generate target for example with one file
+   dirty which is auto-saved.
 * Can we do some sort of notification when assemblies finish parsing? Or to show parse
    error message? Maybe a notifications window? Or directory window can have a
    label somewhere?
@@ -261,6 +243,7 @@ param_modifiers			Space separated list of integers: 0 for in parameter, 1 for ou
 -rw-r--r--  1 jessejones  jessejones  26219520 Feb 26 05:47 mobjc.db
 -rw-r--r--  1 jessejones  jessejones  11363328 Mar  4 14:18 Trivial.db
 * Styles aren't getting applied reliably. Mostly member and type names.
+   NSData.cs for example.
 * Make sure setting the default text font size works too.
 * Work on tab completion:
 	- five versions target, call, arg, ctor arg, namespace completion

@@ -155,6 +155,7 @@ namespace CsRefactor
 			}
 		}
 		
+		[Pure]
 		protected string LinesToString(string[] lines)
 		{
 			Contract.Requires(lines != null, "lines is null");

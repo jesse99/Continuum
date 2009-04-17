@@ -76,6 +76,7 @@ namespace Styler
 			return d;
 		}
 		
+		[Pure]
 		private int DoCountSpaces(string s)
 		{
 			int count = 0;
@@ -85,7 +86,7 @@ namespace Styler
 				
 			return count;
 		}
-				
+		
 		private void DoGetDirectives(CsPreprocess[] preprocess, List<Declaration> decs)
 		{
 			foreach (CsPreprocess p in preprocess)
