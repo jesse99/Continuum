@@ -33,8 +33,11 @@ namespace AutoComplete
 		public ResolveType(ITargetDatabase database)
 		{
 			m_database = database;
+			
+			Boss boss = ObjectModel.Create("CsParser");
+			m_parses = boss.Get<IParses>();
 		}
-		
+				
 		// May return null.
 		public ResolvedTarget Resolve(string type, CsGlobalNamespace globals, bool isInstance, bool isStatic)
 		{
@@ -53,18 +56,7 @@ namespace AutoComplete
 			type = DoGetTypeName(type);
 			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "used type: {0}", type);
 			
-			if (m_type == null)
-			{
-				Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "trying local type");
-				DoHandleLocalType(globals, type);
-			}
-			
-			if (m_type == null)
-			{
-				Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "trying database type");
-				DoHandleDatabaseType(globals, type);
-			}
-				
+			DoResolve(globals, type);				
 			if (m_fullName != null || m_type != null)
 				result = new ResolvedTarget(m_fullName, m_type, isInstance, isStatic);
 			
@@ -112,14 +104,46 @@ namespace AutoComplete
 		}
 		
 		#region Private Methods
-		private void DoHandleLocalType(CsGlobalNamespace globals, string target)
+		private void DoResolve(CsGlobalNamespace globals, string target)
 		{
-			CsType type = DoFindLocalType(globals, target);
+			string name = target;
+			name = DoGetTypeName(name);
+			name = CsHelpers.GetRealName(name);
+			
+			m_fullName = null;
+			m_type = null;
+			DoFindType(name);
+			
+			for (int i = 0; i < globals.Namespaces.Length && m_fullName == null; ++i)
+			{
+				string candidate = globals.Namespaces[i].Name + "." + name;
+				DoFindType(candidate);
+			}
+			
+			for (int i = 0; i < globals.Uses.Length && m_fullName == null; ++i)
+			{
+				string candidate = globals.Uses[i].Namespace + "." + name;
+				DoFindType(candidate);
+			}
+			
+			if (m_fullName != null)
+				if (m_type != null)
+					Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "ResolveType is using parsed {0}", m_fullName);
+				else
+					Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "ResolveType is using db {0}", m_fullName);
+		}
+		
+		private void DoFindType(string fullName)
+		{
+			Contract.Assert(m_fullName == null, "m_fullName is not null");
+			Contract.Assert(m_type == null, "m_fullName is not null");
+			
+			CsType type = m_parses.FindType(fullName);
 			if (type != null)
 			{
 				if (type is CsDelegate)
 				{
-					m_fullName = "System.Delegate";
+					fullName = "System.Delegate";
 				}
 				else
 				{
@@ -127,39 +151,33 @@ namespace AutoComplete
 					m_fullName = DoGetTypeName(m_type.FullName);
 				}
 			}
-		}
-		
-		private void DoHandleDatabaseType(CsGlobalNamespace globals, string target)
-		{
-			string fullName = DoFindFullName(globals, target);
 			
-			if (fullName != null)
+			if (m_fullName == null && m_database.HasType(fullName))
 			{
 				m_fullName = DoGetTypeName(fullName);
-				m_type = DoFindLocalType(globals, m_fullName);
 			}
 		}
 		
-		private string DoGetTypeName(string fullName)
+		private string DoGetTypeName(string name)
 		{
-			if (fullName.EndsWith("[]"))
+			if (name.EndsWith("[]"))
 				return "array-type";
 			
-			else if (fullName.EndsWith("?"))
+			else if (name.EndsWith("?"))
 				return "nullable-type";
 			
-			else if (fullName.EndsWith("*"))
+			else if (name.EndsWith("*"))
 				return "pointer-type";
 			
 			// generic names should be Foo`1 not Foo`<T>
-			else if (fullName.Contains("`"))
-				return DoGetGenericName1(fullName);
+			else if (name.Contains("`"))
+				return DoGetGenericName1(name);
 				
 			// generic names should be Foo`1 not Foo<T>
-			else if (fullName.Contains("<"))
-				return DoGetGenericName2(fullName);
+			else if (name.Contains("<"))
+				return DoGetGenericName2(name);
 				
-			return fullName;
+			return name;
 		}
 		
 		private string DoGetGenericName1(string name)	// TODO: duplicate of GetTypeName from object-model
@@ -195,66 +213,13 @@ namespace AutoComplete
 			
 			return name;
 		}
-		
-		private string  DoFindFullName(CsGlobalNamespace globals, string target)
-		{
-			string fullName = null;
-			
-			target = CsHelpers.GetRealName(target);
-			
-			if (m_database.HasType(target))
-				fullName = target;
-				
-			for (int i = 0; i < globals.Namespaces.Length && fullName == null; ++i)
-			{
-				string candidate = globals.Namespaces[i].Name + "." + target;
-				if (m_database.HasType(candidate))
-					fullName = candidate;
-			}
-			
-			for (int i = 0; i < globals.Uses.Length && fullName == null; ++i)
-			{
-				string candidate = globals.Uses[i].Namespace + "." + target;
-				if (m_database.HasType(candidate))
-					fullName = candidate;
-			}
-			
-			if (fullName != null)
-				Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "ResolveType is using full name {0}", fullName);
-			
-			return fullName;
-		}
-		
-		private CsType DoFindLocalType(CsNamespace outer, string target)
-		{
-			CsType result = DoFindType(outer, target);
-			
-			for (int i = 0; i < outer.Namespaces.Length && result == null; ++i)
-				result = DoFindLocalType(outer.Namespaces[i], target);
-			
-			return result;
-		}
-		
-		private CsType DoFindType(CsTypeScope scope, string target)
-		{
-			CsType result = null;
-			
-			CsType candidate = scope as CsType;
-		
-			if (candidate != null && (candidate.Name == target || candidate.FullName == target))
-				result = candidate;
-			
-			for (int i = 0; i < scope.Types.Length && result == null; ++i)
-				result = DoFindType(scope.Types[i], target);
-			
-			return result;
-		}
 		#endregion
 		
 		#region Fields
 		private ITargetDatabase m_database;
 		private string m_fullName;
 		private CsType m_type;
+		private IParses m_parses;
 		#endregion
 	}
 }

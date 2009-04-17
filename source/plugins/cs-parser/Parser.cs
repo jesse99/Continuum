@@ -24,6 +24,7 @@ using Shared;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Security.Permissions;
 using System.Threading;
@@ -730,7 +731,7 @@ namespace CsParser
 				if (m_scanner.Token.IsPunct("="))
 				{
 					m_scanner.Advance();
-					Unused.Value = DoParseExpression(",", ref last);
+					Unused.Value = DoParseExpression(ref last, ",", "}");
 				}
 				
 				if (m_scanner.Token.IsPunct(","))
@@ -810,10 +811,10 @@ namespace CsParser
 		// to scan tokens until we hit a semi-colon or until we hit a comma not
 		// inside brackets. Another is to add a simple parser which ignores things 
 		// like precedence. If this is fixed also update DoParseEventDeclarator.
-		private string DoParseExpression(string eol, ref Token last)
+		private string DoParseExpression(ref Token last, params string[] eols)
 		{
 			Token start = m_scanner.Token;
-			while (m_scanner.Token.IsValid() && !m_scanner.Token.IsPunct(eol))	
+			while (m_scanner.Token.IsValid() && !	eols.Any(e => m_scanner.Token.IsPunct(e)))
 			{
 				m_scanner.Advance();
 			}
@@ -879,7 +880,7 @@ namespace CsParser
 			if (m_scanner.Token.IsPunct("="))
 			{
 				DoParsePunct("=");
-				value = DoParseExpression(";", ref last);
+				value = DoParseExpression(ref last, ";");
 			}
 			
 			members.Add(new CsField(nameOffset, type, value, attrs, modifiers, name, first.Offset, last.Offset + last.Length - first.Offset, first.Line));

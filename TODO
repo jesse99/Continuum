@@ -199,12 +199,9 @@ param_names				Space separated list of Names integers of the names of each
 							nullary.
 param_modifiers			Space separated list of integers: 0 for in parameter, 1 for out, 2
 							for ref, and 3 for params.
-
+							
 * Work more on target completion:
-	- parser thinks Globs.cs has a parse error
-	- base keyword needs to work
-	- open type should not have NSTextStorage.cs NSTextStorageand NSTextStorageFoo.cs
-	- Trace.Listeners. shouldn't treat the collection as static.
+	- m_member.DeclaringType.Bases. didn't complete
 	- 2+ chars + 2 tabs should complete names and expressions (with no ui where
 	  possible), but only if the second tab happens quickly
 	- add the new db size to tables.txt
@@ -278,10 +275,14 @@ param_modifiers			Space separated list of integers: 0 for in parameter, 1 for ou
    directory. See /System/Library/CoreServices/backupd.bundle/Contents/Resources/StdExclusions.plist
 * Last ignored target isn't ignored?
 * Get gear unit test working.
+* Short form should special case enums:
+	- replace the fields section with a values section
+	- would be nice to show [Flags] (or maybe all attributes)
 * Short form should not show internal members for mscorlib or gac assemblies.
 * Short form should have a separate section for operators (see DateTime).
 * Short form should show extension methods:
 	- maybe could use a comment like // System.Linq Extension Methods
+* Add an svn command to show head.
 * Why doesn't WeakReference short form put ctors in bold?
 * Look at NSObject leaks again:
 	- try the mono profilers again

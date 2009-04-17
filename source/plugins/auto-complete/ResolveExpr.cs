@@ -236,7 +236,7 @@ namespace AutoComplete
 					{
 						if (members.All(m => m.Type == members[0].Type))
 						{
-							result = m_typeResolver.Resolve(members[0].Type, m_globals, target.IsInstance, target.IsStatic);
+							result = m_typeResolver.Resolve(members[0].Type, m_globals, true, false);
 						}
 						else
 						{

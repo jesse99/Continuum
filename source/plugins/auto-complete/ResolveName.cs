@@ -59,8 +59,15 @@ namespace AutoComplete
 			// this.
 			if (result == null)
 			{
-				Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "trying this name");
+				Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "trying this keyword");
 				result = DoHandleThis(name);
+			}
+			
+			// base.
+			if (result == null)
+			{
+				Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "trying base keyword");
+				result = DoHandleBase(name);
 			}
 			
 			// name. (where name is a local, argument, etc)
@@ -214,6 +221,23 @@ namespace AutoComplete
 					bool isStatic = name == "<this>" || (m_member.Modifiers & MemberModifiers.Static) != 0;
 					
 					result = m_typeResolver.Resolve(m_member.DeclaringType, isInstance, isStatic);
+				}
+			}
+			
+			return result;
+		}
+		
+		private ResolvedTarget DoHandleBase(string name)
+		{
+			ResolvedTarget result = null;
+			
+			if (name == "base")
+			{
+				if (m_member != null && (m_member.Modifiers & MemberModifiers.Static) == 0)
+				{
+					string[] bases = m_member.DeclaringType.Bases.Names;
+					string b = (bases.Length > 0 && !CsHelpers.IsInterface(bases[0])) ? bases[0] : "System.Object";
+					result = m_typeResolver.Resolve(b, m_globals, true, false);
 				}
 			}
 			
