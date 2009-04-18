@@ -39,7 +39,7 @@ namespace AutoComplete
 		
 		private bool DoGetTarget(string text, string target, int offset, MockTargetDatabase database)
 		{
-			Log.WriteLine("AutoComplete", "{0} {1} {2}", new string('*', 10), new StackTrace().GetFrame(1).GetMethod().Name, new string('*', 10));
+			Log.WriteLine("AutoComplete", "\n{0} {1} {2}", new string('*', 10), new StackTrace().GetFrame(1).GetMethod().Name, new string('*', 10));
 			
 			var parser = new CsParser.Parser();
 			CsGlobalNamespace globals = parser.Parse(text);
@@ -124,6 +124,7 @@ internal sealed class MyClass
 				{
 					"System.Int32",
 					"System.Int64",
+					"MyClass",
 				},
 				
 				Members = new Dictionary<string, Member[]>
