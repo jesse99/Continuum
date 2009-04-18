@@ -28,13 +28,7 @@ namespace CsParser
 {
 	[TestFixture]
 	public sealed class ParserTest
-	{	
-		[TestFixtureSetUp]
-		public void Init()
-		{
-			AssertListener.Install();
-		}
-		
+	{
 		[Test]
 		public void UsingDirectives()
 		{

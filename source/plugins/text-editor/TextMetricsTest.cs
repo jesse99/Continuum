@@ -28,13 +28,7 @@ using System;
 
 [TestFixture]
 public class TextMetricsTest
-{	
-	[TestFixtureSetUp]
-	public void Init()
-	{
-		AssertListener.Install();
-	}
-	
+{
 	[Test]
 	public void CheckCol()
 	{

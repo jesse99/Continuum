@@ -30,12 +30,6 @@ namespace AutoComplete
 	[TestFixture]
 	public sealed class ResolveNameTest
 	{	
-		[TestFixtureSetUp]
-		public void Init()
-		{
-			AssertListener.Install();
-		}
-		
 		private bool DoGetTarget(string text, string name, int offset, MockTargetDatabase database)
 		{
 //Console.WriteLine("------------------------------------");

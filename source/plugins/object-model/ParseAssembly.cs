@@ -163,6 +163,8 @@ namespace ObjectModel
 					attributes |= 0x10;
 				if (type.DeclaringType != null)
 					attributes |= 0x20;
+				if (type.BaseType != null && (type.BaseType.FullName == "System.Delegate" || type.BaseType.FullName == "System.MulticastDelegate"))
+					attributes |= 0x40;
 				
 				m_database.Update("parse " + type.FullName, () =>
 				{
@@ -490,7 +492,10 @@ namespace ObjectModel
 				name = method.Name.Substring(4);
 			
 			else if (method.IsConstructor)
-				name = method.DeclaringType.Name;
+				if (method.DeclaringType.HasGenericParameters)
+					name = DoGetGenericDisplayName(method.DeclaringType.GenericParameters, method.DeclaringType.Name);
+				else
+					name = method.DeclaringType.Name;
 			
 			else if (method.Name == "Finalize")
 				name = "~" + method.DeclaringType.Name;
@@ -502,6 +507,26 @@ namespace ObjectModel
 				name = method.Name;
 			
 			return name;
+		}
+		
+		private string DoGetGenericDisplayName(GenericParameterCollection gargs, string name)
+		{
+			var builder = new StringBuilder();
+			
+			name = DoGetNameWithoutTick(name);
+			
+			builder.Append(name);
+			builder.Append('<');
+			for (int i = 0; i < gargs.Count; ++i)
+			{
+				builder.Append(gargs[i].Name);
+				
+				if (i + 1 < gargs.Count)
+					builder.Append(", ");
+			}
+			builder.Append('>');
+			
+			return builder.ToString();
 		}
 		
 		private string DoGetOperatorName(MethodDefinition method)

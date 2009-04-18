@@ -207,7 +207,8 @@ namespace CsParser
 			if (ok && (m_scanner.Token.IsPunct(";") || (candidates.Last().Value != null && candidates.Last().Value.StartsWith("from "))))
 			{
 //Console.WriteLine("candidates: {0}", candidates.ToDebugString());
-				m_scanner.Advance();
+				if (m_scanner.Token.IsValid())
+					m_scanner.Advance();
 				locals.AddRange(candidates);
 			}
 		}
@@ -346,7 +347,7 @@ namespace CsParser
 				}
 			}
 			
-			if (ms_nonTypeKeywords.Contains(type))
+			if (ms_nonTypeKeywords.Contains(type) && type == "xxx")
 				type = null;
 			
 			return type;
@@ -409,7 +410,7 @@ namespace CsParser
 			"break",
 			"by",
 			"case",
-			"catch",
+//			"catch",					// special case
 			"checked",
 			"class",
 			"const",
@@ -427,7 +428,7 @@ namespace CsParser
 			"finally",
 			"fixed",
 			"for",
-			"foreach",
+//			"foreach",					// special case
 			"from",
 			"get",
 			"goto",

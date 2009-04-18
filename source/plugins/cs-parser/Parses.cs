@@ -68,7 +68,7 @@ namespace CsParser
 			Contract.Requires(!string.IsNullOrEmpty(path), "path is null or empty");
 			Contract.Requires(text != null, "text is null");
 			
-			if (language == "CsLanguage")
+			if ("CsLanguage" == language)
 			{
 				lock (m_mutex)
 				{
@@ -119,42 +119,75 @@ namespace CsParser
 		
 		public CsType FindType(string fullName)
 		{
-			CsType type = null;
+			Contract.Requires(fullName != null, "fullName is null");
 			
+			CsType result = null;
+			if (fullName.Length > 0)
+			{
+				var types = new List<CsType>();
+				lock (m_mutex)
+				{
+					foreach (Parse parse in m_parses.Values)
+					{
+						DoFindTypes(parse.Globals, types);
+					}
+				}
+				
+				for (int i = 0; i < types.Count && result == null; ++i)
+				{
+					if (types[i].FullName == fullName)
+						result = types[i];
+				}
+			}
+			
+			return result;
+		}
+		
+		public CsType[] FindTypes(string ns, string stem)
+		{
+			Contract.Requires(stem != null, "stem is null");
+			
+			var types = new List<CsType>();
 			lock (m_mutex)
 			{
 				foreach (Parse parse in m_parses.Values)
 				{
-					type = DoFindType(parse.Globals, fullName);
-					if (type != null)
-						break;
+					DoFindTypes(parse.Globals, types);
 				}
 			}
 			
-			return type;
+			var result = new List<CsType>();
+			for (int i = 0; i < types.Count; ++i)
+			{
+				if (types[i].Name.StartsWith(stem))
+				{
+					if (ns == null && (types[i].Namespace == null || types[i].Namespace.Name == "<globals>"))
+						result.Add(types[i]);
+					
+					else if (types[i].Namespace != null && ns == types[i].Namespace.Name)
+						result.Add(types[i]);
+				}
+			}
+			
+			return result.ToArray();
 		}
 		
 		#region Private Methods		
-		private CsType DoFindType(CsTypeScope scope, string fullName)
+		private void DoFindTypes(CsTypeScope scope, List<CsType> types)
 		{
-			CsType result = null;
-			
 			CsType candidate = scope as CsType;
-		
-			if (candidate != null && candidate.FullName == fullName)
-				result = candidate;
+			if (candidate != null)
+				types.Add(candidate);
 			
-			for (int i = 0; i < scope.Types.Length && result == null; ++i)
-				result = DoFindType(scope.Types[i], fullName);
+			for (int i = 0; i < scope.Types.Length; ++i)
+				DoFindTypes(scope.Types[i], types);
 				
 			CsNamespace ns = scope as CsNamespace;
 			if (ns != null)
 			{
-				for (int i = 0; i < ns.Namespaces.Length && result == null; ++i)
-					result = DoFindType(ns.Namespaces[i], fullName);
+				for (int i = 0; i < ns.Namespaces.Length; ++i)
+					DoFindTypes(ns.Namespaces[i], types);
 			}
-			
-			return result;
 		}
 		
 		private void DoThread()		// threaded

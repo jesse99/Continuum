@@ -36,6 +36,8 @@ namespace AutoComplete
 		// implements.
 		void GetBases(string typeName, List<string> baseNames, List<string> interfaceNames, List<string> allNames);
 		
+		Member[] GetCtors(string ns, string stem);
+
 		// Returns the (unique) members for all of the types, but not the methods
 		// which extend the types. 
 		Member[] GetMembers(string[] typeNames, bool instanceCall, bool isStaticCall);

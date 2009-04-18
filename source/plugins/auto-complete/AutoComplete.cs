@@ -27,6 +27,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace AutoComplete
@@ -86,7 +87,7 @@ namespace AutoComplete
 				}
 			}
 		}
-				
+		
 		public bool HandleKey(NSTextView view, NSEvent evt, IComputeRuns computer)
 		{
 			bool handled = false;
@@ -100,9 +101,35 @@ namespace AutoComplete
 				{
 					handled = DoComplete(this.DoCompleteMethodCall, view, range, computer);
 				}
-				else if (evt.keyCode() == Constants.EnterKey)
+				else if (range.length == 0 && evt.keyCode() == Constants.EnterKey)
 				{
-					handled = DoComplete(this.DoCompleteExpression, view, range, computer);
+					if (range.location > 0)
+					{
+						// Completes a (possibly empty) stem.
+						string stem = DoGetTargetStem(range.location - 1);
+						Func<ITextEditor, NSTextView, NSRange, bool> callback = (ITextEditor te, NSTextView tv, NSRange r) =>
+							DoCompleteStem(te, tv, r, stem);
+						handled = DoComplete(callback, view, range, computer);
+					}
+				}
+				else if (range.length == 0 && chars.length() == 1 && chars[0] == '\t')
+				{
+					TimeSpan delta = DateTime.Now - m_lastTab;
+					if (range.location > 2 && delta.TotalSeconds < GetDblTime()/60.0)
+					{
+						string stem = DoGetTargetStem(range.location - 2);
+						if (!string.IsNullOrEmpty(stem))
+						{
+							// Completes a non-empty stem.
+							if (stem.StartsWith("new ") || (stem.Length >= 2 && CsHelpers.IsIdentifier(stem)))
+							{
+								Func<ITextEditor, NSTextView, NSRange, bool> callback = (ITextEditor te, NSTextView tv, NSRange r) =>
+									DoCompleteStem(te, tv, r, stem);
+								handled = DoComplete(callback, view, range, computer);
+							}
+						}
+					}
+					m_lastTab = DateTime.Now;
 				}
 				
 				if (!handled)
@@ -173,7 +200,16 @@ namespace AutoComplete
 					{
 						if (m_controller == null)	
 							m_controller = new CompletionsController();
-						m_controller.Show(m_boss.Get<ITextEditor>(), view, type, members, 0, isInstance, isStatic);
+							
+						string label = type;
+						if (isInstance && !isStatic)
+							label += " Members";
+						else if (isInstance)
+							label += " Instance Members";
+						else if (isStatic)
+							label += " Static Members";
+						
+						m_controller.Show(m_boss.Get<ITextEditor>(), view, label, members, string.Empty, isInstance, isStatic);
 					}
 				}
 				else
@@ -183,44 +219,129 @@ namespace AutoComplete
 			return false;
 		}
 		
-		private bool DoCompleteExpression(ITextEditor editor, NSTextView view, NSRange range)
+		private bool DoCompleteStem(ITextEditor editor, NSTextView view, NSRange range, string stem)
 		{
+			string label;
+			Member[] members;
+			bool isInstance = false, isStatic = false;
+			
 			Parse parse = m_parses.TryParse(editor.Path);
 			CsGlobalNamespace globals = parse != null ? parse.Globals : null;
 			if (globals != null)
 			{
-				var nameResolver = new ResolveName(m_database, m_locals, m_text.Text, range.location, globals);
-				var target = nameResolver.Resolve("<this>");
-				if (target != null)
+				if (stem.StartsWith("new "))
 				{
-					var members = new List<Member>(m_members.Resolve(target, globals));
-					foreach (Variable v in nameResolver.Variables)
-					{
-						members.AddIfMissing(new Member(v.Name, v.Type));
-					}
+					stem = stem.Substring(4);
 					
-					int prefixLen = 0;
-					if (range.length == 0)
-					{
-						string expr = DoGetTargetExpr(range.location);
-						if (!string.IsNullOrEmpty(expr))
-						{
-							members.RemoveAll(m => !m.Text.StartsWith(expr));
-							prefixLen = expr.Length;
-						}
-					}
+					label = "Constructors";
+					members = DoGetConstructorsNamed(globals, ref stem);
+				}
+				else
+				{
+					label = "Names";
+					members = DoGetMembersNamed(globals, range.location, stem, ref isInstance, ref isStatic);
+				}
+				
+				if (members != null && members.Length > 0)
+				{
+					if (m_controller == null)	
+						m_controller = new CompletionsController();
 					
-					if (members.Count > 0)
-					{
-						if (m_controller == null)	
-							m_controller = new CompletionsController();
-							
-						m_controller.Show(m_boss.Get<ITextEditor>(), view, target.TypeName, members.ToArray(), prefixLen, target.IsInstance, target.IsStatic);
-					}
+					m_controller.Show(m_boss.Get<ITextEditor>(), view, label, members, stem, isInstance, isStatic);
 				}
 			}
 			
 			return true;
+		}
+		
+		private Member[] DoGetMembersNamed(CsGlobalNamespace globals, int location, string stem, ref bool isInstance, ref bool isStatic)
+		{
+			Member[] result = null;
+			
+			var nameResolver = new ResolveName(m_database, m_locals, m_text.Text, location, globals);
+			ResolvedTarget target = nameResolver.Resolve("<this>");
+			if (target != null)
+			{
+				var members = new List<Member>(m_members.Resolve(target, globals));
+				foreach (Variable v in nameResolver.Variables)
+				{
+					members.AddIfMissing(new Member(v.Name, v.Type));
+				}
+				
+				if (stem.Length > 0)
+					members.RemoveAll(m => !m.Name.StartsWith(stem));
+				
+				result = members.ToArray();
+				isInstance = target.IsInstance;
+				isStatic = target.IsStatic;
+			}
+			
+			return result;
+		}
+		
+		private Member[] DoGetConstructorsNamed(CsGlobalNamespace globals, ref string stem)
+		{
+			var members = new List<Member>();
+			
+			int j = stem.LastIndexOf('.');
+			if (j > 0)
+			{
+				string ns = stem.Substring(0, j);
+				stem = stem.Substring(j + 1);
+				DoAddConstructors(ns, stem, members);
+			}
+			else
+			{
+				DoAddConstructors(null, stem, members);
+				
+				for (int i = 0; i < globals.Namespaces.Length; ++i)
+				{
+					DoAddConstructors(globals.Namespaces[i].Name, stem, members);
+				}
+				
+				for (int i = 0; i < globals.Uses.Length; ++i)
+				{
+					DoAddConstructors(globals.Uses[i].Namespace, stem, members);
+				}
+			}
+			
+			return members.ToArray();
+		}
+		
+		private void DoAddConstructors(string ns, string stem, List<Member> members)
+		{
+			CsType[] types = m_parses.FindTypes(ns, stem);
+			
+			foreach (CsType type in types)
+			{
+				if (type is CsClass || type is CsStruct)
+				{
+					if ((type.Modifiers & (MemberModifiers.Abstract | MemberModifiers.Static)) == 0)
+					{
+						var ctors = from m in type.Methods where m.IsConstructor select m;
+						foreach (CsMethod ctor in ctors)
+						{
+							DoAddConstructor(type.FullName, type.Name, ctor.Parameters, members);
+						}
+						
+						if (type is CsStruct || !ctors.Any())
+							DoAddConstructor(type.FullName, type.Name, new CsParameter[0], members);
+					}
+				}
+			}
+			
+			members.AddIfMissingRange(m_database.GetCtors(ns, stem));
+		}
+		
+		private void DoAddConstructor(string typeName, string name, CsParameter[] parameters, List<Member> members)
+		{
+			var anames = from p in parameters select p.Name;
+			string text = name + "(" + string.Join(";", (from p in parameters select p.Type + " " + p.Name).ToArray()) + ")";
+			
+			var member = new Member(text, anames.Count(), "System.Void", typeName);
+			member.Label = typeName;
+			
+			members.AddIfMissing(member);
 		}
 		
 		private void DoUpdateCache(ITextEditor editor, IComputeRuns computer)
@@ -233,7 +354,7 @@ namespace AutoComplete
 			}
 		}
 		
-		private string DoGetTargetExpr(int offset)
+		private string DoGetTargetName(int offset)
 		{
 			string text = m_text.Text;
 			
@@ -241,12 +362,29 @@ namespace AutoComplete
 			while (index > 0 && (text[index - 1] == '.' || CsHelpers.CanContinueIdentifier(text[index - 1])))
 				--index;
 			
-			string expr = null;
+			string expr = string.Empty;
 			if (text[index] == '_' || CsHelpers.CanStartIdentifier(text[index]))
-				expr = text.Substring(index, offset - index);
+				expr = text.Substring(index, offset - index + 1);
 				
 			return expr;
 		}
+		
+		private string DoGetTargetStem(int offset)
+		{
+			string name = DoGetTargetName(offset);
+			if (name.Length > 0)
+			{
+				offset -= name.Length;
+				
+				if (offset >= 3 && string.Compare(m_text.Text, offset - 3, "new ", 0, 4) == 0)
+					name = "new " + name;
+			}
+			
+			return name;
+		}
+		
+		[DllImport("/System/Library/Frameworks/Carbon.framework/Carbon")]
+		private extern static uint GetDblTime();
 		#endregion
 		
 		#region Fields
@@ -258,6 +396,7 @@ namespace AutoComplete
 		private IParses m_parses;
 		private ICsLocalsParser m_locals;
 		private ResolveMembers m_members;
+		private DateTime m_lastTab;
 		#endregion
 	}
 }

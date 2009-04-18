@@ -26,13 +26,7 @@ using System;
 
 [TestFixture]
 public sealed class MultiCommandTest
-{	
-	[TestFixtureSetUp]
-	public void Init()
-	{
-		Shared.AssertListener.Install();
-	}
-	
+{
 	[Test]
 	public void Overlapping()
 	{

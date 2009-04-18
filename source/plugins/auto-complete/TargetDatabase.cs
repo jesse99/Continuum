@@ -192,6 +192,64 @@ namespace AutoComplete
 			return members.ToArray();
 		}
 		
+		public Member[] GetCtors(string ns, string stem)
+		{
+			var members = new List<Member>();
+			
+			int attrs =
+				0x01 |	// abstract
+				0x04 |	// interface
+				0x10 |	// enum
+				0x40;	// delegate
+				
+			string common = string.Format(@"Methods.static = 0 AND Methods.kind = 6 AND 
+				Types.visibility < 3 AND Methods.access < 3 AND (Types.attributes & {0}) = 0 AND
+				Methods.declaring_root_name = Types.root_name", attrs);
+			
+			string sql;
+			if (ns != null)
+				if (stem.Length > 0)
+					sql = string.Format(@"
+						SELECT Methods.display_text, Methods.params_count, Types.root_name
+							FROM Methods, Types
+						WHERE {2} AND
+							Types.namespace = '{0}' AND Types.name GLOB '{1}*'", ns, stem, common);
+				else
+					sql = string.Format(@"
+						SELECT Methods.display_text, Methods.params_count, Types.root_name
+							FROM Methods, Types
+						WHERE {1} AND
+							Types.namespace = '{0}'", ns, common);
+			else
+				if (stem.Length > 0)
+					sql = string.Format(@"
+						SELECT Methods.display_text, Methods.params_count, Types.root_name
+							FROM Methods, Types
+						WHERE {1} AND
+							Types.namespace = '' AND Types.name GLOB '{0}*'", stem, common);
+				else
+					sql = string.Format(@"
+						SELECT Methods.display_text, Methods.params_count, Types.root_name
+							FROM Methods, Types
+						WHERE {0} AND
+							Types.namespace = ''", common);
+			
+			string[][] rows = m_database.QueryRows(sql);
+			foreach (string[] r in rows)
+			{
+				string text = r[0];
+				int j = text.IndexOf("::");
+				text = text.Substring(j + 2);
+				
+				var member = new Member(text, int.Parse(r[1]), "System.Void", r[2]);
+				member.Label = r[2];
+				
+				members.Add(member);
+			}
+			
+			return members.ToArray();
+		}
+		
 		public Member[] GetMembers(string[] typeNames, bool instanceCall, bool isStaticCall)
 		{
 			var members = new List<Member>();

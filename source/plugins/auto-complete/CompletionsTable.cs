@@ -45,16 +45,18 @@ namespace AutoComplete
 			ActiveObjects.Add(this);
 		}
 		
-		public void Open(string type, ITextEditor editor, NSTextView text, Member[] members, int prefixLen, NSTextField label, string defaultLabel)
+		public void Open(ITextEditor editor, NSTextView text, Member[] members, string stem, NSTextField label, string defaultLabel)
 		{
+			Contract.Requires(stem != null, "stem is null");
+			
 			m_editor = editor;
 			m_text = text;
 			m_label = label;
 			m_defaultLabel = defaultLabel;
 			
 			m_candidates = new List<Member>(members);
-			m_completed = string.Empty;
-			m_prefixLen = prefixLen;
+			m_completed = stem ?? string.Empty;
+			m_stem = stem;
 			m_hasExtensions = m_candidates.Exists(m => m.IsExtensionMethod);
 			m_showExtensions = true;
 			
@@ -206,15 +208,18 @@ namespace AutoComplete
 			if (row >= 0)
 			{
 				Member member = m_members[row];
-
+				
 				int i = member.Text.IndexOf('(');
 				if (i < 0)
 					i = member.Text.Length;
-				string text = member.Type + " " + member.Text.Replace(";", ", ");
+				string text = member.Label;
 				var str = NSMutableAttributedString.Create(text);
 				
-				NSRange range = new NSRange(member.Type.Length + 1, i);
-				str.addAttribute_value_range(Externs.NSStrokeWidthAttributeName, NSNumber.Create(-3.0f), range);
+				if (text.StartsWith(member.Type + ' '))
+				{
+					NSRange range = new NSRange(member.Type.Length + 1, i);
+					str.addAttribute_value_range(Externs.NSStrokeWidthAttributeName, NSNumber.Create(-3.0f), range);
+				}
 				
 				NSMutableParagraphStyle style = NSMutableParagraphStyle.Create();
 				style.setAlignment(Enums.NSCenterTextAlignment);
@@ -322,22 +327,20 @@ namespace AutoComplete
 				NSRange range;
 				DoGetInsertText(row, prefixOnly, out text, out range);
 				
-				if (m_prefixLen <= text.Length)
-				{
-					m_text.delete(this);
-					m_text.insertText(NSString.Create(text.Substring(m_prefixLen)));
-					
-					if (range.length > 0)
-						m_text.setSelectedRange(range);
-					else
-						m_text.setSelectedRange(new NSRange(range.location + text.Length - m_prefixLen, 0));
-				}
+				m_text.delete(this);
+				m_text.insertText(NSString.Create(text.Substring(m_stem.Length)));
+				
+				if (range.length > 0)
+					m_text.setSelectedRange(range);
+				else
+					m_text.setSelectedRange(new NSRange(range.location + text.Length - m_stem.Length, 0));
 				
 				m_text = null;
 				window().windowController().Call("hide");
 				
 				if (!prefixOnly && m_members[row].Arity > 0)
 				{
+					range.location -= m_stem.Length;
 					range.length = text.Length;
 					ITextAnnotation annotation = m_editor.GetAnnotation(range);
 					
@@ -379,6 +382,12 @@ namespace AutoComplete
 				if (j > 0)
 					text = text.Substring(0, j) + ' ' + text.Substring(j);
 			}
+			
+			// For generic methods (where the generic arguments cannot be deduced) we want to insert "Get<".
+			int k = text.IndexOf('<');
+			int l = text.IndexOf('(');
+			if (k > 0 && (l < 0 || k < l))
+				text = text.Substring(0, k + 1);
 		}
 		
 		private int DoMatchName()
@@ -455,7 +464,7 @@ namespace AutoComplete
 		private List<Member> m_candidates = new List<Member>();
 		private List<Member> m_members = new List<Member>();
 		private string m_completed = string.Empty;
-		private int m_prefixLen;
+		private string m_stem;
 		private Dictionary<string, bool> m_visibleClasses = new Dictionary<string, bool>();
 		private bool m_hasExtensions;
 		private bool m_showExtensions;

@@ -199,15 +199,26 @@ param_names				Space separated list of Names integers of the names of each
 							nullary.
 param_modifiers			Space separated list of integers: 0 for in parameter, 1 for out, 2
 							for ref, and 3 for params.
-							
-* Work more on target completion:
-	- m_member.DeclaringType.Bases. didn't complete
-	- 2+ chars + 2 tabs should complete names and expressions (with no ui where
-	  possible), but only if the second tab happens quickly
-	- add the new db size to tables.txt
-	- get ctor calls completing
+
+* Work on expression completion:
+	- arg completion should work with both the generic args and the regular args
+	- do something similiar with generic method where generic args aren't used in 
+	   parameters
+	- structs always have a default ctor
+	- classes have a default ctor if there are no other ctors
 	- ctor completion should work with dotted names
+	- ctor completion should work just a namespace (and a dot)
 	- ctor completion should work with just new
+	- if there is only one candidate then just insert it
+* Work on tab completion:
+	- need to save the old location and only complete if new loc is old + 1
+	- need to start with the stem in auto-complete
+	- need to somehow remove the first tab char
+	- if there is only one candidate then just insert it
+	- special case new xxx (only check for types)
+* Work more on target completion:
+	- foreach locals aren't working? couldn't complete the local in DoGetTypesNames
+	- add the new db size to tables.txt
 	- completion should start a new undo action so undo only undoes one completion
 	  (instead of a whole chain of them)
 	- complete table should support paste (i.e. add it to completion text)
@@ -221,8 +232,17 @@ param_modifiers			Space separated list of integers: 0 for in parameter, 1 for ou
 	- global explicit interface implementation
 	- need to work with namespace aliases
 	- prune value type members when completing args
+* Enter should add snippets:
+	- $NAME is a placeholder
+	- insert NAME (or maybe assk the user for the real name)
+	- select the first place holder (if we don't ask users for the name)
+	- also need $date and $year
+	- first time a snippet is used copy the snippets to a local dir
+	- if a local snippet dir exists also copy any new snippets (on startup and on dir changed)
+	- snippets: add class, iterface, struct, exception, unit test, method rule, type rule
 * FileStream.cs didn't parse right.
 * Dirty files aren't always being refreshed.
+* Right click on MethodDefinition has an extra separator in the menu.
 * Run command isn't always rebuilding. Generate target for example with one file
    dirty which is auto-saved.
 * Can we do some sort of notification when assemblies finish parsing? Or to show parse
@@ -268,13 +288,15 @@ param_modifiers			Space separated list of integers: 0 for in parameter, 1 for ou
 * Is ChangeAccess correct?
 * Add Convert to Decimal and Convert To Hex.
 * Couldn't use context menu to spellcheck with no database.
-* Search witin "…" isn't finding verbatim strings. E.g. search for Methods should
+* Search within "…" isn't finding verbatim strings. E.g. search for Methods should
   find some.
 * Build errors should use annotations. What about the "Error 1 of 10" text?
 * Should put databases in ~/Library/Caches. Note that time machine skips this
    directory. See /System/Library/CoreServices/backupd.bundle/Contents/Resources/StdExclusions.plist
 * Last ignored target isn't ignored?
 * Get gear unit test working.
+* Open method context menu items should be sorted by full declaring type name
+	- so TryParse should show the local stuff and then the system versions
 * Short form should special case enums:
 	- replace the fields section with a values section
 	- would be nice to show [Flags] (or maybe all attributes)
@@ -282,6 +304,7 @@ param_modifiers			Space separated list of integers: 0 for in parameter, 1 for ou
 * Short form should have a separate section for operators (see DateTime).
 * Short form should show extension methods:
 	- maybe could use a comment like // System.Linq Extension Methods
+* Short form should not show internal methods for system types
 * Add an svn command to show head.
 * Why doesn't WeakReference short form put ctors in bold?
 * Look at NSObject leaks again:

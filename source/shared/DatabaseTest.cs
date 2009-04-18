@@ -31,13 +31,7 @@ using System.Threading;
 
 [TestFixture]
 public sealed class DatabaseTest
-{	
-	[TestFixtureSetUp]
-	public void Init()
-	{
-		AssertListener.Install();
-	}
-	
+{
 	[Test]
 	public void Basics()
 	{

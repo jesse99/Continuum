@@ -29,13 +29,7 @@ namespace AutoComplete
 {
 	[TestFixture]
 	public sealed class ResolveTypeTest
-	{	
-		[TestFixtureSetUp]
-		public void Init()
-		{
-			AssertListener.Install();
-		}
-		
+	{
 		private bool DoGetType(string text, string target, MockTargetDatabase database)
 		{
 //Console.WriteLine("------------------------------------");

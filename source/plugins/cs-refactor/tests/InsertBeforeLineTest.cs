@@ -26,13 +26,7 @@ using System;
 
 [TestFixture]
 public sealed class InsertBeforeLineTest
-{	
-	[TestFixtureSetUp]
-	public void Init()
-	{
-		Shared.AssertListener.Install();
-	}
-	
+{
 	private string DoEdit(string cs, int index, string lines)
 	{
 		Refactor refactor = new Refactor(cs);

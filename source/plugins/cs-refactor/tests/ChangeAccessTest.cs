@@ -26,13 +26,7 @@ using System;
 
 [TestFixture]
 public sealed class ChangeAccessTest
-{	
-	[TestFixtureSetUp]
-	public void Init()
-	{
-		Shared.AssertListener.Install();
-	}
-	
+{
 	private string DoEdit(string cs, string access)
 	{
 		CsParser.Parser parser = new CsParser.Parser();

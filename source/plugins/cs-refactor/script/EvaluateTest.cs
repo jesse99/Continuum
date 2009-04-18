@@ -31,14 +31,8 @@ namespace CsRefactor.Script
 {
 	// Test declarations, statements, and expressions.
 	[TestFixture]
-	public sealed class EvaluateTest 	
-	{	
-		[TestFixtureSetUp]
-		public void Init()
-		{
-			AssertListener.Install();
-		}
-		
+	public sealed class EvaluateTest
+	{
 		private string[] DoParse(string refactor, string cs, int offset)
 		{
 			CsGlobalNamespace globals = new CsParser.Parser().Parse(cs);

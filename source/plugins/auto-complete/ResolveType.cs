@@ -34,10 +34,14 @@ namespace AutoComplete
 		{
 			m_database = database;
 			
+#if TEST
+			m_parses = new CsParser.Parses();
+#else
 			Boss boss = ObjectModel.Create("CsParser");
 			m_parses = boss.Get<IParses>();
+#endif
 		}
-				
+		
 		// May return null.
 		public ResolvedTarget Resolve(string type, CsGlobalNamespace globals, bool isInstance, bool isStatic)
 		{

@@ -28,13 +28,7 @@ namespace CsRefactor
 {
 	[TestFixture]
 	public sealed class AddBaseTypeTest
-	{	
-		[TestFixtureSetUp]
-		public void Init()
-		{
-			Shared.AssertListener.Install();
-		}
-		
+	{
 		private string DoEdit(string cs, params string[] bases)
 		{
 			CsParser.Parser parser = new CsParser.Parser();

@@ -26,16 +26,10 @@ using System;
 using System.Collections.Generic;
 
 [TestFixture]
-public sealed class ListTest 	
-{	
-	[TestFixtureSetUp]
-	public void Init()
-	{
-		AssertListener.Install();
-	}
-	
+public sealed class ListTest
+{
 	[Test]
-	public void Empty()	 
+	public void Empty()
 	{
 		int[] data = new int [0];
 		

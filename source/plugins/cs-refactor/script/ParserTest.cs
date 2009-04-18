@@ -28,14 +28,8 @@ using System.Collections.Generic;
 using System.Linq;
 
 [TestFixture]
-public sealed class ParserTest 	
-{	
-	[TestFixtureSetUp]
-	public void Init()
-	{
-		AssertListener.Install();
-	}
-	
+public sealed class ParserTest
+{
 	[Test]
 	public void Trivial1()
 	{
@@ -43,10 +37,10 @@ public sealed class ParserTest
 define Run()		# this is the simplest legal refactor script
 end";
 		
-		var parser = new Parser(text); 
+		var parser = new Parser(text);
 		Script script = parser.Parse();
 		string result = script.ToString();
-				
+		
 		Assert.AreEqual(@"define Run()
 ", result);
 	}

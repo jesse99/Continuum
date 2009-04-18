@@ -268,7 +268,7 @@ namespace ObjectModel
 						visibility INTEGER NOT NULL
 							CONSTRAINT valid_vis CHECK(visibility >= 0 AND visibility <= 3),
 						attributes INTEGER NOT NULL
-							CONSTRAINT valid_attributes CHECK(attributes >= 0 AND attributes < 4*16)
+							CONSTRAINT valid_attributes CHECK(attributes >= 0 AND attributes <= 127)
 					)");
 				
 				m_database.Update(@"

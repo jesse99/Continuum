@@ -30,12 +30,11 @@ namespace AutoComplete
 {
 	[TestFixture]
 	public sealed class ResolveVarTargetTest
-	{	
+	{
 		[TestFixtureSetUp]
 		public void Init()
 		{
 			Log.SetLevel(TraceLevel.Verbose);
-			AssertListener.Install();
 		}
 		
 		private bool DoGetTarget(string text, string target, int offset, MockTargetDatabase database)

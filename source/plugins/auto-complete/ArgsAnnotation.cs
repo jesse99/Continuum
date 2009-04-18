@@ -266,7 +266,7 @@ namespace AutoComplete
 							if (k < insertionPoint || text[k] == '>')
 								i = k;
 							else
-								++i;							// presumably the < was a less than instead of a generic brace
+								++i;				// presumably the < was a less than instead of a generic brace
 						}
 						else
 						{
@@ -277,7 +277,7 @@ namespace AutoComplete
 					}
 				}
 			}
-						
+			
 			return arg;
 		}
 		

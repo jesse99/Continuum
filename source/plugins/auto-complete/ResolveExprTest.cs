@@ -34,7 +34,6 @@ namespace AutoComplete
 		[TestFixtureSetUp]
 		public void Init()
 		{
-			AssertListener.Install();
 			Log.SetLevel(TraceLevel.Verbose);
 		}
 		

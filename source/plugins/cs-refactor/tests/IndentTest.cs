@@ -26,13 +26,7 @@ using System;
 
 [TestFixture]
 public sealed class IndentTest
-{	
-	[TestFixtureSetUp]
-	public void Init()
-	{
-		Shared.AssertListener.Install();
-	}
-	
+{
 	private string DoEdit(string cs, int offset, int length, string indent)
 	{
 		Refactor refactor = new Refactor(cs);

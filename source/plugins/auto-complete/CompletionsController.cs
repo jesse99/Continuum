@@ -41,22 +41,14 @@ namespace AutoComplete
 			ActiveObjects.Add(this);
 		}
 		
-		public void Show(ITextEditor editor, NSTextView text, string type, Member[] names, int prefixLen, bool isInstance, bool isStatic)
+		public void Show(ITextEditor editor, NSTextView text, string label, Member[] names, string stem, bool isInstance, bool isStatic)
 		{
 			var wind = (CompletionsWindow) window();
 			NSPoint loc = editor.GetBoundingBox(text.selectedRange()).origin;
 			wind.SetLoc(loc);
 			
-			string defaultLabel = type;
-			if (isInstance && !isStatic)
-				defaultLabel += " Members";
-			else if (isInstance)
-				defaultLabel += " Instance Members";
-			else if (isStatic)
-				defaultLabel += " Static Members";
-			
-			m_label.Value.setStringValue(NSString.Create(defaultLabel));
-			m_table.Value.Open(type, editor, text, names, prefixLen, m_label.Value, defaultLabel);
+			m_label.Value.setStringValue(NSString.Create(label));
+			m_table.Value.Open(editor, text, names, stem, m_label.Value, label);
 			Log.WriteLine("AutoComplete", "took {0:0.000} secs to open the window", AutoComplete.Watch.ElapsedMilliseconds/1000.0);
 			
 			NSApplication.sharedApplication().beginSheet_modalForWindow_modalDelegate_didEndSelector_contextInfo(

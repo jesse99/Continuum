@@ -81,5 +81,9 @@ namespace Shared
 		
 		// Searches globals in each parse and returns a matching type or null.
 		CsType FindType(string fullName);
+		
+		// Searches globals in each parse and all of the types whose names 
+		// start with stem.
+		CsType[] FindTypes(string ns, string stem);
 	}
 }

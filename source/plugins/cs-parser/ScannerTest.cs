@@ -29,13 +29,7 @@ namespace CsParser
 {
 	[TestFixture]
 	public sealed class ScannerTest
-	{	
-		[TestFixtureSetUp]
-		public void Init()
-		{
-			Shared.AssertListener.Install();
-		}
-		
+	{
 		[Test]
 		public void Basics()
 		{

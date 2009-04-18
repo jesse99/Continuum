@@ -34,6 +34,7 @@ namespace AutoComplete
 			
 			Text = text;
 			Type = type;
+			Label = Type + " " + Text.Replace(";", ", ");
 		}
 		
 		public Member(string text, string type, string declaringType)
@@ -45,6 +46,7 @@ namespace AutoComplete
 			Text = text;
 			Type = type;
 			DeclaringType = declaringType;
+			Label = Type + " " + Text.Replace(";", ", ");
 		}
 		
 		public Member(string text, int arity, string type, string declaringType)
@@ -59,6 +61,7 @@ namespace AutoComplete
 			Type = type;
 			Arity = arity;
 			DeclaringType = declaringType;
+			Label = Type + " " + Text.Replace(";", ", ");
 		}
 		
 		public string Text {get; private set;}
@@ -69,7 +72,7 @@ namespace AutoComplete
 			{
 				int i = Text.IndexOfAny(new char[]{'(', '['});
 				string result = i >= 0 ? Text.Substring(0, i) : Text;
-
+				
 				i = result.IndexOf('<');
 				result = i >= 0 ? result.Substring(0, i) : result;
 				
@@ -85,6 +88,8 @@ namespace AutoComplete
 		// Non-null if the member is a method (as opposed to a variable, local, etc).
 		public string DeclaringType {get; private set;}
 		
+		public string Label {get; set;}
+
 		public bool IsExtensionMethod {get; set;}
 		
 		public override string ToString()

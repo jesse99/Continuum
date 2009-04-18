@@ -28,13 +28,7 @@ namespace CsParser
 {
 	[TestFixture]
 	public sealed class LocalsParserTest
-	{	
-		[TestFixtureSetUp]
-		public void Init()
-		{
-			Shared.AssertListener.Install();
-		}
-		
+	{
 		private void DoCheck(string text, int start, int stop, params Local[] expected)
 		{
 			var parser = new LocalsParser();

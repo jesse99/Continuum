@@ -32,15 +32,9 @@ namespace CsRefactor.Script
 	// Test all of the built-in methods.
 	[TestFixture]
 	public sealed class EvaluateMethodsTest
-	{	
-		[TestFixtureSetUp]
-		public void Init()
-		{
-			AssertListener.Install();
-		}
-				
+	{
 		private string DoParse(string refactor, string cs, int offset)
-		{	
+		{
 			StringWriter writer = new StringWriter();
 			ScriptType.Instance.SetWriter(writer);
 			

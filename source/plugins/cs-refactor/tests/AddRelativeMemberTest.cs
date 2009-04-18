@@ -26,13 +26,7 @@ using System;
 
 [TestFixture]
 public sealed class AddRelativeMemberTest
-{	
-	[TestFixtureSetUp]
-	public void Init()
-	{
-		Shared.AssertListener.Install();
-	}
-	
+{
 	private string DoEdit(string cs, bool after, int i, params string[] lines)
 	{
 		CsParser.Parser parser = new CsParser.Parser();
