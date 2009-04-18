@@ -34,9 +34,7 @@ namespace AutoComplete
 		{
 			m_database = database;
 			
-#if TEST
-			m_parses = new CsParser.Parses();
-#else
+#if !TEST
 			Boss boss = ObjectModel.Create("CsParser");
 			m_parses = boss.Get<IParses>();
 #endif
@@ -52,6 +50,12 @@ namespace AutoComplete
 			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "isInstance: {0}", isInstance);
 			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "isStatic: {0}", isStatic);
 			
+#if TEST
+			CsParser.Parses parses = new CsParser.Parses();
+			parses.AddParse(type, globals);
+			m_parses = parses;
+#endif
+			
 			ResolvedTarget result = null;
 			
 			m_fullName = null;
@@ -60,7 +64,7 @@ namespace AutoComplete
 			type = DoGetTypeName(type);
 			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "used type: {0}", type);
 			
-			DoResolve(globals, type);				
+			DoResolve(globals, type);
 			if (m_fullName != null || m_type != null)
 				result = new ResolvedTarget(m_fullName, m_type, isInstance, isStatic);
 			
@@ -143,8 +147,10 @@ namespace AutoComplete
 			Contract.Assert(m_type == null, "m_fullName is not null");
 			
 			CsType type = m_parses.FindType(fullName);
+	Log.WriteLine( "AutoComplete", "using {0} and found {1}", fullName, type);
 			if (type != null)
 			{
+	Log.WriteLine( "AutoComplete", "    type: {0}", type.GetType());
 				if (type is CsDelegate)
 				{
 					fullName = "System.Delegate";

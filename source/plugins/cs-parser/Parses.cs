@@ -117,6 +117,17 @@ namespace CsParser
 			return result;
 		}
 		
+#if TEST
+		public void AddParse(string path, CsGlobalNamespace globals)
+		{
+			var parse = new Parse(0, 0, 0, globals, new Token[0], new Token[0]);
+			lock (m_mutex)
+			{
+				m_parses[path] = parse;
+			}
+		}
+#endif
+		
 		public CsType FindType(string fullName)
 		{
 			Contract.Requires(fullName != null, "fullName is null");
@@ -135,6 +146,7 @@ namespace CsParser
 				
 				for (int i = 0; i < types.Count && result == null; ++i)
 				{
+	Log.WriteLine( "AutoComplete", "    candidate: {0}", types[i].FullName);
 					if (types[i].FullName == fullName)
 						result = types[i];
 				}

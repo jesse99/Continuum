@@ -24,17 +24,15 @@ using NUnit.Framework;
 using Shared;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace AutoComplete
 {
 	[TestFixture]
 	public sealed class ResolveTypeTest
 	{
-		private bool DoGetType(string text, string target, MockTargetDatabase database)
+		private bool DoGetTheType(string text, string target, MockTargetDatabase database)
 		{
-//Console.WriteLine("------------------------------------");
-//Console.WriteLine(text);
-			
 			var resolver = new ResolveType(database);
 			
 			var parser = new CsParser.Parser();
@@ -44,10 +42,25 @@ namespace AutoComplete
 			return m_target != null;
 		}
 		
+		private bool DoGetType(string text, string target, MockTargetDatabase database)
+		{
+			Log.WriteLine("AutoComplete", "{0} {1} {2}", new string('*', 10), new StackTrace().GetFrame(1).GetMethod().Name, new string('*', 10));
+			
+			return DoGetTheType(text, target, database);
+		}
+		
 		private bool DoGetType(string text, string target)
 		{
+			Log.WriteLine("AutoComplete", "{0} {1} {2}", new string('*', 10), new StackTrace().GetFrame(1).GetMethod().Name, new string('*', 10));
+			
 			var database = new MockTargetDatabase();
-			return DoGetType(text, target, database);
+			return DoGetTheType(text, target, database);
+		}
+		
+		[TestFixtureSetUp]
+		public void Init()
+		{
+			Log.SetLevel(TraceLevel.Verbose);
 		}
 		
 		[Test]
@@ -232,38 +245,6 @@ namespace CoolLib
 			Assert.IsTrue(found);
 			Assert.AreEqual("array-type", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
-		}
-		
-		[Test]
-		public void NestedType()
-		{
-			string text = @"
-namespace CoolLib
-{
-	internal sealed class MyClass
-	{
-		public void Work()
-		{
-		}
-
-		private sealed class Helper
-		{
-			public void Process()
-			{
-			}
-		}
-	}
-}
-";
-			bool found = DoGetType(text, "MyClass");
-			Assert.IsTrue(found);
-			Assert.AreEqual("CoolLib.MyClass", m_target.TypeName);
-			Assert.AreEqual("MyClass", m_target.Type.Name);
-			
-			found = DoGetType(text, "Helper");
-			Assert.IsTrue(found);
-			Assert.AreEqual("CoolLib.MyClass/Helper", m_target.TypeName);
-			Assert.AreEqual("Helper", m_target.Type.Name);
 		}
 		
 		[Test]
