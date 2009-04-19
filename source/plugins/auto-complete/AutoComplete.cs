@@ -99,32 +99,38 @@ namespace AutoComplete
 				NSString chars = evt.characters();
 				if (range.length == 0 && chars.length() == 1 && chars[0] == '.')
 				{
-					handled = DoComplete(this.DoCompleteMethodCall, view, range, computer);
+					string stem = DoGetTargetStem(range, -1) + '.';
+					
+					if (stem.StartsWith("new "))
+					{
+						Func<ITextEditor, NSTextView, NSRange, bool> callback = (ITextEditor te, NSTextView tv, NSRange r) =>
+							DoCompleteExpression(te, tv, r, stem);
+						Unused.Value = DoComplete(callback, view, range, computer);
+					}
+					else
+						Unused.Value = DoComplete(this.DoCompleteMethodCall, view, range, computer);
 				}
 				else if (range.length == 0 && evt.keyCode() == Constants.EnterKey)
 				{
-					if (range.location > 0)
-					{
-						// Completes a (possibly empty) stem.
-						string stem = DoGetTargetStem(range.location - 1);
-						Func<ITextEditor, NSTextView, NSRange, bool> callback = (ITextEditor te, NSTextView tv, NSRange r) =>
-							DoCompleteStem(te, tv, r, stem);
-						handled = DoComplete(callback, view, range, computer);
-					}
+					string stem = DoGetTargetStem(range, -1);
+					
+					Func<ITextEditor, NSTextView, NSRange, bool> callback = (ITextEditor te, NSTextView tv, NSRange r) =>
+						DoCompleteExpression(te, tv, r, stem);
+					handled = DoComplete(callback, view, range, computer);
 				}
 				else if (range.length == 0 && chars.length() == 1 && chars[0] == '\t')
 				{
 					TimeSpan delta = DateTime.Now - m_lastTab;
 					if (range.location > 2 && delta.TotalSeconds < GetDblTime()/60.0)
 					{
-						string stem = DoGetTargetStem(range.location - 2);
+						string stem = DoGetTargetStem(range, -2);
 						if (!string.IsNullOrEmpty(stem))
 						{
 							// Completes a non-empty stem.
 							if (stem.StartsWith("new ") || (stem.Length >= 2 && CsHelpers.IsIdentifier(stem)))
 							{
 								Func<ITextEditor, NSTextView, NSRange, bool> callback = (ITextEditor te, NSTextView tv, NSRange r) =>
-									DoCompleteStem(te, tv, r, stem);
+									DoCompleteExpression(te, tv, r, stem);
 								handled = DoComplete(callback, view, range, computer);
 							}
 						}
@@ -171,6 +177,8 @@ namespace AutoComplete
 		
 		private bool DoCompleteMethodCall(ITextEditor editor, NSTextView view, NSRange range)
 		{
+			bool handled = false;
+			
 			Parse parse = m_parses.TryParse(editor.Path);
 			CsGlobalNamespace globals = parse != null ? parse.Globals : null;
 			if (globals != null)
@@ -210,16 +218,17 @@ namespace AutoComplete
 							label += " Static Members";
 						
 						m_controller.Show(m_boss.Get<ITextEditor>(), view, label, members, string.Empty, isInstance, isStatic);
+						handled = true;
 					}
 				}
 				else
 					Functions.NSBeep();
 			}
 			
-			return false;
+			return handled;
 		}
 		
-		private bool DoCompleteStem(ITextEditor editor, NSTextView view, NSRange range, string stem)
+		private bool DoCompleteExpression(ITextEditor editor, NSTextView view, NSRange range, string stem)
 		{
 			string label;
 			Member[] members;
@@ -321,11 +330,11 @@ namespace AutoComplete
 						var ctors = from m in type.Methods where m.IsConstructor select m;
 						foreach (CsMethod ctor in ctors)
 						{
-							DoAddConstructor(type.FullName, type.Name, ctor.Parameters, members);
+							DoAddConstructor(type.GenericArguments, type.FullName, type.Name, ctor.Parameters, members);
 						}
 						
 						if (type is CsStruct || !ctors.Any())
-							DoAddConstructor(type.FullName, type.Name, new CsParameter[0], members);
+							DoAddConstructor(type.GenericArguments, type.FullName, type.Name, new CsParameter[0], members);
 					}
 				}
 			}
@@ -333,10 +342,15 @@ namespace AutoComplete
 			members.AddIfMissingRange(m_database.GetCtors(ns, stem));
 		}
 		
-		private void DoAddConstructor(string typeName, string name, CsParameter[] parameters, List<Member> members)
+		private void DoAddConstructor(string gargs, string typeName, string name, CsParameter[] parameters, List<Member> members)
 		{
+			string text = name;
+			
+			if (gargs != null)
+				text += "<" + gargs.Replace(",", ", ") + ">";
+				
 			var anames = from p in parameters select p.Name;
-			string text = name + "(" + string.Join(";", (from p in parameters select p.Type + " " + p.Name).ToArray()) + ")";
+			text += "(" + string.Join(";", (from p in parameters select p.Type + " " + p.Name).ToArray()) + ")";
 			
 			var member = new Member(text, anames.Count(), "System.Void", typeName);
 			member.Label = typeName;
@@ -369,15 +383,21 @@ namespace AutoComplete
 			return expr;
 		}
 		
-		private string DoGetTargetStem(int offset)
+		private string DoGetTargetStem(NSRange range, int delta)
 		{
-			string name = DoGetTargetName(offset);
-			if (name.Length > 0)
+			string name = string.Empty;
+			
+			int offset = range.location + delta;
+			if (offset > 0 && offset < m_text.Text.Length)
 			{
-				offset -= name.Length;
-				
-				if (offset >= 3 && string.Compare(m_text.Text, offset - 3, "new ", 0, 4) == 0)
-					name = "new " + name;
+				name = DoGetTargetName(offset);
+				if (name.Length > 0)
+				{
+					offset -= name.Length;
+					
+					if (offset >= 3 && string.Compare(m_text.Text, offset - 3, "new ", 0, 4) == 0)
+						name = "new " + name;
+				}
 			}
 			
 			return name;

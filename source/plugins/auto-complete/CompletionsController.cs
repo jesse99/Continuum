@@ -51,8 +51,9 @@ namespace AutoComplete
 			m_table.Value.Open(editor, text, names, stem, m_label.Value, label);
 			Log.WriteLine("AutoComplete", "took {0:0.000} secs to open the window", AutoComplete.Watch.ElapsedMilliseconds/1000.0);
 			
-			NSApplication.sharedApplication().beginSheet_modalForWindow_modalDelegate_didEndSelector_contextInfo(
-				wind, text.window(), null, null, IntPtr.Zero);
+			if (names.Length != 1)
+				NSApplication.sharedApplication().beginSheet_modalForWindow_modalDelegate_didEndSelector_contextInfo(
+					wind, text.window(), null, null, IntPtr.Zero);
 		}
 		
 		public void hide()

@@ -147,10 +147,8 @@ namespace AutoComplete
 			Contract.Assert(m_type == null, "m_fullName is not null");
 			
 			CsType type = m_parses.FindType(fullName);
-	Log.WriteLine( "AutoComplete", "using {0} and found {1}", fullName, type);
 			if (type != null)
 			{
-	Log.WriteLine( "AutoComplete", "    type: {0}", type.GetType());
 				if (type is CsDelegate)
 				{
 					fullName = "System.Delegate";

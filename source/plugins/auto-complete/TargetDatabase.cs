@@ -196,7 +196,7 @@ namespace AutoComplete
 		{
 			var members = new List<Member>();
 			
-			int attrs =
+			int badAttrs =
 				0x01 |	// abstract
 				0x04 |	// interface
 				0x10 |	// enum
@@ -204,7 +204,7 @@ namespace AutoComplete
 				
 			string common = string.Format(@"Methods.static = 0 AND Methods.kind = 6 AND 
 				Types.visibility < 3 AND Methods.access < 3 AND (Types.attributes & {0}) = 0 AND
-				Methods.declaring_root_name = Types.root_name", attrs);
+				Methods.declaring_root_name = Types.root_name", badAttrs);
 			
 			string sql;
 			if (ns != null)
@@ -246,6 +246,8 @@ namespace AutoComplete
 				
 				members.Add(member);
 			}
+			
+			DoAddDefaultCtors(ns, stem, badAttrs, members);
 			
 			return members.ToArray();
 		}
@@ -452,6 +454,65 @@ namespace AutoComplete
 			
 			return members.ToArray();
 		}
+		
+		#region Private Methods
+		private void DoAddDefaultCtors(string ns, string stem, int badAttrs, List<Member> members)
+		{
+			string common = string.Format("visibility < 3 AND (attributes & {0}) = 0", badAttrs);
+			
+			string sql;
+			if (ns != null)
+				if (stem.Length > 0)
+					sql = string.Format(@"
+						SELECT attributes, root_name, name, generic_arg_names
+							FROM Types
+						WHERE {2} AND
+							namespace = '{0}' AND name GLOB '{1}*'", ns, stem, common);
+				else
+					sql = string.Format(@"
+						SELECT attributes, root_name, name, generic_arg_names
+							FROM Types
+						WHERE {1} AND
+							namespace = '{0}'", ns, common);
+			else
+				if (stem.Length > 0)
+					sql = string.Format(@"
+						SELECT attributes, root_name, name, generic_arg_names
+							FROM Types
+						WHERE {1} AND
+							namespace = '' AND name GLOB '{0}*'", stem, common);
+				else
+					sql = string.Format(@"
+						SELECT attributes, root_name, name, generic_arg_names
+							FROM Types
+						WHERE {0} AND
+							namespace = ''", common);
+			
+			string[][] rows = m_database.QueryRows(sql);
+			foreach (string[] r in rows)
+			{
+				int attrs = int.Parse(r[0]);
+				if ((attrs & 0x08) != 0)			// struct
+				{
+					var text = new StringBuilder();
+					
+					text.Append(r[2]);
+					if (r[3].Length > 0)
+					{
+						text.Append('<');
+						text.Append(r[3].Replace(";", ", "));
+						text.Append('>');
+					}
+					text.Append("()");
+					
+					var member = new Member(text.ToString(), 0, "System.Void", r[1]);
+					member.Label = r[1];
+					
+					members.AddIfMissing(member);
+				}
+			}
+		}
+		#endregion
 		
 		#region Fields
 		private Database m_database;

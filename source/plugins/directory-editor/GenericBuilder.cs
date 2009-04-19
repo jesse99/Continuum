@@ -152,6 +152,11 @@ namespace DirectoryEditor
 				var editor = b.Get<ITextEditor>();
 				editor.Save();
 			}
+			
+			// There seems to be a race here where make doesn't always recognize
+			// that the file we just saved changed. So, we'll sleep a little bit to try
+			// to avoid the race.
+			System.Threading.Thread.Sleep(200);
 		}
 		
 		private void DoGotStdoutData(object sender, DataReceivedEventArgs e)	// threaded

@@ -72,6 +72,8 @@ namespace Shared
 					if (openBraces.Count > 0 && DoClosesBrace(openBraces.Last(), ch, braces))
 					{
 						openBraces.RemoveLast();
+						if (openBraces.Count > 0)
+							++index;
 					}
 					else
 					{

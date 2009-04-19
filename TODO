@@ -199,17 +199,9 @@ param_names				Space separated list of Names integers of the names of each
 							nullary.
 param_modifiers			Space separated list of integers: 0 for in parameter, 1 for out, 2
 							for ref, and 3 for params.
-
+							
 * Work on expression completion:
-	- arg completion should work with both the generic args and the regular args
-	- do something similiar with generic method where generic args aren't used in 
-	   parameters
-	- structs always have a default ctor
-	- classes have a default ctor if there are no other ctors
-	- ctor completion should work with dotted names
-	- ctor completion should work just a namespace (and a dot)
-	- ctor completion should work with just new
-	- if there is only one candidate then just insert it
+	- make sure unit tests work
 * Work on tab completion:
 	- need to save the old location and only complete if new loc is old + 1
 	- need to start with the stem in auto-complete
@@ -219,6 +211,9 @@ param_modifiers			Space separated list of integers: 0 for in parameter, 1 for ou
 * Work more on target completion:
 	- foreach locals aren't working? couldn't complete the local in DoGetTypesNames
 	- add the new db size to tables.txt
+	- make sure "var x = alpha as beta; x." completes
+	- Unused. isn't showing Value
+	- build a new foreshadow (will need to trash old dbs)
 	- completion should start a new undo action so undo only undoes one completion
 	  (instead of a whole chain of them)
 	- complete table should support paste (i.e. add it to completion text)
@@ -233,6 +228,7 @@ param_modifiers			Space separated list of integers: 0 for in parameter, 1 for ou
 	- need to work with namespace aliases
 	- prune value type members when completing args
 * Enter should add snippets:
+	- look at CodeTemplates file
 	- $NAME is a placeholder
 	- insert NAME (or maybe assk the user for the real name)
 	- select the first place holder (if we don't ask users for the name)
@@ -241,10 +237,7 @@ param_modifiers			Space separated list of integers: 0 for in parameter, 1 for ou
 	- if a local snippet dir exists also copy any new snippets (on startup and on dir changed)
 	- snippets: add class, iterface, struct, exception, unit test, method rule, type rule
 * FileStream.cs didn't parse right.
-* Dirty files aren't always being refreshed.
 * Right click on MethodDefinition has an extra separator in the menu.
-* Run command isn't always rebuilding. Generate target for example with one file
-   dirty which is auto-saved.
 * Can we do some sort of notification when assemblies finish parsing? Or to show parse
    error message? Maybe a notifications window? Or directory window can have a
    label somewhere?

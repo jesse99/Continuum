@@ -146,7 +146,6 @@ namespace CsParser
 				
 				for (int i = 0; i < types.Count && result == null; ++i)
 				{
-	Log.WriteLine( "AutoComplete", "    candidate: {0}", types[i].FullName);
 					if (types[i].FullName == fullName)
 						result = types[i];
 				}

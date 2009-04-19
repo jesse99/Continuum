@@ -54,7 +54,7 @@ namespace AutoComplete
 			ResolvedTarget result = null;
 			
 			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "---------------- resolving name");
-			Log.WriteLine("AutoComplete", "name: {0}", name);
+			Log.WriteLine(TraceLevel.Verbose,"AutoComplete", "name: {0}", name);
 			
 			// this.
 			if (result == null)

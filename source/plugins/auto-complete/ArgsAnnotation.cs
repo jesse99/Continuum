@@ -70,9 +70,14 @@ namespace AutoComplete
 			m_annotation = annotation;
 			m_members = members;
 			m_index = index;
-			m_currentArg = 0;
-			m_annotation.String = DoBuildString();
 			DoUpdateBackColor();
+			
+			int i = members[index].Text.IndexOfAny(new char[]{'<', '('});
+			if (i > 0 && members[index].Text[i] == '<')
+				m_currentArg = -1;
+			else
+				m_currentArg = 1;
+			m_annotation.String = DoBuildString();
 			
 			if (members.Length > 1)
 				DoResetContextMenu();
@@ -102,9 +107,18 @@ namespace AutoComplete
 						if (DoClosesAnchor(range.location))
 							Close();
 					}
+					else if (IsValid && chars[0] == '(')
+					{
+						int i = m_members[m_index].Text.IndexOfAny(new char[]{'<', '('});
+						if (i > 0 && m_members[m_index].Text[i] == '<')
+						{
+							m_currentArg = 1;
+							m_annotation.String = DoBuildString();
+						}
+					}
 					else if (chars[0] == ',')
 					{
-						int arg = -1;
+						int arg = 0;
 						
 						if (IsValid)
 						{
@@ -113,12 +127,12 @@ namespace AutoComplete
 						else if (m_oldStates.Count > 0)
 						{
 							arg = DoGetArgIndex(m_boss, m_oldStates.Last().Annotation, range.location);
-							if (arg >= 0)
+							if (arg != 0)
 							{
 								m_annotation = m_oldStates.Last().Annotation;
 								m_members = m_oldStates.Last().Members;
 								m_index = m_oldStates.Last().Index;
-								m_currentArg = -1;
+								m_currentArg = 0;
 								m_annotation.Visible = true;
 								m_oldStates.RemoveLast();
 							}
@@ -126,7 +140,7 @@ namespace AutoComplete
 								m_oldStates.Clear();		// states aren't synched up with what is being edited so clear them all
 						}
 						
-						if (arg >= 0 && arg != m_currentArg)
+						if (arg != 0 && arg != m_currentArg)
 						{
 							m_currentArg = arg;
 							m_annotation.String = DoBuildString();
@@ -207,25 +221,26 @@ namespace AutoComplete
 					string text = it.Text;
 					Contract.Assert(insertionPoint < text.Length, "insertionPoint is too large");
 					
-					int start = text.IndexOf('(', anchor.location, anchor.length);
-					Contract.Assert(start >= 0, "couldn't find '(' in the anchor: " + text.Substring(anchor.location, anchor.length));
-			
-					int i = start + 1;
-					string[] braces = new string[]{"()", "[]", "{}"};
-					while (i < insertionPoint)
+					int start = text.IndexOf('(', anchor.location, insertionPoint - anchor.location);
+					if (start > 0)			// may not be found when using a generic method
 					{
-						if (Array.Exists(braces, b => text[i] == b[0]))
+						int i = start + 1;
+						string[] braces = new string[]{"()", "[]", "{}"};
+						while (i < insertionPoint)
 						{
-							i = TextHelpers.SkipBraces(text, i, insertionPoint, braces);
-							if (i == insertionPoint)
-								return false;
+							if (Array.Exists(braces, b => text[i] == b[0]))
+							{
+								i = TextHelpers.SkipBraces(text, i, insertionPoint, braces);
+								if (i == insertionPoint)
+									return false;
+							}
+							else
+							{
+								++i;
+							}
 						}
-						else
-						{
-							++i;
-						}
+						closes = true;
 					}
-					closes = true;
 				}
 			}
 			
@@ -234,48 +249,21 @@ namespace AutoComplete
 		
 		private static int DoGetArgIndex(Boss boss, ITextAnnotation annotation, int insertionPoint)
 		{
-			int arg = -1;
+			int arg = 0;
 			
 			if (annotation.IsValid)
 			{
 				NSRange anchor = annotation.Anchor;
-				int delta = insertionPoint - (anchor.location + anchor.length);
-				if (delta > 0 && delta < 2048)			// quick sanity check
-				{
-					var it = boss.Get<IText>();
-					string text = it.Text;
-					Contract.Assert(insertionPoint < text.Length, "insertionPoint is too large");
-					
-					int start = text.IndexOf('(', anchor.location, anchor.length);
-					Contract.Assert(start >= 0, "couldn't find '(' in the anchor: " + text.Substring(anchor.location, anchor.length));
-			
-					arg = 1;						// we start at 1 because the user has typed a comma (tho it will not show up yet)
-					int i = start + 1;
-					string[] braces = new string[]{"()", "[]", "{}"};
-					while (i < insertionPoint)
-					{
-						if (Array.Exists(braces, b => text[i] == b[0]))
-						{
-							i = TextHelpers.SkipBraces(text, i, insertionPoint, braces);
-							if (i == insertionPoint)
-								return -1;
-						}
-						else if (text[i] == '<')
-						{
-							int k = TextHelpers.SkipBraces(text, i, insertionPoint, "<>");
-							if (k < insertionPoint || text[k] == '>')
-								i = k;
-							else
-								++i;				// presumably the < was a less than instead of a generic brace
-						}
-						else
-						{
-							if (text[i] == ',')
-								++arg;
-							++i;
-						}
-					}
-				}
+				var it = boss.Get<IText>();
+				
+				arg = AutoCompleteHelpers.GetArgIndex(it.Text, anchor.location, anchor.length, insertionPoint);
+				
+				// This is only called if the user typed a comma, but the comma hasn't been added
+				// to the text yet. So, we need to increment whatever GetArgIndex returned.
+				if (arg > 0)
+					++arg;
+				else if (arg < 0)
+					--arg;
 			}
 			
 			return arg;
@@ -283,8 +271,6 @@ namespace AutoComplete
 		
 		private NSAttributedString DoBuildString()
 		{
-			NSMutableAttributedString str;
-			
 			Member member = m_members[m_index];
 			
 			string rtype = CsHelpers.GetAliasedName(member.Type);
@@ -292,34 +278,79 @@ namespace AutoComplete
 			rtype = CsHelpers.TrimGeneric(rtype);
 			string text = rtype + " " + member.Text.Replace(";", ", ");
 			
-			str = NSMutableAttributedString.Create(text);
+			NSMutableAttributedString str = NSMutableAttributedString.Create(text);
 			
-			if (member.Arity > 0 && m_currentArg < member.Arity)		// need the second check in case the user is typed something silly
-			{
-				string munged = member.Text.Replace(";", "; ").Replace("[]", "--");
-				int first = munged.IndexOfAny(new char[]{'(', '['}) + 1;
-				Contract.Assert(first > 0, "couldn't find ( or [ in " + munged);
-				
-				Contract.Assert(m_currentArg >= 0, "m_currentArg is negative");
-				for (int j = 0; j <= m_currentArg; ++j)
-				{
-					int next = munged.IndexOfAny(new char[]{';', ')', ']'}, first);
-					Contract.Assert(next > 0, "couldn't find next ; or ) or ] in " + munged);
-					
-					if (j == m_currentArg)
-					{
-						int begin = munged.LastIndexOf(' ', next, next - first);
-						Contract.Assert(begin > 0, "couldn't find a space in " + munged.Substring(first, next - first));
-						
-						int offset = rtype.Length + 1;
-						DoHilite(str, offset + begin, next - begin);
-					}
-					
-					first = next + 2;
-				}
-			}
+			if (member.Arity > 0 && m_currentArg <= member.Arity && m_currentArg > 0)		// need the second check in case the user is typed something silly
+				DoHiliteRegularArg(str, rtype);
+			
+			else if (m_currentArg < 0)
+				DoHiliteGenericArg(str, rtype);
 			
 			return str;
+		}
+		
+		private void DoHiliteRegularArg(NSMutableAttributedString str, string rtype)
+		{
+			Member member = m_members[m_index];
+			
+			string munged = member.Text.Replace(";", "; ").Replace("[]", "--");
+			int first = munged.IndexOf('(') + 1;
+			Contract.Assert(first > 0, "couldn't find ( or [ in " + munged);
+			
+			Contract.Assert(m_currentArg > 0, "m_currentArg is not positive");
+			for (int j = 0; j < m_currentArg; ++j)
+			{
+				int next = munged.IndexOfAny(new char[]{';', ')', ']'}, first);
+				Contract.Assert(next > 0, "couldn't find next ; or ) or ] in " + munged);
+				
+				if (j + 1 == m_currentArg)
+				{
+					int begin = munged.LastIndexOf(' ', next, next - first);
+					Contract.Assert(begin > 0, "couldn't find a space in " + munged.Substring(first, next - first));
+					
+					int offset = rtype.Length + 1;
+					DoHilite(str, offset + begin, next - begin);
+				}
+				
+				first = next + 2;
+			}
+		}
+		
+		private void DoHiliteGenericArg(NSMutableAttributedString str, string rtype)
+		{
+			string text = m_members[m_index].Text;
+			
+			int first = text.IndexOf('<') + 1;
+			int last = text.IndexOf('>');				// note that this is an unbound generic so we don't need to worry about nested angle brackets
+//	Log.WriteLine(TraceLevel.Verbose, "XXX", "full text: {0}", rtype + ' ' + text);
+//	Log.WriteLine(TraceLevel.Verbose, "XXX", "    text: {0}", text.Substring(first, last - first));
+//	Log.WriteLine(TraceLevel.Verbose, "XXX", "    first: {0}", first);
+			
+			if (first < last)
+			{
+				Boss boss = ObjectModel.Create("CsParser");
+				var scanner = boss.Get<IScanner>();
+				scanner.Init(text.Substring(first, last - first));
+				
+				int arg = -1;
+				while (scanner.Token.IsValid() && arg != m_currentArg)
+				{
+					if (scanner.Token.Kind != TokenKind.Identifier)
+						return;
+					scanner.Advance();
+					
+					if (!scanner.Token.IsValid() || !scanner.Token.IsPunct(","))
+						return;
+					scanner.Advance();
+					
+					--arg;
+				}
+				
+				if (scanner.Token.IsValid() && arg == m_currentArg)
+				{
+					DoHilite(str, rtype.Length + 1 + first + scanner.Token.Offset, scanner.Token.Length);
+				}
+			}
 		}
 		
 		// Not sure if it would be better to use but NSForegroundColorAttributeName

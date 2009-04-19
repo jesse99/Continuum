@@ -78,12 +78,20 @@ namespace AutoComplete
 					m_visibleClasses.Add(klass, true);
 			}
 			
-			DoRebuildMembers();
-			deselectAll(this);
-			NSApplication.sharedApplication().BeginInvoke(() => scrollRowToVisible(0));
-			
 			DoGetAddSpace();
-			Broadcaster.Register("directory prefs changed", this);
+			DoRebuildMembers();
+			
+			if (members.Length == 1)
+			{
+				DoComplete(false, 0);
+			}
+			else
+			{
+				deselectAll(this);
+				NSApplication.sharedApplication().BeginInvoke(() => scrollRowToVisible(0));
+				
+				Broadcaster.Register("directory prefs changed", this);
+			}
 		}
 		
 		public void OnBroadcast(string name, object value)
@@ -149,11 +157,11 @@ namespace AutoComplete
 			
 			if (chars == "\t" || chars == "\r")
 			{
-				DoComplete(false);
+				DoComplete(false, selectedRow());
 			}
 			else if (evt.keyCode() == 76)		// enter key
 			{
-				DoComplete(true);
+				DoComplete(true, selectedRow());
 			}
 			else if (chars == Constants.Escape)
 			{
@@ -199,7 +207,7 @@ namespace AutoComplete
 		
 		public void doubleClicked(NSObject sender)
 		{
-			DoComplete(false);
+			DoComplete(false, selectedRow());
 		}
 		
 		public void tableViewSelectionDidChange(NSNotification notification)
@@ -318,14 +326,13 @@ namespace AutoComplete
 			return classes.ToArray();
 		}
 		
-		private void DoComplete(bool prefixOnly)
+		private void DoComplete(bool onlyTypedText, int row)
 		{
-			int row = selectedRow();
 			if (row >= 0)
 			{
 				string text;
 				NSRange range;
-				DoGetInsertText(row, prefixOnly, out text, out range);
+				DoGetInsertText(row, onlyTypedText, out text, out range);
 				
 				m_text.delete(this);
 				m_text.insertText(NSString.Create(text.Substring(m_stem.Length)));
@@ -336,9 +343,12 @@ namespace AutoComplete
 					m_text.setSelectedRange(new NSRange(range.location + text.Length - m_stem.Length, 0));
 				
 				m_text = null;
-				window().windowController().Call("hide");
+				if (window().isVisible())
+					window().windowController().Call("hide");
 				
-				if (!prefixOnly && m_members[row].Arity > 0)
+				int i = m_members[row].Text.IndexOfAny(new char[]{'<', '('});
+				bool annotate = m_members[row].Arity > 0 || (i > 0 && m_members[row].Text[i] == '<');
+				if (!onlyTypedText && annotate)
 				{
 					range.location -= m_stem.Length;
 					range.length = text.Length;
@@ -355,12 +365,12 @@ namespace AutoComplete
 				Functions.NSBeep();
 		}
 		
-		private void DoGetInsertText(int row, bool prefixOnly, out string text, out NSRange range)
+		private void DoGetInsertText(int row, bool onlyTypedText, out string text, out NSRange range)
 		{
 			range = m_text.selectedRange();
 			range.length = 0;
 			
-			if (prefixOnly)
+			if (onlyTypedText)
 			{
 				text = m_completed;
 			}

@@ -27,6 +27,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace ObjectModel
@@ -150,6 +151,15 @@ namespace ObjectModel
 						break;
 				}
 				
+				var gnames = new StringBuilder();
+				for (int i = 0; i < type.GenericParameters.Count; ++i)
+				{
+					gnames.Append(type.GenericParameters[i].Name);
+					
+					if (i + 1 < type.GenericParameters.Count)
+						gnames.Append(';');
+				}
+				
 				uint attributes = 0;
 				if (type.IsAbstract)
 					attributes |= 0x01;
@@ -190,6 +200,7 @@ namespace ObjectModel
 						baseName,
 						interfaces.ToString(),
 						type.GenericParameters.Count.ToString(),
+						gnames.ToString(),
 						visibility.ToString(),
 						attributes.ToString());
 						
@@ -503,6 +514,9 @@ namespace ObjectModel
 			else if (method.Name.StartsWith("op_"))
 				name = DoGetOperatorName(method);
 			
+			else if (!DoCanDeduceGenerics(method))
+				name = DoGetGenericDisplayName(method.GenericParameters, method.Name);
+			
 			else
 				name = method.Name;
 			
@@ -527,6 +541,54 @@ namespace ObjectModel
 			builder.Append('>');
 			
 			return builder.ToString();
+		}
+		
+		private void DoRemoveGenerics(List<GenericParameter> generics, TypeReference type)
+		{
+			var gp = type as GenericParameter;
+			if (gp != null)
+				generics.Remove(gp);
+			
+			var gi = type as GenericInstanceType;
+			if (gi != null)
+			{
+				foreach (TypeReference a in gi.GenericArguments)
+				{
+					DoRemoveGenerics(generics, a);
+				}
+			}
+			
+			var fp = type as FunctionPointerType;
+			if (fp != null)
+				DoRemoveGenerics(generics, fp.ReturnType.ReturnType);
+			
+			var ts = type as TypeSpecification;
+			if (ts != null)
+				DoRemoveGenerics(generics, ts.ElementType);
+		}
+		
+		private bool DoCanDeduceGenerics(MethodDefinition method)
+		{
+			bool can = true;
+			
+			if (method.HasGenericParameters)
+			{
+				var generics = new List<GenericParameter>();
+				foreach (GenericParameter g in method.GenericParameters)		// can't use the range ctor because Cecil is antique
+					generics.Add(g);
+				
+				if (method.HasParameters)
+				{
+					for (int i = 0; i < method.Parameters.Count; ++i)
+					{
+						DoRemoveGenerics(generics, method.Parameters[i].ParameterType);
+					}
+				}
+				
+				can = generics.Count == 0;
+			}
+			
+			return can;
 		}
 		
 		private string DoGetOperatorName(MethodDefinition method)

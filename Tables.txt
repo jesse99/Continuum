@@ -52,6 +52,9 @@ interface_root_names	Colon terminated list of the root names of each interface d
 						implemented by the type. Empty if the type implementes no 
 						interfaces.
 generic_arg_count		Number of generic arguments for the type.
+generic_arg_names		Semi-colon separated list of the generic argument names for
+						the type. Note that these are all the unbound type names.
+						Empty if the type is not generic.
 visibility				0 for public, 1 for family, 2 for internal, and 3 for private.
 attributes				Bitmask where if 0x01 is set the type is abstract, 0x02 sealed, 0x04
 						an interface, 0x08 a value type, 0x10 an enum, 0x20 nested, or

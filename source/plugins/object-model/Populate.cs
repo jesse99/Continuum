@@ -265,6 +265,7 @@ namespace ObjectModel
 							CONSTRAINT valid_interfaces CHECK(length(interface_root_names) = 0 OR substr(interface_root_names, -1) = ':'),
 						generic_arg_count INTEGER NOT NULL
 							CONSTRAINT non_negative_arg_count CHECK(generic_arg_count >= 0),
+						generic_arg_names TEXT NOT NULL,
 						visibility INTEGER NOT NULL
 							CONSTRAINT valid_vis CHECK(visibility >= 0 AND visibility <= 3),
 						attributes INTEGER NOT NULL
