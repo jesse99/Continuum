@@ -202,18 +202,7 @@ param_modifiers			Space separated list of integers: 0 for in parameter, 1 for ou
 
 make sure unused works in release
 
-
-
-* Work on namespace completion:
-	- make sure unit tests work
-* "CsNamespace ns; ns.Name." isn't completing
-* Work on tab completion:
-	- need to save the old location and only complete if new loc is old + 1
-	- need to start with the stem in auto-complete
-	- need to somehow remove the first tab char
-	- if there is only one candidate then just insert it
-	- special case new xxx (only check for types)
-	- get rid of the enter code?
+* Insertion point/scroll bars don't always seem to be saved correctly.
 * Work more on target completion:
 	- arg window context menu needs to replace ; with ,
 	- foreach locals aren't working? couldn't complete the local in DoGetTypesNames
@@ -237,6 +226,7 @@ make sure unused works in release
 	- global explicit interface implementation
 	- need to work with namespace aliases
 	- prune value type members when completing args
+* option-tab needs to scroll selection into view
 * Enter should add snippets:
 	- look at CodeTemplates file
 	- $NAME is a placeholder

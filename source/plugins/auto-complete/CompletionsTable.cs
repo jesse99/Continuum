@@ -47,8 +47,6 @@ namespace AutoComplete
 		
 		public void Open(ITextEditor editor, NSTextView text, Member[] members, string stem, NSTextField label, string defaultLabel)
 		{
-			Contract.Requires(stem != null, "stem is null");
-			
 			m_editor = editor;
 			m_text = text;
 			m_label = label;
@@ -330,17 +328,32 @@ namespace AutoComplete
 		{
 			if (row >= 0)
 			{
-				string text;
-				NSRange range;
-				DoGetInsertText(row, onlyTypedText, out text, out range);
+				int firstIndex = m_text.selectedRange().location;
+				string text = DoGetInsertText(row, onlyTypedText);
 				
-				m_text.delete(this);
-				m_text.insertText(NSString.Create(text.Substring(m_stem.Length)));
-				
-				if (range.length > 0)
-					m_text.setSelectedRange(range);
+				if (m_stem != null)
+				{
+					// If we have a stem then we also have the first tab so we need to do a replace
+					// instead of an insert.
+					NSRange range = new NSRange(firstIndex - 1, 1);
+					string name = m_stem.Length > 0 ? string.Format(" {0}{1}{2}", Constants.LeftDoubleQuote, m_stem, Constants.RightDoubleQuote) : string.Empty;
+					var suffix = NSString.Create(text.Substring(m_stem.Length));
+					
+					m_text.shouldChangeTextInRange_replacementString(range, suffix);
+					m_text.undoManager().setActionName(NSString.Create("Complete" + name));
+					m_text.replaceCharactersInRange_withString(range, suffix);
+					m_text.didChangeText();
+					
+					firstIndex -= m_stem.Length + 1;
+				}
 				else
-					m_text.setSelectedRange(new NSRange(range.location + text.Length - m_stem.Length, 0));
+				{
+					NSAttributedString str = NSAttributedString.Create(text);
+					m_text.shouldChangeTextInRange_replacementString(new NSRange(firstIndex, 0), str.string_());
+					m_text.undoManager().setActionName(NSString.Create("Complete"));
+					m_text.textStorage().insertAttributedString_atIndex(str, (uint) firstIndex);
+					m_text.didChangeText();
+				}
 				
 				m_text = null;
 				if (window().isVisible())
@@ -350,8 +363,7 @@ namespace AutoComplete
 				bool annotate = m_members[row].Arity > 0 || (i > 0 && m_members[row].Text[i] == '<');
 				if (!onlyTypedText && annotate)
 				{
-					range.location -= m_stem.Length;
-					range.length = text.Length;
+					NSRange range = new NSRange(firstIndex, text.Length);
 					ITextAnnotation annotation = m_editor.GetAnnotation(range);
 					
 					IArgsAnnotation args = m_editor.Boss.Get<IArgsAnnotation>();
@@ -365,10 +377,9 @@ namespace AutoComplete
 				Functions.NSBeep();
 		}
 		
-		private void DoGetInsertText(int row, bool onlyTypedText, out string text, out NSRange range)
+		private string DoGetInsertText(int row, bool onlyTypedText)
 		{
-			range = m_text.selectedRange();
-			range.length = 0;
+			string text;
 			
 			if (onlyTypedText)
 			{
@@ -398,6 +409,8 @@ namespace AutoComplete
 			int l = text.IndexOf('(');
 			if (k > 0 && (l < 0 || k < l))
 				text = text.Substring(0, k + 1);
+				
+			return text;
 		}
 		
 		private int DoMatchName()

@@ -101,10 +101,6 @@ namespace AutoComplete
 				{
 					Unused.Value = DoComplete(this.DoCompleteDot, view, range, computer);	// we always want to add the dot
 				}
-				else if (range.length == 0 && evt.keyCode() == Constants.EnterKey)
-				{
-					handled = DoComplete(this.DoCompleteStem, view, range, computer);
-				}
 				else if (range.length == 0 && chars.length() == 1 && chars[0] == '\t')
 				{
 					handled = DoCompleteTab(view, evt, computer, range);
@@ -125,21 +121,14 @@ namespace AutoComplete
 		{
 			bool handled = false;
 			
-			TimeSpan delta = DateTime.Now - m_lastTab;
-			if (range.location > 2 && delta.TotalSeconds < GetDblTime()/60.0)
+			TimeSpan delta = DateTime.Now - m_lastTabTime;
+			if (range.location > 2 && delta.TotalSeconds < GetDblTime()/60.0 && range.location == m_lastTabIndex + 1)
 			{
-				string stem = DoGetTargetStem(range, -2);
-				if (!string.IsNullOrEmpty(stem))
-				{
-					// Completes a non-empty stem.
-					if (stem.StartsWith("new ") || stem.StartsWith("using ") || (stem.Length >= 2 && CsHelpers.IsIdentifier(stem)))
-					{
-						Console.WriteLine("double tab");
-						handled = true;
-					}
-				}
+				handled = DoComplete(this.DoCompleteStem, view, range, computer);
 			}
-			m_lastTab = DateTime.Now;
+			
+			m_lastTabTime = DateTime.Now;
+			m_lastTabIndex = range.location;
 			
 			return handled;
 		}
@@ -199,8 +188,8 @@ namespace AutoComplete
 				if (m_controller == null)	
 					m_controller = new CompletionsController();
 				
-				string label = "Namespaces";
-				m_controller.Show(m_boss.Get<ITextEditor>(), view, label, namespaces, string.Empty, false, false);
+				string label = stem + " Namespaces";
+				m_controller.Show(m_boss.Get<ITextEditor>(), view, label, namespaces, null, false, false);
 			}
 			
 			return namespaces.Length > 0;
@@ -248,7 +237,7 @@ namespace AutoComplete
 						else if (isStatic)
 							label += " Static Members";
 						
-						m_controller.Show(m_boss.Get<ITextEditor>(), view, label, members, string.Empty, isInstance, isStatic);
+						m_controller.Show(m_boss.Get<ITextEditor>(), view, label, members, null, isInstance, isStatic);
 						handled = true;
 					}
 				}
@@ -265,11 +254,11 @@ namespace AutoComplete
 			CsGlobalNamespace globals = parse != null ? parse.Globals : null;
 			if (globals != null)
 			{
-				string stem = DoGetTargetStem(range, -1);
+				string stem = DoGetTargetStem(range, -2);
 				string label = string.Empty;
 				Member[] members;
 				bool isInstance = false, isStatic = false;
-				
+			
 				if (stem.StartsWith("new "))
 				{
 					stem = stem.Substring(stem.IndexOf(' ') + 1);
@@ -280,7 +269,7 @@ namespace AutoComplete
 				else
 				{
 					label = "Names";
-					members = DoGetMembersNamed(globals, range.location, stem, ref isInstance, ref isStatic);
+					members = DoGetMembersNamed(globals, range.location - 1, stem, ref isInstance, ref isStatic);
 				}
 				
 				if (members.Length > 0)
@@ -423,7 +412,7 @@ namespace AutoComplete
 			string expr = string.Empty;
 			if (text[index] == '_' || CsHelpers.CanStartIdentifier(text[index]))
 				expr = text.Substring(index, offset - index + 1);
-				
+			
 			return expr;
 		}
 		
@@ -463,7 +452,8 @@ namespace AutoComplete
 		private IParses m_parses;
 		private ICsLocalsParser m_locals;
 		private ResolveMembers m_members;
-		private DateTime m_lastTab;
+		private DateTime m_lastTabTime;
+		private int m_lastTabIndex = -1;
 		#endregion
 	}
 }

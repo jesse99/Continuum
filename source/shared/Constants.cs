@@ -25,14 +25,22 @@ namespace Shared
 {
 	public static class Constants
 	{
+		// Unicode characters.
 		public const string Bullet = "\x2022";
 		public const string Ellipsis = "\x2026";
 		public const string Replacement = "\xFFFD";
 		public const string ZeroWidthSpace = "\x200C";
+
+		public const string LeftSingleQuote = "\x2018";
+		public const string RightSingleQuote = "\x2019";
+		public const string LeftDoubleQuote = "\x201C";
+		public const string RightDoubleQuote = "\x201D";
 		
+		// Control characters.
 		public const string Escape = "\x001B";
 		public const string Delete = "\x007F";
 		
+		// Key codes.
 		public const int EnterKey = 0x4C;
 		public const int EscapeKey = 0x35;
 	}
