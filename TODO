@@ -199,21 +199,31 @@ param_names				Space separated list of Names integers of the names of each
 							nullary.
 param_modifiers			Space separated list of integers: 0 for in parameter, 1 for out, 2
 							for ref, and 3 for params.
-							
-* Work on expression completion:
+
+make sure unused works in release
+
+
+
+* Work on namespace completion:
 	- make sure unit tests work
+* "CsNamespace ns; ns.Name." isn't completing
 * Work on tab completion:
 	- need to save the old location and only complete if new loc is old + 1
 	- need to start with the stem in auto-complete
 	- need to somehow remove the first tab char
 	- if there is only one candidate then just insert it
 	- special case new xxx (only check for types)
+	- get rid of the enter code?
 * Work more on target completion:
+	- arg window context menu needs to replace ; with ,
 	- foreach locals aren't working? couldn't complete the local in DoGetTypesNames
 	- add the new db size to tables.txt
 	- make sure "var x = alpha as beta; x." completes
+	- default completions window height seems much too tall
+	- don't complete '. or ". (bit of a tricky case)
 	- Unused. isn't showing Value
 	- build a new foreshadow (will need to trash old dbs)
+	- complete namespaces? both in using and method bodies
 	- completion should start a new undo action so undo only undoes one completion
 	  (instead of a whole chain of them)
 	- complete table should support paste (i.e. add it to completion text)

@@ -85,5 +85,9 @@ namespace Shared
 		// Searches globals in each parse and all of the types whose names 
 		// start with stem.
 		CsType[] FindTypes(string ns, string stem);
+		
+		// Returns the namespaces under ns. Note that the returned names don't
+		// include the ns part of the name.
+		string[] FindNamespaces(string ns);
 	}
 }

@@ -99,43 +99,15 @@ namespace AutoComplete
 				NSString chars = evt.characters();
 				if (range.length == 0 && chars.length() == 1 && chars[0] == '.')
 				{
-					string stem = DoGetTargetStem(range, -1) + '.';
-					
-					if (stem.StartsWith("new "))
-					{
-						Func<ITextEditor, NSTextView, NSRange, bool> callback = (ITextEditor te, NSTextView tv, NSRange r) =>
-							DoCompleteExpression(te, tv, r, stem);
-						Unused.Value = DoComplete(callback, view, range, computer);
-					}
-					else
-						Unused.Value = DoComplete(this.DoCompleteMethodCall, view, range, computer);
+					Unused.Value = DoComplete(this.DoCompleteDot, view, range, computer);	// we always want to add the dot
 				}
 				else if (range.length == 0 && evt.keyCode() == Constants.EnterKey)
 				{
-					string stem = DoGetTargetStem(range, -1);
-					
-					Func<ITextEditor, NSTextView, NSRange, bool> callback = (ITextEditor te, NSTextView tv, NSRange r) =>
-						DoCompleteExpression(te, tv, r, stem);
-					handled = DoComplete(callback, view, range, computer);
+					handled = DoComplete(this.DoCompleteStem, view, range, computer);
 				}
 				else if (range.length == 0 && chars.length() == 1 && chars[0] == '\t')
 				{
-					TimeSpan delta = DateTime.Now - m_lastTab;
-					if (range.location > 2 && delta.TotalSeconds < GetDblTime()/60.0)
-					{
-						string stem = DoGetTargetStem(range, -2);
-						if (!string.IsNullOrEmpty(stem))
-						{
-							// Completes a non-empty stem.
-							if (stem.StartsWith("new ") || (stem.Length >= 2 && CsHelpers.IsIdentifier(stem)))
-							{
-								Func<ITextEditor, NSTextView, NSRange, bool> callback = (ITextEditor te, NSTextView tv, NSRange r) =>
-									DoCompleteExpression(te, tv, r, stem);
-								handled = DoComplete(callback, view, range, computer);
-							}
-						}
-					}
-					m_lastTab = DateTime.Now;
+					handled = DoCompleteTab(view, evt, computer, range);
 				}
 				
 				if (!handled)
@@ -149,6 +121,29 @@ namespace AutoComplete
 		}
 		
 		#region Private Methods
+		private bool DoCompleteTab(NSTextView view, NSEvent evt, IComputeRuns computer, NSRange range)
+		{
+			bool handled = false;
+			
+			TimeSpan delta = DateTime.Now - m_lastTab;
+			if (range.location > 2 && delta.TotalSeconds < GetDblTime()/60.0)
+			{
+				string stem = DoGetTargetStem(range, -2);
+				if (!string.IsNullOrEmpty(stem))
+				{
+					// Completes a non-empty stem.
+					if (stem.StartsWith("new ") || stem.StartsWith("using ") || (stem.Length >= 2 && CsHelpers.IsIdentifier(stem)))
+					{
+						Console.WriteLine("double tab");
+						handled = true;
+					}
+				}
+			}
+			m_lastTab = DateTime.Now;
+			
+			return handled;
+		}
+		
 		internal static Stopwatch Watch = new Stopwatch();
 		
 		private bool DoComplete(Func<ITextEditor, NSTextView, NSRange, bool> completer, NSTextView view, NSRange range, IComputeRuns computer)
@@ -175,7 +170,43 @@ namespace AutoComplete
 			return handled;
 		}
 		
-		private bool DoCompleteMethodCall(ITextEditor editor, NSTextView view, NSRange range)
+		private bool DoCompleteDot(ITextEditor editor, NSTextView view, NSRange range)
+		{
+			bool handled = false;
+			
+			string stem = DoGetTargetStem(range, -1);
+			if (stem.StartsWith("new ") || stem.StartsWith("using "))
+			{
+				handled = DoCompleteNamespaceDot(view, stem);
+			}
+			else
+			{
+				handled = DoCompleteNamespaceDot(view, stem);
+				if (!handled)
+					handled = DoCompleteMethodDot(editor, view, range);
+			}
+			
+			return handled;
+		}
+		
+		private bool DoCompleteNamespaceDot(NSTextView view, string stem)
+		{
+			stem = stem.Substring(stem.IndexOf(' ') + 1);
+			Member[] namespaces = DoGetNamespacesNamed(stem);
+			
+			if (namespaces.Length > 0)
+			{
+				if (m_controller == null)	
+					m_controller = new CompletionsController();
+				
+				string label = "Namespaces";
+				m_controller.Show(m_boss.Get<ITextEditor>(), view, label, namespaces, string.Empty, false, false);
+			}
+			
+			return namespaces.Length > 0;
+		}
+		
+		private bool DoCompleteMethodDot(ITextEditor editor, NSTextView view, NSRange range)
 		{
 			bool handled = false;
 			
@@ -228,19 +259,20 @@ namespace AutoComplete
 			return handled;
 		}
 		
-		private bool DoCompleteExpression(ITextEditor editor, NSTextView view, NSRange range, string stem)
+		private bool DoCompleteStem(ITextEditor editor, NSTextView view, NSRange range)
 		{
-			string label;
-			Member[] members;
-			bool isInstance = false, isStatic = false;
-			
 			Parse parse = m_parses.TryParse(editor.Path);
 			CsGlobalNamespace globals = parse != null ? parse.Globals : null;
 			if (globals != null)
 			{
+				string stem = DoGetTargetStem(range, -1);
+				string label = string.Empty;
+				Member[] members;
+				bool isInstance = false, isStatic = false;
+				
 				if (stem.StartsWith("new "))
 				{
-					stem = stem.Substring(4);
+					stem = stem.Substring(stem.IndexOf(' ') + 1);
 					
 					label = "Constructors";
 					members = DoGetConstructorsNamed(globals, ref stem);
@@ -251,7 +283,7 @@ namespace AutoComplete
 					members = DoGetMembersNamed(globals, range.location, stem, ref isInstance, ref isStatic);
 				}
 				
-				if (members != null && members.Length > 0)
+				if (members.Length > 0)
 				{
 					if (m_controller == null)	
 						m_controller = new CompletionsController();
@@ -260,12 +292,12 @@ namespace AutoComplete
 				}
 			}
 			
-			return true;
+			return true;		// we never want to add the second tab
 		}
 		
 		private Member[] DoGetMembersNamed(CsGlobalNamespace globals, int location, string stem, ref bool isInstance, ref bool isStatic)
 		{
-			Member[] result = null;
+			var result = new List<Member>();
 			
 			var nameResolver = new ResolveName(m_database, m_locals, m_text.Text, location, globals);
 			ResolvedTarget target = nameResolver.Resolve("<this>");
@@ -280,12 +312,24 @@ namespace AutoComplete
 				if (stem.Length > 0)
 					members.RemoveAll(m => !m.Name.StartsWith(stem));
 				
-				result = members.ToArray();
+				result = members;
 				isInstance = target.IsInstance;
 				isStatic = target.IsStatic;
 			}
 			
-			return result;
+			return result.ToArray();
+		}
+		
+		private Member[] DoGetNamespacesNamed(string name)
+		{
+			var members = new List<Member>(m_database.GetNamespaces(name));
+			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "db namespaces: {0}", members.ToDebugString());
+			
+			string[] names = m_parses.FindNamespaces(name);
+			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "parsed namespaces: {0}", names.ToDebugString());
+			members.AddIfMissingRange(from n in names select new Member(n));
+			
+			return members.ToArray();
 		}
 		
 		private Member[] DoGetConstructorsNamed(CsGlobalNamespace globals, ref string stem)
@@ -397,6 +441,9 @@ namespace AutoComplete
 					
 					if (offset >= 3 && string.Compare(m_text.Text, offset - 3, "new ", 0, 4) == 0)
 						name = "new " + name;
+					
+					else if (offset >= 5 && string.Compare(m_text.Text, offset - 5, "using ", 0, 6) == 0)
+						name = "using " + name;
 				}
 			}
 			

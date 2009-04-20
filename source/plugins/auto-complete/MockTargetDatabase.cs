@@ -56,6 +56,11 @@ namespace AutoComplete
 			return has;
 		}
 		
+		public Member[] GetNamespaces(string ns)
+		{
+			return new NotImplementedException();
+		}
+		
 		public void GetBases(string typeName, List<string> baseNames, List<string> interfaceNames, List<string> allNames)
 		{
 			if (typeName == "array-type")

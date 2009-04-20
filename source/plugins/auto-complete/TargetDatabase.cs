@@ -69,6 +69,47 @@ namespace AutoComplete
 			return has;
 		}
 		
+		public Member[] GetNamespaces(string ns)
+		{
+			var members = new List<Member>();
+			
+			if (ns.Length > 0)
+			{
+				string sql = string.Format(@"
+					SELECT children
+						FROM Namespaces 
+					WHERE parent = '{0}'", ns);
+				string[][] rows = m_database.QueryRows(sql);
+				
+				foreach (string[] r in rows)
+				{
+					string[] children = r[0].Split(';');
+					foreach (string child in children)
+					{
+						members.AddIfMissing(new Member(child));
+					}
+				}
+			}
+			else
+			{
+				string sql = @"
+					SELECT parent, children
+						FROM Namespaces";
+				string[][] rows = m_database.QueryRows(sql);
+				
+				foreach (string[] r in rows)
+				{
+					string[] children = r[1].Split(';');
+					foreach (string child in children)
+					{
+						members.AddIfMissing(new Member(r[0] + '.' + child));
+					}
+				}
+			}
+			
+			return members.ToArray();
+		}
+		
 		public void GetBases(string typeName, List<string> baseNames, List<string> interfaceNames, List<string> allNames)
 		{
 			if (typeName == "array-type")

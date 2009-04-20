@@ -518,6 +518,7 @@ namespace Shared
 		}
 		
 		// Will be a qualified identifier, e.g. "CoolLib.Internals" or "<globals>" for the global namespace.
+		// But will not include the outer namespace name (if any).
 		public string Name {get; private set;}
 				
 		// These properties will have the declarations at the top of the namespace, but not any

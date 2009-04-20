@@ -252,6 +252,17 @@ namespace ObjectModel
 					)");
 
 				m_database.Update(@"
+					CREATE TABLE IF NOT EXISTS Namespaces(
+						parent TEXT NOT NULL 
+							CONSTRAINT no_empty_parent CHECK(length(parent) > 0),
+						assembly INTEGER NOT NULL 
+							REFERENCES Assemblies(assembly),
+						children TEXT NOT NULL
+							CONSTRAINT no_empty_children CHECK(length(children) > 0),
+						PRIMARY KEY(parent, assembly)
+					)");
+				
+				m_database.Update(@"
 					CREATE TABLE IF NOT EXISTS Types(
 						root_name TEXT PRIMARY KEY NOT NULL 
 							CONSTRAINT no_empty_root CHECK(length(root_name) > 0),
@@ -373,6 +384,10 @@ namespace ObjectModel
 		
 		private void DoDeleteAssemblyReferences(string id)		// threaded
 		{
+			m_database.Update(string.Format(@"
+				DELETE FROM Namespaces 
+					WHERE assembly = '{0}'", id));
+			
 			m_database.Update(string.Format(@"
 				DELETE FROM Types 
 					WHERE assembly = '{0}'", id));

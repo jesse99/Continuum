@@ -59,20 +59,64 @@ namespace ObjectModel
 			
 //	Console.WriteLine("    parsing {0} for thread {1}", assembly.Name.FullName, System.Threading.Thread.CurrentThread.ManagedThreadId);
 			
+			var namespaces = new HashSet<string>();
 			foreach (ModuleDefinition module in assembly.Modules)
 			{
 				foreach (TypeDefinition type in module.Types)
 				{
 					if (fullParse || type.IsPublic || type.IsNestedPublic || type.IsNestedFamily || type.IsNestedFamilyOrAssembly)
 					{
+						if (!namespaces.Contains(type.Namespace))
+							namespaces.Add(type.Namespace);
+							
 						DoParseType(type, id, fullParse);			// max time here is 0.8 secs on a fast machine for type System.Xml.Serialization.XmlSerializationReader (with the old schema)
 //						System.Threading.Thread.Sleep(50);	// this doesn't seem to help the main thread too much
 					}
 				}
 			}
+			
+			DoAddNamespaces(namespaces, id);
 		}
 		
+		// System.Collections.Generic
 		#region Private Methods
+		private void DoAddNamespaces(HashSet<string> namespaces, string id)
+		{
+			var table = new Dictionary<string, string>();
+			
+			foreach (string ns in namespaces)
+			{
+				string[] parts = ns.Split('.');
+				
+				string parent = parts[0];
+				for (int i = 1; i < parts.Length; ++i)
+				{
+					string children;
+					if (!table.TryGetValue(parent, out children))
+						children = string.Empty;
+						
+					if (children.Length == 0)
+						children = string.Join(".", parts, i, parts.Length - i);
+					else
+						children += ";" + string.Join(".", parts, i, parts.Length - i);
+						
+					table[parent] = children;
+					parent += "." + parts[i];
+				}
+			}
+			
+			m_database.Update("update namespaces", () =>
+			{
+				foreach (KeyValuePair<string, string> entry in table)
+				{
+					m_database.InsertOrReplace("Namespaces",
+						entry.Key,
+						id,
+						entry.Value);
+				}
+			});
+		}
+		
 		[Conditional("DEBUG")]
 		private void DoValidateRoot(string label, string type)
 		{

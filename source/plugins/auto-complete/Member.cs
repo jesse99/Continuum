@@ -27,6 +27,15 @@ namespace AutoComplete
 {
 	internal sealed class Member : IEquatable<Member>
 	{
+		public Member(string text)
+		{
+			Contract.Requires(!string.IsNullOrEmpty(text), "text is null or empty");
+			
+			Text = text;
+			Type = string.Empty;
+			Label = Text.Replace(";", ", ");
+		}
+		
 		public Member(string text, string type)
 		{
 			Contract.Requires(!string.IsNullOrEmpty(text), "text is null or empty");

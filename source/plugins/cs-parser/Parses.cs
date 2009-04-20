@@ -183,7 +183,43 @@ namespace CsParser
 			return result.ToArray();
 		}
 		
-		#region Private Methods		
+		public string[] FindNamespaces(string ns)
+		{
+			var names = new List<string>();
+			
+			if (ns.Length > 0)
+				ns += '.';
+			
+			lock (m_mutex)
+			{
+				foreach (Parse parse in m_parses.Values)
+				{
+					DoFindNamespaces(ns, null, parse.Globals, names);
+				}
+			}
+			
+			return names.ToArray();
+		}
+		
+		#region Private Methods
+		private void DoFindNamespaces(string prefix, string parent, CsNamespace ns, List<string> names)
+		{
+			string name = null;
+			if (ns.Name != "<globals>")
+				name = parent != null ? (parent + "." + ns.Name) : ns.Name;
+			
+			if (name != null)
+				if (prefix.Length > 0 && name.StartsWith(prefix))
+					names.AddIfMissing(name.Substring(prefix.Length));	
+				else if (prefix.Length == 0)
+					names.AddIfMissing(name);	
+			
+			foreach (CsNamespace child in ns.Namespaces)
+			{
+				DoFindNamespaces(prefix, name, child, names);
+			}
+		}
+		
 		private void DoFindTypes(CsTypeScope scope, List<CsType> types)
 		{
 			CsType candidate = scope as CsType;

@@ -32,6 +32,8 @@ namespace AutoComplete
 		// Returns true if the name is a special or type name.
 		bool HasType(string typeName);
 		
+		Member[] GetNamespaces(string ns);
+
 		// Returns type names for the type's base class and any interfaces it directly
 		// implements.
 		void GetBases(string typeName, List<string> baseNames, List<string> interfaceNames, List<string> allNames);
