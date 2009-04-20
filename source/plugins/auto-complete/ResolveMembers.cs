@@ -247,7 +247,7 @@ namespace AutoComplete
 			// Note that indexers are not counted because they are not preceded with a dot.
 			foreach (CsProperty prop in type.Properties)
 			{
-				if (prop.HasGetter)
+				if (prop.HasGetter || prop.HasSetter)
 				{
 					if (DoShouldAdd(isInstance, isStatic, prop.Modifiers))
 						if (includePrivates || prop.Access != MemberModifiers.Private)

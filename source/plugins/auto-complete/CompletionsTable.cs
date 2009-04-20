@@ -334,7 +334,7 @@ namespace AutoComplete
 				if (m_stem != null)
 				{
 					// If we have a stem then we also have the first tab so we need to do a replace
-					// instead of an insert.
+					// instead of an insert. 
 					NSRange range = new NSRange(firstIndex - 1, 1);
 					string name = m_stem.Length > 0 ? string.Format(" {0}{1}{2}", Constants.LeftDoubleQuote, m_stem, Constants.RightDoubleQuote) : string.Empty;
 					var suffix = NSString.Create(text.Substring(m_stem.Length));

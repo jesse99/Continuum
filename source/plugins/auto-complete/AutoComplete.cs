@@ -99,7 +99,9 @@ namespace AutoComplete
 				NSString chars = evt.characters();
 				if (range.length == 0 && chars.length() == 1 && chars[0] == '.')
 				{
-					Unused.Value = DoComplete(this.DoCompleteDot, view, range, computer);	// we always want to add the dot
+					view.insertText(NSString.Create('.'));
+					Unused.Value = DoComplete(this.DoCompleteDot, view, range, computer);
+					handled = true;
 				}
 				else if (range.length == 0 && chars.length() == 1 && chars[0] == '\t')
 				{

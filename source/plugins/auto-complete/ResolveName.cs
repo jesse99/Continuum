@@ -266,6 +266,11 @@ namespace AutoComplete
 							// var result = from ...;
 							value = "System.Collections.Generic.IEnumerable`1";
 						}
+						else if (value.Contains(" as "))
+						{
+							// var result = ... as type;
+							value = DoGetAsValue(value);
+						}
 						else
 						{
 							// var result = Get<Type>();
@@ -295,6 +300,7 @@ namespace AutoComplete
 			return result;
 		}
 		
+		// TODO: probably should rewrite this and DoGetAsValue using the scanner
 		private string DoGetNewValue(string value)
 		{
 			int i = 3;
@@ -332,6 +338,33 @@ namespace AutoComplete
 			}
 			
 			return value.Substring(i, count);
+		}
+		
+		private string DoGetAsValue(string value)
+		{
+			string result = null;
+			
+			int i = value.IndexOf(" as ");
+			Contract.Assert(i >= 0, "'as' wasn't found in " + value);
+			i += " as ".Length;
+			
+			while (i < value.Length && char.IsWhiteSpace(value[i]))
+				++i;
+				
+			int j = i;
+			while (i < value.Length && (value[i] == '.' || char.IsLetterOrDigit(value[i])))	// TODO: won't work with a generic
+				++i;
+			
+			int k = i;
+			while (i < value.Length && char.IsWhiteSpace(value[i]))
+				++i;
+				
+			if (j < k && i == value.Length)
+			{
+				result = value.Substring(j, k - j);
+			}
+			
+			return result;
 		}
 		
 		private CsBody DoGetBody()

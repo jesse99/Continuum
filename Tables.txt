@@ -8,7 +8,7 @@ Note that the table schema is very important: the responsiveness of important UI
 like auto-complete is driven by how fast we can query the database for the information
 we need. We also want to keep the database size as small as possible so that as much
 of the tables as possible fits into the sqlite and file-system caches (these sizes can be
-very large, for example Continuum.db was 67M with an earlier version of the schema).
+rather large, for example Continuum.db is 17M).
 
 Times are in System.DateTime ticks. Field names appended with # are part of the primary 
 key. Field names appended with $ are foreign keys. 

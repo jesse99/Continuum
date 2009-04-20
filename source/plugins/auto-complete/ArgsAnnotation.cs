@@ -180,7 +180,7 @@ namespace AutoComplete
 			var items = new List<AnnontationContextItem>();
 			for (int i = 0; i < m_members.Length; ++i)
 			{
-				string text = m_members[i].Type + " " + m_members[i].Text;
+				string text = m_members[i].Type + " " + m_members[i].Text.Replace(";", ", ");
 				int state = i == m_index ? 1 : 0;
 				
 				int j = i;				// need this because we don't want the delegate using the mutated iteration variable

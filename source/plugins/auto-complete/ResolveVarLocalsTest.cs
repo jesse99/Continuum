@@ -290,7 +290,7 @@ internal sealed class MyClass
 			Assert.AreEqual("System.Collections.Generic.IEnumerable`1", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 		}
-				
+		
 		[Test]
 		public void Call1()
 		{
@@ -317,6 +317,62 @@ internal sealed class MyClass
 			});
 			Assert.IsTrue(found);
 			Assert.AreEqual("IFoo", m_target.TypeName);
+			Assert.IsNull(m_target.Type);
+		}
+		
+		[Test]
+		public void AsCast1()
+		{
+			string text = @"
+using System;
+using System.Collections.Generic;
+
+internal sealed class MyClass
+{
+	public void Work(object o)
+	{
+		var x = o as string;
+		xxx.
+	}
+}
+";
+			bool found = DoGetTarget(text, "x", text.IndexOf("xxx"), new MockTargetDatabase
+			{
+				Types = new List<string>
+				{
+					"System.String",
+				}
+			});
+			Assert.IsTrue(found);
+			Assert.AreEqual("System.String", m_target.TypeName);
+			Assert.IsNull(m_target.Type);
+		}
+		
+		[Test]
+		public void AsCast2()
+		{
+			string text = @"
+using System;
+using System.Collections.Generic;
+
+internal sealed class MyClass
+{
+	public void Work(object o)
+	{
+		var x = o  as   string		  ;
+		xxx.
+	}
+}
+";
+			bool found = DoGetTarget(text, "x", text.IndexOf("xxx"), new MockTargetDatabase
+			{
+				Types = new List<string>
+				{
+					"System.String",
+				}
+			});
+			Assert.IsTrue(found);
+			Assert.AreEqual("System.String", m_target.TypeName);
 			Assert.IsNull(m_target.Type);
 		}
 		

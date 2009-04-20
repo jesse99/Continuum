@@ -313,12 +313,12 @@ namespace AutoComplete
 					sql = string.Format(@"
 						SELECT display_text, return_type_name, params_count, declaring_root_name
 							FROM Methods 
-						WHERE kind <= 1 AND ({0})", types.ToString());
+						WHERE kind <= 2 AND ({0})", types.ToString());
 				else
 					sql = string.Format(@"
 						SELECT display_text, return_type_name, params_count, declaring_root_name
 							FROM Methods 
-						WHERE static = {1} AND kind <= 1 AND ({0})", types.ToString(), isStaticCall ? "1" : "0");
+						WHERE static = {1} AND kind <= 2 AND ({0})", types.ToString(), isStaticCall ? "1" : "0");
 				
 				string[][] rows = m_database.QueryRows(sql);
 				foreach (string[] r in rows)
@@ -355,13 +355,13 @@ namespace AutoComplete
 						SELECT display_text, return_type_name, params_count, declaring_root_name
 							FROM Methods 
 						WHERE (name = '{0}' OR name = '{1}') AND params_count = {2} AND 
-							kind <= 1 AND ({3})", name, "get_" + name, arity, types.ToString());
+							kind <= 2 AND ({3})", name, "get_" + name, arity, types.ToString());
 				else
 					sql = string.Format(@"
 						SELECT display_text, return_type_name, params_count, declaring_root_name
 							FROM Methods 
 						WHERE (name = '{0}' OR name = '{1}') AND params_count = {2} AND 
-							static = {4} AND kind <= 1 AND ({3})", name, "get_" + name, arity, types.ToString(), isStaticCall ? "1" : "0");
+							static = {4} AND kind <= 2 AND ({3})", name, "get_" + name, arity, types.ToString(), isStaticCall ? "1" : "0");
 				
 				string[][] rows = m_database.QueryRows(sql);
 				foreach (string[] r in rows)

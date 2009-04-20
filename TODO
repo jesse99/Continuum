@@ -200,21 +200,9 @@ param_names				Space separated list of Names integers of the names of each
 param_modifiers			Space separated list of integers: 0 for in parameter, 1 for out, 2
 							for ref, and 3 for params.
 
-make sure unused works in release
-
-* Insertion point/scroll bars don't always seem to be saved correctly.
 * Work more on target completion:
-	- arg window context menu needs to replace ; with ,
-	- foreach locals aren't working? couldn't complete the local in DoGetTypesNames
-	- add the new db size to tables.txt
-	- make sure "var x = alpha as beta; x." completes
-	- default completions window height seems much too tall
-	- don't complete '. or ". (bit of a tricky case)
-	- Unused. isn't showing Value
 	- build a new foreshadow (will need to trash old dbs)
-	- complete namespaces? both in using and method bodies
-	- completion should start a new undo action so undo only undoes one completion
-	  (instead of a whole chain of them)
+	- setter only properties should not complete
 	- complete table should support paste (i.e. add it to completion text)
 	- member list needs to account for access
 	- member list needs to account for visibility
