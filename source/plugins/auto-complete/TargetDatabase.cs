@@ -311,23 +311,25 @@ namespace AutoComplete
 				string sql;
 				if (instanceCall && isStaticCall)
 					sql = string.Format(@"
-						SELECT display_text, return_type_name, params_count, declaring_root_name
+						SELECT display_text, return_type_name, params_count, declaring_root_name, kind
 							FROM Methods 
 						WHERE kind <= 2 AND ({0})", types.ToString());
 				else
 					sql = string.Format(@"
-						SELECT display_text, return_type_name, params_count, declaring_root_name
+						SELECT display_text, return_type_name, params_count, declaring_root_name, kind
 							FROM Methods 
 						WHERE static = {1} AND kind <= 2 AND ({0})", types.ToString(), isStaticCall ? "1" : "0");
 				
-				string[][] rows = m_database.QueryRows(sql);
-				foreach (string[] r in rows)
+				NamedRows rows = m_database.QueryNamedRows(sql);
+				foreach (NamedRow r in rows)
 				{
-					string text = r[0];
+					string text = r["display_text"];
 					int j = text.IndexOf("::");
 					text = text.Substring(j + 2);
 					
-					members.AddIfMissing(new Member(text, int.Parse(r[2]), r[1], r[3]));
+					string rtype = DoGetType(rows, r);
+					int arity = r["kind"] == "2" ? 0 : int.Parse(r["params_count"]);	// setters have an argument but it's implicit
+					members.AddIfMissing(new Member(text, arity, rtype, r["declaring_root_name"]));
 				}
 			}
 			
@@ -352,25 +354,27 @@ namespace AutoComplete
 				string sql;
 				if (instanceCall && isStaticCall)
 					sql = string.Format(@"
-						SELECT display_text, return_type_name, params_count, declaring_root_name
+						SELECT display_text, return_type_name, params_count, declaring_root_name, kind
 							FROM Methods 
 						WHERE (name = '{0}' OR name = '{1}') AND params_count = {2} AND 
 							kind <= 2 AND ({3})", name, "get_" + name, arity, types.ToString());
 				else
 					sql = string.Format(@"
-						SELECT display_text, return_type_name, params_count, declaring_root_name
+						SELECT display_text, return_type_name, params_count, declaring_root_name, kind
 							FROM Methods 
 						WHERE (name = '{0}' OR name = '{1}') AND params_count = {2} AND 
 							static = {4} AND kind <= 2 AND ({3})", name, "get_" + name, arity, types.ToString(), isStaticCall ? "1" : "0");
 				
-				string[][] rows = m_database.QueryRows(sql);
-				foreach (string[] r in rows)
+				NamedRows rows = m_database.QueryNamedRows(sql);
+				foreach (NamedRow r in rows)
 				{
-					string text = r[0];
+					string text = r["display_text"];
 					int j = text.IndexOf("::");
 					text = text.Substring(j + 2);
 					
-					members.AddIfMissing(new Member(text, int.Parse(r[2]), r[1], r[3]));
+					string type = DoGetType(rows, r);
+					int numArgs = r["kind"] == "2" ? 0 : int.Parse(r["params_count"]);	// setters have an argument but it's implicit
+					members.AddIfMissing(new Member(text, numArgs, type, r["declaring_root_name"]));
 				}
 			}
 			
@@ -497,6 +501,21 @@ namespace AutoComplete
 		}
 		
 		#region Private Methods
+		private string DoGetType(NamedRows rows, NamedRow row)
+		{
+			string type = row["return_type_name"];
+			
+			// If it's a setter and there is no getter then we have to use void
+			// for the return type.
+			if (row["kind"] == "2")
+			{
+				if (!rows.Any(r => r["kind"] == "1" && r["display_text"] == row["display_text"]))
+					type = "System.Void";
+			}
+			
+			return type;
+		}
+		
 		private void DoAddDefaultCtors(string ns, string stem, int badAttrs, List<Member> members)
 		{
 			string common = string.Format("visibility < 3 AND (attributes & {0}) = 0", badAttrs);

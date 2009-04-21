@@ -144,10 +144,25 @@ namespace CsParser
 					}
 				}
 				
+				string name = fullName;
+				int gcount = 0;
+				int j = fullName.IndexOf('`');
+				if (j > 0)
+				{
+					name = fullName.Substring(0, j);
+					gcount = int.Parse(fullName.Substring(j + 1));
+				}
+				
 				for (int i = 0; i < types.Count && result == null; ++i)
 				{
-					if (types[i].FullName == fullName)
-						result = types[i];
+					if (name == types[i].FullName)
+					{
+						if (gcount == 0 || (types[i].GenericArguments != null &&
+							types[i].GenericArguments.Count(',') + 1 == gcount))
+						{
+							result = types[i];
+						}
+					}
 				}
 			}
 			

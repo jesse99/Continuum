@@ -106,6 +106,25 @@ namespace AutoComplete
 			}
 		}
 		
+		public void paste(NSObject sender)
+		{
+			NSPasteboard board = NSPasteboard.generalPasteboard();
+			
+			NSArray types = NSArray.Create(NSPasteboard.NSStringPboardType);
+			NSString best = board.availableTypeFromArray(types);
+			if (!NSObject.IsNullOrNil(best))
+			{
+				NSString text = board.stringForType(best);
+				if (!NSObject.IsNullOrNil(text))
+				{
+					m_completed += text.description();
+					
+					DoMatchName();
+					reloadData();
+				}
+			}
+		}
+		
 		public new NSMenu menuForEvent(NSEvent evt)
 		{
 			NSMenu menu = NSMenu.Alloc().initWithTitle(NSString.Empty);

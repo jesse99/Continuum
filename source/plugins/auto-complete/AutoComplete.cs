@@ -172,7 +172,9 @@ namespace AutoComplete
 			}
 			else
 			{
-				handled = DoCompleteNamespaceDot(view, stem);
+				if (stem.Length > 0)
+					handled = DoCompleteNamespaceDot(view, stem);
+					
 				if (!handled)
 					handled = DoCompleteMethodDot(editor, view, range);
 			}
@@ -252,38 +254,45 @@ namespace AutoComplete
 		
 		private bool DoCompleteStem(ITextEditor editor, NSTextView view, NSRange range)
 		{
+			bool handled = false;
+			
 			Parse parse = m_parses.TryParse(editor.Path);
 			CsGlobalNamespace globals = parse != null ? parse.Globals : null;
 			if (globals != null)
 			{
 				string stem = DoGetTargetStem(range, -2);
-				string label = string.Empty;
-				Member[] members;
-				bool isInstance = false, isStatic = false;
-			
-				if (stem.StartsWith("new "))
+				if (stem.Length > 0)
 				{
-					stem = stem.Substring(stem.IndexOf(' ') + 1);
-					
-					label = "Constructors";
-					members = DoGetConstructorsNamed(globals, ref stem);
-				}
-				else
-				{
-					label = "Names";
-					members = DoGetMembersNamed(globals, range.location - 1, stem, ref isInstance, ref isStatic);
-				}
+					string label = string.Empty;
+					Member[] members;
+					bool isInstance = false, isStatic = false;
 				
-				if (members.Length > 0)
-				{
-					if (m_controller == null)	
-						m_controller = new CompletionsController();
+					if (stem.StartsWith("new "))
+					{
+						stem = stem.Substring(stem.IndexOf(' ') + 1);
+						
+						label = "Constructors";
+						members = DoGetConstructorsNamed(globals, ref stem);
+					}
+					else
+					{
+						label = "Names";
+						members = DoGetMembersNamed(globals, range.location - 1, stem, ref isInstance, ref isStatic);
+					}
 					
-					m_controller.Show(m_boss.Get<ITextEditor>(), view, label, members, stem, isInstance, isStatic);
+					if (members.Length > 0)
+					{
+						if (m_controller == null)	
+							m_controller = new CompletionsController();
+						
+						m_controller.Show(m_boss.Get<ITextEditor>(), view, label, members, stem, isInstance, isStatic);
+					}
+					
+					handled = true;			// if it was recognized as a double tab then we never want to add the second tab
 				}
 			}
 			
-			return true;		// we never want to add the second tab
+			return handled;
 		}
 		
 		private Member[] DoGetMembersNamed(CsGlobalNamespace globals, int location, string stem, ref bool isInstance, ref bool isStatic)

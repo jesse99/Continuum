@@ -35,6 +35,11 @@ namespace AutoComplete
 		public ResolveMembers(ITargetDatabase db)
 		{
 			m_database = db;
+			
+#if !TEST
+			Boss boss = ObjectModel.Create("CsParser");
+			m_parses = boss.Get<IParses>();
+#endif
 		}
 		
 		public Member[] Resolve(ResolvedTarget target, CsGlobalNamespace globals)
@@ -44,7 +49,7 @@ namespace AutoComplete
 			var types = new List<CsType>();
 			var baseNames = new List<string>();
 			var interfaceNames = new List<string>();
-			string[] allNames = DoGetBases(target.TypeName, types, baseNames, interfaceNames);
+			string[] allNames = DoGetBases(globals, target.TypeName, types, baseNames, interfaceNames);
 			
 			foreach (CsType type in types)
 			{
@@ -83,7 +88,7 @@ namespace AutoComplete
 			var types = new List<CsType>();
 			var baseNames = new List<string>();
 			var interfaceNames = new List<string>();
-			string[] allNames = DoGetBases(target.TypeName, types, baseNames, interfaceNames);
+			string[] allNames = DoGetBases(globals, target.TypeName, types, baseNames, interfaceNames);
 			
 			foreach (CsType type in types)
 			{
@@ -145,7 +150,7 @@ namespace AutoComplete
 			return matches;
 		}
 		
-		private string[] DoGetBases(string typeName, List<CsType> types, List<string> baseNames, List<string> interfaceNames)
+		private string[] DoGetBases(CsGlobalNamespace globals, string typeName, List<CsType> types, List<string> baseNames, List<string> interfaceNames)
 		{
 #if TEST
 			var parses = new CsParser.Parses();
@@ -183,13 +188,89 @@ namespace AutoComplete
 					else
 						baseNames.AddIfMissing(name);
 					
-				// Note that we don't use CsType to get bases because it's difficult to get the
-				// full names for them. Note also that interface names can be repeated.
-				m_database.GetBases(name, baseNames, interfaceNames, allNames);
-				Contract.Assert(allNames.Count < 1000);
+				if (type != null)
+					DoGetParsedBases(globals, type, baseNames, interfaceNames, allNames);
+				else
+					m_database.GetBases(name, baseNames, interfaceNames, allNames);
 			}
 			
 			return allNames.ToArray();
+		}
+		
+		private void DoGetParsedBases(CsGlobalNamespace globals, CsType type, List<string> baseNames, List<string> interfaceNames, List<string> allNames)
+		{
+			baseNames.AddIfMissing("System.Object");
+			allNames.AddIfMissing("System.Object");
+			
+			foreach (string n in type.Bases.Names)
+			{
+				string typeName = null;
+				string name = DoGetRootName(n);
+				
+				string candidate = name;
+				if (DoHasType(candidate))
+					typeName = candidate;
+					
+				for (int i = 0; i < globals.Namespaces.Length && typeName == null; ++i)
+				{
+					candidate = globals.Namespaces[i].Name + "." + name;
+					if (DoHasType(candidate))
+						typeName = candidate;
+				}
+				
+				for (int i = 0; i < globals.Uses.Length && typeName == null; ++i)
+				{
+					candidate = globals.Uses[i].Namespace + "." + name;
+					if (DoHasType(candidate))
+						typeName = candidate;
+				}
+				
+				if (typeName != null)
+				{
+					if (CsHelpers.IsInterface(typeName))
+						interfaceNames.AddIfMissing(typeName);
+					else
+						baseNames.AddIfMissing(typeName);
+					
+					allNames.AddIfMissing(typeName);
+				}
+			}
+		}
+		
+		private string DoGetRootName(string name)
+		{
+			string root = CsHelpers.GetRealName(name);
+			
+			// TODO: Improve this for the (rare) cause where we inherit from a bound generic
+			// and one of the bound arguments is also a generic. If we wrote a real type parser
+			// we could also use an in-memory database for parsed types which would make the
+			// code simpler and better...
+			if (name.Count(c => c == '<') == 1 && name.Count(c => c == '>') == 1)
+			{
+				int i = name.IndexOf('<');
+				int j = name.IndexOf('>');
+				
+				int count = name.Substring(i, j- i).Count(c => c == ',') + 1;
+				root = name.Substring(0, i) + '`' + count;
+			}
+			
+			return root;
+		}
+		
+		private bool DoHasType(string name)
+		{
+			bool has = false;
+			
+			if (m_database.HasType(name))
+			{
+				has = true;
+			}
+			else if (m_parses != null)
+			{
+				has = m_parses.FindType(name) != null;
+			}
+			
+			return has;
 		}
 		
 		private void DoGetParsedMembers(CsType type, bool isInstance, bool isStatic, List<Member> members, bool includePrivates)
@@ -250,8 +331,13 @@ namespace AutoComplete
 				if (prop.HasGetter || prop.HasSetter)
 				{
 					if (DoShouldAdd(isInstance, isStatic, prop.Modifiers))
+					{
 						if (includePrivates || prop.Access != MemberModifiers.Private)
-							members.AddIfMissing(new Member(prop.Name, prop.ReturnType, type.FullName));
+						{
+							string rtype = prop.HasGetter ? prop.ReturnType : "System.Void";
+							members.AddIfMissing(new Member(prop.Name, rtype, type.FullName));
+						}
+					}
 				}
 			}
 		}
@@ -259,6 +345,7 @@ namespace AutoComplete
 		
 		#region Fields
 		private ITargetDatabase m_database;
+		private IParses m_parses;
 		#endregion
 	}
 }

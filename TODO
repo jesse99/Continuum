@@ -200,21 +200,19 @@ param_names				Space separated list of Names integers of the names of each
 param_modifiers			Space separated list of integers: 0 for in parameter, 1 for out, 2
 							for ref, and 3 for params.
 
+* Do a checkin and build a new foreshadow.
 * Work more on target completion:
-	- build a new foreshadow (will need to trash old dbs)
-	- setter only properties should not complete
-	- complete table should support paste (i.e. add it to completion text)
 	- member list needs to account for access
 	- member list needs to account for visibility
-	- enter should complete snippets (probably also partial expressions)
 	- get rid of Create Exception refactor
 	- complete new SomeType calls
 		` special case array types
 	- local explicit interface implementation
-	- global explicit interface implementation
+	- db explicit interface implementation
 	- need to work with namespace aliases
 	- prune value type members when completing args
 * option-tab needs to scroll selection into view
+* Add a refactor to make a type enumerable.
 * Enter should add snippets:
 	- look at CodeTemplates file
 	- $NAME is a placeholder
@@ -247,7 +245,6 @@ param_modifiers			Space separated list of integers: 0 for in parameter, 1 for ou
 	- five versions target, call, arg, ctor arg, namespace completion
 	- IAutoComplete should be a repeated interface?
 	- make sure private methods work (for local assemblies)
-	- should the insert be a new undo command?
 	- can we show the comments for the selection? maybe in a second window? or
 	   maybe some sort of context help window that can also be shown if the text 
 	   window selection is within a method?

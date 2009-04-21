@@ -128,7 +128,7 @@ namespace Shared
 		private string[] m_row;
 	}
 	
-	public sealed class NamedRows
+	public sealed class NamedRows : IEnumerable<NamedRow>
 	{
 		public NamedRows(Dictionary<string, int> names, string[][] rows)
 		{
@@ -157,6 +157,11 @@ namespace Shared
 				string[] row = m_rows[index];
 				return new NamedRow(m_names, row);
 			}
+		}
+		
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
 		}
 		
 		public IEnumerator<NamedRow> GetEnumerator()

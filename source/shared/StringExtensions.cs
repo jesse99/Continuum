@@ -77,6 +77,12 @@ namespace Shared
 			return builder.ToString();
 		}
 		
+		[Pure]
+		public static int Count(this string s, char c)
+		{
+			return s.Count(d => d == c);
+		}
+		
 		#region Private Methods		
 		private static string DoTrimAll(string s, int startAt)
 		{
