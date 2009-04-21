@@ -22,18 +22,7 @@ ReferenceEquals used with value type
 might want a sample app
 sudo fs_usage -f filesys
 
-* Work more on target completion:
-	- table should be using …
-	- local explicit interface implementation
-	- db explicit interface implementation
-	- need to work with namespace aliases
-	- prune value type members when completing args
-* option-tab needs to scroll selection into view
-* Add a refactor to make a type enumerable.
 * Work on tab completion:
-	- can we show the comments for the selection? maybe in a second window? or
-	   maybe some sort of context help window that can also be shown if the text 
-	   window selection is within a method?
 	- refactor needs to document Scope and support Locals property
 	- keyDown and textStorageDidProcessEditing should use cStringUsingEncoding
 	  (be sure to do some timing tests to see if it can be used to avoid copying all
@@ -47,6 +36,10 @@ sudo fs_usage -f filesys
 	- get indexers completing
 	- should also be able to complete instantiated generics now
 	
+	- can we show the comments for the selection? maybe in a second window? or
+	   maybe some sort of context help window that can also be shown if the text 
+	   window selection is within a method? or a growl sort of window?
+	- need to work with namespace aliases
 	- might want to special case "throw new "
 * Enter should add snippets:
 	- look at CodeTemplates file

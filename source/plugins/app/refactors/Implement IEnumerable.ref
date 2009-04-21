@@ -1,0 +1,36 @@
+# Inherit from IEnumerable<T> and add both GetEnumerator methods. 
+define Run()
+	if Scope is TypeDeclaration then
+		Process(Scope)
+		
+	elif Scope is Member then
+		Process(Scope.DeclaringType)
+		
+	else
+		Raise("Selection is not within a type or member.")
+	end
+end
+
+define Process(type)
+	let name = Ask("Enumeration type", "object") in
+		Globals.AddUsing("System.Collections.Generic")
+		type.AddBase("IEnumerable<#{name}>")
+		
+		# IEnumerable<T> inherits from System.Collections.IEnumerable so
+		# we need to implement this method as well. And it must be an explicit
+		# implementation because it has the same name as the generic version.
+		type.AddMember(
+"System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+{
+	return GetEnumerator();
+}")
+		
+		type.AddMember(
+"public IEnumerator<#{name}> GetEnumerator()
+{
+	// Typically this will iterate over a collection and use ""yield return""
+	// to return each element.
+	yield return default(#{name});
+}")
+	end
+end

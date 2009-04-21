@@ -352,6 +352,7 @@ namespace TextEditor
 			if (next.length > 0)
 			{
 				setSelectedRange(next);
+				scrollRangeToVisible(next);
 				handled = true;
 			}
 			
@@ -369,6 +370,7 @@ namespace TextEditor
 			if (previous.length > 0)
 			{
 				setSelectedRange(previous);
+				scrollRangeToVisible(previous);
 				handled = true;
 			}
 			
