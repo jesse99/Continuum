@@ -159,7 +159,7 @@ namespace AutoComplete
 			}
 		}
 		
-		public Member[] GetFields(string[] typeNames, bool instanceCall, bool isStaticCall)
+		public Member[] GetFields(string[] typeNames, bool instanceCall, bool isStaticCall, bool includeProtected)
 		{
 			var members = new List<Member>();
 			
@@ -174,17 +174,19 @@ namespace AutoComplete
 						types.Append(" OR ");
 				}
 				
+				string access = includeProtected ? "access < 3" : "(access = 0 OR access = 2)";
+				
 				string sql;
 				if (instanceCall && isStaticCall)
 					sql = string.Format(@"
 						SELECT name, type_name, declaring_root_name
 							FROM Fields 
-						WHERE access < 3 AND ({0})", types.ToString());	// we exclude all private fields (note that this won't affect this methods since the parser will pick up those)
+						WHERE {1} AND ({0})", types.ToString(), access);	// we exclude all private fields (note that this won't affect this methods since the parser will pick up those)
 				else
 					sql = string.Format(@"
 						SELECT name, type_name, declaring_root_name
 							FROM Fields 
-						WHERE static = {1} AND access < 3 AND ({0})", types.ToString(), isStaticCall ? "1" : "0");
+						WHERE static = {1} AND {2} AND ({0})", types.ToString(), isStaticCall ? "1" : "0", access);
 				
 				string[][] rows = m_database.QueryRows(sql);
 				foreach (string[] r in rows)
@@ -196,7 +198,7 @@ namespace AutoComplete
 			return members.ToArray();
 		}
 		
-		public Member[] GetFields(string[] typeNames, bool instanceCall, bool isStaticCall, string name)
+		public Member[] GetFields(string[] typeNames, bool instanceCall, bool isStaticCall, string name,  bool includeProtected)
 		{
 			var members = new List<Member>();
 			
@@ -211,17 +213,19 @@ namespace AutoComplete
 						types.Append(" OR ");
 				}
 				
+				string access = includeProtected ? "access < 3" : "(access = 0 OR access = 2)";
+				
 				string sql;
 				if (instanceCall && isStaticCall)
 					sql = string.Format(@"
 						SELECT name, type_name, declaring_root_name
 							FROM Fields 
-						WHERE name = '{0}' AND access < 3 AND ({1})", name, types.ToString());	// we exclude all private fields (note that this won't affect this methods since the parser will pick up those)
+						WHERE name = '{0}' AND {2} AND ({1})", name, types.ToString(), access);	// we exclude all private fields (note that this won't affect this methods since the parser will pick up those)
 				else
 					sql = string.Format(@"
 						SELECT name, type_name, declaring_root_name
 							FROM Fields 
-						WHERE name = '{0}' AND static = {2} AND access < 3 AND ({1})", name, types.ToString(), isStaticCall ? "1" : "0");
+						WHERE name = '{0}' AND static = {2} AND {3} AND ({1})", name, types.ToString(), isStaticCall ? "1" : "0", access);
 				
 				string[][] rows = m_database.QueryRows(sql);
 				foreach (string[] r in rows)
@@ -293,7 +297,7 @@ namespace AutoComplete
 			return members.ToArray();
 		}
 		
-		public Member[] GetMembers(string[] typeNames, bool instanceCall, bool isStaticCall)
+		public Member[] GetMembers(string[] typeNames, bool instanceCall, bool isStaticCall, bool includeProtected)
 		{
 			var members = new List<Member>();
 			
@@ -308,17 +312,19 @@ namespace AutoComplete
 						types.Append(" OR ");
 				}
 				
+				string access = includeProtected ? "access < 3" : "(access = 0 OR access = 2)";
+				
 				string sql;
 				if (instanceCall && isStaticCall)
 					sql = string.Format(@"
 						SELECT display_text, return_type_name, params_count, declaring_root_name, kind
 							FROM Methods 
-						WHERE kind <= 2 AND ({0})", types.ToString());
+						WHERE kind <= 2 AND {1} AND ({0})", types.ToString(), access);
 				else
 					sql = string.Format(@"
 						SELECT display_text, return_type_name, params_count, declaring_root_name, kind
 							FROM Methods 
-						WHERE static = {1} AND kind <= 2 AND ({0})", types.ToString(), isStaticCall ? "1" : "0");
+						WHERE static = {1} AND kind <= 2 AND {2} AND ({0})", types.ToString(), isStaticCall ? "1" : "0", access);
 				
 				NamedRows rows = m_database.QueryNamedRows(sql);
 				foreach (NamedRow r in rows)
@@ -336,7 +342,7 @@ namespace AutoComplete
 			return members.ToArray();
 		}
 		
-		public Member[] GetMembers(string[] typeNames, bool instanceCall, bool isStaticCall, string name, int arity)
+		public Member[] GetMembers(string[] typeNames, bool instanceCall, bool isStaticCall, string name, int arity, bool includeProtected)
 		{
 			var members = new List<Member>();
 			
@@ -351,19 +357,21 @@ namespace AutoComplete
 						types.Append(" OR ");
 				}
 				
+				string access = includeProtected ? "access < 3" : "(access = 0 OR access = 2)";
+				
 				string sql;
 				if (instanceCall && isStaticCall)
 					sql = string.Format(@"
 						SELECT display_text, return_type_name, params_count, declaring_root_name, kind
 							FROM Methods 
 						WHERE (name = '{0}' OR name = '{1}') AND params_count = {2} AND 
-							kind <= 2 AND ({3})", name, "get_" + name, arity, types.ToString());
+							kind <= 2 AND {4} AND ({3})", name, "get_" + name, arity, types.ToString(), access);
 				else
 					sql = string.Format(@"
 						SELECT display_text, return_type_name, params_count, declaring_root_name, kind
 							FROM Methods 
 						WHERE (name = '{0}' OR name = '{1}') AND params_count = {2} AND 
-							static = {4} AND kind <= 2 AND ({3})", name, "get_" + name, arity, types.ToString(), isStaticCall ? "1" : "0");
+							static = {4} AND {5} AND kind <= 2 AND ({3})", name, "get_" + name, arity, types.ToString(), isStaticCall ? "1" : "0", access);
 				
 				NamedRows rows = m_database.QueryNamedRows(sql);
 				foreach (NamedRow r in rows)

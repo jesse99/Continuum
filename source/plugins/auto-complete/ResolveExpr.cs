@@ -41,7 +41,7 @@ namespace AutoComplete
 		}
 		
 		// Offset should point just after the expression to resolve. May return null.
-		public ResolvedTarget Resolve(string text, int offset)
+		public ResolvedTarget Resolve(CsMember context, string text, int offset)
 		{
 			Contract.Requires(offset >= 0, "offset is negative");
 			Contract.Requires(offset <= text.Length, "offset is too large");
@@ -61,7 +61,7 @@ namespace AutoComplete
 				
 				foreach (string operand in operands)
 				{
-					result = DoResolveOperand(result, operand);
+					result = DoResolveOperand(context, result, operand);
 					if (result == null)
 						break;
 				}
@@ -201,7 +201,7 @@ namespace AutoComplete
 			return operands.ToArray();
 		}
 		
-		private ResolvedTarget DoResolveOperand(ResolvedTarget target, string operand)
+		private ResolvedTarget DoResolveOperand(CsMember context, ResolvedTarget target, string operand)
 		{
 			ResolvedTarget result = null;
 			
@@ -231,7 +231,7 @@ namespace AutoComplete
 				{
 					Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "trying {0}({1} args) member operand", name, numArgs);
 					
-					Member[] members = m_memberResolver.Find(target, m_globals, name, numArgs);
+					Member[] members = m_memberResolver.Find(context, target, m_globals, name, numArgs);
 					if (members.Length > 0)
 					{
 						if (members.All(m => m.Type == members[0].Type))

@@ -22,197 +22,32 @@ ReferenceEquals used with value type
 might want a sample app
 sudo fs_usage -f filesys
 
-http://www.technipages.com/os-x-leopard-enabledisable-spotlight.html
-
-		// fields and properties
-#if false
-		if (m_member != null && m_member.DeclaringType != null)
-		{
-			ResolvedTarget type = m_typeResolver.Resolve(m_member.DeclaringType, m_globals, true, false);
-			if (type != null)
-			{
-				DoFindFields(type, vars);
-				DoFindProperties(type, vars);
-			}
-			
-			var bases = new List<string>();
-			var interfaces = new List<string>();
-			var allNames = new List<string>();
-			m_database.GetBases(m_member.DeclaringType, bases, interfaces, allNames);
-			
-			if (bases.Count > 0)
-			{
-				foreach (string b in bases)
-				{
-					type = m_typeResolver.Resolve(b, m_globals, true, false);
-					DoFindFields(type, vars);
-					DoFindProperties(type, vars);
-				}
-			}
-		}
-#endif
-
-		public IEnumerable<ResolvedTarget> GetBases(CsGlobalNamespace globals, string fullName, bool isInstance, bool isStatic)
-		{
-			if (fullName == "xxxx")
-				yield return null;
-				
-			Trace.Assert(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
-			
-			ResolvedTarget target = Resolve(fullName, globals, isInstance, isStatic);
-			if (target != null && CsHelpers.IsInterface(target.TypeName))
-			{
-				var names = new List<string>();
-				names.AddRange(m_database.FindInterfaces(target.FullName));
-				names.Add("System.Object");
-				
-				while (names.Count > 0)
-				{
-					string name = names[names.Count - 1];
-					names.RemoveLast();
-					names.AddRange(m_database.FindInterfaces(name));
-					
-					target = Resolve(name, globals, isInstance, isStatic);
-					yield return target;
-				}
-			}
-			else
-			{
-				while (target != null && target.FullName != "System.Object")
-				{
-					if (target.Type != null)
-					{
-						if (target.Type.Bases.HasBaseClass)
-							target = Resolve(target.Type.Bases.Names[0], globals, isInstance, isStatic);
-						else
-							target = Resolve("System.Object", globals, isInstance, isStatic);
-					}
-					else if (target.Type == null && target.Hash != null)
-					{
-						string name = m_database.FindBaseType(target.FullName);
-						if (!string.IsNullOrEmpty(name))
-							target = Resolve(name, globals, isInstance, isStatic);
-						else
-							target = Resolve("System.Object", globals, isInstance, isStatic);
-					}
-					else
-						target = Resolve("System.Object", globals, isInstance, isStatic);
-						
-					if (target != null)
-						yield return target;
-				}
-			}
-		}
-		
-		private string DoGetMethodText(MethodDefinition method, int firstArg)
-		{
-			var builder = new StringBuilder();
-			
-			if (method.IsGetter || method.IsSetter)
-			{
-				builder.Append(method.Name.Substring(4));
-			}
-			else
-			{
-				builder.Append(method.Name);
-				
-				builder.Append('(');
-				for (int i = firstArg; i < method.Parameters.Count; ++i)
-				{
-					ParameterDefinition p = method.Parameters[i];
-					
-					string type = CsHelpers.GetAliasedName(p.ParameterType.FullName);
-					if (type == p.ParameterType.FullName)
-					{
-						type = CsHelpers.TrimNamespace(type);
-						type = CsHelpers.TrimGeneric(type);
-					}
-					if (DoIsParams(p))
-						type = "params " + type;
-					if (type.EndsWith("&"))
-					{
-						type = type.Remove(type.Length - 1);
-						
-						if (p.IsOut)
-							type = "out " + type;
-						else
-							type = "ref " + type;
-					}
-					builder.Append(type);
-					
-					builder.Append(' ');	
-					builder.Append(p.Name);
-					
-					if (i + 1 < method.Parameters.Count)
-						builder.Append(", ");
-				}
-				builder.Append(')');
-			}
-			
-			return builder.ToString();
-		}
-		
-Menu Query
-	SELECT DISTINCT full_name, file_name, kind
-		FROM NameInfo
-	WHERE name = 'NSMenu' OR full_name = 'NSMenu' OR full_name GLOB 'NSMenu<*'
-	LIMIT 40
-Database Verbose   query took 0.103 secs
-
-Auto-Complete Query
-	SELECT return_type, arg_names, name, attributes   (used by DoFindProperties)
-		FROM Methods 
-	WHERE declaring_type = 'System.Object' AND name GLOB 'System.Object*'
-	Database Verbose   query took 2*0.098 secs
-	
-	SELECT text, return_type, arg_names, namespace
-		FROM Members 
-	WHERE type = 'MObjc.NSObject' AND is_static = '0'
-	Database Verbose   query took 3*0.064 secs
-	
-	SELECT text, return_type, arg_names, namespace
-		FROM Members 
-	WHERE type = 'System.IEquatable`1' AND length(namespace) > 0
-	Database Verbose   query took 3*0.046 secs
-
-
--rw-r--r--  1 jessejones  staff  67759104 Mar 28 10:20 gendarme.db
--rw-r--r--  1 jessejones  staff  67338240 Apr  9 07:32 Continuum.db
--rw-r--r--  1 jessejones  staff  53890048 Apr  5 09:43 mcocoa.db
--rw-r--r--  1 jessejones  staff  51709952 Apr  8 10:58 shuffler.db
--rw-r--r--  1 jessejones  staff  17373184 Apr  8 12:02 Trivial.db
--rw-r--r--  1 jessejones  staff  27526144 Apr  8 10:54 mobjc.db
-
-  c TEXT UNIQUE        -- index created
-  GLOB is expensive (can't use index, can replace trailing glob with compares)
-  INSERT INTO t1 VALUES((SELECT max(a) FROM t1)+1,123)
-  elect Names.value from Names, Types where Names.name = Types.full_name limit 1000
-  
-declaring_type		Types foreign key or zero if the type is not nested.
-file_name			Names foreign key for the file name (not path) the type is declared
-					within. Zero if the assembly was compiled without debug info.
-
-param_type_names		Space separated list of Names integers of the type names of each
-							type in the method's parameter list. Empty if the method is nullary.
-param_names				Space separated list of Names integers of the names of each
-							argument in the method's parameter list. Empty if the method is 
-							nullary.
-param_modifiers			Space separated list of integers: 0 for in parameter, 1 for out, 2
-							for ref, and 3 for params.
-
-* Do a checkin and build a new foreshadow.
 * Work more on target completion:
-	- member list needs to account for access
-	- member list needs to account for visibility
-	- get rid of Create Exception refactor
-	- complete new SomeType calls
-		` special case array types
+	- table should be using …
 	- local explicit interface implementation
 	- db explicit interface implementation
 	- need to work with namespace aliases
 	- prune value type members when completing args
 * option-tab needs to scroll selection into view
 * Add a refactor to make a type enumerable.
+* Work on tab completion:
+	- can we show the comments for the selection? maybe in a second window? or
+	   maybe some sort of context help window that can also be shown if the text 
+	   window selection is within a method?
+	- refactor needs to document Scope and support Locals property
+	- keyDown and textStorageDidProcessEditing should use cStringUsingEncoding
+	  (be sure to do some timing tests to see if it can be used to avoid copying all
+	  of the characters)
+	- might want to support completing names via F5, should also have a menu item
+	   for this
+	- would be really nice to add an auto-complete (and maybe object-model)
+	  functional test
+	- get pointers completing
+	- get arrays completing
+	- get indexers completing
+	- should also be able to complete instantiated generics now
+	
+	- might want to special case "throw new "
 * Enter should add snippets:
 	- look at CodeTemplates file
 	- $NAME is a placeholder
@@ -222,6 +57,7 @@ param_modifiers			Space separated list of integers: 0 for in parameter, 1 for ou
 	- first time a snippet is used copy the snippets to a local dir
 	- if a local snippet dir exists also copy any new snippets (on startup and on dir changed)
 	- snippets: add class, iterface, struct, exception, unit test, method rule, type rule
+	- get rid of Create Exception refactor
 * FileStream.cs didn't parse right.
 * Right click on MethodDefinition has an extra separator in the menu.
 * Can we do some sort of notification when assemblies finish parsing? Or to show parse
@@ -241,28 +77,6 @@ param_modifiers			Space separated list of integers: 0 for in parameter, 1 for ou
 * Styles aren't getting applied reliably. Mostly member and type names.
    NSData.cs for example.
 * Make sure setting the default text font size works too.
-* Work on tab completion:
-	- five versions target, call, arg, ctor arg, namespace completion
-	- IAutoComplete should be a repeated interface?
-	- make sure private methods work (for local assemblies)
-	- can we show the comments for the selection? maybe in a second window? or
-	   maybe some sort of context help window that can also be shown if the text 
-	   window selection is within a method?
-	- complete throw new ...
-	- refactor needs to document Scope and support Locals property
-	- keyDown and textStorageDidProcessEditing should use cStringUsingEncoding
-	  (be sure to do some timing tests to see if it can be used to avoid copying all
-	  of the characters)
-	- might want to support completing names via F5, should also have a menu item
-	   for this
-	- should prefer current namespace when searching for a type
-	- arg completion should prune more types
-	- look at Code Templates file for ideas on statement completion
-	- arg completion could filter on formal arg type
-	- get pointers completing
-	- get arrays completing
-	- get indexers completing
-	- should also be able to complete instantiated generics now
 * Is ChangeAccess correct?
 * Add Convert to Decimal and Convert To Hex.
 * Couldn't use context menu to spellcheck with no database.

@@ -42,7 +42,7 @@ namespace AutoComplete
 #endif
 		}
 		
-		public Member[] Resolve(ResolvedTarget target, CsGlobalNamespace globals)
+		public Member[] Resolve(CsMember context, ResolvedTarget target, CsGlobalNamespace globals)
 		{
 			var members = new List<Member>();
 			
@@ -51,17 +51,19 @@ namespace AutoComplete
 			var interfaceNames = new List<string>();
 			string[] allNames = DoGetBases(globals, target.TypeName, types, baseNames, interfaceNames);
 			
+			bool includeProtected = context != null && allNames.Contains(context.DeclaringType.FullName);
 			foreach (CsType type in types)
 			{
-				DoGetParsedMembers(type, target.IsInstance, target.IsStatic, members, type.FullName == target.TypeName);
+				bool includePrivate = context != null && type.FullName == context.DeclaringType.FullName;
+				DoGetParsedMembers(type, target.IsInstance, target.IsStatic, members, includePrivate, includeProtected);
 			}
 			
 			// Note that we need to make two GetMembers queries to ensure that interface
 			// methods are not used in place of base methods (this gives us better results
 			// when the context menu is used to filter out methods associated with types).
-			DoAddIfMissingRange("Fields:", members, m_database.GetFields(baseNames.ToArray(), target.IsInstance, target.IsStatic));
-			DoAddIfMissingRange("Base Members:", members, m_database.GetMembers(baseNames.ToArray(), target.IsInstance, target.IsStatic));
-			DoAddIfMissingRange("Interface Members:", members, m_database.GetMembers(interfaceNames.ToArray(), target.IsInstance, target.IsStatic));
+			DoAddIfMissingRange("Fields:", members, m_database.GetFields(baseNames.ToArray(), target.IsInstance, target.IsStatic, includeProtected));
+			DoAddIfMissingRange("Base Members:", members, m_database.GetMembers(baseNames.ToArray(), target.IsInstance, target.IsStatic, includeProtected));
+			DoAddIfMissingRange("Interface Members:", members, m_database.GetMembers(interfaceNames.ToArray(), target.IsInstance, target.IsStatic, includeProtected));
 			
 			if (target.IsInstance)
 			{
@@ -81,7 +83,7 @@ namespace AutoComplete
 		
 		// Usually this will return zero or one name, but it can return more (eg for explicit interface
 		// implementations).
-		public Member[] Find(ResolvedTarget target, CsGlobalNamespace globals, string name, int arity)
+		public Member[] Find(CsMember context, ResolvedTarget target, CsGlobalNamespace globals, string name, int arity)
 		{
 			var members = new List<Member>();
 			
@@ -90,19 +92,22 @@ namespace AutoComplete
 			var interfaceNames = new List<string>();
 			string[] allNames = DoGetBases(globals, target.TypeName, types, baseNames, interfaceNames);
 			
+			bool includeProtected = context != null && allNames.Contains(context.DeclaringType.FullName);
 			foreach (CsType type in types)
 			{
 				var candidates = new List<Member>();
-				DoGetParsedMembers(type, target.IsInstance, target.IsStatic, candidates, type.FullName == target.TypeName);
+				
+				bool includePrivate = context != null && type.FullName == context.DeclaringType.FullName;
+				DoGetParsedMembers(type, target.IsInstance, target.IsStatic, candidates, includePrivate, includeProtected);
 				members = (from m in candidates where DoMatch(m, name, arity) select m).ToList();
 			}
 			
 			// Note that we need to make two GetMembers queries to ensure that interface
 			// methods are not used in place of base methods (this gives us better results
 			// when the context menu is used to filter out methods associated with types).
-			DoAddIfMissingRange("Fields:", members, m_database.GetFields(baseNames.ToArray(), target.IsInstance, target.IsStatic, name));
-			DoAddIfMissingRange("Base Members:", members, m_database.GetMembers(baseNames.ToArray(), target.IsInstance, target.IsStatic, name, arity));
-			DoAddIfMissingRange("Interface Members:", members, m_database.GetMembers(interfaceNames.ToArray(), target.IsInstance, target.IsStatic, name, arity));
+			DoAddIfMissingRange("Fields:", members, m_database.GetFields(baseNames.ToArray(), target.IsInstance, target.IsStatic, name, includeProtected));
+			DoAddIfMissingRange("Base Members:", members, m_database.GetMembers(baseNames.ToArray(), target.IsInstance, target.IsStatic, name, arity, includeProtected));
+			DoAddIfMissingRange("Interface Members:", members, m_database.GetMembers(interfaceNames.ToArray(), target.IsInstance, target.IsStatic, name, arity, includeProtected));
 			
 			if (target.IsInstance)
 			{
@@ -273,7 +278,7 @@ namespace AutoComplete
 			return has;
 		}
 		
-		private void DoGetParsedMembers(CsType type, bool isInstance, bool isStatic, List<Member> members, bool includePrivates)
+		private void DoGetParsedMembers(CsType type, bool isInstance, bool isStatic, List<Member> members, bool includePrivates, bool includeProtected)
 		{
 			CsEnum e = type as CsEnum;
 			if (e != null)
@@ -288,7 +293,7 @@ namespace AutoComplete
 				}
 			}
 			else
-				DoGetParsedTypeMembers(type, isInstance, isStatic, members, includePrivates);
+				DoGetParsedTypeMembers(type, isInstance, isStatic, members, includePrivates, includeProtected);
 		}
 		
 		private bool DoShouldAdd(bool isInstance, bool isStatic, MemberModifiers modifiers)
@@ -299,13 +304,14 @@ namespace AutoComplete
 				return isStatic;
 		}
 		
-		private void DoGetParsedTypeMembers(CsType type, bool isInstance, bool isStatic, List<Member> members, bool includePrivates)
+		private void DoGetParsedTypeMembers(CsType type, bool isInstance, bool isStatic, List<Member> members, bool includePrivates, bool includeProtected)
 		{
 			foreach (CsField field in type.Fields)
 			{
 				if (DoShouldAdd(isInstance, isStatic, field.Modifiers))
 					if (includePrivates || field.Access != MemberModifiers.Private)
-						members.AddIfMissing(new Member(field.Name, field.Type, type.FullName));
+						if (includeProtected || field.Access != MemberModifiers.Protected)
+							members.AddIfMissing(new Member(field.Name, field.Type, type.FullName));
 			}
 			
 			foreach (CsMethod method in type.Methods)
@@ -316,10 +322,13 @@ namespace AutoComplete
 					{
 						if (includePrivates || method.Access != MemberModifiers.Private)
 						{
-							var anames = from p in method.Parameters select p.Name;
-							string text = method.Name + "(" + string.Join(";", (from p in method.Parameters select p.Type + " " + p.Name).ToArray()) + ")";
-							
-							members.AddIfMissing(new Member(text, anames.Count(), method.ReturnType, type.FullName));
+							if (includeProtected || method.Access != MemberModifiers.Protected)
+							{
+								var anames = from p in method.Parameters select p.Name;
+								string text = method.Name + "(" + string.Join(";", (from p in method.Parameters select p.Type + " " + p.Name).ToArray()) + ")";
+								
+								members.AddIfMissing(new Member(text, anames.Count(), method.ReturnType, type.FullName));
+							}
 						}
 					}
 				}
@@ -334,8 +343,11 @@ namespace AutoComplete
 					{
 						if (includePrivates || prop.Access != MemberModifiers.Private)
 						{
-							string rtype = prop.HasGetter ? prop.ReturnType : "System.Void";
-							members.AddIfMissing(new Member(prop.Name, rtype, type.FullName));
+							if (includeProtected || prop.Access != MemberModifiers.Protected)
+							{
+								string rtype = prop.HasGetter ? prop.ReturnType : "System.Void";
+								members.AddIfMissing(new Member(prop.Name, rtype, type.FullName));
+							}
 						}
 					}
 				}

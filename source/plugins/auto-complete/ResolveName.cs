@@ -31,7 +31,7 @@ namespace AutoComplete
 	// Used to resolve a simple name (e.g. locals in scope, arguments, etc).
 	internal sealed class ResolveName
 	{
-		public ResolveName(ITargetDatabase database, ICsLocalsParser locals, string text, int offset, CsGlobalNamespace globals)
+		public ResolveName(CsMember context, ITargetDatabase database, ICsLocalsParser locals, string text, int offset, CsGlobalNamespace globals)
 		{
 			m_database = database;
 			m_typeResolver = new ResolveType(database);
@@ -39,7 +39,7 @@ namespace AutoComplete
 			m_offset = offset;
 			
 			m_member = DoFindMember(m_globals);
-			m_variables = DoGetVariables(text, locals);
+			m_variables = DoGetVariables(context, text, locals);
 		}
 		
 		// Returns all of the names which may be used at the specified offset in the code.
@@ -51,6 +51,7 @@ namespace AutoComplete
 		// May return null.
 		public ResolvedTarget Resolve(string name)
 		{
+			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
 			ResolvedTarget result = null;
 			
 			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "---------------- resolving name");
@@ -113,7 +114,7 @@ namespace AutoComplete
 		#region Private Methods
 		// This is a bit overkill if all we want to do is identify the name, but we also
 		// need this info to do expression completion.
-		private Variable[] DoGetVariables(string text, ICsLocalsParser locals)
+		private Variable[] DoGetVariables(CsMember context, string text, ICsLocalsParser locals)
 		{
 			var vars = new List<Variable>();
 			
@@ -171,7 +172,7 @@ namespace AutoComplete
 				if (target != null)
 				{
 					var resolveMembers = new ResolveMembers(m_database);
-					Member[] members = resolveMembers.Resolve(target, m_globals);
+					Member[] members = resolveMembers.Resolve(context, target, m_globals);
 					foreach (Member member in members)
 					{
 						if (!vars.Exists(v => v.Name == member.Name))
@@ -282,7 +283,7 @@ namespace AutoComplete
 							}
 						}
 						
-						if (result == null)
+						if (result == null && !string.IsNullOrEmpty(value))
 							result = Resolve(value);
 						
 						if (result != null)
@@ -303,6 +304,8 @@ namespace AutoComplete
 		// TODO: probably should rewrite this and DoGetAsValue using the scanner
 		private string DoGetNewValue(string value)
 		{
+			bool isArray = false;
+			
 			int i = 3;
 			while (i < value.Length && char.IsWhiteSpace(value[i]))
 				++i;
@@ -333,11 +336,29 @@ namespace AutoComplete
 						++count;
 					}
 				}
+				else if (value[i + count] == '[')
+				{
+					int num = 1;
+					++count;
+					
+					while (i + count < value.Length && num > 0)
+					{
+						if (value[i + count] == '[')
+							++num;
+						else if (value[i + count] == ']')
+							--num;
+						
+						++count;
+					}
+					
+					if (num == 0)
+						isArray = true;
+				}
 				else
 					break;
 			}
 			
-			return value.Substring(i, count);
+			return isArray ? "array-type" : value.Substring(i, count);
 		}
 		
 		private string DoGetAsValue(string value)

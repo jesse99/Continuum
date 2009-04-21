@@ -58,7 +58,6 @@ namespace ObjectModel
 				m_database = new Database(m_path, "ParseAssembly-" + Path.GetFileNameWithoutExtension(m_path));
 			
 //	Console.WriteLine("    parsing {0} for thread {1}", assembly.Name.FullName, System.Threading.Thread.CurrentThread.ManagedThreadId);
-			
 			var namespaces = new HashSet<string>();
 			foreach (ModuleDefinition module in assembly.Modules)
 			{
@@ -319,7 +318,7 @@ namespace ObjectModel
 			// Note that auto-prop methods count as generated code.
 			if (method.IsGetter || method.IsSetter || !DoIsGeneratedCode(method))
 			{
-				if (fullParse || method.IsFamily || method.IsFamilyAndAssembly || method.IsFamilyOrAssembly || method.IsPublic)
+				if (fullParse || method.IsFamily || method.IsFamilyOrAssembly || method.IsPublic)
 				{
 					var location = DoGetSourceAndLine(method);
 				
@@ -422,7 +421,7 @@ namespace ObjectModel
 		{
 			if (!DoIsGeneratedCode(field))
 			{
-				if (fullParse || field.IsFamily || field.IsFamilyOrAssembly || field.IsFamilyOrAssembly || field.IsPublic)
+				if (fullParse || field.IsFamily || field.IsFamilyOrAssembly || field.IsPublic)
 				{
 					int access = 0;
 					switch (field.Attributes & FieldAttributes.FieldAccessMask)

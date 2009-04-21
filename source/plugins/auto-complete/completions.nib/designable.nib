@@ -101,7 +101,7 @@
 													</object>
 													<object class="NSTextFieldCell" key="NSDataCell" id="560129982">
 														<int key="NSCellFlags">1140981312</int>
-														<int key="NSCellFlags2">2048</int>
+														<int key="NSCellFlags2">2304</int>
 														<string key="NSContents">Text Cell</string>
 														<object class="NSFont" key="NSSupport" id="364917916">
 															<string key="NSName">LucidaGrande</string>

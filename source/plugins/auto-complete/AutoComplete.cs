@@ -119,6 +119,40 @@ namespace AutoComplete
 		}
 		
 		#region Private Methods
+		// Returns the shortest declaration which intersects offset.
+		private CsDeclaration DoFindDeclaration(CsTypeScope scope, int offset)
+		{
+			var decs = new List<CsDeclaration>(scope.Declarations.Length + 1);
+			decs.Add(scope);
+			
+			CsDeclaration result = null;
+			int resultLength = int.MaxValue;
+			
+			// For every declaration,
+			while (decs.Count > 0)
+			{
+				// if the declaration is within the range,
+				CsDeclaration candidate = decs.Pop();
+				if (candidate.Offset <= offset && offset < candidate.Offset + candidate.Length)
+				{
+					// use the declaration if it is shorter than what we have so far.
+					if (candidate.Length < resultLength)
+					{
+						result = candidate;
+						resultLength = candidate.Length;
+					}
+				}
+				
+				// If the declaration is a namespace or type then check the
+				// inner declarations as well.
+				CsTypeScope inner = candidate as CsTypeScope;
+				if (inner != null)
+					decs.AddRange(inner.Declarations);
+			}
+			
+			return result;
+		}
+		
 		private bool DoCompleteTab(NSTextView view, NSEvent evt, IComputeRuns computer, NSRange range)
 		{
 			bool handled = false;
@@ -207,9 +241,11 @@ namespace AutoComplete
 			CsGlobalNamespace globals = parse != null ? parse.Globals : null;
 			if (globals != null)
 			{
+				var context = DoFindDeclaration(globals, range.location) as CsMember;
+
 				Boss boss = ObjectModel.Create("CsParser");
 				var locals = boss.Get<ICsLocalsParser>();
-				var nameResolver = new ResolveName(m_database, locals, m_text.Text, range.location, globals);
+				var nameResolver = new ResolveName(context, m_database, locals, m_text.Text, range.location, globals);
 				var exprResolver = new ResolveExpr(m_database, globals, nameResolver);
 				
 				Member[] members = null;
@@ -217,11 +253,11 @@ namespace AutoComplete
 				bool isInstance = false;
 				bool isStatic = false;
 				
-				ResolvedTarget target = exprResolver.Resolve(m_text.Text, range.location);
+				ResolvedTarget target = exprResolver.Resolve(context, m_text.Text, range.location);
 				if (target != null)
 				{
 					type = target.TypeName;
-					members = m_members.Resolve(target, globals);
+					members = m_members.Resolve(context, target, globals);
 					isInstance = target.IsInstance;
 					isStatic = target.IsStatic;
 				}
@@ -299,11 +335,12 @@ namespace AutoComplete
 		{
 			var result = new List<Member>();
 			
-			var nameResolver = new ResolveName(m_database, m_locals, m_text.Text, location, globals);
+			var context = DoFindDeclaration(globals, location) as CsMember;
+			var nameResolver = new ResolveName(context, m_database, m_locals, m_text.Text, location, globals);
 			ResolvedTarget target = nameResolver.Resolve("<this>");
 			if (target != null)
 			{
-				var members = new List<Member>(m_members.Resolve(target, globals));
+				var members = new List<Member>(m_members.Resolve(context, target, globals));
 				foreach (Variable v in nameResolver.Variables)
 				{
 					members.AddIfMissing(new Member(v.Name, v.Type));
