@@ -86,6 +86,10 @@ namespace AutoComplete
 					string[] children = r[0].Split(';');
 					foreach (string child in children)
 					{
+						var member = new Member(child);
+						member.Label = ns + '.' + child;
+						members.AddIfMissing(member);
+
 						members.AddIfMissing(new Member(child));
 					}
 				}
@@ -102,7 +106,9 @@ namespace AutoComplete
 					string[] children = r[1].Split(';');
 					foreach (string child in children)
 					{
-						members.AddIfMissing(new Member(r[0] + '.' + child));
+						var member = new Member(r[0] + '.' + child);
+						member.Label = ns + '.' + r[0] + '.' + child;
+						members.AddIfMissing(member);
 					}
 				}
 			}
@@ -237,7 +243,45 @@ namespace AutoComplete
 			return members.ToArray();
 		}
 		
-		public Member[] GetCtors(string ns, string stem)
+		public Member[] GetTypes(string[] namespaces, string stem)
+		{
+			var members = new List<Member>();
+			
+			var ns = new StringBuilder();
+			ns.Append('(');
+			for (int i = 0; i < namespaces.Length; ++i)
+			{
+				ns.AppendFormat("namespace = '{0}'", namespaces[i]);
+				
+				if (i + 1 < namespaces.Length)
+					ns.Append(" OR ");
+			}
+			ns.Append(')');
+			
+			string sql;
+			if (stem.Length > 0)
+				sql = string.Format(@"
+					SELECT name, root_name
+						FROM Types
+					WHERE visibility < 3 AND {0} AND name GLOB '{1}*'", ns.ToString(), stem);
+			else
+				sql = string.Format(@"
+					SELECT name, root_name
+						FROM Types
+					WHERE {0} AND visibility < 3", ns.ToString());
+			
+			string[][] rows = m_database.QueryRows(sql);
+			foreach (string[] r in rows)
+			{
+				var member = new Member(r[0]);
+				member.Label = r[1];
+				members.AddIfMissing(member);
+			}
+			
+			return members.ToArray();
+		}
+		
+		public Member[] GetCtors(string[] namespaces, string stem)
 		{
 			var members = new List<Member>();
 			
@@ -250,34 +294,30 @@ namespace AutoComplete
 			string common = string.Format(@"Methods.static = 0 AND Methods.kind = 6 AND 
 				Types.visibility < 3 AND Methods.access < 3 AND (Types.attributes & {0}) = 0 AND
 				Methods.declaring_root_name = Types.root_name", badAttrs);
+				
+			var ns = new StringBuilder();
+			ns.Append('(');
+			for (int i = 0; i < namespaces.Length; ++i)
+			{
+				ns.AppendFormat("Types.namespace = '{0}'", namespaces[i]);
+				
+				if (i + 1 < namespaces.Length)
+					ns.Append(" OR ");
+			}
+			ns.Append(')');
 			
 			string sql;
-			if (ns != null)
-				if (stem.Length > 0)
-					sql = string.Format(@"
-						SELECT Methods.display_text, Methods.params_count, Types.root_name
-							FROM Methods, Types
-						WHERE {2} AND
-							Types.namespace = '{0}' AND Types.name GLOB '{1}*'", ns, stem, common);
-				else
-					sql = string.Format(@"
-						SELECT Methods.display_text, Methods.params_count, Types.root_name
-							FROM Methods, Types
-						WHERE {1} AND
-							Types.namespace = '{0}'", ns, common);
+			if (stem.Length > 0)
+				sql = string.Format(@"
+					SELECT Methods.display_text, Methods.params_count, Types.root_name
+						FROM Methods, Types
+					WHERE {2} AND
+						{0} AND Types.name GLOB '{1}*'", ns.ToString(), stem, common);
 			else
-				if (stem.Length > 0)
-					sql = string.Format(@"
-						SELECT Methods.display_text, Methods.params_count, Types.root_name
-							FROM Methods, Types
-						WHERE {1} AND
-							Types.namespace = '' AND Types.name GLOB '{0}*'", stem, common);
-				else
-					sql = string.Format(@"
-						SELECT Methods.display_text, Methods.params_count, Types.root_name
-							FROM Methods, Types
-						WHERE {0} AND
-							Types.namespace = ''", common);
+				sql = string.Format(@"
+					SELECT Methods.display_text, Methods.params_count, Types.root_name
+						FROM Methods, Types
+					WHERE {1} AND {0}", ns.ToString(), common);
 			
 			string[][] rows = m_database.QueryRows(sql);
 			foreach (string[] r in rows)
@@ -287,12 +327,12 @@ namespace AutoComplete
 				text = text.Substring(j + 2);
 				
 				var member = new Member(text, int.Parse(r[1]), "System.Void", r[2]);
-				member.Label = r[2];
+				member.Label = r[2] + " Constructor";
 				
 				members.Add(member);
 			}
 			
-			DoAddDefaultCtors(ns, stem, badAttrs, members);
+			DoAddDefaultCtors(ns.ToString(), stem, badAttrs, members);
 			
 			return members.ToArray();
 		}
@@ -528,33 +568,20 @@ namespace AutoComplete
 		{
 			string common = string.Format("visibility < 3 AND (attributes & {0}) = 0", badAttrs);
 			
+			ns = ns.Replace("Types.", string.Empty);
+			
 			string sql;
-			if (ns != null)
-				if (stem.Length > 0)
-					sql = string.Format(@"
-						SELECT attributes, root_name, name, generic_arg_names
-							FROM Types
-						WHERE {2} AND
-							namespace = '{0}' AND name GLOB '{1}*'", ns, stem, common);
-				else
-					sql = string.Format(@"
-						SELECT attributes, root_name, name, generic_arg_names
-							FROM Types
-						WHERE {1} AND
-							namespace = '{0}'", ns, common);
+			if (stem.Length > 0)
+				sql = string.Format(@"
+					SELECT attributes, root_name, name, generic_arg_names
+						FROM Types
+					WHERE {2} AND
+						{0} AND name GLOB '{1}*'", ns, stem, common);
 			else
-				if (stem.Length > 0)
-					sql = string.Format(@"
-						SELECT attributes, root_name, name, generic_arg_names
-							FROM Types
-						WHERE {1} AND
-							namespace = '' AND name GLOB '{0}*'", stem, common);
-				else
-					sql = string.Format(@"
-						SELECT attributes, root_name, name, generic_arg_names
-							FROM Types
-						WHERE {0} AND
-							namespace = ''", common);
+				sql = string.Format(@"
+					SELECT attributes, root_name, name, generic_arg_names
+						FROM Types
+					WHERE {1} AND {0}", ns, common);
 			
 			string[][] rows = m_database.QueryRows(sql);
 			foreach (string[] r in rows)
@@ -574,7 +601,7 @@ namespace AutoComplete
 					text.Append("()");
 					
 					var member = new Member(text.ToString(), 0, "System.Void", r[1]);
-					member.Label = r[1];
+					member.Label = r[1] + " Constructor";
 					
 					members.AddIfMissing(member);
 				}

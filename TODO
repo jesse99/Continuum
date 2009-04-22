@@ -22,6 +22,9 @@ ReferenceEquals used with value type
 might want a sample app
 sudo fs_usage -f filesys
 
+* Context menu should probably be able to hide types by namespace:
+	- may want to look at reworking Member to be more generic
+* Before using locate try using appending the path to each open directory.
 * Work on tab completion:
 	- refactor needs to document Scope and support Locals property
 	- keyDown and textStorageDidProcessEditing should use cStringUsingEncoding
@@ -29,13 +32,15 @@ sudo fs_usage -f filesys
 	  of the characters)
 	- might want to support completing names via F5, should also have a menu item
 	   for this
+	
 	- would be really nice to add an auto-complete (and maybe object-model)
 	  functional test
 	- get pointers completing
 	- get arrays completing
 	- get indexers completing
-	- should also be able to complete instantiated generics now
-	
+	- get bound generics compelting
+	- it would be nice if tab could be used to complete type names, but the UI may
+	  be a bit gnarly if there is an ambiguity
 	- can we show the comments for the selection? maybe in a second window? or
 	   maybe some sort of context help window that can also be shown if the text 
 	   window selection is within a method? or a growl sort of window?
@@ -502,6 +507,7 @@ sudo fs_usage -f filesys
 	  that were edited)
 	- would be cool if invariant support could be added via a script		
 * Release checklist:
+	- update the version number
 	- make sure text editor boss goes away
 	- make sure text objects go away
 	- make sure auto complete objects go away
@@ -518,7 +524,6 @@ sudo fs_usage -f filesys
 	- review tar targets
 	- r18 was preview1
 	- upload the new binary
-	- update the version number
 	- delete build_num
 
  /Users/jessejones/Documents/Developer/UnixNotes.sh

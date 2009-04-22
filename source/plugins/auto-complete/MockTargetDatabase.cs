@@ -94,11 +94,16 @@ namespace AutoComplete
 			}
 		}
 		
-		public Member[] GetCtors(string ns, string stem)
+		public Member[] GetTypes(string[] namespaces, string stem)
 		{
 			throw new NotImplementedException();
 		}
-
+		
+		public Member[] GetCtors(string[] namespaces, string stem)
+		{
+			throw new NotImplementedException();
+		}
+		
 		public Member[] GetMembers(string[] typeNames, bool instanceCall, bool isStaticCall)
 		{
 			var result = new List<Member>();

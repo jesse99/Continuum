@@ -83,7 +83,7 @@ namespace Shared
 		CsType FindType(string fullName);
 		
 		// Searches globals in each parse and all of the types whose names 
-		// start with stem.
+		// start with stem. If ns is null the global namespace is searched.
 		CsType[] FindTypes(string ns, string stem);
 		
 		// Returns the namespaces under ns. Note that the returned names don't

@@ -313,7 +313,7 @@ namespace AutoComplete
 					else
 					{
 						label = "Names";
-						members = DoGetMembersNamed(globals, range.location - 1, stem, ref isInstance, ref isStatic);
+						members = DoGetNames(globals, range.location - 1, stem, ref isInstance, ref isStatic);
 					}
 					
 					if (members.Length > 0)
@@ -331,7 +331,7 @@ namespace AutoComplete
 			return handled;
 		}
 		
-		private Member[] DoGetMembersNamed(CsGlobalNamespace globals, int location, string stem, ref bool isInstance, ref bool isStatic)
+		private Member[] DoGetNames(CsGlobalNamespace globals, int location, string stem, ref bool isInstance, ref bool isStatic)
 		{
 			var result = new List<Member>();
 			
@@ -354,7 +354,61 @@ namespace AutoComplete
 				isStatic = target.IsStatic;
 			}
 			
+			if (stem.Length > 0)
+			{
+				DoAddAliasedTypes(result, stem);
+				DoAddRealTypes(result, globals, stem);
+			}
+			
 			return result.ToArray();
+		}
+		
+		private void DoAddAliasedTypes(List<Member> members, string stem)
+		{
+			IEnumerable<string> aliases = CsHelpers.GetAliasedNames();
+			foreach (string alias in aliases)
+			{
+				if (alias.StartsWith(stem))
+				{
+					var member = new Member(alias);
+					member.Label = CsHelpers.GetRealName(alias);
+					members.AddIfMissing(member);
+				}
+			}
+		}
+		
+		private void DoAddRealTypes(List<Member> members, CsGlobalNamespace globals, string stem)
+		{
+			var namespaces = new List<string>();
+			
+			DoAddParsedTypes(members, (string) null, stem);
+			namespaces.AddIfMissing(string.Empty);
+			
+			for (int i = 0; i < globals.Namespaces.Length; ++i)
+			{
+				DoAddParsedTypes(members, globals.Namespaces[i].Name, stem);
+				namespaces.AddIfMissing(globals.Namespaces[i].Name);
+			}
+			
+			for (int i = 0; i < globals.Uses.Length; ++i)
+			{
+				DoAddParsedTypes(members, globals.Uses[i].Namespace, stem);
+				namespaces.AddIfMissing(globals.Uses[i].Namespace);
+			}
+		
+			members.AddIfMissingRange(m_database.GetTypes(namespaces.ToArray(), stem));
+		}
+		
+		private void DoAddParsedTypes(List<Member> members, string ns, string stem)
+		{
+			CsType[] types = m_parses.FindTypes(ns, stem);
+			
+			foreach (CsType type in types)
+			{
+				var member = new Member(type.Name);
+				member.Label = type.FullName;
+				members.AddIfMissing(member);
+			}
 		}
 		
 		private Member[] DoGetNamespacesNamed(string name)
@@ -364,7 +418,13 @@ namespace AutoComplete
 			
 			string[] names = m_parses.FindNamespaces(name);
 			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "parsed namespaces: {0}", names.ToDebugString());
-			members.AddIfMissingRange(from n in names select new Member(n));
+			
+			foreach (string n in names)
+			{
+				var member = new Member(n);
+				member.Label = name + '.' + n;
+				members.AddIfMissing(member);
+			}
 			
 			return members.ToArray();
 		}
@@ -372,6 +432,7 @@ namespace AutoComplete
 		private Member[] DoGetConstructorsNamed(CsGlobalNamespace globals, ref string stem)
 		{
 			var members = new List<Member>();
+			var namespaces = new List<string>();
 			
 			int j = stem.LastIndexOf('.');
 			if (j > 0)
@@ -383,17 +444,22 @@ namespace AutoComplete
 			else
 			{
 				DoAddConstructors(null, stem, members);
+				namespaces.AddIfMissing(string.Empty);
 				
 				for (int i = 0; i < globals.Namespaces.Length; ++i)
 				{
 					DoAddConstructors(globals.Namespaces[i].Name, stem, members);
+					namespaces.AddIfMissing(globals.Namespaces[i].Name);
 				}
 				
 				for (int i = 0; i < globals.Uses.Length; ++i)
 				{
 					DoAddConstructors(globals.Uses[i].Namespace, stem, members);
+					namespaces.AddIfMissing(globals.Uses[i].Namespace);
 				}
 			}
+			
+			members.AddIfMissingRange(m_database.GetCtors(namespaces.ToArray(), stem));
 			
 			return members.ToArray();
 		}
@@ -419,8 +485,6 @@ namespace AutoComplete
 					}
 				}
 			}
-			
-			members.AddIfMissingRange(m_database.GetCtors(ns, stem));
 		}
 		
 		private void DoAddConstructor(string gargs, string typeName, string name, CsParameter[] parameters, List<Member> members)
@@ -434,7 +498,7 @@ namespace AutoComplete
 			text += "(" + string.Join(";", (from p in parameters select p.Type + " " + p.Name).ToArray()) + ")";
 			
 			var member = new Member(text, anames.Count(), "System.Void", typeName);
-			member.Label = typeName;
+			member.Label = typeName + " Constructor";
 			
 			members.AddIfMissing(member);
 		}

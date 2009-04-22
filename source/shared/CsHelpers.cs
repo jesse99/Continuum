@@ -248,6 +248,11 @@ namespace Shared
 			return type;
 		}
 		
+		public static IEnumerable<string> GetAliasedNames()
+		{
+			return ms_aliases.Values;
+		}
+		
 		#region Fields		
 		private static Dictionary<string, string> ms_aliases = new Dictionary<string, string>
 		{
