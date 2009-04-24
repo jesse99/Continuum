@@ -22,21 +22,6 @@ ReferenceEquals used with value type
 might want a sample app
 sudo fs_usage -f filesys
 
-		private static string DoGetReturnType(string rtype)
-		{
-			rtype = CsHelpers.GetAliasedName(rtype);
-			rtype = CsHelpers.TrimNamespace(rtype);
-			rtype = CsHelpers.TrimGeneric(rtype);
-			
-			return rtype;
-		}
-
-* Undo of dot complete should get rid of the dot too.
-* Ditto for tabs.
-* Work on auto-complete
-	- make sure indexers work ok
-	- arrays should have a [] item (from IList)
-	- probably should rename ResolveMembers
 * Test performance once more:
 	- use a Profile class
 	- use gendarme
@@ -81,6 +66,7 @@ sudo fs_usage -f filesys
 	- snippets: add class, iterface, struct, exception, unit test, method rule, type rule
 	- get rid of Create Exception refactor
 * FileStream.cs didn't parse right.
+* Add C language.
 * Right click on MethodDefinition has an extra separator in the menu.
 * Can we do some sort of notification when assemblies finish parsing? Or to show parse
    error message? Maybe a notifications window? Or directory window can have a

@@ -2147,7 +2147,12 @@ namespace CsParser
 			"interface",
 			"enum",
 			"delegate",
-		};		
+			// void is useful for those people who don't mark private members with "private".
+			// TODO: might also want to add a few other common types like int or bool. Those
+			// would cause a lot of recoveries into the middle of methods, but that should normally
+			// be OK...
+			"void"
+		};
 		private static string[] ms_classRecovery = new string[]
 		{
 			"abstract",
@@ -2163,6 +2168,7 @@ namespace CsParser
 			"static",
 			"virtual",
 			"volatile",
+			"void",
 		};
 		#endregion
 	}

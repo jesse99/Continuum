@@ -334,7 +334,6 @@ namespace AutoComplete
 								string[] argNames = (from p in method.Parameters select p.Name).ToArray();
 								
 								// TODO: should add gargs if they cannot be deduced
-		Console.WriteLine("added {0}", method.Name);
 								items.AddIfMissing(new MethodItem(method.ReturnType, method.Name, null, argTypes, argNames, method.ReturnType, type.FullName));
 							}
 						}
