@@ -27,7 +27,32 @@ using System.Security.Permissions;
 namespace Shared
 {
 	[Serializable]
-	public sealed class ScannerException : Exception
+	public abstract class BaseParserException : Exception
+	{
+		protected BaseParserException()
+		{
+		}
+		
+		protected BaseParserException(string text) : base(text)
+		{
+		}
+		
+		protected BaseParserException(string format, params object[] args) : base(string.Format(format, args))
+		{
+		}
+		
+		protected BaseParserException(string text, Exception inner) : base (text, inner)
+		{
+		}
+		
+		[SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+		protected BaseParserException(SerializationInfo info, StreamingContext context) : base(info, context)
+		{
+		}
+	}
+	
+	[Serializable]
+	public sealed class ScannerException : BaseParserException
 	{
 		public ScannerException()
 		{

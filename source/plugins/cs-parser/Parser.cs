@@ -32,8 +32,7 @@ using System.Threading;
 namespace CsParser
 {
 	[Serializable]
-	public class CsParserException : Exception
-	{
+	public class CsParserException : BaseParserException	{
 		public CsParserException(string text) : base(text)
 		{
 		}
@@ -87,12 +86,14 @@ namespace CsParser
 			{
 				offset = 0;
 				length = 0;
+				Log.WriteLine(TraceLevel.Verbose, "CsParser", "parsed ok");
 			}
 			else
 			{
 				offset = m_bad.Offset;
 				length = m_bad.Length;
 				globals.Malformed = true;
+				Log.WriteLine(TraceLevel.Verbose, "CsParser", "{0} was bad at offset {1}", text.Substring(offset, length), offset);
 			}
 			
 			comments = m_scanner.Comments;
@@ -255,7 +256,7 @@ namespace CsParser
 			
 			// class
 			DoParseKeyword("class");
-
+			
 			// identifier
 			Token last = m_scanner.Token;
 			int nameOffset = m_scanner.Token.Offset;
@@ -320,19 +321,10 @@ namespace CsParser
 				{
 					DoParseClassMemberDeclaration2(members, types);
 				}
-				catch (Exception e)
+				catch (BaseParserException e)	
 				{
 					if (m_try)
-					{
-						if (m_bad.Length == 0)
-						{
-							Log.WriteLine(TraceLevel.Info, "Errors", "{0}", e.Message);
-							m_bad = m_scanner.Token;
-						}
-						
-						if (m_scanner.Token.IsValid())
-							m_scanner.Advance();
-					}
+						DoRecover("class member", e.Message, ms_classRecovery);
 					else
 						throw;
 				}
@@ -565,16 +557,17 @@ namespace CsParser
 				if (m_scanner.Token.Kind != TokenKind.Invalid)
 					throw new CsParserException("Expected eof on line {0}, but found '{1}'", m_scanner.Token.Line, m_scanner.Token.Text());
 			}
-			catch (Exception e)
+			catch (BaseParserException e)
 			{
 				if (m_try)
-				{
-					if (m_bad.Length == 0)
-					{
-						Log.WriteLine(TraceLevel.Info, "Errors", "{0}", e.Message);
-						m_bad = m_scanner.Token;
-					}
-				}
+					DoRecover("compilation unit", e.Message, null);
+				else
+					throw;
+			}
+			catch (Exception f)
+			{
+				if (m_try)
+					DoRecover("compilation unit", f.ToString(), null);
 				else
 					throw;
 			}
@@ -842,14 +835,24 @@ namespace CsParser
 		{
 			while (m_scanner.Token.IsIdentifier("extern"))
 			{
-				Token first = m_scanner.Token;
-				m_scanner.Advance();
-				
-				DoParseKeyword("alias");
-				
-				string name = DoParseIdentifier(ref last);
-				last = DoParsePunct(";");
-				externs.Add(new CsExternAlias(name, first.Offset, last.Offset + last.Length - first.Offset, first.Line));
+				try
+				{
+					Token first = m_scanner.Token;
+					m_scanner.Advance();
+					
+					DoParseKeyword("alias");
+					
+					string name = DoParseIdentifier(ref last);
+					last = DoParsePunct(";");
+					externs.Add(new CsExternAlias(name, first.Offset, last.Offset + last.Length - first.Offset, first.Line));
+				}
+				catch (BaseParserException e)
+				{
+					if (m_try)
+						DoRecover("extern alias", e.Message, ms_unitRecovery);
+					else
+						throw;
+				}
 			}
 		}
 		
@@ -955,27 +958,37 @@ namespace CsParser
 		{
 			while (m_scanner.Token.IsPunct("["))
 			{
-				// This is a bit tricky: we can't tell if the attribute is a global attribute until
-				// we get the target (if any).
-				Token l1 = m_scanner.LookAhead(1);	// target or attribute name
-				Token l2 = m_scanner.LookAhead(2);	// : or (
-				
-				if ((l1 == "assembly" || l1 == "module") && l2 == ":")
+				try
 				{
-					Token first = m_scanner.Token;
-					m_scanner.Advance();
+					// This is a bit tricky: we can't tell if the attribute is a global attribute until
+					// we get the target (if any).
+					Token l1 = m_scanner.LookAhead(1);	// target or attribute name
+					Token l2 = m_scanner.LookAhead(2);	// : or (
 					
-					string target = DoParseIdentifier(ref last);
-					
-					DoParsePunct(":");
-					DoParseAttributeList(first, target, attrs);
-					last = DoParsePunct("]");
+					if ((l1 == "assembly" || l1 == "module") && l2 == ":")
+					{
+						Token first = m_scanner.Token;
+						m_scanner.Advance();
+						
+						string target = DoParseIdentifier(ref last);
+						
+						DoParsePunct(":");
+						DoParseAttributeList(first, target, attrs);
+						last = DoParsePunct("]");
+					}
+					else
+						break;		// we'll treat it as a type attribute
 				}
-				else
-					break;		// we'll treat it as a type attribute
+				catch (BaseParserException e)
+				{
+					if (m_try)
+						DoRecover("interface member", e.Message, ms_unitRecovery);
+					else
+						throw;
+				}
 			}
 		}
-						
+		
 		private string DoParseIdentifier(ref Token last)
 		{
 			if (m_scanner.Token.Kind != TokenKind.Identifier)
@@ -1063,19 +1076,10 @@ namespace CsParser
 				{
 					DoParseInterfaceBody2(members,types, ref open, ref last);
 				}
-				catch (Exception e)
+				catch (BaseParserException e)
 				{
 					if (m_try)
-					{
-						if (m_bad.Length == 0)
-						{
-							Log.WriteLine(TraceLevel.Info, "Errors", "{0}", e.Message);
-							m_bad = m_scanner.Token;
-						}
-						
-						if (m_scanner.Token.IsValid())
-							m_scanner.Advance();
-					}
+						DoRecover("interface member", e.Message, new string[]{";"});
 					else
 						throw;
 				}
@@ -1732,7 +1736,7 @@ namespace CsParser
 		{
 			Token last = m_scanner.Token;
 			string name = DoParseIdentifier(ref last);
-
+			
 			while (m_scanner.Token.IsPunct("."))
 			{
 				m_scanner.Advance();
@@ -1761,11 +1765,24 @@ namespace CsParser
 			DoParsePunct("{");
 			first = m_scanner.Token;
 			DoParseClassMemberDeclaration(members, types);
-
-			if (!m_try || m_scanner.Token.IsPunct("}"))
-				last = DoParsePunct("}");
+			
+			if (m_try)
+			{
+				if (m_scanner.Token.IsPunct("}"))
+				{
+					last = DoParsePunct("}");
+				}
+				else
+				{
+					if (m_bad.Length == 0 && m_text.Length > 0)
+						m_bad = new Token(m_text, m_text.Length - 1, 1, m_scanner.Token.Line, TokenKind.Punct);
+					last = m_scanner.Token;
+				}
+			}
 			else
-				last = m_scanner.Token;
+			{
+				last = DoParsePunct("}");
+			}
 		}
 		
 		// struct-declaration:
@@ -2003,24 +2020,63 @@ namespace CsParser
 		{
 			while (m_scanner.Token.IsIdentifier("using"))
 			{
-				Token first = m_scanner.Token;
-				m_scanner.Advance();
-				
-				string name = DoParseNamespaceName();
-				if (m_scanner.Token.IsPunct("="))
+				try
 				{
+					Token first = m_scanner.Token;
 					m_scanner.Advance();
 					
-					string value = DoParseNamespaceOrTypeName(ref last);
-					last = DoParsePunct(";");
-					
-					aliases.Add(new CsUsingAlias(name, value, first.Offset, last.Offset + last.Length - first.Offset, first.Line));
+					string name = DoParseNamespaceName();
+					if (m_scanner.Token.IsPunct("="))
+					{
+						m_scanner.Advance();
+						
+						string value = DoParseNamespaceOrTypeName(ref last);
+						last = DoParsePunct(";");
+						
+						aliases.Add(new CsUsingAlias(name, value, first.Offset, last.Offset + last.Length - first.Offset, first.Line));
+					}
+					else
+					{
+						last = DoParsePunct(";");
+						uses.Add(new CsUsingDirective(name, first.Offset, last.Offset + last.Length - first.Offset, first.Line));
+					}
 				}
-				else
+				catch (BaseParserException e)
 				{
-					last = DoParsePunct(";");
-					uses.Add(new CsUsingDirective(name, first.Offset, last.Offset + last.Length - first.Offset, first.Line));
+					if (m_try)
+						DoRecover("using directive", e.Message, ms_unitRecovery);
+					else
+						throw;
 				}
+			}
+		}
+		
+		private void DoRecover(string name, string error, string[] recoveryNames)
+		{
+			Log.WriteLine(TraceLevel.Verbose, "Errors", "Recovering from {0} error", name);
+			
+			if (m_bad.Length == 0)
+			{
+				Log.WriteLine(TraceLevel.Info, "Errors", "{0}", error);
+				m_bad = m_scanner.Token;
+			}
+			else
+				Log.WriteLine(TraceLevel.Verbose, "Errors", "{0}", error);
+			
+			if (recoveryNames != null)
+			{
+				while (m_scanner.Token.IsValid() && !recoveryNames.Contains(m_scanner.Token.Text()))
+				{
+					m_scanner.Advance();
+				}
+				
+				if (m_scanner.Token.IsValid() && m_scanner.Token.IsPunct(";"))
+					m_scanner.Advance();
+				
+				if (m_scanner.Token.IsValid())
+					Log.WriteLine(TraceLevel.Verbose, "Errors", "skipped to '{0}' on line {1}", m_scanner.Token.Text(), m_scanner.Token.Line);
+				else
+					Log.WriteLine(TraceLevel.Verbose, "Errors", "skipped to eof");
 			}
 		}
 		
@@ -2068,6 +2124,46 @@ namespace CsParser
 		private bool m_try;
 		private Token m_bad;
 		private int m_threadID;
+		
+		private static string[] ms_unitRecovery = new string[]
+		{
+			"abstract",
+			"extern",
+			"internal",
+			"override",
+			"partial",
+			"private",
+			"protected",
+			"public",
+			"readonly",
+			"sealed",
+			"static",
+			"virtual",
+			"volatile",
+			"using",
+			"namespace",
+			"class",
+			"struct",
+			"interface",
+			"enum",
+			"delegate",
+		};		
+		private static string[] ms_classRecovery = new string[]
+		{
+			"abstract",
+			"extern",
+			"internal",
+			"override",
+			"partial",
+			"private",
+			"protected",
+			"public",
+			"readonly",
+			"sealed",
+			"static",
+			"virtual",
+			"volatile",
+		};
 		#endregion
 	}
 }

@@ -31,16 +31,11 @@ sudo fs_usage -f filesys
 			return rtype;
 		}
 
-* Test:
-	make sure stuff in Program.cs completes
-* Do a checkin.
-* Why does an extra dot in a using declaration hose the parse?
 * Undo of dot complete should get rid of the dot too.
 * Ditto for tabs.
-* Context menu should probably be able to hide types by namespace:
-	- should properties/fields be filtered by "Property" or by type?
-	- filter ctors by namespace?
+* Work on auto-complete
 	- make sure indexers work ok
+	- arrays should have a [] item (from IList)
 	- probably should rename ResolveMembers
 * Test performance once more:
 	- use a Profile class
@@ -53,7 +48,6 @@ sudo fs_usage -f filesys
 	- no-op tab
 	- etc
 * Before using locate try using appending the path to each open directory.
-* Make sure "(expr))" doesn't totally screw up auto-complete.
 * Work on tab completion:
 	- refactor needs to document Scope and support Locals property
 	- keyDown and textStorageDidProcessEditing should use cStringUsingEncoding
@@ -62,6 +56,7 @@ sudo fs_usage -f filesys
 	- might want to support completing names via F5, should also have a menu item
 	   for this
 	
+	- if a name cannot be resolved at all maybe it should be underlined in orange
 	- would be really nice to add an auto-complete (and maybe object-model)
 	  functional test
 	- get pointers completing
