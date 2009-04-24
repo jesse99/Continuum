@@ -41,17 +41,17 @@ namespace AutoComplete
 			ActiveObjects.Add(this);
 		}
 		
-		public void Show(ITextEditor editor, NSTextView text, string label, Member[] names, string stem, bool isInstance, bool isStatic)
+		public void Show(ITextEditor editor, NSTextView text, string label, Item[] items, string stem, bool isInstance, bool isStatic)
 		{
 			var wind = (CompletionsWindow) window();
 			NSPoint loc = editor.GetBoundingBox(text.selectedRange()).origin;
 			wind.SetLoc(loc);
 			
 			m_label.Value.setStringValue(NSString.Create(label));
-			m_table.Value.Open(editor, text, names, stem, m_label.Value, label);
+			m_table.Value.Open(editor, text, items, stem, m_label.Value, label);
 			Log.WriteLine("AutoComplete", "took {0:0.000} secs to open the window", AutoComplete.Watch.ElapsedMilliseconds/1000.0);
 			
-			if (names.Length != 1)
+			if (items.Length != 1)
 				NSApplication.sharedApplication().beginSheet_modalForWindow_modalDelegate_didEndSelector_contextInfo(
 					wind, text.window(), null, null, IntPtr.Zero);
 		}

@@ -123,21 +123,21 @@ namespace AutoComplete
 				// this
 				if (m_member.DeclaringType != null)
 					if ((m_member.Modifiers & MemberModifiers.Static) == 0)
-						vars.Add(new Variable(m_member.DeclaringType.FullName, "this", null));
+						vars.Add(new Variable(m_member.DeclaringType.FullName, "this", null, "Locals"));
 				
 				// value
 				CsProperty prop = m_member as CsProperty;
 				if (prop != null && prop.SetterBody != null)
 				{
 					if (prop.SetterBody.First < m_offset && m_offset <= prop.SetterBody.Last)
-						vars.Add(new Variable(prop.ReturnType, "value", null));
+						vars.Add(new Variable(prop.ReturnType, "value", null, "Locals"));
 				}
 				
 				CsIndexer indexer = m_member as CsIndexer;
 				if (indexer != null && indexer.SetterBody != null)
 				{
 					if (indexer.SetterBody.First < m_offset && m_offset <= indexer.SetterBody.Last)
-						vars.Add(new Variable(indexer.ReturnType, "value", null));
+						vars.Add(new Variable(indexer.ReturnType, "value", null, "Locals"));
 				}
 			}
 			
@@ -149,7 +149,7 @@ namespace AutoComplete
 				for (int i = candidates.Length - 1; i >= 0; --i)
 				{
 					if (!vars.Exists(v => v.Name == candidates[i].Name))
-						vars.Add(new Variable(candidates[i].Type, candidates[i].Name, candidates[i].Value));
+						vars.Add(new Variable(candidates[i].Type, candidates[i].Name, candidates[i].Value, "Locals"));
 				}
 			}
 			
@@ -160,7 +160,7 @@ namespace AutoComplete
 				foreach (CsParameter p in parms)
 				{
 					if (!vars.Exists(v => v.Name == p.Name))
-						vars.Add(new Variable(p.Type, p.Name, null));
+						vars.Add(new Variable(p.Type, p.Name, null, "Arguments"));
 				}
 			}
 			
@@ -172,11 +172,12 @@ namespace AutoComplete
 				if (target != null)
 				{
 					var resolveMembers = new ResolveMembers(m_database);
-					Member[] members = resolveMembers.Resolve(context, target, m_globals);
-					foreach (Member member in members)
+					Item[] items = resolveMembers.Resolve(context, target, m_globals);
+					foreach (Item item in items)
 					{
-						if (!vars.Exists(v => v.Name == member.Name))
-							vars.Add(new Variable(member.Type, member.Name, null));
+						if (!(item is MethodItem))
+							if (!vars.Exists(v => v.Name == item.Text))
+								vars.Add(new Variable(item.Type, item.Text, null, item.Type));
 					}
 				}
 			}
@@ -214,12 +215,19 @@ namespace AutoComplete
 		{
 			ResolvedTarget result = null;
 			
-			if (name == "this" || name == "<this>")
+			if (m_member != null)
 			{
-				if (m_member != null && (m_member.Modifiers & MemberModifiers.Static) == 0)
+				if (name == "this")
+				{
+					if ((m_member.Modifiers & MemberModifiers.Static) == 0)
+					{
+						result = m_typeResolver.Resolve(m_member.DeclaringType, true, false);
+					}
+				}
+				else if (name == "<this>")
 				{
 					bool isInstance = (m_member.Modifiers & MemberModifiers.Static) == 0;
-					bool isStatic = name == "<this>" || (m_member.Modifiers & MemberModifiers.Static) != 0;
+					bool isStatic = true;
 					
 					result = m_typeResolver.Resolve(m_member.DeclaringType, isInstance, isStatic);
 				}

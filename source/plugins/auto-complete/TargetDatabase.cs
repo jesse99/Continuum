@@ -69,9 +69,9 @@ namespace AutoComplete
 			return has;
 		}
 		
-		public Member[] GetNamespaces(string ns)
+		public Item[] GetNamespaces(string ns)
 		{
-			var members = new List<Member>();
+			var items = new List<Item>();
 			
 			if (ns.Length > 0)
 			{
@@ -86,11 +86,8 @@ namespace AutoComplete
 					string[] children = r[0].Split(';');
 					foreach (string child in children)
 					{
-						var member = new Member(child);
-						member.Label = ns + '.' + child;
-						members.AddIfMissing(member);
-
-						members.AddIfMissing(new Member(child));
+						var item = new NameItem(child, ns + '.' + child, "Namespaces");
+						items.AddIfMissing(item);
 					}
 				}
 			}
@@ -106,14 +103,13 @@ namespace AutoComplete
 					string[] children = r[1].Split(';');
 					foreach (string child in children)
 					{
-						var member = new Member(r[0] + '.' + child);
-						member.Label = ns + '.' + r[0] + '.' + child;
-						members.AddIfMissing(member);
+						var item = new NameItem(r[0] + '.' + child, ns + '.' + r[0] + '.' + child, "Namespaces");
+						items.AddIfMissing(item);
 					}
 				}
 			}
 			
-			return members.ToArray();
+			return items.ToArray();
 		}
 		
 		public void GetBases(string typeName, List<string> baseNames, List<string> interfaceNames, List<string> allNames)
@@ -165,9 +161,9 @@ namespace AutoComplete
 			}
 		}
 		
-		public Member[] GetFields(string[] typeNames, bool instanceCall, bool isStaticCall, bool includeProtected)
+		public Item[] GetFields(string[] typeNames, bool instanceCall, bool isStaticCall, bool includeProtected)
 		{
-			var members = new List<Member>();
+			var items = new List<Item>();
 			
 			if (typeNames.Length > 0)
 			{
@@ -197,16 +193,16 @@ namespace AutoComplete
 				string[][] rows = m_database.QueryRows(sql);
 				foreach (string[] r in rows)
 				{
-					members.AddIfMissing(new Member(r[0], r[1], r[2]));
+					items.AddIfMissing(new NameItem(r[0], r[1] + ' ' + r[0], r[2], r[1]));
 				}
 			}
 			
-			return members.ToArray();
+			return items.ToArray();
 		}
 		
-		public Member[] GetFields(string[] typeNames, bool instanceCall, bool isStaticCall, string name,  bool includeProtected)
+		public Item[] GetFields(string[] typeNames, bool instanceCall, bool isStaticCall, string name,  bool includeProtected)
 		{
-			var members = new List<Member>();
+			var items = new List<Item>();
 			
 			if (typeNames.Length > 0)
 			{
@@ -236,16 +232,16 @@ namespace AutoComplete
 				string[][] rows = m_database.QueryRows(sql);
 				foreach (string[] r in rows)
 				{
-					members.AddIfMissing(new Member(r[0], r[1], r[2]));
+					items.AddIfMissing(new NameItem(r[0], r[1] + ' ' + r[0], r[2], r[1]));
 				}
 			}
 			
-			return members.ToArray();
+			return items.ToArray();
 		}
 		
-		public Member[] GetTypes(string[] namespaces, string stem)
+		public Item[] GetTypes(string[] namespaces, string stem)
 		{
-			var members = new List<Member>();
+			var items = new List<Item>();
 			
 			var ns = new StringBuilder();
 			ns.Append('(');
@@ -273,17 +269,16 @@ namespace AutoComplete
 			string[][] rows = m_database.QueryRows(sql);
 			foreach (string[] r in rows)
 			{
-				var member = new Member(r[0]);
-				member.Label = r[1];
-				members.AddIfMissing(member);
+				var item = new NameItem(r[0], r[1], "types");
+				items.AddIfMissing(item);
 			}
 			
-			return members.ToArray();
+			return items.ToArray();
 		}
 		
-		public Member[] GetCtors(string[] namespaces, string stem)
+		public Item[] GetCtors(string[] namespaces, string stem)
 		{
-			var members = new List<Member>();
+			var items = new List<Item>();
 			
 			int badAttrs =
 				0x01 |	// abstract
@@ -309,37 +304,32 @@ namespace AutoComplete
 			string sql;
 			if (stem.Length > 0)
 				sql = string.Format(@"
-					SELECT Methods.display_text, Methods.params_count, Types.root_name
+					SELECT Methods.display_text, Methods.return_type_name, Types.namespace
 						FROM Methods, Types
 					WHERE {2} AND
 						{0} AND Types.name GLOB '{1}*'", ns.ToString(), stem, common);
 			else
 				sql = string.Format(@"
-					SELECT Methods.display_text, Methods.params_count, Types.root_name
+					SELECT Methods.display_text, Methods.return_type_name, Types.namespace
 						FROM Methods, Types
 					WHERE {1} AND {0}", ns.ToString(), common);
 			
 			string[][] rows = m_database.QueryRows(sql);
 			foreach (string[] r in rows)
 			{
-				string text = r[0];
-				int j = text.IndexOf("::");
-				text = text.Substring(j + 2);
-				
-				var member = new Member(text, int.Parse(r[1]), "System.Void", r[2]);
-				member.Label = r[2] + " Constructor";
-				
-				members.Add(member);
+				string nsName = r[2] == "<globals>" || r[2].Length == 0 ? "global" : r[2];
+				Item item = DoCreateItem(r[0], nsName + " constructors", 6, r[1]);
+				items.AddIfMissing(item);
 			}
 			
-			DoAddDefaultCtors(ns.ToString(), stem, badAttrs, members);
+			DoAddDefaultCtors(ns.ToString(), stem, badAttrs, items);
 			
-			return members.ToArray();
+			return items.ToArray();
 		}
 		
-		public Member[] GetMembers(string[] typeNames, bool instanceCall, bool isStaticCall, bool includeProtected)
+		public Item[] GetMembers(string[] typeNames, bool instanceCall, bool isStaticCall, bool includeProtected)
 		{
-			var members = new List<Member>();
+			var items = new List<Item>();
 			
 			if (typeNames.Length > 0)
 			{
@@ -357,34 +347,29 @@ namespace AutoComplete
 				string sql;
 				if (instanceCall && isStaticCall)
 					sql = string.Format(@"
-						SELECT display_text, return_type_name, params_count, declaring_root_name, kind
+						SELECT display_text, declaring_root_name, kind, return_type_name
 							FROM Methods 
 						WHERE kind <= 2 AND {1} AND ({0})", types.ToString(), access);
 				else
 					sql = string.Format(@"
-						SELECT display_text, return_type_name, params_count, declaring_root_name, kind
+						SELECT display_text, declaring_root_name, kind, return_type_name
 							FROM Methods 
 						WHERE static = {1} AND kind <= 2 AND {2} AND ({0})", types.ToString(), isStaticCall ? "1" : "0", access);
 				
 				NamedRows rows = m_database.QueryNamedRows(sql);
 				foreach (NamedRow r in rows)
 				{
-					string text = r["display_text"];
-					int j = text.IndexOf("::");
-					text = text.Substring(j + 2);
-					
-					string rtype = DoGetType(rows, r);
-					int arity = r["kind"] == "2" ? 0 : int.Parse(r["params_count"]);	// setters have an argument but it's implicit
-					members.AddIfMissing(new Member(text, arity, rtype, r["declaring_root_name"]));
+					Item item = DoCreateItem(r["display_text"], r["declaring_root_name"], int.Parse(r["kind"]), r["return_type_name"]);
+					items.AddIfMissing(item);
 				}
 			}
 			
-			return members.ToArray();
+			return items.ToArray();
 		}
 		
-		public Member[] GetMembers(string[] typeNames, bool instanceCall, bool isStaticCall, string name, int arity, bool includeProtected)
+		public Item[] GetMembers(string[] typeNames, bool instanceCall, bool isStaticCall, string name, int arity, bool includeProtected)
 		{
-			var members = new List<Member>();
+			var items = new List<Item>();
 			
 			if (typeNames.Length > 0)
 			{
@@ -402,13 +387,13 @@ namespace AutoComplete
 				string sql;
 				if (instanceCall && isStaticCall)
 					sql = string.Format(@"
-						SELECT display_text, return_type_name, params_count, declaring_root_name, kind
+						SELECT display_text, declaring_root_name, kind, return_type_name
 							FROM Methods 
 						WHERE (name = '{0}' OR name = '{1}') AND params_count = {2} AND 
 							kind <= 2 AND {4} AND ({3})", name, "get_" + name, arity, types.ToString(), access);
 				else
 					sql = string.Format(@"
-						SELECT display_text, return_type_name, params_count, declaring_root_name, kind
+						SELECT display_text, declaring_root_name, kind, return_type_name
 							FROM Methods 
 						WHERE (name = '{0}' OR name = '{1}') AND params_count = {2} AND 
 							static = {4} AND {5} AND kind <= 2 AND ({3})", name, "get_" + name, arity, types.ToString(), isStaticCall ? "1" : "0", access);
@@ -416,23 +401,18 @@ namespace AutoComplete
 				NamedRows rows = m_database.QueryNamedRows(sql);
 				foreach (NamedRow r in rows)
 				{
-					string text = r["display_text"];
-					int j = text.IndexOf("::");
-					text = text.Substring(j + 2);
-					
-					string type = DoGetType(rows, r);
-					int numArgs = r["kind"] == "2" ? 0 : int.Parse(r["params_count"]);	// setters have an argument but it's implicit
-					members.AddIfMissing(new Member(text, numArgs, type, r["declaring_root_name"]));
+					Item item = DoCreateItem(r["display_text"], r["declaring_root_name"], int.Parse(r["kind"]), r["return_type_name"]);
+					items.AddIfMissing(item);
 				}
 			}
 			
-			return members.ToArray();
+			return items.ToArray();
 		}
 		
-		public Member[] GetExtensionMethods(string targetType, string[] typeNames, string[] namespaces)
+		public Item[] GetExtensionMethods(string[] typeNames, string[] namespaces)
 		{
-			var members = new List<Member>();
-			
+			var items = new List<Item>();
+		
 			if (typeNames.Length > 0)
 			{
 				var types = new StringBuilder();
@@ -454,7 +434,7 @@ namespace AutoComplete
 				}
 				
 				string sql = string.Format(@"
-					SELECT Methods.display_text, Methods.return_type_name, Methods.params_count
+					SELECT Methods.display_text, Methods.return_type_name
 						FROM Methods, Types
 					WHERE Methods.static = 1 AND Methods.kind = 8 AND
 						Methods.declaring_root_name = Types.root_name AND
@@ -463,38 +443,17 @@ namespace AutoComplete
 				string[][] rows = m_database.QueryRows(sql);
 				foreach (string[] r in rows)
 				{
-					string text = r[0];
-					int j = text.IndexOf("::");
-					text = text.Substring(j + 2);
-					
-					j = text.IndexOf('(');
-					Contract.Assert(j > 0, "couldn't find ( in " + text);
-					
-					int k = text.IndexOf(';', j + 1);
-					if (k > 0)
-					{
-						text = text.Substring(0, j + 1) + text.Substring(k + 1);
-					}
-					else
-					{
-						k = text.IndexOf(')', j + 1);
-						Contract.Assert(j < k, "couldn't find a second ; or ) in " + text);
-						text = text.Substring(0, j + 1) + text.Substring(k);
-					}
-					
-					Member member = new Member(text, int.Parse(r[2]) - 1, r[1], targetType);
-					member.IsExtensionMethod = true;
-					
-					members.AddIfMissing(member);
+					Item item = DoCreateItem(r[0], "extension methods", 8, r[1]);
+					items.AddIfMissing(item);
 				}
 			}
 			
-			return members.ToArray();
+			return items.ToArray();
 		}
 		
-		public Member[] GetExtensionMethods(string targetType, string[] typeNames, string[] namespaces, string name, int arity)
+		public Item[] GetExtensionMethods(string[] typeNames, string[] namespaces, string name, int arity)
 		{
-			var members = new List<Member>();
+			var items = new List<Item>();
 			
 			if (typeNames.Length > 0)
 			{
@@ -517,7 +476,7 @@ namespace AutoComplete
 				}
 				
 				string sql = string.Format(@"
-					SELECT Methods.display_text, Methods.return_type_name, Methods.params_count
+					SELECT Methods.display_text, Methods.return_type_name
 						FROM Methods, Types
 					WHERE Methods.name = '{0}' AND Methods.params_count = '{1}' AND
 						Methods.static = 1 AND Methods.kind = 8 AND
@@ -527,44 +486,67 @@ namespace AutoComplete
 				string[][] rows = m_database.QueryRows(sql);
 				foreach (string[] r in rows)
 				{
-					string text = r[0];
-					int j = text.IndexOf("::");
-					text = text.Substring(j + 2);
-					
-					j = text.IndexOf('{');
-					if (j > 0)
-					{
-						int k = text.IndexOf('}');
-						text = text.Substring(0, j) + text.Substring(k + 1);
-					}
-					
-					Member member = new Member(text, int.Parse(r[2]) - 1, r[1], targetType);
-					member.IsExtensionMethod = true;
-					
-					members.AddIfMissing(member);
+					Item item = DoCreateItem(r[0], "extension methods", 8, r[1]);
+					items.AddIfMissing(item);
 				}
 			}
 			
-			return members.ToArray();
+			return items.ToArray();
 		}
 		
 		#region Private Methods
-		private string DoGetType(NamedRows rows, NamedRow row)
+		private Item DoCreateItem(string displayText, string filter, int kind, string type)
 		{
-			string type = row["return_type_name"];
+			string[] parts = displayText.Split(':');
+			Contract.Assert(parts.Length == 6, "expected 6 parts from " + displayText);
 			
-			// If it's a setter and there is no getter then we have to use void
-			// for the return type.
-			if (row["kind"] == "2")
+			string rtype = parts[0];
+			string name = parts[2];
+			
+			Item result;
+			if (kind == 1 || kind == 2)
 			{
-				if (!rows.Any(r => r["kind"] == "1" && r["display_text"] == row["display_text"]))
-					type = "System.Void";
+				// property getter or setter
+				result = new NameItem(name, rtype + ' ' + name, filter, type);
+			}
+			else
+			{
+				string[] gargs = parts[3].Split(new char[]{';'}, StringSplitOptions.RemoveEmptyEntries);
+				string[] argTypes = parts[4].Split(new char[]{';'}, StringSplitOptions.RemoveEmptyEntries);
+				string[] argNames = parts[5].Split(new char[]{';'}, StringSplitOptions.RemoveEmptyEntries);
+				
+				if (kind == 3)
+				{
+					// indexer getter
+					result = new MethodItem(rtype, name, gargs, argTypes, argNames, type, filter, '[', ']');
+				}
+				else if (kind == 4)
+				{
+					// indexer setter
+					argTypes = argTypes.SubArray(0, argTypes.Length - 1);
+					argNames = argNames.SubArray(0, argNames.Length - 1);
+					result = new MethodItem(rtype, name, gargs, argTypes, argNames, "System.Void", filter, '[', ']');
+				}
+				else if (kind == 8)
+				{
+					// extension method
+					argTypes = argTypes.SubArray(1);
+					argNames = argNames.SubArray(1);
+					result = new MethodItem(rtype, name, gargs, argTypes, argNames, type, filter);
+				}
+				else if (kind == 0 || kind == 6)
+				{
+					// normal method or constructor
+					result = new MethodItem(rtype, name, gargs, argTypes, argNames, type, filter);
+				}
+				else
+					throw new Exception("bad method kind: " + kind);
 			}
 			
-			return type;
+			return result;
 		}
-		
-		private void DoAddDefaultCtors(string ns, string stem, int badAttrs, List<Member> members)
+				
+		private void DoAddDefaultCtors(string ns, string stem, int badAttrs, List<Item> items)
 		{
 			string common = string.Format("visibility < 3 AND (attributes & {0}) = 0", badAttrs);
 			
@@ -573,13 +555,13 @@ namespace AutoComplete
 			string sql;
 			if (stem.Length > 0)
 				sql = string.Format(@"
-					SELECT attributes, root_name, name, generic_arg_names
+					SELECT attributes, name, namespace
 						FROM Types
 					WHERE {2} AND
 						{0} AND name GLOB '{1}*'", ns, stem, common);
 			else
 				sql = string.Format(@"
-					SELECT attributes, root_name, name, generic_arg_names
+					SELECT attributes, name, root_name
 						FROM Types
 					WHERE {1} AND {0}", ns, common);
 			
@@ -589,21 +571,10 @@ namespace AutoComplete
 				int attrs = int.Parse(r[0]);
 				if ((attrs & 0x08) != 0)			// struct
 				{
-					var text = new StringBuilder();
-					
-					text.Append(r[2]);
-					if (r[3].Length > 0)
-					{
-						text.Append('<');
-						text.Append(r[3].Replace(";", ", "));
-						text.Append('>');
-					}
-					text.Append("()");
-					
-					var member = new Member(text.ToString(), 0, "System.Void", r[1]);
-					member.Label = r[1] + " Constructor";
-					
-					members.AddIfMissing(member);
+					string displayText = string.Format("void:{0}:{1}:::", r[2], r[1]);
+					string nsName = r[2] == "<globals>" || r[2].Length == 0 ? "global" : r[2];
+					Item item = DoCreateItem(displayText, nsName + " constructors", 6, "System.Void");
+					items.AddIfMissing(item);
 				}
 			}
 		}

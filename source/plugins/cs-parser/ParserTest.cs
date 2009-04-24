@@ -583,37 +583,59 @@ namespace CsParser
 			Assert.IsTrue(p.HasGetter);
 			Assert.IsFalse(p.HasSetter);
 		}
-	
+		
 		[Test]
 		public void Method1()
 		{
 			string text = @"
-	public interface IFoo : IBar, IBaz
-	{
-		bool Enabled(int x, float y);
-	}
-	";
+public interface IFoo : IBar, IBaz
+{
+	bool Enabled(int x, float y);
+}
+";
 			
 			var parser = new Parser();
 			var globals = parser.Parse(text);
-	
+			
 			Assert.AreEqual(1, globals.Interfaces.Length);
-	
+			
 			Assert.AreEqual(1, globals.Interfaces[0].Methods.Length);
 			CsMethod m = globals.Interfaces[0].Methods[0];
 			Assert.IsFalse(m.IsConstructor);
 			
 			Assert.AreEqual("bool", m.ReturnType);
 			Assert.AreEqual("Enabled", m.Name);
-	
+			
 			Assert.AreEqual(2, m.Parameters.Length);
 			Assert.AreEqual("x", m.Parameters[0].Name);
 			Assert.AreEqual("y", m.Parameters[1].Name);
-	
+			
 			Assert.AreEqual("int", m.Parameters[0].Type);
 			Assert.AreEqual("float", m.Parameters[1].Type);
 		}
-	
+		
+		[Test]
+		public void Method2()
+		{
+			string text = @"
+public class MyClass
+{
+	public void Moby<KEY, VALUE>(KEY key, VALUE value)
+	{
+	}
+}
+";
+			
+			var parser = new Parser();
+			var globals = parser.Parse(text);
+			
+			CsMethod m = globals.Classes[0].Methods[0];
+			
+			Assert.AreEqual("MyClass", m.DeclaringType.Name);
+			Assert.AreEqual("Moby", m.Name);
+			Assert.AreEqual("KEY,VALUE", m.GenericArguments);
+		}
+		
 		[Test]
 		public void Fields()
 		{
@@ -628,12 +650,12 @@ namespace CsParser
 			
 			var parser = new Parser();
 			var globals = parser.Parse(text);
-	
+			
 			Assert.AreEqual(1, globals.Structs.Length);
-	
+			
 			CsStruct s = globals.Structs[0];		
 			Assert.AreEqual("Foo", s.Name);
-	
+			
 			Assert.AreEqual(3, s.Fields.Length);
 			Assert.AreEqual("Pi", s.Fields[0].Name);
 			Assert.AreEqual("Age", s.Fields[1].Name);
@@ -984,14 +1006,36 @@ namespace CsParser
 			Assert.AreEqual(1, s.Methods.Length);
 			Assert.AreEqual("Foo", s.Methods[0].Name);
 			Assert.AreEqual("void", s.Methods[0].ReturnType);
-	
+			
 			Assert.IsFalse(s.Methods[0].IsConstructor);
-	
+			
 			Assert.AreEqual(2, s.Methods[0].Parameters.Length);
 			Assert.AreEqual("x", s.Methods[0].Parameters[0].Name);
 			Assert.AreEqual("y", s.Methods[0].Parameters[1].Name);
 		}
-	
+		
+		[Test]
+		public void GenericClass()
+		{
+			string text = @"
+public sealed class MyClass<Key, Value> where KEY : class
+{
+}
+";
+			
+			var parser = new Parser();
+			var globals = parser.Parse(text);
+			
+			Assert.AreEqual(1, globals.Classes.Length);
+			
+			// class
+			CsClass klass = globals.Classes[0];
+			Assert.AreEqual("MyClass", klass.Name);
+			Assert.AreEqual("MyClass", klass.FullName);
+			Assert.AreEqual("Key,Value", klass.GenericArguments);
+			Assert.AreEqual("where KEY : class", klass.Constraints);
+		}
+		
 		[Test]
 		public void Class1()
 		{
@@ -1117,7 +1161,7 @@ namespace CsParser
 			Assert.IsNull(klass.Fields[0].Value);
 			Assert.IsNull(klass.Fields[1].Value);
 		}
-	
+		
 		[Test]
 		public void NullableType()
 		{

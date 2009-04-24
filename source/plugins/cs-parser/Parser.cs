@@ -428,7 +428,7 @@ namespace CsParser
 					}
 					else
 					{
-						Token last = m_scanner.Token;	
+						Token last = m_scanner.Token;
 						nameOffset = m_scanner.Token.Offset;
 						string name = DoParseNamespaceOrTypeName(ref last);
 						
@@ -467,10 +467,19 @@ namespace CsParser
 		//     block
 		//     ;
 		private void DoParseConstructorDeclaration(string name, int nameOffset, List<CsMember> members, CsAttribute[] attrs, MemberModifiers modifiers, Token first)
-		{			
+		{
 			var parms = new List<CsParameter>();
 			DoParseFormalParameterList(parms);
 			DoParsePunct(")");
+			
+			string gargs = null;
+			int i = name.IndexOf('<');
+			if (i > 0)
+			{
+				int j = name.IndexOf('>');
+				gargs = name.Substring(i + 1, j - (i + 1)).TrimAll();
+				name = name.Substring(0, i);
+			}
 			
 			Token last = m_scanner.Token;
 			Token open = last;
@@ -494,9 +503,9 @@ namespace CsParser
 				DoSkipBody("{", "}", ref open, ref last);
 				close = last;
 			}
-
+			
 			CsBody body = open.Length > 0 ? new CsBody(name, start.Offset, open.Offset, close.Offset + close.Length - start.Offset, start.Line) : null;
-			members.Add(new CsMethod(nameOffset, body, true, false, null, parms.ToArray(), null, "void", attrs, modifiers, name, first.Offset, last.Offset + last.Length - first.Offset, first.Line));
+			members.Add(new CsMethod(nameOffset, body, true, false, null, parms.ToArray(), gargs, "void", attrs, modifiers, name, first.Offset, last.Offset + last.Length - first.Offset, first.Line));
 		}
 		
 		// operator-declaration:
@@ -1331,9 +1340,12 @@ namespace CsParser
 			Token last = m_scanner.Token;
 			
 			string gargs = null;
-			if (m_scanner.Token.IsPunct("<"))
+			int i = memberName.IndexOf('<');
+			if (i > 0)
 			{
-				gargs = DoScanBody("<", ">", ref last);
+				int j = memberName.IndexOf('>');
+				gargs = memberName.Substring(i + 1, j - (i + 1)).TrimAll();
+				memberName = memberName.Substring(0, i);
 			}
 			
 			var parms = new List<CsParameter>();

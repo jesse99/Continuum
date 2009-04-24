@@ -118,9 +118,8 @@ namespace AutoComplete
 			return handled;
 		}
 		
-		#region Private Methods
 		// Returns the shortest declaration which intersects offset.
-		private CsDeclaration DoFindDeclaration(CsTypeScope scope, int offset)
+		internal static CsDeclaration FindDeclaration(CsTypeScope scope, int offset)
 		{
 			var decs = new List<CsDeclaration>(scope.Declarations.Length + 1);
 			decs.Add(scope);
@@ -153,6 +152,7 @@ namespace AutoComplete
 			return result;
 		}
 		
+		#region Private Methods
 		private bool DoCompleteTab(NSTextView view, NSEvent evt, IComputeRuns computer, NSRange range)
 		{
 			bool handled = false;
@@ -219,7 +219,7 @@ namespace AutoComplete
 		private bool DoCompleteNamespaceDot(NSTextView view, string stem)
 		{
 			stem = stem.Substring(stem.IndexOf(' ') + 1);
-			Member[] namespaces = DoGetNamespacesNamed(stem);
+			Item[] namespaces = DoGetNamespacesNamed(stem);
 			
 			if (namespaces.Length > 0)
 			{
@@ -241,14 +241,14 @@ namespace AutoComplete
 			CsGlobalNamespace globals = parse != null ? parse.Globals : null;
 			if (globals != null)
 			{
-				var context = DoFindDeclaration(globals, range.location) as CsMember;
+				var context = FindDeclaration(globals, range.location) as CsMember;
 
 				Boss boss = ObjectModel.Create("CsParser");
 				var locals = boss.Get<ICsLocalsParser>();
 				var nameResolver = new ResolveName(context, m_database, locals, m_text.Text, range.location, globals);
 				var exprResolver = new ResolveExpr(m_database, globals, nameResolver);
 				
-				Member[] members = null;
+				Item[] items = null;
 				string type = null;
 				bool isInstance = false;
 				bool isStatic = false;
@@ -257,14 +257,14 @@ namespace AutoComplete
 				if (target != null)
 				{
 					type = target.TypeName;
-					members = m_members.Resolve(context, target, globals);
+					items = m_members.Resolve(context, target, globals);
 					isInstance = target.IsInstance;
 					isStatic = target.IsStatic;
 				}
 				
 				if (type != "System.Void")
 				{
-					if (members != null && members.Length > 0)
+					if (items != null && items.Length > 0)
 					{
 						if (m_controller == null)	
 							m_controller = new CompletionsController();
@@ -277,7 +277,7 @@ namespace AutoComplete
 						else if (isStatic)
 							label += " Static Members";
 						
-						m_controller.Show(m_boss.Get<ITextEditor>(), view, label, members, null, isInstance, isStatic);
+						m_controller.Show(m_boss.Get<ITextEditor>(), view, label, items, null, isInstance, isStatic);
 						handled = true;
 					}
 				}
@@ -300,7 +300,7 @@ namespace AutoComplete
 				if (stem.Length > 0)
 				{
 					string label = string.Empty;
-					Member[] members;
+					Item[] items;
 					bool isInstance = false, isStatic = false;
 				
 					if (stem.StartsWith("new "))
@@ -308,20 +308,20 @@ namespace AutoComplete
 						stem = stem.Substring(stem.IndexOf(' ') + 1);
 						
 						label = "Constructors";
-						members = DoGetConstructorsNamed(globals, ref stem);
+						items = DoGetConstructorsNamed(globals, ref stem);
 					}
 					else
 					{
 						label = "Names";
-						members = DoGetNames(globals, range.location - 1, stem, ref isInstance, ref isStatic);
+						items = DoGetNames(globals, range.location - 1, stem, ref isInstance, ref isStatic);
 					}
 					
-					if (members.Length > 0)
+					if (items.Length > 0)
 					{
 						if (m_controller == null)	
 							m_controller = new CompletionsController();
 						
-						m_controller.Show(m_boss.Get<ITextEditor>(), view, label, members, stem, isInstance, isStatic);
+						m_controller.Show(m_boss.Get<ITextEditor>(), view, label, items, stem, isInstance, isStatic);
 					}
 					
 					handled = true;			// if it was recognized as a double tab then we never want to add the second tab
@@ -331,25 +331,25 @@ namespace AutoComplete
 			return handled;
 		}
 		
-		private Member[] DoGetNames(CsGlobalNamespace globals, int location, string stem, ref bool isInstance, ref bool isStatic)
+		private Item[] DoGetNames(CsGlobalNamespace globals, int location, string stem, ref bool isInstance, ref bool isStatic)
 		{
-			var result = new List<Member>();
+			var result = new List<Item>();
 			
-			var context = DoFindDeclaration(globals, location) as CsMember;
+			var context = FindDeclaration(globals, location) as CsMember;
 			var nameResolver = new ResolveName(context, m_database, m_locals, m_text.Text, location, globals);
 			ResolvedTarget target = nameResolver.Resolve("<this>");
 			if (target != null)
 			{
-				var members = new List<Member>(m_members.Resolve(context, target, globals));
+				var items = new List<Item>(m_members.Resolve(context, target, globals));
 				foreach (Variable v in nameResolver.Variables)
 				{
-					members.AddIfMissing(new Member(v.Name, v.Type));
+					items.AddIfMissing(new NameItem(v.Name, v.Type + ' ' + v.Name, v.Filter, v.Type));
 				}
 				
 				if (stem.Length > 0)
-					members.RemoveAll(m => !m.Name.StartsWith(stem));
+					items.RemoveAll(m => !m.Text.StartsWith(stem));
 				
-				result = members;
+				result = items;
 				isInstance = target.IsInstance;
 				isStatic = target.IsStatic;
 			}
@@ -363,75 +363,72 @@ namespace AutoComplete
 			return result.ToArray();
 		}
 		
-		private void DoAddAliasedTypes(List<Member> members, string stem)
+		private void DoAddAliasedTypes(List<Item> items, string stem)
 		{
 			IEnumerable<string> aliases = CsHelpers.GetAliasedNames();
 			foreach (string alias in aliases)
 			{
 				if (alias.StartsWith(stem))
 				{
-					var member = new Member(alias);
-					member.Label = CsHelpers.GetRealName(alias);
-					members.AddIfMissing(member);
+					var item = new NameItem(alias, CsHelpers.GetRealName(alias), "System types", CsHelpers.GetRealName(alias));
+					items.AddIfMissing(item);
 				}
 			}
 		}
 		
-		private void DoAddRealTypes(List<Member> members, CsGlobalNamespace globals, string stem)
+		private void DoAddRealTypes(List<Item> items, CsGlobalNamespace globals, string stem)
 		{
 			var namespaces = new List<string>();
 			
-			DoAddParsedTypes(members, (string) null, stem);
+			DoAddParsedTypes(items, (string) null, stem);
 			namespaces.AddIfMissing(string.Empty);
 			
 			for (int i = 0; i < globals.Namespaces.Length; ++i)
 			{
-				DoAddParsedTypes(members, globals.Namespaces[i].Name, stem);
+				DoAddParsedTypes(items, globals.Namespaces[i].Name, stem);
 				namespaces.AddIfMissing(globals.Namespaces[i].Name);
 			}
 			
 			for (int i = 0; i < globals.Uses.Length; ++i)
 			{
-				DoAddParsedTypes(members, globals.Uses[i].Namespace, stem);
+				DoAddParsedTypes(items, globals.Uses[i].Namespace, stem);
 				namespaces.AddIfMissing(globals.Uses[i].Namespace);
 			}
 		
-			members.AddIfMissingRange(m_database.GetTypes(namespaces.ToArray(), stem));
+			items.AddIfMissingRange(m_database.GetTypes(namespaces.ToArray(), stem));
 		}
 		
-		private void DoAddParsedTypes(List<Member> members, string ns, string stem)
+		private void DoAddParsedTypes(List<Item> items, string ns, string stem)
 		{
 			CsType[] types = m_parses.FindTypes(ns, stem);
 			
 			foreach (CsType type in types)
 			{
-				var member = new Member(type.Name);
-				member.Label = type.FullName;
-				members.AddIfMissing(member);
+				var item = new NameItem(type.Name, type.FullName, ns + " types", type.FullName);
+				items.AddIfMissing(item);
 			}
 		}
 		
-		private Member[] DoGetNamespacesNamed(string name)
+		private Item[] DoGetNamespacesNamed(string name)
 		{
-			var members = new List<Member>(m_database.GetNamespaces(name));
-			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "db namespaces: {0}", members.ToDebugString());
+			var items = new List<Item>(m_database.GetNamespaces(name));
+			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "db namespaces: {0}", items.ToDebugString());
 			
 			string[] names = m_parses.FindNamespaces(name);
 			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "parsed namespaces: {0}", names.ToDebugString());
 			
 			foreach (string n in names)
 			{
-				var member = new Member(n);
-				member.Label = name + '.' + n;
-				members.AddIfMissing(member);
+				var item = new NameItem(n, name + '.' + n, name + " types");
+				items.AddIfMissing(item);
 			}
 			
-			return members.ToArray();
+			return items.ToArray();
 		}
 		
-		private Member[] DoGetConstructorsNamed(CsGlobalNamespace globals, ref string stem)
+		private Item[] DoGetConstructorsNamed(CsGlobalNamespace globals, ref string stem)
 		{
-			var members = new List<Member>();
+			var items = new List<Item>();
 			var namespaces = new List<string>();
 			
 			int j = stem.LastIndexOf('.');
@@ -439,32 +436,32 @@ namespace AutoComplete
 			{
 				string ns = stem.Substring(0, j);
 				stem = stem.Substring(j + 1);
-				DoAddConstructors(ns, stem, members);
+				DoAddConstructors(ns, stem, items);
 			}
 			else
 			{
-				DoAddConstructors(null, stem, members);
+				DoAddConstructors(null, stem, items);
 				namespaces.AddIfMissing(string.Empty);
 				
 				for (int i = 0; i < globals.Namespaces.Length; ++i)
 				{
-					DoAddConstructors(globals.Namespaces[i].Name, stem, members);
+					DoAddConstructors(globals.Namespaces[i].Name, stem, items);
 					namespaces.AddIfMissing(globals.Namespaces[i].Name);
 				}
 				
 				for (int i = 0; i < globals.Uses.Length; ++i)
 				{
-					DoAddConstructors(globals.Uses[i].Namespace, stem, members);
+					DoAddConstructors(globals.Uses[i].Namespace, stem, items);
 					namespaces.AddIfMissing(globals.Uses[i].Namespace);
 				}
 			}
 			
-			members.AddIfMissingRange(m_database.GetCtors(namespaces.ToArray(), stem));
+			items.AddIfMissingRange(m_database.GetCtors(namespaces.ToArray(), stem));
 			
-			return members.ToArray();
+			return items.ToArray();
 		}
 		
-		private void DoAddConstructors(string ns, string stem, List<Member> members)
+		private void DoAddConstructors(string ns, string stem, List<Item> items)
 		{
 			CsType[] types = m_parses.FindTypes(ns, stem);
 			
@@ -477,30 +474,28 @@ namespace AutoComplete
 						var ctors = from m in type.Methods where m.IsConstructor select m;
 						foreach (CsMethod ctor in ctors)
 						{
-							DoAddConstructor(type.GenericArguments, type.FullName, type.Name, ctor.Parameters, members);
+							DoAddConstructor(type.Namespace.Name, type.GenericArguments, type.FullName, type.Name, ctor.Parameters, items);
 						}
 						
 						if (type is CsStruct || !ctors.Any())
-							DoAddConstructor(type.GenericArguments, type.FullName, type.Name, new CsParameter[0], members);
+							DoAddConstructor(type.Namespace.Name, type.GenericArguments, type.FullName, type.Name, new CsParameter[0], items);
 					}
 				}
 			}
 		}
 		
-		private void DoAddConstructor(string gargs, string typeName, string name, CsParameter[] parameters, List<Member> members)
+		private void DoAddConstructor(string ns, string inGargs, string typeName, string name, CsParameter[] parameters, List<Item> items)
 		{
-			string text = name;
-			
-			if (gargs != null)
-				text += "<" + gargs.Replace(",", ", ") + ">";
+			string[] gargs = null;
+			if (inGargs != null)
+				gargs = inGargs.Split(',');
 				
-			var anames = from p in parameters select p.Name;
-			text += "(" + string.Join(";", (from p in parameters select p.Type + " " + p.Name).ToArray()) + ")";
+			string[] argTypes = (from p in parameters select p.ModifiedType).ToArray();
+			string[] argNames = (from p in parameters select p.Name).ToArray();
 			
-			var member = new Member(text, anames.Count(), "System.Void", typeName);
-			member.Label = typeName + " Constructor";
-			
-			members.AddIfMissing(member);
+			string nsName = ns == "<globals>" ? "global" : ns;
+			var item = new MethodItem("System.Void", name, gargs, argTypes, argNames, typeName, nsName + " constructors");
+			items.AddIfMissing(item);
 		}
 		
 		private void DoUpdateCache(ITextEditor editor, IComputeRuns computer)

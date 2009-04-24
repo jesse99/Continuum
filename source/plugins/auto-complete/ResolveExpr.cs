@@ -229,21 +229,22 @@ namespace AutoComplete
 				
 				if (name != null)
 				{
-					Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "trying {0}({1} args) member operand", name, numArgs);
+					Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "trying {0}({1} args) item operand", name, numArgs);
 					
-					Member[] members = m_memberResolver.Find(context, target, m_globals, name, numArgs);
-					if (members.Length > 0)
+					Item[] candidates = m_memberResolver.Find(context, target, m_globals, name, numArgs);
+					IEnumerable<Item> items = from c in candidates where c.Type != null select c;
+					if (items.Any())
 					{
-						if (members.All(m => m.Type == members[0].Type))
+						if (items.All(m => m.Type == items.First().Type))
 						{
-							result = m_typeResolver.Resolve(members[0].Type, m_globals, true, false);
+							result = m_typeResolver.Resolve(items.First().Type, m_globals, true, false);
 						}
 						else
 						{
 							Log.WriteLine("AutoComplete", "{0} has an ambiguous return type:", name);
-							foreach (Member member in members)
+							foreach (Item item in items)
 							{
-								Log.WriteLine("AutoComplete", "    {0} {1}", member.Type, member);
+								Log.WriteLine("AutoComplete", "    {0} {1}", item.Type, item);
 							}
 						}
 					}

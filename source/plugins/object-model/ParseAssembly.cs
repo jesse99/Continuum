@@ -391,12 +391,12 @@ namespace ObjectModel
 					DoValidateRoot("root_name", method.DeclaringType);
 					
 					string returnName;
-					if (method.ReturnType.ReturnType.IsSpecial())
-					{
-						DoAddSpecialType(method.ReturnType.ReturnType);
-						returnName = method.ReturnType.ReturnType.FullName;
-					}
-					else
+//					if (method.ReturnType.ReturnType.IsSpecial())			// TODO: should use this code
+//					{
+//						DoAddSpecialType(method.ReturnType.ReturnType);
+//						returnName = method.ReturnType.ReturnType.FullName;
+//					}
+//					else
 						returnName = DoGetRootName(method.ReturnType.ReturnType);
 					
 					m_database.InsertOrReplace("Methods",
@@ -471,71 +471,112 @@ namespace ObjectModel
 			}
 		}
 		
-		private void DoAppendType(StringBuilder text, string name)
-		{
-			name = CsHelpers.TrimGeneric(name);
-			name = CsHelpers.GetAliasedName(name);
-			name = CsHelpers.TrimNamespace(name);
-			
-			text.Append(name);
-		}
-		
 		private string DoGetDisplayText(MethodDefinition method)
 		{
 			var text = new StringBuilder();
 			
-			DoAppendType(text, method.ReturnType.ReturnType.FullName);
-			text.Append(' ');
+			// return-type
+			text.Append(DoGetDisplayType(method.ReturnType.ReturnType.FullName));
+			text.Append(':');
 			
-			text.Append(DoGetNameWithoutTick(method.DeclaringType.FullName));
-			text.Append("::");
+			// declaring-type
+			string name = method.DeclaringType.FullName;
+			Debug.Assert(!name.Contains(":"), name + " should not have a ':'");
+			text.Append(name);
+			text.Append(':');
+			
+			// name
 			text.Append(DoGetDisplayName(method));
+			text.Append(':');
 			
-			bool indexer = method.Name == "get_Item" || method.Name == "set_Item";
-			if (indexer || (!method.IsGetter && !method.IsSetter))
+			// generic-args
+			if (method.HasGenericParameters && !DoCanDeduceGenerics(method))
+				text.Append(DoGetDisplayGargs(method.GenericParameters));
+			else if (method.IsConstructor && method.DeclaringType.HasGenericParameters)
+				text.Append(DoGetDisplayGargs(method.DeclaringType.GenericParameters));
+			text.Append(':');
+			
+			// arg-types
+			if (method.HasParameters)
 			{
-				text.Append(indexer ? '[' : '(');
-				if (method.HasParameters)
+				bool isExtension = DoHasExtensionAtribute(method.CustomAttributes);
+				for (int i = 0; i < method.Parameters.Count; ++i)
 				{
-					bool isExtension = DoHasExtensionAtribute(method.CustomAttributes);
-					for (int i = 0; i < method.Parameters.Count; ++i)
+					ParameterDefinition p = method.Parameters[i];
+					
+					if (isExtension && i == 0)
+						text.Append("this ");
+					
+					if (DoIsParams(p))
+						text.Append("params ");
+					
+					string typeName = p.ParameterType.FullName;
+					if (typeName.EndsWith("&"))
 					{
-						ParameterDefinition p = method.Parameters[i];
-						
-						if (isExtension && i == 0)
-							text.Append("this ");
-						
-						if (DoIsParams(p))
-							text.Append("params ");
-						
-						string typeName = p.ParameterType.FullName;
-#if DEBUG
-						Contract.Assert(!typeName.Contains("{"), "type has a '{':" + typeName);
-						Contract.Assert(!typeName.Contains("}"), "type has a '}':" + typeName);
-#endif
-						
-						if (typeName.EndsWith("&"))
-						{
-							if (p.IsOut)
-								text.Append("out ");
-							else
-								text.Append("ref ");
-							DoAppendType(text, typeName.Remove(typeName.Length - 1));
-						}
+						if (p.IsOut)
+							text.Append("out ");
 						else
-							DoAppendType(text, typeName);
-						
-						text.Append(' ');
-						text.Append(p.Name);
-						
-						if (i + 1 < method.Parameters.Count)
-							text.Append(";");
+							text.Append("ref ");
+						typeName = typeName.Remove(typeName.Length - 1);
 					}
+					text.Append(DoGetDisplayType(typeName));
+					
+					if (i + 1 < method.Parameters.Count)
+						text.Append(";");
 				}
-				text.Append(indexer ? ']' : ')');
+			}
+			text.Append(':');
+			
+			// arg-names
+			if (method.HasParameters)
+			{
+				for (int i = 0; i < method.Parameters.Count; ++i)
+				{
+					ParameterDefinition p = method.Parameters[i];
+					
+					Debug.Assert(!p.Name.Contains(":"), p.Name + " should not have a ':'");
+					Debug.Assert(!p.Name.Contains(";"), p.Name + " should not have a ';'");
+					text.Append(p.Name);
+					
+					if (i + 1 < method.Parameters.Count)
+						text.Append(";");
+				}
 			}
 			
 			return text.ToString();
+		}
+		
+		private string DoGetDisplayType(string name)
+		{
+			name = CsHelpers.TrimGeneric(name);
+			name = CsHelpers.GetAliasedName(name);
+			name = CsHelpers.TrimNamespace(name);
+
+			Debug.Assert(!name.Contains(":"), name + " should not have a ':'");
+			Debug.Assert(!name.Contains(";"), name + " should not have a ';'");
+			
+			return name;
+		}
+		
+		private string DoGetDisplayGargs(GenericParameterCollection parms)
+		{
+			var builder = new StringBuilder();
+			
+			for (int i = 0; i < parms.Count; ++i)
+			{
+				GenericParameter p = parms[i];
+				
+				Debug.Assert(!p.Name.Contains(";"), p.Name + " should not have a ';'");
+				builder.Append(p.Name);
+				
+				if (i + 1 < parms.Count)
+					builder.Append(";");
+			}
+			
+			string result = builder.ToString();
+			Debug.Assert(!result.Contains(":"), result + " should not have a ':'");
+
+			return result;
 		}
 		
 		private string DoGetDisplayName(MethodDefinition method)
@@ -546,10 +587,7 @@ namespace ObjectModel
 				name = method.Name.Substring(4);
 			
 			else if (method.IsConstructor)
-				if (method.DeclaringType.HasGenericParameters)
-					name = DoGetGenericDisplayName(method.DeclaringType.GenericParameters, method.DeclaringType.Name);
-				else
-					name = method.DeclaringType.Name;
+				name = DoGetNameWithoutTick(method.DeclaringType.Name);
 			
 			else if (method.Name == "Finalize")
 				name = "~" + method.DeclaringType.Name;
@@ -557,33 +595,12 @@ namespace ObjectModel
 			else if (method.Name.StartsWith("op_"))
 				name = DoGetOperatorName(method);
 			
-			else if (!DoCanDeduceGenerics(method))
-				name = DoGetGenericDisplayName(method.GenericParameters, method.Name);
-			
 			else
 				name = method.Name;
 			
+			Debug.Assert(!name.Contains(":"), name + " should not have a ':'");
+
 			return name;
-		}
-		
-		private string DoGetGenericDisplayName(GenericParameterCollection gargs, string name)
-		{
-			var builder = new StringBuilder();
-			
-			name = DoGetNameWithoutTick(name);
-			
-			builder.Append(name);
-			builder.Append('<');
-			for (int i = 0; i < gargs.Count; ++i)
-			{
-				builder.Append(gargs[i].Name);
-				
-				if (i + 1 < gargs.Count)
-					builder.Append(", ");
-			}
-			builder.Append('>');
-			
-			return builder.ToString();
 		}
 		
 		private void DoRemoveGenerics(List<GenericParameter> generics, TypeReference type)
@@ -649,7 +666,7 @@ namespace ObjectModel
 					name = "explicit operator " + method.DeclaringType.Name;
 					break;
 				
-			// unary operators
+				// unary operators
 				case "op_Decrement":
 					name = "operator --";
 					break;

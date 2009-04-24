@@ -45,7 +45,8 @@ namespace AutoComplete
 			CsGlobalNamespace globals = parser.Parse(text);
 			
 			var locals = new CsParser.LocalsParser();
-			var resolver = new ResolveName(database, locals, text, offset, globals);
+			CsMember context = AutoComplete.FindDeclaration(globals, offset) as CsMember;
+			var resolver = new ResolveName(context, database, locals, text, offset, globals);
 			
 			m_target = resolver.Resolve(target);
 			return m_target != null;
@@ -127,11 +128,11 @@ internal sealed class MyClass
 					"MyClass",
 				},
 				
-				Members = new Dictionary<string, Member[]>
+				Members = new Dictionary<string, Item[]>
 				{
-					{"MyClass", new Member[]
+					{"MyClass", new Item[]
 					{
-						new Member("Weight", 0, "System.Int64", "MyClass"),
+						new NameItem("Weight", "long Weight", "Props", "System.Int64"),
 					}}
 				}
 			});

@@ -99,8 +99,12 @@ Note that unlike the other tables the rows in this table are not pruned.
 			
 --------------------------------------
 Methods
-display_text#			The exact formatting is undefined except that the method name is
-						preceded by "::" and ';' is used to separate the arguments.
+display_text#			Formatted as return-type:declaring-type:name:generic-args:
+						arg-types:arg-names where generic-args and arg-types/arg-names may 
+						be empty. All arguments are separated by ';' characters. Types are not 
+						special or root types: they are human readable versions of the type. 
+						generic-args is empty if the method is not generic or if the generic 
+						arguments can be deduced.
 name					Undecorated method name.
 return_type_name		Types or SpecialTypes foreign key.
 declaring_root_name$	Types foreign key. 

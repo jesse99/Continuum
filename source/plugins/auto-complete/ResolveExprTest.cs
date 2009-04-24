@@ -30,7 +30,7 @@ namespace AutoComplete
 {
 	[TestFixture]
 	public sealed class ResolveExprTest
-	{	
+	{
 		[TestFixtureSetUp]
 		public void Init()
 		{
@@ -38,15 +38,16 @@ namespace AutoComplete
 		}
 		
 		private bool DoGetTheTarget(string text, int offset, MockTargetDatabase database)
-		{			
+		{
 			var parser = new CsParser.Parser();
 			CsGlobalNamespace globals = parser.Parse(text);
 			
 			var locals = new CsParser.LocalsParser();
-			var nameResolver = new ResolveName(database, locals, text, offset, globals);
+			CsMember context = AutoComplete.FindDeclaration(globals, offset) as CsMember;
+			var nameResolver = new ResolveName(context, database, locals, text, offset, globals);
 			var resolver = new ResolveExpr(database, globals, nameResolver);
 			
-			m_target = resolver.Resolve(text, offset);
+			m_target = resolver.Resolve(context, text, offset);
 			return m_target != null;
 		}
 		
@@ -143,11 +144,11 @@ internal partial class MyClass
 					"MyClass",
 				},
 				
-				Members = new Dictionary<string, Member[]>
+				Members = new Dictionary<string, Item[]>
 				{
-					{"MyClass", new Member[]
+					{"MyClass", new Item[]
 					{
-						new Member("Process(int x;int y)", 2, "System.Int32", "MyClass"),
+						new MethodItem("int", "Process", null, new string[]{"int", "int"}, new string[]{"x", "y"}, "System.Int32", "Classes"),
 					}}
 				},
 			});
@@ -176,11 +177,11 @@ internal partial class MyClass
 					"MyClass",
 				},
 				
-				Members = new Dictionary<string, Member[]>
+				Members = new Dictionary<string, Item[]>
 				{
-					{"MyClass", new Member[]
+					{"MyClass", new Item[]
 					{
-						new Member("Process(int x;int y)", 2, "System.Int32", "MyClass"),
+						new MethodItem("int", "Process", null, new string[]{"int", "int"}, new string[]{"x", "y"}, "System.Int32", "Classes"),
 					}}
 				},
 			});
@@ -211,11 +212,11 @@ internal partial class MyClass
 					"MyClass",
 				},
 				
-				Members = new Dictionary<string, Member[]>
+				Members = new Dictionary<string, Item[]>
 				{
-					{"MyClass", new Member[]
+					{"MyClass", new Item[]
 					{
-						new Member("Process(int x;int y)", 2, "System.Int32", "MyClass"),
+						new MethodItem("int", "Process", null, new string[]{"int", "int"}, new string[]{"x", "y"}, "System.Int32", "Classes"),
 					}}
 				},
 			});
@@ -245,13 +246,13 @@ internal partial class MyClass
 					"MyClass",
 				},
 				
-				Members = new Dictionary<string, Member[]>
+				Members = new Dictionary<string, Item[]>
 				{
-					{"MyClass", new Member[]
+					{"MyClass", new Item[]
 					{
-						new Member("Alpha(int x)", 1, "MyClass", "MyClass"),
-						new Member("Beta(int x;int y)", 2, "MyClass", "MyClass"),
-						new Member("Gamma(object value)", 1, "System.Boolean", "MyClass"),
+						new MethodItem("MyClass", "Alpha", null, new string[]{"int"}, new string[]{"x"}, "MyClass", "Classes"),
+						new MethodItem("MyClass", "Beta", null, new string[]{"int", "int"}, new string[]{"x", "y"}, "MyClass", "Classes"),
+						new MethodItem("bool", "Gamma", null, new string[]{"object"}, new string[]{"value"}, "System.Boolean", "Classes"),
 					}}
 				},
 			});

@@ -45,41 +45,39 @@ namespace AutoComplete
 			ActiveObjects.Add(this);
 		}
 		
-		public void Open(ITextEditor editor, NSTextView text, Member[] members, string stem, NSTextField label, string defaultLabel)
+		public void Open(ITextEditor editor, NSTextView text, Item[] items, string stem, NSTextField label, string defaultLabel)
 		{
 			m_editor = editor;
 			m_text = text;
 			m_label = label;
 			m_defaultLabel = defaultLabel;
 			
-			m_candidates = new List<Member>(members);
+			m_candidates = new List<Item>(items);
 			m_completed = stem ?? string.Empty;
 			m_stem = stem;
-			m_hasExtensions = m_candidates.Exists(m => m.IsExtensionMethod);
-			m_showExtensions = true;
 			
-			m_visibleClasses.Clear();
-			string[] classes = DoGetClasses();
-			bool isEnum = classes.Any(k => k == "System.Enum");
-			foreach (string klass in classes)
+			m_filter.Clear();
+			IEnumerable<string> filters = from i in items select i.Filter;
+			bool isEnum = filters.Any(k => k == "System.Enum");
+			foreach (string filter in filters)
 			{
 				if (isEnum)									// for enums default to showing only the enum values
 				{
-					if (klass == "System.Enum")
-						m_visibleClasses.Add(klass, false);
-					else if (klass == "System.Object")
-						m_visibleClasses.Add(klass, false);
+					if (filter == "System.Enum")
+						m_filter[filter] =  true;
+					else if (filter == "System.Object")
+						m_filter[filter] = true;
 					else
-						m_visibleClasses.Add(klass, true);
+						m_filter[filter] = false;
 				}
 				else
-					m_visibleClasses.Add(klass, true);
+					m_filter[filter] =  false;
 			}
 			
 			DoGetAddSpace();
-			DoRebuildMembers();
+			DoRebuildItems();
 			
-			if (members.Length == 1)
+			if (items.Length == 1)
 			{
 				DoComplete(false, 0);
 			}
@@ -130,42 +128,45 @@ namespace AutoComplete
 			NSMenu menu = NSMenu.Alloc().initWithTitle(NSString.Empty);
 			menu.autorelease();
 			
-			var classes = new List<string>(m_visibleClasses.Keys);
-			classes.Sort();
-			
-			foreach (string klass in classes)
+			var filters = new List<string>(m_filter.Keys);
+			if (filters.Count > 1)
 			{
-				string title = (m_visibleClasses[klass] ? "Hide " : "Show ") + klass;
-				NSMenuItem item = NSMenuItem.Create(title, "toggleClass:");
-				menu.addItem(item);
-			}
-			
-			if (m_hasExtensions)
-			{
-				menu.addItem(NSMenuItem.separatorItem());
+				filters.Sort();
 				
-				string title = m_showExtensions ? "Hide  Extension Methods" : "Show Extension Methods";
-				NSMenuItem item = NSMenuItem.Create(title, "toggleExtensions:");
-				menu.addItem(item);
+				string extension = null;
+				foreach (string filter in filters)
+				{
+					if (filter != "extension methods")
+					{
+						string title = (m_filter[filter] ? "Show " : "Hide ") + filter;
+						NSMenuItem item = NSMenuItem.Create(title, "toggleFilter:");
+						menu.addItem(item);
+					}
+					else
+						extension = filter;
+				}
+				
+				if (extension != null)
+				{
+					menu.addItem(NSMenuItem.separatorItem());
+					
+					string title = (m_filter[extension] ? "Show " : "Hide ") + extension;
+					NSMenuItem item = NSMenuItem.Create(title, "toggleFilter:");
+					menu.addItem(item);
+				}
 			}
 			
 			return menu;
 		}
 		
-		public void toggleClass(NSMenuItem sender)
+		public void toggleFilter(NSMenuItem sender)
 		{
 			string name = sender.title().description();
 			int i = name.IndexOf(' ');
 			name = name.Substring(i + 1);
-			m_visibleClasses[name] = !m_visibleClasses[name];
+			m_filter[name] = !m_filter[name];
 			
-			DoRebuildMembers();
-		}
-		
-		public void toggleExtensions(NSMenuItem sender)
-		{
-			m_showExtensions = !m_showExtensions;
-			DoRebuildMembers();
+			DoRebuildItems();
 		}
 		
 		public new void keyDown(NSEvent evt)
@@ -232,23 +233,25 @@ namespace AutoComplete
 			int row = selectedRow();
 			if (row >= 0)
 			{
-				Member member = m_members[row];
+				Item item = m_items[row];
+				var str = NSMutableAttributedString.Create(item.Label);
 				
-				int i = member.Text.IndexOf('(');
-				if (i < 0)
-					i = member.Text.Length;
-				string text = member.Label;
-				var str = NSMutableAttributedString.Create(text);
-				
-				if (text.StartsWith(member.Type + ' '))
+				MethodItem method = item as MethodItem;
+				if (method != null)
 				{
-					NSRange range = new NSRange(member.Type.Length + 1, i);
+					NSRange range = method.GetNameRange();
+					str.addAttribute_value_range(Externs.NSStrokeWidthAttributeName, NSNumber.Create(-3.0f), range);
+				}
+				else if (item.Label.Contains(" "))
+				{
+					int i = item.Label.LastIndexOf(' ');
+					NSRange range = new NSRange(i + 1, item.Label.Length - (i + 1));
 					str.addAttribute_value_range(Externs.NSStrokeWidthAttributeName, NSNumber.Create(-3.0f), range);
 				}
 				
 				NSMutableParagraphStyle style = NSMutableParagraphStyle.Create();
 				style.setAlignment(Enums.NSCenterTextAlignment);
-				str.addAttribute_value_range(Externs.NSParagraphStyleAttributeName, style, new NSRange(0, text.Length));
+				str.addAttribute_value_range(Externs.NSParagraphStyleAttributeName, style, new NSRange(0, item.Text.Length));
 				
 				m_label.setObjectValue(str);
 			}
@@ -258,14 +261,14 @@ namespace AutoComplete
 		
 		public int numberOfRowsInTableView(NSTableView table)
 		{
-			return m_members.Count;
+			return m_items.Count;
 		}
 		
 		public NSObject tableView_objectValueForTableColumn_row(NSTableView table, NSTableColumn col, int row)
 		{
 			NSObject result;
 			
-			string name = m_members[row].Text.Replace(";", ", ");
+			string name = m_items[row].Text;
 			int n = DoCountMatching(name);
 			if (n > 0)
 			{
@@ -290,15 +293,23 @@ namespace AutoComplete
 		}
 		
 		#region Private Methods
-		private void DoSortMembers()
+		private void DoSortItems()
 		{
-			m_members.Sort((lhs, rhs) =>
+			m_items.Sort((lhs, rhs) =>
 			{
-				int result = lhs.Name.CompareTo(rhs.Name);
+				int result = 0;
 				
-				if (result == 0)
-					result = lhs.Arity.CompareTo(rhs.Arity);
+				MethodItem m1 = lhs as MethodItem;
+				MethodItem m2 = rhs as MethodItem;
+				
+				if (m1 != null && m2 != null)
+				{
+					result = m1.Name.CompareTo(m2.Name);
 					
+					if (result == 0)
+						result = m1.Arity.CompareTo(m2.Arity);
+				}
+				
 				if (result == 0)
 					result = lhs.Text.CompareTo(rhs.Text);
 				
@@ -306,41 +317,18 @@ namespace AutoComplete
 			});
 		}
 		
-		private void DoRebuildMembers()
+		private void DoRebuildItems()
 		{
-			m_members.Clear();
+			m_items.Clear();
 			
-			foreach (Member member in m_candidates)
+			foreach (Item member in m_candidates)
 			{
-				if (member.IsExtensionMethod)
-				{
-					if (m_showExtensions)
-						m_members.Add(member);
-				}
-				else
-				{
-					if (member.DeclaringType == null)
-						m_members.Add(member);
-					else if (m_visibleClasses[member.DeclaringType])
-						m_members.Add(member);
-				}
+				if (!m_filter[member.Filter])
+					m_items.Add(member);
 			}
 			
-			DoSortMembers();
+			DoSortItems();
 			reloadData();
-		}
-		
-		private string[] DoGetClasses()
-		{
-			var classes = new List<string>();
-			
-			foreach (Member member in m_candidates)
-			{
-				if (member.DeclaringType != null && !member.DeclaringType.Contains("-"))
-					classes.AddIfMissing(member.DeclaringType);
-			}
-			
-			return classes.ToArray();
 		}
 		
 		private void DoComplete(bool onlyTypedText, int row)
@@ -377,19 +365,19 @@ namespace AutoComplete
 				m_text = null;
 				if (window().isVisible())
 					window().windowController().Call("hide");
-				
-				int i = m_members[row].Text.IndexOfAny(new char[]{'<', '('});
-				bool annotate = m_members[row].Arity > 0 || (i > 0 && m_members[row].Text[i] == '<');
+					
+				MethodItem method = m_items[row] as MethodItem;
+				bool annotate = method != null && (method.Arity > 0 || method.GetArgumentRange(-1).length > 0);
 				if (!onlyTypedText && annotate)
 				{
 					NSRange range = new NSRange(firstIndex, text.Length);
 					ITextAnnotation annotation = m_editor.GetAnnotation(range);
 					
 					IArgsAnnotation args = m_editor.Boss.Get<IArgsAnnotation>();
-					string name = m_members[row].Name;
-					var members = (from m in m_members where m.Text.StartsWith(name) select m).ToArray();
-					int j = Array.FindIndex(members, m => m.Text == m_members[row].Text);
-					args.Open(annotation, members, j);
+					string name = method.Name;
+					var methods = (from m in m_items where m is MethodItem && m.Text.StartsWith(name) select (MethodItem) m).ToArray();
+					int j = Array.FindIndex(methods, m => m.Text == m_items[row].Text);
+					args.Open(annotation, methods, j);
 				}
 			}
 			else
@@ -406,29 +394,30 @@ namespace AutoComplete
 			}
 			else
 			{
-				int i = m_members[row].Text.IndexOf('(');
-				if (i > 0)
-					if (m_members[row].Arity > 0)
-						text = m_members[row].Text.Substring(0, i + 1);
+				MethodItem method = m_items[row] as MethodItem;
+				if (method != null)
+				{
+					text = method.Name;
+					
+					if (method.GetArgumentRange(-1).length > 0)
+						text += "<";
+						
+					else if (m_addSpace)
+						if (method.Arity == 0)
+							text += " ()";
+						else
+							text += " (";
+							
 					else
-						text = m_members[row].Text.Substring(0, i + 2);
+						if (method.Arity == 0)
+							text += "()";
+						else
+							text += "(";
+				}
 				else
-					text = m_members[row].Text;
+					text = m_items[row].Text;
 			}
 			
-			if (m_addSpace)
-			{
-				int j = text.IndexOf('(');
-				if (j > 0)
-					text = text.Substring(0, j) + ' ' + text.Substring(j);
-			}
-			
-			// For generic methods (where the generic arguments cannot be deduced) we want to insert "Get<".
-			int k = text.IndexOf('<');
-			int l = text.IndexOf('(');
-			if (k > 0 && (l < 0 || k < l))
-				text = text.Substring(0, k + 1);
-				
 			return text;
 		}
 		
@@ -437,15 +426,15 @@ namespace AutoComplete
 			int index = -1;
 			int count = 0;
 			
-			for (int i = 0; i < m_members.Count; ++i)
+			for (int i = 0; i < m_items.Count; ++i)
 			{
-				int n = DoCountMatching(m_members[i].Text);
+				int n = DoCountMatching(m_items[i].Text);
 				if (n > count)
 				{
 					index = i;
 					count = n;
 				}
-				else if (count == 0 && m_completed.Length > 0 && char.ToLower(m_members[i].Text[0]) < char.ToLower(m_completed[0]))	// if there's no match we still want to select a name near what the user typed
+				else if (count == 0 && m_completed.Length > 0 && char.ToLower(m_items[i].Text[0]) < char.ToLower(m_completed[0]))	// if there's no match we still want to select a name near what the user typed
 				{
 					index = i;
 				}
@@ -461,7 +450,7 @@ namespace AutoComplete
 				int row = Math.Max(index - 2, 0);
 				scrollRowToVisible(row);
 				
-				row = Math.Min(index + 2, m_members.Count - 1);
+				row = Math.Min(index + 2, m_items.Count - 1);
 				scrollRowToVisible(row);
 			}
 			else
@@ -503,13 +492,11 @@ namespace AutoComplete
 		private NSTextView m_text;
 		private NSTextField m_label;
 		private string m_defaultLabel;
-		private List<Member> m_candidates = new List<Member>();
-		private List<Member> m_members = new List<Member>();
+		private List<Item> m_candidates = new List<Item>();
+		private List<Item> m_items = new List<Item>();
 		private string m_completed = string.Empty;
 		private string m_stem;
-		private Dictionary<string, bool> m_visibleClasses = new Dictionary<string, bool>();
-		private bool m_hasExtensions;
-		private bool m_showExtensions;
+		private Dictionary<string, bool> m_filter = new Dictionary<string, bool>();
 		private bool m_addSpace;
 		#endregion
 	}

@@ -122,9 +122,28 @@ namespace Shared
 					data[j + 1] = data[j];
 					--j;
 				}
-
+				
 				data[j + 1] = value;
 			}
+		}
+		
+		public static T[] SubArray<T>(this IList<T> data, int offset)
+		{
+			return SubArray(data, offset, data.Count - offset);
+		}
+		
+		public static T[] SubArray<T>(this IList<T> data, int offset, int length)
+		{
+			Contract.Requires(data != null, "data is null");
+			Contract.Requires(offset >= 0, "offset is negative");
+			Contract.Requires(length >= 0, "length is negative");
+			Contract.Requires(offset + length <= data.Count, "too large");
+			
+			T[] result = new T[length];
+			for (int i = 0; i < length; ++i)
+				result[i] = data[offset + i];
+			
+			return result;
 		}
 	}
 }

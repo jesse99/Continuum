@@ -53,7 +53,7 @@ namespace Shared
 			if (!Directory.Exists(path))
 				Directory.CreateDirectory(path);
 			
-			path = Path.Combine(path, name + "2.db");
+			path = Path.Combine(path, name + "3.db");
 			
 			return path;
 		}

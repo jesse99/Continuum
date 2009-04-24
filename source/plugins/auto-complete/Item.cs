@@ -25,32 +25,29 @@ using System.Diagnostics;
 
 namespace AutoComplete
 {
-	internal sealed class Variable : IEquatable<Variable>
+	// An item which may appear in the completions table. This can represent
+	// a namespace, a type name, a field, a method, a local variable, etc.
+	internal abstract class Item : IEquatable<Item>
 	{
-		public Variable(string type, string name, string value, string filter)
-		{
-			Contract.Requires(!string.IsNullOrEmpty(type), "type is null or empty");
-			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
-			Contract.Requires(filter != null, "filter is null");
-			
-			Type = type;
-			Name = name;
-			Value = value;
-			Filter = filter;
-		}
+		// This is the text that appears in the completion table rows. It's also the
+		// default for the text which is inserted.
+		public string Text {get; protected set;}
 		
-		public string Type {get; private set;}
+		// This is the text that appears in the label above the table when
+		// the member is selected.
+		public string Label {get; protected set;}
 		
-		public string Name {get; private set;}
-
-		public string Filter {get; private set;}
+		// This is used with the table's context menu to show or hide members.
+		// It will usually be a full type name, "extension methods", etc.
+		public string Filter {get; protected set;}
 		
-		// May be null;
-		public string Value {get; private set;}
+		// The type name of the item. This may not be the full type name and
+		// may be null (e.g. if the item is a namespace).
+		public string Type {get; protected set;}
 		
 		public override string ToString()
 		{
-			return Type + " " + Name;
+			return Text;
 		}
 		
 		public override bool Equals(object obj)
@@ -58,16 +55,16 @@ namespace AutoComplete
 			if (obj == null)
 				return false;
 			
-			Variable rhs = obj as Variable;
+			Item rhs = obj as Item;
 			return this == rhs;
 		}
 		
-		public bool Equals(Variable rhs)
+		public bool Equals(Item rhs)
 		{
 			return this == rhs;
 		}
 		
-		public static bool operator==(Variable lhs, Variable rhs)
+		public static bool operator==(Item lhs, Item rhs)
 		{
 			if (object.ReferenceEquals(lhs, rhs))
 				return true;
@@ -75,16 +72,13 @@ namespace AutoComplete
 			if ((object) lhs == null || (object) rhs == null)
 				return false;
 			
-			if (lhs.Type != rhs.Type)
-				return false;
-			
-			if (lhs.Name != rhs.Name)
+			if (lhs.Text != rhs.Text)
 				return false;
 			
 			return true;
 		}
 		
-		public static bool operator!=(Variable lhs, Variable rhs)
+		public static bool operator!=(Item lhs, Item rhs)
 		{
 			return !(lhs == rhs);
 		}
@@ -95,8 +89,7 @@ namespace AutoComplete
 			
 			unchecked
 			{
-				hash += Type.GetHashCode();
-				hash += Name.GetHashCode();
+				hash += Text.GetHashCode();
 			}
 			
 			return hash;

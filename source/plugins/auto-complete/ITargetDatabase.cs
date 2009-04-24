@@ -32,24 +32,24 @@ namespace AutoComplete
 		// Returns true if the name is a special or type name.
 		bool HasType(string typeName);
 		
-		Member[] GetNamespaces(string ns);
-
+		Item[] GetNamespaces(string ns);
+		
 		// Returns type names for the type's base class and any interfaces it directly
 		// implements.
 		void GetBases(string typeName, List<string> baseNames, List<string> interfaceNames, List<string> allNames);
 		
-		Member[] GetTypes(string[] namespaces, string stem);
-		Member[] GetCtors(string[] namespaces, string stem);
-
+		Item[] GetTypes(string[] namespaces, string stem);
+		Item[] GetCtors(string[] namespaces, string stem);
+		
 		// Returns the (unique) members for all of the types, but not the methods
 		// which extend the types. 
-		Member[] GetMembers(string[] typeNames, bool instanceCall, bool isStaticCall, bool includeProtected);
-		Member[] GetMembers(string[] typeNames, bool instanceCall, bool isStaticCall, string name, int arity, bool includeProtected);
+		Item[] GetMembers(string[] typeNames, bool instanceCall, bool isStaticCall, bool includeProtected);
+		Item[] GetMembers(string[] typeNames, bool instanceCall, bool isStaticCall, string name, int arity, bool includeProtected);
 		
-		Member[] GetExtensionMethods(string targetType, string[] typeNames, string[] namespaces);
-		Member[] GetExtensionMethods(string targetType, string[] typeNames, string[] namespaces, string name, int arity);
+		Item[] GetExtensionMethods(string[] typeNames, string[] namespaces);
+		Item[] GetExtensionMethods(string[] typeNames, string[] namespaces, string name, int arity);
 		
-		Member[] GetFields(string[] typeNames, bool instanceCall, bool isStaticCall, bool includeProtected);
-		Member[] GetFields(string[] typeNames, bool instanceCall, bool isStaticCall, string name, bool includeProtected);
+		Item[] GetFields(string[] typeNames, bool instanceCall, bool isStaticCall, bool includeProtected);
+		Item[] GetFields(string[] typeNames, bool instanceCall, bool isStaticCall, string name, bool includeProtected);
 	}
 }

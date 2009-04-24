@@ -40,7 +40,8 @@ namespace AutoComplete
 			CsGlobalNamespace globals = parser.Parse(text);
 			
 			var locals = new CsParser.LocalsParser();
-			var resolver = new ResolveName(database, locals, text, offset, globals);
+			CsMember context = AutoComplete.FindDeclaration(globals, offset) as CsMember;
+			var resolver = new ResolveName(context, database, locals, text, offset, globals);
 			
 			m_target = resolver.Resolve(name);
 			return m_target != null;

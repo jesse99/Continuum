@@ -53,33 +53,33 @@ namespace AutoComplete
 			get {return m_annotation != null && m_annotation.Visible;}
 		}
 		
-		public void Open(ITextAnnotation annotation, Member[] members, int index)
+		public void Open(ITextAnnotation annotation, MethodItem[] methods, int index)
 		{
 			Contract.Requires(annotation != null, "annotation is null");
-			Contract.Requires(members != null, "members is null");
+			Contract.Requires(methods != null, "methods is null");
 			Contract.Requires(index >= 0, "index is negative");
-			Contract.Requires(index < members.Length, "index is too large");
+			Contract.Requires(index < methods.Length, "index is too large");
 			
 			if (IsVisible)
 			{
-				m_oldStates.Add(new State(m_annotation, m_members, m_index));
+				m_oldStates.Add(new State(m_annotation, m_methods, m_index));
 				m_annotation.SetContext(null);
 				m_annotation.Visible = false;
 			}
 			
 			m_annotation = annotation;
-			m_members = members;
+			m_methods = methods;
 			m_index = index;
 			DoUpdateBackColor();
 			
-			int i = members[index].Text.IndexOfAny(new char[]{'<', '('});
-			if (i > 0 && members[index].Text[i] == '<')
+			int i = methods[index].Text.IndexOfAny(new char[]{'<', '('});
+			if (i > 0 && methods[index].Text[i] == '<')
 				m_currentArg = -1;
 			else
 				m_currentArg = 1;
 			m_annotation.String = DoBuildString();
 			
-			if (members.Length > 1)
+			if (methods.Length > 1)
 				DoResetContextMenu();
 			
 			m_annotation.Visible = true;
@@ -109,8 +109,8 @@ namespace AutoComplete
 					}
 					else if (IsValid && chars[0] == '(')
 					{
-						int i = m_members[m_index].Text.IndexOfAny(new char[]{'<', '('});
-						if (i > 0 && m_members[m_index].Text[i] == '<')
+						int i = m_methods[m_index].Text.IndexOfAny(new char[]{'<', '('});
+						if (i > 0 && m_methods[m_index].Text[i] == '<')
 						{
 							m_currentArg = 1;
 							m_annotation.String = DoBuildString();
@@ -130,7 +130,7 @@ namespace AutoComplete
 							if (arg != 0)
 							{
 								m_annotation = m_oldStates.Last().Annotation;
-								m_members = m_oldStates.Last().Members;
+								m_methods = m_oldStates.Last().Methods;
 								m_index = m_oldStates.Last().Index;
 								m_currentArg = 0;
 								m_annotation.Visible = true;
@@ -177,17 +177,17 @@ namespace AutoComplete
 		#region Private Methods
 		private void DoResetContextMenu()
 		{
-			var items = new List<AnnontationContextItem>();
-			for (int i = 0; i < m_members.Length; ++i)
+			var methods = new List<AnnontationContextItem>();
+			for (int i = 0; i < m_methods.Length; ++i)
 			{
-				string text = m_members[i].Type + " " + m_members[i].Text.Replace(";", ", ");
+				string text = m_methods[i].Label;
 				int state = i == m_index ? 1 : 0;
 				
 				int j = i;				// need this because we don't want the delegate using the mutated iteration variable
 				var item = new AnnontationContextItem(text, state, () => DoUseOverload(j));
-				items.Add(item);
+				methods.Add(item);
 			}
-			m_annotation.SetContext(items);
+			m_annotation.SetContext(methods);
 		}
 		
 		private void DoUseOverload(int index)
@@ -271,109 +271,30 @@ namespace AutoComplete
 		
 		private NSAttributedString DoBuildString()
 		{
-			Member member = m_members[m_index];
+			MethodItem method = m_methods[m_index];
 			
-			string rtype = CsHelpers.GetAliasedName(member.Type);
-			rtype = CsHelpers.TrimNamespace(rtype);
-			rtype = CsHelpers.TrimGeneric(rtype);
-			string text = rtype + " " + member.Text.Replace(";", ", ");
+			NSMutableAttributedString str = NSMutableAttributedString.Create(method.Label);
 			
-			NSMutableAttributedString str = NSMutableAttributedString.Create(text);
-			
-			if (member.Arity > 0 && m_currentArg <= member.Arity && m_currentArg > 0)		// need the second check in case the user is typed something silly
-				DoHiliteRegularArg(str, rtype);
-			
-			else if (m_currentArg < 0)
-				DoHiliteGenericArg(str, rtype);
+			NSRange range = method.GetArgumentRange(m_currentArg);
+			if (range.length > 0)
+				str.addAttribute_value_range(Externs.NSStrokeWidthAttributeName, NSNumber.Create(-4.0f), range);
 			
 			return str;
-		}
-		
-		private void DoHiliteRegularArg(NSMutableAttributedString str, string rtype)
-		{
-			Member member = m_members[m_index];
-			
-			string munged = member.Text.Replace(";", "; ").Replace("[]", "--");
-			int first = munged.IndexOf('(') + 1;
-			Contract.Assert(first > 0, "couldn't find ( or [ in " + munged);
-			
-			Contract.Assert(m_currentArg > 0, "m_currentArg is not positive");
-			for (int j = 0; j < m_currentArg; ++j)
-			{
-				int next = munged.IndexOfAny(new char[]{';', ')', ']'}, first);
-				Contract.Assert(next > 0, "couldn't find next ; or ) or ] in " + munged);
-				
-				if (j + 1 == m_currentArg)
-				{
-					int begin = munged.LastIndexOf(' ', next, next - first);
-					Contract.Assert(begin > 0, "couldn't find a space in " + munged.Substring(first, next - first));
-					
-					int offset = rtype.Length + 1;
-					DoHilite(str, offset + begin, next - begin);
-				}
-				
-				first = next + 2;
-			}
-		}
-		
-		private void DoHiliteGenericArg(NSMutableAttributedString str, string rtype)
-		{
-			string text = m_members[m_index].Text;
-			
-			int first = text.IndexOf('<') + 1;
-			int last = text.IndexOf('>');				// note that this is an unbound generic so we don't need to worry about nested angle brackets
-//	Log.WriteLine(TraceLevel.Verbose, "XXX", "full text: {0}", rtype + ' ' + text);
-//	Log.WriteLine(TraceLevel.Verbose, "XXX", "    text: {0}", text.Substring(first, last - first));
-//	Log.WriteLine(TraceLevel.Verbose, "XXX", "    first: {0}", first);
-			
-			if (first < last)
-			{
-				Boss boss = ObjectModel.Create("CsParser");
-				var scanner = boss.Get<IScanner>();
-				scanner.Init(text.Substring(first, last - first));
-				
-				int arg = -1;
-				while (scanner.Token.IsValid() && arg != m_currentArg)
-				{
-					if (scanner.Token.Kind != TokenKind.Identifier)
-						return;
-					scanner.Advance();
-					
-					if (!scanner.Token.IsValid() || !scanner.Token.IsPunct(","))
-						return;
-					scanner.Advance();
-					
-					--arg;
-				}
-				
-				if (scanner.Token.IsValid() && arg == m_currentArg)
-				{
-					DoHilite(str, rtype.Length + 1 + first + scanner.Token.Offset, scanner.Token.Length);
-				}
-			}
-		}
-		
-		// Not sure if it would be better to use but NSForegroundColorAttributeName
-		// isn't working for some reason.
-		private void DoHilite(NSMutableAttributedString str, int index, int length)
-		{
-			NSRange range = new NSRange(index, length);
-			str.addAttribute_value_range(Externs.NSStrokeWidthAttributeName, NSNumber.Create(-4.0f), range);
 		}
 		#endregion
 		
 		#region Private Types
 		private sealed class State
 		{
-			public State(ITextAnnotation annotation, Member[] members, int index)
+			public State(ITextAnnotation annotation, MethodItem[] methods, int index)
 			{
 				Annotation = annotation;
-				Members = members;
+				Methods = methods;
 				Index = index;
 			}
 			
 			public ITextAnnotation Annotation {get; private set;}
-			public Member[] Members {get; private set;}
+			public MethodItem[] Methods {get; private set;}
 			public int Index {get; private set;}
 		}
 		#endregion
@@ -381,7 +302,7 @@ namespace AutoComplete
 		#region Fields
 		private Boss m_boss;								// text editor boss
 		private ITextAnnotation m_annotation;
-		private Member[] m_members;
+		private MethodItem[] m_methods;
 		private int m_index;
 		private int m_currentArg;
 		private List<State> m_oldStates = new List<State>();

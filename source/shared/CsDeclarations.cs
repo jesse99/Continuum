@@ -620,6 +620,21 @@ namespace Shared
 		// Will be something like "int"  Note that the type will not have any whitespace.
 		public string Type {get; private set;}
 		
+		public string ModifiedType
+		{
+			get
+			{
+				if (Modifier == ParameterModifier.Out)
+					return "out " + Type;
+				else if (Modifier == ParameterModifier.Ref)
+					return "ref " + Type;
+				else if (Modifier == ParameterModifier.This)
+					return "this " + Type;
+				else
+					return Type;
+			}
+		}
+		
 		public ParameterModifier Modifier {get; private set;}
 		
 		// Returns true if the parameter was decorated with the params keyword.

@@ -56,7 +56,7 @@ namespace AutoComplete
 			return has;
 		}
 		
-		public Member[] GetNamespaces(string ns)
+		public Item[] GetNamespaces(string ns)
 		{
 			throw new NotImplementedException();
 		}
@@ -94,28 +94,28 @@ namespace AutoComplete
 			}
 		}
 		
-		public Member[] GetTypes(string[] namespaces, string stem)
+		public Item[] GetTypes(string[] namespaces, string stem)
 		{
 			throw new NotImplementedException();
 		}
 		
-		public Member[] GetCtors(string[] namespaces, string stem)
+		public Item[] GetCtors(string[] namespaces, string stem)
 		{
 			throw new NotImplementedException();
 		}
 		
-		public Member[] GetMembers(string[] typeNames, bool instanceCall, bool isStaticCall)
+		public Item[] GetMembers(string[] typeNames, bool instanceCall, bool isStaticCall, bool includeProtected)
 		{
-			var result = new List<Member>();
+			var result = new List<Item>();
 			
 			if (Members != null)
 			{
 				foreach (string typeName in typeNames)
 				{
-					Member[] members;
+					Item[] members;
 					if (Members.TryGetValue(typeName, out members))
 					{
-						foreach (Member member in members)
+						foreach (Item member in members)
 						{
 							result.AddIfMissing(member);
 						}
@@ -126,20 +126,23 @@ namespace AutoComplete
 			return result.ToArray();
 		}
 		
-		public Member[] GetMembers(string[] typeNames, bool instanceCall, bool isStaticCall, string name, int arity)
+		public Item[] GetMembers(string[] typeNames, bool instanceCall, bool isStaticCall, string name, int arity, bool includeProtected)
 		{
-			var result = new List<Member>();
+			var result = new List<Item>();
 			
 			if (Members != null)
 			{
 				foreach (string typeName in typeNames)
 				{
-					Member[] members;
+					Item[] members;
 					if (Members.TryGetValue(typeName, out members))
 					{
-						foreach (Member member in members)
+						foreach (Item member in members)
 						{
-							if (member.Name == name && member.Arity == arity)
+							MethodItem method = member as MethodItem;
+							if (method != null && method.Name == name && method.Arity == arity)
+								result.AddIfMissing(member);
+							else if (method == null && member.Text == name && arity == 0)
 								result.AddIfMissing(member);
 						}
 					}
@@ -149,9 +152,9 @@ namespace AutoComplete
 			return result.ToArray();
 		}
 		
-		public Member[] GetExtensionMethods(string targetType, string[] typeNames, string[] namespaces)
+		public Item[] GetExtensionMethods(string[] typeNames, string[] namespaces)
 		{
-			var result = new List<Member>();
+			var result = new List<Item>();
 			
 			if (ExtensionMethods != null)
 			{
@@ -159,10 +162,10 @@ namespace AutoComplete
 				{
 					foreach (string ns in namespaces)
 					{
-						Member[] members;
+						Item[] members;
 						if (ExtensionMethods.TryGetValue(ns + "." + typeName, out members))
 						{
-							foreach (Member member in members)
+							foreach (Item member in members)
 							{
 								result.AddIfMissing(member);
 							}
@@ -174,9 +177,9 @@ namespace AutoComplete
 			return result.ToArray();
 		}
 		
-		public Member[] GetExtensionMethods(string targetType, string[] typeNames, string[] namespaces, string name, int arity)
+		public Item[] GetExtensionMethods(string[] typeNames, string[] namespaces, string name, int arity)
 		{
-			var result = new List<Member>();
+			var result = new List<Item>();
 			
 			if (ExtensionMethods != null)
 			{
@@ -184,12 +187,15 @@ namespace AutoComplete
 				{
 					foreach (string ns in namespaces)
 					{
-						Member[] members;
+						Item[] members;
 						if (ExtensionMethods.TryGetValue(ns + "." + typeName, out members))
 						{
-							foreach (Member member in members)
+							foreach (Item member in members)
 							{
-								if (member.Name == name && member.Arity == arity)
+								MethodItem method = member as MethodItem;
+								if (method != null && method.Name == name && method.Arity == arity)
+									result.AddIfMissing(member);
+								else if (method == null && member.Text == name && arity == 0)
 									result.AddIfMissing(member);
 							}
 						}
@@ -200,18 +206,18 @@ namespace AutoComplete
 			return result.ToArray();
 		}
 		
-		public Member[] GetFields(string[] typeNames, bool instanceCall, bool isStaticCall)
+		public Item[] GetFields(string[] typeNames, bool instanceCall, bool isStaticCall, bool includeProtected)
 		{
-			var result = new List<Member>();
+			var result = new List<Item>();
 			
 			if (Fields != null)
 			{
 				foreach (string typeName in typeNames)
 				{
-					Member[] members;
+					Item[] members;
 					if (Fields.TryGetValue(typeName, out members))
 					{
-						foreach (Member member in members)
+						foreach (Item member in members)
 						{
 							result.AddIfMissing(member);
 						}
@@ -222,20 +228,20 @@ namespace AutoComplete
 			return result.ToArray();
 		}
 		
-		public Member[] GetFields(string[] typeNames, bool instanceCall, bool isStaticCall, string name)
+		public Item[] GetFields(string[] typeNames, bool instanceCall, bool isStaticCall, string name, bool includeProtected)
 		{
-			var result = new List<Member>();
+			var result = new List<Item>();
 			
 			if (Fields != null)
 			{
 				foreach (string typeName in typeNames)
 				{
-					Member[] members;
+					Item[] members;
 					if (Fields.TryGetValue(typeName, out members))
 					{
-						foreach (Member member in members)
+						foreach (Item member in members)
 						{
-							if (member.Name == name)
+							if (member.Text == name)
 								result.AddIfMissing(member);
 						}
 					}
@@ -249,11 +255,11 @@ namespace AutoComplete
 		
 		public Dictionary<string, string> BaseClasses {get; set;}
 		
-		public Dictionary<string, Member[]> Members {get; set;}
+		public Dictionary<string, Item[]> Members {get; set;}
 
-		public Dictionary<string, Member[]> ExtensionMethods {get; set;}
+		public Dictionary<string, Item[]> ExtensionMethods {get; set;}
 
-		public Dictionary<string, Member[]> Fields {get; set;}
+		public Dictionary<string, Item[]> Fields {get; set;}
 	}
 }
 #endif
