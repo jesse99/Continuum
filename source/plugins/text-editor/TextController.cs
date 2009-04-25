@@ -627,6 +627,9 @@ namespace TextEditor
 		//
 		// changeInLength is the difference in length between the old selection
 		// and the new text.
+		//
+		// TODO: cStringUsingEncoding might allow us to skip a copy when getting
+		// the text (might also help keyDown)
 		public void textStorageDidProcessEditing(NSObject notification)
 		{
 			NSTextStorage storage = m_textView.Value.textStorage();

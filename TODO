@@ -22,33 +22,6 @@ ReferenceEquals used with value type
 might want a sample app
 sudo fs_usage -f filesys
 
-* Work on tab completion:
-	- keyDown and textStorageDidProcessEditing should use cStringUsingEncoding
-	  (be sure to do some timing tests to see if it can be used to avoid copying all
-	  of the characters)
-	- might want to support completing names via F5, should also have a menu item
-	   for this
-	
-	- if a name cannot be resolved at all maybe it should be underlined in orange
-	- would be really nice to add an auto-complete (and maybe object-model)
-	  functional test
-	- get pointers completing
-	- get arrays completing
-	- get indexers completing
-	- get bound generics compelting
-	- it would be nice if tab could be used to complete type names, but the UI may
-	  be a bit gnarly if there is an ambiguity
-	- can we show the comments for the selection? maybe in a second window? or
-	   maybe some sort of context help window that can also be shown if the text 
-	   window selection is within a method? or a growl sort of window?
-	- need to work with namespace aliases
-	- might want to special case "throw new "
-* Styles aren't getting applied reliably. Mostly member and type names.
-   NSData.cs for example.
-* Add C language.
-* FileStream.cs didn't parse right.
-* Right click on MethodDefinition has an extra separator in the menu.
-* Make sure setting the default text font size works too.
 * Work on no-language support:
 	- enable font command
 	- enable stuff like bold and underline commands
@@ -122,7 +95,24 @@ sudo fs_usage -f filesys
 * Implement interface refactor.
 * Add Find in Spotlight.
 * Time Machine integration? Maybe show diffs?
-* Might want to expose CsEnum.Names to refactor.
+* Preprocessor commands can screw up the parser, see FileStream.cs for example.
+* Work on tab completion:
+	- might want to support completing names via F5, should also have a menu item
+	   for this	
+	- if a name cannot be resolved at all maybe it should be underlined in orange
+	- would be really nice to add an auto-complete (and maybe object-model)
+	  functional test
+	- get pointers completing
+	- get arrays completing
+	- get indexers completing
+	- get bound generics compelting
+	- it would be nice if tab could be used to complete type names, but the UI may
+	  be a bit gnarly if there is an ambiguity
+	- can we show the comments for the selection? maybe in a second window? or
+	   maybe some sort of context help window that can also be shown if the text 
+	   window selection is within a method? or a growl sort of window?
+	- need to work with namespace aliases
+	- might want to special case "throw new "
 * Expose CsBases.HasBaseClass to refactor.
 * Don't do brace hiliting if insertion point is not within code.
 * Implement IDisposable added throw to a private method.

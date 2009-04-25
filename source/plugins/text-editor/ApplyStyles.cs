@@ -46,15 +46,15 @@ namespace TextEditor
 			if (ms_attributes.Count == 0)
 			{
 				ms_tabObserver = new ObserverTrampoline(ApplyStyles.DoResetTabStops);
-				Broadcaster.Register("tab stops changed", ms_tabObserver);
-				DoResetTabStops("tab stops changed", null);
+				Broadcaster.Register("tab stops changed-pre", ms_tabObserver);
+				DoResetTabStops("tab stops changed-pre", null);
 				
 				ms_styleObserver = new ObserverTrampoline(ApplyStyles.DoResetFont);
 				foreach (string name in ms_names)
 				{
-					Broadcaster.Register(name, ms_styleObserver);
+					Broadcaster.Register(name + "-pre", ms_styleObserver);
 					ms_attributes.Add(name, NSMutableDictionary.Create().Retain());
-					DoResetFont(name, null);
+					DoResetFont(name + "-pre", null);
 				}
 			}
 			
@@ -150,6 +150,10 @@ namespace TextEditor
 					}
 					else
 					{
+//	Console.WriteLine("   applying all the runs");
+//	for (int i = 0; i < runs.Count; ++i)
+//		if (runs[i].Type != StyleType.Default && runs[i].Type != StyleType.Tabs)
+//			Console.WriteLine("   {0} {1}", runs[i].Type, m_text.string_().description().Substring(runs[i].Offset, runs[i].Length));
 						m_appliedSet = new List<StyleRun>(runs.Count);
 						DoResetAttributes(0, m_length, m_length);
 					}
@@ -237,9 +241,9 @@ namespace TextEditor
 					// Except for type and member which must be processed after the
 					// run they are within.
 					if (lhs.Type == StyleType.Type || lhs.Type == StyleType.Member)
-						lhsMidpoint += m_length;
+						lhsMidpoint += 2*m_length;
 					if (rhs.Type == StyleType.Type || rhs.Type == StyleType.Member)
-						rhsMidpoint += m_length;
+						rhsMidpoint += 2*m_length;
 					
 					int lhsDist = Math.Abs(lhsMidpoint - m_origin);
 					int rhsDist = Math.Abs(rhsMidpoint - m_origin);
@@ -275,6 +279,16 @@ namespace TextEditor
 					{
 						for (int i = m_workSet.Count - 1; i >= Math.Max(0, m_workSet.Count - MaxChunkSize); --i)
 						{
+//		if (m_workSet[i].Type != StyleType.Default && m_workSet[i].Type != StyleType.Tabs)
+//			Console.WriteLine("   {0} {1}", m_workSet[i].Type, m_text.string_().description().Substring(m_workSet[i].Offset, m_workSet[i].Length));
+
+#if DEBUG
+							if (i + 1 < m_workSet.Count)
+								if (m_workSet[i].Type != StyleType.Type && m_workSet[i].Type != StyleType.Member)
+									if (m_workSet[i + 1].Type == StyleType.Type || m_workSet[i + 1].Type == StyleType.Member)
+										Log.WriteLine(TraceLevel.Error, "Styler", "Applying {0} after {1}", m_workSet[i].Type, m_workSet[i + 1].Type);
+#endif
+						
 							DoApplyStyle(m_workSet[i], length);
 							m_appliedSet.Add(m_workSet[i]);
 						}
@@ -420,6 +434,9 @@ namespace TextEditor
 		
 		private static void DoResetFont(string name, object value)
 		{
+			Contract.Assert(name.EndsWith("-pre"), name + " does not end with '-pre'");
+			name = name.Remove(name.Length - 4);
+			
 			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
 			string key = name.Substring(0, name.Length - "changed".Length);
 			
@@ -436,7 +453,7 @@ namespace TextEditor
 			
 			// attributes
 			string attrKey = key + "attributes";
-						
+			
 			var data = defaults.objectForKey(NSString.Create(attrKey)).To<NSData>();
 			if (!NSObject.IsNullOrNil(data))
 			{

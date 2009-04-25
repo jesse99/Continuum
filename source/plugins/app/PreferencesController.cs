@@ -220,6 +220,7 @@ namespace App
 			defaults.setFloat_forKey(m_font.pointSize(), NSString.Create(m_styleName + " font size"));
 			
 			DoUpdateButtonTitle(m_styleName);
+			Broadcaster.Invoke(m_styleName + " font changed-pre", true);
 			Broadcaster.Invoke(m_styleName + " font changed", true);
 		}
 		
@@ -231,6 +232,7 @@ namespace App
 			NSData data = NSArchiver.archivedDataWithRootObject(m_attributes);
 			defaults.setObject_forKey(data, NSString.Create(m_styleName + " font attributes"));
 			
+			Broadcaster.Invoke(m_styleName + " font changed-pre", true);
 			Broadcaster.Invoke(m_styleName + " font changed", true);
 		}
 		
@@ -242,6 +244,7 @@ namespace App
 			
 			foreach (string name in m_buttons.Keys)
 			{
+				Broadcaster.Invoke(name + " font changed-pre", false);
 				Broadcaster.Invoke(name + " font changed", false);
 				DoUpdateButtonTitle(name);
 			}
@@ -249,7 +252,11 @@ namespace App
 			this["globsTable"].Call("reload");
 			Broadcaster.Invoke("language globs changed", null);
 			
-			Broadcaster.Invoke("text default font changed", true);			// small hack to avoid redoing attributes umpteen times for text documents
+			Broadcaster.Invoke("text default font changed-pre", true);		// small hack to avoid redoing attributes umpteen times for text documents
+			Broadcaster.Invoke("text spaces color changed-pre", true);
+			Broadcaster.Invoke("text tabs color changed-pre", true);
+
+			Broadcaster.Invoke("text default font changed", true);
 			Broadcaster.Invoke("text default color changed", null);
 			Broadcaster.Invoke("transcript default color changed", null);
 			Broadcaster.Invoke("text spaces color changed", true);
@@ -273,10 +280,11 @@ namespace App
 		
 		public void tabStopsChanged(NSObject sender)
 		{
+			Broadcaster.Invoke("tab stops changed-pre", true);
 			Broadcaster.Invoke("tab stops changed", true);
 		}
 		
-		public void addPreferred(NSObject sender)	
+		public void addPreferred(NSObject sender)
 		{
 			NSOpenPanel panel = NSOpenPanel.Create();
 			panel.setTitle(NSString.Create("Choose Directory"));
@@ -365,6 +373,7 @@ namespace App
 				defaults.setObject_forKey(data, NSString.Create(name + " color attributes"));
 			}
 			
+			Broadcaster.Invoke(name + " color changed-pre", true);
 			Broadcaster.Invoke(name + " color changed", true);
 		}
 		

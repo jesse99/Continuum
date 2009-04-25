@@ -343,11 +343,17 @@ namespace ObjectModel
 			{
 				Array.Sort(sources, (lhs, rhs) => lhs.Source.CompareTo(rhs.Source));
 				
-				items.Add(new TextContextItem(order));
+				bool addedSep = false;
 				for (int i = 0; i < Math.Min(sources.Length, MaxOpenItems); ++i)
 				{
 					if (!string.IsNullOrEmpty(sources[i].Path))
 					{
+						if (!addedSep)
+						{
+							items.Add(new TextContextItem(order));
+							addedSep = true;
+						}
+						
 						int k = i;											// need this for the delegate (or the for loop will mutate the value)
 						string title = "Open " + sources[i].Source;
 						

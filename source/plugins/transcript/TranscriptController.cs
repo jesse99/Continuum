@@ -183,7 +183,7 @@ namespace Transcript
 			NSString fname = defaults.stringForKey(NSString.Create(key + "name"));
 			float ptSize = defaults.floatForKey(NSString.Create(key + "size"));
 			
-			NSFont font = NSFont.fontWithName_size(fname, ptSize);			
+			NSFont font = NSFont.fontWithName_size(fname, ptSize);
 			m_attributes[name].setObject_forKey(font, Externs.NSFontAttributeName);
 			
 			// attributes
