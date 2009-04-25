@@ -31,14 +31,11 @@ sudo fs_usage -f filesys
 			s.
 		}
 
+* HashSet didn't tab complete in expr context.
 * Test performance once more:
-	- local dot
-	- chained dot	
-	- no-op tab
-	
 	- GetMembers1 is a bit slow
-* Why didn't dirname resolve?
 * Before using locate try using appending the path to each open directory.
+* Build a new foreshadow. Be sure to keep an eye on local parser errors.
 * Work on tab completion:
 	- refactor needs to document Scope and support Locals property
 	- keyDown and textStorageDidProcessEditing should use cStringUsingEncoding

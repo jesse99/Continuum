@@ -25,9 +25,33 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.Serialization;
+using System.Security.Permissions;
+using System.Text;
 
 namespace CsParser
 {
+	[Serializable]
+	public sealed class LocalException : Exception
+	{
+		public LocalException()
+		{
+		}
+		
+		public LocalException(string message) : base(message)
+		{
+		}
+		
+		public LocalException(string message, Exception inner) : base(message)
+		{
+		}
+		
+		[SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+		private LocalException(SerializationInfo info, StreamingContext context) : base(info, context)
+		{
+		}
+	}
+	
 	internal sealed class LocalsParser : ICsLocalsParser
 	{
 		public void Instantiated(Boss boss)
@@ -45,20 +69,16 @@ namespace CsParser
 		// extract local declarations and is made trickier because the method body is
 		// being edited so it may be very malformed.
 		//
-		// Despite the simplistic implementation the code should work pretty well. 
-		// The only problem caused by its simple nature is that locals defined in
-		// linq expressions with let, for/foreach loop variables, and fixed pointer
-		// variables have incorrect scopes. But, in practice, this should be OK: locals
-		// defined later will hide the earlier ones so everything will normally work 
-		// fine for users.
+		// What we do here is treat everything that could be a local variable as a 
+		// local variable. This may result in a few false positives, but that should
+		// happen rarely and should not be a problem unless the false local hides
+		// a real one.
 		public Local[] Parse(string text, int start, int stop)
 		{
 			Contract.Requires(text != null, "text is null");
 			Contract.Requires(start >= 0, "start is negative");
 			Contract.Requires(start <= text.Length, "start is too big");
 			Contract.Requires(start <= stop, "stop is too small");
-//Console.WriteLine("---------------------------");
-//Console.WriteLine(text.Substring(start, stop - start).EscapeAll());
 			
 			var locals = new List<Local>();
 			
@@ -72,9 +92,7 @@ namespace CsParser
 				while (m_scanner.Token.IsValid())
 				{
 					if (m_scanner.Token.IsPunct("{"))
-					{
 						DoParseBlock(locals, 0);
-					}
 					else
 						m_scanner.Advance();
 				}
@@ -94,10 +112,12 @@ namespace CsParser
 			int count = locals.Count;
 			while (m_scanner.Token.IsValid())
 			{
-//Console.WriteLine("token = {0}, line {1}", m_scanner.Token.Text(), m_scanner.Token.Line);
 				if (m_scanner.Token.Kind == TokenKind.Identifier)
 				{
-					DoParseLocal(locals);
+					if (!ms_keywords.Contains(m_scanner.Token.Text()))
+						DoTryParseLocals(locals);
+					else
+						m_scanner.Advance();
 				}
 				else if (m_scanner.Token.IsPunct("{"))
 				{
@@ -114,311 +134,298 @@ namespace CsParser
 			}
 		}
 		
-		// TODO: handle fixed-statement
-		private void DoParseLocal(List<Local> locals)
-		{
-			if (m_scanner.Token.Kind == TokenKind.Identifier)
-			{
-				string typeOrName = DoParseType();
-				if (typeOrName != null)
-				{
-					if (typeOrName == "foreach")
-						DoParseForEach(locals);
-					else if (typeOrName == "catch")
-						DoParseCatch(locals);
-					else if (typeOrName == "using")
-						DoParseUsing(locals);
-					else
-						DoParseLocalVariable(locals, typeOrName);
-				}
-			}
-		}
-		
-		// foreach-statement:
-		//     foreach   (   local-variable-type   identifier   in   expression   )   embedded-statement
-		private void DoParseForEach(List<Local> locals)
-		{
-			if (m_scanner.Token.IsPunct("("))
-			{
-				m_scanner.Advance();
-				
-				string type = DoParseType();
-				if (type != null)
-				{
-					if (m_scanner.Token.Kind == TokenKind.Identifier)
-					{
-						string name = m_scanner.Token.Text();
-						m_scanner.Advance();
-						
-//Console.WriteLine("type: {0}", type);
-//Console.WriteLine("    name: {0}", name);
-						locals.Add(new Local(type, name, null));
-					}
-				}
-			}
-		}
-		
-		// using-statement:
-		//     using   (    resource-acquisition   )    embedded-statement
-		// 
-		// resource-acquisition:
-		//     local-variable-declaration
-		//     expression
-		private void DoParseUsing(List<Local> locals)
-		{
-			if (m_scanner.Token.IsPunct("("))
-			{
-				m_scanner.Advance();
-				
-				string type = DoParseType();
-				if (type != null)
-				{
-					if (m_scanner.Token.Kind == TokenKind.Identifier)
-					{
-						DoParseLocalDeclarator(type, locals);
-					}
-				}
-			}
-		}
-		
-		// specific-catch-clause:
-		//     catch   (   class-type   identifier?   )   block
-		private void DoParseCatch(List<Local> locals)
-		{
-			if (m_scanner.Token.IsPunct("("))
-			{
-				m_scanner.Advance();
-				
-				string type = DoParseType();
-				if (type != null)
-				{
-					if (m_scanner.Token.Kind == TokenKind.Identifier)
-					{
-						string name = m_scanner.Token.Text();
-						m_scanner.Advance();
-						
-						locals.Add(new Local(type, name, null));
-					}
-				}
-			}
-		}
-		
-		// declaration-statement:
-		//      local-variable-declaration   ;
-		//      local-constant-declaration   ;
-		// 
-		// local-variable-declaration:
-		//      local-variable-type   local-variable-declarators
-		// 
-		// local-variable-type:
-		//      type
-		//      var
-		// 
-		// local-variable-declarators:
-		//      local-variable-declarator
-		//      local-variable-declarators   ,   local-variable-declarator
-		private void DoParseLocalVariable(List<Local> locals, string type)
-		{
-//Console.WriteLine("type: {0}", type);
-			var candidates = new List<Local>();
-			bool ok = DoParseLocalDeclarator(type, candidates);
-			
-			while (ok && m_scanner.Token.IsPunct(","))
-			{
-				m_scanner.Advance();
-				ok = DoParseLocalDeclarator(type, candidates);
-			}
-			
-			if (ok && (m_scanner.Token.IsPunct(";") || (candidates.Last().Value != null && candidates.Last().Value.StartsWith("from "))))
-			{
-//Console.WriteLine("candidates: {0}", candidates.ToDebugString());
-				if (m_scanner.Token.IsValid())
-					m_scanner.Advance();
-				locals.AddRange(candidates);
-			}
-		}
-		
-		// local-variable-declarator:
-		//      identifier
-		//      identifier   =   local-variable-initializer
-		// 
-		// local-variable-initializer:
-		//      expression
-		//      array-initializer
-		private bool DoParseLocalDeclarator(string type, List<Local> locals)
-		{
-			bool ok = false;
-			
-			if (m_scanner.Token.Kind == TokenKind.Identifier)
-			{
-				string name = m_scanner.Token.Text();
-				m_scanner.Advance();
-				ok = true;
-//Console.WriteLine("    name: {0}", name);
-				
-				string value = null;
-				if (m_scanner.Token.IsPunct("="))
-				{
-					m_scanner.Advance();
-					if (m_scanner.Token.IsValid())
-						value = DoParseExpression();
-//Console.WriteLine("    value: {0}", value);
-				}
-				
-				if (ok)
-					locals.Add(new Local(type, name, value));
-			}
-			
-			return ok;
-		}
-		
-		// This is definitely cheesy, but it will usually work well enough for our
-		// purposes. 
-		// TODO: need to  handle 
-		// linq, `var foo = from x in xs let y = 2*x select x + y;` should result in 3 locals
-		// lambda-expression
 		private string DoParseExpression()
 		{
-			Token start = m_scanner.Token;
-			Token last = m_scanner.Token;
+			var builder = new StringBuilder();
 			
-			bool scanning = true;
-			string body;
-			while (m_scanner.Token.IsValid() && scanning)
+			int angleCount = 0;
+			while (m_scanner.Token.IsValid())
 			{
-				switch (m_scanner.Token.Text())
+				if (m_scanner.Token.IsPunct(";") || (angleCount == 0 && m_scanner.Token.IsPunct(",")))
 				{
-					case ";":
-					case ",":
-					case "for":
-					case "foreach":
-					case "let":
-					case "where":
-					case "join":
-					case "into":
-					case "orderby":
-					case "select":
-					case "group":
-					case "fixed":
-					case "=>":
-						scanning = false;
-						break;
-					
-					// Need these so we don't stop at a comma we should not stop at.
-					case "(":
-						body = DoScanBody("(", ")", ref last);
-						if (body == null)
-							scanning = false;
-						break;
-					
-					case "[":
-						body = DoScanBody("[", "]", ref last);
-						if (body == null)
-							scanning = false;
-						break;
-					
-					case "<":
-						body = DoScanBody("<", ">", ref last, ";", "(", "{", ")");
-						if (body == null)
-							scanning = false;
-						break;
-					
-					// Need this one so our caller doesn't think a block has ended.
-					case "{":
-						body = DoScanBody("{", "}", ref last);
-						if (body == null)
-							scanning = false;
-						break;
-						
-					default:
-						last = m_scanner.Token;
-						m_scanner.Advance();
-						break;
+					break;
 				}
-			}
-			
-			return m_text.Substring(start.Offset, last.Offset + last.Length - start.Offset);
-		}
-		
-		private string DoParseType()
-		{
-			string type = m_scanner.Token.Text();
-			m_scanner.Advance();
-			
-			while (m_scanner.Token.IsPunct(".") && m_scanner.LookAhead(1).Kind == TokenKind.Identifier)
-			{
-				type += ".";
-				m_scanner.Advance();
-				
-				type += m_scanner.Token.Text();
-				m_scanner.Advance();
-			}
-			
-			Token last = m_scanner.Token;
-			while (m_scanner.Token.IsPunct("<") || m_scanner.Token.IsPunct("[") || m_scanner.Token.IsPunct("?") || m_scanner.Token.IsPunct("*"))
-			{
-				if (m_scanner.Token.IsPunct("<"))
+				else if (m_scanner.Token.IsPunct(")") || m_scanner.Token.IsPunct("}"))
 				{
-					type += DoScanBody("<", ">", ref last, ";", "(", "{", ")");	// scan "<KEY, VALUE>" but skip (most of) "if (foo < xxx)"
+					break;
+				}
+				else if (m_scanner.Token.IsPunct("(") || m_scanner.Token.IsPunct("{"))
+				{
+					angleCount = Math.Max(--angleCount, 0);
+					DoParseSubExpression(builder);
 				}
 				else if (m_scanner.Token.IsPunct("["))
 				{
-					type += DoScanBody("[", "]");
+					DoParseSubExpression(builder);
 				}
 				else
 				{
-					type += m_scanner.Token.Text();
+					// This is a bit tricky: we don't want to stop on a comma if we're inside a
+					// type-argument-list but we don't have enough context to know if the '<'
+					// is starting the list or is the less than operator. So what we do is assume
+					// it is the list and invalidate our assumption if we hit a token which can't
+					// be part of a type name.
+					if (m_scanner.Token.Kind == TokenKind.Punct)
+					{
+						if (m_scanner.Token.Equals("<"))
+							++angleCount;
+						else if (m_scanner.Token.Equals(">"))
+							angleCount = Math.Max(--angleCount, 0);
+						else if (angleCount > 0 && !(m_scanner.Token.Equals(".") || m_scanner.Token.Equals("::") || m_scanner.Token.Equals("?") || m_scanner.Token.Equals("*")))
+							angleCount = Math.Max(--angleCount, 0);
+					}
+					else if (m_scanner.Token.Kind == TokenKind.Char || m_scanner.Token.Kind == TokenKind.Number || m_scanner.Token.Kind == TokenKind.String)
+						angleCount = Math.Max(--angleCount, 0);
+					else if (m_scanner.Token.Kind == TokenKind.Identifier && ms_keywords.Contains(m_scanner.Token.Text()))
+						angleCount = Math.Max(--angleCount, 0);
+					
+					builder.Append(m_scanner.Token.Text());
+					builder.Append(' ');
 					m_scanner.Advance();
 				}
 			}
 			
-			if (ms_nonTypeKeywords.Contains(type) && type == "xxx")
-				type = null;
-			
-			return type;
+			return builder.ToString();
 		}
 		
-		// Returns either null or the inclusive text between the (possibly nested)
-		// open and close strings.
-		private string DoScanBody(string open, string close)
+		// LocalName := Name ('=' Expression)?
+		private void DoParseLocalName(string type, List<Local> locals)
 		{
-			Token last = m_scanner.Token;
-			return DoScanBody(open, close, ref last);
-		}
-		
-		private string DoScanBody(string open, string close, ref Token last)
-		{
-			return DoScanBody(open, close, ref last, new string[0]);
-		}
-
-		// TODO: reset the scanner on failure?
-		private string DoScanBody(string open, string close, ref Token rlast, params string[] bad)
-		{
-			Token first = m_scanner.Token;
-			Token last = m_scanner.Token;
+			Contract.Requires(!ms_keywords.Contains(type), type + " is a keyword");
 			
-			int count = 1;
+			string name = m_scanner.Token.Text();
 			m_scanner.Advance();
 			
-			while (m_scanner.Token.IsValid() && count > 0 && !bad.Contains(m_scanner.Token.Text()))
+			string value = null;
+			if (m_scanner.Token.IsPunct("="))
 			{
-				if (m_scanner.Token.IsPunct(open))
-					++count;
-				else if (m_scanner.Token.IsPunct(close))
-					--count;
+				m_scanner.Advance();
+				value = DoParseExpression();
+			}
+			
+			var local = new Local(type, name, value);
+			Log.WriteLine(TraceLevel.Verbose, "LocalsParser", "    adding {0}", local);
+			locals.Add(local);
+		}
+		
+		// LocalNames := LocalName (',' LocalName)*
+		private void DoParseLocalNames(string type, List<Local> locals)
+		{
+			DoParseLocalName(type, locals);
+			
+			while (m_scanner.Token.IsPunct(","))
+			{
+				m_scanner.Advance();
 				
-				last = m_scanner.Token;
+				if (m_scanner.Token.Kind == TokenKind.Identifier)
+					DoParseLocalName(type, locals);
+				else
+					throw new LocalException("Expected an identifier, but found " + m_scanner.Token);
+			}
+		}
+		
+		// namespace-or-type-name:
+		//    identifier   type-argument-list?
+		//    namespace-or-type-name   .   identifier   type-argument-list?
+		//    qualified-alias-member
+		// 
+		// qualified-alias-member:
+		//      identifier   ::   identifier   type-argument-list?
+		private void DoParseNamespaceOrTypeName(StringBuilder builder)
+		{
+			DoParseNamespaceOrTypeName2(builder);
+			while (m_scanner.Token.IsPunct("."))
+			{
+				builder.Append('.');
+				m_scanner.Advance();
+				
+				if (m_scanner.Token.Kind == TokenKind.Identifier)
+					DoParseNamespaceOrTypeName2(builder);
+				else
+					throw new LocalException("Expected an identifier, but found " + m_scanner.Token);
+			}
+		}
+		
+		private void DoParseNamespaceOrTypeName2(StringBuilder builder)
+		{
+			if (m_scanner.Token.Kind != TokenKind.Identifier)
+				throw new LocalException("Expected a namespace or type name, but found " + m_scanner.Token);
+		
+			builder.Append(m_scanner.Token.Text());	
+			m_scanner.Advance();
+			
+			if (m_scanner.Token.IsPunct("::"))
+			{
+				builder.Append("::");
+				m_scanner.Advance();
+				
+				if (m_scanner.Token.Kind == TokenKind.Identifier)
+				{
+					builder.Append(m_scanner.Token.Text());	
+					m_scanner.Advance();
+				}
+				else
+					throw new LocalException("Expected an identifier, but found " + m_scanner.Token);
+			}
+			
+			if (m_scanner.Token.IsPunct("<"))
+				DoParseTypeArgumentList(builder);
+		}
+		
+		// rank-specifiers:
+		//     rank-specifier
+		//     rank-specifiers   rank-specifier
+		// 
+		// rank-specifier:
+		//     [   dim-separators?   ]
+		// 
+		// dim-separators:
+		//     ,
+		//     dim-separators   ,
+		private void DoParseRankSpecifiers(StringBuilder builder)
+		{
+			while (m_scanner.Token.IsPunct("["))
+			{
+				builder.Append('[');
+				m_scanner.Advance();
+				
+				while (m_scanner.Token.IsPunct(","))
+				{
+					builder.Append(',');
+					m_scanner.Advance();
+				}
+				
+				if (m_scanner.Token.IsPunct("]"))
+				{
+					builder.Append(']');
+					m_scanner.Advance();
+				}
+				else
+					throw new LocalException("Expected a ']', but found " + m_scanner.Token);
+			}
+		}
+		
+		private void DoParseSubExpression(StringBuilder builder)
+		{
+			var open = new List<string>();
+			open.Add(m_scanner.Token.Text());
+			builder.Append(m_scanner.Token.Text());
+			builder.Append(' ');
+			m_scanner.Advance();
+			
+			while (m_scanner.Token.IsValid() && open.Count > 0)
+			{
+				builder.Append(m_scanner.Token.Text());
+				builder.Append(' ');
+				
+				if (m_scanner.Token.IsPunct("(") || m_scanner.Token.IsPunct("[") || m_scanner.Token.IsPunct("{"))
+				{
+					open.Add(m_scanner.Token.Text());
+				}
+				else if (m_scanner.Token.IsPunct(")"))
+				{
+					if (open.Last() == "(")
+						open.Pop();
+					else
+						throw new LocalException("Found a ')' which doesn't close a '('");
+				}
+				else if (m_scanner.Token.IsPunct("]"))
+				{
+					if (open.Last() == "[")
+						open.Pop();
+					else
+						throw new LocalException("Found a ']' which doesn't close a '['");
+				}
+				else if (m_scanner.Token.IsPunct("}"))
+				{
+					if (open.Last() == "{")
+						open.Pop();
+					else
+						throw new LocalException("Found a '}' which doesn't close a '{'");
+				}
+				
 				m_scanner.Advance();
 			}
 			
-			string result = null;
-			if (count == 0)
+			// Note that it isn't necessarily an error if we were not able to find all of the close
+			// tokens because we only parse up to the insertion point.
+		}
+		
+		private void DoParseType(StringBuilder builder)
+		{
+			DoParseNamespaceOrTypeName(builder);
+			
+			while (m_scanner.Token.IsValid())
 			{
-				rlast = last;
-				result = m_text.Substring(first.Offset, last.Offset + last.Length - first.Offset);
+				if (m_scanner.Token.IsPunct("?"))
+				{
+					builder.Append('?');
+					m_scanner.Advance();
+				}
+				else if (m_scanner.Token.IsPunct("*"))
+				{
+					builder.Append('*');
+					m_scanner.Advance();
+				}
+				else if (m_scanner.Token.IsPunct("["))
+				{
+					DoParseRankSpecifiers(builder);
+				}
+				else
+					break;
+			}
+		}
+		
+		// type-argument-list:
+		//      <   type-arguments   >
+		// 
+		// type-arguments:
+		//      type-argument
+		//      type-arguments   ,   type-argument
+		//
+		// type-argument:
+		//      type
+		private void DoParseTypeArgumentList(StringBuilder builder)
+		{
+			builder.Append('<');
+			m_scanner.Advance();
+			
+			DoParseType(builder);
+			while (m_scanner.Token.IsPunct(","))
+			{
+				builder.Append(',');
+				m_scanner.Advance();
+				
+				DoParseType(builder);
 			}
 			
-			return result;
+			if (m_scanner.Token.IsPunct(">"))
+			{
+				builder.Append('>');
+				m_scanner.Advance();
+			}
+			else
+				throw new LocalException("Expected '>', but found " + m_scanner.Token);
+		}
+		
+		// Locals := Type LocalNames
+		private void DoTryParseLocals(List<Local> locals)
+		{
+			try
+			{
+				int line = m_scanner.Token.Line;
+				var type = new StringBuilder();
+				DoParseType(type);
+				Log.WriteLine(TraceLevel.Verbose, "LocalsParser", "found candidate type {0} on line {1}", type, line);
+				
+				if (m_scanner.Token.Kind == TokenKind.Identifier)
+					DoParseLocalNames(type.ToString(), locals);
+			}
+			catch (LocalException e)
+			{		
+				Log.WriteLine(TraceLevel.Info, "LocalsParser", "Parse error on line {0}", m_scanner.Token.Line);
+				Log.WriteLine(TraceLevel.Info, "LocalsParser", e.Message);
+			}
 		}
 		#endregion
 		
@@ -426,23 +433,21 @@ namespace CsParser
 		private Boss m_boss;
 		private Scanner m_scanner;
 		private string m_text;
-		private static string[] ms_nonTypeKeywords = new string[]
+		private HashSet<string> ms_keywords = new HashSet<string>
 		{
+			// keywords which are not type names
 			"abstract",
 			"as",
-			"ascending",
 			"base",
 			"break",
-			"by",
 			"case",
-//			"catch",					// special case
+			"catch",
 			"checked",
 			"class",
 			"const",
 			"continue",
 			"default",
 			"delegate",
-			"descending",
 			"do",
 			"else",
 			"enum",
@@ -453,32 +458,22 @@ namespace CsParser
 			"finally",
 			"fixed",
 			"for",
-//			"foreach",					// special case
-			"from",
-			"get",
+			"foreach",
 			"goto",
-			"group",
 			"if",
 			"implicit",
 			"in",
 			"interface",
 			"internal",
-			"into",
 			"is",
-			"join",
-			"let",
 			"lock",
 			"namespace",
 			"new",
 			"null",
-			"on",
 			"operator",
-			"orderby",
 			"out",
 			"override",
 			"params",
-			"partial",
-			"partial",
 			"private",
 			"protected",
 			"public",
@@ -486,8 +481,6 @@ namespace CsParser
 			"ref",
 			"return",
 			"sealed",
-			"select",
-			"set",
 			"sizeof",
 			"stackalloc",
 			"static",
@@ -502,10 +495,26 @@ namespace CsParser
 			"unsafe",
 			"using",
 			"virtual",
+			"void",
 			"volatile",
-			"where",
-			"where",
 			"while",
+			
+			// context sensitive keywords
+			"ascending",
+			"by",
+			"descending",
+			"from",
+			"get",
+			"group",
+			"into",
+			"join",
+			"let",
+			"on",
+			"orderby",
+			"partial",
+			"select",
+			"set",
+			"where",
 			"yield",
 		};
 		#endregion
