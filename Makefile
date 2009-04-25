@@ -18,6 +18,10 @@ else
 	MONO_FLAGS += --desktop --debug
 endif
 
+ifeq ($(PROFILE),1)
+	CSC_FLAGS += -d:PROFILE
+endif
+
 # ------------------------------------------------------------------------
 # Internal variables
 dummy := $(shell mkdir bin 2> /dev/null)

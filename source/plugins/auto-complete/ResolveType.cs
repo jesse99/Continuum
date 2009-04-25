@@ -44,6 +44,7 @@ namespace AutoComplete
 		public ResolvedTarget Resolve(string type, CsGlobalNamespace globals, bool isInstance, bool isStatic)
 		{
 			Contract.Requires(!string.IsNullOrEmpty(type), "type is null or empty");
+			Profile.Start("ResolveType::Resolve1");
 			
 			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "---------------- resolving type");
 			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "type: {0}", type);
@@ -70,12 +71,14 @@ namespace AutoComplete
 			
 			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "---- type {0} -> {1}", type, result);
 			
+			Profile.Stop("ResolveType::Resolve1");
 			return result;
 		}
 		
 		public ResolvedTarget Resolve(CsType type, bool isInstance, bool isStatic)
 		{
 			Contract.Requires(type != null, "type is null or empty");
+			Profile.Start("ResolveType::Resolve2");
 			
 			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "---------------- resolving type");
 			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "cs type: {0}", type);
@@ -89,12 +92,14 @@ namespace AutoComplete
 			
 			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "---- cs type {0} -> {1}", type, result);
 			
+			Profile.Stop("ResolveType::Resolve2");
 			return result;
 		}
 		
 		public ResolvedTarget Resolve(string fullName, bool isInstance, bool isStatic)
 		{
 			Contract.Requires(!string.IsNullOrEmpty(fullName), "fullName is null or empty");
+			Profile.Start("ResolveType::Resolve3");
 			
 			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "---------------- resolving type");
 			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "fullName: {0}", fullName);
@@ -108,6 +113,7 @@ namespace AutoComplete
 			
 			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "---- fullName type {0} -> {1}", fullName, result);
 			
+			Profile.Stop("ResolveType::Resolve3");
 			return result;
 		}
 		

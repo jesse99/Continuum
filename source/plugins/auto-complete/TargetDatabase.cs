@@ -39,6 +39,7 @@ namespace AutoComplete
 		public bool HasType(string typeName)
 		{
 			Contract.Requires(!string.IsNullOrEmpty(typeName), "typeName is null or empty");
+			Profile.Start("TargetDatabase::HasType");
 			
 			bool has = false;
 			
@@ -62,16 +63,18 @@ namespace AutoComplete
 					WHERE root_name = '{0}'", typeName.Replace("'", "''"));
 				string[][] rows = m_database.QueryRows(sql);
 				Contract.Assert(rows.Length <= 1, "too many rows");
-
+				
 				has = rows.Length > 0;
 			}
 			
+			Profile.Stop("TargetDatabase::HasType");
 			return has;
 		}
 		
 		public Item[] GetNamespaces(string ns)
 		{
 			var items = new List<Item>();
+			Profile.Start("TargetDatabase::GetNamespaces");
 			
 			if (ns.Length > 0)
 			{
@@ -109,11 +112,14 @@ namespace AutoComplete
 				}
 			}
 			
+			Profile.Stop("TargetDatabase::GetNamespaces");
 			return items.ToArray();
 		}
 		
 		public void GetBases(string typeName, List<string> baseNames, List<string> interfaceNames, List<string> allNames)
 		{
+			Profile.Start("TargetDatabase::GetBases");
+			
 			if (typeName == "array-type")
 			{
 				baseNames.AddIfMissing("System.Array");
@@ -159,10 +165,13 @@ namespace AutoComplete
 					}
 				}
 			}
+			
+			Profile.Stop("TargetDatabase::GetBases");
 		}
 		
 		public Item[] GetFields(string[] typeNames, bool instanceCall, bool isStaticCall, bool includeProtected)
 		{
+			Profile.Start("TargetDatabase::GetFields1");
 			var items = new List<Item>();
 			
 			if (typeNames.Length > 0)
@@ -197,11 +206,13 @@ namespace AutoComplete
 				}
 			}
 			
+			Profile.Stop("TargetDatabase::GetFields1");
 			return items.ToArray();
 		}
 		
 		public Item[] GetFields(string[] typeNames, bool instanceCall, bool isStaticCall, string name,  bool includeProtected)
 		{
+			Profile.Start("TargetDatabase::GetFields2");
 			var items = new List<Item>();
 			
 			if (typeNames.Length > 0)
@@ -236,11 +247,13 @@ namespace AutoComplete
 				}
 			}
 			
+			Profile.Stop("TargetDatabase::GetFields2");
 			return items.ToArray();
 		}
 		
 		public Item[] GetTypes(string[] namespaces, string stem)
 		{
+			Profile.Start("TargetDatabase::GetTypes");
 			var items = new List<Item>();
 			
 			var ns = new StringBuilder();
@@ -273,11 +286,13 @@ namespace AutoComplete
 				items.AddIfMissing(item);
 			}
 			
+			Profile.Stop("TargetDatabase::GetTypes");
 			return items.ToArray();
 		}
 		
 		public Item[] GetCtors(string[] namespaces, string stem)
 		{
+			Profile.Start("TargetDatabase::GetCtors");
 			var items = new List<Item>();
 			
 			int badAttrs =
@@ -324,11 +339,13 @@ namespace AutoComplete
 			
 			DoAddDefaultCtors(ns.ToString(), stem, badAttrs, items);
 			
+			Profile.Stop("TargetDatabase::GetCtors");
 			return items.ToArray();
 		}
 		
 		public Item[] GetMembers(string[] typeNames, bool instanceCall, bool isStaticCall, bool includeProtected)
 		{
+			Profile.Start("TargetDatabase::GetMembers1");
 			var items = new List<Item>();
 			
 			if (typeNames.Length > 0)
@@ -364,11 +381,13 @@ namespace AutoComplete
 				}
 			}
 			
+			Profile.Stop("TargetDatabase::GetMembers1");
 			return items.ToArray();
 		}
 		
 		public Item[] GetMembers(string[] typeNames, bool instanceCall, bool isStaticCall, string name, int arity, bool includeProtected)
 		{
+			Profile.Start("TargetDatabase::GetMembers2");
 			var items = new List<Item>();
 			
 			if (typeNames.Length > 0)
@@ -406,13 +425,15 @@ namespace AutoComplete
 				}
 			}
 			
+			Profile.Stop("TargetDatabase::GetMembers2");
 			return items.ToArray();
 		}
 		
 		public Item[] GetExtensionMethods(string[] typeNames, string[] namespaces)
 		{
+			Profile.Start("TargetDatabase::GetExtensionMethods1");
 			var items = new List<Item>();
-		
+			
 			if (typeNames.Length > 0)
 			{
 				var types = new StringBuilder();
@@ -448,11 +469,13 @@ namespace AutoComplete
 				}
 			}
 			
+			Profile.Stop("TargetDatabase::GetExtensionMethods1");
 			return items.ToArray();
 		}
 		
 		public Item[] GetExtensionMethods(string[] typeNames, string[] namespaces, string name, int arity)
 		{
+			Profile.Start("TargetDatabase::GetExtensionMethods2");
 			var items = new List<Item>();
 			
 			if (typeNames.Length > 0)
@@ -491,6 +514,7 @@ namespace AutoComplete
 				}
 			}
 			
+			Profile.Stop("TargetDatabase::GetExtensionMethods2");
 			return items.ToArray();
 		}
 		

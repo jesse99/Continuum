@@ -45,6 +45,7 @@ namespace AutoComplete
 		{
 			Contract.Requires(offset >= 0, "offset is negative");
 			Contract.Requires(offset <= text.Length, "offset is too large");
+			Profile.Start("ResolveExpr::Resolve");
 			
 			ResolvedTarget result = null;
 			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "---------------- resolving expression");
@@ -69,6 +70,7 @@ namespace AutoComplete
 			
 			Log.WriteLine("AutoComplete", "---- expression {0} -> {1}", expr, result);
 			
+			Profile.Stop("ResolveExpr::Resolve");
 			return result;
 		}
 		

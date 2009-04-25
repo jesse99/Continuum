@@ -33,6 +33,7 @@ namespace AutoComplete
 	{
 		public ResolveName(CsMember context, ITargetDatabase database, ICsLocalsParser locals, string text, int offset, CsGlobalNamespace globals)
 		{
+			Profile.Start("ResolveName::ctor");
 			m_database = database;
 			m_typeResolver = new ResolveType(database);
 			m_globals = globals;
@@ -40,6 +41,7 @@ namespace AutoComplete
 			
 			m_member = DoFindMember(m_globals);
 			m_variables = DoGetVariables(context, text, locals);
+			Profile.Stop("ResolveName::ctor");
 		}
 		
 		// Returns all of the names which may be used at the specified offset in the code.
@@ -53,6 +55,7 @@ namespace AutoComplete
 		{
 			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
 			ResolvedTarget result = null;
+			Profile.Start("ResolveName::Resolve");
 			
 			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "---------------- resolving name");
 			Log.WriteLine(TraceLevel.Verbose,"AutoComplete", "name: '{0}'", name);
@@ -108,6 +111,7 @@ namespace AutoComplete
 			
 			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "---- name {0} -> {1}", name, result);
 			
+			Profile.Stop("ResolveName::Resolve");
 			return result;
 		}
 		

@@ -22,16 +22,22 @@ ReferenceEquals used with value type
 might want a sample app
 sudo fs_usage -f filesys
 
+		void AddFiles1 (string name)
+		{
+			using (StreamReader sr = File.OpenText (name.Substring (1))) {
+			}
+			
+			string s;
+			s.
+		}
+
 * Test performance once more:
-	- use a Profile class
-	- use gendarme
-	- use four or five cases for each run
-	- test dot on namespace
-	- test not on simple target
-	- test dot on chained call
-	- tab on local name
+	- local dot
+	- chained dot	
 	- no-op tab
-	- etc
+	
+	- GetMembers1 is a bit slow
+* Why didn't dirname resolve?
 * Before using locate try using appending the path to each open directory.
 * Work on tab completion:
 	- refactor needs to document Scope and support Locals property

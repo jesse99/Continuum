@@ -333,6 +333,7 @@ namespace AutoComplete
 		
 		private Item[] DoGetNames(CsGlobalNamespace globals, int location, string stem, ref bool isInstance, ref bool isStatic)
 		{
+			Profile.Start("AutoComplete::DoGetNames");
 			var result = new List<Item>();
 			
 			var context = FindDeclaration(globals, location) as CsMember;
@@ -360,6 +361,7 @@ namespace AutoComplete
 				DoAddRealTypes(result, globals, stem);
 			}
 			
+			Profile.Stop("AutoComplete::DoGetNames");
 			return result.ToArray();
 		}
 		
@@ -411,6 +413,7 @@ namespace AutoComplete
 		
 		private Item[] DoGetNamespacesNamed(string name)
 		{
+			Profile.Start("AutoComplete::DoGetNamespacesNamed");
 			var items = new List<Item>(m_database.GetNamespaces(name));
 			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "db namespaces: {0}", items.ToDebugString());
 			
@@ -423,11 +426,13 @@ namespace AutoComplete
 				items.AddIfMissing(item);
 			}
 			
+			Profile.Stop("AutoComplete::DoGetNamespacesNamed");
 			return items.ToArray();
 		}
 		
 		private Item[] DoGetConstructorsNamed(CsGlobalNamespace globals, ref string stem)
 		{
+			Profile.Start("AutoComplete::DoGetConstructorsNamed");
 			var items = new List<Item>();
 			var namespaces = new List<string>();
 			
@@ -458,6 +463,7 @@ namespace AutoComplete
 			
 			items.AddIfMissingRange(m_database.GetCtors(namespaces.ToArray(), stem));
 			
+			Profile.Stop("AutoComplete::DoGetConstructorsNamed");
 			return items.ToArray();
 		}
 		
@@ -500,12 +506,14 @@ namespace AutoComplete
 		
 		private void DoUpdateCache(ITextEditor editor, IComputeRuns computer)
 		{
+			Profile.Start("AutoComplete::DoUpdateCache");
 			Parse parse = m_parses.TryParse(editor.Path);
 			
 			if (parse != null && parse.Edit != m_text.EditCount)
 			{
 				computer.ComputeRuns(editor.Boss, editor.Path, m_text.Text, m_text.EditCount);
 			}
+			Profile.Stop("AutoComplete::DoUpdateCache");
 		}
 		
 		private string DoGetTargetName(int offset)

@@ -346,6 +346,43 @@ string name;
 				new Local("Exception", "e", null)
 			);
 		}
+		
+		[Test]
+		public void UsingBlock1()
+		{
+			string text = @"
+{
+	int x;
+	using (StreamReader s = File.OpenText(name))
+	{
+		z;
+	}
+}";
+			DoCheck(text, 0, text.IndexOf("z"),
+				new Local("int", "x", null),
+				new Local("StreamReader", "s", "File.OpenText(name))")	// TODO: ideally we would not have this extra paren...
+			);
+		}
+		
+		[Test]
+		public void UsingBlock2()
+		{
+			string text = @"
+{
+	int x;
+	using (StreamReader s = File.OpenText(name))
+	{
+	}
+	
+	string s;
+	z;
+}";
+			DoCheck(text, 0, text.IndexOf("z"),
+				new Local("int", "x", null),
+				new Local("StreamReader", "s", "File.OpenText(name))"),	// TODO: ideally we would not have this extra paren...
+				new Local("string", "s", null),
+			);
+		}
 	}
 }
 #endif	// TEST

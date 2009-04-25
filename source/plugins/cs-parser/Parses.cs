@@ -81,6 +81,7 @@ namespace CsParser
 		public Parse TryParse(string path)
 		{
 			Contract.Requires(!string.IsNullOrEmpty(path), "path is null or empty");
+			Profile.Start("Parses::TryParse");
 			
 			Parse parse;
 			lock (m_mutex)
@@ -88,6 +89,7 @@ namespace CsParser
 				Unused.Value = m_parses.TryGetValue(path, out parse);
 			}
 			
+			Profile.Stop("Parses::TryParse");
 			return parse;
 		}
 		

@@ -44,6 +44,7 @@ namespace AutoComplete
 		
 		public Item[] Resolve(CsMember context, ResolvedTarget target, CsGlobalNamespace globals)
 		{
+			Profile.Start("ResolveMembers::Resolve");
 			var items = new List<Item>();
 			
 			var types = new List<CsType>();
@@ -78,6 +79,7 @@ namespace AutoComplete
 				DoAddIfMissingRange("extension methods:", items, m_database.GetExtensionMethods(allNames, namespaces.ToArray()));
 			}
 			
+			Profile.Stop("ResolveMembers::Resolve");
 			return items.ToArray();
 		}
 		
@@ -85,6 +87,7 @@ namespace AutoComplete
 		// implementations).
 		public Item[] Find(CsMember context, ResolvedTarget target, CsGlobalNamespace globals, string name, int arity)
 		{
+			Profile.Start("ResolveMembers::Find");
 			var items = new List<Item>();
 			
 			var types = new List<CsType>();
@@ -122,6 +125,7 @@ namespace AutoComplete
 				DoAddIfMissingRange("extension methods:", items, m_database.GetExtensionMethods(allNames, namespaces.ToArray(), name, arity));
 			}
 			
+			Profile.Stop("ResolveMembers::Find");
 			return items.ToArray();
 		}
 		

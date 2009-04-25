@@ -126,6 +126,8 @@ namespace CsParser
 						DoParseForEach(locals);
 					else if (typeOrName == "catch")
 						DoParseCatch(locals);
+					else if (typeOrName == "using")
+						DoParseUsing(locals);
 					else
 						DoParseLocalVariable(locals, typeOrName);
 				}
@@ -151,6 +153,29 @@ namespace CsParser
 //Console.WriteLine("type: {0}", type);
 //Console.WriteLine("    name: {0}", name);
 						locals.Add(new Local(type, name, null));
+					}
+				}
+			}
+		}
+		
+		// using-statement:
+		//     using   (    resource-acquisition   )    embedded-statement
+		// 
+		// resource-acquisition:
+		//     local-variable-declaration
+		//     expression
+		private void DoParseUsing(List<Local> locals)
+		{
+			if (m_scanner.Token.IsPunct("("))
+			{
+				m_scanner.Advance();
+				
+				string type = DoParseType();
+				if (type != null)
+				{
+					if (m_scanner.Token.Kind == TokenKind.Identifier)
+					{
+						DoParseLocalDeclarator(type, locals);
 					}
 				}
 			}

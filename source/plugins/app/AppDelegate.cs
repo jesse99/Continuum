@@ -37,6 +37,7 @@ namespace App
 		private AppDelegate(IntPtr instance) : base(instance)
 		{
 			ActiveObjects.Add(this);
+			Profile.Start("App");
 		}
 		
 		public void applicationDidFinishLaunching(NSObject notification)
@@ -94,6 +95,11 @@ namespace App
 			m_boss.CallRepeated<IShutdown>(i => i.OnShutdown());
 			
 //			NSUserDefaults.standardUserDefaults().synchronize();
+
+			Profile.Stop("App");
+#if PROFILE
+			Console.WriteLine(Profile.GetResults());
+#endif
 			
 			Log.WriteLine("App", "exiting normally");
 		}
