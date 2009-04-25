@@ -31,7 +31,7 @@ using System.Linq;
 namespace TextEditor
 {
 	// Here are some test cases which should work:
-	// source/plugins/find/Find.cs																		relative path
+	// source/plugins/find/Find.cs																		relative path (this should work as well for files not in the locate db)
 	// DatabaseTest.cs																						local file
 	// <AppKit/NSResponder.h>																		non-local relative path
 	// /Users/jessejones/Source/Continuum/source/plugins/find/AssemblyInfo.cs		absolute path
@@ -106,7 +106,13 @@ namespace TextEditor
 			DoGetLineAndCol(text, loc, len, ref line, ref col);
 			Log.WriteLine(TraceLevel.Verbose, "Open Selection", "trying path '{0}'", name);
 			
-			bool found = DoOpenAbsolutePath(name, line, col);
+			bool found = false;
+			
+			if (!found)
+				found = DoOpenAbsolutePath(name, line, col);
+			
+			if (!found)
+				found = DoOpenRelativePath(name, line, col);
 			
 			if (!found)
 			{
@@ -208,8 +214,57 @@ namespace TextEditor
 			return opened;
 		}
 		
+		private bool DoOpenRelativePath(string name, int line, int col)
+		{
+			bool opened = false;
+			
+			try
+			{
+				if (!System.IO.Path.IsPathRooted(name) && name.Contains("/"))
+				{
+					// See if a file exists at local path + name.
+					Boss boss = ObjectModel.Create("DirectoryEditorPlugin");
+					var windows = boss.Get<IWindows>();
+					
+					var paths = new List<string>();
+					foreach (Boss b in windows.All())
+					{
+						var editor = b.Get<IDirectoryEditor>();
+						string candidate = System.IO.Path.Combine(editor.Path, name);
+						if (System.IO.File.Exists(candidate))
+							paths.Add(candidate);
+					}
+					
+					// Open all of the paths we found.
+					if (paths.Count > 0 && paths.Count < 10)		// TODO: use a picker if there is more than one file
+					{
+						boss = ObjectModel.Create("Application");
+						var launcher = boss.Get<ILaunch>();
+					
+						foreach (string p in paths)
+						{
+							launcher.Launch(p, line, col, 1);
+							opened = true;
+						}
+						
+						Log.WriteLine(TraceLevel.Verbose, "Open Selection", "opened {0} relative files", paths.Count);
+					}
+					else if (paths.Count > 0)
+						Log.WriteLine("Open Selection", "open relative failed ({0} is too many paths)", paths.Count);
+				}
+			}
+			catch
+			{
+			}
+			
+			return opened;
+		}
+		
 		// If the name is not an absolute path then we'll see if it corresponds to a 
-		// path rooted at one of the directories we have open.
+		// path rooted at one of the directories we have open. (This won't be used
+		// for a relative path rooted at one of the directories we have open, but it
+		// will be used if we have a relative path or file name rooted at a directory
+		// under one of our open directories).
 		private bool DoOpenLocalPath(string[] candidates, string name, int line, int col)
 		{
 			bool opened = false;

@@ -35,9 +35,9 @@ namespace CsRefactor.Script
 		{
 		}
 		
-		public static ExternAliasType Instance 
+		public static ExternAliasType Instance
 		{
-			get 
+			get
 			{
 				if (ms_instance == null)
 					ms_instance = new ExternAliasType();
@@ -63,8 +63,16 @@ namespace CsRefactor.Script
 		
 		protected override void RegisterMethods(RefactorType type)
 		{
+			type.Register<CsExternAlias>("get_Name", this.DoGetName);
 		}
 		
+		#region Private Methods
+		private object DoGetName(CsExternAlias type)
+		{
+			return type.Name;
+		}
+		#endregion
+		
 		private static ExternAliasType ms_instance;
-	} 
+	}
 }

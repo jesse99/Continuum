@@ -1,7 +1,7 @@
 {\rtf1\ansi\ansicpg1252\cocoartf949\cocoasubrtf430
 {\fonttbl\f0\fnil\fcharset0 Verdana;}
 {\colortbl;\red255\green255\blue255;\red255\green255\blue177;\red0\green91\blue255;\red45\green148\blue76;
-\red242\green0\blue88;}
+\red0\green0\blue0;\red242\green0\blue88;}
 \margl1440\margr1440\vieww13340\viewh16060\viewkind0
 \deftab400
 \pard\pardeftab400\ql\qnatural\pardirnatural
@@ -91,17 +91,20 @@ The type of methods which affect the text store. Note that in order for edits to
 \b Enum
 \b0  : TypeDeclaration\
 Represents a C# enum type declaration.\
-String \cf3 BaseType\cf0 				E.g. "int". Will not have any whitespace.\
+String \cf3 BaseType\cf0 					E.g. "int". Will not have any whitespace.\
+Sequence <String> \cf3 Names\cf0 	Names of all of the enum values.\
 \
 
 \b Event
 \b0  : Member\
-Represents a C# event member declaration. This type defines no new members.\
+Represents a C# event member declaration.\
+String \cf3 Type\cf0 					E.g. "bool". Will not have any whitespace.\
 \
 
 \b ExternAlias
 \b0  : Declaration\
-Represents an external alias. This type defines no new members.\
+Represents an external alias. \cf5 (These are used in conjunction with the alias form of gmcs's -reference command to reference distinct types which happen to have the same fully qualified name.)\cf0 \
+String \cf3 Name\cf0 					E.g. "MyType".\
 \
 
 \b Field
@@ -171,8 +174,8 @@ String \cf3 GenericArguments\cf0 				E.g. "KEY,VALUE" Will not have whitespace a
 Body \cf3 Body\cf0 										Null if the method has no body.\
 Boolean \cf3 IsConstructor\cf0 					\
 Boolean \cf3 IsFinalizer\cf0 							\
-String \cf3 ReturnType\cf0 							Will not have whitespace.\
 Sequence<Parameter> \cf3 Parameters\cf0 						\
+String \cf3 ReturnType\cf0 							Will not have whitespace.\
 \
 
 \b Namespace
@@ -286,7 +289,6 @@ Represents a struct type declaration. This type defines no new members.\
 Base type for Interface, Struct, and Class types.\
 String \cf3 Access\cf0 									E.g. "internal".\
 Edit \cf4 AddBase\cf0 (name)						Adds a new base class or interface to the type. No-op if the type already has the base.\
-Edit \cf4 AddField\cf0 (modifiers, name)		Adds a new base class or interface to the type. No-op if the type already has the base. Modifiers can be empty, or something like "static" or "public readonly".\
 Edit \cf4 AddMember\cf0 (text)						Adds a new method to the type. It's an error to call this with a method signature that is already used by the type.\
 Sequence<Attribute> \cf3 Attributes\cf0 				\
 Sequence<String> \cf3 Bases\cf0 					E.g. ["IBar", "IFoo"].\
@@ -351,7 +353,7 @@ This is the type of the null literal. This type defines no new methods.\
 \b\fs36 VI. Grammar
 \b0\fs28 \
 \pard\pardeftab400\ql\qnatural\pardirnatural
-\cf5 # Declarations\cf0 \
+\cf6 # Declarations\cf0 \
 CompilationUnit := Declaration+\
 \
 Declaration := MethodDeclaration | PropertyDeclaration\
@@ -365,7 +367,7 @@ FormalArgs := '(' IdentifierList? ')'\
 IdentifierList := Identifier (',' Identifier)*\
 \
 \
-\cf5 # Statements\cf0 \
+\cf6 # Statements\cf0 \
 Statement := IfStatement | ForStatement | LetStatement | MethodStatement | ReturnStatement\
 \
 IfStatement := IfClause ElifClause* ElseClause? '\cf3 end\cf0 '\
@@ -380,7 +382,7 @@ MethodStatement := CallExpression			\
 \
 ForStatement := ForClause WhereClause? '\cf3 do\cf0 ' Statement* '\cf3 end\cf0 '\
 \
-ForClause := '\cf3 for\cf0 ' Identifier '\cf3 in\cf0 ' CallExpression	\cf5 # Expression may be null\cf0 \
+ForClause := '\cf3 for\cf0 ' Identifier '\cf3 in\cf0 ' CallExpression	\cf6 # Expression may be null\cf0 \
 \
 WhereClause := '\cf3 where\cf0 ' OrExpression\
 \
@@ -391,7 +393,7 @@ LetLocal := Identifier '=' Expression\
 ReturnStatement := '\cf3 return\cf0 ' Expression\
 \
 \
-\cf5 # Expressions\cf0 \
+\cf6 # Expressions\cf0 \
 Expression := OrExpression | FromExpression | WhenExpression\
 \
 FromExpression := FromClause ('\cf3 where\cf0 ' OrExpression)? ('\cf3 select\cf0 ' OrExpression)?\
@@ -427,8 +429,8 @@ ExpressionList := Expression (',' Expression)*\
 ParenthesizedExpression := '(' Expression ')'\
 \
 \
-\cf5 # Lexical\cf0 \
-Identifier := IdentifierStart IdentifierSuffix*		\cf5 # but not a Keyword\cf0 \
+\cf6 # Lexical\cf0 \
+Identifier := IdentifierStart IdentifierSuffix*		\cf6 # but not a Keyword\cf0 \
 \
 IdentifierStart := ascii letter or underscore\
 \

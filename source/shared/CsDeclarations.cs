@@ -191,14 +191,16 @@ namespace Shared
 			get
 			{
 				if (DeclaringType != null)
-					return DeclaringType.FullName + "/" + Name;				
+					return DeclaringType.FullName + "/" + Name;
 				else
 					return Name;
 			}
 		}
 	}
 	
-	// extern alias Foo;
+	// extern alias TypeName; These are used in conjunction with the alias form of
+	// gmcs's -reference command to reference distinct types which happen to have
+	// the same fully qualified name.
 	public sealed class CsExternAlias : CsDeclaration
 	{
 		public CsExternAlias(string name, int offset, int length, int line) : base(offset, length, line)

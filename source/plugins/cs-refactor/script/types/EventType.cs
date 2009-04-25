@@ -35,9 +35,9 @@ namespace CsRefactor.Script
 		{
 		}
 		
-		public static EventType Instance 
+		public static EventType Instance
 		{
-			get 
+			get
 			{
 				if (ms_instance == null)
 					ms_instance = new EventType();
@@ -55,7 +55,7 @@ namespace CsRefactor.Script
 		{
 			get {return "Event";}
 		}
-
+		
 		public override Type ManagedType
 		{
 			get {return typeof(CsEvent);}
@@ -63,8 +63,16 @@ namespace CsRefactor.Script
 		
 		protected override void RegisterMethods(RefactorType type)
 		{
+			type.Register<CsEvent>("get_Type", this.DoGetType);
 		}
 		
+		#region Private Methods
+		private object DoGetType(CsEvent type)
+		{
+			return type.Type;
+		}
+		#endregion
+		
 		private static EventType ms_instance;
-	} 
+	}
 }

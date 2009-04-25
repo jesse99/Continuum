@@ -22,22 +22,7 @@ ReferenceEquals used with value type
 might want a sample app
 sudo fs_usage -f filesys
 
-		void AddFiles1 (string name)
-		{
-			using (StreamReader sr = File.OpenText (name.Substring (1))) {
-			}
-			
-			string s;
-			s.
-		}
-
-* HashSet didn't tab complete in expr context.
-* Test performance once more:
-	- GetMembers1 is a bit slow
-* Before using locate try using appending the path to each open directory.
-* Build a new foreshadow. Be sure to keep an eye on local parser errors.
 * Work on tab completion:
-	- refactor needs to document Scope and support Locals property
 	- keyDown and textStorageDidProcessEditing should use cStringUsingEncoding
 	  (be sure to do some timing tests to see if it can be used to avoid copying all
 	  of the characters)
@@ -58,6 +43,40 @@ sudo fs_usage -f filesys
 	   window selection is within a method? or a growl sort of window?
 	- need to work with namespace aliases
 	- might want to special case "throw new "
+* Styles aren't getting applied reliably. Mostly member and type names.
+   NSData.cs for example.
+* Add C language.
+* FileStream.cs didn't parse right.
+* Right click on MethodDefinition has an extra separator in the menu.
+* Make sure setting the default text font size works too.
+* Work on no-language support:
+	- enable font command
+	- enable stuff like bold and underline commands
+	- special case saving to rtf
+	- special case loading from rtf
+	- make sure *.rtf can be double clicked
+* Couldn't use context menu to spellcheck with no database.
+* Search within "…" isn't finding verbatim strings. E.g. search for Methods should
+  find some.
+* Is ChangeAccess correct?
+* Add Convert to Decimal and Convert To Hex.
+* AssemblyVersion.cs file(s) aren't being generated?
+* Should put databases in ~/Library/Caches. Note that time machine skips this
+   directory. See /System/Library/CoreServices/backupd.bundle/Contents/Resources/StdExclusions.plist
+* Why doesn't WeakReference short form put ctors in bold?
+* Last ignored target isn't ignored?
+* Might want a warning if /var/db/locate.database is missing.
+* Put a cap on transcript size.
+* Add scripts to convert to decimal and hex. Maybe binary too.
+* Make sure prefs size is bounded.
+* Should be able to get rid of NSTreatUnknownArgumentsAsOpen hack.
+* Mention option-tab somewhere.
+* Does time code refactor really need a finally block?
+* Popup should not bold delegates used as members.
+* Got a crash trying to open a bundle.
+* Add some tips to readme, e.g. open selection, auto-complete.
+* Do a second preview.
+
 * Enter should add snippets:
 	- look at CodeTemplates file
 	- $NAME is a placeholder
@@ -68,35 +87,12 @@ sudo fs_usage -f filesys
 	- if a local snippet dir exists also copy any new snippets (on startup and on dir changed)
 	- snippets: add class, iterface, struct, exception, unit test, method rule, type rule
 	- get rid of Create Exception refactor
-* FileStream.cs didn't parse right.
-* Add C language.
-* Right click on MethodDefinition has an extra separator in the menu.
 * Can we do some sort of notification when assemblies finish parsing? Or to show parse
    error message? Maybe a notifications window? Or directory window can have a
    label somewhere?
    - could say stuff like "parsing mscorlib...", "parsing mscorlib...done", "[parser]
      expected '}' on line 56"
-* Database should only parse assemblies referenced by local assemblies, not
-   all assemblies referenced.
--rw-r--r--  1 jessejones  jessejones  60900352 Mar  4 12:34 Continuum.db
--rw-r--r--  1 jessejones  jessejones  16929792 Feb 13 23:37 Mono.Cecil.db
--rw-r--r--  1 jessejones  jessejones  23283712 Feb 24 12:13 bad-shield-anvil.db
--rw-r--r--  1 jessejones  jessejones  76693504 Feb 24 22:32 gendarme.db
--rw-r--r--  1 jessejones  jessejones  43925504 Feb 25 21:52 mcocoa.db
--rw-r--r--  1 jessejones  jessejones  26219520 Feb 26 05:47 mobjc.db
--rw-r--r--  1 jessejones  jessejones  11363328 Mar  4 14:18 Trivial.db
-* Styles aren't getting applied reliably. Mostly member and type names.
-   NSData.cs for example.
-* Make sure setting the default text font size works too.
-* Is ChangeAccess correct?
-* Add Convert to Decimal and Convert To Hex.
-* Couldn't use context menu to spellcheck with no database.
-* Search within "…" isn't finding verbatim strings. E.g. search for Methods should
-  find some.
 * Build errors should use annotations. What about the "Error 1 of 10" text?
-* Should put databases in ~/Library/Caches. Note that time machine skips this
-   directory. See /System/Library/CoreServices/backupd.bundle/Contents/Resources/StdExclusions.plist
-* Last ignored target isn't ignored?
 * Get gear unit test working.
 * Open method context menu items should be sorted by full declaring type name
 	- so TryParse should show the local stuff and then the system versions
@@ -109,7 +105,6 @@ sudo fs_usage -f filesys
 	- maybe could use a comment like // System.Linq Extension Methods
 * Short form should not show internal methods for system types
 * Add an svn command to show head.
-* Why doesn't WeakReference short form put ctors in bold?
 * Look at NSObject leaks again:
 	- try the mono profilers again
 	- might also want to look at the new performance counters
@@ -123,28 +118,16 @@ sudo fs_usage -f filesys
 	- types and members should count as valid words
 * Might want to use NSFindPboard.
 * Need to comment out the snk line in cecil's standalone make file.
-* AssemblyVersion.cs file(s) aren't being generated?
-* Might want a warning if /var/db/locate.database is missing.
-* Put a cap on transcript size.
-* Add scripts to convert to decimal and hex. Maybe binary too.
-* Make sure prefs size is bounded.
-* Should be able to get rid of NSTreatUnknownArgumentsAsOpen hack.
-* Mention option-tab somewhere.
-* Does time code refactor really need a finally block?
 * Make sure ComputeRuns is not called if runs are up to date.
 * Implement interface refactor.
-* Popup should not bold delegates used as members.
 * Add Find in Spotlight.
 * Time Machine integration? Maybe show diffs?
 * Might want to expose CsEnum.Names to refactor.
-* Look at Windows.db size.
-* Got a crash trying to open a bundle.
 * Expose CsBases.HasBaseClass to refactor.
 * Don't do brace hiliting if insertion point is not within code.
 * Implement IDisposable added throw to a private method.
 * Expose CsGlobalNamespace.Malformed to refactor. Or don't refactor if there are
    parse errors.
-* Add some tips to readme, e.g. open selection.
 * Rework Apply:
 	- use an AppliedRunsTable
 	- table is updated (using a thread) for edits
@@ -162,7 +145,6 @@ sudo fs_usage -f filesys
 * Tab style isn't getting applied correctly
 	- seems to screw up when pasting from C# Grammar.txt
 * Can probably add a Lift Code to Method refactor now.
-* Do a new preview. Add a screenshot showing the three completion windows.
 * Don't die if a factory pref handler throws.
 * Files should default to plain text (no styles but get rid of formatting)?
 * Make sure untitled files still preserve attributes.
@@ -174,7 +156,6 @@ sudo fs_usage -f filesys
 * Need to handle aliaii in the Continuum directory.
 * Probably need to handle aliaii in open panels as well.
 * Find button locations look a bit odd.
-* Might want a Make IEnumerable refactor.
 * mono root finder may not be correct.
 * Need a preference for Type.GetFieldName
 * Get parse errors for show base class. Maybe use an rtf format instead of cs.

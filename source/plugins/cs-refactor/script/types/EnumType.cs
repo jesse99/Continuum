@@ -64,12 +64,18 @@ namespace CsRefactor.Script
 		protected override void RegisterMethods(RefactorType type)
 		{
 			type.Register<CsEnum>("get_BaseType", this.DoGetBaseType);
+			type.Register<CsEnum>("get_Names", this.DoGetNames);
 		}
 		
 		#region Private Methods
 		private object DoGetBaseType(CsEnum type)
 		{
 			return type.BaseType;
+		}
+		
+		private object DoGetNames(CsEnum type)
+		{
+			return type.Names;
 		}
 		#endregion
 		
