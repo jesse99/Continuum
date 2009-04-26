@@ -33,6 +33,21 @@ namespace TextEditor
 	// Color codes text using StyleRuns.
 	internal sealed class ApplyStyles : IObserver
 	{
+		static ApplyStyles()
+		{
+			ms_tabObserver = new ObserverTrampoline(ApplyStyles.DoResetTabStops);
+			Broadcaster.Register("tab stops changed-pre", ms_tabObserver);
+			DoResetTabStops("tab stops changed-pre", null);
+			
+			ms_styleObserver = new ObserverTrampoline(ApplyStyles.DoResetFont);
+			foreach (string name in ms_names)
+			{
+				Broadcaster.Register(name + "-pre", ms_styleObserver);
+				ms_attributes.Add(name, NSMutableDictionary.Create().Retain());
+				DoResetFont(name + "-pre", null);
+			}
+		}
+		
 		public ApplyStyles(TextController controller, NSTextView text, NSScrollView scroller)
 		{
 			Contract.Requires(text.textStorage().layoutManagers().count() == 1, "expected one layout not " + text.textStorage().layoutManagers().count());
@@ -42,21 +57,6 @@ namespace TextEditor
 			m_storage = text.textStorage();
 			m_layout = m_storage.layoutManagers().objectAtIndex(0).To<NSLayoutManager>();
 			m_scroller = scroller;
-			
-			if (ms_attributes.Count == 0)
-			{
-				ms_tabObserver = new ObserverTrampoline(ApplyStyles.DoResetTabStops);
-				Broadcaster.Register("tab stops changed-pre", ms_tabObserver);
-				DoResetTabStops("tab stops changed-pre", null);
-				
-				ms_styleObserver = new ObserverTrampoline(ApplyStyles.DoResetFont);
-				foreach (string name in ms_names)
-				{
-					Broadcaster.Register(name + "-pre", ms_styleObserver);
-					ms_attributes.Add(name, NSMutableDictionary.Create().Retain());
-					DoResetFont(name + "-pre", null);
-				}
-			}
 			
 			Broadcaster.Register("tab stops changed", this);
 			foreach (string name in ms_names)
@@ -91,12 +91,21 @@ namespace TextEditor
 		
 		public void Reset(string text)
 		{
+			m_storage.setAttributedString(GetDefaultStyledString(text));
+		}
+		
+		internal static NSAttributedString GetDefaultStyledString(string text)
+		{
+			return GetDefaultStyledString(NSString.Create(text));;
+		}
+		
+		internal static NSAttributedString GetDefaultStyledString(NSString text)
+		{
 			NSMutableDictionary attrs = NSMutableDictionary.Create();
 			attrs.addEntriesFromDictionary(ms_attributes["text default font changed"]);
 			attrs.addEntriesFromDictionary(ms_paragraphAttrs);
 			
-			var str = NSAttributedString.Create(text, attrs);
-			m_storage.setAttributedString(str);
+			return NSAttributedString.Alloc().initWithString_attributes(text, attrs);
 		}
 		
 		public void Stop()
@@ -547,8 +556,8 @@ namespace TextEditor
 		private StyleRun m_line;
 		private StyleRun m_error;
 		
-		private ObserverTrampoline ms_tabObserver;
-		private ObserverTrampoline ms_styleObserver;
+		private static ObserverTrampoline ms_tabObserver;
+		private static ObserverTrampoline ms_styleObserver;
 		private static NSColor ms_selectedLineColor;
 		private static NSColor ms_errorColor;
 		private static Dictionary<string, NSMutableDictionary> ms_attributes = new Dictionary<string, NSMutableDictionary>();

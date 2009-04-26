@@ -22,13 +22,12 @@ ReferenceEquals used with value type
 might want a sample app
 sudo fs_usage -f filesys
 
-* Work on no-language support:
-	- enable font command
-	- enable stuff like bold and underline commands
-	- special case saving to rtf
-	- special case loading from rtf
-	- make sure *.rtf can be double clicked
+* Parse error on the subscript:
+			NSMutableDictionary attrs = NSMutableDictionary.Create();
+			attrs.addEntriesFromDictionary(ms_attributes["text default font changed"]);
+			attrs.addEntriesFromDictionary(ms_paragraphAttrs);
 * Couldn't use context menu to spellcheck with no database.
+* Method hiliting in context menu is hosed. Try Find.
 * Search within "…" isn't finding verbatim strings. E.g. search for Methods should
   find some.
 * Is ChangeAccess correct?
@@ -184,8 +183,10 @@ sudo fs_usage -f filesys
 * Window, scroller position, word wrap should be saved in a (project) database.
 * Work on intellisense.
 * Allow utf-16 to be read.
-* Allow files to be saved in different encodings.
 * Allow files to be saved with different line endings.
+* Need a menu (like TextEdit) to specify encoding on load.
+* Would also be nice if directory editor context menu had support for opening as 
+  different encodings or file types.
 * Warn on mixed line endings read.
 * Need to set file type for saved files.
 * Should be able to open locked files.

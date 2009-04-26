@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Jesse Jones
+// Copyright (C) 2008-2009 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -23,17 +23,19 @@ using Gear;
 using MCocoa;
 
 namespace Shared
-{	
+{
 	// Used to decode and encode text files.
 	public interface ITextEncoding : IInterface
 	{
 		// Decode the data using encodings like Enums.NSUTF8StringEncoding
 		// and Enums.NSMacOSRomanStringEncoding. If not successful an 
 		// exception is thrown. Note that this is thread safe.
-		Tuple2<NSString, uint> Decode(NSData data);
+		NSString Decode(NSData data);
+		
+		NSString Decode(NSData data, out uint encoding);
 		
 		// Encodes the string using the specified encoding. Note that this 
 		// is thread safe.
 		NSData Encode(NSString text, uint encoding);
-	} 
+	}
 }

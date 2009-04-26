@@ -45,10 +45,18 @@ namespace TextEditor
 			m_controller = new TextController();
 			addWindowController(m_controller);
 			m_controller.OnPathChanged();
-			m_controller.Text = m_data ?? string.Empty;		// will be null if we're opening a new doc
-			m_controller.Open();
 			
-			m_data = null;
+			if (NSObject.IsNullOrNil(m_text))
+			{
+				m_controller.Text = string.Empty;		// will be null if we're opening a new doc
+			}
+			else
+			{
+				m_controller.RichText = m_text;
+				m_text.release();
+				m_text = null;
+			}
+			m_controller.Open();
 		}
 		
 		public bool HasChangedOnDisk()
@@ -85,7 +93,17 @@ namespace TextEditor
 				transcript.WriteLine(Output.Error, "Couldn't reload {0:D}:\n{1:D}.", url, err.localizedFailureReason());
 			}
 			
-			m_data = null;
+			if (!NSObject.IsNullOrNil(m_text))
+			{
+				m_text.release();
+				m_text = null;
+			}
+			m_controller.Open();
+		}
+		
+		public bool IsRichText()
+		{
+			return m_isRichText;
 		}
 		
 		// This is called every time the document is saved...
@@ -108,27 +126,64 @@ namespace TextEditor
 			}
 		}
 		
-		// Used to read the document.
 		public bool readFromData_ofType_error(NSData data, NSString typeName, IntPtr outError)
 		{
 			bool read = true;
 			
 			try
 			{
-				Boss boss = ObjectModel.Create("TextEditorPlugin");
-				var encoding = boss.Get<ITextEncoding>();
-				var result = encoding.Decode(data);
+				Contract.Assert(NSObject.IsNullOrNil(m_text), "m_text is not null");
 				
-				m_data = result.First.description();
-				m_encoding = result.Second;
+				switch (typeName.description())
+				{
+					// Note that this does not mean that the file is utf8, instead it means that the
+					// file is our default document type which means we need to deduce the encoding.
+					case "UTF8":
+					case "HTML":
+						Boss boss = ObjectModel.Create("TextEditorPlugin");
+						var encoding = boss.Get<ITextEncoding>();
+						m_text = ApplyStyles.GetDefaultStyledString(encoding.Decode(data).description());
+						break;
+					
+					// These types are based on the file's extension so we can (more or less) trust them.
+					case "RTF":
+						m_text = DoReadWrapped(data, Externs.NSRTFTextDocumentType);
+						m_isRichText = true;
+						break;
+						
+					case "Microsoft Word (DOC)":
+						m_text = DoReadWrapped(data, Externs.NSDocFormatTextDocumentType);
+						m_isRichText = true;
+						break;
+						
+					case "Open XML (DOCX)":
+						m_text = DoReadWrapped(data, Externs.NSOfficeOpenXMLTextDocumentType);
+						m_isRichText = true;
+						break;
+						
+					case "Open Document (ODF)":
+						m_text = DoReadWrapped(data, Externs.NSOpenDocumentTextDocumentType);
+						m_isRichText = true;
+						break;
+					
+					default:
+						Contract.Assert(false, "bad typeName: " + typeName.description());
+						break;
+				}
 				
-				DoCheckForControlChars(m_data);
+				if (NSObject.IsNullOrNil(m_text))
+					throw new InvalidOperationException("Couldn't decode the file.");
+				
+				if (m_text != null)
+					DoCheckForControlChars(m_text.string_().description());
 				
 				if (m_controller != null)			// will be null for initial open, but non-null for revert
 				{
-					m_controller.Text = m_data ?? string.Empty;
-					m_data = null;
+					m_controller.RichText = m_text;
+					m_text = null;
 				}
+				else
+					m_text.retain();
 			}
 			catch (Exception e)
 			{
@@ -153,11 +208,50 @@ namespace TextEditor
 			try
 			{
 				DoCheckForControlChars(m_controller.Text);
-				NSString s = NSString.Create(m_controller.Text);
 				
-				Boss boss = ObjectModel.Create("TextEditorPlugin");
-				var encoding = boss.Get<ITextEncoding>();
-				data = encoding.Encode(s, m_encoding);
+				switch (typeName.description())
+				{
+					case "UTF8":
+						data = DoGetEncodedString(Enums.NSUTF8StringEncoding);
+						break;
+						
+					case "UTF16":
+						data = DoGetEncodedString(Enums.NSUTF16LittleEndianStringEncoding);
+						break;
+						
+					case "7-Bit ASCII":
+						data = DoGetEncodedString(Enums.NSASCIIStringEncoding);
+						break;
+						
+					case "RTF":
+						data = DoWriteWrapped(Externs.NSRTFTextDocumentType);
+						m_isRichText = true;
+						break;
+						
+					case "HTML":
+						data = DoWriteWrapped(Externs.NSHTMLTextDocumentType);
+						m_isRichText = true;
+						break;
+					
+					case "Microsoft Word (DOC)":
+						data = DoWriteWrapped(Externs.NSDocFormatTextDocumentType);
+						m_isRichText = true;
+						break;
+						
+					case "Open XML (DOCX)":
+						data = DoWriteWrapped(Externs.NSOfficeOpenXMLTextDocumentType);
+						m_isRichText = true;
+						break;
+						
+					case "Open Document (ODF)":
+						data = DoWriteWrapped(Externs.NSOpenDocumentTextDocumentType);
+						m_isRichText = true;
+						break;
+					
+					default:
+						Contract.Assert(false, "bad typeName: " + typeName.description());
+						break;
+				}
 			}
 			catch (Exception e)
 			{
@@ -182,6 +276,39 @@ namespace TextEditor
 		}
 		
 		#region Private Methods
+		private NSData DoGetEncodedString(uint encoding)
+		{
+			NSString str = m_controller.TextView.string_();
+			return str.dataUsingEncoding_allowLossyConversion(encoding, true);
+		}
+		
+		private NSData DoWriteWrapped(NSString type)
+		{
+			NSAttributedString str = m_controller.TextView.textStorage();
+			
+			NSRange range = new NSRange(0, (int) str.length());
+			NSDictionary dict = NSDictionary.dictionaryWithObject_forKey(type, Externs.NSDocumentTypeDocumentAttribute);
+			NSError error;
+			NSData result = str.dataFromRange_documentAttributes_error(range, dict, out error);
+			if (!NSObject.IsNullOrNil(error))
+				error.Raise();
+			
+			return result;
+		}
+		
+		private NSAttributedString DoReadWrapped(NSData data, NSString type)
+		{
+			NSDictionary options = NSDictionary.dictionaryWithObject_forKey(type, Externs.NSDocumentTypeDocumentAttribute);
+			NSError error;
+			NSAttributedString str = NSAttributedString.Alloc().initWithData_options_documentAttributes_error(data, options, IntPtr.Zero, out error).To<NSAttributedString>();
+			if (!NSObject.IsNullOrNil(error))
+				error.Raise();
+				
+			str.autorelease();
+			
+			return str;
+		}
+		
 		// It is fairly rare for control characters to wind up in text files, but 
 		// when it does happen it can be quite annoying, especially because they
 		// cannot ordinarily be seen. So, if this happens we'll write a message 
@@ -248,8 +375,8 @@ namespace TextEditor
 		
 		#region Fields
 		private TextController m_controller;
-		private string m_data;
-		private uint m_encoding = Enums.NSUTF8StringEncoding;		// TODO: should allow this to be set so that the file can be written to other encodings (and store this in a pref?)
+		private NSAttributedString m_text;
+		private bool m_isRichText;
 		private NSURL m_url;
 		
 		private static Dictionary<char, string> ms_controlNames = new Dictionary<char, string>

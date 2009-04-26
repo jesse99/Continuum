@@ -168,6 +168,37 @@ namespace TextEditor
 			}
 		}
 		
+		public NSAttributedString RichText
+		{
+			get
+			{
+				Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
+				
+				return m_textView.Value.textStorage();
+			}
+			set
+			{
+				try
+				{
+					m_userEdit = false;
+					m_editCount = unchecked(m_editCount + 1);
+					
+					m_textView.Value.textStorage().setAttributedString(value);
+					m_textView.Value.setSelectedRange(new NSRange(0, 0));
+					DoUpdateDefaultColor(string.Empty, null);
+					
+					if (m_computer != null)
+						m_styler.Apply(m_computer, this.DoStylerFinished);
+					
+					DoUpdateLineLabel(Text);			// use Text so metrics are up to date
+				}
+				finally
+				{
+					m_userEdit = true;
+				}
+			}
+		}
+		
 		public void Open()
 		{
 			window().makeKeyAndOrderFront(this);
@@ -864,7 +895,7 @@ namespace TextEditor
 		
 		private void DoSetTextOptions()
 		{
-			// Instead of wrapping use the horizontal scrollbar. TODO: make this a pref?
+			// Instead of wrapping use the horizontal scrollbar. TODO: make this a pref? 
 			m_textView.Value.setAutoresizingMask(Enums.NSViewWidthSizable | Enums.NSViewHeightSizable);
 			m_textView.Value.setMaxSize(new NSSize(float.MaxValue, float.MaxValue));
 			m_textView.Value.textContainer().setContainerSize(new NSSize(float.MaxValue, float.MaxValue));
@@ -872,17 +903,27 @@ namespace TextEditor
 			
 			m_textView.Value.textStorage().setDelegate(this);
 		}
-				
+		
 		private void DoUpdateDefaultColor(string name, object value)
 		{
-			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
-			var data = defaults.objectForKey(NSString.Create("text default color")).To<NSData>();
+			NSColor color = null;
 			
-			if (!NSObject.IsNullOrNil(data))
+			TextDocument doc = document() as TextDocument;
+			if (doc != null && doc.IsRichText())
 			{
-				var color = NSUnarchiver.unarchiveObjectWithData(data).To<NSColor>();
-				m_textView.Value.setBackgroundColor(color);
+				color = NSColor.whiteColor();
 			}
+			else
+			{
+				NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
+				var data = defaults.objectForKey(NSString.Create("text default color")).To<NSData>();
+				
+				if (!NSObject.IsNullOrNil(data))
+					color = NSUnarchiver.unarchiveObjectWithData(data).To<NSColor>();
+			}
+			
+			if (!NSObject.IsNullOrNil(color))
+				m_textView.Value.setBackgroundColor(color);
 		}
 		
 		private void DoUpdateLineLabel(string text)

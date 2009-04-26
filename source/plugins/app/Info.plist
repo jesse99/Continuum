@@ -1,20 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 
+<!-- http://developer.apple.com/documentation/MacOSX/Conceptual/BPRuntimeConfig/BPRuntimeConfig.html#//apple_ref/doc/uid/10000170 -->
 <plist version="1.0">
 <dict>
 	<key>CFBundleIdentifier</key>
 	<string>${APPNAME}-IDE</string>
-
-    <key>CFBundleDevelopmentRegion</key>
-    <string>English</string>
-
+	
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	
 	<key>CFBundleIconFile</key>
 	<string>AppIcon.icns</string>
-
+	
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
-
+	
+	<!-- TODO: would be nice to use CFBundleTypeIconFile -->
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
@@ -23,11 +25,124 @@
 				<string>*</string>
 			</array>
 			
-			<key>CFBundleTypeIconFile</key>
-			<string></string>
+			<key>CFBundleTypeName</key>
+			<string>UTF8</string>
+			
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			
+			<key>NSDocumentClass</key>
+			<string>TextDocument</string>
+		</dict>
+		
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>UTF16</string>
+			
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			
+			<key>NSDocumentClass</key>
+			<string>TextDocument</string>
+		</dict>
+		
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>7-Bit ASCII</string>
+			
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			
+			<key>NSDocumentClass</key>
+			<string>TextDocument</string>
+		</dict>
+		
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>rtf</string>
+			</array>
 			
 			<key>CFBundleTypeName</key>
-			<string>DocumentType</string>
+			<string>RTF</string>
+			
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			
+			<key>NSDocumentClass</key>
+			<string>TextDocument</string>
+		</dict>
+		
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>html</string>
+				<string>htm</string>
+			</array>
+			
+			<key>CFBundleTypeName</key>
+			<string>HTML</string>
+			
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			
+			<key>NSDocumentClass</key>
+			<string>TextDocument</string>
+		</dict>
+		
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>doc</string>
+			</array>
+			
+			<key>CFBundleTypeName</key>
+			<string>Microsoft Word (DOC)</string>
+			
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			
+			<key>NSDocumentClass</key>
+			<string>TextDocument</string>
+		</dict>
+		
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>docx</string>
+				<string>docm</string>
+			</array>
+			
+			<key>CFBundleTypeName</key>
+			<string>Open XML (DOCX)</string>
+			
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			
+			<key>NSDocumentClass</key>
+			<string>TextDocument</string>
+		</dict>
+		
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>odf</string>
+			</array>
+			
+			<key>CFBundleTypeName</key>
+			<string>Open Document (ODF)</string>
+			
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
 			
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
@@ -39,33 +154,33 @@
 	
 	<key>LSMinimumSystemVersion</key>
 	<string>10.5.0</string>
-
+	
 	<!-- Keys that should not be changed. -->
 	<key>CFBundleExecutable</key>
 	<string>launcher</string>
-
+	
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
-
+	
 	<key>CFBundleName</key>
 	<string>${APPNAME}</string>
-
+	
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
-
+	
 	<!-- This is what is shown to the user via the Finder's get info command. -->
 	<key>CFBundleShortVersionString</key>	<!-- major.minor.maintenance -->
 	<string>${VERSION}</string>
-
+	
 	<key>CFBundleSignature</key>
 	<string>????</string>
-
+	
 	<key>CFBundleVersion</key>
 	<string>${BUILDNUM}</string> 
-
+	
 	<key>NSAppleScriptEnabled</key>
 	<string>YES</string>
-
+	
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 </dict>

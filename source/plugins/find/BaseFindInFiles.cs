@@ -240,13 +240,14 @@ namespace Find
 				
 				Boss boss = ObjectModel.Create("TextEditorPlugin");
 				var encoding = boss.Get<ITextEncoding>();
-				var result = encoding.Decode(data);
+				uint coding;
+				var result = encoding.Decode(data, out coding);
 				
-				string oldText = result.First.description();
+				string oldText = result.description();
 				string newText = OnProcessFile(file, oldText);
 				if (newText != oldText)
 				{
-					data = encoding.Encode(NSString.Create(newText), result.Second);
+					data = encoding.Encode(NSString.Create(newText), coding);
 					
 					handle.seekToFileOffset(0);
 					handle.writeData(data);

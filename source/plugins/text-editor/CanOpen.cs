@@ -22,13 +22,14 @@
 using Gear;
 using Shared;
 using System;
+using System.Linq;
 
 namespace TextEditor
 {
 	internal sealed class CanOpen : ICanOpen
-	{		
+	{
 		public void Instantiated(Boss boss)
-		{	
+		{
 			m_boss = boss;
 		}
 		
@@ -39,6 +40,14 @@ namespace TextEditor
 		
 		public bool Can(string fileName)
 		{
+			// See if the extension is one we want to handle.
+			// TODO: might want a rich-text language so users can have more
+			// control over this.
+			string ext = System.IO.Path.GetExtension(fileName);
+			if (ext == ".rtf")
+				return true;
+						
+			// See if the extension matches one of our languages.
 			Boss boss = ObjectModel.Create("Stylers");
 			if (boss.Has<IFindLanguage>())
 			{
