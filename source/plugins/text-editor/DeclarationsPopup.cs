@@ -47,6 +47,9 @@ namespace TextEditor
 			
 			m_controller = controller;
 			m_getter = getter;
+
+			if (m_getter == null)
+				DoReset();
 		}
 		
 		public new void mouseDown(NSEvent e)
@@ -117,6 +120,13 @@ namespace TextEditor
 				
 				DoBuildUsingOffsetsOrder();
 				textSelectionChanged();
+			}
+			else
+			{
+				m_declarations = new Declaration[0];
+				m_indexTable = new Dictionary<int, Declaration>();
+				
+				removeAllItems();
 			}
 		}
 		

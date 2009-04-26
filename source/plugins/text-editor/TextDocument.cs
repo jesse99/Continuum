@@ -101,11 +101,6 @@ namespace TextEditor
 			m_controller.Open();
 		}
 		
-		public bool IsRichText()
-		{
-			return m_isRichText;
-		}
-		
 		// This is called every time the document is saved...
 		public new void setFileURL(NSURL url)
 		{
@@ -114,12 +109,10 @@ namespace TextEditor
 			if (m_controller != null && url != m_url)
 			{
 				if (m_url != null)
-				{
-					m_controller.OnPathChanged();
 					m_url.release();
-				}
 				
 				m_url = url;
+				m_controller.OnPathChanged();
 				
 				if (m_url != null)
 					m_url.retain();
@@ -148,22 +141,18 @@ namespace TextEditor
 					// These types are based on the file's extension so we can (more or less) trust them.
 					case "RTF":
 						m_text = DoReadWrapped(data, Externs.NSRTFTextDocumentType);
-						m_isRichText = true;
 						break;
 						
 					case "Microsoft Word (DOC)":
 						m_text = DoReadWrapped(data, Externs.NSDocFormatTextDocumentType);
-						m_isRichText = true;
 						break;
 						
 					case "Open XML (DOCX)":
 						m_text = DoReadWrapped(data, Externs.NSOfficeOpenXMLTextDocumentType);
-						m_isRichText = true;
 						break;
 						
 					case "Open Document (ODF)":
 						m_text = DoReadWrapped(data, Externs.NSOpenDocumentTextDocumentType);
-						m_isRichText = true;
 						break;
 					
 					default:
@@ -225,27 +214,22 @@ namespace TextEditor
 						
 					case "RTF":
 						data = DoWriteWrapped(Externs.NSRTFTextDocumentType);
-						m_isRichText = true;
 						break;
 						
 					case "HTML":
 						data = DoWriteWrapped(Externs.NSHTMLTextDocumentType);
-						m_isRichText = true;
 						break;
 					
 					case "Microsoft Word (DOC)":
 						data = DoWriteWrapped(Externs.NSDocFormatTextDocumentType);
-						m_isRichText = true;
 						break;
 						
 					case "Open XML (DOCX)":
 						data = DoWriteWrapped(Externs.NSOfficeOpenXMLTextDocumentType);
-						m_isRichText = true;
 						break;
 						
 					case "Open Document (ODF)":
 						data = DoWriteWrapped(Externs.NSOpenDocumentTextDocumentType);
-						m_isRichText = true;
 						break;
 					
 					default:
@@ -376,7 +360,6 @@ namespace TextEditor
 		#region Fields
 		private TextController m_controller;
 		private NSAttributedString m_text;
-		private bool m_isRichText;
 		private NSURL m_url;
 		
 		private static Dictionary<char, string> ms_controlNames = new Dictionary<char, string>

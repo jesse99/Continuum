@@ -87,15 +87,15 @@ namespace TextEditor
 		private uint DoGetEncoding(NSData data)
 		{
 			uint encoding = 0;
-			const int MaxBytes = 2*32;
+			const int HeaderBytes = 2*64;
 			
-			IntPtr ptr = Marshal.AllocHGlobal(MaxBytes);
-			for (int i = 0; i < MaxBytes; ++i)						// getBytes_length may not fill the entire buffer so we need to seed it with something
+			IntPtr ptr = Marshal.AllocHGlobal(HeaderBytes);
+			for (int i = 0; i < HeaderBytes; ++i)					// getBytes_length may not fill the entire buffer so we need to seed it with something
 				Marshal.WriteByte(ptr, i, (byte) '?');
-			data.getBytes_length(ptr, MaxBytes);
+			data.getBytes_length(ptr, HeaderBytes);
 			
-			byte[] buffer = new byte[MaxBytes];
-			Marshal.Copy(ptr, buffer, 0, MaxBytes);
+			byte[] buffer = new byte[HeaderBytes];
+			Marshal.Copy(ptr, buffer, 0, HeaderBytes);
 			Marshal.FreeHGlobal(ptr);
 			
 			// Check for a BOM.
@@ -114,9 +114,9 @@ namespace TextEditor
 			// See if it looks like utf-16.
 			if (encoding == 0)
 			{
-				if (DoLooksLikeUTF16(buffer, true, MaxBytes))
+				if (DoLooksLikeUTF16(buffer, true, HeaderBytes))
 					encoding = Enums.NSUTF16BigEndianStringEncoding;
-				else if (DoLooksLikeUTF16(buffer, false, MaxBytes))
+				else if (DoLooksLikeUTF16(buffer, false, HeaderBytes))
 					encoding = Enums.NSUTF16LittleEndianStringEncoding;
 			}
 			
@@ -140,25 +140,37 @@ namespace TextEditor
 		// Apart from the asian languages most utf16 characters will have a zero in
 		// their high byte. So, if we see enough zeros we'll call the data utf16 (and
 		// note that utf8 will not have zeros).
-		private bool DoLooksLikeUTF16(byte[] buffer, bool bigEndian, int count)
+		private bool DoLooksLikeUTF16(byte[] buffer, bool bigEndian, int headerBytes)
 		{
 			int zeros = 0;
+			int count = 0;
 			
-			for (int i = 0; i + 1 < count && buffer[i] != (byte) '?'; i += 2)
+			for (int i = 0; i + 1 < headerBytes; i += 2)
 			{
-				if (bigEndian)
+				if (buffer[i] != (byte) '?')		// there might be a '?' in the header (or even two together) so we'll keep going if we find one
 				{
-					if (buffer[i] == 0 && buffer[i + 1] != 0)
-						++zeros;
-				}
-				else
-				{
-					if (buffer[i] != 0 && buffer[i + 1] == 0)
-						++zeros;
+					++count;
+					
+					if (bigEndian)
+					{
+						if (buffer[i] == 0 && buffer[i + 1] != 0)
+							if (DoIsControl(buffer[i + 1]))
+								return false;
+							else
+								++zeros;
+					}
+					else
+					{
+						if (buffer[i] != 0 && buffer[i + 1] == 0)
+							if (DoIsControl(buffer[i]))
+								return false;
+							else
+								++zeros;
+					}
 				}
 			}
 			
-			return zeros > 0.25*count/2;
+			return zeros > 0.25*count;
 		}
 		
 		// See http://en.wikipedia.org/wiki/UTF-8#Invalid_byte_sequences
@@ -172,7 +184,7 @@ namespace TextEditor
 			else if (b >= 0xF5)
 				valid = false;
 			
-			else if (b < 0x20 && b != (byte) '\t' && b != (byte) '\n' && b != (byte) '\r')
+			else if (DoIsControl(b))
 				valid = false;
 			
 			return valid;
@@ -182,10 +194,15 @@ namespace TextEditor
 		{
 			bool valid = true;
 			
-			if (b < 0x20 && b != (byte) '\t' && b != (byte) '\n' && b != (byte) '\r')
+			if (DoIsControl(b))
 				valid = false;
 			
 			return valid;
+		}
+		
+		private bool DoIsControl(byte b)
+		{
+			return b < 0x20 && b != (byte) '\t' && b != (byte) '\n' && b != (byte) '\r';
 		}
 		
 		private NSString DoDecode(NSData data, uint encoding)		// threaded code

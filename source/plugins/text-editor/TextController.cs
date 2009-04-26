@@ -98,6 +98,16 @@ namespace TextEditor
 			m_applier.HighlightError(offset, length);
 		}
 		
+		public string Path
+		{
+			get
+			{
+				Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
+				
+				return !NSObject.IsNullOrNil(document().fileURL()) ? document().fileURL().path().description() : null;
+			}	
+		}
+		
 		public void OnPathChanged()
 		{
 			if (Path != null)
@@ -185,8 +195,6 @@ namespace TextEditor
 					
 					m_textView.Value.textStorage().setAttributedString(value);
 					m_textView.Value.setSelectedRange(new NSRange(0, 0));
-					DoUpdateDefaultColor(string.Empty, null);
-					
 					if (m_computer != null)
 						m_styler.Apply(m_computer, this.DoStylerFinished);
 					
@@ -213,16 +221,6 @@ namespace TextEditor
 			
 				return m_textView.Value;
 			}
-		}
-		
-		public string Path
-		{
-			get
-			{
-				Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
-				
-				return !NSObject.IsNullOrNil(document().fileURL()) ? document().fileURL().path().description() : null;
-			}	
 		}
 		
 		public IComputeRuns Computer
@@ -908,22 +906,14 @@ namespace TextEditor
 		{
 			NSColor color = null;
 			
-			TextDocument doc = document() as TextDocument;
-			if (doc != null && doc.IsRichText())
-			{
-				color = NSColor.whiteColor();
-			}
-			else
-			{
-				NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
-				var data = defaults.objectForKey(NSString.Create("text default color")).To<NSData>();
-				
-				if (!NSObject.IsNullOrNil(data))
-					color = NSUnarchiver.unarchiveObjectWithData(data).To<NSColor>();
-			}
+			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
+			var data = defaults.objectForKey(NSString.Create("text default color")).To<NSData>();
 			
-			if (!NSObject.IsNullOrNil(color))
+			if (!NSObject.IsNullOrNil(data))
+			{
+				color = NSUnarchiver.unarchiveObjectWithData(data).To<NSColor>();
 				m_textView.Value.setBackgroundColor(color);
+			}
 		}
 		
 		private void DoUpdateLineLabel(string text)

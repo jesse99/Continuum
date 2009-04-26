@@ -1,6 +1,6 @@
 http://msdn.microsoft.com/en-us/devlabs/dd491992.aspx
 
-	⁃	https://home.comcast.net/~jesse98/public/Continuum-0.2.222.0.tar.gz
+https://home.comcast.net/~jesse98/public/Continuum-0.2.222.0.tar.gz
 
 BMPN - flow charts
 http://code.google.com
@@ -22,24 +22,26 @@ ReferenceEquals used with value type
 might want a sample app
 sudo fs_usage -f filesys
 
+save as html
+try opening an assembly
+
 * Parse error on the subscript:
 			NSMutableDictionary attrs = NSMutableDictionary.Create();
 			attrs.addEntriesFromDictionary(ms_attributes["text default font changed"]);
 			attrs.addEntriesFromDictionary(ms_paragraphAttrs);
-* Couldn't use context menu to spellcheck with no database.
 * Method hiliting in context menu is hosed. Try Find.
+* Should put databases in ~/Library/Caches. Note that time machine skips this
+   directory. See /System/Library/CoreServices/backupd.bundle/Contents/Resources/StdExclusions.plist
+* Build a new foreshadow.
 * Search within "…" isn't finding verbatim strings. E.g. search for Methods should
   find some.
+* Couldn't use context menu to spellcheck with no database.
 * Is ChangeAccess correct?
 * Add Convert to Decimal and Convert To Hex.
 * AssemblyVersion.cs file(s) aren't being generated?
-* Should put databases in ~/Library/Caches. Note that time machine skips this
-   directory. See /System/Library/CoreServices/backupd.bundle/Contents/Resources/StdExclusions.plist
-* Why doesn't WeakReference short form put ctors in bold?
 * Last ignored target isn't ignored?
 * Might want a warning if /var/db/locate.database is missing.
 * Put a cap on transcript size.
-* Add scripts to convert to decimal and hex. Maybe binary too.
 * Make sure prefs size is bounded.
 * Should be able to get rid of NSTreatUnknownArgumentsAsOpen hack.
 * Mention option-tab somewhere.
