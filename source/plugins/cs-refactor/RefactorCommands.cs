@@ -44,7 +44,7 @@ namespace CsRefactor
 		public override void PreExecute(RefactorCommand[] commands, int i)
 		{
 			Contract.Requires(commands != null, "commands is null");
-
+			
 			// If there are no bases and we're the last AddBase command then we
 			// need to use a colon for the prefix, otherwise we need to use a comma.
 			if (m_type.Bases.Names.Length == 0)
@@ -55,7 +55,7 @@ namespace CsRefactor
 					m_prefix = " : ";
 			}
 		}
-
+		
 		protected override void OnFindRange(StringBuilder builder, out int offset, out int length)
 		{
 			// Type already includes base.
@@ -63,7 +63,7 @@ namespace CsRefactor
 			{
 				offset = -1;
 			}
-
+			
 			// Type has no bases.
 			else if (m_type.Bases.Names.Length == 0)
 			{
@@ -150,8 +150,8 @@ namespace CsRefactor
 		private string m_prefix = string.Empty;
 		private string m_suffix = string.Empty;
 		#endregion
-	} 
-
+	}
+	
 	// Adds a new member to a class, interface, or struct. Note that this does
 	// not check to see if a method with that signature exists.
 	public sealed class AddMember : RefactorCommand
@@ -234,7 +234,7 @@ namespace CsRefactor
 		private CsType m_type;
 		private string[] m_lines;
 		private int m_first;
-	} 
+	}
 	
 	// Adds a new member to a class, interface, or struct. Note that this does
 	// not check to see if a method with that signature exists.
@@ -278,7 +278,7 @@ namespace CsRefactor
 		{
 			return string.Format("{0}.AddRelativeMember({1})", m_member.Name, LinesToString(m_lines));
 		}
-				
+		
 		// Add a blank line before or after the new text
 		private string[] DoMungeLines(string[] lines)
 		{
@@ -472,10 +472,10 @@ namespace CsRefactor
 		{
 			return string.Format("{0}.ChangeAccess({1})", m_member.Name, m_access);
 		}
-
+		
 		private CsMember m_member;
 		private string m_access;
-	} 
+	}
 	
 	// Inserts lines at an arbitrary range within a source code file.
 	public sealed class Indent : RefactorCommand
@@ -531,7 +531,7 @@ namespace CsRefactor
 		private readonly string m_tabs;
 		private string m_newText;
 		#endregion
-	} 
+	}
 	
 	// Inserts lines at at the line after the line index is within.
 	public sealed class InsertAfterLine : RefactorCommand
@@ -569,8 +569,8 @@ namespace CsRefactor
 		private int m_index;
 		private int m_length;
 		private string[] m_lines;
-	} 
-
+	}
+	
 	// Inserts lines at at the start of the line index is within.
 	public sealed class InsertBeforeLine : RefactorCommand
 	{
@@ -600,7 +600,7 @@ namespace CsRefactor
 		
 		private int m_index;
 		private string[] m_lines;
-	} 
+	}
 	
 	// Inserts lines at the start of a block.
 	public sealed class InsertFirst : RefactorCommand
@@ -631,7 +631,7 @@ namespace CsRefactor
 		
 		private CsBody m_body;
 		private string[] m_lines;
-	} 
+	}
 	
 	// Inserts lines at the end of a block. 
 	public sealed class InsertLast : RefactorCommand
@@ -662,5 +662,5 @@ namespace CsRefactor
 		
 		private CsBody m_body;
 		private string[] m_lines;
-	} 
+	}
 }
