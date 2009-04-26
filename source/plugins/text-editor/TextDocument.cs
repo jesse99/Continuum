@@ -131,7 +131,7 @@ namespace TextEditor
 				{
 					// Note that this does not mean that the file is utf8, instead it means that the
 					// file is our default document type which means we need to deduce the encoding.
-					case "UTF8":
+					case "Plain Text, UTF8 Encoded":
 					case "HTML":
 						Boss boss = ObjectModel.Create("TextEditorPlugin");
 						var encoding = boss.Get<ITextEncoding>();
@@ -139,19 +139,19 @@ namespace TextEditor
 						break;
 					
 					// These types are based on the file's extension so we can (more or less) trust them.
-					case "RTF":
+					case "Rich Text Format (RTF)":
 						m_text = DoReadWrapped(data, Externs.NSRTFTextDocumentType);
 						break;
 						
-					case "Microsoft Word (DOC)":
+					case "Word 97 Format (doc)":
 						m_text = DoReadWrapped(data, Externs.NSDocFormatTextDocumentType);
 						break;
 						
-					case "Open XML (DOCX)":
+					case "Word 2007 Format (docx)":
 						m_text = DoReadWrapped(data, Externs.NSOfficeOpenXMLTextDocumentType);
 						break;
 						
-					case "Open Document (ODF)":
+					case "Open Document Text (odt)":
 						m_text = DoReadWrapped(data, Externs.NSOpenDocumentTextDocumentType);
 						break;
 					
@@ -200,19 +200,19 @@ namespace TextEditor
 				
 				switch (typeName.description())
 				{
-					case "UTF8":
+					case "Plain Text, UTF8 Encoded":
 						data = DoGetEncodedString(Enums.NSUTF8StringEncoding);
 						break;
 						
-					case "UTF16":
+					case "Plain Text, UTF16 Encoded":
 						data = DoGetEncodedString(Enums.NSUTF16LittleEndianStringEncoding);
 						break;
 						
-					case "7-Bit ASCII":
+					case "Plain Text, 7-Bit ASCII Encoded":
 						data = DoGetEncodedString(Enums.NSASCIIStringEncoding);
 						break;
 						
-					case "RTF":
+					case "Rich Text Format (RTF)":
 						data = DoWriteWrapped(Externs.NSRTFTextDocumentType);
 						break;
 						
@@ -220,15 +220,15 @@ namespace TextEditor
 						data = DoWriteWrapped(Externs.NSHTMLTextDocumentType);
 						break;
 					
-					case "Microsoft Word (DOC)":
+					case "Word 97 Format (doc)":
 						data = DoWriteWrapped(Externs.NSDocFormatTextDocumentType);
 						break;
 						
-					case "Open XML (DOCX)":
+					case "Word 2007 Format (docx)":
 						data = DoWriteWrapped(Externs.NSOfficeOpenXMLTextDocumentType);
 						break;
 						
-					case "Open Document (ODF)":
+					case "Open Document Text (odt)":
 						data = DoWriteWrapped(Externs.NSOpenDocumentTextDocumentType);
 						break;
 					

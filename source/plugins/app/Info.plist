@@ -26,7 +26,7 @@
 			</array>
 			
 			<key>CFBundleTypeName</key>
-			<string>UTF8</string>
+			<string>Plain Text, UTF8 Encoded</string>
 			
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
@@ -37,7 +37,7 @@
 		
 		<dict>
 			<key>CFBundleTypeName</key>
-			<string>UTF16</string>
+			<string>Plain Text, UTF16 Encoded</string>
 			
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
@@ -48,7 +48,7 @@
 		
 		<dict>
 			<key>CFBundleTypeName</key>
-			<string>7-Bit ASCII</string>
+			<string>Plain Text, 7-Bit ASCII Encoded</string>
 			
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
@@ -64,7 +64,7 @@
 			</array>
 			
 			<key>CFBundleTypeName</key>
-			<string>RTF</string>
+			<string>Rich Text Format (RTF)</string>
 			
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
@@ -96,31 +96,12 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
-				<string>doc</string>
-			</array>
-			
-			<key>CFBundleTypeName</key>
-			<string>Microsoft Word (DOC)</string>
-			
-			<key>LSHandlerRank</key>
-			<string>Alternate</string>
-			
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			
-			<key>NSDocumentClass</key>
-			<string>TextDocument</string>
-		</dict>
-		
-		<dict>
-			<key>CFBundleTypeExtensions</key>
-			<array>
 				<string>docx</string>
 				<string>docm</string>
 			</array>
 			
 			<key>CFBundleTypeName</key>
-			<string>Open XML (DOCX)</string>
+			<string>Word 2007 Format (docx)</string>
 			
 			<key>LSHandlerRank</key>
 			<string>Alternate</string>
@@ -135,11 +116,30 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
-				<string>odf</string>
+				<string>doc</string>
 			</array>
 			
 			<key>CFBundleTypeName</key>
-			<string>Open Document (ODF)</string>
+			<string>Word 97 Format (doc)</string>
+			
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			
+			<key>NSDocumentClass</key>
+			<string>TextDocument</string>
+		</dict>
+		
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>odt</string>
+			</array>
+			
+			<key>CFBundleTypeName</key>
+			<string>Open Document Text (odt)</string>
 			
 			<key>LSHandlerRank</key>
 			<string>Alternate</string>

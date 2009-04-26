@@ -81,6 +81,7 @@ namespace CsParser
 			Contract.Requires(start <= stop, "stop is too small");
 			
 			var locals = new List<Local>();
+			m_numErrors = 0;
 			
 			try
 			{
@@ -99,10 +100,18 @@ namespace CsParser
 			}
 			catch (ScannerException)
 			{
+				++m_numErrors;
 			}
 			
 			return locals.ToArray();
 		}
+		
+#if TEST
+		internal int NumErrors
+		{
+			get {return m_numErrors;}
+		}
+#endif
 		
 		#region Private Methods
 		public void DoParseBlock(List<Local> locals, int depth)
@@ -425,6 +434,7 @@ namespace CsParser
 			{		
 				Log.WriteLine(TraceLevel.Info, "LocalsParser", "Parse error on line {0}", m_scanner.Token.Line);
 				Log.WriteLine(TraceLevel.Info, "LocalsParser", e.Message);
+				++m_numErrors;
 			}
 		}
 		#endregion
@@ -433,6 +443,7 @@ namespace CsParser
 		private Boss m_boss;
 		private Scanner m_scanner;
 		private string m_text;
+		private int m_numErrors;
 		private HashSet<string> ms_keywords = new HashSet<string>
 		{
 			// keywords which are not type names

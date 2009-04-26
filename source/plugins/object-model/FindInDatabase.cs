@@ -375,11 +375,11 @@ namespace ObjectModel
 		{
 			NSMutableAttributedString atitle = null;
 			
-			int index = title.IndexOf(':');						// hilite the declaring type (makes it much easier to pick out the method you want when there are more than a few)
+			int index = title.IndexOf(':');						// hilite the declaring type (makes it much easier to pick out the method you want when there are more than a few) 
 			if (index > 0)
 			{
 				int k = index - 1, len = 0;
-				while (k > 0 && char.IsLetterOrDigit(title[k]))
+				while (k > 0 && (char.IsLetterOrDigit(title[k]) || title[k] == '/' || title[k] == '`'))
 				{
 					--k;
 					++len;

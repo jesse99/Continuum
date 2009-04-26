@@ -101,18 +101,18 @@ namespace ObjectModel
 			
 			return types.ToArray();
 		}
-				
+		
 		public SourceInfo[] FindMethodSources(string name, int max)
 		{
 			string sql = string.Format(@"
-				SELECT display_text, file_path, line
+				SELECT display_text, file_path, line, kind
 					FROM Methods
 				WHERE (name = '{0}' OR name = '{2}') AND Methods.file_path != 0
 				LIMIT {1}", name, max, "get_" + name);
 			var rows = new List<string[]>(m_database.QueryRows(sql));
 			
 			sql = string.Format(@"
-				SELECT Methods.display_text, Methods.file_path, Methods.line
+				SELECT Methods.display_text, Methods.file_path, Methods.line, Methods.kind
 					FROM Methods, Types
 				WHERE Types.name = '{0}' AND 
 					Methods.kind = 6 AND Types.root_name = Methods.declaring_root_name AND
@@ -121,7 +121,7 @@ namespace ObjectModel
 			rows.AddRange(m_database.QueryRows(sql));
 			
 			var sources = from r in rows
-				select new SourceInfo(r[0].Replace(";", ", "), DoGetPath(r[1]), int.Parse(r[2]));
+				select new SourceInfo(DoGetMethodName(r[0], int.Parse(r[3])), DoGetPath(r[1]), int.Parse(r[2]));
 			
 			return sources.ToArray();
 		}
@@ -131,7 +131,7 @@ namespace ObjectModel
 			Contract.Requires(rootNames.Length > 0);
 			
 			var sources = new List<SourceInfo>();
-
+			
 			if (rootNames.Length > 0)
 			{
 				var roots = new StringBuilder();
@@ -184,7 +184,7 @@ namespace ObjectModel
 		}
 		
 		public string FindAssemblyPath(int assembly)
-		{			
+		{
 			string sql = string.Format(@"
 				SELECT path 
 					FROM Assemblies 
@@ -248,7 +248,7 @@ namespace ObjectModel
 					t1.root_name = t2.root_name
 				LIMIT {1}", rootName, max);
 			string[][] rows = m_database.QueryRows(sql);
-		
+			
 			var types = from r in rows
 				select new TypeInfo(int.Parse(r[2]), r[0], int.Parse(r[1]), int.Parse(r[3]));
 			
@@ -256,6 +256,56 @@ namespace ObjectModel
 		}
 		
 		#region Private Methods
+		private string DoGetMethodName(string displayText, int kind)
+		{
+			string[] parts = displayText.Split(':');
+			Contract.Assert(parts.Length == 6, "expected 6 parts from " + displayText);
+			
+			string rtype = CsHelpers.TrimNamespace(parts[0]);
+			string declaringType = parts[1];
+			string name = parts[2];
+			
+			string[] gargParts = parts[3].Split(new char[]{';'}, StringSplitOptions.RemoveEmptyEntries);
+			string gargs = gargParts.Length > 0 ? string.Format("<{0}>", string.Join(", ", gargParts)) : string.Empty;
+			
+			string result;
+			if (kind == 1 || kind == 2)
+			{
+				// property getter or setter
+				result = string.Format("{0} {1}::{2}{3}", rtype, declaringType, name, gargs);
+			}
+			else
+			{
+				string[] argTypeParts = parts[4].Split(new char[]{';'}, StringSplitOptions.RemoveEmptyEntries);
+				string[] argNameParts = parts[5].Split(new char[]{';'}, StringSplitOptions.RemoveEmptyEntries);
+				Contract.Assert(argTypeParts.Length == argNameParts.Length);
+				
+				var args = new StringBuilder();
+				for (int i = 0; i < argTypeParts.Length; ++i)
+				{
+					args.Append(CsHelpers.TrimNamespace(argTypeParts[i]));
+					args.Append(' ');
+					args.Append(argNameParts[i]);
+					
+					if (i + 1 < argTypeParts.Length)
+						args.Append(", ");
+				}
+				
+				if (kind == 3 || kind == 4)
+				{
+					// indexer getter or setter
+					result = string.Format("{0} {1}::{2}{3}[{4}]", rtype, declaringType, name, gargs, args);
+				}
+				else
+				{
+					// method
+					result = string.Format("{0} {1}::{2}{3}({4})", rtype, declaringType, name, gargs, args);
+				}
+			}
+			
+			return result;
+		}
+		
 		private void DoMonoRootChanged(string name, object value)
 		{
 			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();

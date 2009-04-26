@@ -156,7 +156,7 @@ namespace DirectoryEditor
 			// There seems to be a race here where make doesn't always recognize
 			// that the file we just saved changed. So, we'll sleep a little bit to try
 			// to avoid the race.
-			System.Threading.Thread.Sleep(200);
+			System.Threading.Thread.Sleep(333);		// 200 didn't always work...
 		}
 		
 		private void DoGotStdoutData(object sender, DataReceivedEventArgs e)	// threaded

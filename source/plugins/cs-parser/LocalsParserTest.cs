@@ -30,7 +30,7 @@ namespace CsParser
 	[TestFixture]
 	public sealed class LocalsParserTest
 	{
-		private void DoTheCheck(string text, int start, int stop, params Local[] expected)
+		private void DoTheCheck(string text, int start, int stop, int expectedErrors, params Local[] expected)
 		{
 			var parser = new LocalsParser();
 			Local[] actual = parser.Parse(text, start, stop);
@@ -56,18 +56,20 @@ namespace CsParser
 					
 				Assert.Fail(builder.ToString());
 			}
+			
+			Assert.AreEqual(expectedErrors, parser.NumErrors);
 		}
 		
-		private void DoCheck(string text, int start, int stop, params Local[] expected)
+		private void DoCheck(string text, int start, int stop, int expectedErrors, params Local[] expected)
 		{
 			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "{0} {1} {2}", new string('*', 10), new StackTrace().GetFrame(1).GetMethod().Name, new string('*', 10));
-			DoTheCheck(text, start, stop, expected);
+			DoTheCheck(text, start, stop, expectedErrors, expected);
 		}
 		
 		private void DoCheck(string text, params Local[] expected)
 		{
 			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "{0} {1} {2}", new string('*', 10), new StackTrace().GetFrame(1).GetMethod().Name, new string('*', 10));
-			DoTheCheck(text, 0, text.Length - 1, expected);
+			DoTheCheck(text, 0, text.Length - 1, 0, expected);
 		}
 		
 		[TestFixtureSetUp]
@@ -80,14 +82,14 @@ namespace CsParser
 		public void Empty1()
 		{
 			string text = @"";
-			DoCheck(text, 0, 0, new Local[0]);
+			DoCheck(text, 0, 0, 0, new Local[0]);
 		}
 		
 		[Test]
 		public void Empty2()
 		{
 			string text = @"{}";
-			DoCheck(text, 0, 2, new Local[0]);
+			DoCheck(text, 0, 2, 0, new Local[0]);
 		}
 		
 		[Test]
@@ -169,7 +171,7 @@ namespace CsParser
 	}
 	int z;
 }";
-			DoCheck(text, 0, text.IndexOf('|'),
+			DoCheck(text, 0, text.IndexOf('|'), 0,
 				new Local("int", "x", null),
 				new Local("int", "y", null)
 			);
@@ -187,7 +189,7 @@ namespace CsParser
 	int z;
 	foo(|);
 }";
-			DoCheck(text, 0, text.IndexOf('|'),
+			DoCheck(text, 0, text.IndexOf('|'), 0,
 				new Local("int", "x", null),
 				new Local("int", "z", null)
 			);
@@ -213,7 +215,7 @@ namespace CsParser
 	}
 	int z;
 }";
-			DoCheck(text, 0, text.IndexOf('|'),
+			DoCheck(text, 0, text.IndexOf('|'), 0,
 				new Local("int", "x", null),
 				new Local("int", "y", null),
 				new Local("int", "b", null)
@@ -226,7 +228,7 @@ namespace CsParser
 			string text = @"
 {
 	int x = 33; 
-	for (int i = 0; i < x; ++i)
+	for (int i = 0; i < x; ++i)		// < is not a generic because ; is not legal there
 	{
 		foo(x);
 	}
@@ -235,7 +237,7 @@ namespace CsParser
 		bar(ch);
 	}
 }";
-			DoCheck(text,
+			DoCheck(text, 0, text.Length - 1, 1,
 				new Local("int", "x", "33"),
 				new Local("int", "i", "0"),
 				new Local("char", "ch", null));
@@ -259,11 +261,11 @@ namespace CsParser
 		{
 			string text = @"{
 	int i = 10;
-	for (int i = 0; i < 20; ++i)
+	for (int i = 0; i < 20; ++i)		// < is not a generic because 20 is not a type name
 	{
 	} 
 }";
-			DoCheck(text,
+			DoCheck(text, 0, text.Length - 1, 1,
 				new Local("int", "i", "10"),
 				new Local("int", "i", "0"));
 		}
@@ -275,11 +277,11 @@ namespace CsParser
 	int i = 10;
 	if (i > 10)
 	{
-		for (int i = 0; i < 20; ++i)
+		for (int i = 0; i < 20; ++i)		// < is not a generic because 20 is not a type name
 		{
 		}";
 			
-			DoCheck(text,
+			DoCheck(text, 0, text.Length - 1, 1,
 				new Local("int", "i", "10"),
 				new Local("int", "i", "0"));
 		}
@@ -289,12 +291,12 @@ namespace CsParser
 		{
 			string text = @"{
 	int i = 10;
-	if (i < 10)
+	if (i < 10)			// < is not a generic because 10 is not a type name
 	{
 		for (int j = 0; i < 20; ++j)
 		{
 		}";
-			DoCheck(text,
+			DoCheck(text, 0, text.Length - 1, 2,
 				new Local("int", "i", "10"),
 				new Local("int", "j", "0"));
 		}
@@ -325,7 +327,7 @@ namespace CsParser
 		|;
 	}
 }";
-			DoCheck(text, 0, text.IndexOf('|'),
+			DoCheck(text, 0, text.IndexOf('|'), 0,
 				new Local("int", "x", null),
 				new Local("Exception", "e", null)
 			);
@@ -341,7 +343,7 @@ namespace CsParser
 		|;
 	}
 }";
-			DoCheck(text, 0, text.IndexOf('|'),
+			DoCheck(text, 0, text.IndexOf('|'), 0,
 				new Local("int", "x", null),
 				new Local("StreamReader", "s", "File . OpenText ( name )")
 			);
@@ -359,7 +361,7 @@ namespace CsParser
 	string s;
 	|;
 }";
-			DoCheck(text, 0, text.IndexOf('|'),
+			DoCheck(text, 0, text.IndexOf('|'), 0,
 				new Local("int", "x", null),
 				new Local("StreamReader", "s", "File . OpenText ( name )"),
 				new Local("string", "s", null)
@@ -381,10 +383,24 @@ namespace CsParser
 		}
 	}
 }";
-			DoCheck(text, 0, text.IndexOf('|'),
+			DoCheck(text, 0, text.IndexOf('|'), 0,
 				new Local("int", "oldIndex", "m_index"),
 				new Local("int", "oldLine", "m_line"),
 				new Local("char*", "buffer", "m_text")
+			);
+		}
+		
+		[Test]
+		public void BadArray()
+		{
+			string text = @"{
+	NSMutableDictionary attrs = NSMutableDictionary.Create();
+	attrs.addEntriesFromDictionary(ms_attributes[""text default font changed""]);	// not a rank specifier
+	attrs.addEntriesFromDictionary(ms_paragraphAttrs);
+	|;
+}";
+			DoCheck(text, 0, text.IndexOf('|'), 1,
+				new Local("NSMutableDictionary", "attrs", "NSMutableDictionary . Create ( )")
 			);
 		}
 	}

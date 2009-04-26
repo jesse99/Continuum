@@ -22,14 +22,6 @@ ReferenceEquals used with value type
 might want a sample app
 sudo fs_usage -f filesys
 
-save as html
-try opening an assembly
-
-* Parse error on the subscript:
-			NSMutableDictionary attrs = NSMutableDictionary.Create();
-			attrs.addEntriesFromDictionary(ms_attributes["text default font changed"]);
-			attrs.addEntriesFromDictionary(ms_paragraphAttrs);
-* Method hiliting in context menu is hosed. Try Find.
 * Should put databases in ~/Library/Caches. Note that time machine skips this
    directory. See /System/Library/CoreServices/backupd.bundle/Contents/Resources/StdExclusions.plist
 * Build a new foreshadow.
