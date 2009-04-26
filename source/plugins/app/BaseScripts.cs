@@ -37,7 +37,7 @@ namespace App
 		protected BaseScripts(string dirName, int baseTag)
 		{
 			m_dirName = dirName;
-			m_installedPath = Path.Combine(Paths.SupportPath, dirName);
+			m_installedPath = Path.Combine(Paths.ScriptsPath, dirName);
 			
 			m_baseTag = baseTag;
 		}

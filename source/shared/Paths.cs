@@ -28,34 +28,49 @@ namespace Shared
 {
 	public static class Paths
 	{
-		// This returns the path to the directory that contain's Continuum's
-		// database and user script files.
-		public static string SupportPath
+		public static string ScriptsPath
 		{
 			get
 			{
-				if (ms_supportPath == null)
+				if (ms_scriptsPath == null)
 				{
-					// TODO: use /Library/Application Support/Continuum instead
-					string path = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-					ms_supportPath = Path.Combine(path, "Continuum Files");
-					if (!Directory.Exists(ms_supportPath))
-						Directory.CreateDirectory(ms_supportPath);
+					ms_scriptsPath = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+					ms_scriptsPath = Path.Combine(ms_scriptsPath, "Library");
+					ms_scriptsPath = Path.Combine(ms_scriptsPath, "Application Support");
+					ms_scriptsPath = Path.Combine(ms_scriptsPath, "Continuum");
+					
+					if (!Directory.Exists(ms_scriptsPath))
+						Directory.CreateDirectory(ms_scriptsPath);
 				}
 				
-				return ms_supportPath;
+				return ms_scriptsPath;
+			}
+		}
+		
+		public static string DatabasesPath
+		{
+			get
+			{
+				if (ms_dbPath == null)
+				{
+					// Note that Time Machine will exclude the contents of ~/Library/Caches (see
+					// /System/Library/CoreServices/backupd.bundle/Contents/Resources/StdExclusions.plist).
+					ms_dbPath = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+					ms_dbPath = Path.Combine(ms_dbPath, "Library");
+					ms_dbPath = Path.Combine(ms_dbPath, "Caches");
+					ms_dbPath = Path.Combine(ms_dbPath, "Continuum");
+					
+					if (!Directory.Exists(ms_dbPath))
+						Directory.CreateDirectory(ms_dbPath);
+				}
+				
+				return ms_dbPath;
 			}
 		}
 		
 		public static string GetAssemblyDatabase(string name)
 		{
-			string path = Path.Combine(SupportPath, "databases");
-			if (!Directory.Exists(path))
-				Directory.CreateDirectory(path);
-			
-			path = Path.Combine(path, name + "3.db");
-			
-			return path;
+			return Path.Combine(DatabasesPath, name + ".db");
 		}
 		
 		// Compares paths and handles things like extra slashes and references
@@ -72,6 +87,7 @@ namespace Shared
 			return lhs == rhs;
 		}
 		
-		private static string ms_supportPath;
+		private static string ms_scriptsPath;
+		private static string ms_dbPath;
 	}
 }

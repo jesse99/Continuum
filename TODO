@@ -22,8 +22,6 @@ ReferenceEquals used with value type
 might want a sample app
 sudo fs_usage -f filesys
 
-* Should put databases in ~/Library/Caches. Note that time machine skips this
-   directory. See /System/Library/CoreServices/backupd.bundle/Contents/Resources/StdExclusions.plist
 * Build a new foreshadow.
 * Search within "…" isn't finding verbatim strings. E.g. search for Methods should
   find some.

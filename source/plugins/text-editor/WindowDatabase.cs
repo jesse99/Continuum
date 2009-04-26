@@ -35,11 +35,7 @@ namespace TextEditor
 	{
 		static WindowDatabase()
 		{
-			string path = Path.Combine(Paths.SupportPath, "databases");
-			if (!Directory.Exists(path))
-				Directory.CreateDirectory(path);
-			
-			path = Path.Combine(path, "Windows.db");
+			string path = Path.Combine(Paths.DatabasesPath, "Windows.db");
 			ms_database = new Database(path, "windows");
 			
 			// TODO: might want to add an access time field and then use a 

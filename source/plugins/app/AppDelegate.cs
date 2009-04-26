@@ -224,7 +224,7 @@ namespace App
 		
 		public void openScripts(NSObject sender)
 		{
-			string path = System.IO.Path.Combine(Paths.SupportPath, "scripts/standard/");
+			string path = System.IO.Path.Combine(Paths.ScriptsPath, "scripts/standard/");
 			
 			NSWorkspace.sharedWorkspace().selectFile_inFileViewerRootedAtPath(
 				NSString.Create(path), NSString.Empty);
@@ -232,7 +232,7 @@ namespace App
 		
 		public void openRefactors(NSObject sender)
 		{
-			string path = System.IO.Path.Combine(Paths.SupportPath, "refactors/standard/");
+			string path = System.IO.Path.Combine(Paths.ScriptsPath, "refactors/standard/");
 		
 			NSWorkspace.sharedWorkspace().selectFile_inFileViewerRootedAtPath(
 				NSString.Create(path), NSString.Empty);
