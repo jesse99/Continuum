@@ -19,6 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Shared;
 using System;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -49,12 +50,12 @@ namespace Find
 				pattern = Escape(pattern);
 			if (MatchWords)
 				pattern = @"\b" + pattern + @"\b";
-			if (WithinText != null && WithinText.Length > 0 && WithinText != Ellipsis)
-				pattern = DoSearchWithin(pattern, WithinText);
+			if (WithinText != null && WithinText.Length > 0 && WithinText != Constants.Ellipsis)
+				pattern = DoSearchWithin(pattern, WithinText, ref options);
 				
 			return new Regex(pattern, options);
 		}
-				
+		
 		public static string Escape(string pattern)
 		{
 			StringBuilder builder = new StringBuilder(pattern.Length);
@@ -88,19 +89,51 @@ namespace Find
 			return builder.ToString();
 		}
 		
-		#region Private Methods ----------------------------------------------- 		
-		internal const string Ellipsis = "\x2026";
-		
-		private string DoSearchWithin(string pattern, string within)
-		{	
-			int i = within.IndexOf(Ellipsis[0]);
+		#region Private Methods
+		private string DoSearchWithin(string pattern, string within, ref RegexOptions options)
+		{
+			int i = within.IndexOf(Constants.Ellipsis[0]);
 			if (i < 0)
 				throw new ArgumentException("Within text is missing an ellipsis.");
 				
-			string prefix = @"(?<=" + Escape(within.Substring(0, i)) + @".*?)";
-			string suffix = @"(?=.*?" + Escape(within.Substring(i + 1)) + ")";
+			string prefix = Escape(within.Substring(0, i));
+			string suffix = Escape(within.Substring(i + 1));
 			
-			return prefix + pattern + suffix;
+			var result = new StringBuilder();
+			
+			if (prefix.Length > 0)
+			{
+				// zero width match of prefix
+				result.AppendFormat("(?<=(?:{0})", prefix);
+				
+				// match zero or more characters, but not the suffix
+				if (suffix.Length > 0 && prefix != suffix)
+					result.AppendFormat("(?:.(?!{0}))*?)", suffix);
+				else
+					result.Append(".*?)");
+			}
+			
+			// match the user's re
+			result.Append(pattern);
+			
+			if (suffix.Length > 0)
+			{
+				// match zero or more characters, but not the prefix
+				if (prefix.Length > 0 && prefix != suffix)
+					result.AppendFormat("(?=(?:.(?!{0}))*?", prefix);
+				else
+					result.Append("(?=.*?");
+				
+				// zero width match the suffix
+				result.AppendFormat("{0})", suffix);
+			}
+			
+			// If we can distinguish between the prefix and the suffix then allow
+			// . to match new lines.
+			if (prefix.Length > 0 && suffix.Length > 0 && prefix != suffix)
+				options |= RegexOptions.Singleline;
+			
+			return result.ToString();
 		}
 		#endregion
 	}

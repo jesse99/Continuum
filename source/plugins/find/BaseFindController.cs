@@ -64,6 +64,7 @@ namespace Find
 			NSMutableArray items = NSMutableArray.Create();
 			items.addObject(NSString.Create(Constants.Ellipsis));			// note that we can't do this within IB because we have bound the list
 			items.addObject(NSString.Create("\"" + Constants.Ellipsis + "\""));
+			items.addObject(NSString.Create("@\"" + Constants.Ellipsis + "\""));
 			items.addObject(NSString.Create("(" + Constants.Ellipsis + ")"));
 			items.addObject(NSString.Create("//" + Constants.Ellipsis));
 			items.addObject(NSString.Create("/*" + Constants.Ellipsis + "*/"));
@@ -71,11 +72,11 @@ namespace Find
 			this.willChangeValueForKey(NSString.Create("withinList"));
 			m_withinList.Value = items;
 			this.didChangeValueForKey(NSString.Create("withinList"));
-
+			
 			this.willChangeValueForKey(NSString.Create("withinText"));
 			m_withinText.Value = NSString.Create(Constants.Ellipsis);
 			this.didChangeValueForKey(NSString.Create("withinText"));
-
+			
 			this.addObserver_forKeyPath_options_context(
 				this, NSString.Create("findText"), 0, IntPtr.Zero);
 			this.addObserver_forKeyPath_options_context(
@@ -97,7 +98,7 @@ namespace Find
 		public string FindText
 		{
 			get {return !NSObject.IsNullOrNil(m_findText.Value) ? m_findText.Value.description() : string.Empty;}
-			set 
+			set
 			{
 				value = value.Replace(@"\", @"\\");
 				if (UseRegex)
@@ -113,10 +114,10 @@ namespace Find
 				OnEnableButtons();
 			}
 		}
-									
+		
 		public string ReplaceText
 		{
-			get 
+			get
 			{
 				string result = !NSObject.IsNullOrNil(m_replaceText.Value) ? m_replaceText.Value.description() : string.Empty;
 				
@@ -131,7 +132,7 @@ namespace Find
 				
 				return result;
 			}
-			set 
+			set
 			{
 				value = value.Replace("\\", "\\\\");
 				if (UseRegex)
@@ -155,12 +156,12 @@ namespace Find
 			get {return !NSObject.IsNullOrNil(m_useRegex.Value) ? m_useRegex.Value.boolValue() : false;}
 		}
 		
-		public bool MatchWords	
+		public bool MatchWords
 		{
 			get {return !NSObject.IsNullOrNil(m_matchWords.Value) ? m_matchWords.Value.boolValue() : false;}
 		}
 		
-		public string WithinText	
+		public string WithinText
 		{
 			get {return !NSObject.IsNullOrNil(m_withinText.Value) ? m_withinText.Value.description() : string.Empty;}
 		}
@@ -200,13 +201,13 @@ namespace Find
 				
 				while (m_replaceList.Value.count() > 10)
 					m_replaceList.Value.removeObjectAtIndex(m_replaceList.Value.count() - 1);
-
+				
 				this.didChangeValueForKey(NSString.Create("replaceList"));
 			}
 		}
-
-		#region Protected Methods ---------------------------------------------
-		protected IFind Finder 
+		
+		#region Protected Methods
+		protected IFind Finder
 		{
 			get {return m_finder;}
 		}
@@ -241,7 +242,7 @@ namespace Find
 		}
 		#endregion
 		
-		#region Fields --------------------------------------------------------
+		#region Fields
 		private IBOutlet<NSComboBox> m_findBox;
 		private IBOutlet<NSNumber> m_findEnabled;
 		private IBOutlet<NSNumber> m_replaceEnabled;

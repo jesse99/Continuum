@@ -22,9 +22,6 @@ ReferenceEquals used with value type
 might want a sample app
 sudo fs_usage -f filesys
 
-* Build a new foreshadow.
-* Search within "…" isn't finding verbatim strings. E.g. search for Methods should
-  find some.
 * Couldn't use context menu to spellcheck with no database.
 * Is ChangeAccess correct?
 * Add Convert to Decimal and Convert To Hex.
@@ -39,6 +36,7 @@ sudo fs_usage -f filesys
 * Popup should not bold delegates used as members.
 * Got a crash trying to open a bundle.
 * Add some tips to readme, e.g. open selection, auto-complete.
+* Make sure Methods search finds some in verbatim strings.
 * Do a second preview.
 
 * Enter should add snippets:
