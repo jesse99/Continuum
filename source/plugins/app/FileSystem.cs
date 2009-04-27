@@ -34,7 +34,7 @@ namespace App
 	internal sealed class FileSystem : IFileSystem
 	{
 		public void Instantiated(Boss boss)
-		{	
+		{
 			m_boss = boss;
 		}
 		
@@ -42,7 +42,7 @@ namespace App
 		{
 			get {return m_boss;}
 		}
-
+		
 		public void Launch(string path)
 		{
 			Contract.Requires(!string.IsNullOrEmpty(path), "path is null or empty");
@@ -56,7 +56,7 @@ namespace App
 		public long GetBytes(string path)
 		{
 			Contract.Requires(!string.IsNullOrEmpty(path), "path is null or empty");
-
+			
 			long bytes = 0;
 			
 			if (Directory.Exists(path))
@@ -70,7 +70,7 @@ namespace App
 		public string[] LocatePath(string path)
 		{
 			Contract.Requires(!string.IsNullOrEmpty(path), "path is null or empty");
-
+			
 			string result = string.Empty;
 			
 			try
@@ -81,7 +81,7 @@ namespace App
 					process.StartInfo.Arguments = "-i '" + path + "'";
 					process.StartInfo.UseShellExecute = false;
 					process.StartInfo.RedirectStandardOutput = true;
-		
+					
 					process.Start();
 					
 					result = process.StandardOutput.ReadToEnd();
@@ -93,7 +93,7 @@ namespace App
 				Log.WriteLine(TraceLevel.Warning, "Errors", "couldn't locate '{0}'", path);
 				Log.WriteLine(TraceLevel.Warning, "Errors", e.Message);
 			}
-						
+			
 			var paths = new List<string>(result.Split(new char[]{'\n', '\r'}, StringSplitOptions.RemoveEmptyEntries));
 			Unused.Value = paths.RemoveAll(p => p.Contains("/.svn/") || p.Contains("/.Trashes/"));
 			
@@ -106,7 +106,7 @@ namespace App
 			Contract.Requires(extension != null, "extension is null");
 			
 			prefix = prefix.Replace('/', '.');		// prefix is often a type name which causes problems if it is a nested type unless we do this
-
+			
 			string dir = Path.GetTempPath();
 			string path = Path.Combine(dir, prefix) + extension;
 			if (!File.Exists(path))
@@ -133,11 +133,11 @@ namespace App
 		
 		#region Private Methods 
 		private static void DoGetAllFiles(List<string> files, string path, string glob)
-		{		
+		{
 			try
 			{
 				files.AddRange(Directory.GetFiles(path, glob));
-	
+				
 				string[] dirs = Directory.GetDirectories(path);
 				foreach (string dir in dirs)
 				{
@@ -149,7 +149,7 @@ namespace App
 				// If the file system is changing via another process we may land here.
 			}
 		}
-
+		
 		private static long DoGetDirBytes(string path)
 		{
 			long bytes = 0;
@@ -174,7 +174,7 @@ namespace App
 			
 			return bytes;
 		}
-	
+		
 		private static long DoGetFileBytes(string path)
 		{
 			long bytes = 0;
@@ -190,9 +190,9 @@ namespace App
 			return bytes;
 		}
 		#endregion
-
-		#region Fields 
-		private Boss m_boss; 
+		
+		#region Fields
+		private Boss m_boss;
 		#endregion
-	} 
-}	
+	}
+}
