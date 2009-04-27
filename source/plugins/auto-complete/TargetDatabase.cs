@@ -257,27 +257,30 @@ namespace AutoComplete
 			var items = new List<Item>();
 			
 			var ns = new StringBuilder();
-			ns.Append('(');
-			for (int i = 0; i < namespaces.Length; ++i)
+			if (namespaces.Length > 0)
 			{
-				ns.AppendFormat("namespace = '{0}'", namespaces[i]);
-				
-				if (i + 1 < namespaces.Length)
-					ns.Append(" OR ");
+				ns.Append('(');
+				for (int i = 0; i < namespaces.Length; ++i)
+				{
+					ns.AppendFormat("namespace = '{0}'", namespaces[i]);
+					
+					if (i + 1 < namespaces.Length)
+						ns.Append(" OR ");
+				}
+				ns.Append(") AND");
 			}
-			ns.Append(')');
 			
 			string sql;
 			if (stem.Length > 0)
 				sql = string.Format(@"
 					SELECT name, root_name
 						FROM Types
-					WHERE visibility < 3 AND {0} AND name GLOB '{1}*'", ns.ToString(), stem);
+					WHERE visibility < 3 AND {0} name GLOB '{1}*'", ns.ToString(), stem);
 			else
 				sql = string.Format(@"
 					SELECT name, root_name
 						FROM Types
-					WHERE {0} AND visibility < 3", ns.ToString());
+					WHERE {0} visibility < 3", ns.ToString());
 			
 			string[][] rows = m_database.QueryRows(sql);
 			foreach (string[] r in rows)
@@ -306,15 +309,18 @@ namespace AutoComplete
 				Methods.declaring_root_name = Types.root_name", badAttrs);
 				
 			var ns = new StringBuilder();
-			ns.Append('(');
-			for (int i = 0; i < namespaces.Length; ++i)
+			if (namespaces.Length > 0)
 			{
-				ns.AppendFormat("Types.namespace = '{0}'", namespaces[i]);
-				
-				if (i + 1 < namespaces.Length)
-					ns.Append(" OR ");
+				ns.Append('(');
+				for (int i = 0; i < namespaces.Length; ++i)
+				{
+					ns.AppendFormat("Types.namespace = '{0}'", namespaces[i]);
+					
+					if (i + 1 < namespaces.Length)
+						ns.Append(" OR ");
+				}
+				ns.Append(") AND");
 			}
-			ns.Append(')');
 			
 			string sql;
 			if (stem.Length > 0)
@@ -322,12 +328,12 @@ namespace AutoComplete
 					SELECT Methods.display_text, Methods.return_type_name, Types.namespace
 						FROM Methods, Types
 					WHERE {2} AND
-						{0} AND Types.name GLOB '{1}*'", ns.ToString(), stem, common);
+						{0} Types.name GLOB '{1}*'", ns.ToString(), stem, common);
 			else
 				sql = string.Format(@"
 					SELECT Methods.display_text, Methods.return_type_name, Types.namespace
 						FROM Methods, Types
-					WHERE {1} AND {0}", ns.ToString(), common);
+					WHERE {1} {0}", ns.ToString(), common);
 			
 			string[][] rows = m_database.QueryRows(sql);
 			foreach (string[] r in rows)
@@ -574,20 +580,24 @@ namespace AutoComplete
 		{
 			string common = string.Format("visibility < 3 AND (attributes & {0}) = 0", badAttrs);
 			
-			ns = ns.Replace("Types.", string.Empty);
+			if (ns.Length > 0)
+			{
+				ns = ns.Replace("Types.", string.Empty);
+				ns = "AND " + ns;
+			}
 			
 			string sql;
 			if (stem.Length > 0)
 				sql = string.Format(@"
 					SELECT attributes, name, namespace
 						FROM Types
-					WHERE {2} AND
+					WHERE {2}
 						{0} AND name GLOB '{1}*'", ns, stem, common);
 			else
 				sql = string.Format(@"
 					SELECT attributes, name, root_name
 						FROM Types
-					WHERE {1} AND {0}", ns, common);
+					WHERE {1} {0}", ns, common);
 			
 			string[][] rows = m_database.QueryRows(sql);
 			foreach (string[] r in rows)

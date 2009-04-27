@@ -23,12 +23,15 @@ using CsRefactor;
 using NUnit.Framework;
 using Shared;
 using System;
+using System.Diagnostics;
 
 [TestFixture]
 public sealed class ChangeAccessTest
 {
 	private string DoEdit(string cs, string access)
 	{
+		Log.WriteLine("Refactor Commands", "{0} {1} {2}", new string('*', 10), new StackTrace().GetFrame(1).GetMethod().Name, new string('*', 10));
+		
 		CsParser.Parser parser = new CsParser.Parser();
 		CsGlobalNamespace globals = parser.Parse(cs);
 		Refactor refactor = new Refactor(cs);
@@ -38,6 +41,12 @@ public sealed class ChangeAccessTest
 		return refactor.Process();
 	}
 	
+	[TestFixtureSetUp]
+	public void Init()
+	{
+		Log.SetLevel(TraceLevel.Verbose);
+	}
+		
 	[Test]
 	public void ToPrivate()
 	{
@@ -74,6 +83,27 @@ internal sealed class Foo
 internal sealed class Foo
 {
 	static public void Process(int x)
+	{
+	}
+}
+", DoEdit(text, "public"));
+}
+	
+	[Test]
+	public void ToPublic2()
+	{
+		string text = @"
+internal sealed class Foo
+{
+	sealed override protected void Process(int x)
+	{
+	}
+}
+";
+		Assert.AreEqual(@"
+internal sealed class Foo
+{
+	sealed override public void Process(int x)
 	{
 	}
 }

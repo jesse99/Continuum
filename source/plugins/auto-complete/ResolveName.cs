@@ -19,6 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear;
 using Shared;
 using System;
 using System.Collections.Generic;
@@ -39,11 +40,18 @@ namespace AutoComplete
 			m_globals = globals;
 			m_offset = offset;
 			
+#if TEST
+			m_locals = new CsParser.LocalsParser();
+#else
+			Boss boss = ObjectModel.Create("CsParser");
+			m_locals = boss.Get<ICsLocalsParser>();
+#endif
+			
 			m_member = DoFindMember(m_globals);
 			m_variables = DoGetVariables(context, text, locals);
 			Profile.Stop("ResolveName::ctor");
 		}
-		
+				
 		// Returns all of the names which may be used at the specified offset in the code.
 		public Variable[] Variables
 		{
@@ -313,91 +321,52 @@ namespace AutoComplete
 			return result;
 		}
 		
-		// TODO: probably should rewrite this and DoGetAsValue using the scanner
 		private string DoGetNewValue(string value)
 		{
-			bool isArray = false;
+			Token next = new Token(0);
+			string type = m_locals.ParseType(value, 4, value.Length, ref next);
+	Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "new type: {0}, next: '{1}'", type, next);
 			
-			int i = 3;
-			while (i < value.Length && char.IsWhiteSpace(value[i]))
-				++i;
-			
-			int count = 0;
-			while (i + count < value.Length)
+			if (type != null && !next.IsPunct("(") && !next.IsPunct("{"))	// new foo() or new int[]{1, 2}
 			{
-				if (char.IsLetterOrDigit(value[i + count]))
-				{
-					++count;
-				}
-				else if (value[i + count] == '_' || value[i + count] == '.')
-				{
-					++count;
-				}
-				else if (value[i + count] == '<')
-				{
-					int num = 1;
-					++count;
-					
-					while (i + count < value.Length && num > 0)
-					{
-						if (value[i + count] == '<')
-							++num;
-						else if (value[i + count] == '>')
-							--num;
-						
-						++count;
-					}
-				}
-				else if (value[i + count] == '[')
-				{
-					int num = 1;
-					++count;
-					
-					while (i + count < value.Length && num > 0)
-					{
-						if (value[i + count] == '[')
-							++num;
-						else if (value[i + count] == ']')
-							--num;
-						
-						++count;
-					}
-					
-					if (num == 0)
-						isArray = true;
-				}
-				else
-					break;
+				Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "type {0} was followed by '{1}', but '(' was expected", type, next);
+				type = null;
+			}
+
+			if (type != null)
+			{
+				if (type.EndsWith("[ ]"))
+					type = "array-type";
+				
+				else if (type.EndsWith("?"))
+					type = "nullable-type";
+				
+				else if (type.EndsWith("*"))
+					type = "pointer-type";
 			}
 			
-			return isArray ? "array-type" : value.Substring(i, count);
+			return type;
 		}
 		
 		private string DoGetAsValue(string value)
 		{
-			string result = null;
+			Token next = new Token(0);
+			string type = m_locals.ParseType(value, 4, value.Length, ref next);
+	Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "as cast type: {0}, next: '{1}'", type, next);
 			
-			int i = value.IndexOf(" as ");
-			Contract.Assert(i >= 0, "'as' wasn't found in " + value);
-			i += " as ".Length;
-			
-			while (i < value.Length && char.IsWhiteSpace(value[i]))
-				++i;
-				
-			int j = i;
-			while (i < value.Length && (value[i] == '.' || char.IsLetterOrDigit(value[i])))	// TODO: won't work with a generic
-				++i;
-			
-			int k = i;
-			while (i < value.Length && char.IsWhiteSpace(value[i]))
-				++i;
-				
-			if (j < k && i == value.Length)
+			if (type != null)
 			{
-				result = value.Substring(j, k - j);
+				if (type.EndsWith("[ ]"))
+					type = "array-type";
+				
+				else if (type.EndsWith("?"))
+					type = "nullable-type";
+				
+				else if (type.EndsWith("*"))
+					type = "pointer-type";
 			}
 			
-			return result;
+			return type;
 		}
 		
 		private CsBody DoGetBody()
@@ -473,13 +442,14 @@ namespace AutoComplete
 		
 		#region Fields
 		private ITargetDatabase m_database;
+		private ICsLocalsParser m_locals;
 		private ResolveType m_typeResolver;
 		private Variable[] m_variables;
 		private int m_offset;
 		private CsMember m_member;
 		private CsGlobalNamespace m_globals;
 		
-		private Regex ms_getRE = new Regex(@"\w+ \. Get \s* < \s* (\w+) \s* > \s* \( \s* \)", RegexOptions.IgnorePatternWhitespace);
+		private Regex ms_getRE = new Regex(@"\w+ \s* \. \s* Get \s* < \s* (\w+) \s* > \s* \( \s* \)", RegexOptions.IgnorePatternWhitespace);
 		#endregion
 	}
 }

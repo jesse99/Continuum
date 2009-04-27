@@ -441,20 +441,16 @@ namespace CsRefactor
 #endif
 			scanner.Init(builder.ToString(), offset);
 			
-			foreach (string candidate in new string[]{"public", "protected", "internal", "private"})
+			string[] candidates = new string[]{"public", "protected", "internal", "private"};
+			while (scanner.Token.Kind == TokenKind.Identifier)
 			{
-				if (scanner.Token.Kind == TokenKind.Identifier)
+				if (candidates.Any(c => scanner.Token == c))
 				{
-					if (candidate == scanner.Token.Text())
-					{
-						offset = scanner.Token.Offset;
-						length = candidate.Length + 1;
-						break;
-					}
-					scanner.Advance();
-				}
-				else
+					offset = scanner.Token.Offset;
+					length = scanner.Token.Length + 1;
 					break;
+				}
+				scanner.Advance();
 			}
 		}
 		

@@ -22,12 +22,11 @@ ReferenceEquals used with value type
 might want a sample app
 sudo fs_usage -f filesys
 
-* Couldn't use context menu to spellcheck with no database.
 * Is ChangeAccess correct?
 * Add Convert to Decimal and Convert To Hex.
 * AssemblyVersion.cs file(s) aren't being generated?
 * Last ignored target isn't ignored?
-* Might want a warning if /var/db/locate.database is missing.
+* Might want a warning if /var/db/locate.database is missing. Maybe warn once on use.
 * Put a cap on transcript size.
 * Make sure prefs size is bounded.
 * Should be able to get rid of NSTreatUnknownArgumentsAsOpen hack.

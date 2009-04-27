@@ -213,13 +213,13 @@ internal sealed class MyClass
 	public void Work(int alpha)
 	{
 		var x = new Dictionary<int, string>();
-		xxx.
+		|
 	}
 	
 	public long Weight {get; set;}
 }
 ";
-			bool found = DoGetTarget(text, "x", text.IndexOf("xxx"), new MockTargetDatabase
+			bool found = DoGetTarget(text, "x", text.IndexOf('|'), new MockTargetDatabase
 			{
 				Types = new List<string>
 				{
@@ -244,13 +244,13 @@ internal sealed class MyClass
 	public void Work(int alpha)
 	{
 		var x = new Dictionary<int, List<string>>();
-		xxx.
+		|
 	}
 	
 	public long Weight {get; set;}
 }
 ";
-			bool found = DoGetTarget(text, "x", text.IndexOf("xxx"), new MockTargetDatabase
+			bool found = DoGetTarget(text, "x", text.IndexOf('|'), new MockTargetDatabase
 			{
 				Types = new List<string>
 				{
@@ -304,16 +304,16 @@ internal sealed class MyClass
 	public void Work(Boss boss)
 	{
 		var x = boss.Get<IFoo>();
-		xxx.
+		|
 	}
 }
 ";
-			bool found = DoGetTarget(text, "x", text.IndexOf("xxx"), new MockTargetDatabase
+			bool found = DoGetTarget(text, "x", text.IndexOf('|'), new MockTargetDatabase
 			{
 				Types = new List<string>
 				{
 					"System.Int32",
-					"IFoo", "00-02",
+					"IFoo",
 				}
 			});
 			Assert.IsTrue(found);
@@ -361,11 +361,11 @@ internal sealed class MyClass
 	public void Work(object o)
 	{
 		var x = o  as   string		  ;
-		xxx.
+		|
 	}
 }
 ";
-			bool found = DoGetTarget(text, "x", text.IndexOf("xxx"), new MockTargetDatabase
+			bool found = DoGetTarget(text, "x", text.IndexOf('|'), new MockTargetDatabase
 			{
 				Types = new List<string>
 				{

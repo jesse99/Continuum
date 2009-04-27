@@ -86,7 +86,6 @@ namespace CsParser
 			try
 			{
 				m_text = text.Substring(start, stop - start);
-				
 				m_scanner = new Scanner();
 				m_scanner.Init(m_text);
 				
@@ -104,6 +103,45 @@ namespace CsParser
 			}
 			
 			return locals.ToArray();
+		}
+		
+		public string ParseType(string text, int start, int stop, ref Token token)
+		{
+			Contract.Requires(text != null, "text is null");
+			Contract.Requires(start >= 0, "start is negative");
+			Contract.Requires(start <= text.Length, "start is too big");
+			Contract.Requires(start <= stop, "stop is too small");
+			
+			var result = new StringBuilder();
+			
+			try
+			{
+				m_text = text.Substring(start, stop - start);
+				m_scanner = new Scanner();
+				m_scanner.Init(m_text);
+				
+				if (m_scanner.Token.Kind == TokenKind.Identifier)
+				{
+					DoParseType(result);
+					token = m_scanner.Token;
+				}
+			}
+			catch (LocalException)
+			{
+				result = null;
+			}
+			catch (ScannerException)
+			{
+				result = null;
+			}
+			catch (Exception e)
+			{
+				Log.WriteLine(TraceLevel.Warning, "LocalsParser", "Unexpected error:");
+				Log.WriteLine(TraceLevel.Warning, "LocalsParser", "{0}", e);
+				result = null;
+			}
+			
+			return result != null && result.Length > 0 ? result.ToString() : null;
 		}
 		
 #if TEST

@@ -120,5 +120,10 @@ namespace Shared
 		// stop are omitted. When checking for a local the last match should be
 		// used.
 		Local[] Parse(string text, int start, int stop);
+		
+		// Attempts to parse the text at [start, stop) as a type. If successful the
+		// type's name is returned and next is set to the first token after the 
+		// type. If not null is returned. 
+		string ParseType(string text, int start, int stop, ref Token next);
 	}
 }
