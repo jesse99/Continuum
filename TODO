@@ -22,9 +22,8 @@ ReferenceEquals used with value type
 might want a sample app
 sudo fs_usage -f filesys
 
-* Is ChangeAccess correct?
-* Add Convert to Decimal and Convert To Hex.
-* AssemblyVersion.cs file(s) aren't being generated?
+[assembly: AssemblyVersion("0.1.66.0")]
+
 * Last ignored target isn't ignored?
 * Might want a warning if /var/db/locate.database is missing. Maybe warn once on use.
 * Put a cap on transcript size.

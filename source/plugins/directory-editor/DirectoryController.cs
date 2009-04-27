@@ -166,7 +166,7 @@ namespace DirectoryEditor
 			get
 			{
 				Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
-
+				
 				return m_root.Path;
 			}
 		}
@@ -486,7 +486,7 @@ namespace DirectoryEditor
 			foreach (string title in m_builder.Targets)
 			{
 				if (Array.IndexOf(ignored, title) < 0 && Array.IndexOf(m_ignoredTargets, title) < 0)
-					titles.Add(title);
+					titles.AddIfMissing(title);
 			}
 			
 			if (titles.Count != m_targets.Value.itemTitles().count())

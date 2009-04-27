@@ -16,10 +16,13 @@ clean-dirs += $(app-path)
 source-files := bin/$(exe-name)-sources
 
 # ------------------------------------------------------------------------
-# Binary targets 	
+# Binary targets
 
 # assembly 
-$(source-files): source/continuum/*.cs source/AssemblyVersion.cs 
+source/AssemblyVersion.cs: build_num
+	@./gen_version.sh $(version) source/AssemblyVersion.cs
+
+$(source-files): source/continuum/*.cs source/AssemblyVersion.cs
 	@echo "$^" > $@
 
 $(exe-path): $(source-files) bin/csc_flags $(ui-files)
