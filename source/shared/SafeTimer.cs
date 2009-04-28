@@ -123,6 +123,7 @@ namespace Shared
 					
 					if (callback != null)
 					{
+						Contract.Assert(!m_disposed, "timer is disposed");
 						callback(m_state);
 					}
 				}

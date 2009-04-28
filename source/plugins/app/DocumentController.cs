@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Jesse Jones
+// Copyright (C) 2009 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -19,25 +19,25 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-using Gear;
+using MCocoa;
+using MObjc;
+using Shared;
 using System;
 
-namespace Shared
+namespace App
 {
-	[Serializable]
-	public enum Output {Normal, Command, Error};
-	
-	// Part of the Application boss.
-	public interface ITranscript : IInterface
+	[ExportClass("DocumentController", "NSDocumentController")]
+	internal sealed class DocumentController : NSDocumentController
 	{
-		// Note that all of the Write methods are thread safe.
-		void Write(Output type, string text);
-		void Write(Output type, string format, params object[] args);
+		private DocumentController(IntPtr instance) : base(instance)
+		{
+		}
 		
-		void WriteLine(Output type, string text);
-		void WriteLine(Output type, string format, params object[] args);
-		
-		bool Visible {get;}
-		void Show();
+		public new int runModalOpenPanel_forTypes(NSOpenPanel openPanel, NSArray types)
+		{
+			openPanel.setTreatsFilePackagesAsDirectories(true);
+			
+			return SuperCall("runModalOpenPanel:forTypes:", openPanel, types).To<int>();
+		}
 	}
 }

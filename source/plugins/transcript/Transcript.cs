@@ -24,6 +24,8 @@ using MCocoa;
 using MObjc;
 using Shared;
 using System;
+using System.Text;
+using System.Threading;
 
 namespace Transcript
 {
@@ -37,6 +39,7 @@ namespace Transcript
 		public void Instantiated(Boss boss)
 		{
 			m_boss = boss;
+			m_timer = new SafeTimer(o => DoFlush(), null, Timeout.Infinite, Timeout.Infinite);
 		}
 		
 		public void OnInitFactoryPref(NSMutableDictionary dict)
@@ -89,20 +92,29 @@ namespace Transcript
 		
 		public void Write(Output type, string text)		// Write methods need to be thread safe
 		{
-			if (NSApplication.sharedApplication().InvokeRequired)
+			if (text.Length > 0)
 			{
-				NSApplication.sharedApplication().BeginInvoke(() => Write(type, text));
-				return;
+				lock (m_lock)
+				{
+					if (m_currentType == type && m_currentText.Length < 4*1024)
+					{
+						m_currentText.Append(text);
+						Unused.Value = m_timer.Change(250, Timeout.Infinite);
+					}
+					else
+					{
+						if (m_currentText.Length > 0)
+						{
+							DoWrite(m_currentType, m_currentText.ToString());
+							Unused.Value = m_timer.Change(Timeout.Infinite, Timeout.Infinite);
+						}
+						
+						m_currentType = type;
+						m_currentText = new StringBuilder(text);
+					}
+					m_editCount = unchecked(m_editCount + 1);
+				}
 			}
-			
-			if (m_controller == null)
-			{
-				m_controller = new TranscriptController();
-				Unused.Value = m_controller.Retain();
-			}
-			
-			m_controller.Write(type, text);
-			m_editCount = unchecked(m_editCount + 1);
 		}
 		
 		public void Write(Output type, string format, params object[] args)
@@ -193,10 +205,46 @@ namespace Transcript
 			NSApplication.sharedApplication().BeginInvoke(() => view.showFindIndicatorForRange(range));
 		}
 		
+		#region Private Methods
+		private void DoFlush()		// threaded
+		{
+			lock (m_lock)
+			{
+				if (m_currentText.Length > 0)
+					DoWrite(m_currentType, m_currentText.ToString());
+					
+				m_currentType = Output.Normal;
+				m_currentText = new StringBuilder();
+			}
+		}
+		
+		private void DoWrite(Output type, string text)		// threaded
+		{
+			if (NSApplication.sharedApplication().InvokeRequired)
+			{
+				NSApplication.sharedApplication().BeginInvoke(() => DoWrite(type, text));
+				return;
+			}
+			
+			if (m_controller == null)
+			{
+				m_controller = new TranscriptController();
+				Unused.Value = m_controller.Retain();
+			}
+			
+			m_controller.Write(type, text);
+		}
+		#endregion
+		
 		#region Fields 
 		private Boss m_boss;
 		private TranscriptController m_controller;
-		private int m_editCount;
+		private volatile int m_editCount;
+		private SafeTimer m_timer;
+		
+		private object m_lock = new object();
+			private Output m_currentType;
+			private StringBuilder m_currentText = new StringBuilder();
 		#endregion
 	}
 }

@@ -148,6 +148,8 @@ namespace Transcript
 					break;
 			}
 			
+			DoOverflowCheck();
+			
 			int len = (int) m_output.Value.string_().length();
 			NSRange range = new NSRange(len, 0);
 			m_output.Value.scrollRangeToVisible(range);
@@ -231,9 +233,25 @@ namespace Transcript
 			
 			m_output.Value.setBackgroundColor(color);
 		}
+		
+		private void DoOverflowCheck()
+		{
+			int len = (int) m_output.Value.string_().length();
+			if (len > MaxCharacters)
+			{
+				int overflow = (len - MaxCharacters) + ShrinkBy;
+				
+				NSTextStorage storage = m_output.Value.textStorage();
+				NSRange range = new NSRange(0, overflow);
+				storage.deleteCharactersInRange(range);
+			}
+		}
 		#endregion
 		
 		#region Fields
+		private const int MaxCharacters = 128*1024;
+		private const int ShrinkBy = 8*1024;
+		
 		private IBOutlet<NSTextView> m_output;
 		private Dictionary<string, NSMutableDictionary> m_attributes = new Dictionary<string, NSMutableDictionary>();
 		#endregion

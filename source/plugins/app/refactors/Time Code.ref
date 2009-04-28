@@ -11,14 +11,7 @@ define Process()
 	Globals.AddUsing("System.Diagnostics")
 	
 	let name = GetUniqueName("watch") in
-		# Use try/finally so that the code works even in the presence of exceptions
-		# or early returns.
-		InsertBeforeSelection("Stopwatch #{name} = Stopwatch.StartNew•();
-try•{")
-		Indent("	")
-		InsertAfterSelection("}•finally•{
-	Console.WriteLine•(""elapsed: {0:0.000} secs"", #{name}.ElapsedMilliseconds/1000.0);
-}")
+		InsertBeforeSelection("Stopwatch #{name} = Stopwatch.StartNew•();")
+		InsertAfterSelection("Console.WriteLine•(""elapsed: {0:0.000} secs"", #{name}.ElapsedMilliseconds/1000.0);")
 	end
 end
-

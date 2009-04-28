@@ -121,14 +121,15 @@ namespace Styler
 				{
 					DoGetDeclarations(nested, indent, decs);
 				}
-			}
+			} 
 			else
 			{
 				CsType type = scope as CsType;
+				bool isType = (type is CsClass) || (type is CsStruct) || (type is CsInterface)  || type.DeclaringType == null;
 				decs.Add(new Declaration(
 					indent + DoGetTypePrefix(type) + type.Name,
 					new NSRange(type.Offset, type.Length),
-					true, false));
+					isType, false));
 					
 				string[] names = (from m in type.Members select DoGetShortName(m)).ToArray();
 				for (int i = 0; i < names.Length - 1; ++i)

@@ -19,24 +19,32 @@ http://www.mono-project.com/StudentProjects#MonoDevelop
 can make readonly rule
 ReferenceEquals used with value type
 
-might want a sample app
+might want a sample app		NSDocumentController
 sudo fs_usage -f filesys
 
-[assembly: AssemblyVersion("0.1.66.0")]
-
-* Last ignored target isn't ignored?
-* Might want a warning if /var/db/locate.database is missing. Maybe warn once on use.
-* Put a cap on transcript size.
-* Make sure prefs size is bounded.
-* Should be able to get rid of NSTreatUnknownArgumentsAsOpen hack.
-* Mention option-tab somewhere.
-* Does time code refactor really need a finally block?
-* Popup should not bold delegates used as members.
-* Got a crash trying to open a bundle.
+* defaults write com.flyingmeat.acorn NSRecentDocumentsLimit 137
 * Add some tips to readme, e.g. open selection, auto-complete.
-* Make sure Methods search finds some in verbatim strings.
+* Mention option-tab somewhere.
 * Do a second preview.
+* Do a mobjc and mcocoa release.
 
+* Short form should special case enums:
+	- replace the fields section with a values section
+	- would be nice to show [Flags] (or maybe all attributes)
+* Short form should not show internal members for mscorlib or gac assemblies.
+* Short form should have a separate section for operators (see DateTime).
+* Short form should show extension methods:
+	- maybe could use a comment like // System.Linq Extension Methods
+* Short form should not show internal methods for system types
+* Add an svn command to show head.
+* Fix dir editor so it doesn't collapse child dirs when an item changes.
+* After duplicating directory items select the new item(s).
+* Rework styling:
+	- try to minimize the amount of threaded code (and to avoid calling interface
+	  methods from a thread)
+	- could maybe tell things like the language styler that there was an edit and have
+	   it broadcast on the main thread when style runs are computed
+* Make sure spelling and grammar menu works OK.
 * Enter should add snippets:
 	- look at CodeTemplates file
 	- $NAME is a placeholder
@@ -54,17 +62,9 @@ sudo fs_usage -f filesys
      expected '}' on line 56"
 * Build errors should use annotations. What about the "Error 1 of 10" text?
 * Get gear unit test working.
+* Should be able to get rid of NSTreatUnknownArgumentsAsOpen hack.
 * Open method context menu items should be sorted by full declaring type name
 	- so TryParse should show the local stuff and then the system versions
-* Short form should special case enums:
-	- replace the fields section with a values section
-	- would be nice to show [Flags] (or maybe all attributes)
-* Short form should not show internal members for mscorlib or gac assemblies.
-* Short form should have a separate section for operators (see DateTime).
-* Short form should show extension methods:
-	- maybe could use a comment like // System.Linq Extension Methods
-* Short form should not show internal methods for system types
-* Add an svn command to show head.
 * Look at NSObject leaks again:
 	- try the mono profilers again
 	- might also want to look at the new performance counters
@@ -119,16 +119,10 @@ sudo fs_usage -f filesys
    up a timer and do it after editing stops.
 * Might want to submit a bug report for System.Threading.ThreadPool.
 * Also why didn't PulseAll work?
-* Tab style isn't getting applied correctly
-	- seems to screw up when pasting from C# Grammar.txt
 * Can probably add a Lift Code to Method refactor now.
 * Don't die if a factory pref handler throws.
-* Files should default to plain text (no styles but get rid of formatting)?
-* Make sure untitled files still preserve attributes.
 * Add some tool tips to the nibs.
 * Should not iterate over the entire opened directory.
-* Fix dir editor so it doesn't collapse child dirs when an item changes.
-* After duplicating directory items select the new item(s).
 * Might want a context menu to toggle showing/hiding of parse error annonations.
 * Need to handle aliaii in the Continuum directory.
 * Probably need to handle aliaii in open panels as well.

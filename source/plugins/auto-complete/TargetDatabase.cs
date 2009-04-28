@@ -333,7 +333,7 @@ namespace AutoComplete
 				sql = string.Format(@"
 					SELECT Methods.display_text, Methods.return_type_name, Types.namespace
 						FROM Methods, Types
-					WHERE {1} {0}", ns.ToString(), common);
+					WHERE {0} {1}", ns.ToString(), common);
 			
 			string[][] rows = m_database.QueryRows(sql);
 			foreach (string[] r in rows)
@@ -581,23 +581,20 @@ namespace AutoComplete
 			string common = string.Format("visibility < 3 AND (attributes & {0}) = 0", badAttrs);
 			
 			if (ns.Length > 0)
-			{
 				ns = ns.Replace("Types.", string.Empty);
-				ns = "AND " + ns;
-			}
 			
 			string sql;
 			if (stem.Length > 0)
 				sql = string.Format(@"
 					SELECT attributes, name, namespace
 						FROM Types
-					WHERE {2}
-						{0} AND name GLOB '{1}*'", ns, stem, common);
+					WHERE {2} AND
+						{0} name GLOB '{1}*'", ns, stem, common);
 			else
 				sql = string.Format(@"
 					SELECT attributes, name, root_name
 						FROM Types
-					WHERE {1} {0}", ns, common);
+					WHERE {0} {1}", ns, common);
 			
 			string[][] rows = m_database.QueryRows(sql);
 			foreach (string[] r in rows)
