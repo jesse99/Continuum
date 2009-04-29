@@ -29,9 +29,9 @@ using System.Collections.Generic;
 namespace DirectoryEditor
 {
 	internal sealed class Windows : IWindows
-	{		
+	{
 		public void Instantiated(Boss boss)
-		{	
+		{
 			m_boss = boss;
 		}
 		
@@ -39,16 +39,16 @@ namespace DirectoryEditor
 		{
 			get {return m_boss;}
 		}
-
+		
 		public Boss Main()
 		{
 			DirectoryController controller = NSApplication.sharedApplication().mainWindow().windowController() as DirectoryController;
 			if (controller == null)
 				controller = NSApplication.sharedApplication().keyWindow().windowController() as DirectoryController;
-
-			return controller != null ? controller.Boss : null;			
+			
+			return controller != null ? controller.Boss : null;
 		}
-	
+		
 		public Boss[] All()
 		{
 			List<Boss> bosses = new List<Boss>();
@@ -65,9 +65,9 @@ namespace DirectoryEditor
 			
 			return bosses.ToArray();
 		}
- 		
+		
 		#region Fields 
-		private Boss m_boss; 
+		private Boss m_boss;
 		#endregion
-	} 
-}	
+	}
+}
