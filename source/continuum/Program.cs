@@ -56,7 +56,7 @@ namespace Continuum
 		// their version numbers
 		private static void DoLoadPlugins()
 		{
-			Gear.Ignore.Value = typeof(IStartup);		// force shared.dll to load (we need to do this or the plugins will fail when they try to use shared types from Bosses.xml)
+			Gear.Helpers.Unused.Value = typeof(IStartup);		// force shared.dll to load (we need to do this or the plugins will fail when they try to use shared types from Bosses.xml)
 			
 			string loc = Assembly.GetExecutingAssembly().Location;
 			string root = Path.GetDirectoryName(loc);

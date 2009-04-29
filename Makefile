@@ -67,7 +67,7 @@ all: $(program-targets)
 
 plugins: $(plugin-targets)
 
-app: $(program-targets) bin/continuum.exe.config
+app: bin/install-tool $(program-targets) bin/continuum.exe.config
 
 # Note that running this way (instead of via open or the Finder) allows us to see 
 # console output in the terminal instead of the system log.
@@ -91,6 +91,16 @@ bin/test-files: $(test-files)
 bin/tests.dll: bin/test-files $(gear-dll) bin/csc_flags
 	$(CSC) -out:$@ $(CSC_FLAGS) -unsafe -d:TEST -pkg:mono-nunit -r:$(cocoa-dlls),$(gear-dll),ICSharpCode.SharpZipLib.dll,Mono.Posix.dll,bin/Mono.Cecil.dll,bin/Mono.Cecil.Mdb.dll,System.Configuration.dll -target:library @bin/test-files
 
+bin/install-tool: bin/install-tool.i386 bin/install-tool.ppc
+	lipo -create -output bin/install-tool -arch i386 bin/install-tool.i386 -arch ppc bin/install-tool.ppc
+	-rm bin/install-tool.i386 bin/install-tool.ppc
+
+bin/install-tool.i386: install-tool.c
+	gcc install-tool.c -arch i386 -o bin/install-tool.i386 -framework Security
+
+bin/install-tool.ppc: install-tool.c
+	gcc install-tool.c -arch ppc -o bin/install-tool.ppc -framework Security
+
 update-libraries:
 	cp `pkg-config --variable=Libraries mobjc` bin
 	cp `pkg-config --variable=Libraries mcocoa` bin
@@ -103,6 +113,7 @@ mini-clean:
 	-rm bin/*-sources
 	-rm -rf bin/*.config
 	-rm -rf bin/*.nib
+	-rm -rf bin/install-tool*
 	
 tar-bin: mini-clean app
 	tar --create --compress --file=Continuum-$(version).tar.gz \
@@ -126,6 +137,7 @@ clean:
 	-rm -rf bin/test-files
 	-rm -rf bin/tests.dll
 	-rm -rf bin/tests.dll.mdb
+	-rm -rf bin/install-tool*
 
 bin/continuum.exe.config:
 	@echo "generating bin/continuum.exe.config"

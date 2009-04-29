@@ -1,6 +1,0 @@
-#!/bin/sh
-# Takes a list of files and opens them within Foreshadow.
-# TODO: 
-# This only seems to open the files if Foreshadow is already open. 
-# Would be nice to support file:100.
-open -b Foreshadow-IDE $@

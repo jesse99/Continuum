@@ -22,10 +22,13 @@
 using Gear;
 using MCocoa;
 using MObjc;
+using Mono.Unix;
+using Mono.Unix.Native;
 using Shared;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 
 namespace App
@@ -120,6 +123,60 @@ namespace App
 				bool enable = commands.Values.Any(a => Array.IndexOf(a, command) >= 0);
 				
 				item.setEnabled(enable);
+			}
+		}
+		
+		private const string Script = @"#!/bin/sh
+# Takes a list of files and opens them within {0}.
+app={1}
+
+if [ ""$1"" = ""-?"" ] || [ ""$1"" = ""-h"" ] || [ ""$1"" = ""--help"" ] ; then
+    echo ""Usage: {2} [files]""
+    exit 0
+fi
+
+if [ -d ""$app"" ] ; then
+    open -a ""$app"" $@
+else
+    echo ""Couldn't find $app: try re-installing the tool.""
+fi
+";
+		
+		public void installTool(NSObject sender)
+		{
+			try
+			{
+				// Get the path and the name of the app bundle.
+				string appPath = DoGetAppPath();
+				string appName = Path.GetFileNameWithoutExtension(appPath);
+				
+				// Generate the script and write it out to /tmp.
+				string tmpPath = Path.Combine("/tmp", appName.ToLower());
+				var info = new UnixFileInfo(tmpPath);
+				using (UnixStream stream = info.Open(
+					OpenFlags.O_CREAT | OpenFlags.O_TRUNC | OpenFlags.O_WRONLY,
+					FilePermissions.ACCESSPERMS))
+				{
+					string script = string.Format(Script, appName, appPath, appName.ToLower());
+					byte[] buffer = System.Text.Encoding.UTF8.GetBytes(script);
+					stream.Write(buffer, 0, buffer.Length);
+				}
+				
+				// Use Authorization Services to copy the script to /usr/bin.
+				string realPath = Path.Combine("/usr/bin", appName.ToLower());
+				DoInstall(tmpPath, realPath);
+				
+				// Tell the user what we did.
+				Boss boss = ObjectModel.Create("Application");
+				var transcript = boss.Get<ITranscript>();
+				transcript.Show();
+				transcript.WriteLine(Output.Normal, "installed {0}", realPath);
+			}
+			catch (Exception e)
+			{
+				NSString title = NSString.Create("Couldn't install the tool.");
+				NSString message = NSString.Create(e.Message);
+				Unused.Value = Functions.NSRunAlertPanel(title, message);
 			}
 		}
 		
@@ -224,7 +281,7 @@ namespace App
 		
 		public void openScripts(NSObject sender)
 		{
-			string path = System.IO.Path.Combine(Paths.ScriptsPath, "scripts/standard/");
+			string path = Path.Combine(Paths.ScriptsPath, "scripts/standard/");
 			
 			NSWorkspace.sharedWorkspace().selectFile_inFileViewerRootedAtPath(
 				NSString.Create(path), NSString.Empty);
@@ -232,7 +289,7 @@ namespace App
 		
 		public void openRefactors(NSObject sender)
 		{
-			string path = System.IO.Path.Combine(Paths.ScriptsPath, "refactors/standard/");
+			string path = Path.Combine(Paths.ScriptsPath, "refactors/standard/");
 		
 			NSWorkspace.sharedWorkspace().selectFile_inFileViewerRootedAtPath(
 				NSString.Create(path), NSString.Empty);
@@ -363,6 +420,45 @@ namespace App
 		}
 		
 		#region Private Methods
+		private string DoGetAppPath()
+		{
+			string asmPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+			Contract.Assert(Path.IsPathRooted(asmPath), asmPath + " is not absolute");
+			
+			string appPath = asmPath;
+			while (!string.IsNullOrEmpty(appPath) && Path.GetExtension(appPath) != ".app")
+			{
+				appPath = Path.GetDirectoryName(appPath);
+			}
+			
+			if (string.IsNullOrEmpty(appPath))
+				throw new Exception("Couldn't get the .app directory from " + asmPath);
+			
+			return appPath;
+		}
+		
+		public void DoInstall(string fromPath, string toPath)
+		{
+			string asmPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+			string path = Path.GetDirectoryName(asmPath);
+			path = Path.GetDirectoryName(path);
+			path = Path.GetDirectoryName(path);
+			
+			using (Process process = new Process())
+			{
+				process.StartInfo.FileName = "install-tool";
+				process.StartInfo.Arguments = string.Format("{0} {1}", fromPath, toPath);
+				process.StartInfo.RedirectStandardOutput = false;
+				process.StartInfo.UseShellExecute = false;
+				process.StartInfo.WorkingDirectory = path;
+				
+				process.Start();
+				process.WaitForExit();
+				if (process.ExitCode != 0)
+					throw new Exception("Failed with error " + process.ExitCode);
+			}
+		}
+		
 		private string[] DoGetSelectedPaths()
 		{
 			string[] paths = null;

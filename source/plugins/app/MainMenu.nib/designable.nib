@@ -8,7 +8,7 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="29"/>
+			<integer value="57"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -64,6 +64,15 @@
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="357837154"/>
 									<reference key="NSMixedImage" ref="851651225"/>
+								</object>
+								<object class="NSMenuItem" id="437213248">
+									<reference key="NSMenu" ref="110575045"/>
+									<string key="NSTitle">Install Command Line Tool</string>
+									<string key="NSKeyEquiv"/>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="357837154"/>
+									<reference key="NSMixedImage" ref="851651225"/>
+									<int key="NSTag">1000</int>
 								</object>
 								<object class="NSMenuItem" id="304266470">
 									<reference key="NSMenu" ref="110575045"/>
@@ -2044,6 +2053,14 @@
 					</object>
 					<int key="connectionID">661</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">installTool:</string>
+						<reference key="source" ref="446385640"/>
+						<reference key="destination" ref="437213248"/>
+					</object>
+					<int key="connectionID">664</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -2370,6 +2387,7 @@
 							<reference ref="1056857174"/>
 							<reference ref="342932134"/>
 							<reference ref="474716961"/>
+							<reference ref="437213248"/>
 						</object>
 						<reference key="parent" ref="694149608"/>
 					</object>
@@ -3040,6 +3058,12 @@
 						<reference key="object" ref="595742068"/>
 						<reference key="parent" ref="1049"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">663</int>
+						<reference key="object" ref="437213248"/>
+						<reference key="parent" ref="110575045"/>
+						<string key="objectName">121</string>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -3211,6 +3235,7 @@
 					<string>516.IBPluginDependency</string>
 					<string>56.IBPluginDependency</string>
 					<string>56.ImportedFromIB2</string>
+					<string>57.IBEditorWindowLastContentRect</string>
 					<string>57.IBPluginDependency</string>
 					<string>57.ImportedFromIB2</string>
 					<string>57.editorWindowContentRectSynchronizationRect</string>
@@ -3252,6 +3277,8 @@
 					<string>639.IBPluginDependency</string>
 					<string>640.IBPluginDependency</string>
 					<string>662.IBPluginDependency</string>
+					<string>663.IBPluginDependency</string>
+					<string>663.ImportedFromIB2</string>
 					<string>72.IBPluginDependency</string>
 					<string>72.ImportedFromIB2</string>
 					<string>73.IBPluginDependency</string>
@@ -3338,7 +3365,7 @@
 					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
-					<string>{{685, 746}, {244, 183}}</string>
+					<string>{{658, 739}, {244, 183}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{{725, 181}, {244, 183}}</string>
@@ -3366,7 +3393,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{{954, 262}, {197, 73}}</string>
-					<string>{{533, 930}, {664, 20}}</string>
+					<string>{{506, 922}, {664, 20}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{74, 862}</string>
@@ -3474,6 +3501,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
+					<string>{{518, 699}, {275, 223}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{{628, 170}, {237, 203}}</string>
@@ -3531,7 +3559,9 @@
 					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
-					<string>{{643, 666}, {211, 263}}</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<reference ref="9"/>
+					<string>{{616, 659}, {211, 263}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{{683, 101}, {211, 263}}</string>
@@ -3563,7 +3593,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">662</int>
+			<int key="maxID">664</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -3611,6 +3641,7 @@
 							<string>findAgain:</string>
 							<string>findInFiles:</string>
 							<string>findPrevious:</string>
+							<string>installTool:</string>
 							<string>openDir:</string>
 							<string>openRefactors:</string>
 							<string>openScripts:</string>
@@ -3624,6 +3655,7 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>

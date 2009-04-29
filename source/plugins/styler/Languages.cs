@@ -43,7 +43,7 @@ namespace Styler
 				if (Glob.Match(entry.Key, fileName))
 				{
 					Language result;
-					Ignore.Value = ms_languages.TryGetValue(entry.Value, out result);
+					Gear.Helpers.Unused.Value = ms_languages.TryGetValue(entry.Value, out result);
 					return result;		// this may be null if the xml files aren't in sync
 				}
 			}

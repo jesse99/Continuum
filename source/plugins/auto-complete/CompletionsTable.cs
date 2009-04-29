@@ -173,7 +173,7 @@ namespace AutoComplete
 		{
 			NSString chars = evt.characters();
 			
-			if (chars == "\t" || chars == "\r")
+			if (chars.Equals("\t") || chars.Equals("\r"))
 			{
 				DoComplete(false, selectedRow());
 			}
@@ -181,7 +181,7 @@ namespace AutoComplete
 			{
 				DoComplete(true, selectedRow());
 			}
-			else if (chars == Constants.Escape)
+			else if (chars.Equals(Constants.Escape))
 			{
 				m_text = null;
 				window().windowController().Call("hide");
@@ -202,7 +202,7 @@ namespace AutoComplete
 					m_completed = string.Empty;
 				}
 			}
-			else if (chars == Constants.Delete)
+			else if (chars.Equals(Constants.Delete))
 			{
 				if (m_completed.Length > 0)
 				{

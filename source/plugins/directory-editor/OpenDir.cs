@@ -28,7 +28,7 @@ using System;
 namespace DirectoryEditor
 {
 	internal sealed class OpenDir : IOpen
-	{		
+	{
 		public void Instantiated(Boss boss)
 		{	
 			m_boss = boss;
@@ -38,7 +38,7 @@ namespace DirectoryEditor
 		{
 			get {return m_boss;}
 		}
-
+		
 		public void Open()
 		{
 			NSOpenPanel panel = NSOpenPanel.Create();
@@ -60,11 +60,11 @@ namespace DirectoryEditor
 		
 		public void Open(string path)
 		{
-			Gear.Ignore.Value = new DirectoryController(path);
+			Gear.Helpers.Unused.Value = new DirectoryController(path);
 		}
-
+		
 		#region Fields 
-		private Boss m_boss; 
+		private Boss m_boss;
 		#endregion
-	} 
-}	
+	}
+}

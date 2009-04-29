@@ -29,7 +29,7 @@ $(exe-path): $(source-files) bin/csc_flags $(ui-files)
 	$(CSC) -out:$@ $(CSC_FLAGS) -r:$(ui-resources) -target:exe @$<
 
 # bundle
-other-files += bin/mobjc-glue.dylib bin/plugins
+other-files += bin/mobjc-glue.dylib bin/plugins bin/install-tool
 
 nib-resources := $(shell echo $(strip $(nib-files)) | sed "s/ /,/g")
 other-resources := $(shell echo $(strip $(other-files)) | sed "s/ /,/g")

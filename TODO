@@ -19,10 +19,24 @@ http://www.mono-project.com/StudentProjects#MonoDevelop
 can make readonly rule
 ReferenceEquals used with value type
 
-might want a sample app		NSDocumentController
+might want a sample app
 sudo fs_usage -f filesys
 
-* defaults write com.flyingmeat.acorn NSRecentDocumentsLimit 137
+* Windows are jumping when saved.
+* Touch command doesn't seem to reliably force a build.
+* Add core foundation to default find in files dirs.
+* 127 is a control char (for decode and load check).
+* Transcript window (usually) is now brought to the front after the window with an
+   error is opened.
+* Command-D dialog still needs case to be correct.
+* Why did Invoke context method items have an ellipsis?
+* Why didn't the following complete?
+	System.Reflection.Assembly.GetCallingAssembly().
+	System.Text.Encoding.UTF8.
+* Fix the hard link goo in cocoa-pack.
+* make update-libraries
+* build a new foreshadow
+* rules.xml should not exclude any rules.
 * Add some tips to readme, e.g. open selection, auto-complete.
 * Mention option-tab somewhere.
 * Do a second preview.
@@ -61,7 +75,8 @@ sudo fs_usage -f filesys
    - could say stuff like "parsing mscorlib...", "parsing mscorlib...done", "[parser]
      expected '}' on line 56"
 * Build errors should use annotations. What about the "Error 1 of 10" text?
-* Get gear unit test working.
+* Might be neat if could figure out languages for files with no extension using
+   the shebang (if present).
 * Should be able to get rid of NSTreatUnknownArgumentsAsOpen hack.
 * Open method context menu items should be sorted by full declaring type name
 	- so TryParse should show the local stuff and then the system versions

@@ -29,9 +29,9 @@ using System.IO;
 namespace DirectoryEditor
 {
 	internal sealed class Startup : IStartup, IFactoryPrefs
-	{		
+	{
 		public void Instantiated(Boss boss)
-		{	
+		{
 			m_boss = boss;
 		}
 		
@@ -39,15 +39,15 @@ namespace DirectoryEditor
 		{
 			get {return m_boss;}
 		}
-
+		
 		public void OnInitFactoryPref(NSMutableDictionary dict)
 		{
 			DoInitPrefs(dict);
 		}
-
+		
 		public void OnStartup()
 		{
-			DoReadPrefs();			
+			DoReadPrefs();
 		}
 		
 		#region Private Methods
@@ -59,7 +59,7 @@ namespace DirectoryEditor
 				foreach (NSString p in paths)
 				{
 					if (Directory.Exists(p.ToString()))
-						Gear.Ignore.Value = new DirectoryController(p.ToString());
+						Gear.Helpers.Unused.Value = new DirectoryController(p.ToString());
 				}
 			}
 			else
@@ -69,7 +69,7 @@ namespace DirectoryEditor
 				open.Open();
 			}
 		}
-				
+		
 		// These are the prefs associated with the app's preferences panel
 		// (DirectoryController handles the prefs associated with a directory).
 		private void DoInitPrefs(NSMutableDictionary dict)	
@@ -134,9 +134,9 @@ zip-bin";
 			dict.setObject_forKey(NSString.Create(ignores), NSString.Create("globalIgnores"));
 		}
 		#endregion
-
+	
 		#region Fields 
-		private Boss m_boss; 
+		private Boss m_boss;
 		#endregion
-	} 
-}	
+	}
+}
