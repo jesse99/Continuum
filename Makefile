@@ -93,7 +93,6 @@ bin/tests.dll: bin/test-files $(gear-dll) bin/csc_flags
 
 bin/install-tool: bin/install-tool.i386 bin/install-tool.ppc
 	lipo -create -output bin/install-tool -arch i386 bin/install-tool.i386 -arch ppc bin/install-tool.ppc
-	-rm bin/install-tool.i386 bin/install-tool.ppc
 
 bin/install-tool.i386: install-tool.c
 	gcc install-tool.c -arch i386 -o bin/install-tool.i386 -framework Security

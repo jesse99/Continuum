@@ -22,17 +22,6 @@ ReferenceEquals used with value type
 might want a sample app
 sudo fs_usage -f filesys
 
-* Windows are jumping when saved.
-* Touch command doesn't seem to reliably force a build.
-* Add core foundation to default find in files dirs.
-* 127 is a control char (for decode and load check).
-* Transcript window (usually) is now brought to the front after the window with an
-   error is opened.
-* Command-D dialog still needs case to be correct.
-* Why did Invoke context method items have an ellipsis?
-* Why didn't the following complete?
-	System.Reflection.Assembly.GetCallingAssembly().
-	System.Text.Encoding.UTF8.
 * Fix the hard link goo in cocoa-pack.
 * make update-libraries
 * build a new foreshadow

@@ -44,6 +44,8 @@ namespace TextEditor
 		{
 			m_controller = new TextController();
 			addWindowController(m_controller);
+			
+			DoResetURL(fileURL());
 			m_controller.OnPathChanged();
 			
 			if (NSObject.IsNullOrNil(m_text))
@@ -108,14 +110,8 @@ namespace TextEditor
 			
 			if (m_controller != null && url != m_url)
 			{
-				if (m_url != null)
-					m_url.release();
-				
-				m_url = url;
+				DoResetURL(url);
 				m_controller.OnPathChanged();
-				
-				if (m_url != null)
-					m_url.retain();
 			}
 		}
 		
@@ -260,6 +256,20 @@ namespace TextEditor
 		}
 		
 		#region Private Methods
+		private void DoResetURL(NSURL url)
+		{
+			if (url != m_url)
+			{
+				if (m_url != null)
+					m_url.release();
+				
+				m_url = url;
+				
+				if (m_url != null)
+					m_url.retain();
+			}
+		}
+		
 		private NSData DoGetEncodedString(uint encoding)
 		{
 			NSString str = m_controller.TextView.string_();
@@ -341,7 +351,7 @@ namespace TextEditor
 			
 			foreach (char ch in text)
 			{
-				if ((int) ch < 0x20)
+				if ((int) ch < 0x20 || (int) ch == 0x7F)
 				{
 					if (ch != '\t' && ch != '\n' && ch != '\r')
 					{
@@ -396,6 +406,7 @@ namespace TextEditor
 			{'\x1D', "gs"},
 			{'\x1E', "rs"},
 			{'\x1F', "us"},
+			{'\x7F', "del"},
 		};
 		#endregion
 	}

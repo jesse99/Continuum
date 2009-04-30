@@ -360,7 +360,7 @@ namespace TextEditor
 					{
 						foreach (string sp in preferred)
 						{
-							if (path.StartsWith(sp) && System.IO.Path.GetFileName(path) == name)
+							if (path.StartsWith(sp) && System.IO.Path.GetFileName(path).ToLower() == name.ToLower())
 							{
 								paths.Add(path);
 								break;

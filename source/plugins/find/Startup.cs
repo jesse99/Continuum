@@ -64,6 +64,7 @@ namespace Find
 		{
 			"/System/Library/Frameworks/AppKit.framework/Versions/C/Headers",
 			"/System/Library/Frameworks/Foundation.framework/Versions/C/Headers",
+			"/System/Library/Frameworks/CoreFoundation.framework/Versions/Current/Headers/",
 		};
 		
 		internal const string DefaultInclude = "*.cs *.h *.m";

@@ -33,40 +33,45 @@ namespace DirectoryEditor
 	internal sealed class DummyUserInterfaceItem : NSObject
 	{
 		public DummyUserInterfaceItem(string selector) : base(NSObject.AllocNative("DummyUserInterfaceItem"))
-		{		
+		{
 			m_selector = new Selector(selector);
 			autorelease();
 			
 			ActiveObjects.Add(this);
 		}
-				
- 	   	public Selector action()
- 	   	{
- 	   		return m_selector;
+		
+		public Selector action()
+		{
+			return m_selector;
 		}
-
- 	   	public int tag()
- 	   	{
- 	   		return 0;
+		
+		public int tag()
+		{
+			return 0;
 		}
 		
 		private Selector m_selector;
 	}
-
+	
 	[ExportClass("DirectoryView", "NSOutlineView")]
 	internal sealed class DirectoryView : NSOutlineView
 	{
 		public DirectoryView(IntPtr instance) : base(instance)
-		{		
+		{
 			ActiveObjects.Add(this);
 		}
-				
- 	   	public new NSMenu menuForEvent(NSEvent evt)
+		
+		public new NSMenu menuForEvent(NSEvent evt)
 		{
+			
 			NSMenu menu = NSMenu.Alloc().initWithTitle(NSString.Empty);
 			menu.autorelease();
 			
-			// If the item clicking on is not selected then select it.
+			// Make the window the key window (handleSccs expects that it
+			// is either the main or the key window).
+			window().makeKeyAndOrderFront(this);
+			
+			// If the item clicked on is not selected then select it.
 			NSPoint baseLoc = evt.locationInWindow();
 			NSPoint viewLoc = convertPointFromBase(baseLoc);
 			int row = rowAtPoint(viewLoc);
@@ -105,8 +110,8 @@ namespace DirectoryEditor
 					}
 				}
 			}
-
+			
 			return menu;
 		}
 	}
-}	
+}

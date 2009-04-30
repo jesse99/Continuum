@@ -202,7 +202,13 @@ namespace TextEditor
 		
 		private bool DoIsControl(byte b)
 		{
-			return b < 0x20 && b != (byte) '\t' && b != (byte) '\n' && b != (byte) '\r';
+			if (b < 0x20 && b != (byte) '\t' && b != (byte) '\n' && b != (byte) '\r')
+				return true;
+				
+			else if (b == 0x7F)
+				return true;
+				
+			return false;
 		}
 		
 		private NSString DoDecode(NSData data, uint encoding)		// threaded code

@@ -96,7 +96,13 @@ namespace Transcript
 			{
 				lock (m_lock)
 				{
-					if (m_currentType == type && m_currentText.Length < 4*1024)
+					// Note that error output causes the transcript window to be made key (which
+					// will helpfully ensure that errors are seen). But when buffering this happens
+					// a bit later than it otherwise would which causes an annoying interaction when
+					// HandleBuildError opens windows with errors. So, to avoid this we won't buffer
+					// up error output. TODO: this may bog down the UI quite a bit though if there
+					// is lots of error output.
+					if (m_currentType == type && m_currentText.Length < 4*1024 && type != Output.Error)
 					{
 						m_currentText.Append(text);
 						Unused.Value = m_timer.Change(250, Timeout.Infinite);

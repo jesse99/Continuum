@@ -55,14 +55,21 @@ namespace AutoComplete
 			Log.WriteLine("AutoComplete", "expression: '{0}'", expr);
 			if (!string.IsNullOrEmpty(expr))
 				result = m_nameResolver.Resolve(expr);
-				
+			
 			if (result == null)
 			{
 				string[] operands = DoGetOperands(expr);
+		
+				int first = 0;
+				result = DoGetOperandType(operands, ref first);
+				Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "operand type: {0}", result);
 				
-				foreach (string operand in operands)
+				for (int i = first; i < operands.Length; ++i)
 				{
+					string operand = operands[i];
+					ResolvedTarget old = result;
 					result = DoResolveOperand(context, result, operand);
+					Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "{0}::{1} resolved to {2}", old, operand, result);
 					if (result == null)
 						break;
 				}
@@ -74,7 +81,29 @@ namespace AutoComplete
 			return result;
 		}
 		
-		#region Private Methods		
+		#region Private Methods
+		// Handle cases like `System.String.Empty.`.
+		private ResolvedTarget DoGetOperandType(string[] operands, ref int first)
+		{
+			ResolvedTarget result = null;
+			
+			int i = first;
+			string type = string.Empty;
+			while (i < operands.Length - 1)
+			{
+				type += type.Length == 0 ? operands[i] : ("." + operands[i]);
+				ResolvedTarget candidate = m_typeResolver.Resolve(type, m_globals, false, true);;
+				++i;
+				if (candidate != null)
+				{
+					result = candidate;
+					first = i;
+				}
+			}
+			
+			return result;
+		}
+		
 		private string DoFindExpr(string text, int offset)
 		{
 			int i = offset;

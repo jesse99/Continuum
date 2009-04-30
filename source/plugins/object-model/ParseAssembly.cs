@@ -716,6 +716,10 @@ namespace ObjectModel
 					name = "operator ^";
 					break;
 					
+				case "op_False":
+					name = "operator false";
+					break;
+					
 				case "op_GreaterThan":
 					name = "operator >";
 					break;
@@ -744,6 +748,10 @@ namespace ObjectModel
 					name = "operator &&";
 					break;
 					
+				case "op_LogicalNot":
+					name = "operator !";
+					break;
+					
 				case "op_LogicalOr":
 					name = "operator ||";
 					break;
@@ -756,12 +764,20 @@ namespace ObjectModel
 					name = "operator *";
 					break;
 					
+				case "op_OnesComplement":
+					name = "operator ~";
+					break;
+				
 				case "op_RightShift":
 					name = "operator >>";
 					break;
 					
 				case "op_Subtraction":
 					name = "operator -";
+					break;
+					
+				case "op_True":
+					name = "operator true";
 					break;
 					
 				default:
@@ -801,11 +817,7 @@ namespace ObjectModel
 		
 		private string DoGetNameWithoutTick(string name)	// theaded
 		{
-			int i = name.IndexOf('`');
-			if (i >= 0)
-				name = name.Substring(0, i);
-			
-			return name;
+			return CsHelpers.TrimGeneric(name);
 		}
 		
 		// TODO: This code is not quite correct: Cecil lazily populates the method body

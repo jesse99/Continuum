@@ -148,11 +148,14 @@ namespace CsParser
 				
 				string name = fullName;
 				int gcount = 0;
-				int j = fullName.IndexOf('`');
+				int j = fullName.LastIndexOf('`');
 				if (j > 0)
 				{
 					name = fullName.Substring(0, j);
-					gcount = int.Parse(fullName.Substring(j + 1));
+					string gstr = fullName.Substring(j + 1);
+					if (!gstr.All(c => char.IsDigit(c)))
+						return null;			// TODO: can happen for nested generics
+					gcount = int.Parse(gstr);
 				}
 				
 				for (int i = 0; i < types.Count && result == null; ++i)

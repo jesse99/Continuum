@@ -219,6 +219,7 @@ namespace AutoComplete
 		private bool DoCompleteNamespaceDot(NSTextView view, string stem)
 		{
 			stem = stem.Substring(stem.IndexOf(' ') + 1);
+			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "DoCompleteNamespaceDot is checking for namespaces using {0}", stem);
 			Item[] namespaces = DoGetNamespacesNamed(stem);
 			
 			if (namespaces.Length > 0)
@@ -253,6 +254,7 @@ namespace AutoComplete
 				bool isInstance = false;
 				bool isStatic = false;
 				
+				Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "DoCompleteMethodDot is resolving an expression");
 				ResolvedTarget target = exprResolver.Resolve(context, m_text.Text, range.location);
 				if (target != null)
 				{
@@ -307,11 +309,13 @@ namespace AutoComplete
 					{
 						stem = stem.Substring(stem.IndexOf(' ') + 1);
 						
+						Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "DoCompleteStem is getting ctors");
 						label = "Constructors";
 						items = DoGetConstructorsNamed(globals, ref stem);
 					}
 					else
 					{
+						Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "DoCompleteStem is getting names");
 						label = "Names";
 						items = DoGetNames(globals, range.location - 1, stem, ref isInstance, ref isStatic);
 					}

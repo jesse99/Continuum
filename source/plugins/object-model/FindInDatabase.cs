@@ -62,7 +62,7 @@ namespace ObjectModel
 					
 					// Add open types.
 					var objects = m_dirBoss.Get<IObjectModel>();
-					TypeInfo[] types = objects.FindTypes(selection, MaxOpenItems + 1);
+					TypeInfo[] types = objects.FindTypes(selection, 2*MaxOpenItems);
 					DoAddOpenType(items, objects, types, selection, 0.2f);
 					
 					// Add open methods.
@@ -266,7 +266,7 @@ namespace ObjectModel
 			string[] roots = (from t in types select t.RootName).ToArray();
 			if (roots.Length > 0)
 			{
-				SourceInfo[] sources = objects.FindTypeSources(roots, MaxOpenItems + 1);
+				SourceInfo[] sources = objects.FindTypeSources(roots, 2*MaxOpenItems);
 				if (sources.Length == 0)
 				{
 					// If the database doesn't have the type then see if we can find a local or mono
@@ -291,31 +291,28 @@ namespace ObjectModel
 				}
 				
 				// If we found some files then add them to the context menu.
-				if (sources.Length > 0)
+				Array.Sort(sources, (lhs, rhs) => lhs.Source.CompareTo(rhs.Source));
+				SourceInfo[] used = (from s in sources where !string.IsNullOrEmpty(s.Path) select s).ToArray();
+				if (used.Length > 0)
 				{
-					Array.Sort(sources, (lhs, rhs) => lhs.Source.CompareTo(rhs.Source));
-					
 					items.Add(new TextContextItem(order));
-					for (int i = 0; i < Math.Min(sources.Length, MaxOpenItems); ++i)
+					for (int i = 0; i < Math.Min(used.Length, MaxOpenItems); ++i)
 					{
-						if (sources[i].Path != null)
+						string title = used[i].Source;
+						if (used.Count(s => s.Source == title) > 1)		// see if the name is ambiguous
 						{
-							string title = sources[i].Source;
-							if (sources.Count(s => s.Source == title) > 1)		// see if the name is ambiguous
-							{
-								title = Path.GetFileName(Path.GetDirectoryName(sources[i].Path));
-								title = Path.Combine(title, sources[i].Source);
-							}
-							
-							int k = i;											// need this for the delegate (or the for loop will mutate the value)
-							items.Add(new TextContextItem(
-								"Open " + title,
-								s => {DoOpenFile(sources[k].Path, sources[k].Line); return s;},
-								order));
+							title = Path.GetFileName(Path.GetDirectoryName(used[i].Path));
+							title = Path.Combine(title, used[i].Source);
 						}
+						
+						int k = i;											// need this for the delegate (or the for loop will mutate the value)
+						items.Add(new TextContextItem(
+							"Open " + title,
+							s => {DoOpenFile(used[k].Path, used[k].Line); return s;},
+							order));
 					}
 					
-					if (sources.Length > MaxOpenItems)
+					if (used.Length > MaxOpenItems)
 						items.Add(new TextContextItem(Shared.Constants.Ellipsis, null, order));
 				}
 			}
@@ -335,38 +332,36 @@ namespace ObjectModel
 			
 			return localPaths.ToArray();
 		}
-				
+		
 		public void DoAddOpenMethod(List<TextContextItem> items, IObjectModel objects, string selection, float order)
 		{
-			SourceInfo[] sources = objects.FindMethodSources(selection, MaxOpenItems + 1);
-			if (sources.Length > 0)
+			SourceInfo[] sources = objects.FindMethodSources(selection, 2*MaxOpenItems);
+			SourceInfo[] used = (from s in sources where !string.IsNullOrEmpty(s.Path) select s).ToArray();
+			if (used.Length > 0)
 			{
-				Array.Sort(sources, (lhs, rhs) => lhs.Source.CompareTo(rhs.Source));
+				Array.Sort(used, (lhs, rhs) => lhs.Source.CompareTo(rhs.Source));
 				
 				bool addedSep = false;
-				for (int i = 0; i < Math.Min(sources.Length, MaxOpenItems); ++i)
+				for (int i = 0; i < Math.Min(used.Length, MaxOpenItems); ++i)
 				{
-					if (!string.IsNullOrEmpty(sources[i].Path))
+					if (!addedSep)
 					{
-						if (!addedSep)
-						{
-							items.Add(new TextContextItem(order));
-							addedSep = true;
-						}
-						
-						int k = i;											// need this for the delegate (or the for loop will mutate the value)
-						string title = "Open " + sources[i].Source;
-						
-						items.Add(new TextContextItem(
-							title,
-							s => {DoOpenFile(sources[k].Path, sources[k].Line); return s;},
-							order,
-							null,
-							DoGetAttrTitle(title)));
+						items.Add(new TextContextItem(order));
+						addedSep = true;
 					}
+					
+					int k = i;											// need this for the delegate (or the for loop will mutate the value)
+					string title = "Open " + used[i].Source;
+					
+					items.Add(new TextContextItem(
+						title,
+						s => {DoOpenFile(used[k].Path, used[k].Line); return s;},
+						order,
+						null,
+						DoGetAttrTitle(title)));
 				}
 				
-				if (sources.Length > MaxOpenItems)
+				if (used.Length > MaxOpenItems)
 					items.Add(new TextContextItem(Shared.Constants.Ellipsis, null, order));
 			}
 		}
