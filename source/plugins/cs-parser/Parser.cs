@@ -76,23 +76,40 @@ namespace CsParser
 		public void TryParse(string text, out int offset, out int length, out CsGlobalNamespace globals, out Token[] tokens, out Token[] comments)
 		{
 			Contract.Requires(Thread.CurrentThread.ManagedThreadId == m_threadID, "can only be used with one thread");
-			DoInit(text);
 			
 			m_try = true;
 			m_bad = new Token();
-			globals = DoParseCompilationUnit();
+			try
+			{
+				DoInit(text);
+			}
+			catch (ScannerException e)
+			{
+				if (m_scanner != null)
+					m_bad = m_scanner.Token;
+				if (m_bad.Length == 0)
+					m_bad = new Token(text, 0, 1, 1, TokenKind.Other);
+				Log.WriteLine(TraceLevel.Verbose, "CsParser", "couldn't scan the first token: {0}", e.Message);
+			}
+			
+			if (m_bad.Length == 0)
+				globals = DoParseCompilationUnit();
+			else
+				globals = null;
 			
 			if (m_bad.Length == 0)
 			{
 				offset = 0;
 				length = 0;
+				globals.Malformed = false;
 				Log.WriteLine(TraceLevel.Verbose, "CsParser", "parsed ok");
 			}
 			else
 			{
 				offset = m_bad.Offset;
 				length = m_bad.Length;
-				globals.Malformed = true;
+				if (globals != null)
+					globals.Malformed = true;
 				Log.WriteLine(TraceLevel.Verbose, "CsParser", "{0} was bad at offset {1}", text.Substring(offset, length), offset);
 			}
 			
@@ -107,7 +124,7 @@ namespace CsParser
 			m_scanner = new Scanner();
 			m_scanner.Init(text);
 		}
-
+		
 		// accessor-declarations:
 		//      get-accessor-declaration   set-accessor-declaration?
 		//      set-accessor-declaration   get-accessor-declaration?

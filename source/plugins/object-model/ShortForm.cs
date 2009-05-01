@@ -32,11 +32,15 @@ using System.Text;
 namespace ObjectModel
 {
 	internal sealed class ShortForm
-	{		
+	{
 		public ShortForm(Boss boss, TextWriter writer)
 		{
 			m_boss = boss;
 			m_writer = writer;
+			
+			var editor = m_boss.Get<IDirectoryEditor>();
+			m_addSpace = editor.AddSpace;
+			m_addBraceLine = editor.AddBraceLine;
 		}
 		
 		public void Write(string fullName, int assembly)
@@ -154,15 +158,23 @@ namespace ObjectModel
 			m_writer.WriteLine("// {0}", Path.GetFileName(m_assembly));
 			if (!string.IsNullOrEmpty(type.Namespace))
 			{
-				m_writer.WriteLine("namespace {0}", type.Namespace);
-				m_writer.WriteLine("{");
+				if (m_addBraceLine)
+				{
+					m_writer.WriteLine("namespace {0}", type.Namespace);
+					m_writer.WriteLine("{");
+				}
+				else
+					m_writer.WriteLine("namespace {0} {1}", type.Namespace, "{");
 				indent += "\t";
 			}
 			
 			m_writer.Write(indent);
 			DoWriteType(type);
-			m_writer.Write(indent);
-			m_writer.WriteLine("{");
+			if (m_addBraceLine)
+			{
+				m_writer.Write(indent);
+				m_writer.WriteLine("{");
+			}
 			
 			// constructors
 			string indent2 = indent + "\t";
@@ -350,6 +362,8 @@ namespace ObjectModel
 						m_writer.Write(", ");
 				}
 			}
+			if (!m_addBraceLine)
+				m_writer.Write(" {0}", "{");
 			m_writer.WriteLine();
 		}
 		
@@ -472,7 +486,10 @@ namespace ObjectModel
 			builder.Append(DoGetQualifiedTypeName(prop.PropertyType, true));
 			if (prop.HasParameters)				// TODO: might want to include the prop.Name as IndexerNameAttribute for languages that don't support the array indexer notation
 			{
-				builder.Append(" this[");
+				if (m_addSpace)
+					builder.Append(" this [");
+				else
+					builder.Append(" this[");
 				builder.Append(DoGetQualifiedTypeName(m.Parameters[0].ParameterType, true));
 				builder.Append(" ");
 				builder.Append(m.Parameters[0].Name);
@@ -480,11 +497,15 @@ namespace ObjectModel
 			}
 			else
 				builder.AppendFormat(" {0} {1}", prop.Name, "{");
+				
+			if (m_addSpace)
+				builder.Append(' ');
+				
 			if (getter != null)
 			{
 				builder.Append("get;");
 				if (setter != null)
-					builder.Append(" ");
+					builder.Append(' ');
 			}
 			if (setter != null)
 			{
@@ -492,6 +513,8 @@ namespace ObjectModel
 					DoGetMethodModifiers(type, builder, setter.Attributes & MethodAttributes.MemberAccessMask);
 				builder.Append("set;");
 			}
+			if (m_addSpace)
+				builder.Append(' ');
 			builder.Append("}");
 			
 			DoAdd(m_properties, new Member(prop.Name, m.Attributes & MethodAttributes.MemberAccessMask, builder.ToString(), m));
@@ -655,7 +678,10 @@ namespace ObjectModel
 		
 		private void DoGetParams(StringBuilder builder, ParameterDefinitionCollection pc)
 		{
-			builder.Append("(");
+			if (m_addSpace)
+				builder.Append(" (");
+			else
+				builder.Append("(");
 			for (int i = 0; i < pc.Count; ++i)
 			{
 				ParameterDefinition param = pc[i];
@@ -838,7 +864,7 @@ namespace ObjectModel
 		// sealed keywords).
 		private void DoAdd(List<Member> list, Member member)
 		{
-			if (!list.Any(m => m.Key == member.Key)) 
+			if (!list.Any(m => m.Key == member.Key))
 				list.Add(member);
 		}
 		#endregion
@@ -883,6 +909,8 @@ namespace ObjectModel
 		private Boss m_boss;
 		private TextWriter m_writer;
 		private string m_assembly;
+		private bool m_addSpace;
+		private bool m_addBraceLine;
 			
 		private List<Member> m_ctors = new List<Member>();
 		private List<Member> m_events = new List<Member>();

@@ -101,23 +101,26 @@ namespace App
 				Boss b = ObjectModel.Create("CsParser");
 				var parses = b.Get<IParses>();
 				Parse parse = parses.Parse(editor.Path, text.EditCount, text.Text);
-				CsGlobalNamespace globals = parse.Globals;
-				CsDeclaration first = DoFindDeclaration(globals, range.location, range.length);
-				string name = DoGetName(first);
-				
-				string path = DoGetPath(editor.Path, name + ".cs");
-				if (path != null)
+				if (parse.ErrorLength == 0)
 				{
-					var builder = new StringBuilder();
-					name = Path.GetFileNameWithoutExtension(path);
+					CsGlobalNamespace globals = parse.Globals;
+					CsDeclaration first = DoFindDeclaration(globals, range.location, range.length);
+					string name = DoGetName(first);
 					
-					DoBuildNewFile(name, globals, first, builder, text.Text, range.location, range.length);
-					b = ObjectModel.Create("Refactor");
-					var script = b.Get<IRefactorScript>();
-					string contents = script.Expand(text.Boss, builder.ToString());
-					
-					File.WriteAllText(path, contents, Encoding.UTF8);
-					text.Replace(string.Empty, range.location, range.length, "Cut");
+					string path = DoGetPath(editor.Path, name + ".cs");
+					if (path != null)
+					{
+						var builder = new StringBuilder();
+						name = Path.GetFileNameWithoutExtension(path);
+						
+						DoBuildNewFile(name, globals, first, builder, text.Text, range.location, range.length);
+						b = ObjectModel.Create("Refactor");
+						var script = b.Get<IRefactorScript>();
+						string contents = script.Expand(text.Boss, builder.ToString());
+						
+						File.WriteAllText(path, contents, Encoding.UTF8);
+						text.Replace(string.Empty, range.location, range.length, "Cut");
+					}
 				}
 			}
 		}

@@ -142,7 +142,8 @@ namespace CsParser
 				{
 					foreach (Parse parse in m_parses.Values)
 					{
-						DoFindTypes(parse.Globals, types);
+						if (parse.Globals != null)
+							DoFindTypes(parse.Globals, types);
 					}
 				}
 				
@@ -183,7 +184,8 @@ namespace CsParser
 			{
 				foreach (Parse parse in m_parses.Values)
 				{
-					DoFindTypes(parse.Globals, types);
+					if (parse.Globals != null)
+						DoFindTypes(parse.Globals, types);
 				}
 			}
 			
@@ -214,7 +216,8 @@ namespace CsParser
 			{
 				foreach (Parse parse in m_parses.Values)
 				{
-					DoFindNamespaces(ns, null, parse.Globals, names);
+					if (parse.Globals != null)
+						DoFindNamespaces(ns, null, parse.Globals, names);
 				}
 			}
 			

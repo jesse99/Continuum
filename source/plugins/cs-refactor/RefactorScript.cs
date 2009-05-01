@@ -40,33 +40,38 @@ namespace CsRefactor
 		
 		public string Execute(string rSource, IText cSource, int selStart, int selLen)
 		{
+			string result = rSource;
+
 			// Parse the C# code..
 			var editor = cSource.Boss.Get<ITextEditor>();
 			
 			Boss boss = ObjectModel.Create("CsParser");
 			var parses = boss.Get<IParses>();
 			Parse parse = parses.Parse(editor.Path, cSource.EditCount, cSource.Text);
-			CsGlobalNamespace globals = parse.Globals;
-			
-			// Parse the refactor script.
-			var rParser = new CsRefactor.Script.Parser(rSource);
-			CsRefactor.Script.Script script = rParser.Parse();
-			
-			// Evaluate the script.
-			var context = new CsRefactor.Script.Context(script, globals, cSource.Text, selStart, selLen);
-			RefactorCommand[] commands = script.Evaluate(context);
-			
-			// Execute the script.
-			Refactor refactor = new Refactor(cSource.Text);
-			foreach (RefactorCommand command in commands)
+			if (parse.ErrorLength == 0)
 			{
-				refactor.Queue(command);
+				CsGlobalNamespace globals = parse.Globals;
+				
+				// Parse the refactor script.
+				var rParser = new CsRefactor.Script.Parser(rSource);
+				CsRefactor.Script.Script script = rParser.Parse();
+				
+				// Evaluate the script.
+				var context = new CsRefactor.Script.Context(script, globals, cSource.Text, selStart, selLen);
+				RefactorCommand[] commands = script.Evaluate(context);
+				
+				// Execute the script.
+				Refactor refactor = new Refactor(cSource.Text);
+				foreach (RefactorCommand command in commands)
+				{
+					refactor.Queue(command);
+				}
+				result = refactor.Process();
+				
+				// Expand bullet characters.
+				DoGetSettings(cSource.Boss);
+				result = DoExpandText(result);
 			}
-			string result = refactor.Process();
-			
-			// Expand bullet characters.
-			DoGetSettings(cSource.Boss);
-			result = DoExpandText(result);
 			
 			return result;
 		}

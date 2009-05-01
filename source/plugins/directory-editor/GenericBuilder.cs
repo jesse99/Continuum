@@ -167,8 +167,11 @@ namespace DirectoryEditor
 				return;
 			}
 			
-			m_results.WriteOutput(e.Data);
-			m_results.WriteOutput(Environment.NewLine);
+			if (e.Data != null)
+			{
+				m_results.WriteOutput(e.Data);
+				m_results.WriteOutput(Environment.NewLine);
+			}
 		}
 		
 		private void DoGotStderrData(object sender, DataReceivedEventArgs e)	// threaded
@@ -178,11 +181,14 @@ namespace DirectoryEditor
 				NSApplication.sharedApplication().BeginInvoke(() => DoGotStderrData(sender, e));
 				return;
 			}
-				
-			m_results.WriteError(e.Data);
-			m_results.WriteError(Environment.NewLine);
 			
-			m_errors.AppendLine(e.Data);
+			if (e.Data != null)
+			{
+				m_results.WriteError(e.Data);
+				m_results.WriteError(Environment.NewLine);
+			
+				m_errors.AppendLine(e.Data);
+			}
 		}
 		
 		private void DoProcessExited(object sender, EventArgs e)	// threaded

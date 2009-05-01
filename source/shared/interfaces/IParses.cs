@@ -30,9 +30,9 @@ namespace Shared
 		{
 			Contract.Requires(index >= 0, "index is negative");
 			Contract.Requires(length >= 0, "length is negative");
-			Contract.Requires(globals != null, "globals is null");
 			Contract.Requires(comments != null, "comments is null");
 			Contract.Requires(tokens != null, "tokens is null");
+			Contract.Requires(globals != null || length >= 0, "null globals but error length is not set");
 			
 			Edit = edit;
 			ErrorIndex = index;
@@ -51,6 +51,7 @@ namespace Shared
 		
 		public int ErrorLength {get; private set;}
 		
+		// May be null if the code is really messed up.
 		public CsGlobalNamespace Globals {get; private set;}
 		
 		// This contains all of the tokens except for comments and preprocess
@@ -75,8 +76,9 @@ namespace Shared
 		// has been purged. Note that this is thread safe.
 		Parse TryParse(string path);
 		
-		// Blocks until the file is parsed and returns the result.Note that this is 
-		// thread safe.
+		// Blocks until the file is parsed and returns the result. Note that this is 
+		// thread safe. This will normally not throw, but may return a parse with
+		// errors.
 		Parse Parse(string path, int edit, string text);
 		
 		// Searches globals in each parse and returns a matching type or null.

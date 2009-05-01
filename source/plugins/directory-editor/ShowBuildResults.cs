@@ -29,9 +29,9 @@ using System.IO;
 namespace DirectoryEditor
 {
 	internal sealed class ShowBuildResults : IBuildStatus
-	{		
+	{
 		public void Instantiated(Boss boss)
-		{	
+		{
 			m_boss = boss;
 		}
 		
@@ -39,7 +39,7 @@ namespace DirectoryEditor
 		{
 			get {return m_boss;}
 		}
-
+		
 		public void OnStarted()
 		{
 			if (m_transcript == null)
@@ -55,16 +55,22 @@ namespace DirectoryEditor
 		
 		public void WriteCommand(string text)
 		{
+			Contract.Assert(text != null, "text is null");
+			
 			DoWrite(Output.Command, text);
 		}
-
+		
 		public void WriteOutput(string text)
 		{
+			Contract.Assert(text != null, "text is null");
+			
 			DoWrite(Output.Normal, text);
 		}
-
+		
 		public void WriteError(string text)
 		{
+			Contract.Assert(text != null, "text is null");
+			
 			DoWrite(Output.Error, text);
 		}
 		
@@ -80,5 +86,5 @@ namespace DirectoryEditor
 		private Boss m_boss;
 		private ITranscript m_transcript;
 		#endregion
-	} 
-}	
+	}
+}

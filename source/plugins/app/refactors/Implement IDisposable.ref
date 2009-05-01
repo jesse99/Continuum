@@ -3,10 +3,10 @@
 define Run()
 	if Scope is TypeDeclaration then
 		Process(Scope)
-			
+	
 	elif Scope is Member then
 		Process(Scope.DeclaringType)
-			
+	
 	else
 		Raise("Selection is not within a type or member.")
 	end
@@ -15,21 +15,21 @@ end
 define Process(type)
 	Globals.AddUsing("System")
 	type.AddBase("IDisposable")
-		
+	
 	if not (type is Interface) then
 		AddExceptions(type)
-					
+		
 		if type.IsSealed then
-			if HasNativeFields(type) then
-				SealedAndNative(type)
+			if HasNativeFields(type) or HasFinalizer(type) then
+				SealedWithFinalizer(type)
 			else
-				SealedAndManaged(type)
+				SealedWithNoFinalizer(type)
 			end
 		else
-			if HasNativeFields(type) then
-				UnealedAndNative(type)
+			if HasNativeFields(type) or HasFinalizer(type) then
+				UnsealedWithFinalizer(type)
 			else
-				UnealedAndManaged(type)
+				UnsealedWithNoFinalizer(type)
 			end
 		end
 	end
@@ -42,15 +42,15 @@ define AddExceptions(type)
 			InsertThrow(method.Body)
 		end
 	end
-
+	
 	for prop in type.Properties where prop.SetterBody != null and not prop.IsStatic do
 		InsertThrow(prop.SetterBody)
 	end
-
+	
 	for indexer in type.Indexers where indexer.SetterBody != null and not indexer.IsStatic do
 		InsertThrow(indexer.SetterBody)
 	end
-
+	
 	for op in type.Operators where op.Body != null and not op.IsStatic do
 		if op.Name != "==" and op.Name != "!=" and not op.IsImplicit then
 			InsertThrow(op.Body)
@@ -64,7 +64,7 @@ define InsertThrow(body)
 	throw new ObjectDisposedException•(GetType•().Name);")
 end
 
-define SealedAndManaged(type)
+define SealedWithNoFinalizer(type)
 	type.AddMember(
 "public void Dispose•()
 {
@@ -78,7 +78,7 @@ define SealedAndManaged(type)
 	type.AddMember("private bool Disposed {get; set;}")
 end
 
-define UnealedAndManaged(type)
+define UnsealedWithNoFinalizer(type)
 	type.AddMember(
 "public void Dispose•()
 {
@@ -98,7 +98,7 @@ define UnealedAndManaged(type)
 	type.AddMember("protected bool Disposed {get; private set;}")
 end
 
-define SealedAndNative(type)
+define SealedWithFinalizer(type)
 	AddFinalizerType(type)
 
 	type.AddMember(
@@ -129,7 +129,7 @@ define SealedAndNative(type)
 	type.AddMember("private bool Disposed {get; set;}")
 end
 
-define UnealedAndNative(type)
+define UnsealedWithFinalizer(type)
 	AddFinalizerType(type)
 
 	type.AddMember(
@@ -158,6 +158,12 @@ define UnealedAndNative(type)
 }")
 
 	type.AddMember("protected bool Disposed {get; private set;}")
+end
+
+define HasFinalizer(type)
+	let finalizers = (from method in type.Methods where method.IsFinalizer) in
+		return not finalizers.IsEmpty
+	end
 end
 
 define AddFinalizerType(type)

@@ -49,13 +49,16 @@ namespace Styler
 			
 			var editor = text.Boss.Get<ITextEditor>();
 			Parse parse = parses.Parse(editor.Path, text.EditCount, text.Text);
-			CsGlobalNamespace globals = parse.Globals;
 			
 			var decs = new List<Declaration>();
-			DoGetDeclarations(globals, string.Empty, decs);
-			DoGetDirectives(globals.Preprocess, decs);
-			
-			decs.Sort((lhs, rhs) => lhs.Extent.location.CompareTo(rhs.Extent.location));
+			CsGlobalNamespace globals = parse.Globals;
+			if (globals != null)
+			{
+				DoGetDeclarations(globals, string.Empty, decs);
+				DoGetDirectives(globals.Preprocess, decs);
+				
+				decs.Sort((lhs, rhs) => lhs.Extent.location.CompareTo(rhs.Extent.location));
+			}
 			
 			return decs.ToArray();
 		}

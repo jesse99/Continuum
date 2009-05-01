@@ -65,7 +65,8 @@ namespace Styler
 				runs.Add(new StyleRun(offset, length, StyleType.Error));
 			}
 			
-			DoMatchScope(parse.Globals, runs);
+			if (parse.Globals != null)
+				DoMatchScope(parse.Globals, runs);
 			
 			return parse;
 		}
