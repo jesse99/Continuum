@@ -75,8 +75,22 @@ namespace TextEditor
 				NSDictionary attrs = NSFileManager.defaultManager().fileAttributesAtPath_traverseLink(url.path(), true);
 				NSDate fileTime = attrs.objectForKey(Externs.NSFileModificationDate).To<NSDate>();
 				
-				changed = fileTime != null && fileTime.compare(docTime) == Enums.NSOrderedDescending;
+				if (fileTime != null && fileTime.compare(docTime) == Enums.NSOrderedDescending)
+				{
+					changed = true;
+				}
+				else
+				{
+					// The modification date is a bit too coarse to work properly if the file is being
+					// written to as we are trying to reload it so we need to also check the file size.
+					NSNumber size = attrs.objectForKey(Externs.NSFileSize).To<NSNumber>();
+					if (size != null && m_size != size.unsignedIntValue())
+						changed = true;
+				}
 			}
+			
+			if (changed)
+				Log.WriteLine(TraceLevel.Info, "App", "{0:D} changed on disk", url);
 			
 			return changed;
 		}
@@ -161,6 +175,8 @@ namespace TextEditor
 				
 				if (m_text != null)
 					DoCheckForControlChars(m_text.string_().description());
+					
+				m_size = data.length();
 				
 				if (m_controller != null)			// will be null for initial open, but non-null for revert
 				{
@@ -232,6 +248,8 @@ namespace TextEditor
 						Contract.Assert(false, "bad typeName: " + typeName.description());
 						break;
 				}
+				
+				m_size = data.length();
 			}
 			catch (Exception e)
 			{
@@ -371,6 +389,7 @@ namespace TextEditor
 		private TextController m_controller;
 		private NSAttributedString m_text;
 		private NSURL m_url;
+		private uint m_size;
 		
 		private static Dictionary<char, string> ms_controlNames = new Dictionary<char, string>
 		{

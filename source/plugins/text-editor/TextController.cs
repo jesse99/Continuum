@@ -135,7 +135,7 @@ namespace TextEditor
 				
 				string dir = System.IO.Path.GetDirectoryName(Path);
 				m_dir = NSString.Create(dir).stringByResolvingSymlinksInPath().Retain();
-				m_watcher = new DirectoryWatcher(m_dir.description(), TimeSpan.FromMilliseconds(500));
+				m_watcher = new DirectoryWatcher(m_dir.description(), TimeSpan.FromMilliseconds(250));
 				m_watcher.Changed += this.DoDirChanged;	
 			}
 			else
@@ -981,10 +981,6 @@ namespace TextEditor
 				
 				if (Paths.AreEqual(path.description(), m_dir.description()))
 				{
-					// We can't reload immediately or we get into a race with whatever
-					// is writing to the file.
-					System.Threading.Thread.Sleep(200);
-					
 					var reload = m_boss.Get<IReload>();
 					reload.Reload();
 					break;

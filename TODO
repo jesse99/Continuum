@@ -22,10 +22,6 @@ ReferenceEquals used with value type
 might want a sample app
 sudo fs_usage -f filesys
 
-* Do a checkin.
-* Make a new foreshadow.
-* Still have problems loading changed files. Print modtime and file size for the log.
-* Make a new foreshadow.
 * Look at bug:
 	http://bugzilla.novell.com/show_bug.cgi?id=469228
 * Make sure pkg:mono-nunit is being used.
@@ -33,6 +29,8 @@ sudo fs_usage -f filesys
 * rules.xml should not exclude any rules.
 * Add some tips to readme, e.g. open selection, auto-complete.
 * Mention option-tab somewhere.
+* Fix the HasChangedOnDisk log.
+* Might want to review log levels in config.
 * Do a second preview.
 
 * Short form should special case enums:
