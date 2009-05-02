@@ -401,7 +401,7 @@ namespace AutoComplete
 				namespaces.AddIfMissing(globals.Uses[i].Namespace);
 			}
 		
-			items.AddIfMissingRange(m_database.GetTypes(namespaces.ToArray(), stem));
+			items.AddIfMissingRange(m_database.GetStemmedTypes(namespaces.ToArray(), stem));
 		}
 		
 		private void DoAddParsedTypes(List<Item> items, string ns, string stem)
@@ -465,7 +465,7 @@ namespace AutoComplete
 				}
 			}
 			
-			items.AddIfMissingRange(m_database.GetCtors(namespaces.ToArray(), stem));
+			items.AddIfMissingRange(m_database.GetStemmedCtors(namespaces.ToArray(), stem));
 			
 			Profile.Stop("AutoComplete::DoGetConstructorsNamed");
 			return items.ToArray();

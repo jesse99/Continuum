@@ -108,6 +108,7 @@ namespace CsParser
 				lock (m_mutex)
 				{
 					m_parses[path] = result;
+					DoCheckHighwater();
 				}
 				
 				if (Thread.CurrentThread.ManagedThreadId == 1)
@@ -192,7 +193,7 @@ namespace CsParser
 			var result = new List<CsType>();
 			for (int i = 0; i < types.Count; ++i)
 			{
-				if (types[i].Name.StartsWith(stem))
+				if (stem.Length == 0 || types[i].Name.StartsWith(stem))
 				{
 					if (ns == null && (types[i].Namespace == null || types[i].Namespace.Name == "<globals>"))
 						result.Add(types[i]);
@@ -289,6 +290,7 @@ namespace CsParser
 					if (last == null || last.Edit < parse.Edit)
 					{
 						m_parses[path] = parse;
+						DoCheckHighwater();
 						
 						NSApplication.sharedApplication().BeginInvoke(
 							() => Broadcaster.Invoke("parsed file", path));
@@ -347,6 +349,18 @@ namespace CsParser
 			
 			return false;
 		}
+		
+		// It's very important that the parses be properly purged so we'll
+		// log when they start stacking up.
+		[Conditional("DEBUG")]
+		private void DoCheckHighwater()		// threaded
+		{
+			if (m_parses.Count > m_highwater)
+			{
+				m_highwater = m_parses.Count;
+				Log.WriteLine(TraceLevel.Info, "App", "Parses highwater mark is now {0}", m_highwater);
+			}
+		}
 		#endregion
 		
 		#region Private Types
@@ -370,6 +384,7 @@ namespace CsParser
 		private object m_mutex = new object();
 			private Dictionary<string, Job> m_jobs = new Dictionary<string, Job>();
 			private Dictionary<string, Parse> m_parses = new Dictionary<string, Parse>();
+			private int m_highwater = 20;
 		#endregion
 	}
 }

@@ -251,9 +251,9 @@ namespace AutoComplete
 			return items.ToArray();
 		}
 		
-		public Item[] GetTypes(string[] namespaces, string stem)
+		public Item[] GetStemmedTypes(string[] namespaces, string stem)
 		{
-			Profile.Start("TargetDatabase::GetTypes");
+			Profile.Start("TargetDatabase::GetStemmedTypes");
 			var items = new List<Item>();
 			
 			var ns = new StringBuilder();
@@ -289,13 +289,13 @@ namespace AutoComplete
 				items.AddIfMissing(item);
 			}
 			
-			Profile.Stop("TargetDatabase::GetTypes");
+			Profile.Stop("TargetDatabase::GetStemmedTypes");
 			return items.ToArray();
 		}
 		
-		public Item[] GetCtors(string[] namespaces, string stem)
+		public Item[] GetStemmedCtors(string[] namespaces, string stem)
 		{
-			Profile.Start("TargetDatabase::GetCtors");
+			Profile.Start("TargetDatabase::GetStemmedCtors");
 			var items = new List<Item>();
 			
 			int badAttrs =
@@ -345,7 +345,7 @@ namespace AutoComplete
 			
 			DoAddDefaultCtors(ns.ToString(), stem, badAttrs, items);
 			
-			Profile.Stop("TargetDatabase::GetCtors");
+			Profile.Stop("TargetDatabase::GetStemmedCtors");
 			return items.ToArray();
 		}
 		

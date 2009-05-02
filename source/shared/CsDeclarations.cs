@@ -378,7 +378,7 @@ namespace Shared
 		{
 			Contract.Requires(attrs != null, "attrs is null");
 			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
-			Contract.Requires(nameOffset > offset, "nameOffset is too small");
+			Contract.Requires(nameOffset >= offset, "nameOffset is too small");				// usually the name will be after the member start, but it won't be for ctors with no modifiers
 			Contract.Requires(nameOffset < offset + length, "nameOffset is too large");
 			
 			Attributes = attrs;
@@ -455,6 +455,14 @@ namespace Shared
 		public bool IsConstructor {get; private set;}
 		
 		public bool IsFinalizer {get; private set;}
+		
+		public bool IsExtension
+		{
+			get
+			{
+				return Parameters.Length > 0 && Parameters[0].Modifier == ParameterModifier.This;
+			}
+		}
 		
 		// Will be something like "int" or "Dictionary<KEY,VALUE>". Note that the type will 
 		// not have any whitespace.

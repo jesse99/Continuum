@@ -35,9 +35,9 @@ namespace CsRefactor.Script
 		{
 		}
 		
-		public static MethodType Instance 
+		public static MethodType Instance
 		{
-			get 
+			get
 			{
 				if (ms_instance == null)
 					ms_instance = new MethodType();
@@ -55,7 +55,7 @@ namespace CsRefactor.Script
 		{
 			get {return "Method";}
 		}
-
+		
 		public override Type ManagedType
 		{
 			get {return typeof(CsMethod);}
@@ -68,6 +68,7 @@ namespace CsRefactor.Script
 			type.Register<CsMethod>("get_Body", this.DoGetBody);
 			type.Register<CsMethod>("get_IsConstructor", this.DoGetIsConstructor);
 			type.Register<CsMethod>("get_IsFinalizer", this.DoGetIsFinalizer);
+			type.Register<CsMethod>("get_IsExtension", this.DoGetIsExtension);
 			type.Register<CsMethod>("get_ReturnType", this.DoGetReturnType);
 			type.Register<CsMethod>("get_Parameters", this.DoGetParameters);
 		}
@@ -77,37 +78,42 @@ namespace CsRefactor.Script
 		{
 			return method.Constraints;
 		}
-
+		
 		private object DoGetGenericArguments(CsMethod method)
 		{
 			return method.GenericArguments;
 		}
-
+		
 		private object DoGetBody(CsMethod method)
 		{
 			return method.Body;
 		}
-
+		
 		private object DoGetIsConstructor(CsMethod method)
 		{
 			return method.IsConstructor;
 		}
-
+		
 		private object DoGetIsFinalizer(CsMethod method)
 		{
 			return method.IsFinalizer;
 		}
-
+		
+		private object DoGetIsExtension(CsMethod method)
+		{
+			return method.IsExtension;
+		}
+		
 		private object DoGetReturnType(CsMethod method)
 		{
 			return method.ReturnType;
 		}
-
+		
 		private object DoGetParameters(CsMethod method)
 		{
 			return method.Parameters;
 		}
 		#endregion
 		private static MethodType ms_instance;
-	} 
+	}
 }

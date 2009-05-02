@@ -94,12 +94,12 @@ namespace AutoComplete
 			}
 		}
 		
-		public Item[] GetTypes(string[] namespaces, string stem)
+		public Item[] GetStemmedTypes(string[] namespaces, string stem)
 		{
 			throw new NotImplementedException();
 		}
 		
-		public Item[] GetCtors(string[] namespaces, string stem)
+		public Item[] GetStemmedCtors(string[] namespaces, string stem)
 		{
 			throw new NotImplementedException();
 		}

@@ -22,9 +22,7 @@ ReferenceEquals used with value type
 might want a sample app
 sudo fs_usage -f filesys
 
-* Look at bug:
-	http://bugzilla.novell.com/show_bug.cgi?id=469228
-* Make sure pkg:mono-nunit is being used.
+* Expose CsMember.IsExtension
 * Make sure unit tests work.
 * rules.xml should not exclude any rules.
 * Add some tips to readme, e.g. open selection, auto-complete.

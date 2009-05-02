@@ -76,6 +76,7 @@ namespace AutoComplete
 				for (int i = 0; i < globals.Uses.Length; ++i)
 					namespaces.Add(globals.Uses[i].Namespace);
 				
+				DoGetParsedExtensions(globals, target.TypeName, items);
 				DoAddIfMissingRange("extension methods:", items, m_database.GetExtensionMethods(allNames, namespaces.ToArray()));
 			}
 			
@@ -215,39 +216,46 @@ namespace AutoComplete
 			baseNames.AddIfMissing("System.Object");
 			allNames.AddIfMissing("System.Object");
 			
-			foreach (string n in type.Bases.Names)
+			foreach (string name in type.Bases.Names)
 			{
-				string typeName = null;
-				string name = DoGetRootName(n);
+				string fullName = DoGetFullParsedName(globals, name);
 				
-				string candidate = name;
-				if (DoHasType(candidate))
-					typeName = candidate;
-					
-				for (int i = 0; i < globals.Namespaces.Length && typeName == null; ++i)
+				if (fullName != null)
 				{
-					candidate = globals.Namespaces[i].Name + "." + name;
-					if (DoHasType(candidate))
-						typeName = candidate;
-				}
-				
-				for (int i = 0; i < globals.Uses.Length && typeName == null; ++i)
-				{
-					candidate = globals.Uses[i].Namespace + "." + name;
-					if (DoHasType(candidate))
-						typeName = candidate;
-				}
-				
-				if (typeName != null)
-				{
-					if (CsHelpers.IsInterface(typeName))
-						interfaceNames.AddIfMissing(typeName);
+					if (CsHelpers.IsInterface(fullName))
+						interfaceNames.AddIfMissing(fullName);
 					else
-						baseNames.AddIfMissing(typeName);
+						baseNames.AddIfMissing(fullName);
 					
-					allNames.AddIfMissing(typeName);
+					allNames.AddIfMissing(fullName);
 				}
 			}
+		}
+		
+		private string DoGetFullParsedName(CsGlobalNamespace globals, string inName)
+		{
+			string typeName = null;
+			string name = DoGetRootName(inName);
+			
+			string candidate = name;
+			if (DoHasType(candidate))
+				typeName = candidate;
+				
+			for (int i = 0; i < globals.Namespaces.Length && typeName == null; ++i)
+			{
+				candidate = globals.Namespaces[i].Name + "." + name;
+				if (DoHasType(candidate))
+					typeName = candidate;
+			}
+			
+			for (int i = 0; i < globals.Uses.Length && typeName == null; ++i)
+			{
+				candidate = globals.Uses[i].Namespace + "." + name;
+				if (DoHasType(candidate))
+					typeName = candidate;
+			}
+			
+			return typeName;
 		}
 		
 		private string DoGetRootName(string name)
@@ -306,6 +314,49 @@ namespace AutoComplete
 				DoGetParsedTypeMembers(type, isInstance, isStatic, items, includePrivates, includeProtected);
 		}
 		
+		private void DoGetParsedExtensions(CsGlobalNamespace globals, string targetType, List<Item> items)
+		{
+			CsType[] types = DoGetAllParsedTypes(globals);
+			
+			foreach (CsType type in types)
+			{
+				foreach (CsMethod method in type.Methods)
+				{
+					if (method.IsExtension)
+					{
+						string fullName = DoGetFullParsedName(globals, method.Parameters[0].Type);
+						
+						if (targetType == fullName)
+						{
+							List<string> argTypes = (from p in method.Parameters select p.ModifiedType).ToList();
+							List<string> argNames = (from p in method.Parameters select p.Name).ToList();
+							
+							argTypes.RemoveAt(0);
+							argNames.RemoveAt(0);
+							
+							// TODO: should add gargs if they cannot be deduced
+							items.AddIfMissing(new MethodItem(method.ReturnType, method.Name, null, argTypes.ToArray(), argNames.ToArray(), method.ReturnType, "extension methods"));
+						}
+					}
+				}
+			}
+		}
+		
+		private CsType[] DoGetAllParsedTypes(CsGlobalNamespace globals)
+		{
+			var types = new List<CsType>();
+			
+			types.AddRange(m_parses.FindTypes(null, string.Empty));
+			
+			for (int i = 0; i < globals.Namespaces.Length; ++i)
+				types.AddRange(m_parses.FindTypes(globals.Namespaces[i].Name, string.Empty));
+			
+			for (int i = 0; i < globals.Uses.Length; ++i)
+				types.AddRange(m_parses.FindTypes(globals.Uses[i].Namespace, string.Empty));
+					
+			return types.ToArray();
+		}
+		
 		private bool DoShouldAdd(bool isInstance, bool isStatic, MemberModifiers modifiers)
 		{
 			if ((modifiers & MemberModifiers.Static) == 0 && (modifiers & MemberModifiers.Const) == 0)
@@ -323,7 +374,7 @@ namespace AutoComplete
 						if (includeProtected || field.Access != MemberModifiers.Protected)
 							items.AddIfMissing(new NameItem(field.Name, field.Type + ' ' + field.Name, type.FullName, field.Type));
 			}
-		
+			
 			foreach (CsMethod method in type.Methods)
 			{
 				if (!method.IsConstructor && !method.IsFinalizer)

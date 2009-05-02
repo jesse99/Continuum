@@ -359,106 +359,106 @@ namespace CsParser
 			if (((int) modifiers & CsMember.AccessMask) == 0)
 				modifiers = MemberModifiers.Private;
 				
-				// 'const'
-				if (m_scanner.Token.IsIdentifier("const"))
+			// 'const'
+			if (m_scanner.Token.IsIdentifier("const"))
+			{
+				m_scanner.Advance();
+				DoParseConstantDeclaration(members, attrs, modifiers, first);
+			}
+			// 'event'
+			else if (m_scanner.Token.IsIdentifier("event"))
+			{
+				m_scanner.Advance();
+				DoParseEventDeclaration(members, attrs, modifiers, first);
+			}
+			// 'implicit'
+			else if (m_scanner.Token.IsIdentifier("implicit"))
+			{
+				m_scanner.Advance();
+				DoParseConversionOperatorDeclaration(true, members, attrs, modifiers, first);
+			}
+			// 'explicit'
+			else if (m_scanner.Token.IsIdentifier("explicit"))
+			{
+				m_scanner.Advance();
+				DoParseConversionOperatorDeclaration(false, members, attrs, modifiers, first);
+			}
+			// '~'
+			else if (m_scanner.Token.IsPunct("~"))
+			{
+				m_scanner.Advance();
+				DoParseDestructorDeclaration(members, attrs, modifiers, first);
+			}
+			// class, struct, interface, enum, or delegate
+			else if (m_scanner.Token.IsIdentifier("class") || m_scanner.Token.IsIdentifier("struct") || m_scanner.Token.IsIdentifier("interface") || m_scanner.Token.IsIdentifier("enum") || m_scanner.Token.IsIdentifier("delegate"))
+			{
+				DoParseTypeDeclarationStub(first, attrs, modifiers, types, MemberModifiers.Private);
+			}
+			// partial  class, struct, interface, enum, or delegate
+			else if (m_scanner.Token.IsIdentifier("partial") && (m_scanner.LookAhead(1).IsIdentifier("class") || m_scanner.LookAhead(1).IsIdentifier("struct") || m_scanner.LookAhead(1).IsIdentifier("interface") || m_scanner.LookAhead(1).IsIdentifier("enum") || m_scanner.LookAhead(1).IsIdentifier("delegate")))
+			{
+				m_scanner.Advance();
+				DoParseTypeDeclarationStub(first, attrs, modifiers | MemberModifiers.Partial, types, MemberModifiers.Private);
+			}
+			// partial   return-type  member-name  type-parameter-list?    (
+			else if (m_scanner.Token.IsIdentifier("partial"))
+			{
+				m_scanner.Advance();
+				DoParseMethodDeclaration(first, attrs, modifiers | MemberModifiers.Partial, members);
+			}
+			else
+			{
+				int nameOffset = m_scanner.Token.Offset;
+				string typeOrName = DoParseType();
+				
+				// type 'this'
+				if (m_scanner.Token.IsIdentifier("this"))
+				{
+					nameOffset = m_scanner.Token.Offset;
+					m_scanner.Advance();
+					DoParseIndexerDeclaration(typeOrName, "<this>", nameOffset, members, attrs, modifiers, first);
+				}
+				// type 'operator'
+				else if (m_scanner.Token.IsIdentifier("operator"))
 				{
 					m_scanner.Advance();
-					DoParseConstantDeclaration(members, attrs, modifiers, first);
+					DoParseOperatorDeclaration(typeOrName, members, attrs, modifiers, first);
 				}
-				// 'event'
-				else if (m_scanner.Token.IsIdentifier("event"))
+				// identifier  '('
+				else if (m_scanner.Token.IsPunct("("))
 				{
 					m_scanner.Advance();
-					DoParseEventDeclaration(members, attrs, modifiers, first);
+					DoParseConstructorDeclaration(typeOrName, nameOffset, members, attrs, modifiers, first);
 				}
-				// 'implicit'
-				else if (m_scanner.Token.IsIdentifier("implicit"))
+				// type  identifier  ',' | '=' | ';'
+				else if (m_scanner.Token.Kind == TokenKind.Identifier && (m_scanner.LookAhead(1).IsPunct(",") || m_scanner.LookAhead(1).IsPunct("=") || m_scanner.LookAhead(1).IsPunct(";")))
 				{
-					m_scanner.Advance();
-					DoParseConversionOperatorDeclaration(true, members, attrs, modifiers, first);
-				}
-				// 'explicit'
-				else if (m_scanner.Token.IsIdentifier("explicit"))
-				{
-					m_scanner.Advance();
-					DoParseConversionOperatorDeclaration(false, members, attrs, modifiers, first);
-				}
-				// '~'
-				else if (m_scanner.Token.IsPunct("~"))
-				{
-					m_scanner.Advance();
-					DoParseDestructorDeclaration(members, attrs, modifiers, first);
-				}
-				// class, struct, interface, enum, or delegate
-				else if (m_scanner.Token.IsIdentifier("class") || m_scanner.Token.IsIdentifier("struct") || m_scanner.Token.IsIdentifier("interface") || m_scanner.Token.IsIdentifier("enum") || m_scanner.Token.IsIdentifier("delegate"))
-				{
-					DoParseTypeDeclarationStub(first, attrs, modifiers, types, MemberModifiers.Private);
-				}
-				// partial  class, struct, interface, enum, or delegate
-				else if (m_scanner.Token.IsIdentifier("partial") && (m_scanner.LookAhead(1).IsIdentifier("class") || m_scanner.LookAhead(1).IsIdentifier("struct") || m_scanner.LookAhead(1).IsIdentifier("interface") || m_scanner.LookAhead(1).IsIdentifier("enum") || m_scanner.LookAhead(1).IsIdentifier("delegate")))
-				{
-					m_scanner.Advance();
-					DoParseTypeDeclarationStub(first, attrs, modifiers | MemberModifiers.Partial, types, MemberModifiers.Private);
-				}
-				// partial   return-type  member-name  type-parameter-list?    (
-				else if (m_scanner.Token.IsIdentifier("partial"))
-				{
-					m_scanner.Advance();
-					DoParseMethodDeclaration(first, attrs, modifiers | MemberModifiers.Partial, members);
+					DoParseFieldDeclaration(typeOrName, members, attrs, modifiers, first);
 				}
 				else
 				{
-					int nameOffset = m_scanner.Token.Offset;
-					string typeOrName = DoParseType();
-				
-					// type 'this'
-					if (m_scanner.Token.IsIdentifier("this"))
+					Token last = m_scanner.Token;
+					nameOffset = m_scanner.Token.Offset;
+					string name = DoParseNamespaceOrTypeName(ref last);
+					
+					// type   interface-type   '.'   'this'
+					if (name.EndsWith(".this"))
 					{
-						nameOffset = m_scanner.Token.Offset;
-						m_scanner.Advance();
-						DoParseIndexerDeclaration(typeOrName, "<this>", nameOffset, members, attrs, modifiers, first);
+						DoParseIndexerDeclaration(typeOrName, name, nameOffset, members, attrs, modifiers, first);
 					}
-					// type 'operator'
-					else if (m_scanner.Token.IsIdentifier("operator"))
+					// type   member-name   '{'
+					else if (m_scanner.Token.IsPunct("{"))
 					{
-						m_scanner.Advance();
-						DoParseOperatorDeclaration(typeOrName, members, attrs, modifiers, first);
+						DoParsePropertyDeclaration(typeOrName, name, nameOffset, members, attrs, modifiers, first);
 					}
-					// identifier  '('
-					else if (m_scanner.Token.IsPunct("("))
+					// type   member-name   '<' | '('
+					else if (m_scanner.Token.IsPunct("<") || m_scanner.Token.IsPunct("("))
 					{
-						m_scanner.Advance();
-						DoParseConstructorDeclaration(typeOrName, nameOffset, members, attrs, modifiers, first);
-					}
-					// type  identifier  ',' | '=' | ';'
-					else if (m_scanner.Token.Kind == TokenKind.Identifier && (m_scanner.LookAhead(1).IsPunct(",") || m_scanner.LookAhead(1).IsPunct("=") || m_scanner.LookAhead(1).IsPunct(";")))
-					{
-						DoParseFieldDeclaration(typeOrName, members, attrs, modifiers, first);
+						DoParseMethodStub(typeOrName, name, nameOffset, first, attrs, modifiers, members);
 					}
 					else
-					{
-						Token last = m_scanner.Token;
-						nameOffset = m_scanner.Token.Offset;
-						string name = DoParseNamespaceOrTypeName(ref last);
-						
-						// type   interface-type   '.'   'this'
-						if (name.EndsWith(".this"))
-						{
-							DoParseIndexerDeclaration(typeOrName, name, nameOffset, members, attrs, modifiers, first);
-						}
-						// type   member-name   '{'
-						else if (m_scanner.Token.IsPunct("{"))
-						{
-							DoParsePropertyDeclaration(typeOrName, name, nameOffset, members, attrs, modifiers, first);
-						}
-						// type   member-name   '<' | '('
-						else if (m_scanner.Token.IsPunct("<") || m_scanner.Token.IsPunct("("))
-						{
-							DoParseMethodStub(typeOrName, name, nameOffset, first, attrs, modifiers, members);
-						}
-						else
-							throw new CsParserException("Expected member declaration on line {0}, but found '{1}'", m_scanner.Token.Line, m_scanner.Token.Text());
-					}
+						throw new CsParserException("Expected member declaration on line {0}, but found '{1}'", m_scanner.Token.Line, m_scanner.Token.Text());
+				}
 			}
 		}
 		
