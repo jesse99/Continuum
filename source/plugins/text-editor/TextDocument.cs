@@ -90,7 +90,7 @@ namespace TextEditor
 			}
 			
 			if (changed)
-				Log.WriteLine(TraceLevel.Info, "App", "{0:D} changed on disk", url);
+				Log.WriteLine(TraceLevel.Verbose, "App", "{0:D} changed on disk", url);
 			
 			return changed;
 		}

@@ -72,9 +72,7 @@ namespace App
 			string[] candidates = fs.LocatePath("/mono-uninstalled.pc.in");
 			if (candidates.Length > 0)
 			{
-				string root = Path.GetDirectoryName(candidates[0]);
-				root = Path.GetDirectoryName(root);
-				
+				string root = Path.GetDirectoryName(candidates[0]);				
 				dict.setObject_forKey(NSString.Create(root), NSString.Create("mono_root"));
 			}
 			else

@@ -22,14 +22,12 @@ ReferenceEquals used with value type
 might want a sample app
 sudo fs_usage -f filesys
 
-* Expose CsMember.IsExtension
-* Make sure unit tests work.
-* rules.xml should not exclude any rules.
-* Add some tips to readme, e.g. open selection, auto-complete.
-* Mention option-tab somewhere.
-* Fix the HasChangedOnDisk log.
-* Might want to review log levels in config.
-* Do a second preview.
+* Release checklist:
+	- upload the new binary
+	- build a new foreshadow
+	- checkin
+	- review google docs
+	- email, be sure to mention mobjc and mcocoa changes too
 
 * Short form should special case enums:
 	- replace the fields section with a values section
@@ -40,6 +38,7 @@ sudo fs_usage -f filesys
 	- maybe could use a comment like // System.Linq Extension Methods
 * Short form should not show internal methods for system types
 * Add an svn command to show head.
+* Should have Find in Dictionary.
 * Fix dir editor so it doesn't collapse child dirs when an item changes.
 * After duplicating directory items select the new item(s).
 * Rework styling:
@@ -66,6 +65,7 @@ sudo fs_usage -f filesys
 * Build errors should use annotations. What about the "Error 1 of 10" text?
 * Might be neat if could figure out languages for files with no extension using
    the shebang (if present).
+* Mention option-tab somewhere.
 * Should be able to get rid of NSTreatUnknownArgumentsAsOpen hack.
 * Open method context menu items should be sorted by full declaring type name
 	- so TryParse should show the local stuff and then the system versions
@@ -479,7 +479,8 @@ sudo fs_usage -f filesys
 	- would be cool if invariant support could be added via a script		
 * Release checklist:
 	- update the version number
-	- make sure text editor boss goes away
+	- delete build_num
+	- make sure text editor boss goes away (after forcing a GC)
 	- make sure text objects go away
 	- make sure auto complete objects go away
 	- make sure directory editor boss goes away
@@ -492,10 +493,12 @@ sudo fs_usage -f filesys
 	- run unit tests in release
 	- make sure untitled docs work OK
 	- review config file
+	- run from the finder
 	- review tar targets
-	- r18 was preview1
+	- use svn log -r 1:HEAD > CHANGE_LOG
+	- update CHANGES file
 	- upload the new binary
-	- delete build_num
+	- build a new foreshadow
 
  /Users/jessejones/Documents/Developer/UnixNotes.sh
  /Users/jessejones/Documents/Developer/c#.cs

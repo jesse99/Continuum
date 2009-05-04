@@ -1,0 +1,43 @@
+Preview 2 version 0.4 (r155)
+
+* (Mostly) implemented auto-complete.
+* Added support for reading and writing utf16, 7-bit ASCII, rtf, html, word, open xml, and
+  open document files.
+* Added a Font menu for files which are not syntax hilited. 
+* Region directives now appear in the popup as disabled items (if the option key is not down).
+* Sccs menu now works for text editor windows (instead of just for directory editor windows).
+* Option tab now selects the next identifier using the c# scanner. Option-shift-tab
+   does the reverse.
+* Open type context menu item now falls back to using the locate command so interfaces 
+   and enums can be opened (if their file name is the same as the type name).
+* Open type context menu items now disambiguate file names if neccesary.   
+* Method names in the context menu now look better (C# aliased type names are used,
+   namespaces are removed, and params/this/ref/out keywords are added to parameters).
+* Open selection command now treats the mono root as a preferred directory.
+* Added a directory pref to add spaces before method args.
+* Added a directory pref to put curly braces on their own lines (for refactor commands).
+* Added Convert to Hex and Convert to Decimal scripts.
+* Added a menu item to install a tool which can be used to open files in continuum (or
+  foreshadow).
+* Added CoreFoundation to the default find in files directories.
+* Improved Transcript window speed.
+* Fixed searching locked files.
+* Make the editor window the key window on context click (otherwise confusion ensues
+   when we try to process the menu command).
+* Fixed styler sorting bug which sometimes causes styles to not be applied correctly.
+* Sleep a bit after saving files to attempt to ensure that make recognizes that the files have 
+  changed.
+* Instead of killing the app fallback on stdout if the log file cannot be created.
+* Only enable the refactor menu items if a text editor window is the main window and it's
+  editing C#.
+* Fixed a few minor bugs in the C# parser.
+* Short form shows the assembly for the most derived type, not the most base type.
+* Cleaned up some problems with using sqlite from threads.
+* Object databases are now about 3x smaller.
+* Databases are now placed into ~/Library/Caches/Continuum (note that Time Machine
+   ignores this directory).
+* Moved scripts to ~/Library/Application Support/Continuum.
+
+
+Preview 1 version 0.2 (r18)
+* First public release.

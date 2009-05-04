@@ -346,6 +346,7 @@ namespace AutoComplete
 		{
 			var types = new List<CsType>();
 			
+#if !TEST
 			types.AddRange(m_parses.FindTypes(null, string.Empty));
 			
 			for (int i = 0; i < globals.Namespaces.Length; ++i)
@@ -353,7 +354,8 @@ namespace AutoComplete
 			
 			for (int i = 0; i < globals.Uses.Length; ++i)
 				types.AddRange(m_parses.FindTypes(globals.Uses[i].Namespace, string.Empty));
-					
+#endif
+			
 			return types.ToArray();
 		}
 		

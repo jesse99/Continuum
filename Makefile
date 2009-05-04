@@ -5,10 +5,7 @@ MONO ?= mono
 PACK ?= cocoa-pack
 SMOKE ?= smoke
 NUNIT ?= nunit-console2
-
-# TODO: don't hard code these paths
-GENDARME ?= /Users/jessejones/Source/mono-tools/gendarme/bin/gendarme.exe
-GENDARME_RULES ?= rules.xml
+GENDARME ?= /usr/local/bin/gendarme
 
 ifdef RELEASE
 	CSC_FLAGS += -checked+ -debug+ -warn:4 -nowarn:1591 -optimize+ -d:TRACE
@@ -28,7 +25,7 @@ dummy := $(shell mkdir bin 2> /dev/null)
 dummy := $(shell mkdir bin/plugins 2> /dev/null)
 dummy := $(shell if [[ "$(CSC_FLAGS)" != `cat bin/csc_flags 2> /dev/null` ]]; then echo "$(CSC_FLAGS)" > bin/csc_flags; fi)
 
-base_version := 0.3.xxx.0										# major.minor.build.revision
+base_version := 0.4.xxx.0										# major.minor.build.revision
 version := $(shell ./get_version.sh $(base_version) build_num)	# this will increment the build number stored in build_num
 version := $(strip $(version))
 
@@ -116,11 +113,11 @@ mini-clean:
 	
 tar-bin: mini-clean app
 	tar --create --compress --file=Continuum-$(version).tar.gz \
-		README bin/Continuum.app
+		CHANGES README bin/Continuum.app
 
 tar-src:
 	tar --create --compress --exclude \*/.svn --exclude \*/.svn/\* --file=Continuum-src-$(version).tar.gz \
-		BUILDING Dictionary.txt GOALS MIT.X11 Makefile README make-foreshadow rules.xml source
+		BUILDING CHANGES CHANGE_LOG Dictionary.txt GOALS MIT.X11 Makefile README Tables.txt gen_version.sh gendarme.ignore get_version.sh install-tool.c make-foreshadow source
 
 # Note that it's important to delete the config files so that we run with the same environment
 # as users.
@@ -198,7 +195,7 @@ smoke: app
 	
 gendarme_flags := --severity all --confidence all --ignore gendarme.ignore --quiet
 gendarme: app
-	@-$(MONO) $(GENDARME) $(gendarme_flags) --config $(GENDARME_RULES) $(smoke-files)
+	@-$(MONO) $(GENDARME) $(gendarme_flags) $(smoke-files)
 	
 help:
 	@echo "continuum version $(version)"
@@ -213,8 +210,4 @@ help:
 	@echo " "
 	@echo "Variables include:"
 	@echo "RELEASE - define to enable release builds, defaults to not defined"
-
-# Shouldn't this be removed?	
-tar:
-	tar --exclude \*/.svn --exclude \*/.svn/\* --create --compress --file=continuum-$(version).tar.gz Dictionary.txt MIT.X11 Makefile gen_version.sh get_version.sh source
 

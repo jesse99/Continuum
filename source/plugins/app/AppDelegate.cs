@@ -194,10 +194,12 @@ fi
 #if DEBUG
 		public void dumpBosses(NSObject sender)
 		{
+			Console.WriteLine("Bosses:");
 			Boss[] bosses = Boss.GetBosses();
 			foreach (Boss boss in bosses)
 			{
-				Console.WriteLine("{0}", boss);
+				if (!boss.Definition.IsAbstract())
+					Console.WriteLine("    {0}", boss);
 			}
 		}
 		

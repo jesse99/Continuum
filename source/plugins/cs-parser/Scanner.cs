@@ -157,7 +157,7 @@ namespace CsParser
 			// skip whitespace and comments
 			while (true)
 			{
-				if (char.IsWhiteSpace(Current))
+				if (char.IsWhiteSpace(Current) || Current == '#')
 					DoSkipWhiteSpace();
 				else if (Current == '/' && Next == '/')
 					DoSkipSingleLineComment();
@@ -456,7 +456,7 @@ namespace CsParser
 			
 			while (Current != '\x00')
 			{
-				if (char.IsWhiteSpace(Current))
+				if (char.IsWhiteSpace(Current) || Current == '#')
 					DoSkipWhiteSpace();
 				else if (Current == '\\' && Next == '"')
 					m_index = m_index + 2;
