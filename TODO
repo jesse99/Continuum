@@ -22,13 +22,13 @@ ReferenceEquals used with value type
 might want a sample app
 sudo fs_usage -f filesys
 
-* Release checklist:
-	- upload the new binary
-	- build a new foreshadow
-	- checkin
-	- review google docs
-	- email, be sure to mention mobjc and mcocoa changes too
-
+* Straighten out threading:
+	- should gear be main thread? or make just a definition and a few boss methods
+	  like get multi?
+	- start adding threading attributes
+	- check in the libraries
+	- check in the code
+* make gendarme>tmp.txt isn't reloading tmp.txt
 * Short form should special case enums:
 	- replace the fields section with a values section
 	- would be nice to show [Flags] (or maybe all attributes)
@@ -37,6 +37,8 @@ sudo fs_usage -f filesys
 * Short form should show extension methods:
 	- maybe could use a comment like // System.Linq Extension Methods
 * Short form should not show internal methods for system types
+* Method hiliting isn't quite right for
+	- public static explicit operator IntPtr(PtrArray value)
 * Add an svn command to show head.
 * Should have Find in Dictionary.
 * Fix dir editor so it doesn't collapse child dirs when an item changes.
@@ -97,6 +99,7 @@ sudo fs_usage -f filesys
 	- get arrays completing
 	- get indexers completing
 	- get bound generics compelting
+	- might want to allow attributes to be tab completed
 	- it would be nice if tab could be used to complete type names, but the UI may
 	  be a bit gnarly if there is an ambiguity
 	- can we show the comments for the selection? maybe in a second window? or

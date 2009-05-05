@@ -77,9 +77,8 @@ namespace App
 			bool enabled = false;
 			if (boss != null)
 			{
-				
 				var editor = boss.Get<ITextEditor>();
-				enabled = CsHelpers.IsCSharp(editor.Path);
+				enabled = editor.Path != null && CsHelpers.IsCSharp(editor.Path);
 			}
 			
 			return enabled;

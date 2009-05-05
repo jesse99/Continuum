@@ -1,4 +1,4 @@
-Preview 2 version 0.4 (r155)
+Version 0.4 (r156)
 
 * (Mostly) implemented auto-complete.
 * Added support for reading and writing utf16, 7-bit ASCII, rtf, html, word, open xml, and
@@ -39,5 +39,5 @@ Preview 2 version 0.4 (r155)
 * Moved scripts to ~/Library/Application Support/Continuum.
 
 
-Preview 1 version 0.2 (r18)
+Version 0.2 (r18)
 * First public release.

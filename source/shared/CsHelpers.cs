@@ -63,7 +63,7 @@ namespace Shared
 				while (find != null && !found)
 				{
 					Boss language = find.Find(fileName);
-					found = language.Name == "CsLanguage";
+					found = language != null && language.Name == "CsLanguage";
 					
 					find = boss.GetNext<IFindLanguage>(find);
 				}
