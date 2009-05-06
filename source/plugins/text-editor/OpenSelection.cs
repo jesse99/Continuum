@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using Gear.Helpers;
 using MCocoa;
 using MObjc;
 using Shared;
@@ -39,9 +40,9 @@ namespace TextEditor
 	// NSWindow.h																							file in preferred directory																
 	// C#.cs																										file not in preferred directory
 	internal sealed class OpenSelection : IOpenSelection
-	{		
+	{
 		public void Instantiated(Boss boss)
-		{	
+		{
 			m_boss = boss;
 		}
 		

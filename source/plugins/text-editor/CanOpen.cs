@@ -46,7 +46,7 @@ namespace TextEditor
 			string ext = System.IO.Path.GetExtension(fileName);
 			if (ext == ".rtf")
 				return true;
-						
+			
 			// See if the extension matches one of our languages.
 			Boss boss = ObjectModel.Create("Stylers");
 			if (boss.Has<IFindLanguage>())

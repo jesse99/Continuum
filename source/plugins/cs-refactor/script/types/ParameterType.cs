@@ -35,9 +35,9 @@ namespace CsRefactor.Script
 		{
 		}
 		
-		public static ParameterType Instance 
+		public static ParameterType Instance
 		{
-			get 
+			get
 			{
 				if (ms_instance == null)
 					ms_instance = new ParameterType();
@@ -55,7 +55,7 @@ namespace CsRefactor.Script
 		{
 			get {return "Parameter";}
 		}
-
+		
 		public override Type ManagedType
 		{
 			get {return typeof(CsParameter);}
@@ -75,22 +75,22 @@ namespace CsRefactor.Script
 		{
 			return p.Attributes;
 		}
-
+		
 		private object DoGetIsParams(CsParameter p)
 		{
 			return p.IsParams;
 		}
-
+		
 		private object DoGetModifier(CsParameter p)
 		{
 			return p.Modifier.ToString().ToLower();
 		}
-
+		
 		private object DoGetName(CsParameter p)
 		{
 			return p.Name;
 		}
-
+		
 		private object DoGetType(CsParameter p)
 		{
 			return p.Type;

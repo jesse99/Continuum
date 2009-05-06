@@ -23,7 +23,7 @@
 using MCocoa;
 using NUnit.Framework;
 using TextEditor;
-using Shared;
+//using Shared;
 using System;
 
 [TestFixture]

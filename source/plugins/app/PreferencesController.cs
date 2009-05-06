@@ -19,6 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear.Helpers;
 using MCocoa;
 using MObjc;
 using Shared;
@@ -75,7 +76,7 @@ namespace App
 			
 			ActiveObjects.Add(this);
 		}
-				
+		
 		public void setDefaultColor(NSObject sender)
 		{
 			NSColor color = sender.Call("color").To<NSColor>();

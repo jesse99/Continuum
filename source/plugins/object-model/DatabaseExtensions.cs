@@ -32,19 +32,19 @@ namespace ObjectModel
 			var quoted = from v in values select "'" + v + "'";
 			var joined = string.Join(", ", quoted.ToArray());
 			string sql = string.Format("INSERT INTO {0} VALUES ({1})", table, joined);
-
+			
 			database.Update(sql);
 		}
-
+		
 		public static void InsertOrIgnore(this Database database, string table, params string[] values)
 		{
 			var quoted = from v in values select "'" + v + "'";
 			var joined = string.Join(", ", quoted.ToArray());
 			string sql = string.Format("INSERT OR IGNORE INTO {0} VALUES ({1})", table, joined);
-
+			
 			database.Update(sql);
 		}
-
+		
 		public static void InsertOrReplace(this Database database, string table, params string[] values)
 		{
 			var quoted = from v in values select "'" + v + "'";

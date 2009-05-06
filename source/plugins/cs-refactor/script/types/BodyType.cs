@@ -35,9 +35,9 @@ namespace CsRefactor.Script
 		{
 		}
 		
-		public static BodyType Instance 
+		public static BodyType Instance
 		{
-			get 
+			get
 			{
 				if (ms_instance == null)
 					ms_instance = new BodyType();
@@ -80,5 +80,5 @@ namespace CsRefactor.Script
 		#endregion
 		
 		private static BodyType ms_instance;
-	} 
+	}
 }

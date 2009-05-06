@@ -19,6 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -129,6 +130,10 @@ namespace Shared
 		
 		public static T[] SubArray<T>(this IList<T> data, int offset)
 		{
+			Contract.Requires(data != null, "data is null");
+			Contract.Requires(offset >= 0, "offset is negative");
+			Contract.Requires(offset <= data.Count, "too large");
+			
 			return SubArray(data, offset, data.Count - offset);
 		}
 		

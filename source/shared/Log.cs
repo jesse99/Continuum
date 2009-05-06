@@ -19,6 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -104,7 +105,7 @@ namespace Shared
 			if (IsEnabled(level, category))
 				DoWriteLine(level, category, message);
 		}
-	
+		
 		[Conditional("TRACE")]
 		public static void WriteLine(TraceLevel level, string category, string format, params object[] args)
 		{

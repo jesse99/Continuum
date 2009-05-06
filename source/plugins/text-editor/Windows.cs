@@ -29,9 +29,9 @@ using System.Collections.Generic;
 namespace TextEditor
 {
 	internal sealed class Windows : IWindows
-	{		
+	{
 		public void Instantiated(Boss boss)
-		{	
+		{
 			m_boss = boss;
 		}
 		
@@ -39,13 +39,13 @@ namespace TextEditor
 		{
 			get {return m_boss;}
 		}
-
+		
 		public Boss Main()
 		{
 			TextController controller = NSApplication.sharedApplication().mainWindow().windowController() as TextController;
 			if (controller == null)
 				controller = NSApplication.sharedApplication().keyWindow().windowController() as TextController;
-
+			
 			return controller != null ? controller.Boss : null;			
 		}
 	

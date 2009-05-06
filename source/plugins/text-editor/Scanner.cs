@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using Gear.Helpers;
 using Shared;
 using System;
 using System.Diagnostics;
@@ -27,9 +28,9 @@ using System.Diagnostics;
 namespace TextEditor
 {
 	public class Scanner
-	{		
+	{
 		public Scanner(string text) : this(text, 0)
-		{	
+		{
 		}
 		
 		public Scanner(string text, int startAt)
@@ -41,7 +42,7 @@ namespace TextEditor
 			m_text = text;
 			m_startAt = startAt;
 			m_index = startAt;
-	
+			
 			ActiveObjects.Add(this);
 		}
 		

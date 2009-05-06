@@ -28,9 +28,9 @@ using System;
 namespace DirectoryEditor
 {
 	internal sealed class Shutdown : IShutdown
-	{		
+	{
 		public void Instantiated(Boss boss)
-		{	
+		{
 			m_boss = boss;
 		}
 		

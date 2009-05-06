@@ -27,9 +27,9 @@ using System.IO;
 namespace MakeBuilder
 {
 	internal sealed class CanBuild : ICanBuild
-	{		
+	{
 		public void Instantiated(Boss boss)
-		{	
+		{
 			m_boss = boss;
 		}
 		
@@ -37,7 +37,7 @@ namespace MakeBuilder
 		{
 			get {return m_boss;}
 		}
-
+		
 		public IBuilder GetBuilder(string path)
 		{
 			IBuilder builder = null;

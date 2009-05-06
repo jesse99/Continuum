@@ -35,9 +35,9 @@ namespace CsRefactor.Script
 		{
 		}
 		
-		public static IndexerType Instance 
+		public static IndexerType Instance
 		{
-			get 
+			get
 			{
 				if (ms_instance == null)
 					ms_instance = new IndexerType();
@@ -55,7 +55,7 @@ namespace CsRefactor.Script
 		{
 			get {return "Indexer";}
 		}
-
+		
 		public override Type ManagedType
 		{
 			get {return typeof(CsIndexer);}
@@ -80,22 +80,22 @@ namespace CsRefactor.Script
 		{
 			return member.GetterAccess != 0 ? member.GetterAccess.ToString().ToLower() : null;
 		}
-
+		
 		private object DoGetGetterAttributes(CsIndexer member)
 		{
 			return member.GetterAttributes;
 		}
-
+		
 		private object DoGetGetterBody(CsIndexer member)
 		{
 			return member.GetterBody;
 		}
-
+		
 		private object DoGetHasGetter(CsIndexer member)
 		{
 			return member.HasGetter;
 		}
-
+		
 		private object DoGetHasSetter(CsIndexer member)
 		{
 			return member.HasSetter;

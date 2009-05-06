@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using Gear.Helpers;
 using System;
 
 namespace Shared
@@ -30,7 +31,6 @@ namespace Shared
 	// Part of the Application boss.
 	public interface ITranscript : IInterface
 	{
-		// Note that all of the Write methods are thread safe.
 		void Write(Output type, string text);
 		void Write(Output type, string format, params object[] args);
 		

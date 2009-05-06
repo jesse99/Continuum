@@ -35,9 +35,9 @@ namespace CsRefactor.Script
 		{
 		}
 		
-		public static TypeScopeType Instance 
+		public static TypeScopeType Instance
 		{
-			get 
+			get
 			{
 				if (ms_instance == null)
 					ms_instance = new TypeScopeType();
@@ -55,12 +55,12 @@ namespace CsRefactor.Script
 		{
 			get {return "TypeScope";}
 		}
-
+		
 		public override Type ManagedType
 		{
 			get {return typeof(CsTypeScope);}
 		}
-				
+		
 		protected override void RegisterMethods(RefactorType type)
 		{
 			type.Register<CsTypeScope>("get_Body", this.DoGetBody);
@@ -84,17 +84,17 @@ namespace CsRefactor.Script
 		{
 			return outer.Classes;
 		}
-
+		
 		private object DoGetDeclarations(CsTypeScope outer)
 		{
 			return outer.Declarations;
 		}
-
+		
 		private object DoGetDelegates(CsTypeScope outer)
 		{
 			return outer.Delegates;
 		}
-
+		
 		private object DoGetEnums(CsTypeScope outer)
 		{
 			return outer.Enums;

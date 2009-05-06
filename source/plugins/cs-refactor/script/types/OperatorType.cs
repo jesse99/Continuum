@@ -35,9 +35,9 @@ namespace CsRefactor.Script
 		{
 		}
 		
-		public static OperatorType Instance 
+		public static OperatorType Instance
 		{
-			get 
+			get
 			{
 				if (ms_instance == null)
 					ms_instance = new OperatorType();
@@ -55,7 +55,7 @@ namespace CsRefactor.Script
 		{
 			get {return "Operator";}
 		}
-
+		
 		public override Type ManagedType
 		{
 			get {return typeof(CsOperator);}
@@ -76,22 +76,22 @@ namespace CsRefactor.Script
 		{
 			return member.Body;
 		}
-
+		
 		private object DoGetIsConversion(CsOperator member)
 		{
 			return member.IsConversion;
 		}
-
+		
 		private object DoGetIsExplicit(CsOperator member)
 		{
 			return member.IsExplicit;
 		}
-
+		
 		private object DoGetIsImplicit(CsOperator member)
 		{
 			return member.IsImplicit;
 		}
-
+		
 		private object DoGetParameters(CsOperator member)
 		{
 			return member.Parameters;

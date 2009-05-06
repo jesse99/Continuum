@@ -21,7 +21,7 @@
 
 #if TEST
 using NUnit.Framework;
-using Shared;
+//using Shared;
 using System;
 using System.Diagnostics;
 

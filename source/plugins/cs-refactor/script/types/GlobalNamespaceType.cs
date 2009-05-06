@@ -35,9 +35,9 @@ namespace CsRefactor.Script
 		{
 		}
 		
-		public static GlobalNamespaceType Instance 
+		public static GlobalNamespaceType Instance
 		{
-			get 
+			get
 			{
 				if (ms_instance == null)
 					ms_instance = new GlobalNamespaceType();
@@ -55,7 +55,7 @@ namespace CsRefactor.Script
 		{
 			get {return "GlobalNamespace";}
 		}
-
+		
 		public override Type ManagedType
 		{
 			get {return typeof(CsGlobalNamespace);}
@@ -72,7 +72,7 @@ namespace CsRefactor.Script
 			return globals.Attributes;
 		}
 		#endregion
-
+		
 		private static GlobalNamespaceType ms_instance;
-	} 
+	}
 }

@@ -31,7 +31,7 @@ namespace TextEditor
 	internal sealed class DisplayError : IDisplayBuildError
 	{
 		public void Instantiated(Boss boss)
-		{	
+		{
 			m_boss = boss;
 		}
 		

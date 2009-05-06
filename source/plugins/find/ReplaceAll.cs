@@ -20,7 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using MCocoa;
-using Shared;
+//using Shared;
 using System;
 using System.Text.RegularExpressions;
 

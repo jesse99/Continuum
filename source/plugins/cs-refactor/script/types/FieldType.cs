@@ -35,9 +35,9 @@ namespace CsRefactor.Script
 		{
 		}
 		
-		public static FieldType Instance 
+		public static FieldType Instance
 		{
-			get 
+			get
 			{
 				if (ms_instance == null)
 					ms_instance = new FieldType();
@@ -55,7 +55,7 @@ namespace CsRefactor.Script
 		{
 			get {return "Field";}
 		}
-
+		
 		public override Type ManagedType
 		{
 			get {return typeof(CsField);}
@@ -72,13 +72,13 @@ namespace CsRefactor.Script
 		{
 			return type.Type;
 		}
-
+		
 		private object DoGetValue(CsField type)
 		{
 			return type.Value;
 		}
 		#endregion
-
+		
 		private static FieldType ms_instance;
-	} 
+	}
 }

@@ -23,7 +23,7 @@ using Gear;
 using Shared;
 
 namespace BuildErrors
-{		
+{
 	internal interface IBuildErrors : IInterface
 	{
 		int Count {get;}
@@ -31,5 +31,5 @@ namespace BuildErrors
 		BuildError Get(int index);
 		
 		void Show(int index);
-	} 
+	}
 }

@@ -22,7 +22,7 @@
 using Gear;
 using MCocoa;
 using MObjc;
-using Shared;
+//using Shared;
 using System;
 using System.IO;
 using System.Reflection;

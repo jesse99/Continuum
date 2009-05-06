@@ -19,6 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear.Helpers;
 using MCocoa;
 using MObjc;
 using Shared;
@@ -32,18 +33,18 @@ namespace MakeBuilder
 	internal sealed class VariablesController : NSWindowController
 	{
 		public VariablesController(List<Variable> variables) : base(NSObject.AllocNative("VariablesController"))
-		{		
+		{
 			m_docVariables = variables;
 			m_newVariables = new List<Variable>(variables);
-
+			
 			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("build-variables"), this);	
-
+			
 			m_table = new IBOutlet<NSTableView>(this, "table");
 			m_table.Value.setDataSource(this);
-
+			
 			Unused.Value = window().setFrameAutosaveName(NSString.Create("build-variables window"));
 			window().makeKeyAndOrderFront(this);
-
+			
 			ActiveObjects.Add(this);
 		}
 							

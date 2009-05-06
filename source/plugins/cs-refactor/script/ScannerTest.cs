@@ -23,7 +23,7 @@
 using CsRefactor;
 using CsRefactor.Script;
 using NUnit.Framework;
-using Shared;
+//using Shared;
 using System;
 using System.Collections.Generic;
 

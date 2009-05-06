@@ -19,6 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear.Helpers;
 using MCocoa;
 using MObjc;
 using Shared;
@@ -40,9 +41,9 @@ namespace CsRefactor.Script
 			ms_instance = this;
 		}
 		
-		public static ScriptType Instance 
+		public static ScriptType Instance
 		{
-			get 
+			get
 			{
 				if (ms_instance == null)
 					ms_instance = new ScriptType();
@@ -136,17 +137,17 @@ namespace CsRefactor.Script
 				
 			return result;
 		}
-
+		
 		private object DoGetHasSelection(Script script)
 		{
 			return script.Context.SelLen > 0;
 		}
-
+		
 		private object DoGetGlobals(Script script)
 		{
 			return script.Context.Globals;
 		}
-
+		
 		private CsDeclaration DoFindScope(CsDeclaration declaration, int offset)
 		{
 			CsTypeScope outer = declaration as CsTypeScope;
@@ -161,16 +162,16 @@ namespace CsRefactor.Script
 			
 			return declaration;
 		}
-
+		
 		private object DoGetScope(Script script)
 		{
 			return DoFindScope(script.Context.Globals, script.Context.SelStart);
 		}
-
+		
 		private object DoGetUniqueName(Script script, string inName)
 		{
 			CsDeclaration dec = DoFindScope(script.Context.Globals, script.Context.SelStart);
-
+			
 			string name = inName;
 			for (int i = 2; i < 102; ++i)
 			{

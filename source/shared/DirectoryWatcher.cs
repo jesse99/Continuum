@@ -21,6 +21,7 @@
 
 using MCocoa;
 using MObjc;
+using MObjc.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -54,7 +55,7 @@ namespace Shared
 		public DirectoryWatcher(string path, TimeSpan latency)
 		{
 			Log.WriteLine(TraceLevel.Verbose, "App", "creating a directory watcher for '{0}'", path);
-
+			
 			Path = path;
 			m_callback = this.DoCallback;
 			
@@ -85,8 +86,8 @@ namespace Shared
 			Log.WriteLine(TraceLevel.Verbose, "App", "created the directory watcher");
 		}
 		
-		// This will fire (on the main thread) if files are added, removed, or changed from 
-		// the specified directory or any of its sub-directories.
+		// This will fire if files are added, removed, or changed from the specified
+		// directory or any of its sub-directories.
 		public event EventHandler<DirectoryWatcherEventArgs> Changed;
 		
 		public string Path {get; private set;}
@@ -97,7 +98,7 @@ namespace Shared
 			GC.SuppressFinalize(this);
 		}
 		
-		#region Private Members		
+		#region Private Members
 		private void Dispose(bool disposing)
 		{
 			if (m_stream != IntPtr.Zero)
@@ -116,6 +117,7 @@ namespace Shared
 		// Note that this is called from the run loop so it is not threaded.
 		private void DoCallback(IntPtr streamRef, IntPtr clientCallBackInfo, int numEvents, IntPtr eventPaths, IntPtr eventFlags, IntPtr eventIds)
 		{	
+			Contract.Assert(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 			int bytes = Marshal.SizeOf(typeof(IntPtr));
 			
 			string[] paths = new string[numEvents];

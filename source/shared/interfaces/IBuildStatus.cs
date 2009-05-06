@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using Gear.Helpers;
 
 namespace Shared
 {
@@ -35,5 +36,5 @@ namespace Shared
 		void WriteOutput(string text);
 		
 		void WriteError(string text);
-	} 
+	}
 }

@@ -35,9 +35,9 @@ namespace CsRefactor.Script
 		{
 		}
 		
-		public static UsingDirectiveType Instance 
+		public static UsingDirectiveType Instance
 		{
-			get 
+			get
 			{
 				if (ms_instance == null)
 					ms_instance = new UsingDirectiveType();
@@ -55,7 +55,7 @@ namespace CsRefactor.Script
 		{
 			get {return "UsingDirective";}
 		}
-
+		
 		public override Type ManagedType
 		{
 			get {return typeof(CsUsingDirective);}
@@ -72,7 +72,7 @@ namespace CsRefactor.Script
 			return u.Namespace;
 		}
 		#endregion
-
+		
 		private static UsingDirectiveType ms_instance;
-	} 
+	}
 }

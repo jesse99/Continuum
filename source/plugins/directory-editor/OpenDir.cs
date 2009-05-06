@@ -30,7 +30,7 @@ namespace DirectoryEditor
 	internal sealed class OpenDir : IOpen
 	{
 		public void Instantiated(Boss boss)
-		{	
+		{
 			m_boss = boss;
 		}
 		

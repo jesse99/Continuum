@@ -19,6 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear.Helpers;
 using System;
 using System.Diagnostics;
 using System.Threading;
@@ -37,7 +38,9 @@ namespace Shared
 			Dispose();
 		}
 		
-		public SafeTimer(Action<object> callback)
+		public delegate void Callback(object data);
+		
+		public SafeTimer(Callback callback)
 		{
 			Contract.Requires(callback != null, "callback is null");
 			
@@ -49,14 +52,14 @@ namespace Shared
 			m_callback = callback;
 		}
 		
-		public SafeTimer(Action<object> callback, object state, int dueTime, int period) : this(callback)
+		public SafeTimer(Callback callback, object state, int dueTime, int period) : this(callback)
 		{
 			m_state = state;
 			
 			Change(dueTime, period);
 		}
 		
-		public SafeTimer(Action<object> callback, object state, TimeSpan dueTime, TimeSpan period) : this(callback)
+		public SafeTimer(Callback callback, object state, TimeSpan dueTime, TimeSpan period) : this(callback)
 		{
 			m_state = state;
 			
@@ -101,14 +104,14 @@ namespace Shared
 			}
 		}
 		
-		#region Private Methods		
+		#region Private Methods
 		private void DoThread()
 		{
 			try
 			{
 				while (!m_disposed)
 				{
-					Action<object> callback = null;
+					Callback callback = null;
 					
 					lock (m_mutex)
 					{
@@ -138,7 +141,7 @@ namespace Shared
 		#endregion
 		
 		#region Fields
-		private readonly Action<object> m_callback;
+		private readonly Callback m_callback;
 		private readonly object m_state;
 		private object m_mutex = new object();
 			private volatile bool m_disposed;

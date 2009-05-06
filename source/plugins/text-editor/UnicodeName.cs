@@ -33,9 +33,9 @@ using System.IO;
 namespace TextEditor
 {
 	internal sealed class UnicodeName : IUnicodeName
-	{		
+	{
 		public void Instantiated(Boss boss)
-		{	
+		{
 			m_boss = boss;
 		}
 		
@@ -43,7 +43,7 @@ namespace TextEditor
 		{
 			get {return m_boss;}
 		}
-
+		
 		public string GetName(char ch)
 		{
 			string name = null;

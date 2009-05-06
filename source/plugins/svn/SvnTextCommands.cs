@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using Gear.Helpers;
 using Shared;
 using System;
 using System.Collections.Generic;
@@ -29,9 +30,9 @@ using System.Linq;
 namespace Subversion
 {
 	internal sealed class SvnTextCommands : ITextContextCommands
-	{		
+	{
 		public void Instantiated(Boss boss)
-		{	
+		{
 			m_boss = boss;
 		}
 		
@@ -39,7 +40,7 @@ namespace Subversion
 		{
 			get {return m_boss;}
 		}
-				
+		
 		public void Get(Boss boss, string selection, List<TextContextItem> items)
 		{
 			if (selection == null)

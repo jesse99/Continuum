@@ -35,9 +35,9 @@ namespace CsRefactor.Script
 		{
 		}
 		
-		public static PropertyType Instance 
+		public static PropertyType Instance
 		{
-			get 
+			get
 			{
 				if (ms_instance == null)
 					ms_instance = new PropertyType();
@@ -55,7 +55,7 @@ namespace CsRefactor.Script
 		{
 			get {return "Property";}
 		}
-
+		
 		public override Type ManagedType
 		{
 			get {return typeof(CsProperty);}
@@ -89,7 +89,7 @@ namespace CsRefactor.Script
 		{
 			return member.GetterBody;
 		}
-
+		
 		private object DoGetHasGetter(CsProperty member)
 		{
 			return member.HasGetter;

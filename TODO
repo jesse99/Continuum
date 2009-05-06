@@ -22,13 +22,17 @@ ReferenceEquals used with value type
 might want a sample app
 sudo fs_usage -f filesys
 
+* Start adding decorations to one thead at a time:
+	- start with stuff in shared
+	- may want to temporarily ignore the other defects
+* sharedApplication needs to be thread safe.
 * Straighten out threading:
-	- should gear be main thread? or make just a definition and a few boss methods
-	  like get multi?
 	- start adding threading attributes
 	- check in the libraries
+	- review thread safety
 	- check in the code
 * make gendarme>tmp.txt isn't reloading tmp.txt
+* AppDelegate.cs isn't styling.
 * Short form should special case enums:
 	- replace the fields section with a values section
 	- would be nice to show [Flags] (or maybe all attributes)

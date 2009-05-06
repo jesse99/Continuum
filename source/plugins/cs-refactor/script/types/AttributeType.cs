@@ -35,9 +35,9 @@ namespace CsRefactor.Script
 		{
 		}
 		
-		public static AttributeType Instance 
+		public static AttributeType Instance
 		{
-			get 
+			get
 			{
 				if (ms_instance == null)
 					ms_instance = new AttributeType();
@@ -55,7 +55,7 @@ namespace CsRefactor.Script
 		{
 			get {return "Attribute";}
 		}
-
+		
 		public override Type ManagedType
 		{
 			get {return typeof(CsAttribute);}
@@ -73,18 +73,18 @@ namespace CsRefactor.Script
 		{
 			return attribute.Arguments;
 		}
-
+		
 		private object DoGetName(CsAttribute attribute)
 		{
 			return attribute.Name;
 		}
-
+		
 		private object DoGetTarget(CsAttribute attribute)
 		{
 			return attribute.Target;
 		}
 		#endregion
-
+		
 		private static AttributeType ms_instance;
-	} 
+	}
 }

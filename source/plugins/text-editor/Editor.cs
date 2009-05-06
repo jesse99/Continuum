@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using Gear.Helpers;
 using MCocoa;
 using MObjc;
 using Shared;
@@ -32,9 +33,9 @@ using System.Runtime.InteropServices;
 namespace TextEditor
 {
 	internal sealed class Editor : IWindow, ITextEditor, IText, IReload
-	{		
+	{
 		public void Instantiated(Boss boss)
-		{	
+		{
 			m_boss = boss;
 		}
 		

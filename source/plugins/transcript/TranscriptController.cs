@@ -21,6 +21,7 @@
 
 using MCocoa;
 using Gear;
+using Gear.Helpers;
 using MObjc;
 using Shared;
 using System;
@@ -31,7 +32,7 @@ namespace Transcript
 {
 	[ExportClass("TranscriptController", "NSWindowController", Outlets = "output")]
 	internal sealed class TranscriptController : NSWindowController, IObserver
-	{			
+	{
 		public TranscriptController() : base("TranscriptController", "transcript")
 		{
 			m_output = new IBOutlet<NSTextView>(this, "output");

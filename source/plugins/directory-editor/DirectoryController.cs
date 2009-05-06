@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using Gear.Helpers;
 using MCocoa;
 using MObjc;
 using Shared;
@@ -36,7 +37,7 @@ namespace DirectoryEditor
 	internal sealed class DirectoryController : NSWindowController, IObserver
 	{
 		public DirectoryController(string path) : base(NSObject.AllocNative("DirectoryController"))
-		{	
+		{
 			m_boss = ObjectModel.Create("DirectoryEditor");
 			m_path = path;
 			m_dirStyler = new DirectoryItemStyler(path);

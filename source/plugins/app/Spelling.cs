@@ -29,9 +29,9 @@ using System.Collections.Generic;
 namespace App
 {
 	internal sealed class Spelling : ITextContextCommands
-	{		
+	{
 		public void Instantiated(Boss boss)
-		{	
+		{
 			m_boss = boss;
 		}
 		
@@ -39,7 +39,7 @@ namespace App
 		{
 			get {return m_boss;}
 		}
-
+		
 		public void Get(Boss boss, string selection, List<TextContextItem> items)
 		{
 			if (selection != null && DoNeedsSpellCheck(selection))

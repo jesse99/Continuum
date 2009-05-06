@@ -99,22 +99,22 @@ namespace CsRefactor.Script
 		{
 			return new AddBaseType(type, name);
 		}
-
+		
 		private object DoAddMember(CsType type, string text)
 		{
 			return new AddMember(type, text.Split('\n'));
 		}
-
+		
 		private object DoGetAccess(CsType type)
 		{
 			return type.Access.ToString().ToLower();
 		}
-
+		
 		private object DoGetAttributes(CsType type)
 		{
 			return type.Attributes;
 		}
-
+		
 		private object DoGetBases(CsType type)
 		{
 			return type.Bases.Names;

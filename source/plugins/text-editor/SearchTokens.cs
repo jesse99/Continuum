@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using Gear.Helpers;
 using MCocoa;
 using Shared;
 using System;
@@ -29,7 +30,7 @@ using System.Diagnostics;
 namespace TextEditor
 {
 	internal sealed class SearchTokens : ISearchTokens
-	{		
+	{
 		public void Instantiated(Boss boss)
 		{
 			m_boss = boss;

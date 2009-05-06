@@ -20,11 +20,12 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using Gear.Helpers;
 using System;
 using System.Diagnostics;
 
 namespace Shared
-{		
+{
 	[Serializable]
 	public enum StyleType : ushort		// the StyleRun lists can get large so we'd like to keep the runs as small as possible to reduce memory pressure and increase locality
 	{

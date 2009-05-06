@@ -6,6 +6,44 @@ R: Gendarme.Rules.Design.Linq.AvoidExtensionMethodOnSystemObjectRule
 M: System.String CsRefactor.Script.ObjectExtensions::Stringify(System.Object)
 M: System.String CsRefactor.Script.ObjectExtensions::QuotedStringify(System.Object)
 
+# These are OK.
+R: Gendarme.Rules.Design.EnumsShouldUseInt32Rule
+A: shared
+
+R: Gendarme.Rules.Maintainability.AvoidLackOfCohesionOfMethodsRule
+A: app
+A: auto-complete
+A: build-errors
+A: continuum
+A: cs-parser
+A: cs-refactor
+A: directory-editor
+A: file-system
+A: find
+A: make-builder
+A: object-model
+A: shared
+A: svn
+A: text-editor
+A: transcript
+
+R: Gendarme.Rules.Performance.AvoidUncalledPrivateCodeRule
+A: app
+A: auto-complete
+A: build-errors
+A: continuum
+A: cs-parser
+A: cs-refactor
+A: directory-editor
+A: file-system
+A: find
+A: make-builder
+A: object-model
+A: shared
+A: svn
+A: text-editor
+A: transcript
+
 # This is only done in debug code.
 R: Gendarme.Rules.BadPractice.AvoidCallingProblematicMethodsRule
 M: System.Void App.AppDelegate::dumpActiveObjects(MObjc.NSObject)
@@ -13,16 +51,39 @@ M: System.Void App.AppDelegate::dumpObjectDetails(MObjc.NSObject)
 
 # These are created via reflection.
 R: Gendarme.Rules.Performance.AvoidUninstantiatedInternalClassesRule
-T: DirectoryEditor.DirectoryView
-T: BuildErrors.ErrorsTextView
+A: app
+A: auto-complete
+A: build-errors
+A: continuum
+A: cs-parser
+A: cs-refactor
+A: directory-editor
+A: file-system
+A: find
+A: make-builder
+A: object-model
+A: shared
+A: svn
+A: text-editor
+A: transcript
 
 # This rule seems totally bogus.
 R: Gendarme.Rules.Smells.AvoidLargeClassesRule
+A: app
+A: auto-complete
+A: build-errors
+A: continuum
+A: cs-parser
 A: cs-refactor
 A: directory-editor
+A: file-system
 A: find
+A: make-builder
+A: object-model
 A: shared
+A: svn
 A: text-editor
+A: transcript
 
 # This rule is lame.
 R: Gendarme.Rules.Design.AvoidVisibleNestedTypesRule
@@ -47,6 +108,11 @@ T: CsRefactor.Script.ParserException
 T: CsRefactor.Script.ScannerException
 T: Shared.ScriptException
 
+# These are OK because the method is sealed. TODO: remove once gendarme is fixed.
+R: Gendarme.Rules.BadPractice.ConstructorShouldNotCallVirtualMethodsRule
+M: System.Void Shared.CsNamespace::SetDeclarations(System.Collections.Generic.List`1<Shared.CsDeclaration>)
+M: System.Void Shared.CsType::SetDeclarations(System.Collections.Generic.List`1<Shared.CsDeclaration>)
+
 # This rule is (almost always) lame.
 R: Gendarme.Rules.Performance.ConsiderCustomAccessorsForNonVisibleEventsRule
 A: text-editor
@@ -58,6 +124,7 @@ A: cs-refactor
 R: Gendarme.Rules.Smells.AvoidCodeDuplicatedInSameClassRule
 A: app
 A: auto-complete
+A: build-errors
 A: continuum
 A: cs-parser
 A: cs-refactor

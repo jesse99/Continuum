@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using Gear.Helpers;
 using MCocoa;
 using MObjc;
 using Mono.Cecil;
@@ -36,7 +37,7 @@ namespace ObjectModel
 	internal sealed class Objects : IObjectModel, IOpened, IObserver
 	{
 		public void Instantiated(Boss boss)
-		{	
+		{
 			m_boss = boss;
 		}
 		

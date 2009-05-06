@@ -35,9 +35,9 @@ namespace CsRefactor.Script
 		{
 		}
 		
-		public static StructType Instance 
+		public static StructType Instance
 		{
-			get 
+			get
 			{
 				if (ms_instance == null)
 					ms_instance = new StructType();
@@ -55,7 +55,7 @@ namespace CsRefactor.Script
 		{
 			get {return "Struct";}
 		}
-
+		
 		public override Type ManagedType
 		{
 			get {return typeof(CsStruct);}
@@ -66,5 +66,5 @@ namespace CsRefactor.Script
 		}
 		
 		private static StructType ms_instance;
-	} 
+	}
 }

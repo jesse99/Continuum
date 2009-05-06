@@ -37,7 +37,7 @@ namespace App
 		{
 			get {return m_boss;}
 		}
-
+		
 		public void Get(Boss boss, string selection, List<TextContextItem> items)
 		{
 			if (selection != null)
@@ -46,7 +46,7 @@ namespace App
 				var scripts = boss.Get<IScripts>();
 				
 				items.Add(new TextContextItem(0.8f));
-
+				
 				string[] names = scripts.Names();
 				for (int i = 0; i < names.Length; ++i)
 				{

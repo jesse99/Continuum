@@ -35,9 +35,9 @@ namespace CsRefactor.Script
 		{
 		}
 		
-		public static NamespaceType Instance 
+		public static NamespaceType Instance
 		{
-			get 
+			get
 			{
 				if (ms_instance == null)
 					ms_instance = new NamespaceType();
@@ -55,7 +55,7 @@ namespace CsRefactor.Script
 		{
 			get {return "Namespace";}
 		}
-
+		
 		public override Type ManagedType
 		{
 			get {return typeof(CsNamespace);}
@@ -77,22 +77,22 @@ namespace CsRefactor.Script
 		{
 			return new AddUsing(ns, name);
 		}
-
+		
 		private object DoGetAliases(CsNamespace ns)
 		{
 			return ns.Aliases;
 		}
-
+		
 		private object DoGetExterns(CsNamespace ns)
 		{
 			return ns.Externs;
 		}
-
+		
 		private object DoGetName(CsNamespace ns)
 		{
 			return ns.Name;
 		}
-
+		
 		private object DoGetNamespaces(CsNamespace ns)
 		{
 			return ns.Namespaces;

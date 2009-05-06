@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using Gear.Helpers;
 using MCocoa;
 using MObjc;
 using Mono.Unix;
@@ -36,7 +37,7 @@ namespace App
 		public Scripts() : base("scripts", 23400)
 		{
 		}
-				
+		
 		public string[] Names()
 		{
 			var names = new List<string>(Items.Count);
@@ -55,7 +56,7 @@ namespace App
 			int index = Items.FindIndex(s => Path.GetFileNameWithoutExtension(s) == name);
 			return DoScript(Items[index], text);
 		}
-
+		
 		#region Protected Methods
 		protected override void RemoveScriptsFromMenu()
 		{
@@ -68,13 +69,13 @@ namespace App
 				menu.removeItemAtIndex(index--);
 			}
 		}
-
+		
 		protected override Tuple2<NSMenu, int> GetScriptsLocation()
 		{
 			NSApplication app = NSApplication.sharedApplication();
 			NSMenu menu = app.Call("textMenu").To<NSMenu>();
 			int at = menu.indexOfItemWithTarget_andAction(app.delegate_(), "openScripts:") - 1;
-
+			
 			return Tuple.Make(menu, at);
 		}
 		
@@ -83,7 +84,7 @@ namespace App
 			Boss boss = ObjectModel.Create("TextEditorPlugin");
 			var windows = boss.Get<IWindows>();
 			boss = windows.Main();
-
+			
 			if (boss != null)
 			{
 				var text = boss.Get<IText>();

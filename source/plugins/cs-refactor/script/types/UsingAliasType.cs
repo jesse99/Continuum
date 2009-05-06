@@ -35,9 +35,9 @@ namespace CsRefactor.Script
 		{
 		}
 		
-		public static UsingAliasType Instance 
+		public static UsingAliasType Instance
 		{
-			get 
+			get
 			{
 				if (ms_instance == null)
 					ms_instance = new UsingAliasType();
@@ -55,7 +55,7 @@ namespace CsRefactor.Script
 		{
 			get {return "UsingAlias";}
 		}
-
+		
 		public override Type ManagedType
 		{
 			get {return typeof(CsUsingAlias);}
@@ -72,13 +72,13 @@ namespace CsRefactor.Script
 		{
 			return alias.Alias;
 		}
-
+		
 		private object DoGetValue(CsUsingAlias alias)
 		{
 			return alias.Value;
 		}
 		#endregion
-
+		
 		private static UsingAliasType ms_instance;
-	} 
+	}
 }

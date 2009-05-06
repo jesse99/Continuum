@@ -27,9 +27,9 @@ using System.Diagnostics;
 namespace DirectoryEditor
 {
 	internal sealed class FindDirectoryEditor : IFindDirectoryEditor
-	{		
+	{
 		public void Instantiated(Boss boss)
-		{	
+		{
 			m_boss = boss;
 		}
 		
@@ -37,9 +37,9 @@ namespace DirectoryEditor
 		{
 			get {return m_boss;}
 		}
-
+		
 		public Boss GetDirectoryEditor(Boss window)
-		{			
+		{
 			Boss result = null;
 			
 			if (window != null)

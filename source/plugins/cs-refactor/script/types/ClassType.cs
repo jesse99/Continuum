@@ -35,9 +35,9 @@ namespace CsRefactor.Script
 		{
 		}
 		
-		public static ClassType Instance 
+		public static ClassType Instance
 		{
-			get 
+			get
 			{
 				if (ms_instance == null)
 					ms_instance = new ClassType();
@@ -55,7 +55,7 @@ namespace CsRefactor.Script
 		{
 			get {return "Class";}
 		}
-
+		
 		public override Type ManagedType
 		{
 			get {return typeof(CsClass);}
@@ -66,5 +66,5 @@ namespace CsRefactor.Script
 		}
 		
 		private static ClassType ms_instance;
-	} 
+	}
 }

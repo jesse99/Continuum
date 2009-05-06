@@ -19,6 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear.Helpers;
 using Shared;
 using System;
 using System.Collections.Generic;
@@ -28,22 +29,22 @@ using System.Runtime.Serialization;
 using System.Security.Permissions;
 
 namespace CsRefactor.Script
-{	
+{
 	// ---------------------------------------------------------------------------
 	internal sealed class BooleanLiteral : Expression, IEquatable<BooleanLiteral>
 	{
 		public BooleanLiteral(int line, bool value) : base(line)
-		{			
+		{
 			m_value = value;
 		}
-				
+		
 		public override object Evaluate(Context context)
 		{
 			return m_value;
 		}
-
+		
 		public override void Print(System.Text.StringBuilder buffer)
-		{			
+		{
 			buffer.Append(m_value ? "true" : "false");
 		}
 		
@@ -84,10 +85,10 @@ namespace CsRefactor.Script
 		{
 			return m_value ? 1 : 0;
 		}
-    		
+		
 		private bool m_value;
-	} 
-
+	}
+	
 	// ---------------------------------------------------------------------------
 	internal sealed class From : Expression
 	{
@@ -105,9 +106,9 @@ namespace CsRefactor.Script
 		public override object Evaluate(Context context)
 		{
 			Log.WriteLine("Refactor Evaluate", "{0}: From", Line);
-
+			
 			object r = m_elements.Evaluate(context);
-
+			
 			object[] elements = (object[]) r;
 			if (elements == null && r != null)
 				throw new EvaluateException(Line, "From expression should return a Sequence, but was a {0}.", RefactorType.GetName(r.GetType()));
@@ -124,7 +125,7 @@ namespace CsRefactor.Script
 							result.Add(m_select.Evaluate(context));
 						else
 							result.Add(element);
-	
+						
 					context.RemoveLocal(m_local);
 				}
 			}

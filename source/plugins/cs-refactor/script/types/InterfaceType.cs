@@ -35,9 +35,9 @@ namespace CsRefactor.Script
 		{
 		}
 		
-		public static InterfaceType Instance 
+		public static InterfaceType Instance
 		{
-			get 
+			get
 			{
 				if (ms_instance == null)
 					ms_instance = new InterfaceType();
@@ -55,7 +55,7 @@ namespace CsRefactor.Script
 		{
 			get {return "Interface";}
 		}
-
+		
 		public override Type ManagedType
 		{
 			get {return typeof(CsInterface);}
@@ -66,5 +66,5 @@ namespace CsRefactor.Script
 		}
 		
 		private static InterfaceType ms_instance;
-	} 
+	}
 }

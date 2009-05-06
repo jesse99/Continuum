@@ -19,6 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear.Helpers;
 using MCocoa;
 using MObjc;
 using Shared;
@@ -36,7 +37,7 @@ namespace MakeBuilder
 		public MakeParser(NSString contents)
 		{
 			Contract.Requires(!NSObject.IsNullOrNil(contents), "contents is null");
-	
+			
 			m_scanner = NSScanner.scannerWithString(contents);
 			m_scanner.setCharactersToBeSkipped(NSCharacterSet.whitespaceCharacterSet());	// does not include new lines
 			m_scanner.setCaseSensitive(true);
@@ -44,26 +45,26 @@ namespace MakeBuilder
 			m_nameChars = NSMutableCharacterSet.Create();
 			m_nameChars.formUnionWithCharacterSet(NSCharacterSet.alphanumericCharacterSet());		
 			m_nameChars.addCharactersInString(NSString.Create("_-"));		
-	
+			
 			m_eolChars = NSMutableCharacterSet.Create();
 			m_eolChars.addCharactersInString(NSString.Create("\r\n#"));		// lines are ended by comments or new line characters
 			
 			DoParse();
-
+			
 			for (int i = 0; i < 4; ++i)			// add some blank lines so the user can define new variables that we couldn't pull out of the make file
 				m_variables.Add(new Variable(string.Empty, string.Empty));
-
+			
 			ActiveObjects.Add(this);
 		}
 		
 		public Process Build(string buildFile, string target, IEnumerable<Variable> vars, Dictionary<string, int> flags)
-		{	
+		{
 			string args = string.Empty;
-	
+			
 			foreach (KeyValuePair<string, int> f in flags)
 				if (f.Value == 1)
 					args += string.Format("--{0} ", f.Key);
-	
+			
 			foreach (Variable v in vars)
 				if (v.Value.Length > 0 && v.Value != v.DefaultValue)
 					if (v.Value.IndexOf(' ') >= 0)
@@ -73,7 +74,7 @@ namespace MakeBuilder
 			args += target;
 			
 			m_command = "make " + args + Environment.NewLine;
-					
+			
 			Process process = new Process();
 			
 			process.StartInfo.FileName               = "make";

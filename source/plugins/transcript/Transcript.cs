@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using Gear.Helpers;
 using MCocoa;
 using MObjc;
 using Shared;
@@ -90,7 +91,7 @@ namespace Transcript
 			m_controller.window().makeKeyAndOrderFront(null);
 		}
 		
-		public void Write(Output type, string text)		// Write methods need to be thread safe
+		public void Write(Output type, string text)
 		{
 			if (text.Length > 0)
 			{

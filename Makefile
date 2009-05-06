@@ -195,7 +195,7 @@ smoke: app
 	
 gendarme_flags := --severity all --confidence all --ignore gendarme.ignore --quiet
 gendarme: app
-	@-$(MONO) $(GENDARME) $(gendarme_flags) $(smoke-files)
+	@-$(GENDARME) $(gendarme_flags) $(smoke-files)
 	
 help:
 	@echo "continuum version $(version)"

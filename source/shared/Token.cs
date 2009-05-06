@@ -19,6 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear.Helpers;
 using System;
 using System.Diagnostics;
 
@@ -129,6 +130,7 @@ namespace Shared
 			return Kind == TokenKind.Punct && this == name;
 		}
 		
+		[Pure]
 		public string Text()
 		{
 			// TODO: Unforunately strings are only usually immutable (unsafe

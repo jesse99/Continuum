@@ -19,6 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear.Helpers;
 using MCocoa;
 using MObjc;
 using Shared;
@@ -31,12 +32,12 @@ namespace MakeBuilder
 	internal sealed class FlagsController : NSWindowController
 	{
 		public FlagsController(Dictionary<string, int> flags) : base(NSObject.AllocNative("FlagsController"))
-		{					
+		{
 			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("make-flags"), this);	
-
+			
 			Unused.Value = window().setFrameAutosaveName(NSString.Create("make-flags window"));
 			window().makeKeyAndOrderFront(this);
-
+			
 			m_docFlags = flags;
 			m_flags = new Dictionary<string, int>(flags);
 			
@@ -50,15 +51,15 @@ namespace MakeBuilder
 						views[i].Call("setState:", m_flags[title]);
 				}
 			}
-
+			
 			ActiveObjects.Add(this);
 		}
-			
+		
 		public void toggle(NSButton sender)
 		{
 			m_flags[sender.title().ToString()] = sender.state();
 		}
-	
+		
 		public void flagsOK(NSObject sender)
 		{
 			Unused.Value = sender;
@@ -70,7 +71,7 @@ namespace MakeBuilder
 			window().orderOut(this);
 			window().release();
 		}
-	
+		
 		public void flagsCancel(NSObject sender)
 		{
 			Unused.Value = sender;

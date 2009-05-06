@@ -19,16 +19,18 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
 namespace Shared
-{	
+{
 	public static class EnumerableExtensions
 	{
 #if DEBUG
+		[Pure]
 		public static string ToDebugString(this System.Collections.IEnumerable list)
 		{
 			Contract.Requires(list != null, "list is null");
@@ -50,7 +52,8 @@ namespace Shared
 		}
 		
 		public delegate string Converter<T>(T item);
-
+		
+		[Pure]
 		public static string ToDebugString<T>(this IEnumerable<T> list, Converter<T> converter)
 		{
 			Contract.Requires(list != null, "list is null");
@@ -71,6 +74,6 @@ namespace Shared
 			
 			return "[" + string.Join(", ", items.ToArray()) + "]";
 		}
-	} 
+	}
 #endif	// DEBUG
 }

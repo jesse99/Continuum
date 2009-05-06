@@ -41,7 +41,7 @@ namespace CsRefactor
 		public string Execute(string rSource, IText cSource, int selStart, int selLen)
 		{
 			string result = rSource;
-
+			
 			// Parse the C# code..
 			var editor = cSource.Boss.Get<ITextEditor>();
 			
