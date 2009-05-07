@@ -453,12 +453,17 @@ namespace AutoComplete
 				}
 				
 				var ns = new StringBuilder();
-				for (int i = 0; i < namespaces.Length; ++i)
+				if (namespaces.Length > 0)
 				{
-					ns.AppendFormat("Types.namespace = '{0}'", namespaces[i].Replace("'", "''"));
-					
-					if (i + 1 < namespaces.Length)
-						ns.Append(" OR ");
+					ns.Append(" AND (");
+					for (int i = 0; i < namespaces.Length; ++i)
+					{
+						ns.AppendFormat("Types.namespace = '{0}'", namespaces[i].Replace("'", "''"));
+						
+						if (i + 1 < namespaces.Length)
+							ns.Append(" OR ");
+					}
+					ns.Append(')');
 				}
 				
 				string sql = string.Format(@"
@@ -466,7 +471,7 @@ namespace AutoComplete
 						FROM Methods, Types
 					WHERE Methods.static = 1 AND Methods.kind = 8 AND
 						Methods.declaring_root_name = Types.root_name AND
-						({0}) AND ({1})", types.ToString(), ns.ToString());
+						({0}){1}", types.ToString(), ns.ToString());
 				
 				string[][] rows = m_database.QueryRows(sql);
 				foreach (string[] r in rows)

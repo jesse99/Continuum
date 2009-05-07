@@ -482,14 +482,16 @@ namespace AutoComplete
 				{
 					if ((type.Modifiers & (MemberModifiers.Abstract | MemberModifiers.Static)) == 0)
 					{
+						string nsName = type.Namespace != null ? type.Namespace.Name : "<globals>";
+						
 						var ctors = from m in type.Methods where m.IsConstructor select m;
 						foreach (CsMethod ctor in ctors)
 						{
-							DoAddConstructor(type.Namespace.Name, type.GenericArguments, type.FullName, type.Name, ctor.Parameters, items);
+							DoAddConstructor(nsName, type.GenericArguments, type.FullName, type.Name, ctor.Parameters, items);
 						}
 						
 						if (type is CsStruct || !ctors.Any())
-							DoAddConstructor(type.Namespace.Name, type.GenericArguments, type.FullName, type.Name, new CsParameter[0], items);
+							DoAddConstructor(nsName, type.GenericArguments, type.FullName, type.Name, new CsParameter[0], items);
 					}
 				}
 			}
