@@ -20,12 +20,12 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear.Helpers;
-//using Shared;
 using System;
 using System.Diagnostics;
 
 namespace ObjectModel
 {
+	[ThreadModel(ThreadModel.Concurrent)]
 	public static class StringExtensions
 	{
 		// Generic type names are sometimes Foo`1 and sometimes Foo`1<T>. In order
@@ -33,7 +33,7 @@ namespace ObjectModel
 		public static string GetTypeName(this string name)
 		{
 			Contract.Requires(name != null, "name is null");
-
+			
 			int i = name.IndexOf('`');
 			
 			if (i > 0)
@@ -44,7 +44,7 @@ namespace ObjectModel
 					++i;
 				}
 			}
-						
+			
 			if (i > 0)
 				name = name.Substring(0, i);
 				

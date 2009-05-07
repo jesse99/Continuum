@@ -29,6 +29,7 @@ using System.Globalization;
 namespace Shared
 {
 	// Misc handy methods for dealing with C# code.
+	[ThreadModel(ThreadModel.Concurrent)]
 	public static class CsHelpers
 	{
 		static CsHelpers()
@@ -49,6 +50,7 @@ namespace Shared
 		}
 		
 		// Returns true if the path points to a C# file.
+		[ThreadModel(ThreadModel.MainThread)]
 		public static bool IsCSharp(string path)
 		{
 			Contract.Requires(path != null, "path is null");

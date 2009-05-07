@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Jesse Jones
+// Copyright (C) 2008-2009 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using Gear.Helpers;
 using Mono.Cecil;
 
 namespace ObjectModel
@@ -30,6 +31,7 @@ namespace ObjectModel
 	{
 		// Note that this will be called from within a worker thread and will be
 		// called multiple times if the assembly is rebuilt.
+		[ThreadModel("populate")]
 		void Parse(string path, AssemblyDefinition assembly, string id, bool fullParse);
 	}
 }

@@ -27,6 +27,7 @@ using System.Text;
 
 namespace Shared
 {
+	[ThreadModel(ThreadModel.Concurrent)]
 	public static class StringExtensions
 	{
 		// Removes all whitespace from the string.

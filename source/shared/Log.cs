@@ -29,6 +29,7 @@ using System.Runtime.Remoting;
 
 namespace Shared
 {
+	[ThreadModel(ThreadModel.Concurrent)]
 	public static class Log
 	{
 		static Log()
@@ -66,13 +67,10 @@ namespace Shared
 			}
 		}
 		
-#if TEST
-		// Test because this code is dicy in the presence of threads.
 		public static void SetLevel(TraceLevel level)
 		{
 			ms_defaultLevel = level;
 		}
-#endif
 		
 		// Writing
 		[Conditional("TRACE")]
@@ -238,7 +236,7 @@ namespace Shared
 		#endregion
 		
 		#region Fields
-		private static TraceLevel ms_defaultLevel = TraceLevel.Warning;
+		private static volatile TraceLevel ms_defaultLevel = TraceLevel.Warning;
 		private static Dictionary<string, TraceLevel> ms_levels = new Dictionary<string, TraceLevel>();
 		#endregion
 	}

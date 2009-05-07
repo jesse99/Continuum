@@ -28,9 +28,9 @@ using System.IO;
 
 namespace Shared
 {
+	[ThreadModel(ThreadModel.Concurrent)]
 	public static class AssemblyCache
 	{
-		// Note that this is thread safe.
 		public static AssemblyDefinition Load(string path, bool loadSymbols)
 		{
 			Contract.Requires(!string.IsNullOrEmpty(path), "path is null or empty");
@@ -91,7 +91,7 @@ namespace Shared
 				get {return (AssemblyDefinition) m_reference.Target;}
 			}
 			
-			public DateTime Time 
+			public DateTime Time
 			{
 				get {return m_time;}
 			}
@@ -114,7 +114,7 @@ namespace Shared
 					{
 						// mdb file is missing
 					}
-
+					
 					m_loadedSymbols = true;
 				}
 			}
@@ -124,10 +124,10 @@ namespace Shared
 			private bool m_loadedSymbols;
 		}
 		#endregion
-
+		
 		#region Fields
 		private static object ms_lock = new object();
 		private static Dictionary<string, Entry> ms_entries = new Dictionary<string, Entry>();
 		#endregion
-	} 
+	}
 }

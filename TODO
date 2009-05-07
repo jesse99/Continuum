@@ -22,6 +22,80 @@ ReferenceEquals used with value type
 might want a sample app
 sudo fs_usage -f filesys
 
+* Got an error double tabbing private ctor:
+Unhandled Exception: System.Reflection.TargetInvocationException: Exception has been thrown by the target of an Objective-C method call. ---> System.NullReferenceException: Object reference not set to an instance of an object
+  at AutoComplete.AutoComplete.DoAddConstructors (System.String ns, System.String stem, System.Collections.Generic.List`1 items) [0x00077] in /Users/jessejones/Source/Continuum/source/plugins/auto-complete/AutoComplete.cs:485 
+  at AutoComplete.AutoComplete.DoGetConstructorsNamed (Shared.CsGlobalNamespace globals, System.String& stem) [0x00042] in /Users/jessejones/Source/Continuum/source/plugins/auto-complete/AutoComplete.cs:452 
+  at AutoComplete.AutoComplete.DoCompleteStem (ITextEditor editor, MCocoa.NSTextView view, NSRange range) [0x00088] in /Users/jessejones/Source/Continuum/source/plugins/auto-complete/AutoComplete.cs:314 
+  at AutoComplete.AutoComplete.DoComplete (System.Func`4 completer, MCocoa.NSTextView view, NSRange range, IComputeRuns computer) [0x00098] in /Users/jessejones/Source/Continuum/source/plugins/auto-complete/AutoComplete.cs:189 
+  at AutoComplete.AutoComplete.DoCompleteTab (MCocoa.NSTextView view, MCocoa.NSEvent evt, IComputeRuns computer, NSRange range) [0x00051] in /Users/jessejones/Source/Continuum/source/plugins/auto-complete/AutoComplete.cs:163 
+  at AutoComplete.AutoComplete.HandleKey (MCocoa.NSTextView view, MCocoa.NSEvent evt, IComputeRuns computer) [0x0009a] in /Users/jessejones/Source/Continuum/source/plugins/auto-complete/AutoComplete.cs:108 
+  at TextEditor.TextEditorView.keyDown (MCocoa.NSEvent evt) [0x0002d] in /Users/jessejones/Source/Continuum/source/plugins/text-editor/TextEditorView.cs:60 
+  at (wrapper managed-to-native) System.Reflection.MonoMethod:InternalInvoke (object,object[],System.Exception&)
+  at System.Reflection.MonoMethod.Invoke (System.Object obj, BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x00057] in /private/tmp/monobuild/build/BUILD/mono-2.4/mcs/class/corlib/System.Reflection/MonoMethod.cs:159 
+  --- End of inner exception stack trace ---
+  at MObjc.CocoaException.Raise (IntPtr p) [0x0013e] in /Users/jessejones/Source/mobjc/source/CocoaException.cs:105 
+  at MObjc.Ffi.Call (IntPtr cif, IntPtr imp, IntPtr result, MObjc.Helpers.PtrArray args) [0x00026] in /Users/jessejones/Source/mobjc/source/Ffi.cs:95 
+  at MObjc.Native.Invoke () [0x00020] in /Users/jessejones/Source/mobjc/source/Native.cs:98 
+  at MCocoa.NSApplication.run () [0x00000] in /Users/jessejones/Source/mcocoa/source/appkit/NSApplication.cs:100 
+  at App.Application.Run () [0x000da] in /Users/jessejones/Source/Continuum/source/plugins/app/Application.cs:65 
+  at Continuum.Program.Main (System.String[] args) [0x0005f] in /Users/jessejones/Source/Continuum/source/continuum/Program.cs:50 
+* Got error with a dot in tmp.cs
+Continuum: ./bin/Foreshadow.app/Contents/MacOS/launcher 
+Managed exception: Void keyDown(MCocoa.NSEvent)
+System.Reflection.TargetInvocationException: Exception has been thrown by the target of an invocation. ---> Shared.DatabaseException: Failed to execute '
+					SELECT Methods.display_text, Methods.return_type_name
+						FROM Methods, Types
+					WHERE Methods.static = 1 AND Methods.kind = 8 AND
+						Methods.declaring_root_name = Types.root_name AND
+						(Methods.extend_type_name = 'ThreadModelAttribute' OR Methods.extend_type_name = 'System.Object') AND ()' (near ")": syntax error)
+  at Shared.Database.DoRaiseError (System.String command, Error err, IntPtr errMesg) [0x00055] in /Users/jessejones/Source/Continuum/source/shared/Database.cs:526 
+  at Shared.Database.Query (System.String command, Shared.HeaderCallback hc, Shared.RowCallback rc) [0x00155] in /Users/jessejones/Source/Continuum/source/shared/Database.cs:442 
+  at Shared.Database.QueryRows (System.String command) [0x0004d] in /Users/jessejones/Source/Continuum/source/shared/Database.cs:468 
+  at AutoComplete.TargetDatabase.GetExtensionMethods (System.String[] typeNames, System.String[] namespaces) [0x000cb] in /Users/jessejones/Source/Continuum/source/plugins/auto-complete/TargetDatabase.cs:470 
+  at AutoComplete.ResolveMembers.Resolve (Shared.CsMember context, AutoComplete.ResolvedTarget target, Shared.CsGlobalNamespace globals) [0x001b3] in /Users/jessejones/Source/Continuum/source/plugins/auto-complete/ResolveMembers.cs:80 
+  at AutoComplete.ResolveName.DoGetVariables (Shared.CsMember context, System.String text, ICsLocalsParser locals) [0x002ce] in /Users/jessejones/Source/Continuum/source/plugins/auto-complete/ResolveName.cs:187 
+  at AutoComplete.ResolveName..ctor (Shared.CsMember context, ITargetDatabase database, ICsLocalsParser locals, System.String text, Int32 offset, Shared.CsGlobalNamespace globals) [0x00064] in /Users/jessejones/Source/Continuum/source/plugins/auto-complete/ResolveName.cs:51 
+  at AutoComplete.AutoComplete.DoCompleteMethodDot (ITextEditor editor, MCocoa.NSTextView view, NSRange range) [0x00055] in /Users/jessejones/Source/Continuum/source/plugins/auto-complete/AutoComplete.cs:249 
+  at AutoComplete.AutoComplete.DoCompleteDot (ITextEditor editor, MCocoa.NSTextView view, NSRange range) [0x00054] in /Users/jessejones/Source/Continuum/source/plugins/auto-complete/AutoComplete.cs:213 
+  at AutoComplete.AutoComplete.DoComplete (System.Func`4 completer, MCocoa.NSTextView view, NSRange range, IComputeRuns computer) [0x00098] in /Users/jessejones/Source/Continuum/source/plugins/auto-complete/AutoComplete.cs:189 
+  at AutoComplete.AutoComplete.HandleKey (MCocoa.NSTextView view, MCocoa.NSEvent evt, IComputeRuns computer) [0x0004e] in /Users/jessejones/Source/Continuum/source/plugins/auto-complete/AutoComplete.cs:103 
+  at TextEditor.TextEditorView.keyDown (MCocoa.NSEvent evt) [0x0002d] in /Users/jessejones/Source/Continuum/source/plugins/text-editor/TextEditorView.cs:60 
+  at (wrapper managed-to-native) System.Reflection.MonoMethod:InternalInvoke (object,object[],System.Exception&)
+  at System.Reflection.MonoMethod.Invoke (System.Object obj, BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x00057] in /private/tmp/monobuild/build/BUILD/mono-2.4/mcs/class/corlib/System.Reflection/MonoMethod.cs:159 
+  --- End of inner exception stack trace ---
+  at System.Reflection.MonoMethod.Invoke (System.Object obj, BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x00071] in /private/tmp/monobuild/build/BUILD/mono-2.4/mcs/class/corlib/System.Reflection/MonoMethod.cs:169 
+  at System.Reflection.MethodBase.Invoke (System.Object obj, System.Object[] parameters) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.4/mcs/class/corlib/System.Reflection/MethodBase.cs:111 
+  at MObjc.Managed.Call (IntPtr dummy, IntPtr resultBuffer, IntPtr argBuffers) [0x001c0] in /Users/jessejones/Source/mobjc/source/Managed.cs:97 
+
+Unhandled Exception: System.Reflection.TargetInvocationException: Exception has been thrown by the target of an Objective-C method call. ---> Shared.DatabaseException: Failed to execute '
+					SELECT Methods.display_text, Methods.return_type_name
+						FROM Methods, Types
+					WHERE Methods.static = 1 AND Methods.kind = 8 AND
+						Methods.declaring_root_name = Types.root_name AND
+						(Methods.extend_type_name = 'ThreadModelAttribute' OR Methods.extend_type_name = 'System.Object') AND ()' (near ")": syntax error)
+  at Shared.Database.DoRaiseError (System.String command, Error err, IntPtr errMesg) [0x00055] in /Users/jessejones/Source/Continuum/source/shared/Database.cs:526 
+  at Shared.Database.Query (System.String command, Shared.HeaderCallback hc, Shared.RowCallback rc) [0x00155] in /Users/jessejones/Source/Continuum/source/shared/Database.cs:442 
+  at Shared.Database.QueryRows (System.String command) [0x0004d] in /Users/jessejones/Source/Continuum/source/shared/Database.cs:468 
+  at AutoComplete.TargetDatabase.GetExtensionMethods (System.String[] typeNames, System.String[] namespaces) [0x000cb] in /Users/jessejones/Source/Continuum/source/plugins/auto-complete/TargetDatabase.cs:470 
+  at AutoComplete.ResolveMembers.Resolve (Shared.CsMember context, AutoComplete.ResolvedTarget target, Shared.CsGlobalNamespace globals) [0x001b3] in /Users/jessejones/Source/Continuum/source/plugins/auto-complete/ResolveMembers.cs:80 
+  at AutoComplete.ResolveName.DoGetVariables (Shared.CsMember context, System.String text, ICsLocalsParser locals) [0x002ce] in /Users/jessejones/Source/Continuum/source/plugins/auto-complete/ResolveName.cs:187 
+  at AutoComplete.ResolveName..ctor (Shared.CsMember context, ITargetDatabase database, ICsLocalsParser locals, System.String text, Int32 offset, Shared.CsGlobalNamespace globals) [0x00064] in /Users/jessejones/Source/Continuum/source/plugins/auto-complete/ResolveName.cs:51 
+  at AutoComplete.AutoComplete.DoCompleteMethodDot (ITextEditor editor, MCocoa.NSTextView view, NSRange range) [0x00055] in /Users/jessejones/Source/Continuum/source/plugins/auto-complete/AutoComplete.cs:249 
+  at AutoComplete.AutoComplete.DoCompleteDot (ITextEditor editor, MCocoa.NSTextView view, NSRange range) [0x00054] in /Users/jessejones/Source/Continuum/source/plugins/auto-complete/AutoComplete.cs:213 
+  at AutoComplete.AutoComplete.DoComplete (System.Func`4 completer, MCocoa.NSTextView view, NSRange range, IComputeRuns computer) [0x00098] in /Users/jessejones/Source/Continuum/source/plugins/auto-complete/AutoComplete.cs:189 
+  at AutoComplete.AutoComplete.HandleKey (MCocoa.NSTextView view, MCocoa.NSEvent evt, IComputeRuns computer) [0x0004e] in /Users/jessejones/Source/Continuum/source/plugins/auto-complete/AutoComplete.cs:103 
+  at TextEditor.TextEditorView.keyDown (MCocoa.NSEvent evt) [0x0002d] in /Users/jessejones/Source/Continuum/source/plugins/text-editor/TextEditorView.cs:60 
+  at (wrapper managed-to-native) System.Reflection.MonoMethod:InternalInvoke (object,object[],System.Exception&)
+  at System.Reflection.MonoMethod.Invoke (System.Object obj, BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x00057] in /private/tmp/monobuild/build/BUILD/mono-2.4/mcs/class/corlib/System.Reflection/MonoMethod.cs:159 
+  --- End of inner exception stack trace ---
+  at MObjc.CocoaException.Raise (IntPtr p) [0x0013e] in /Users/jessejones/Source/mobjc/source/CocoaException.cs:105 
+  at MObjc.Ffi.Call (IntPtr cif, IntPtr imp, IntPtr result, MObjc.Helpers.PtrArray args) [0x00026] in /Users/jessejones/Source/mobjc/source/Ffi.cs:95 
+  at MObjc.Native.Invoke () [0x00020] in /Users/jessejones/Source/mobjc/source/Native.cs:98 
+  at MCocoa.NSApplication.run () [0x00000] in /Users/jessejones/Source/mcocoa/source/appkit/NSApplication.cs:100 
+  at App.Application.Run () [0x000da] in /Users/jessejones/Source/Continuum/source/plugins/app/Application.cs:65 
+  at Continuum.Program.Main (System.String[] args) [0x0005f] in /Users/jessejones/Source/Continuum/source/continuum/Program.cs:50 
+Continuum: 
 * Start adding decorations to one thead at a time:
 	- start with stuff in shared
 	- may want to temporarily ignore the other defects

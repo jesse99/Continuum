@@ -19,12 +19,14 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear.Helpers;
 using Shared;
 using System;
 using System.Linq;
 
 namespace ObjectModel
 {
+	[ThreadModel(ThreadModel.ArbitraryThread)]
 	internal static class DatabaseExtensions
 	{
 		public static void Insert(this Database database, string table, params string[] values)
@@ -50,7 +52,7 @@ namespace ObjectModel
 			var quoted = from v in values select "'" + v + "'";
 			var joined = string.Join(", ", quoted.ToArray());
 			string sql = string.Format("INSERT OR REPLACE INTO {0} VALUES ({1})", table, joined);
-
+			
 			database.Update(sql);
 		}
 	}	

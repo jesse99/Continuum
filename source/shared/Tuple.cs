@@ -19,17 +19,19 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear.Helpers;
 using System;
 
 namespace Shared
 {
+	[ThreadModel(ThreadModel.Concurrent)]
 	public static class Tuple
 	{
 		public static Tuple2<T0, T1> Make<T0, T1>(T0 value0, T1 value1)
 		{
 			return new Tuple2<T0, T1>(value0, value1);
 		}
-
+		
 		public static Tuple3<T0, T1, T2> Make<T0, T1, T2>(T0 value0, T1 value1, T2 value2)
 		{
 			return new Tuple3<T0, T1, T2>(value0, value1, value2);
@@ -37,8 +39,9 @@ namespace Shared
 	}
 	
 	// Represents a pair of values.
+	[ThreadModel(ThreadModel.Concurrent)]
 	public struct Tuple2<T0, T1> : IEquatable<Tuple2<T0, T1>>	// TODO: probably should support IList, IList<object>
-	{	
+	{
 		public Tuple2(T0 value0, T1 value1)
 		{
 			First = value0;
@@ -112,8 +115,9 @@ namespace Shared
 	}
 	
 	// Represents a triplet of values.
+	[ThreadModel(ThreadModel.Concurrent)]
 	public struct Tuple3<T0, T1, T2> : IEquatable<Tuple3<T0, T1, T2>>
-	{	
+	{
 		public Tuple3(T0 value0, T1 value1, T2 value2)
 		{
 			First = value0;

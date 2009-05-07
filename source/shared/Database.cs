@@ -74,6 +74,7 @@ namespace Shared
 		}
 	}
 	
+	[ThreadModel(ThreadModel.Concurrent)]
 	public struct NamedRow
 	{
 		internal NamedRow(Dictionary<string, int> names, string[] row)
@@ -117,7 +118,7 @@ namespace Shared
 				builder.Append(m_row[entry.Value]);
 				
 				if (++i < m_names.Count)
-					builder.Append(", ");	
+					builder.Append(", ");
 			}
 			
 			builder.Append("}");
@@ -125,10 +126,11 @@ namespace Shared
 			return builder.ToString();
 		}
 		
-		private Dictionary<string, int> m_names;
-		private string[] m_row;
+		private readonly Dictionary<string, int> m_names;
+		private readonly string[] m_row;
 	}
 	
+	[ThreadModel(ThreadModel.Concurrent)]
 	public sealed class NamedRows : IEnumerable<NamedRow>
 	{
 		public NamedRows(Dictionary<string, int> names, string[][] rows)
@@ -171,14 +173,15 @@ namespace Shared
 				yield return new NamedRow(m_names, m_rows[i]);
 		}
 		
-		private Dictionary<string, int> m_names;
-		private string[][] m_rows;
+		private readonly Dictionary<string, int> m_names;
+		private readonly string[][] m_rows;
 	}
 	
-	// Simple sqlite wrapper. Note that this will work with multiple threads, but
-	// each thread should use its own Database object.
+	// Simple sqlite wrapper.
+	[ThreadModel(ThreadModel.ArbitraryThread)]
 	public sealed class Database	: IDisposable
 	{
+		[ThreadModel("finalizer")]
 		~Database()
 		{
 			DoDispose(false);
@@ -244,6 +247,9 @@ namespace Shared
 			GC.KeepAlive(this);
 		}
 		
+		// We use this instead of System.Action so that it gets the right threading attribute.
+		public delegate void UpdateCallback();
+		
 		// When a connection calls BEGIN IMMEDIATE it will transition from UNLOCKED
 		// (can't read/write) to SHARED (can read) to RESERVED (the connection plans
 		// on writing). If BEGIN IMMEDIATE returns successfully other connections may
@@ -262,7 +268,7 @@ namespace Shared
 		// In order to simplify life for our callers we'll address this by sleeping and 
 		// restarting the first transaction a few times. Because we're restarting the
 		// entire transaction we avoid the deadlock.
-		public void Update(string name, Action action)
+		public void Update(string name, UpdateCallback action)
 		{
 			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
 			Contract.Requires(action != null, "action is null");

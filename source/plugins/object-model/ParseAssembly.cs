@@ -53,6 +53,7 @@ namespace ObjectModel
 		// Parsing the larger system assemblies takes 10s of seconds which is much 
 		// too long a period of time to keep the database locked so our transaction
 		// is around the types, not the assembly.
+		[ThreadModel("populate")]
 		public void Parse(string path, AssemblyDefinition assembly, string id, bool fullParse)		// threaded
 		{
 			if (m_database == null)
@@ -80,6 +81,7 @@ namespace ObjectModel
 		
 		// System.Collections.Generic
 		#region Private Methods
+		[ThreadModel("populate")]
 		private void DoAddNamespaces(HashSet<string> namespaces, string id)
 		{
 			var table = new Dictionary<string, string>();
@@ -118,7 +120,8 @@ namespace ObjectModel
 		}
 		
 		[Conditional("DEBUG")]
-		private void DoValidateRoot(string label, string type)
+		[ThreadModel(ThreadModel.Concurrent)]
+		private static void DoValidateRoot(string label, string type)
 		{
 			string mesg = null;
 			
@@ -145,6 +148,7 @@ namespace ObjectModel
 		}
 		
 		[Conditional("DEBUG")]
+		[ThreadModel("populate")]
 		private void DoValidateRoot(string label, TypeReference type)
 		{
 			string mesg = null;
@@ -163,6 +167,7 @@ namespace ObjectModel
 				Contract.Assert(false, mesg);
 		}
 		
+		[ThreadModel("populate")]
 		private void DoParseType(TypeDefinition type, string id, bool fullParse)		// threaded
 		{
 			if (!DoIsGeneratedCode(type))
@@ -263,6 +268,7 @@ namespace ObjectModel
 			}
 		}
 		
+		[ThreadModel("populate")]
 		private void DoAddSpecialType(TypeReference type)		// threaded
 		{
 			TypeSpecification spec = type as TypeSpecification;
@@ -314,6 +320,7 @@ namespace ObjectModel
 			}
 		}
 		
+		[ThreadModel("populate")]
 		private void DoParseMethod(TypeDefinition type, MethodDefinition method, string id, bool fullParse)		// threaded
 		{
 			// Note that auto-prop methods count as generated code.
@@ -418,6 +425,7 @@ namespace ObjectModel
 			}
 		}
 		
+		[ThreadModel("populate")]
 		private void DoParseField(TypeDefinition type, FieldDefinition field, string id, bool fullParse)		// threaded
 		{
 			if (!DoIsGeneratedCode(field))
@@ -472,6 +480,7 @@ namespace ObjectModel
 			}
 		}
 		
+		[ThreadModel("populate")]
 		private string DoGetDisplayText(MethodDefinition method)
 		{
 			var text = new StringBuilder();
@@ -547,18 +556,20 @@ namespace ObjectModel
 			return text.ToString();
 		}
 		
+		[ThreadModel("populate")]
 		private string DoGetDisplayType(string name)
 		{
 			name = CsHelpers.TrimGeneric(name);
 			name = CsHelpers.GetAliasedName(name);
 			name = CsHelpers.TrimNamespace(name);
-
+			
 			Debug.Assert(!name.Contains(":"), name + " should not have a ':'");
 			Debug.Assert(!name.Contains(";"), name + " should not have a ';'");
 			
 			return name;
 		}
 		
+		[ThreadModel("populate")]
 		private string DoGetDisplayGargs(GenericParameterCollection parms)
 		{
 			var builder = new StringBuilder();
@@ -576,10 +587,11 @@ namespace ObjectModel
 			
 			string result = builder.ToString();
 			Debug.Assert(!result.Contains(":"), result + " should not have a ':'");
-
+			
 			return result;
 		}
 		
+		[ThreadModel("populate")]
 		private string DoGetDisplayName(MethodDefinition method)
 		{
 			string name;
@@ -600,10 +612,11 @@ namespace ObjectModel
 				name = method.Name;
 			
 			Debug.Assert(!name.Contains(":"), name + " should not have a ':'");
-
+			
 			return name;
 		}
 		
+		[ThreadModel("populate")]
 		private void DoRemoveGenerics(List<GenericParameter> generics, TypeReference type)
 		{
 			var gp = type as GenericParameter;
@@ -628,6 +641,7 @@ namespace ObjectModel
 				DoRemoveGenerics(generics, ts.ElementType);
 		}
 		
+		[ThreadModel("populate")]
 		private bool DoCanDeduceGenerics(MethodDefinition method)
 		{
 			bool can = true;
@@ -652,6 +666,7 @@ namespace ObjectModel
 			return can;
 		}
 		
+		[ThreadModel("populate")]
 		private string DoGetOperatorName(MethodDefinition method)
 		{
 			string name;
@@ -789,8 +804,9 @@ namespace ObjectModel
 			
 			return name;
 		}
-				
-		private string DoGetRootName(TypeReference inType)
+		
+		[ThreadModel(ThreadModel.Concurrent)]
+		private static string DoGetRootName(TypeReference inType)
 		{
 			string root = string.Empty;
 			
@@ -816,7 +832,8 @@ namespace ObjectModel
 			return root;
 		}
 		
-		private string DoGetNameWithoutTick(string name)	// theaded
+		[ThreadModel(ThreadModel.Concurrent)]
+		private static string DoGetNameWithoutTick(string name)	// theaded
 		{
 			return CsHelpers.TrimGeneric(name);
 		}
@@ -827,6 +844,7 @@ namespace ObjectModel
 		// this. We could try to change AssemblyCache so that it touches all the method 
 		// bodies or we could perhaps somehow change assembly parsing so that it's done 
 		// with one thread.
+		[ThreadModel("populate")]
 		private Tuple2<string, int> DoGetSourceAndLine(MethodDefinition method)	// theaded
 		{
 			string source = string.Empty;
@@ -857,6 +875,7 @@ namespace ObjectModel
 		}
 		
 		// Based on the gendarme code.
+		[ThreadModel("populate")]
 		private bool DoIsGeneratedCode(TypeReference type)	// theaded
 		{
 			if (type.HasCustomAttributes)
@@ -877,6 +896,7 @@ namespace ObjectModel
 			return false;
 		}
 		
+		[ThreadModel("populate")]
 		private bool DoIsGeneratedCode(MethodDefinition method)	// theaded
 		{
 			if (method.HasCustomAttributes)
@@ -886,6 +906,7 @@ namespace ObjectModel
 			return false;
 		}
 		
+		[ThreadModel("populate")]
 		private bool DoIsGeneratedCode(FieldDefinition field)	// theaded
 		{
 			if (field.HasCustomAttributes)
@@ -895,6 +916,7 @@ namespace ObjectModel
 			return false;
 		}
 		
+		[ThreadModel("populate")]
 		private bool DoHasGeneratedAtribute(CustomAttributeCollection attrs)	// theaded
 		{
 			foreach (CustomAttribute attr in attrs)
@@ -910,6 +932,7 @@ namespace ObjectModel
 			return false;
 		}
 		
+		[ThreadModel("populate")]
 		private bool DoHasExtensionAtribute(CustomAttributeCollection attrs)	// theaded
 		{
 			foreach (CustomAttribute attr in attrs)
@@ -922,6 +945,7 @@ namespace ObjectModel
 			return false;
 		}
 		
+		[ThreadModel("populate")]
 		private bool DoIsParams(ParameterDefinition param)
 		{
 			if (param.HasCustomAttributes)
