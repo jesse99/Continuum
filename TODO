@@ -24,20 +24,23 @@ sudo fs_usage -f filesys
 
 			Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 
-* Start adding decorations to one thead at a time:
-	- start with stuff in shared
-	- may want to temporarily ignore the other defects
-* sharedApplication needs to be thread safe.
+single/any thread
+or maybe any instead uses a ctor arg
+or bitmask? AllowEveryCaller, AllowEveryTarget
+or allowed callers arg
+could add a rule to check for assert with AllowEveryCaller | MainThread
+
 * Straighten out threading:
 	- start adding threading attributes
-	- check in the libraries
+	- make sure we run
+	- do a checkin
+	- start making (most) of the interfaces thread safe
 	- review thread safety
-	- check in the code
+	- look at ArbitraryThread usage
 	- search for " threaded" and make sure it's all labeled
-* BasicIgnoreList::AddMethod should not do the existence check. Might also want to use a 
-   HashSet instead of a List.
 * make gendarme>tmp.txt isn't reloading tmp.txt
 * AppDelegate.cs isn't styling.
+* Enum. completion should show enum members by default.
 * Short form should special case enums:
 	- replace the fields section with a values section
 	- would be nice to show [Flags] (or maybe all attributes)

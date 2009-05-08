@@ -34,6 +34,7 @@ namespace TextEditor
 	{
 		internal const float LeftMargin = 4.0f;
 		
+		[ThreadModel("finalizer")]
 		~AnnotateView()
 		{
 			if (!NSObject.IsNullOrNil(m_text))

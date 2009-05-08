@@ -160,13 +160,22 @@ namespace DirectoryEditor
 			System.Threading.Thread.Sleep(333);		// 200 didn't always work...
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		private void DoGotStdoutData(object sender, DataReceivedEventArgs e)	// threaded
 		{
 			if (NSApplication.sharedApplication().InvokeRequired)
 			{
-				NSApplication.sharedApplication().BeginInvoke(() => DoGotStdoutData(sender, e));
+				NSApplication.sharedApplication().BeginInvoke(() => DoNonThreadedGotStdoutData(sender, e));
 				return;
 			}
+			
+			DoNonThreadedGotStdoutData(sender, e);
+		}
+		
+		[ThreadModel(ThreadModel.MainThread | ThreadModel.AllowEveryCaller)]
+		private void DoNonThreadedGotStdoutData(object sender, DataReceivedEventArgs e)
+		{
+			Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 			
 			if (e.Data != null)
 			{
@@ -175,30 +184,48 @@ namespace DirectoryEditor
 			}
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		private void DoGotStderrData(object sender, DataReceivedEventArgs e)	// threaded
 		{
 			if (NSApplication.sharedApplication().InvokeRequired)
 			{
-				NSApplication.sharedApplication().BeginInvoke(() => DoGotStderrData(sender, e));
+				NSApplication.sharedApplication().BeginInvoke(() => DoNonThreadedGotStderrData(sender, e));
 				return;
 			}
+			
+			DoNonThreadedGotStderrData(sender, e);
+		}
+		
+		[ThreadModel(ThreadModel.MainThread | ThreadModel.AllowEveryCaller)]
+		private void DoNonThreadedGotStderrData(object sender, DataReceivedEventArgs e)
+		{
+			Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 			
 			if (e.Data != null)
 			{
 				m_results.WriteError(e.Data);
 				m_results.WriteError(Environment.NewLine);
-			
+				
 				m_errors.AppendLine(e.Data);
 			}
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		private void DoProcessExited(object sender, EventArgs e)	// threaded
 		{
 			if (NSApplication.sharedApplication().InvokeRequired)
 			{
-				NSApplication.sharedApplication().BeginInvoke(() => DoProcessExited(sender, e));
+				NSApplication.sharedApplication().BeginInvoke(() => DoNonThreadedProcessExited(sender, e));
 				return;
 			}
+			
+			DoNonThreadedProcessExited(sender, e);
+		}
+		
+		[ThreadModel(ThreadModel.MainThread | ThreadModel.AllowEveryCaller)]
+		private void DoNonThreadedProcessExited(object sender, EventArgs e)
+		{
+			Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 			
 			m_results.OnStopped();
 			

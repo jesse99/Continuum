@@ -101,7 +101,7 @@ namespace Shared
 		}
 		
 		#region Private Members
-		[ThreadModel(ThreadModel.ArbitraryThread)]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private void Dispose(bool disposing)
 		{
 			if (m_stream != IntPtr.Zero)
@@ -185,17 +185,17 @@ namespace Shared
 			IntPtr   streamRef);
 		
 		[DllImport("/System/Library/Frameworks/CoreServices.framework/CoreServices")]
-		[ThreadModel(ThreadModel.ArbitraryThread)]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private extern static void FSEventStreamStop(
 			IntPtr   streamRef);
 		
 		[DllImport("/System/Library/Frameworks/CoreServices.framework/CoreServices")]
-		[ThreadModel(ThreadModel.ArbitraryThread)]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private extern static void FSEventStreamInvalidate(
 			IntPtr   streamRef);
 		
 		[DllImport("/System/Library/Frameworks/CoreServices.framework/CoreServices")]
-		[ThreadModel(ThreadModel.ArbitraryThread)]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private extern static void FSEventStreamRelease(
 			IntPtr   streamRef);
 		#endregion

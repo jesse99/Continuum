@@ -32,6 +32,7 @@ namespace Find
 	[ExportClass("FindInstance", "NSObject")]
 	internal sealed class FindInstance : NSObject
 	{
+		[ThreadModel("finalizer")]
 		~FindInstance()
 		{
 			if ((object) m_context != null)
@@ -105,6 +106,7 @@ namespace Find
 	[ExportClass("FindsForFile", "NSObject")]
 	internal sealed class FindsForFile : NSObject
 	{
+		[ThreadModel("finalizer")]
 		~FindsForFile()
 		{
 			if ((object) m_path != null)
@@ -180,6 +182,7 @@ namespace Find
 	
 	internal sealed class FindAll : BaseFindInFiles
 	{
+		[ThreadModel("finalizer")]
 		~FindAll()
 		{
 			if (m_finds != null)

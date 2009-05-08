@@ -262,6 +262,7 @@ namespace CsParser
 			}
 		}
 		
+		[ThreadModel("parses")]
 		private void DoThread()
 		{
 			Parser parser = new Parser();

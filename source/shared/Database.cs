@@ -178,7 +178,7 @@ namespace Shared
 	}
 	
 	// Simple sqlite wrapper.
-	[ThreadModel(ThreadModel.ArbitraryThread)]
+	[ThreadModel(ThreadModel.SingleThread)]
 	public sealed class Database	: IDisposable
 	{
 		[ThreadModel("finalizer")]

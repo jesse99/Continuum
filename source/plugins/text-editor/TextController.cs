@@ -812,6 +812,7 @@ namespace TextEditor
 		// This is retarded, but showFindIndicatorForRange only works if the window is
 		//  already visible and the indicator doesn't always show up if we simply use 
 		// BeginInvoke.
+		[ThreadModel(ThreadModel.Concurrent)]
 		private void DoDeferredFindIndicator(NSRange range)
 		{
 			System.Threading.Thread.Sleep(200);

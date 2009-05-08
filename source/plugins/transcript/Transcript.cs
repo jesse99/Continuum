@@ -209,6 +209,7 @@ namespace Transcript
 		
 		// This is retarded, but showFindIndicatorForRange only works if the window is aleady visible
 		// and the indicator doesn't always show up if we simply use BeginInvoke.
+		[ThreadModel(ThreadModel.Concurrent)]
 		private static void DoAnimateError(NSTextView view, NSRange range)
 		{
 			System.Threading.Thread.Sleep(200);
@@ -241,7 +242,7 @@ namespace Transcript
 			DoNonthreadedWrite(type, text);
 		}
 		
-		[ThreadModel(ThreadModel.ArbitraryThread)]		// we (safely) call this from a concurrent method so we need to decorate it
+		[ThreadModel(ThreadModel.MainThread | ThreadModel.AllowEveryCaller)]
 		private void DoNonthreadedWrite(Output type, string text)
 		{
 			Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");

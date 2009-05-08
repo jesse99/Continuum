@@ -26,7 +26,7 @@ using System.Diagnostics;
 
 namespace ObjectModel
 {
-	[ThreadModel(ThreadModel.ArbitraryThread)]
+	[ThreadModel(ThreadModel.SingleThread)]
 	public static class CecilExtensions
 	{
 		public static bool IsSpecial(this TypeReference type)
