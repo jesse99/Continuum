@@ -20,22 +20,23 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using Gear.Helpers;
 using MCocoa;
 
 namespace Shared
 {
 	// Used to decode and encode text files.
+	[ThreadModel(ThreadModel.Concurrent)]
 	public interface ITextEncoding : IInterface
 	{
 		// Decode the data using encodings like Enums.NSUTF8StringEncoding
 		// and Enums.NSMacOSRomanStringEncoding. If not successful an 
-		// exception is thrown. Note that this is thread safe.
+		// exception is thrown. 
 		NSString Decode(NSData data);
 		
 		NSString Decode(NSData data, out uint encoding);
 		
-		// Encodes the string using the specified encoding. Note that this 
-		// is thread safe.
+		// Encodes the string using the specified encoding. 		
 		NSData Encode(NSString text, uint encoding);
 	}
 }

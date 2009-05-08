@@ -43,12 +43,14 @@ namespace TextEditor
 			get {return m_boss;}
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		public NSString Decode(NSData data)	// threaded code
 		{
 			uint encoding;
 			return Decode(data, out encoding);
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		public NSString Decode(NSData data, out uint encoding)	// threaded code
 		{
 			Contract.Requires(data != null, "data is null");
@@ -76,6 +78,7 @@ namespace TextEditor
 			return result;
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		public NSData Encode(NSString text, uint encoding)	// threaded code
 		{
 			Contract.Requires((object) text != null, "text is null");
@@ -85,6 +88,7 @@ namespace TextEditor
 		}
 		
 		#region Private Methods
+		[ThreadModel(ThreadModel.Concurrent)]
 		private uint DoGetEncoding(NSData data)
 		{
 			uint encoding = 0;
@@ -141,6 +145,7 @@ namespace TextEditor
 		// Apart from the asian languages most utf16 characters will have a zero in
 		// their high byte. So, if we see enough zeros we'll call the data utf16 (and
 		// note that utf8 will not have zeros).
+		[ThreadModel(ThreadModel.Concurrent)]
 		private bool DoLooksLikeUTF16(byte[] buffer, bool bigEndian, int headerBytes)
 		{
 			int zeros = 0;
@@ -175,6 +180,7 @@ namespace TextEditor
 		}
 		
 		// See http://en.wikipedia.org/wiki/UTF-8#Invalid_byte_sequences
+		[ThreadModel(ThreadModel.Concurrent)]
 		private bool DoIsValidUTF8(byte b)
 		{
 			bool valid = true;
@@ -191,6 +197,7 @@ namespace TextEditor
 			return valid;
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		private bool DoIsValidMacRoman(byte b)
 		{
 			bool valid = true;
@@ -201,6 +208,7 @@ namespace TextEditor
 			return valid;
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		private bool DoIsControl(byte b)
 		{
 			if (b < 0x20 && b != (byte) '\t' && b != (byte) '\n' && b != (byte) '\r')
@@ -212,6 +220,7 @@ namespace TextEditor
 			return false;
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		private NSString DoDecode(NSData data, uint encoding)		// threaded code
 		{
 			NSString result = NSString.Alloc().initWithData_encoding(data, encoding);

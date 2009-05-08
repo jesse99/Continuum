@@ -31,10 +31,14 @@ namespace Shared
 	// Part of the Application boss.
 	public interface ITranscript : IInterface
 	{
+		[ThreadModel(ThreadModel.Concurrent)]
 		void Write(Output type, string text);
+		[ThreadModel(ThreadModel.Concurrent)]
 		void Write(Output type, string format, params object[] args);
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		void WriteLine(Output type, string text);
+		[ThreadModel(ThreadModel.Concurrent)]
 		void WriteLine(Output type, string format, params object[] args);
 		
 		bool Visible {get;}

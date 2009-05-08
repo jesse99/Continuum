@@ -146,6 +146,7 @@ namespace Find
 			m_styledPath = NSAttributedString.Create(path, attrs).Retain();
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		public new FindsForFile Retain()
 		{
 			Unused.Value = retain();
@@ -205,11 +206,13 @@ namespace Find
 		}
 		
 		#region Protected Methods
+		[ThreadModel(ThreadModel.Concurrent)]
 		protected override NSFileHandle OnOpenFile(string path)	// threaded
 		{
 			return NSFileHandle.fileHandleForReadingAtPath(NSString.Create(path));
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		protected override string OnProcessFile(string file, string text)	// threaded
 		{
 			MatchCollection matches = m_regex.Matches(text);

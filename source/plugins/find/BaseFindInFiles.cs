@@ -39,6 +39,12 @@ namespace Find
 			m_directory = directory;
 			m_include = include;
 			m_exclude = exclude;
+			
+			Boss boss = ObjectModel.Create("TextEditorPlugin");
+			m_encoding = boss.Get<ITextEncoding>();
+			
+			boss = ObjectModel.Create("Application");
+			m_transcript = boss.Get<ITranscript>();
 		}
 		
 		public void Run()
@@ -90,8 +96,10 @@ namespace Find
 		}
 		
 		#region Protected Methods
+		[ThreadModel(ThreadModel.Concurrent)]
 		protected abstract NSFileHandle OnOpenFile(string path);	// threaded
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		protected abstract string OnProcessFile(string file, string text);	// threaded
 		#endregion
 		
@@ -208,6 +216,7 @@ namespace Find
 			return true;
 		}
 		
+		[ThreadModel("find in files")]
 		private void DoThread()			// threaded
 		{
 			// Then process each file in turn.
@@ -230,6 +239,7 @@ namespace Find
 				NSApplication.sharedApplication().BeginInvoke(this.DoReload);
 		}
 		
+		[ThreadModel("find in files")]
 		private void DoProcessFile(string file)		// threaded
 		{
 			NSAutoreleasePool pool = NSAutoreleasePool.Create();
@@ -239,16 +249,14 @@ namespace Find
 				NSFileHandle handle = OnOpenFile(file);
 				NSData data = handle.readDataToEndOfFile();
 				
-				Boss boss = ObjectModel.Create("TextEditorPlugin");
-				var encoding = boss.Get<ITextEncoding>();
 				uint coding;
-				var result = encoding.Decode(data, out coding);
+				var result = m_encoding.Decode(data, out coding);
 				
 				string oldText = result.description();
 				string newText = OnProcessFile(file, oldText);
 				if (newText != oldText)
 				{
-					data = encoding.Encode(NSString.Create(newText), coding);
+					data = m_encoding.Encode(NSString.Create(newText), coding);
 					
 					handle.seekToFileOffset(0);
 					handle.writeData(data);
@@ -257,12 +265,9 @@ namespace Find
 				}
 			}
 			catch (Exception e)
-			{
-				Boss boss = ObjectModel.Create("Application");
-				var transcript = boss.Get<ITranscript>();
-				
-				transcript.WriteLine(Output.Error, "Couldn't do the search/replace for '{0}'.", file);
-				transcript.WriteLine(Output.Error, e.Message);
+			{				
+				m_transcript.WriteLine(Output.Error, "Couldn't do the search/replace for '{0}'.", file);
+				m_transcript.WriteLine(Output.Error, e.Message);
 			}
 			finally
 			{
@@ -277,6 +282,8 @@ namespace Find
 		private string[] m_exclude;
 		private Thread m_thread;
 		private List<string> m_files = new List<string>(50);
+		private ITextEncoding m_encoding;
+		private ITranscript m_transcript;
 		
 		private volatile string m_title = string.Empty;
 		private volatile int m_fileCount = 1000;		// default to something non-zero so the progress window doesn't think we are done on startup

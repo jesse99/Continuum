@@ -68,11 +68,13 @@ namespace Shared
 			Change(dueTime, period);
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		public bool Change(int dueTime, int period)
 		{
 			return Change(TimeSpan.FromMilliseconds(dueTime), TimeSpan.FromMilliseconds(period));
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		public bool Change(TimeSpan dueTime, TimeSpan period)
 		{
 			Contract.Requires(dueTime.TotalMilliseconds >= -1, "bad dueTime");

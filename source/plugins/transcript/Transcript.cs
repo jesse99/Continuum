@@ -91,6 +91,7 @@ namespace Transcript
 			m_controller.window().makeKeyAndOrderFront(null);
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		public void Write(Output type, string text)
 		{
 			if (text.Length > 0)
@@ -124,16 +125,19 @@ namespace Transcript
 			}
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		public void Write(Output type, string format, params object[] args)
 		{
 			Write(type, string.Format(format, args));
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		public void WriteLine(Output type, string text)
 		{
 			Write(type, text + Environment.NewLine);
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		public void WriteLine(Output type, string format, params object[] args)
 		{
 			Write(type, string.Format(format, args) + Environment.NewLine);
@@ -225,13 +229,22 @@ namespace Transcript
 			}
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		private void DoWrite(Output type, string text)		// threaded
 		{
 			if (NSApplication.sharedApplication().InvokeRequired)
 			{
-				NSApplication.sharedApplication().BeginInvoke(() => DoWrite(type, text));
+				NSApplication.sharedApplication().BeginInvoke(() => DoNonthreadedWrite(type, text));
 				return;
 			}
+			
+			DoNonthreadedWrite(type, text);
+		}
+		
+		[ThreadModel(ThreadModel.ArbitraryThread)]		// we (safely) call this from a concurrent method so we need to decorate it
+		private void DoNonthreadedWrite(Output type, string text)
+		{
+			Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 			
 			if (m_controller == null)
 			{
