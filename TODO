@@ -24,19 +24,13 @@ sudo fs_usage -f filesys
 
 			Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 
-single/any thread
-or maybe any instead uses a ctor arg
-or bitmask? AllowEveryCaller, AllowEveryTarget
-or allowed callers arg
-could add a rule to check for assert with AllowEveryCaller | MainThread
-
+* SHould be legal to use just NamedThread.
 * Straighten out threading:
 	- start adding threading attributes
 	- make sure we run
 	- do a checkin
 	- start making (most) of the interfaces thread safe
 	- review thread safety
-	- look at ArbitraryThread usage
 	- search for " threaded" and make sure it's all labeled
 * make gendarme>tmp.txt isn't reloading tmp.txt
 * AppDelegate.cs isn't styling.

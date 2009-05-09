@@ -44,6 +44,7 @@ namespace Shared
 		}
 		
 		// Edit count for the text this parse is associated with.
+		[ThreadModel(ThreadModel.Concurrent)]
 		public int Edit {get; private set;}
 		
 		// Index and length of the text associated with the first parser error.

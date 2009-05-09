@@ -301,6 +301,7 @@ namespace CsParser
 			}
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		private Parse DoParse(Parser parser, Job job)		// threaded
 		{
 			int index, length;
@@ -355,6 +356,7 @@ namespace CsParser
 		// It's very important that the parses be properly purged so we'll
 		// log when they start stacking up.
 		[Conditional("DEBUG")]
+		[ThreadModel(ThreadModel.Concurrent)]
 		private void DoCheckHighwater()		// threaded
 		{
 			if (m_parses.Count > m_highwater)

@@ -248,6 +248,7 @@ namespace Shared
 		}
 		
 		// We use this instead of System.Action so that it gets the right threading attribute.
+		[ThreadModel(ThreadModel.NamedThread)]
 		public delegate void UpdateCallback();
 		
 		// When a connection calls BEGIN IMMEDIATE it will transition from UNLOCKED

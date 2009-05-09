@@ -55,6 +55,7 @@ namespace CsParser
 	// Note that this parser is a bit simplified because we only care whether the text is 
 	// well-formed not if it is actually correct. Note that instances are safe to use from
 	// a thread (but not from multiple threads).
+	[ThreadModel(ThreadModel.Concurrent)]
 	internal sealed class Parser
 	{
 		public Parser()
