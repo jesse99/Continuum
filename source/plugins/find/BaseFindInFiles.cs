@@ -63,28 +63,28 @@ namespace Find
 			m_thread.Start();
 		}
 		
-		public string Title 			// threaded
+		public string Title
 		{
 			get {return m_title;}	
 			set {m_title = value;}
 		}
 		
-		public int FileCount 			// threaded
+		public int FileCount
 		{
 			get {return m_fileCount;}	
 		}
 		
-		public int ProcessedCount  		// threaded
+		public int ProcessedCount
 		{
 			get {return m_processCount;}
 		}
 		
-		public int ChangeCount  		// threaded
+		public int ChangeCount
 		{
 			get {return m_changeCount;}
 		}
 		
-		public string Processing  		// threaded
+		public string Processing
 		{
 			get {return m_processing;}
 		}

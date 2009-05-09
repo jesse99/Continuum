@@ -62,7 +62,7 @@ namespace Find
 		{
 			get {return m_path;}
 		}
-			
+		
 		public NSString Context
 		{
 			get {return m_context;}
@@ -78,22 +78,28 @@ namespace Find
 			get {return m_range;}
 		}
 		
-		public void Update(NSRange changed, int delta)
-		{		
+		public bool Update(NSRange changed, int delta)
+		{
 			if (changed.length == 0 && delta < 0)		// this is a deletion
 				changed = new NSRange(changed.location, -delta);
-				
+			
+			bool dirty = false;
+			
 			if (changed.location + changed.length < m_range.location)
 			{
 				m_range.location += delta;
-			}	
+			}
 			else if (m_range.Intersects(changed)) 
 			{
 				m_range = new NSRange(0, 0);
 				
 				var attrs = NSDictionary.dictionaryWithObject_forKey(NSColor.disabledControlTextColor(), Externs.NSForegroundColorAttributeName);
 				m_styledContext.setAttributes_range(attrs, new NSRange(0, (int) m_context.length()));
+				
+				dirty = true;
 			}
+			
+			return dirty;
 		}
 		
 		private string m_path;
@@ -137,7 +143,7 @@ namespace Find
 				
 				while (index + length < text.Length && text[index + length] != '\n')
 					++length;
-					
+				
 				string context = text.Substring(index, length);
 				m_instances[i] = new FindInstance(path, context, index, m.Index, m.Length).Retain();
 				++i;

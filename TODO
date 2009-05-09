@@ -24,15 +24,21 @@ sudo fs_usage -f filesys
 
 			Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 
-
+* Make thread safe:
+	- add IStyleRuns
+		` has a thread safe method to get runs for a path/edit count
+		` has thread which listens for text changes, computes new runs, and broadcasts
+	- IComputeRuns
+	- ICachedStyleRuns
+	- IParses?
+	- IWhitespace?
+	- IStyleRuns
 * Straighten out threading:
-	- make sure we run
-	- do a checkin
 	- start making (most) of the interfaces thread safe
 	- review thread safety
-	- search for " threaded" and make sure it's all labeled
 * make gendarme>tmp.txt isn't reloading tmp.txt
 * AppDelegate.cs isn't styling.
+* Right click on Invoke didn't show the Broadcaster method.
 * Enum. completion should show enum members by default.
 * Short form should special case enums:
 	- replace the fields section with a values section

@@ -55,7 +55,7 @@ namespace Find
 			if (superclass().respondsToSelector("awakeFromNib"))
 				Unused.Value = SuperCall("awakeFromNib");
 			
-			Broadcaster.Register("text range changed", this);
+			Broadcaster.Register("text changed", this);
 			NSApplication.sharedApplication().BeginInvoke(this.DoUpdate, TimeSpan.FromMilliseconds(50));
 		}
 		
@@ -63,8 +63,8 @@ namespace Find
 		{
 			switch (name)
 			{
-				case "text range changed":
-					DoDocChanged(name, value);
+				case "text changed":
+					DoDocChanged((TextEdit) value);
 					break;
 					
 				default:
@@ -154,19 +154,30 @@ namespace Find
 		}
 			
 		#region Private Methods
-		private void DoDocChanged(string name, object v)
-		{
-			var value = (Tuple3<string, NSRange, int>) v;	// path, affected range, change in length
-	
-			foreach (FindsForFile finds in m_finds)
+		private void DoDocChanged(TextEdit edit)
+		{	
+			var editor = edit.Boss.Get<ITextEditor>();
+			string path = editor.Path;
+			
+			// Note that simply opening the file should not invalidate the finds.
+			if (path != null && edit.UserEdit)
 			{
-				for (int i = 0; i < finds.Length; ++i)
+				bool changed = false;
+				
+				foreach (FindsForFile finds in m_finds)
 				{
-					if (value.First != null && Paths.AreEqual(finds[i].Path, value.First))
+					for (int i = 0; i < finds.Length; ++i)
 					{
-						finds[i].Update(value.Second, value.Third);
+						if (Paths.AreEqual(finds[i].Path, path))
+						{
+							if (finds[i].Update(edit.EditedRange, edit.ChangeInLength))
+								changed = true;
+						}
 					}
 				}
+				
+				if (changed)
+					window().display();
 			}
 		}
 		
@@ -197,7 +208,7 @@ namespace Find
 		{
 			if (!m_closed)
 			{
-				FindsForFile[] results = m_find.Results();			
+				FindsForFile[] results = m_find.Results();
 				if (results.Length != m_finds.Length)
 				{
 					m_finds = results;

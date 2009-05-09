@@ -684,18 +684,6 @@ namespace TextEditor
 				
 				if (m_userEdit)
 				{
-					Broadcaster.Invoke("text range changed", Tuple.Make(Path, range, lengthChange));
-					
-					// Let people who care know if the number of lines has changed
-					// (e.g. so build errors can be fixed up).
-					if (Path != null)
-					{
-						int deltaLines = m_metrics.LineCount - oldNumLines;
-						int startLine = m_metrics.GetLine(range.location);
-						
-						Broadcaster.Invoke("text lines changed", Tuple.Make(Path, startLine, deltaLines));
-					}
-					
 					// If the user typed a closing brace and it is balanced,
 					int left = m_metrics.BalanceLeft(text, range.location + range.length - 1);
 					if (left != -2)
@@ -735,6 +723,15 @@ namespace TextEditor
 						}
 					}
 				}
+				
+				var edit = new TextEdit{
+					Boss = m_boss,
+					UserEdit = m_userEdit,
+					EditedRange = range,
+					ChangeInLength = lengthChange,
+					ChangeInLines = m_metrics.LineCount - oldNumLines,
+					StartLine = m_metrics.GetLine(range.location)};
+				Broadcaster.Invoke("text changed", edit);
 			}
 		}
 		

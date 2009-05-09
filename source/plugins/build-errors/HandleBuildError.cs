@@ -94,15 +94,15 @@ namespace BuildErrors
 			m_current = 0;
 			DoHandle();
 			
-			Broadcaster.Register("text lines changed", this);
+			Broadcaster.Register("text changed", this);
 		}
 		
 		public void OnBroadcast(string name, object value)
 		{
 			switch (name)
 			{
-				case "text lines changed":
-					DoUpdateLines(name, value);
+				case "text changed":
+					DoUpdateLines((TextEdit) value);
 					break;
 					
 				default:
@@ -168,21 +168,25 @@ namespace BuildErrors
 				m_boss.CallRepeated<IDisplayBuildError>(i => i.Clear());
 		}
 		
-		private void DoUpdateLines(string name, object value)
+		private void DoUpdateLines(TextEdit edit)
 		{
-			var data = (Tuple3<string, int, int>) value;
+			var editor = edit.Boss.Get<ITextEditor>();
+			string path = editor.Path;
 			
-			foreach (BuildError error in m_errors)
+			if (path != null)
 			{
-				string path = System.IO.Path.Combine(m_dirPath, error.File);
-				if (Paths.AreEqual(path, data.First))
+				foreach (BuildError error in m_errors)
 				{
-					if (data.Third <= 0)
-						if (data.Second <= error.Line && error.Line <= data.Second - data.Third)
-							error.Column = -1;
-					
-					if (data.Second < error.Line)
-						error.Line += data.Third;	
+					string errorPath = System.IO.Path.Combine(m_dirPath, error.File);
+					if (Paths.AreEqual(errorPath, path))
+					{
+						if (edit.ChangeInLines <= 0)
+							if (edit.StartLine <= error.Line && error.Line <= edit.StartLine - edit.ChangeInLines)
+								error.Column = -1;
+						
+						if (edit.StartLine < error.Line)
+							error.Line += edit.ChangeInLines;
+					}
 				}
 			}
 		}
