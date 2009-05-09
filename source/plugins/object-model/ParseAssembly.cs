@@ -53,7 +53,7 @@ namespace ObjectModel
 		// Parsing the larger system assemblies takes 10s of seconds which is much 
 		// too long a period of time to keep the database locked so our transaction
 		// is around the types, not the assembly.
-		[ThreadModel("populate")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		public void Parse(string path, AssemblyDefinition assembly, string id, bool fullParse)		// threaded
 		{
 			if (m_database == null)
@@ -81,7 +81,7 @@ namespace ObjectModel
 		
 		// System.Collections.Generic
 		#region Private Methods
-		[ThreadModel("populate")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private void DoAddNamespaces(HashSet<string> namespaces, string id)
 		{
 			var table = new Dictionary<string, string>();
@@ -148,7 +148,7 @@ namespace ObjectModel
 		}
 		
 		[Conditional("DEBUG")]
-		[ThreadModel("populate")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private void DoValidateRoot(string label, TypeReference type)
 		{
 			string mesg = null;
@@ -167,7 +167,7 @@ namespace ObjectModel
 				Contract.Assert(false, mesg);
 		}
 		
-		[ThreadModel("populate")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private void DoParseType(TypeDefinition type, string id, bool fullParse)		// threaded
 		{
 			if (!DoIsGeneratedCode(type))
@@ -268,7 +268,7 @@ namespace ObjectModel
 			}
 		}
 		
-		[ThreadModel("populate")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private void DoAddSpecialType(TypeReference type)		// threaded
 		{
 			TypeSpecification spec = type as TypeSpecification;
@@ -320,7 +320,7 @@ namespace ObjectModel
 			}
 		}
 		
-		[ThreadModel("populate")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private void DoParseMethod(TypeDefinition type, MethodDefinition method, string id, bool fullParse)		// threaded
 		{
 			// Note that auto-prop methods count as generated code.
@@ -425,7 +425,7 @@ namespace ObjectModel
 			}
 		}
 		
-		[ThreadModel("populate")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private void DoParseField(TypeDefinition type, FieldDefinition field, string id, bool fullParse)		// threaded
 		{
 			if (!DoIsGeneratedCode(field))
@@ -480,7 +480,7 @@ namespace ObjectModel
 			}
 		}
 		
-		[ThreadModel("populate")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private string DoGetDisplayText(MethodDefinition method)
 		{
 			var text = new StringBuilder();
@@ -556,7 +556,7 @@ namespace ObjectModel
 			return text.ToString();
 		}
 		
-		[ThreadModel("populate")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private string DoGetDisplayType(string name)
 		{
 			name = CsHelpers.TrimGeneric(name);
@@ -569,7 +569,7 @@ namespace ObjectModel
 			return name;
 		}
 		
-		[ThreadModel("populate")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private string DoGetDisplayGargs(GenericParameterCollection parms)
 		{
 			var builder = new StringBuilder();
@@ -591,7 +591,7 @@ namespace ObjectModel
 			return result;
 		}
 		
-		[ThreadModel("populate")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private string DoGetDisplayName(MethodDefinition method)
 		{
 			string name;
@@ -616,7 +616,7 @@ namespace ObjectModel
 			return name;
 		}
 		
-		[ThreadModel("populate")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private void DoRemoveGenerics(List<GenericParameter> generics, TypeReference type)
 		{
 			var gp = type as GenericParameter;
@@ -641,7 +641,7 @@ namespace ObjectModel
 				DoRemoveGenerics(generics, ts.ElementType);
 		}
 		
-		[ThreadModel("populate")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private bool DoCanDeduceGenerics(MethodDefinition method)
 		{
 			bool can = true;
@@ -666,7 +666,7 @@ namespace ObjectModel
 			return can;
 		}
 		
-		[ThreadModel("populate")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private string DoGetOperatorName(MethodDefinition method)
 		{
 			string name;
@@ -844,7 +844,7 @@ namespace ObjectModel
 		// this. We could try to change AssemblyCache so that it touches all the method 
 		// bodies or we could perhaps somehow change assembly parsing so that it's done 
 		// with one thread.
-		[ThreadModel("populate")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private Tuple2<string, int> DoGetSourceAndLine(MethodDefinition method)	// theaded
 		{
 			string source = string.Empty;
@@ -875,7 +875,7 @@ namespace ObjectModel
 		}
 		
 		// Based on the gendarme code.
-		[ThreadModel("populate")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private bool DoIsGeneratedCode(TypeReference type)	// theaded
 		{
 			if (type.HasCustomAttributes)
@@ -896,7 +896,7 @@ namespace ObjectModel
 			return false;
 		}
 		
-		[ThreadModel("populate")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private bool DoIsGeneratedCode(MethodDefinition method)	// theaded
 		{
 			if (method.HasCustomAttributes)
@@ -906,7 +906,7 @@ namespace ObjectModel
 			return false;
 		}
 		
-		[ThreadModel("populate")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private bool DoIsGeneratedCode(FieldDefinition field)	// theaded
 		{
 			if (field.HasCustomAttributes)
@@ -916,7 +916,7 @@ namespace ObjectModel
 			return false;
 		}
 		
-		[ThreadModel("populate")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private bool DoHasGeneratedAtribute(CustomAttributeCollection attrs)	// theaded
 		{
 			foreach (CustomAttribute attr in attrs)
@@ -932,7 +932,7 @@ namespace ObjectModel
 			return false;
 		}
 		
-		[ThreadModel("populate")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private bool DoHasExtensionAtribute(CustomAttributeCollection attrs)	// theaded
 		{
 			foreach (CustomAttribute attr in attrs)
@@ -945,7 +945,7 @@ namespace ObjectModel
 			return false;
 		}
 		
-		[ThreadModel("populate")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private bool DoIsParams(ParameterDefinition param)
 		{
 			if (param.HasCustomAttributes)

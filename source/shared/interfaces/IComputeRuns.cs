@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using Gear.Helpers;
 using System;
 using System.Collections.Generic;
 
@@ -27,13 +28,15 @@ namespace Shared
 {
 	// Primary interface on language bosses.
 	public interface IComputeRuns : IInterface
-	{		
+	{
 		// Computes style runs and updates ICachedStyleRuns on the boss. 
-		// Note that this is called from a thread. 
+		// Note that this is called from a thread.
+		[ThreadModel(ThreadModel.Concurrent)]
 		void ComputeRuns(Boss boss, string path, string text, int edit);
 		
 		// Returns true if the language supports showing leading/trailing tabs and
 		// spaces.
+		[ThreadModel(ThreadModel.Concurrent)]
 		bool StylesWhitespace {get;}
 	}
 }

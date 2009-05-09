@@ -29,6 +29,7 @@ using System.Text;
 namespace Shared
 {
 	// [assembly: CLSCompliant(false)]
+	[ThreadModel(ThreadModel.Serializable)]
 	public sealed class CsAttribute : CsDeclaration
 	{
 		public CsAttribute(string target, string name, string args, int offset, int length, int line) : base(offset, length, line)
@@ -60,6 +61,7 @@ namespace Shared
 	}
 	
 	// Command, IComparable <MyCommand>, IDisposable
+	[ThreadModel(ThreadModel.Serializable)]
 	public sealed class CsBases : CsDeclaration
 	{
 		public CsBases(int offset, int line) : base(offset, 0, line)
@@ -88,6 +90,7 @@ namespace Shared
 	}
 	
 	// { void Foo(); }
+	[ThreadModel(ThreadModel.Serializable)]
 	public sealed class CsBody : CsDeclaration
 	{
 		public CsBody(string name, int length) : base(0, length, 1)
@@ -127,6 +130,7 @@ namespace Shared
 	}
 	
 	// public class Foo : Bar {}
+	[ThreadModel(ThreadModel.Serializable)]
 	public sealed class CsClass : CsType
 	{
 		public CsClass(int nameOffset, CsBody body, CsMember[] members, CsType[] types, CsBases bases, string constraints, string gargs, CsAttribute[] attrs, MemberModifiers modifiers, string name, int offset, int length, int line) : base(nameOffset, body, bases, members, types, attrs, modifiers, constraints, gargs, name, offset, length, line)
@@ -135,6 +139,7 @@ namespace Shared
 	}
 	
 	// public delegate void Foo<KEY, VALUE>(int x, Dictionary<KEY, VALUE> y)
+	[ThreadModel(ThreadModel.Serializable)]
 	public sealed class CsDelegate : CsType
 	{
 		public CsDelegate(int nameOffset, string constraints, CsParameter[] parms, string gargs, string rtype, CsAttribute[] attrs, MemberModifiers modifiers, string name, int offset, int length, int line)
@@ -155,6 +160,7 @@ namespace Shared
 	}
 	
 	// public enum Greek {alpha, beta, gamma}
+	[ThreadModel(ThreadModel.Serializable)]
 	public sealed class CsEnum : CsType
 	{
 		public CsEnum(string[] names, int nameOffset, string baseType, CsAttribute[] attrs, MemberModifiers modifiers, string name, int offset, int length, int line)
@@ -174,6 +180,7 @@ namespace Shared
 	}
 	
 	// event bool Signaled;
+	[ThreadModel(ThreadModel.Serializable)]
 	public sealed class CsEvent : CsMember
 	{
 		public CsEvent(int nameOffset, string type, string name, CsAttribute[] attrs, MemberModifiers modifiers, int offset, int length, int line) : base(nameOffset, attrs, modifiers, name, offset, length, line)
@@ -202,6 +209,7 @@ namespace Shared
 	// extern alias TypeName; These are used in conjunction with the alias form of
 	// gmcs's -reference command to reference distinct types which happen to have
 	// the same fully qualified name.
+	[ThreadModel(ThreadModel.Serializable)]
 	public sealed class CsExternAlias : CsDeclaration
 	{
 		public CsExternAlias(string name, int offset, int length, int line) : base(offset, length, line)
@@ -221,6 +229,7 @@ namespace Shared
 	}
 	
 	// public float Pi = 3.14;
+	[ThreadModel(ThreadModel.Serializable)]
 	public sealed class CsField : CsMember
 	{
 		public CsField(int nameOffset, string type, string value, CsAttribute[] attrs, MemberModifiers modifiers, string name, int offset, int length, int line) : base(nameOffset, attrs, modifiers, name, offset, length, line)
@@ -247,6 +256,7 @@ namespace Shared
 		}
 	}
 	
+	[ThreadModel(ThreadModel.Serializable)]
 	public sealed class CsGlobalNamespace : CsNamespace
 	{
 		public CsGlobalNamespace(CsPreprocess[] preprocess, CsBody body, CsAttribute[] attrs, CsExternAlias[] externs, CsUsingAlias[] aliases, CsUsingDirective[] uses, CsNamespace[] namespaces, CsType[] types, int length) : base(body, "<globals>", externs, aliases, uses, namespaces, types, 0, length, 1)
@@ -267,6 +277,7 @@ namespace Shared
 	}
 	
 	// int this[int x] {get; set;}
+	[ThreadModel(ThreadModel.Serializable)]
 	public sealed class CsIndexer : CsMember
 	{
 		public CsIndexer(int nameOffset, CsBody getterBody, CsBody setterBody, MemberModifiers getAccess, MemberModifiers setAccess, string name, CsAttribute[] getAttrs, CsAttribute[] setAttrs, bool hasGet, bool hasSet, CsParameter[] parms, string rtype, CsAttribute[] attrs, MemberModifiers modifiers, int offset, int length, int line) : base(nameOffset, attrs, modifiers, name, offset, length, line)
@@ -337,6 +348,7 @@ namespace Shared
 	}
 	
 	// public interface IFoo : IBar, IBaz {}
+	[ThreadModel(ThreadModel.Serializable)]
 	public sealed class CsInterface : CsType
 	{
 		public CsInterface(int nameOffset, CsBody body, CsMember[] members, CsType[] types, CsBases bases, string constraints, string gargs, CsAttribute[] attrs, MemberModifiers modifiers, string name, int offset, int length, int line) : base(nameOffset, body, bases, members, types, attrs, modifiers, constraints, gargs, name, offset, length, line)
@@ -371,6 +383,7 @@ namespace Shared
 	}
 	
 	// Base class for things which may appear in a class, e.g. CsMethod, CsProperty etc.
+	[ThreadModel(ThreadModel.Serializable)]
 	public abstract class CsMember : CsDeclaration
 	{
 		public static readonly int AccessMask	= 0x000F;			// can't define this in MemberModifiers or it messes up ToString
@@ -434,6 +447,7 @@ namespace Shared
 	}
 	
 	// public bool IsEnabled() {return m_enabled;}
+	[ThreadModel(ThreadModel.Serializable)]
 	public sealed class CsMethod : CsMember
 	{
 		public CsMethod(int nameOffset, CsBody body, bool isCtor, bool isDtor, string constraints, CsParameter[] parms, string gargs, string rtype, CsAttribute[] attrs, MemberModifiers modifiers, string name, int offset, int length, int line) : base(nameOffset, attrs, modifiers, name, offset, length, line)
@@ -502,6 +516,7 @@ namespace Shared
 	}
 	
 	// namespace CoolLib.Internals {}
+	[ThreadModel(ThreadModel.Serializable)]
 	public class CsNamespace : CsTypeScope
 	{
 		public CsNamespace(CsBody body, string name, CsExternAlias[] externs, CsUsingAlias[] aliases, CsUsingDirective[] uses, CsNamespace[] namespaces, CsType[] types, int offset, int length, int line) : base(body, types, offset, length, line)
@@ -556,6 +571,7 @@ namespace Shared
 	}
 	
 	// public static bool operator!(Foo rhs) {return !m_value;}
+	[ThreadModel(ThreadModel.Serializable)]
 	public sealed class CsOperator : CsMember
 	{
 		public CsOperator(int nameOffset, CsBody body, bool isImplicit, bool isExplicit, CsParameter[] parms, string rtype, CsAttribute[] attrs, MemberModifiers modifiers, string name, int offset, int length, int line) : base(nameOffset, attrs, modifiers, name, offset, length, line)
@@ -611,6 +627,7 @@ namespace Shared
 	public enum ParameterModifier {None, Ref, Out, This}
 	
 	// int width
+	[ThreadModel(ThreadModel.Serializable)]
 	public sealed class CsParameter
 	{
 		public CsParameter(CsAttribute[] attrs, ParameterModifier modifier, bool isParams, string type, string name)
@@ -661,6 +678,7 @@ namespace Shared
 	}
 	
 	// #region Private methods
+	[ThreadModel(ThreadModel.Serializable)]
 	public sealed class CsPreprocess : CsDeclaration
 	{
 		public CsPreprocess(string name, string text, int offset, int length, int line) : base(offset, length, line)
@@ -688,6 +706,7 @@ namespace Shared
 	}
 	
 	// int Age {get; set;}
+	[ThreadModel(ThreadModel.Serializable)]
 	public sealed class CsProperty : CsMember
 	{
 		public CsProperty(int nameOffset, CsBody getterBody, CsBody setterBody, MemberModifiers getAccess, MemberModifiers setAccess, string name, CsAttribute[] getAttrs, CsAttribute[] setAttrs, bool hasGet, bool hasSet, string rtype, CsAttribute[] attrs, MemberModifiers modifiers, int offset, int length, int line) : base(nameOffset, attrs, modifiers, name, offset, length, line)
@@ -753,6 +772,7 @@ namespace Shared
 	}
 	
 	// public struct Foo {}
+	[ThreadModel(ThreadModel.Serializable)]
 	public sealed class CsStruct : CsType
 	{
 		public CsStruct(int nameOffset, CsBody body, CsMember[] members, CsType[] types, CsBases bases, string constraints, string gargs, CsAttribute[] attrs, MemberModifiers modifiers, string name, int offset, int length, int line) : base(nameOffset, body, bases, members, types, attrs, modifiers, constraints, gargs, name, offset, length, line)
@@ -761,6 +781,7 @@ namespace Shared
 	}
 	
 	// Base class for CsInterface, CsClass, and CsStruct.
+	[ThreadModel(ThreadModel.Serializable)]
 	public abstract class CsType : CsTypeScope
 	{
 		protected CsType(int nameOffset, CsBody body, CsBases bases, CsMember[] members, CsType[] types, CsAttribute[] attrs, MemberModifiers modifiers, string constraints, string gargs, string name, int offset, int length, int line) : base(body, types, offset, length, line)
@@ -882,6 +903,7 @@ namespace Shared
 	}
 	
 	// Derived classes are CsNamespace, CsClass, etc.
+	[ThreadModel(ThreadModel.Serializable)]
 	public abstract class CsTypeScope : CsDeclaration
 	{
 		protected CsTypeScope(CsBody body, CsType[] types, int offset, int length, int line) : base(offset, length, line)
@@ -941,6 +963,7 @@ namespace Shared
 	
 	// using Cookie = IntPtr;
 	// using OldCollections = System.Collections;
+	[ThreadModel(ThreadModel.Serializable)]
 	public sealed class CsUsingAlias : CsDeclaration
 	{
 		public CsUsingAlias(string alias, string value, int offset, int length, int line) : base(offset, length, line)
@@ -965,6 +988,7 @@ namespace Shared
 	} 
 
 	// using namespace System.IO;
+	[ThreadModel(ThreadModel.Serializable)]
 	public sealed class CsUsingDirective : CsDeclaration
 	{
 		public CsUsingDirective(string name, int offset, int length, int line) : base(offset, length, line)

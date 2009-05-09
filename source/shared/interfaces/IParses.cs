@@ -49,11 +49,14 @@ namespace Shared
 		
 		// Index and length of the text associated with the first parser error.
 		// If there was no error ErrorLength will be zero.
+		[ThreadModel(ThreadModel.Concurrent)]
 		public int ErrorIndex {get; private set;}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		public int ErrorLength {get; private set;}
 		
 		// May be null if the code is really messed up.
+		[ThreadModel(ThreadModel.Concurrent)]
 		public CsGlobalNamespace Globals {get; private set;}
 		
 		// This contains all of the tokens except for comments and preprocess
@@ -76,11 +79,13 @@ namespace Shared
 		// Attempts to return the current parse information for the specified file.
 		// May return null if the file has not been parsed yet or the parse info
 		// has been purged. Note that this is thread safe.
+		[ThreadModel(ThreadModel.Concurrent)]
 		Parse TryParse(string path);
 		
 		// Blocks until the file is parsed and returns the result. Note that this is 
 		// thread safe. This will normally not throw, but may return a parse with
 		// errors.
+		[ThreadModel(ThreadModel.Concurrent)]
 		Parse Parse(string path, int edit, string text);
 		
 		// Searches globals in each parse and returns a matching type or null.

@@ -128,12 +128,13 @@ namespace TextEditor
 				Apply(computer, callback);
 		}
 		
+		[ThreadModel(ThreadModel.SingleThread)]
 		private void DoTimer()			// threaded		TODO: might be better to use a low priority thread (tho mono 2.2 doesn't support them)
 		{
 			string path = null;
 			string text = null;
 			int edit = 0;
-			IComputeRuns computer = null;
+			IComputeRuns computer = null; 
 			Action callback = null;
 			
 			lock (m_mutex)	

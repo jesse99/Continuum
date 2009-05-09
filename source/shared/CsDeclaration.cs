@@ -30,6 +30,7 @@ namespace Shared
 	// like Enum which we can't use without causing confusion with System types and
 	// can't use the obvious alternative EnumType without causing confusion with the
 	// refactor types.
+	[ThreadModel(ThreadModel.Serializable)]
 	public abstract class CsDeclaration
 	{
 		protected CsDeclaration(int offset, int length, int line)	

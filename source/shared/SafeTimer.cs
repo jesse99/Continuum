@@ -33,13 +33,13 @@ namespace Shared
 	// it makes finding leaks quite painful).
 	public sealed class SafeTimer : IDisposable
 	{
-		[ThreadModel("finalizer")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		~SafeTimer()
 		{
 			Dispose();
 		}
 		
-		[ThreadModel(ThreadModel.Sequential)]
+		[ThreadModel(ThreadModel.SingleThread)]
 		public delegate void Callback(object data);
 		
 		public SafeTimer(Callback callback)
@@ -94,7 +94,7 @@ namespace Shared
 			return true;
 		}
 		
-		[ThreadModel(ThreadModel.Sequential)]
+		[ThreadModel(ThreadModel.SingleThread)]
 		public void Dispose()
 		{
 			if (!m_disposed)
@@ -110,7 +110,7 @@ namespace Shared
 		}
 		
 		#region Private Methods
-		[ThreadModel("safe timer")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private void DoThread()
 		{
 			try

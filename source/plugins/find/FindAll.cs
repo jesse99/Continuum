@@ -22,7 +22,6 @@
 using Gear.Helpers;
 using MCocoa;
 using MObjc;
-//using Shared;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
@@ -32,7 +31,7 @@ namespace Find
 	[ExportClass("FindInstance", "NSObject")]
 	internal sealed class FindInstance : NSObject
 	{
-		[ThreadModel("finalizer")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		~FindInstance()
 		{
 			if ((object) m_context != null)
@@ -106,7 +105,7 @@ namespace Find
 	[ExportClass("FindsForFile", "NSObject")]
 	internal sealed class FindsForFile : NSObject
 	{
-		[ThreadModel("finalizer")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		~FindsForFile()
 		{
 			if ((object) m_path != null)
@@ -182,7 +181,7 @@ namespace Find
 	
 	internal sealed class FindAll : BaseFindInFiles
 	{
-		[ThreadModel("finalizer")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		~FindAll()
 		{
 			if (m_finds != null)

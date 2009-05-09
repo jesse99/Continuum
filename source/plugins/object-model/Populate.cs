@@ -169,7 +169,7 @@ namespace ObjectModel
 			}
 		}
 		
-		[ThreadModel("populate")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private void DoParseAssemblies(string path)	// threaded
 		{
 			m_database = new Database(path, "Populate-" + Path.GetFileNameWithoutExtension(path));			
@@ -228,7 +228,7 @@ namespace ObjectModel
 		// field, but that only reduced the db size by about 30% and makes the
 		// auto-complete queries rather painful because they want access to names
 		// for the parse cache.
-		[ThreadModel("populate")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private void DoCreateTables()		// threaded
 		{
 			// We could place an upper limit on some of the field sizes, but it won't
@@ -347,7 +347,7 @@ namespace ObjectModel
 			});
 		}
 		
-		[ThreadModel("populate")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private void DoDeleteAssemblies()		// threaded
 		{
 			int count = 0;
@@ -386,7 +386,7 @@ namespace ObjectModel
 			}
 		}
 		
-		[ThreadModel("populate")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private void DoDeleteAssemblyReferences(string id)		// threaded
 		{
 			m_database.Update(string.Format(@"
@@ -406,7 +406,7 @@ namespace ObjectModel
 					WHERE assembly = '{0}'", id));
 		}
 		
-		[ThreadModel("populate")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private bool DoAddAssembly(string path)
 		{
 			Contract.Requires(Path.IsPathRooted(path), path + " is not an absolute path");
@@ -488,7 +488,7 @@ namespace ObjectModel
 		}
 		
 		// Make sure the assembly which is in use is the newest version.
-		[ThreadModel("populate")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private void DoCheckAssemblyVersions()
 		{
 			string sql = @"
@@ -509,7 +509,7 @@ namespace ObjectModel
 			}
 		}
 		
-		[ThreadModel("populate")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private NamedRow DoGetNewestAssembly(string name, string culture)
 		{
 			string sql = string.Format(@"
@@ -529,7 +529,7 @@ namespace ObjectModel
 			return newest;
 		}
 		
-		[ThreadModel("populate")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private NamedRow DoGetUsedAssembly(string name, string culture)
 		{
 			string sql = string.Format(@"
@@ -551,7 +551,7 @@ namespace ObjectModel
 			return used;
 		}
 		
-		[ThreadModel("populate")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private bool DoLhsIsNewer(NamedRow lhs, NamedRow rhs)
 		{
 			bool newer = false;
@@ -575,7 +575,7 @@ namespace ObjectModel
 			return newer;
 		}
 		
-		[ThreadModel("populate")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private void DoUnparseAssembly(NamedRow row)
 		{
 			Contract.Requires(row["in_use"] == "1", "assembly is not in use");
@@ -596,7 +596,7 @@ namespace ObjectModel
 			});
 		}
 		
-		[ThreadModel("populate")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private void DoParseAssembly(NamedRow row)
 		{
 			Contract.Requires(row["in_use"] == "0", "assembly is already in use");
@@ -640,7 +640,7 @@ namespace ObjectModel
 			}
 		}
 		
-		[ThreadModel("populate")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private void DoQueueReferencedAssemblies(AssemblyDefinition assembly, string path)		// threaded
 		{
 			var resolver = (BaseAssemblyResolver) assembly.Resolver;

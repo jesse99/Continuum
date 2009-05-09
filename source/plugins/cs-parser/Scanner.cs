@@ -42,11 +42,13 @@ namespace CsParser
 			m_threadID = Thread.CurrentThread.ManagedThreadId;
 		}
 		
+		[ThreadModel(ThreadModel.MainThread)]
 		public void Instantiated(Boss boss)
 		{
 			m_boss = boss;
 		}
 		
+		[ThreadModel(ThreadModel.MainThread)]
 		public Boss Boss
 		{
 			get {return m_boss;}

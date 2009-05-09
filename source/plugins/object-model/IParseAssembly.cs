@@ -31,7 +31,7 @@ namespace ObjectModel
 	{
 		// Note that this will be called from within a worker thread and will be
 		// called multiple times if the assembly is rebuilt.
-		[ThreadModel("populate")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		void Parse(string path, AssemblyDefinition assembly, string id, bool fullParse);
 	}
 }

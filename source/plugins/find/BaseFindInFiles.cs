@@ -216,7 +216,7 @@ namespace Find
 			return true;
 		}
 		
-		[ThreadModel("find in files")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private void DoThread()			// threaded
 		{
 			// Then process each file in turn.
@@ -239,7 +239,7 @@ namespace Find
 				NSApplication.sharedApplication().BeginInvoke(this.DoReload);
 		}
 		
-		[ThreadModel("find in files")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private void DoProcessFile(string file)		// threaded
 		{
 			NSAutoreleasePool pool = NSAutoreleasePool.Create();

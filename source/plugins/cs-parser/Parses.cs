@@ -79,6 +79,7 @@ namespace CsParser
 			}
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		public Parse TryParse(string path)
 		{
 			Contract.Requires(!string.IsNullOrEmpty(path), "path is null or empty");
@@ -94,6 +95,7 @@ namespace CsParser
 			return parse;
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		public Parse Parse(string path, int edit, string text)
 		{
 			Contract.Requires(!string.IsNullOrEmpty(path), "path is null or empty");
@@ -112,10 +114,7 @@ namespace CsParser
 					DoCheckHighwater();
 				}
 				
-				if (Thread.CurrentThread.ManagedThreadId == 1)
-					Broadcaster.Invoke("parsed file", path);
-				else
-					NSApplication.sharedApplication().BeginInvoke(() => Broadcaster.Invoke("parsed file", path));
+				DoBroadcast(path);
 			}
 			
 			return result;
@@ -227,6 +226,15 @@ namespace CsParser
 		}
 		
 		#region Private Methods
+		[ThreadModel(ThreadModel.MainThread | ThreadModel.AllowEveryCaller)]
+		private void DoBroadcast(string path)
+		{
+			if (Thread.CurrentThread.ManagedThreadId == 1)
+				Broadcaster.Invoke("parsed file", path);
+			else
+				NSApplication.sharedApplication().BeginInvoke(() => Broadcaster.Invoke("parsed file", path));
+		}
+		
 		private void DoFindNamespaces(string prefix, string parent, CsNamespace ns, List<string> names)
 		{
 			string name = null;
@@ -262,7 +270,7 @@ namespace CsParser
 			}
 		}
 		
-		[ThreadModel("parses")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private void DoThread()
 		{
 			Parser parser = new Parser();
@@ -368,6 +376,7 @@ namespace CsParser
 		#endregion
 		
 		#region Private Types
+		[ThreadModel(ThreadModel.Concurrent)]
 		private sealed class Job
 		{
 			public Job(int edit, string text)

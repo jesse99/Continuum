@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using Gear.Helpers;
 using MCocoa;
 using Shared;
 using System;
@@ -44,6 +45,7 @@ namespace Styler
 			m_white = b.Get<IWhitespace>();
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		public void ComputeRuns(Boss boss, string path, string text, int edit)	// threaded
 		{
 			var runs = new List<StyleRun>(text.Length/50);
@@ -64,6 +66,7 @@ namespace Styler
 			}
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		public bool StylesWhitespace
 		{
 			get {return m_language.StylesWhitespace;}
@@ -79,6 +82,7 @@ namespace Styler
 		// TODO: This is a bit slow. The parser seems to be significantly faster than the mondo
 		// regex so we might get a speedup for c# by reusing the scanner. Note that we'd still
 		// have to use the regex for stuff like whitespace and preprocessor runs though.
+		[ThreadModel(ThreadModel.Concurrent)]
 		protected virtual void OnComputeRuns(Boss boss, string path, string text, int edit, List<StyleRun> runs)	// threaded
 		{
 			DoRegexMatch(text, runs);
@@ -86,6 +90,7 @@ namespace Styler
 		#endregion
 		
 		#region Private Methods
+		[ThreadModel(ThreadModel.Concurrent)]
 		private void DoRegexMatch(string text, List<StyleRun> runs)		// threaded
 		{
 			int last = 0;
@@ -114,6 +119,7 @@ namespace Styler
 			}
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		private void DoMatchWhitespace(string text, Group g, List<StyleRun> runs)		// threaded
 		{
 			int i = g.Index;
@@ -135,6 +141,7 @@ namespace Styler
 			}
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		private int DoFindContiguousCount(string text, int i)	// threaded
 		{
 			int count = 0;

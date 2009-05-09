@@ -172,7 +172,7 @@ namespace DirectoryEditor
 			DoNonThreadedGotStdoutData(sender, e);
 		}
 		
-		[ThreadModel("main", ThreadModel.AllowEveryCaller)]
+		[ThreadModel(ThreadModel.MainThread | ThreadModel.AllowEveryCaller)]
 		private void DoNonThreadedGotStdoutData(object sender, DataReceivedEventArgs e)
 		{
 			Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
@@ -196,7 +196,7 @@ namespace DirectoryEditor
 			DoNonThreadedGotStderrData(sender, e);
 		}
 		
-		[ThreadModel("main", ThreadModel.AllowEveryCaller)]
+		[ThreadModel(ThreadModel.MainThread | ThreadModel.AllowEveryCaller)]
 		private void DoNonThreadedGotStderrData(object sender, DataReceivedEventArgs e)
 		{
 			Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
@@ -222,7 +222,7 @@ namespace DirectoryEditor
 			DoNonThreadedProcessExited(sender, e);
 		}
 		
-		[ThreadModel("main", ThreadModel.AllowEveryCaller)]
+		[ThreadModel(ThreadModel.MainThread | ThreadModel.AllowEveryCaller)]
 		private void DoNonThreadedProcessExited(object sender, EventArgs e)
 		{
 			Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");

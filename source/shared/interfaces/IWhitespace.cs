@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using Gear.Helpers;
 using System;
 
 namespace Shared
@@ -28,8 +29,10 @@ namespace Shared
 	{
 		// Note that these will not be shown if the language's styler does
 		// not show whitespace.
+		[ThreadModel(ThreadModel.Concurrent)]
 		bool ShowSpaces  {get; set;}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		bool ShowTabs {get; set;}
 	}
 }

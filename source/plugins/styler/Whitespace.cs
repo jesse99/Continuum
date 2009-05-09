@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using Gear.Helpers;
 using MCocoa;
 using Shared;
 using System;
@@ -43,6 +44,7 @@ namespace Styler
 			m_showTabs = defaults.boolForKey(NSString.Create("show tabs"));
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		public bool ShowSpaces
 		{
 			get {return m_showSpaces;}
@@ -55,6 +57,7 @@ namespace Styler
 			}
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		public bool ShowTabs
 		{
 			get {return m_showTabs;}

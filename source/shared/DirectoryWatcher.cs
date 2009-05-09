@@ -47,7 +47,7 @@ namespace Shared
 	// /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/CarbonCore.framework/Versions/A/Headers/FSEvents.h
 	public sealed class DirectoryWatcher : IDisposable
 	{
-		[ThreadModel("finalizer")]
+		[ThreadModel(ThreadModel.SingleThread)]
 		~DirectoryWatcher()
 		{
 			Dispose(false);
@@ -89,7 +89,7 @@ namespace Shared
 		
 		// This will fire if files are added, removed, or changed from the specified
 		// directory or any of its sub-directories.
-		[ThreadModel("main")]
+		[ThreadModel(ThreadModel.MainThread)]
 		public event EventHandler<DirectoryWatcherEventArgs> Changed;
 		
 		public string Path {get; private set;}
@@ -101,7 +101,7 @@ namespace Shared
 		}
 		
 		#region Private Members
-		[ThreadModel(ThreadModel.Sequential)]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private void Dispose(bool disposing)
 		{
 			if (m_stream != IntPtr.Zero)
@@ -185,17 +185,17 @@ namespace Shared
 			IntPtr   streamRef);
 		
 		[DllImport("/System/Library/Frameworks/CoreServices.framework/CoreServices")]
-		[ThreadModel(ThreadModel.Sequential)]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private extern static void FSEventStreamStop(
 			IntPtr   streamRef);
 		
 		[DllImport("/System/Library/Frameworks/CoreServices.framework/CoreServices")]
-		[ThreadModel(ThreadModel.Sequential)]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private extern static void FSEventStreamInvalidate(
 			IntPtr   streamRef);
 		
 		[DllImport("/System/Library/Frameworks/CoreServices.framework/CoreServices")]
-		[ThreadModel(ThreadModel.Sequential)]
+		[ThreadModel(ThreadModel.SingleThread)]
 		private extern static void FSEventStreamRelease(
 			IntPtr   streamRef);
 		#endregion

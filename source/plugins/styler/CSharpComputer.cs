@@ -39,6 +39,7 @@ namespace Styler
 			m_parses = b.Get<IParses>();
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		protected override void OnComputeRuns(Boss boss, string path, string text, int edit, List<StyleRun> runs)	// threaded
 		{
 			base.OnComputeRuns(boss, path, text, edit, runs);
@@ -47,6 +48,7 @@ namespace Styler
 		}
 		
 		#region Private Methods
+		[ThreadModel(ThreadModel.Concurrent)]
 		private Parse DoParseMatch(string path, string text, int edit, List<StyleRun> runs)		// threaded
 		{
 			Parse parse = m_parses.Parse(path, edit, text);
@@ -72,6 +74,7 @@ namespace Styler
 			return parse;
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		private void DoMatchScope(CsTypeScope scope, List<StyleRun> runs)		// threaded
 		{
 			foreach (CsType type in scope.Types)

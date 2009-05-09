@@ -48,6 +48,7 @@ namespace TextEditor
 			}
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		public void Reset(int edit, StyleRun[] runs)
 		{
 			Contract.Requires(runs != null, "runs is null");

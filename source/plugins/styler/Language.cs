@@ -19,9 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-//using Gear;
 using Gear.Helpers;
-//using MCocoa;
 using Shared;
 using System;
 using System.Diagnostics;
@@ -58,16 +56,19 @@ namespace Styler
 			}
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		public int StyleCount
 		{
 			get {return m_indexTable.Count;}
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		public StyleType Style(int index)
 		{
 			return m_indexTable[index];
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		public bool StylesWhitespace
 		{
 			get {return m_styleWhitespace;}

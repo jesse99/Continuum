@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using Gear.Helpers;
 using System;
 
 namespace Shared
@@ -31,6 +32,7 @@ namespace Shared
 		void Get(out int editCount, out StyleRun[] runs);
 		
 		// This is normally called from a worker thread.
+		[ThreadModel(ThreadModel.Concurrent)]
 		void Reset(int edit, StyleRun[] runs);
 	}
 }
