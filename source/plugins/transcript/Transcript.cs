@@ -242,7 +242,7 @@ namespace Transcript
 			DoNonthreadedWrite(type, text);
 		}
 		
-		[ThreadModel(ThreadModel.MainThread | ThreadModel.AllowEveryCaller)]
+		[ThreadModel("main", ThreadModel.AllowEveryCaller)]
 		private void DoNonthreadedWrite(Output type, string text)
 		{
 			Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");

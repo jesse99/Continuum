@@ -39,6 +39,7 @@ namespace Shared
 		Other,
 	}
 	
+	[ThreadModel(ThreadModel.Concurrent)]
 	public struct Token : IEquatable<Token>
 	{
 		public Token(int offset)

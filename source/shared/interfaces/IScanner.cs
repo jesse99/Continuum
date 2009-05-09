@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using Gear.Helpers;
 using System;
 using System.Runtime.Serialization;
 using System.Security.Permissions;
@@ -76,6 +77,7 @@ namespace Shared
 		}
 	}
 	
+	[ThreadModel(ThreadModel.Serializable)]
 	public interface IScanner : IInterface
 	{
 		void Init(string text);

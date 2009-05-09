@@ -89,7 +89,7 @@ namespace Shared
 		
 		// This will fire if files are added, removed, or changed from the specified
 		// directory or any of its sub-directories.
-		[ThreadModel(ThreadModel.MainThread)]
+		[ThreadModel("main")]
 		public event EventHandler<DirectoryWatcherEventArgs> Changed;
 		
 		public string Path {get; private set;}
@@ -101,7 +101,7 @@ namespace Shared
 		}
 		
 		#region Private Members
-		[ThreadModel(ThreadModel.SingleThread)]
+		[ThreadModel(ThreadModel.Sequential)]
 		private void Dispose(bool disposing)
 		{
 			if (m_stream != IntPtr.Zero)
@@ -185,17 +185,17 @@ namespace Shared
 			IntPtr   streamRef);
 		
 		[DllImport("/System/Library/Frameworks/CoreServices.framework/CoreServices")]
-		[ThreadModel(ThreadModel.SingleThread)]
+		[ThreadModel(ThreadModel.Sequential)]
 		private extern static void FSEventStreamStop(
 			IntPtr   streamRef);
 		
 		[DllImport("/System/Library/Frameworks/CoreServices.framework/CoreServices")]
-		[ThreadModel(ThreadModel.SingleThread)]
+		[ThreadModel(ThreadModel.Sequential)]
 		private extern static void FSEventStreamInvalidate(
 			IntPtr   streamRef);
 		
 		[DllImport("/System/Library/Frameworks/CoreServices.framework/CoreServices")]
-		[ThreadModel(ThreadModel.SingleThread)]
+		[ThreadModel(ThreadModel.Sequential)]
 		private extern static void FSEventStreamRelease(
 			IntPtr   streamRef);
 		#endregion

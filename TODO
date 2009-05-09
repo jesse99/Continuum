@@ -24,7 +24,11 @@ sudo fs_usage -f filesys
 
 			Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 
-* SHould be legal to use just NamedThread.
+
+Threadable - able to be used from a thread
+MainThread 
+threaded cant call main
+
 * Straighten out threading:
 	- start adding threading attributes
 	- make sure we run

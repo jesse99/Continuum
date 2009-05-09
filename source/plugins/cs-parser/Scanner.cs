@@ -34,6 +34,7 @@ namespace CsParser
 	// the code to so do is somewhat obnoxious and doesn't buy us a whole lot since we don't
 	// care if keywords are used as identifiers. Note that instances are safe to use from a thread
 	// (but not from multiple threads).
+	[ThreadModel(ThreadModel.Serializable)]
 	internal sealed unsafe class Scanner : IScanner
 	{
 		public Scanner()

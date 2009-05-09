@@ -178,7 +178,7 @@ namespace Shared
 	}
 	
 	// Simple sqlite wrapper.
-	[ThreadModel(ThreadModel.SingleThread)]
+	[ThreadModel(ThreadModel.Sequential)]
 	public sealed class Database	: IDisposable
 	{
 		[ThreadModel("finalizer")]
@@ -248,7 +248,6 @@ namespace Shared
 		}
 		
 		// We use this instead of System.Action so that it gets the right threading attribute.
-		[ThreadModel(ThreadModel.NamedThread)]
 		public delegate void UpdateCallback();
 		
 		// When a connection calls BEGIN IMMEDIATE it will transition from UNLOCKED

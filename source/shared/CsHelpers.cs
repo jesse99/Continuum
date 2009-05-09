@@ -50,10 +50,11 @@ namespace Shared
 		}
 		
 		// Returns true if the path points to a C# file.
-		[ThreadModel(ThreadModel.MainThread)]
+		[ThreadModel("main")]
 		public static bool IsCSharp(string path)
 		{
 			Contract.Requires(path != null, "path is null");
+			Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 			
 			string fileName = System.IO.Path.GetFileName(path);
 			

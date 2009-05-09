@@ -26,7 +26,7 @@ using System.Linq;
 
 namespace ObjectModel
 {
-	[ThreadModel(ThreadModel.SingleThread)]
+	[ThreadModel(ThreadModel.Sequential)]
 	internal static class DatabaseExtensions
 	{
 		public static void Insert(this Database database, string table, params string[] values)

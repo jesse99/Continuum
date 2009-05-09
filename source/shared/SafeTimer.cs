@@ -39,7 +39,7 @@ namespace Shared
 			Dispose();
 		}
 		
-		[ThreadModel(ThreadModel.NamedThread)]
+		[ThreadModel(ThreadModel.Sequential)]
 		public delegate void Callback(object data);
 		
 		public SafeTimer(Callback callback)
@@ -94,7 +94,7 @@ namespace Shared
 			return true;
 		}
 		
-		[ThreadModel(ThreadModel.SingleThread)]
+		[ThreadModel(ThreadModel.Sequential)]
 		public void Dispose()
 		{
 			if (!m_disposed)
@@ -110,7 +110,7 @@ namespace Shared
 		}
 		
 		#region Private Methods
-		[ThreadModel(ThreadModel.NamedThread)]
+		[ThreadModel("safe timer")]
 		private void DoThread()
 		{
 			try
