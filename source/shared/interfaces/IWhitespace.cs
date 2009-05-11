@@ -29,10 +29,18 @@ namespace Shared
 	{
 		// Note that these will not be shown if the language's styler does
 		// not show whitespace.
-		[ThreadModel(ThreadModel.Concurrent)]
-		bool ShowSpaces  {get; set;}
+		bool ShowSpaces
+		{
+			[ThreadModel(ThreadModel.Concurrent)]
+			get;
+			set;
+		}
 		
-		[ThreadModel(ThreadModel.Concurrent)]
-		bool ShowTabs {get; set;}
+		bool ShowTabs
+		{
+			[ThreadModel(ThreadModel.Concurrent)]
+			get;
+			set;
+		}
 	}
 }

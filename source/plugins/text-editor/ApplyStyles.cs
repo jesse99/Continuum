@@ -76,7 +76,7 @@ namespace TextEditor
 					break;
 					
 				case "computed style runs":
-					DoApplyRegexStyles((StyleRuns) value);
+					DoApplyStyles((StyleRuns) value);
 					break;
 					
 				case "text changed":
@@ -131,12 +131,12 @@ namespace TextEditor
 				m_layout.addTemporaryAttribute_value_forCharacterRange(Externs.NSUnderlineColorAttributeName, ms_errorColor, m_errorRange);
 			}
 		}
-		
+				
 		#region Private Methods		
-		private void DoApplyRegexStyles(StyleRuns runs)
+		private void DoApplyStyles(StyleRuns runs)
 		{
 			if (m_controller.Path != null && Paths.AreEqual(runs.Path, m_controller.Path))
-			{			
+			{
 				m_current.Reset(runs.Edit, runs.Runs);
 				m_current.ApplyDefault();
 				m_current.ApplyStyles();

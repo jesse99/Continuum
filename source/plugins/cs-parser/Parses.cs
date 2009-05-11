@@ -89,7 +89,6 @@ namespace CsParser
 			}
 		}
 		
-		[ThreadModel(ThreadModel.Concurrent)]
 		public Parse TryParse(string path)
 		{
 			Contract.Requires(!string.IsNullOrEmpty(path), "path is null or empty");
@@ -105,7 +104,6 @@ namespace CsParser
 			return parse;
 		}
 		
-		[ThreadModel(ThreadModel.Concurrent)]
 		public Parse Parse(string path, int edit, string text)
 		{
 			Contract.Requires(!string.IsNullOrEmpty(path), "path is null or empty");

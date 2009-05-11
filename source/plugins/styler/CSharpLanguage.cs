@@ -20,12 +20,9 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
-//using Gear.Helpers;
-//using MCocoa;
+using Gear.Helpers;
 using Shared;
 using System;
-//using System.Diagnostics;
-//using System.Collections.Generic;
 
 namespace Styler
 {
@@ -41,7 +38,7 @@ namespace Styler
 			get {return m_boss;}
 		}
 		
-		public string Name 
+		public string Name
 		{
 			get {return "CsLanguage";}
 		}
@@ -51,7 +48,8 @@ namespace Styler
 			get {return m_language != null ? m_language.StylesWhitespace : false;}
 		}
 		
-		public Language Language 
+		[ThreadModel(ThreadModel.Concurrent)]
+		public Language Language
 		{
 			get {return m_language;}
 			set {m_language = value;}

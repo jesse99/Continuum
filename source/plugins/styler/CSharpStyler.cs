@@ -26,6 +26,7 @@ using Shared;
 using System;
 using System.Diagnostics;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 namespace Styler
@@ -35,7 +36,7 @@ namespace Styler
 		public void Instantiated(Boss boss)
 		{
 			m_boss = boss;
-						
+			
 			Thread thread = new Thread(this.DoComputeStyles);
 			thread.Name = "CSharpStyler.DoComputeStyles";
 			thread.IsBackground = true;		// allow the app to quit even if the thread is still running
@@ -105,7 +106,8 @@ namespace Styler
 						Unused.Value = Monitor.Wait(m_mutex);
 					}
 					
-					parse = m_parses.Pop();			// prefer the last parse added since that is presumbaby what the user is editing
+					parse = m_parses.Last();			// prefer the last parse added since that is presumbaby what the user is editing
+					m_parses.RemoveAt(m_parses.Count - 1);
 				}
 				
 				DoComputeRuns(parse);
@@ -199,6 +201,7 @@ namespace Styler
 		#endregion
 		
 		#region Private Type
+		[ThreadModel(ThreadModel.Concurrent)]
 		private sealed class Styles
 		{
 			public StyleRuns RegexStyles {get; set;}

@@ -21,59 +21,22 @@
 
 using Gear;
 using Gear.Helpers;
-using MCocoa;
-using Shared;
 using System;
-using System.Diagnostics;
 
-namespace Styler
+namespace Shared
 {
-	internal sealed class Whitespace : IWhitespace
+	public static class InterfaceExtensions
 	{
-		public Boss Boss
+		// We'd like to reserve the ThreadModel attribute for code which really needs
+		// to be thead safe so Gear doesn't decorate the Boss method. However we
+		// sometimes still need to be able to get the boss from threaded code so we
+		// provide this method.
+		[ThreadModel(ThreadModel.Concurrent)]
+		public static Boss SafeBoss(this IInterface i)
 		{
-			get {return m_boss;}
-		}
-		
-		public void Instantiated(Boss boss)
-		{
-			m_boss = boss;
+			Contract.Requires(i != null, "i is null");
 			
-			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
-			m_showSpaces = defaults.boolForKey(NSString.Create("show spaces"));
-			m_showTabs = defaults.boolForKey(NSString.Create("show tabs"));
+			return i.Boss;
 		}
-		
-		public bool ShowSpaces
-		{
-			[ThreadModel(ThreadModel.Concurrent)]
-			get {return m_showSpaces;}
-			set
-			{
-				m_showSpaces = value;
-				
-				NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
-				defaults.setBool_forKey(m_showSpaces, NSString.Create("show spaces"));
-			}
-		}
-		
-		public bool ShowTabs
-		{
-			[ThreadModel(ThreadModel.Concurrent)]
-			get {return m_showTabs;}
-			set
-			{
-				m_showTabs = value;
-				
-				NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
-				defaults.setBool_forKey(m_showTabs, NSString.Create("show tabs"));
-			}
-		}
-		
-		#region Fields 
-		private Boss m_boss;
-		private volatile bool m_showSpaces;
-		private volatile bool m_showTabs;
-		#endregion
 	}
 }

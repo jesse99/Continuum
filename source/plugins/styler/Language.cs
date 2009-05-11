@@ -45,6 +45,7 @@ namespace Styler
 		}
 		
 		// May return null.
+		[ThreadModel(ThreadModel.Concurrent)]
 		public Regex Regex
 		{
 			get
@@ -75,7 +76,10 @@ namespace Styler
 		}
 		
 		#region Private Methods		
-		// Compiling regexen is expensive so we won't do it unless we need to.
+		// Compiling regexen is expensive so we won't do it unless we need to. Also
+		// this method may execute concurrently but that should not cause any actual
+		// harm.
+		[ThreadModel(ThreadModel.Concurrent)]
 		private void DoCreateRE()
 		{
 			try

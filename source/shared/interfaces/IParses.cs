@@ -31,14 +31,11 @@ namespace Shared
 	{
 		// Attempts to return the current parse information for the specified file.
 		// May return null if the file has not been parsed yet or the parse info
-		// has been purged. Note that this is thread safe.
-		[ThreadModel(ThreadModel.Concurrent)]
+		// has been purged.
 		Parse TryParse(string path);
 		
-		// Blocks until the file is parsed and returns the result. Note that this is 
-		// thread safe. This will normally not throw, but may return a parse with
-		// errors.
-		[ThreadModel(ThreadModel.Concurrent)]
+		// Blocks until the file is parsed and returns the result. This will normally
+		// not throw, but may return a parse with errors.
 		Parse Parse(string path, int edit, string text);
 		
 		// Searches globals in each parse and returns a matching type or null.

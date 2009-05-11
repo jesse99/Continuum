@@ -224,15 +224,13 @@ namespace TextEditor
 			return boss;
 		}
 		
-		// We can't restore the scoller until the text has been styled (because of things like
-		// font size changes) and layout has completed (because the scroller doesn't know
-		// how many lines there are until this happens).
+		// We can't restore the scoller until layout has completed (because the scroller 
+		// doesn't know how many lines there are until this happens).
 		public void layoutManager_didCompleteLayoutForTextContainer_atEnd(NSLayoutManager mgr, NSTextContainer container, bool atEnd)
 		{
 			if (!m_closed)
 			{
 				if (atEnd && !m_opened && !m_scrolled)
-//				if (atEnd && m_finishedStyling && !m_opened && !m_scrolled)
 				{
 					DoRestoreView();
 					m_opened = true;

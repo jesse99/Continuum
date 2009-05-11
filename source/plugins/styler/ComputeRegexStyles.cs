@@ -115,15 +115,15 @@ namespace Styler
 		private void DoComputeRuns(string path, int edit, string text, ILanguage language)
 		{
 			var runs = new List<StyleRun>();
-			var sw = language.Boss.Get<IStyleWith>();
+			var sw = language.SafeBoss().Get<IStyleWith>();
 			DoRegexMatch(text, sw.Language, runs);
 			Log.WriteLine(TraceLevel.Verbose, "Styler", "computed runs for {0} edit {1}", System.IO.Path.GetFileName(path), edit);
 			
 			var data = new StyleRuns(path, edit, runs.ToArray());
 			
-			if (language.Boss.Has<IStyler>())
+			if (language.SafeBoss().Has<IStyler>())
 			{
-				var post = language.Boss.Get<IStyler>();
+				var post = language.SafeBoss().Get<IStyler>();
 				post.PostProcess(data);
 			}
 			else

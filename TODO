@@ -25,27 +25,17 @@ sudo fs_usage -f filesys
 			Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 
 * Make thread safe:
-	- rename ComputeParseStyles
-	- do something with IStyleWith?
-	- layoutManager_didCompleteLayoutForTextContainer_atEnd
-	- TryParse doesn't need to be thread safe?
+	- popup blinks too much when editing
 	- get unit tests working again
-	- try to use both begin and end of applied runs
 	- try setting typing attribues to default?
 	- might want to enable text shadow for types by default
 	- review thread safety
+* AppDelegate.cs isn't styling.
 * Transcript flush doesn't seem to work quite right.
-* Straighten out threading:
-	- start making (most) of the interfaces thread safe
-	- review thread safety
 * Build a new foreshadow.
-* Might want to create a type-safe read-only collection:
-	- implement IEnumerable
-	- construct with an ICollection<T>
 * make gendarme>tmp.txt isn't reloading tmp.txt
 * Transcript should not cache commands.
 * Deleting a new line should remove any eol whitespace.
-* AppDelegate.cs isn't styling.
 * Right click on Invoke didn't show the Broadcaster method. Also BeginInvoke.
 * Enum. completion should show enum members by default.
 * Short form should special case enums:

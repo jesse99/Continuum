@@ -20,12 +20,14 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using Gear.Helpers;
 using System;
 
 namespace Styler
 {
 	internal interface IStyleWith : IInterface
 	{
+		[ThreadModel(ThreadModel.Concurrent)]
 		Language Language {get; set;}
 	}
 }
