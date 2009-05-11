@@ -12,7 +12,7 @@
 	<Boss name = "CsLanguage" singleton = "true">
 		<Implementation interfaces = "ILanguage IStyleWith" name = "CSharpLanguage"/>
 		<Implementation interfaces = "IInterface" name = "CSharpDeclarations"/>
-		<Implementation interfaces = "IStyler" name = "ComputeParseStyles"/>
+		<Implementation interfaces = "IStyler" name = "CSharpStyler"/>
 	</Boss>
 	
 	<Boss name = "RegexLanguage" singleton = "true">

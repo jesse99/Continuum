@@ -26,19 +26,18 @@ using Shared;
 using System;
 using System.Diagnostics;
 using System.Collections.Generic;
-//using System.Linq;
 using System.Threading;
 
 namespace Styler
 {
-	internal sealed class ComputeParseStyles : IStyler, IObserver
+	internal sealed class CSharpStyler : IStyler, IObserver
 	{
 		public void Instantiated(Boss boss)
 		{
 			m_boss = boss;
 						
 			Thread thread = new Thread(this.DoComputeStyles);
-			thread.Name = "ComputeParseStyles.DoComputeStyles";
+			thread.Name = "CSharpStyler.DoComputeStyles";
 			thread.IsBackground = true;		// allow the app to quit even if the thread is still running
 			thread.Start();
 			
