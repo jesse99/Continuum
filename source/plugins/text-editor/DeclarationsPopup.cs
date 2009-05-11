@@ -85,23 +85,18 @@ namespace TextEditor
 		
 		public void textSelectionChanged()
 		{
-			if (m_edit == m_controller.EditCount)
+			NSRange selection = m_controller.TextView.selectedRange();
+			int offset = selection.location;
+			
+			// Find the last declaration the selection start intersects.
+			int index = -1;
+			for (int i = 0; i < m_declarations.Decs.Length; ++i)
 			{
-				NSRange selection = m_controller.TextView.selectedRange();
-				int offset = selection.location;
-				
-				// Find the last declaration the selection start intersects.
-				int index = -1;
-				for (int i = 0; i < m_declarations.Length; ++i)
-				{
-					if (m_declarations[i].Extent.Intersects(offset))
-						index = i;
-				}
-				
-				selectItemAtIndex(index);
+				if (m_declarations.Decs[i].Extent.Intersects(offset))
+					index = i;
 			}
-			else
-				selectItem(null);
+			
+			selectItemAtIndex(index);
 		}
 		
 		public void selectedItemChanged(NSObject sender)
@@ -119,7 +114,7 @@ namespace TextEditor
 		#region Private Methods
 		private void DoReset()
 		{
-			m_declarations = new Declaration[0];
+			m_declarations = new Declarations();
 			m_indexTable = new Dictionary<int, Declaration>();
 			
 			removeAllItems();
@@ -129,17 +124,19 @@ namespace TextEditor
 		{
 			if (decs.Edit == m_controller.EditCount && Paths.AreEqual(decs.Path, m_controller.Path))
 			{
-				m_declarations = decs.Decs;
-				m_edit = decs.Edit;
-				
-				DoBuildUsingOffsetsOrder();
-				textSelectionChanged();
+				if (decs != m_declarations)
+				{
+					m_declarations = decs;
+					
+					DoBuildUsingOffsetsOrder();
+					textSelectionChanged();
+				}
 			}
 		}
 		
 		private void DoBuildUsingOffsetsOrder()
 		{
-			DoBuild(m_declarations);
+			DoBuild(m_declarations.Decs);
 		}
 		
 		private void DoBuild(IList<Declaration> declarations)
@@ -194,7 +191,7 @@ namespace TextEditor
 		
 		private void DoBuildUsingNamesOrder()
 		{
-			var items = (from d in m_declarations where !d.IsDirective select new QualifiedName(d.Name, d)).ToList();
+			var items = (from d in m_declarations.Decs where !d.IsDirective select new QualifiedName(d.Name, d)).ToList();
 			
 			// Sort the items by building a full name consisting of whatever it is declared under
 			// plus the item name.
@@ -236,9 +233,8 @@ namespace TextEditor
 		
 		#region Fields
 		private TextController m_controller;
-		private Declaration[] m_declarations = new Declaration[0];
+		private Declarations m_declarations = new Declarations();
 		private Dictionary<int, Declaration> m_indexTable = new Dictionary<int, Declaration>();
-		private int m_edit;
 		#endregion
 	}
 }

@@ -26,65 +26,62 @@ using System;
 namespace Shared
 {
 	[ThreadModel(ThreadModel.Concurrent)]
-	public sealed class Declarations : IEquatable<Declarations>
+	public struct Declaration : IEquatable<Declaration>
 	{
-		public Declarations()
+		public Declaration(string name, NSRange extent, bool isType, bool isDir)
 		{
-			Path = string.Empty;
-			Decs = new Declaration[0];
+			Name = name;
+			Extent = extent;
+			IsType = isType;
+			IsDirective = isDir;
 		}
 		
-		public Declarations(string path, int edit, Declaration[] decs)
+		public string Name {get; private set;}
+		
+		public NSRange Extent {get; private set;}
+		
+		public bool IsType {get; private set;}
+		
+		public bool IsDirective {get; private set;}
+		
+		public override string ToString()
 		{
-			Path = path;
-			Edit = edit;
-			Decs = decs;
+			return string.Format("Name: {0}, Extent: {1}, IsType: {2}, IsDirective: {3}",
+				Name, Extent, IsType, IsDirective);
 		}
 		
-		public string Path {get; private set;}
-		
-		public int Edit {get; private set;}
-		
-		public Declaration[] Decs {get; private set;}
-
 		public override bool Equals(object obj)
 		{
 			if (obj == null)
 				return false;
 			
-			Declarations rhs = obj as Declarations;
+			if (GetType() != obj.GetType())
+				return false;
+			
+			Declaration rhs = (Declaration) obj;
 			return this == rhs;
 		}
 		
-		public bool Equals(Declarations rhs)
+		public bool Equals(Declaration rhs)
 		{
 			return this == rhs;
 		}
 		
-		public static bool operator==(Declarations lhs, Declarations rhs)
+		public static bool operator==(Declaration lhs, Declaration rhs)
 		{
-			if (object.ReferenceEquals(lhs, rhs))
-				return true;
-			
-			if ((object) lhs == null || (object) rhs == null)
+			if (lhs.Name != rhs.Name)
+				return false;
+						
+			if (lhs.IsType != rhs.IsType)
 				return false;
 			
-			if (lhs.Path != rhs.Path)
+			if (lhs.IsDirective != rhs.IsDirective)
 				return false;
-			
-			if (lhs.Decs.Length != rhs.Decs.Length)
-				return false;
-				
-			for (int i = 0; i < lhs.Decs.Length; ++i)
-			{
-				if (lhs.Decs[i] != rhs.Decs[i])
-					return false;
-			}
 			
 			return true;
 		}
 		
-		public static bool operator!=(Declarations lhs, Declarations rhs)
+		public static bool operator!=(Declaration lhs, Declaration rhs)
 		{
 			return !(lhs == rhs);
 		}
@@ -95,11 +92,9 @@ namespace Shared
 			
 			unchecked
 			{
-				hash += Path.GetHashCode();
-				foreach (Declaration d in Decs)
-				{
-					hash += d.GetHashCode();
-				}
+				hash += Name.GetHashCode();
+				hash += IsType.GetHashCode();
+				hash += IsDirective.GetHashCode();
 			}
 			
 			return hash;

@@ -25,7 +25,6 @@ sudo fs_usage -f filesys
 			Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 
 * Make thread safe:
-	- popup blinks too much when editing
 	- get unit tests working again
 	- try setting typing attribues to default?
 	- might want to enable text shadow for types by default
