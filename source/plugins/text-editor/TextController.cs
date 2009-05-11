@@ -46,12 +46,8 @@ namespace TextEditor
 			var wind = m_boss.Get<IWindow>();
 			wind.Window = window();
 			
-//			m_styler = m_boss.Get<IStyler>();
 			m_applier = new ApplyStyles(this, m_textView.Value);
 			DoSetTextOptions();
-			
-//			Boss boss = ObjectModel.Create("CsParser");
-//			m_parses = boss.Get<IParses>();
 			
 			Broadcaster.Register("text default color changed", this);	
 			DoUpdateDefaultColor(string.Empty, null);
@@ -311,10 +307,7 @@ namespace TextEditor
 			}
 			
 			Broadcaster.Unregister(this);
-			
-//			if (m_styler != null)					// may be null if ctor threw
-//				m_styler.Close();
-				
+							
 			if (m_applier != null)
 				m_applier.Stop();
 			((DeclarationsPopup) m_decPopup.Value).Stop();
@@ -984,8 +977,6 @@ namespace TextEditor
 		private IBOutlet<NSScrollView> m_scrollView;
 		private Boss m_boss;
 		private ILanguage m_language;
-//		private IParses m_parses;
-//		private IStyler m_styler;
 		private ApplyStyles m_applier;
 		private bool m_userEdit = true;
 		private TextMetrics m_metrics = new TextMetrics(string.Empty);
@@ -994,11 +985,9 @@ namespace TextEditor
 		private string m_cachedText;
 		private int m_cachedEditCount = -1;
 		private int m_editCount;
-//		private bool m_finishedStyling;
 		private bool m_opened;
 		private bool m_closed;
 		private bool m_scrolled;
-//		private string m_language;
 		private List<WeakReference> m_ranges = new List<WeakReference>();
 		
 		public static WarningWindow ms_warning;

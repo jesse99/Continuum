@@ -49,13 +49,11 @@ namespace TextEditor
 			m_storage = text.textStorage();
 			m_layout = m_storage.layoutManagers().objectAtIndex(0).To<NSLayoutManager>();
 			
-			m_regexStyles = new CurrentStyles(controller, m_storage, this.DoFinishedRegex);
-			m_parsedStyles = new CurrentStyles(controller, m_storage);
+			m_current = new CurrentStyles(controller, m_storage);
 			
 			Broadcaster.Register("tab stops changed", this);
 			Broadcaster.Register("selected line color changed", this);
 			Broadcaster.Register("computed style runs", this);
-			Broadcaster.Register("computed parsed style runs", this);
 			Broadcaster.Register("text changed", this);
 			
 			if (ms_selectedLineColor == null)
@@ -81,14 +79,9 @@ namespace TextEditor
 					DoApplyRegexStyles((StyleRuns) value);
 					break;
 					
-				case "computed parsed style runs":
-					DoApplyParsedStyles((StyleRuns) value);
-					break;
-					
 				case "text changed":
 					// If the text has changed stop applying styles until we get updated info.
-					m_regexStyles.Reset();
-					m_parsedStyles.Reset();
+					m_current.Reset();
 					break;
 					
 				default:
@@ -99,16 +92,14 @@ namespace TextEditor
 		
 		public void Stop()
 		{
-			m_regexStyles.Stop();
-			m_parsedStyles.Stop();
+			m_current.Stop();
 			
 			Broadcaster.Unregister(this);
 		}
 		
 		public void EditedRange(NSRange range)
 		{
-			m_regexStyles.EditedRange(range);
-			m_parsedStyles.EditedRange(range);
+			m_current.EditedRange(range);
 		}
 		
 		public void HighlightLine(int offset, int length)
@@ -145,37 +136,10 @@ namespace TextEditor
 		private void DoApplyRegexStyles(StyleRuns runs)
 		{
 			if (m_controller.Path != null && Paths.AreEqual(runs.Path, m_controller.Path))
-			{
-				m_finished = false;
-				Console.WriteLine("applying regex");
-			
-				m_regexStyles.Reset(runs.Edit, runs.Runs);
-				m_regexStyles.ApplyDefault();
-				m_regexStyles.ApplyStyles();
-			}
-		}
-		
-		private void DoApplyParsedStyles(StyleRuns runs)
-		{
-			if (m_controller.Path != null && Paths.AreEqual(runs.Path, m_controller.Path))
-			{
-				Array.Sort(runs.Runs, (lhs, rhs) => lhs.CompareTo(rhs));
-				m_parsedStyles.Reset(runs.Edit, runs.Runs);
-				
-				if (m_finished && m_parsedStyles.Edit == m_regexStyles.Edit)
-				{
-					m_parsedStyles.ApplyStyles();
-				}
-			}
-		}
-		
-		private void DoFinishedRegex()
-		{
-			m_finished = true;
-			
-			if (m_parsedStyles.Edit == m_regexStyles.Edit)
-			{
-				m_parsedStyles.ApplyStyles();
+			{			
+				m_current.Reset(runs.Edit, runs.Runs);
+				m_current.ApplyDefault();
+				m_current.ApplyStyles();
 			}
 		}
 		
@@ -233,11 +197,9 @@ namespace TextEditor
 		private TextController m_controller;
 		private NSTextStorage m_storage;
 		private NSLayoutManager m_layout;
-		private CurrentStyles m_regexStyles;
-		private CurrentStyles m_parsedStyles;
+		private CurrentStyles m_current;
 		private NSRange m_lineRange;
 		private NSRange m_errorRange;
-		private bool m_finished;
 		
 		private static ObserverTrampoline ms_tabObserver;
 		private static NSColor ms_selectedLineColor;

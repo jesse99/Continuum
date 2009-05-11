@@ -54,7 +54,7 @@ namespace Styler
 		{
 			get {return m_boss;}
 		}
-		
+				
 		public void OnBroadcast(string name, object value)
 		{
 			switch (name)
@@ -120,15 +120,22 @@ namespace Styler
 			Log.WriteLine(TraceLevel.Verbose, "Styler", "computed runs for {0} edit {1}", System.IO.Path.GetFileName(path), edit);
 			
 			var data = new StyleRuns(path, edit, runs.ToArray());
-			NSApplication.sharedApplication().BeginInvoke(
-				() => Broadcaster.Invoke("computed style runs", data));
+			
+			if (language.Boss.Has<IStyler>())
+			{
+				var post = language.Boss.Get<IStyler>();
+				post.PostProcess(data);
+			}
+			else
+			{
+				NSApplication.sharedApplication().BeginInvoke(
+					() => Broadcaster.Invoke("computed style runs", data));
+			}
 		}
 		
 		[ThreadModel(ThreadModel.Concurrent)]
 		private void DoRegexMatch(string text, Language language, List<StyleRun> runs)
 		{
-//			int last = 0;
-			
 			MatchCollection matches = language.Regex.Matches(text);
 			foreach (Match match in matches)
 			{
@@ -138,15 +145,10 @@ namespace Styler
 					Group g = groups[i];
 					if (g.Success)
 					{
-//						if (g.Index > last)
-//							runs.Add(new StyleRun(last, g.Index - last, StyleType.Default));
-						
 						if (i == 1 && language.StylesWhitespace)
 							DoMatchWhitespace(text, g, language, runs);
 						else
 							runs.Add(new StyleRun(g.Index, g.Length, language.Style(i)));
-						
-//						last = g.Index + g.Length;
 						break;
 					}
 				}

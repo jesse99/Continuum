@@ -73,7 +73,7 @@ namespace CsParser
 		{
 			var editor = edit.Boss.Get<ITextEditor>();
 			string path = editor.Path;
-			
+		
 			if (path != null)
 			{
 				if (edit.Language != null && "CsLanguage" == edit.Language.Name)
@@ -297,19 +297,14 @@ namespace CsParser
 				Parse parse = DoParse(path, parser, job);
 				lock (m_mutex)
 				{
-					Parse last;
-					Unused.Value = m_parses.TryGetValue(path, out last);
-					if (last == null || last.Edit <= parse.Edit)
-					{
-						m_parses[path] = parse;
-						DoCheckHighwater();
-						
-						Log.WriteLine(TraceLevel.Verbose, "Parser", "computed parse for {0} and edit {1}", System.IO.Path.GetFileName(path), parse.Edit);
-						NSApplication.sharedApplication().BeginInvoke(
-							() => Broadcaster.Invoke("parsed file", parse));
-						
-						Monitor.Pulse(m_mutex);
-					}
+					m_parses[path] = parse;
+					DoCheckHighwater();
+					
+					Log.WriteLine(TraceLevel.Verbose, "Parser", "computed parse for {0} and edit {1}", System.IO.Path.GetFileName(path), parse.Edit);
+					NSApplication.sharedApplication().BeginInvoke(
+						() => Broadcaster.Invoke("parsed file", parse));
+					
+					Monitor.Pulse(m_mutex);
 				}
 			}
 		}

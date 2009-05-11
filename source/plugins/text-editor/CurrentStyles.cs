@@ -71,15 +71,10 @@ namespace TextEditor
 //			Log.WriteLine("XXX", "spaces: {0:D}", ms_attributes["text spaces color changed"]);
 		}
 		
-		public CurrentStyles(TextController controller, NSTextStorage storage) : this(controller, storage, null)
-		{
-		}
-		
-		public CurrentStyles(TextController controller, NSTextStorage storage, Action onFinished)
+		public CurrentStyles(TextController controller, NSTextStorage storage)
 		{
 			m_controller = controller;
 			m_storage = storage;
-			m_onFinished = onFinished;
 			
 			foreach (string name in ms_names)
 			{
@@ -230,7 +225,7 @@ namespace TextEditor
 					for (int i = 0; i < count; ++i)
 					{
 						if (i > 0)				// note that we can't use a short circuited or expression in the contract because of the Format call
-							Contract.Assert(m_currentRuns[i - 1].Offset < m_currentRuns[i].Offset,
+							Contract.Assert(m_currentRuns[i - 1].Offset <= m_currentRuns[i].Offset,
 								string.Format("runs are not sorted: {0} and {1}", m_currentRuns[i - 1], m_currentRuns[i]));
 						DoApplyStyle(m_currentRuns[i], length);
 					}
@@ -250,8 +245,6 @@ namespace TextEditor
 						m_queued = true;
 						NSApplication.sharedApplication().BeginInvoke(this.DoApplyStyles, ApplyDelay);
 					}
-					else if (m_onFinished != null)
-						NSApplication.sharedApplication().BeginInvoke(m_onFinished);
 				}
 				finally
 				{
@@ -407,7 +400,6 @@ namespace TextEditor
 		private bool m_queued;
 		private int m_editStart = int.MaxValue;
 		private bool m_stopped;
-		private Action m_onFinished;
 		
 		private static ObserverTrampoline ms_styleObserver;
 		private static NSColor ms_errorColor = NSColor.redColor().Retain();

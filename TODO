@@ -25,10 +25,12 @@ sudo fs_usage -f filesys
 			Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 
 * Make thread safe:
+	- rename ComputeParseStyles
 	- do something with IStyleWith?
+	- layoutManager_didCompleteLayoutForTextContainer_atEnd
 	- TryParse doesn't need to be thread safe?
-	- try to use both begin and end of applied runs
 	- get unit tests working again
+	- try to use both begin and end of applied runs
 	- try setting typing attribues to default?
 	- might want to enable text shadow for types by default
 	- review thread safety
@@ -36,6 +38,7 @@ sudo fs_usage -f filesys
 * Straighten out threading:
 	- start making (most) of the interfaces thread safe
 	- review thread safety
+* Build a new foreshadow.
 * Might want to create a type-safe read-only collection:
 	- implement IEnumerable
 	- construct with an ICollection<T>
@@ -156,6 +159,7 @@ sudo fs_usage -f filesys
 * Don't die if a factory pref handler throws.
 * Add some tool tips to the nibs.
 * Should not iterate over the entire opened directory.
+* Might be nice to bury all the C# knowledge in a plugin.
 * Might want a context menu to toggle showing/hiding of parse error annonations.
 * Need to handle aliaii in the Continuum directory.
 * Probably need to handle aliaii in open panels as well.

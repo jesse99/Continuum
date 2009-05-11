@@ -26,19 +26,17 @@ using Shared;
 using System;
 using System.Diagnostics;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
+//using System.Linq;
 using System.Threading;
 
 namespace Styler
 {
-	// Note that this is on a singleton boss.
-	internal sealed class ComputeParseStyles : IInterface, IObserver
+	internal sealed class ComputeParseStyles : IStyler, IObserver
 	{
 		public void Instantiated(Boss boss)
 		{
 			m_boss = boss;
-			
+						
 			Thread thread = new Thread(this.DoComputeStyles);
 			thread.Name = "ComputeParseStyles.DoComputeStyles";
 			thread.IsBackground = true;		// allow the app to quit even if the thread is still running
@@ -50,6 +48,23 @@ namespace Styler
 		public Boss Boss
 		{
 			get {return m_boss;}
+		}
+		
+		[ThreadModel(ThreadModel.Concurrent)]
+		public void PostProcess(StyleRuns runs)
+		{
+			lock (m_mutex)
+			{
+				Styles styles;
+				if (!m_styles.TryGetValue(runs.Path, out styles))
+				{
+					styles = new Styles();
+					m_styles.Add(runs.Path, styles);
+				}
+				styles.RegexStyles = runs;
+				
+				DoTryBroadcast(runs.Path);
+			}
 		}
 		
 		public void OnBroadcast(string name, object value)
@@ -104,10 +119,44 @@ namespace Styler
 			var runs = new List<StyleRun>();
 			DoParseMatch(parse, runs);
 			Log.WriteLine(TraceLevel.Verbose, "Styler", "computed runs for parse {0} edit {1}", System.IO.Path.GetFileName(parse.Path), parse.Edit);
+			
+			lock (m_mutex)
+			{
+				Styles styles;
+				if (!m_styles.TryGetValue(parse.Path, out styles))
+				{
+					styles = new Styles();
+					m_styles.Add(parse.Path, styles);
+				}
+				styles.ParsedStyles = new StyleRuns(parse.Path, parse.Edit, runs.ToArray());
+				
+				DoTryBroadcast(parse.Path);
+			}
+		}
 		
-			var data = new StyleRuns(parse.Path, parse.Edit, runs.ToArray());
-			NSApplication.sharedApplication().BeginInvoke(
-				() => Broadcaster.Invoke("computed parsed style runs", data));
+		[ThreadModel(ThreadModel.Concurrent)]
+		private void DoTryBroadcast(string path)
+		{
+			Styles styles = m_styles[path];
+			
+			if (styles.RegexStyles != null && styles.ParsedStyles != null)
+			{
+				if (styles.RegexStyles.Edit == styles.ParsedStyles.Edit)
+				{
+					var runs = new List<StyleRun>(styles.RegexStyles.Runs.Length + styles.ParsedStyles.Runs.Length);
+					runs.AddRange(styles.RegexStyles.Runs);
+					runs.AddRange(styles.ParsedStyles.Runs);
+					runs.Sort((lhs, rhs) => lhs.Offset.CompareTo(rhs.Offset));
+					
+					var data = new StyleRuns(styles.RegexStyles.Path,
+						styles.RegexStyles.Edit, runs.ToArray());
+					
+					NSApplication.sharedApplication().BeginInvoke(
+						() => Broadcaster.Invoke("computed style runs", data));
+						
+					m_styles.Remove(path);
+				}
+			}
 		}
 		
 		[ThreadModel(ThreadModel.Concurrent)]
@@ -150,10 +199,20 @@ namespace Styler
 		}
 		#endregion
 		
+		#region Private Type
+		private sealed class Styles
+		{
+			public StyleRuns RegexStyles {get; set;}
+			public StyleRuns ParsedStyles {get; set;}
+		}
+		#endregion
+		
 		#region Fields
 		private Boss m_boss;
+		
 		private object m_mutex = new object();
 			private List<Parse> m_parses = new List<Parse>();
+			private Dictionary<string, Styles> m_styles = new Dictionary<string, Styles>();
 		#endregion
 	}
 }
