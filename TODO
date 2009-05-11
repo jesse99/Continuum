@@ -26,10 +26,10 @@ sudo fs_usage -f filesys
 
 * Make thread safe:
 	- get unit tests working again
-	- try setting typing attribues to default?
+	- try setting typing attribues to default?	religion
 	- might want to enable text shadow for types by default
 	- review thread safety
-* AppDelegate.cs isn't styling.
+* AppDelegate.cs isn't styling. Also EvaluateTest.cs and ScannerTest.cs
 * Transcript flush doesn't seem to work quite right.
 * Build a new foreshadow.
 * make gendarme>tmp.txt isn't reloading tmp.txt

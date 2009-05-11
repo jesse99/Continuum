@@ -22,7 +22,7 @@
 #if TEST
 using CsParser;
 using NUnit.Framework;
-//using Shared;
+using Shared;
 using System;
 
 namespace CsParser

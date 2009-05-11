@@ -20,8 +20,9 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #if TEST
+using Gear.Helpers;
 using NUnit.Framework;
-//using Shared;
+using Shared;
 using System;
 
 namespace CsParser
