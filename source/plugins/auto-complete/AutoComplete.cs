@@ -89,7 +89,7 @@ namespace AutoComplete
 			}
 		}
 		
-		public bool HandleKey(NSTextView view, NSEvent evt, IComputeRuns computer)
+		public bool HandleKey(NSTextView view, NSEvent evt)
 		{
 			bool handled = false;
 			
@@ -101,12 +101,12 @@ namespace AutoComplete
 				if (range.length == 0 && chars.length() == 1 && chars[0] == '.')
 				{
 					view.insertText(NSString.Create('.'));
-					Unused.Value = DoComplete(this.DoCompleteDot, view, range, computer);
+					Unused.Value = DoComplete(this.DoCompleteDot, view, range);
 					handled = true;
 				}
 				else if (range.length == 0 && chars.length() == 1 && chars[0] == '\t')
 				{
-					handled = DoCompleteTab(view, evt, computer, range);
+					handled = DoCompleteTab(view, evt, range);
 				}
 				
 				if (!handled)
@@ -154,14 +154,14 @@ namespace AutoComplete
 		}
 		
 		#region Private Methods
-		private bool DoCompleteTab(NSTextView view, NSEvent evt, IComputeRuns computer, NSRange range)
+		private bool DoCompleteTab(NSTextView view, NSEvent evt, NSRange range)
 		{
 			bool handled = false;
 			
 			TimeSpan delta = DateTime.Now - m_lastTabTime;
 			if (range.location > 2 && delta.TotalSeconds < GetDblTime()/60.0 && range.location == m_lastTabIndex + 1)
 			{
-				handled = DoComplete(this.DoCompleteStem, view, range, computer);
+				handled = DoComplete(this.DoCompleteStem, view, range);
 			}
 			
 			m_lastTabTime = DateTime.Now;
@@ -172,7 +172,7 @@ namespace AutoComplete
 		
 		internal static Stopwatch Watch = new Stopwatch();
 		
-		private bool DoComplete(Func<ITextEditor, NSTextView, NSRange, bool> completer, NSTextView view, NSRange range, IComputeRuns computer)
+		private bool DoComplete(Func<ITextEditor, NSTextView, NSRange, bool> completer, NSTextView view, NSRange range)
 		{
 			bool handled = false;
 			
@@ -183,7 +183,7 @@ namespace AutoComplete
 				Log.WriteLine("AutoComplete", "starting auto-complete");
 				
 				var editor = m_boss.Get<ITextEditor>();
-				DoUpdateCache(editor, computer);
+				DoUpdateCache(editor);
 				
 				if (!m_tokens.IsWithinComment(range.location) && !m_tokens.IsWithinString(range.location))
 				{
@@ -511,16 +511,16 @@ namespace AutoComplete
 			items.AddIfMissing(item);
 		}
 		
-		private void DoUpdateCache(ITextEditor editor, IComputeRuns computer)
+		private void DoUpdateCache(ITextEditor editor)
 		{
-			Profile.Start("AutoComplete::DoUpdateCache");
-			Parse parse = m_parses.TryParse(editor.Path);
+//			Profile.Start("AutoComplete::DoUpdateCache");
+//			Parse parse = m_parses.TryParse(editor.Path);
 			
-			if (parse != null && parse.Edit != m_text.EditCount)
-			{
-				computer.ComputeRuns(editor.Boss, editor.Path, m_text.Text, m_text.EditCount);
-			}
-			Profile.Stop("AutoComplete::DoUpdateCache");
+//			if (parse != null && parse.Edit != m_text.EditCount)
+//			{
+//				computer.ComputeRuns(editor.Boss, editor.Path, m_text.Text, m_text.EditCount);
+//			}
+//			Profile.Stop("AutoComplete::DoUpdateCache");
 		}
 		
 		private string DoGetTargetName(int offset)

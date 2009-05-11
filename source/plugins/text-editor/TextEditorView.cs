@@ -57,8 +57,7 @@ namespace TextEditor
 				if ("CsLanguage" == controller.Language)			// order is important: Language may be null
 				{
 					// Handle auto-complete initiated with '.' or enter.
-					IComputeRuns computer = controller.Computer;
-					if (m_autoComplete.HandleKey(this, evt, computer))
+					if (m_autoComplete.HandleKey(this, evt))
 						break;
 					
 					// Option-tab selects the next identifier.

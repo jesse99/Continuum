@@ -28,8 +28,7 @@ namespace Shared
 	// interfaces associated with a file.
 	public interface IFindLanguage : IInterface
 	{
-		// Returns either null or a boss with an IStyler interface. The boss
-		// may also have additional interfaces, in particular, IDeclarations. 
+		// Returns either null or a boss with an ILanguage interface. 
 		Boss Find(string fileName);
 	}
 }

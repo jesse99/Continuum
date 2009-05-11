@@ -29,8 +29,11 @@ namespace Shared
 		public static readonly string Bullet = "\x2022";
 		public static readonly string Ellipsis = "\x2026";
 		public static readonly string Replacement = "\xFFFD";
-		public static readonly string ZeroWidthSpace = "\x200C";
-
+		
+		public static readonly string ZeroWidthSpace = "\x200B";
+		public static readonly string ZeroWidthNonJoiner = "\x200C";
+		public static readonly string ZeroWidthJoiner = "\x200D";
+		
 		public static readonly string LeftSingleQuote = "\x2018";
 		public static readonly string RightSingleQuote = "\x2019";
 		public static readonly string LeftDoubleQuote = "\x201C";

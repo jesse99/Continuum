@@ -34,10 +34,11 @@ namespace CsParser
 	internal sealed class Parses : IParses, IObserver
 	{
 		public void Instantiated(Boss boss)
-		{	
+		{
 			m_boss = boss;
 			
 			Broadcaster.Register("built target", this);
+			Broadcaster.Register("text changed", this);
 			
 			Thread thread = new Thread(this.DoThread);
 			thread.Name = "Parses.DoThread";
@@ -58,23 +59,32 @@ namespace CsParser
 					DoClearClosed();
 					break;
 					
+				case "text changed":
+					DoQueueJob((TextEdit) value);
+					break;
+					
 				default:
 					Contract.Assert(false, "bad name: " + name);
 					break;
 			}
 		}
 		
-		public void OnEdit(string language, string path, int edit, string text)
+		private void DoQueueJob(TextEdit edit)
 		{
-			Contract.Requires(!string.IsNullOrEmpty(path), "path is null or empty");
-			Contract.Requires(text != null, "text is null");
+			var editor = edit.Boss.Get<ITextEditor>();
+			string path = editor.Path;
 			
-			if ("CsLanguage" == language)
+			if (path != null)
 			{
-				lock (m_mutex)
+				if (edit.Language != null && "CsLanguage" == edit.Language.Name)
 				{
-					m_jobs[path] = new Job(edit, text);
-					Monitor.Pulse(m_mutex);
+					var text = edit.Boss.Get<IText>();
+					lock (m_mutex)
+					{
+						Log.WriteLine(TraceLevel.Verbose, "Parser", "queuing {0} for edit {1}", System.IO.Path.GetFileName(path), text.EditCount);
+						m_jobs[path] = new Job(text.EditCount, text.Text);
+						Monitor.Pulse(m_mutex);
+					}
 				}
 			}
 		}
@@ -101,23 +111,24 @@ namespace CsParser
 			Contract.Requires(!string.IsNullOrEmpty(path), "path is null or empty");
 			Contract.Requires(text != null, "text is null");
 			
-			Parse result = TryParse(path);
-			if (result == null || result.Edit != edit)
+			Parse parse = null;
+			
+			lock (m_mutex)
 			{
-				Job job = new Job(edit, text);
-				Parser parser = Thread.CurrentThread.ManagedThreadId == 1 ? m_parser : new Parser();
-				result = DoParse(parser, job);
-				
-				lock (m_mutex)
+				while (!m_parses.ContainsKey(path) || m_parses[path].Edit != edit)
 				{
-					m_parses[path] = result;
-					DoCheckHighwater();
+					m_jobs[path] = new Job(edit, text);
+					Monitor.Pulse(m_mutex);
+					
+					bool pulsed = Monitor.Wait(m_mutex, TimeSpan.FromSeconds(10));
+					if (!pulsed)
+						throw new Exception("Timed out trying to parse " + path);
 				}
 				
-				DoBroadcast(path);
+				parse = m_parses[path];
 			}
 			
-			return result;
+			return parse;
 		}
 		
 #if TEST
@@ -226,15 +237,6 @@ namespace CsParser
 		}
 		
 		#region Private Methods
-		[ThreadModel(ThreadModel.MainThread | ThreadModel.AllowEveryCaller)]
-		private void DoBroadcast(string path)
-		{
-			if (Thread.CurrentThread.ManagedThreadId == 1)
-				Broadcaster.Invoke("parsed file", path);
-			else
-				NSApplication.sharedApplication().BeginInvoke(() => Broadcaster.Invoke("parsed file", path));
-		}
-		
 		private void DoFindNamespaces(string prefix, string parent, CsNamespace ns, List<string> names)
 		{
 			string name = null;
@@ -292,32 +294,35 @@ namespace CsParser
 					m_jobs.Remove(path);
 				}
 				
-				Parse parse = DoParse(parser, job);
+				Parse parse = DoParse(path, parser, job);
 				lock (m_mutex)
 				{
 					Parse last;
 					Unused.Value = m_parses.TryGetValue(path, out last);
-					if (last == null || last.Edit < parse.Edit)
+					if (last == null || last.Edit <= parse.Edit)
 					{
 						m_parses[path] = parse;
 						DoCheckHighwater();
 						
+						Log.WriteLine(TraceLevel.Verbose, "Parser", "computed parse for {0} and edit {1}", System.IO.Path.GetFileName(path), parse.Edit);
 						NSApplication.sharedApplication().BeginInvoke(
-							() => Broadcaster.Invoke("parsed file", path));
+							() => Broadcaster.Invoke("parsed file", parse));
+						
+						Monitor.Pulse(m_mutex);
 					}
 				}
 			}
 		}
 		
 		[ThreadModel(ThreadModel.Concurrent)]
-		private Parse DoParse(Parser parser, Job job)		// threaded
+		private Parse DoParse(string path, Parser parser, Job job)		// threaded
 		{
 			int index, length;
 			CsGlobalNamespace globals;
 			Token[] tokens, comments;
 			parser.TryParse(job.Text, out index, out length, out globals, out tokens, out comments);
 			
-			return new Parse(job.Edit, index, length, globals, comments, tokens);
+			return new Parse(path, job.Edit, index, length, globals, comments, tokens);
 		}
 		
 		// We want to hang onto parses until the assembly they are within is
@@ -393,7 +398,6 @@ namespace CsParser
 		
 		#region Fields
 		private Boss m_boss;
-		private Parser m_parser = new Parser();
 		private object m_mutex = new object();
 			private Dictionary<string, Job> m_jobs = new Dictionary<string, Job>();
 			private Dictionary<string, Parse> m_parses = new Dictionary<string, Parse>();

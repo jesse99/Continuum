@@ -31,7 +31,7 @@ using System.Text;
 
 namespace Styler
 {
-	internal sealed class CSharpDeclarations : IDeclarations
+	internal sealed class CSharpDeclarations : IInterface, IObserver
 	{
 		public Boss Boss
 		{
@@ -41,17 +41,28 @@ namespace Styler
 		public void Instantiated(Boss boss)
 		{
 			m_boss = boss;
+			Broadcaster.Register("parsed file", this);
 		}
 		
-		public Declaration[] Get(IText text, StyleRun[] runs)
+		public void OnBroadcast(string name, object value)
 		{
-			Boss boss = ObjectModel.Create("CsParser");
-			var parses = boss.Get<IParses>();
-			
-			var editor = text.Boss.Get<ITextEditor>();
-			Parse parse = parses.Parse(editor.Path, text.EditCount, text.Text);
-			
+			switch (name)
+			{
+				case "parsed file":
+					DoProcessParse((Parse) value);
+					break;
+					
+				default:
+					Contract.Assert(false, "bad name: " + name);
+					break;
+			}
+		}
+		
+		#region Private Methods
+		private void DoProcessParse(Parse parse)
+		{
 			var decs = new List<Declaration>();
+			
 			CsGlobalNamespace globals = parse.Globals;
 			if (globals != null)
 			{
@@ -59,12 +70,12 @@ namespace Styler
 				DoGetDirectives(globals.Preprocess, decs);
 				
 				decs.Sort((lhs, rhs) => lhs.Extent.location.CompareTo(rhs.Extent.location));
+				
+				var data = new Declarations(parse.Path, parse.Edit, decs.ToArray());
+				Broadcaster.Invoke("computed declarations", data);
 			}
-			
-			return decs.ToArray();
 		}
 		
-		#region Private Methods
 		private const string IndentLevel = "    ";
 		
 		private Declaration DoFindDeclaration(List<Declaration> decs, int offset)

@@ -29,7 +29,7 @@ using System.Diagnostics;
 
 namespace Styler
 {
-	internal sealed class RegexDeclarations : IDeclarations
+	internal sealed class RegexDeclarations : IInterface, IObserver
 	{
 		public Boss Boss
 		{
@@ -39,37 +39,73 @@ namespace Styler
 		public void Instantiated(Boss boss)
 		{
 			m_boss = boss;
+			Broadcaster.Register("computed style runs", this);
 		}
 		
-		public Declaration[] Get(IText itext, StyleRun[] runs)
+		public void OnBroadcast(string name, object value)
 		{
-			Contract.Requires(runs != null, "runs is null");
-			
-			string text = itext.Text;
-			
-			var decs = new List<Declaration>();
-			string indent = string.Empty;
-			foreach (StyleRun run in runs)
+			switch (name)
 			{
-				if (run.Type == StyleType.Type)
+				case "computed style runs":
+					DoProcessStyles((StyleRuns) value);
+					break;
+					
+				default:
+					Contract.Assert(false, "bad name: " + name);
+					break;
+			}
+		}
+		
+		#region Private Methods 
+		private void DoProcessStyles(StyleRuns styles)
+		{
+			string text = DoGetText(styles.Path);
+			if (text != null)
+			{
+				var decs = new List<Declaration>();
+				string indent = string.Empty;
+				foreach (StyleRun run in styles.Runs)
 				{
-					decs.Add(new Declaration(
-						text.Substring(run.Offset, run.Length),	
-						new NSRange(run.Offset, run.Length),
-						true, false));
-					indent = "    ";
+					if (run.Type == StyleType.Type)
+					{
+						decs.Add(new Declaration(
+							text.Substring(run.Offset, run.Length),	
+							new NSRange(run.Offset, run.Length),
+							true, false));
+						indent = "    ";
+					}
+					else if (run.Type == StyleType.Member)
+					{
+						decs.Add(new Declaration(
+							indent + text.Substring(run.Offset, run.Length),
+							new NSRange(run.Offset, run.Length),
+							false, false));
+					}
 				}
-				else if (run.Type == StyleType.Member)
+				
+				var data = new Declarations(styles.Path, styles.Edit, decs.ToArray());
+				Broadcaster.Invoke("computed declarations", data);
+			}
+		}
+		
+		public string DoGetText(string path)
+		{
+			Boss boss = ObjectModel.Create("TextEditorPlugin");
+			var windows = boss.Get<IWindows>();
+			
+			foreach (Boss b in windows.All())
+			{
+				var editor = b.Get<ITextEditor>();
+				if (editor.Path != null && Paths.AreEqual(editor.Path, path))
 				{
-					decs.Add(new Declaration(
-						indent + text.Substring(run.Offset, run.Length),
-						new NSRange(run.Offset, run.Length),
-						false, false));
+					var text = b.Get<IText>();
+					return text.Text;
 				}
 			}
 			
-			return decs.ToArray();
+			return null;
 		}
+		#endregion
 		
 		#region Fields 
 		private Boss m_boss;

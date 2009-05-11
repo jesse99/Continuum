@@ -28,6 +28,7 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
+#if false
 namespace Styler
 {
 	internal class RegexComputer : IComputeRuns, IStyleWith
@@ -163,3 +164,4 @@ namespace Styler
 		#endregion
 	}
 }
+#endif

@@ -25,20 +25,27 @@ sudo fs_usage -f filesys
 			Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 
 * Make thread safe:
-	- add IStyleRuns
-		` has a thread safe method to get runs for a path/edit count
-		` has thread which listens for text changes, computes new runs, and broadcasts
-	- IComputeRuns
-	- ICachedStyleRuns
-	- IParses?
-	- IWhitespace?
-	- IStyleRuns
+	- get rid of: CSharpComputer, RegexComputer, IComputeRuns, ICachedStyleRuns,
+	  Styler, IStyler, IComputeStyleRuns, IDeclarations
+	- do something with IStyleWith?
+	- TryParse doesn't need to be thread safe?
+	- try to use both begin and end of applied runs
+	- get unit tests working again
+	- try setting typing attribues to default?
+	- might want to enable text shadow for types by default
+	- review thread safety
+* Transcript flush doesn't seem to work quite right.
 * Straighten out threading:
 	- start making (most) of the interfaces thread safe
 	- review thread safety
+* Might want to create a type-safe read-only collection:
+	- implement IEnumerable
+	- construct with an ICollection<T>
 * make gendarme>tmp.txt isn't reloading tmp.txt
+* Transcript should not cache commands.
+* Deleting a new line should remove any eol whitespace.
 * AppDelegate.cs isn't styling.
-* Right click on Invoke didn't show the Broadcaster method.
+* Right click on Invoke didn't show the Broadcaster method. Also BeginInvoke.
 * Enum. completion should show enum members by default.
 * Short form should special case enums:
 	- replace the fields section with a values section
@@ -47,6 +54,9 @@ sudo fs_usage -f filesys
 * Short form should have a separate section for operators (see DateTime).
 * Should always be able to do a find after command-e?
 	- so turn off stuff like "match entire words" if there is whitespace?
+* Might be able to use NSToolTipAttributeName for a few things:
+	- parse errors
+	- method comments
 * Short form should show extension methods:
 	- maybe could use a comment like // System.Linq Extension Methods
 * Short form should not show internal methods for system types

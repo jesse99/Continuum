@@ -19,27 +19,25 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-using Gear;
-using Shared;
+using Gear.Helpers;
 using System;
 
-#if false
-namespace TextEditor
+namespace Shared
 {
-	internal interface IStyler : IInterface
+	[ThreadModel(ThreadModel.Concurrent)]
+	public sealed class StyleRuns
 	{
-		// Asynchronously computes the style runs and calls the callback on the 
-		// main thread when finished. Note that the runs given to ICachedStyleRuns
-		// will cover the text.
-//		void Apply(IComputeRuns computer, Action callback);
+		public StyleRuns(string path, int edit, StyleRun[] runs)
+		{
+			Path = path;
+			Edit = edit;
+			Runs = runs;
+		}
 		
-		// Like the above except there is a delay before styling begins. Queue can 
-		// be called multiple times and any queue requests which have not yet 
-		// finished are dropped.
-//		void Queue(IComputeRuns computer, Action callback);
+		public string Path {get; private set;}
 		
-		// Cancel any pending applies.
-		void Close();
+		public int Edit {get; private set;}
+		
+		public StyleRun[] Runs {get; private set;}
 	}
 }
-#endif

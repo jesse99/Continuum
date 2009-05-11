@@ -23,6 +23,7 @@ using Gear;
 using Gear.Helpers;
 using System;
 
+#if false
 namespace Shared
 {
 	// Interface on the Text Editor boss which caches style runs.
@@ -36,3 +37,4 @@ namespace Shared
 		void Reset(int edit, StyleRun[] runs);
 	}
 }
+#endif

@@ -46,12 +46,12 @@ namespace TextEditor
 			var wind = m_boss.Get<IWindow>();
 			wind.Window = window();
 			
-			m_styler = m_boss.Get<IStyler>();
-			m_applier = new ApplyStyles(this, m_textView.Value, m_scrollView.Value);
+//			m_styler = m_boss.Get<IStyler>();
+			m_applier = new ApplyStyles(this, m_textView.Value);
 			DoSetTextOptions();
 			
-			Boss boss = ObjectModel.Create("CsParser");
-			m_parses = boss.Get<IParses>();
+//			Boss boss = ObjectModel.Create("CsParser");
+//			m_parses = boss.Get<IParses>();
 			
 			Broadcaster.Register("text default color changed", this);	
 			DoUpdateDefaultColor(string.Empty, null);
@@ -87,16 +87,8 @@ namespace TextEditor
 		
 		public void HighlightError(int offset, int length)
 		{
-			// We can't highlight control characters because they have zero width so we'll
-			// grow to the left until we find a non-control character.
-			string text = Text;
-			while (offset > 0 && char.IsControl(text, offset) && text[offset] != '\t')
-			{
-				--offset;
-				++length;
-			}
-			
-			m_applier.HighlightError(offset, length);
+			NSRange range = CurrentStyles.AdjustRangeForZeroWidthChars(Text, new NSRange(offset, length));
+			m_applier.HighlightError(range.location, range.length);
 		}
 		
 		public string Path
@@ -140,7 +132,7 @@ namespace TextEditor
 				m_watcher.Changed += this.DoDirChanged;	
 			}
 			else
-				((DeclarationsPopup) m_decPopup.Value).Init(this, null);
+				((DeclarationsPopup) m_decPopup.Value).Init(this);
 		}
 		
 		public string Text
@@ -165,10 +157,9 @@ namespace TextEditor
 					m_userEdit = false;
 					m_editCount = unchecked(m_editCount + 1);
 					
-					m_applier.Reset(value);
+					var text = NSAttributedString.Create(value);
+					m_textView.Value.textStorage().setAttributedString(text);
 					m_textView.Value.setSelectedRange(new NSRange(0, 0));
-					if (m_computer != null)
-						m_styler.Apply(m_computer, this.DoStylerFinished);
 					
 					DoUpdateLineLabel(Text);			// use Text so metrics are up to date
 				}
@@ -196,8 +187,6 @@ namespace TextEditor
 					
 					m_textView.Value.textStorage().setAttributedString(value);
 					m_textView.Value.setSelectedRange(new NSRange(0, 0));
-					if (m_computer != null)
-						m_styler.Apply(m_computer, this.DoStylerFinished);
 					
 					DoUpdateLineLabel(Text);			// use Text so metrics are up to date
 				}
@@ -224,14 +213,9 @@ namespace TextEditor
 			}
 		}
 		
-		public IComputeRuns Computer
-		{
-			get {return m_computer;}
-		}
-		
 		public string Language
 		{
-			get {return m_language;}
+			get {return m_language != null ? m_language.Name : null;}
 		}
 		
 		public Boss GetDirEditorBoss()
@@ -251,7 +235,8 @@ namespace TextEditor
 		{
 			if (!m_closed)
 			{
-				if (atEnd && m_finishedStyling && !m_opened && !m_scrolled)
+				if (atEnd && !m_opened && !m_scrolled)
+//				if (atEnd && m_finishedStyling && !m_opened && !m_scrolled)
 				{
 					DoRestoreView();
 					m_opened = true;
@@ -327,11 +312,12 @@ namespace TextEditor
 			
 			Broadcaster.Unregister(this);
 			
-			if (m_styler != null)					// may be null if ctor threw
-				m_styler.Close();
+//			if (m_styler != null)					// may be null if ctor threw
+//				m_styler.Close();
 				
 			if (m_applier != null)
 				m_applier.Stop();
+			((DeclarationsPopup) m_decPopup.Value).Stop();
 			
 			// If the windows are closed very very quickly then if we don't do this
 			// we get a crash when Cocoa tries to call our delegate.
@@ -478,7 +464,7 @@ namespace TextEditor
 			shiftLines(args);
 		}
 		
-		public void shiftLines(NSArray args) 
+		public void shiftLines(NSArray args)
 		{
 			int firstLine = args.objectAtIndex(0).To<NSNumber>().intValue();
 			int lastLine = args.objectAtIndex(1).To<NSNumber>().intValue();
@@ -520,29 +506,45 @@ namespace TextEditor
 			window().windowController().document().undoManager().registerUndoWithTarget_selector_object(this, "shiftLines:", oldArgs);
 			window().windowController().document().undoManager().setActionName(NSString.Create("Shift"));
 		}
-				
+		
 		public void showSpaces(NSObject sender)
 		{
-			if (m_computer != null)
-			{
-				Boss boss = ObjectModel.Create("Stylers");
-				var white = boss.Get<IWhitespace>();
-				white.ShowSpaces = !white.ShowSpaces;
-				
-				m_styler.Apply(m_computer, this.DoStylerFinished);
-			}
+			Boss boss = ObjectModel.Create("Stylers");
+			var white = boss.Get<IWhitespace>();
+			white.ShowSpaces = !white.ShowSpaces;
+			
+			m_editCount = unchecked(m_editCount + 1);
+			m_applier.EditedRange(NSRange.Empty);
+			
+			var edit = new TextEdit{
+				Boss = m_boss,
+				Language = m_language,
+				UserEdit = true,
+				EditedRange = NSRange.Empty,
+				ChangeInLength = 0,
+				ChangeInLines = 0,
+				StartLine = 1};
+			Broadcaster.Invoke("text changed", edit);
 		}
 		
 		public void showTabs(NSObject sender)
 		{
-			if (m_computer != null)
-			{
-				Boss boss = ObjectModel.Create("Stylers");
-				var white = boss.Get<IWhitespace>();
-				white.ShowTabs = !white.ShowTabs;
-				
-				m_styler.Apply(m_computer, this.DoStylerFinished);
-			}
+			Boss boss = ObjectModel.Create("Stylers");
+			var white = boss.Get<IWhitespace>();
+			white.ShowTabs = !white.ShowTabs;
+			
+			m_editCount = unchecked(m_editCount + 1);
+			m_applier.EditedRange(NSRange.Empty);
+			
+			var edit = new TextEdit{
+				Boss = m_boss,
+				Language = m_language,
+				UserEdit = true,
+				EditedRange = NSRange.Empty,
+				ChangeInLength = 0,
+				ChangeInLines = 0,
+				StartLine = 1};
+			Broadcaster.Invoke("text changed", edit);
 		}
 		
 		public void findLine(NSObject sender)
@@ -578,7 +580,7 @@ namespace TextEditor
 		
 		public bool StylesWhitespace
 		{
-			get {return m_computer != null && m_computer.StylesWhitespace;}
+			get {return m_language != null && m_language.StylesWhitespace;}
 		}
 		
 		public bool validateUserInterfaceItem(NSObject item)
@@ -673,11 +675,6 @@ namespace TextEditor
 				NSRange range = storage.editedRange();
 				int lengthChange = storage.changeInLength();
 				
-				if (m_language != null)
-					m_parses.OnEdit(m_language, Path, EditCount, text);
-				if (m_computer != null)
-					m_styler.Queue(m_computer, this.DoStylerFinished);
-				
 				DoUpdateLineLabel(text);
 				DoUpdateRanges(range, lengthChange);
 				m_applier.EditedRange(range);
@@ -726,6 +723,7 @@ namespace TextEditor
 				
 				var edit = new TextEdit{
 					Boss = m_boss,
+					Language = m_language,
 					UserEdit = m_userEdit,
 					EditedRange = range,
 					ChangeInLength = lengthChange,
@@ -739,7 +737,7 @@ namespace TextEditor
 		{
 			string text = Text;			// note that this will ensure m_metrics is up to date
 			
-			if (m_computer != null)
+//			if (m_language != null)
 			{
 				int line = -1;
 				int offset = 0;
@@ -771,38 +769,31 @@ namespace TextEditor
 			string fileName = System.IO.Path.GetFileName(Path);
 			m_language = null;
 			
-			IComputeRuns computer = null;
-			IDeclarations decs = null;
+			ILanguage language = null;
 			Boss boss = ObjectModel.Create("Stylers");
 			if (boss.Has<IFindLanguage>())
 			{
 				var find = boss.Get<IFindLanguage>();
-				while (find != null && computer == null)
+				while (find != null && language == null)
 				{
-					Boss language = find.Find(fileName);
-					if (language != null)
+					Boss lboss = find.Find(fileName);
+					if (lboss != null)
 					{
-						m_language = language.Name;
-						computer = language.Get<IComputeRuns>();
-						
-						if (language.Has<IDeclarations>())
-							decs = language.Get<IDeclarations>();
+						language = lboss.Get<ILanguage>();
 					}
 					find = boss.GetNext<IFindLanguage>(find);
 				}
 			}
 			
-			((DeclarationsPopup) m_decPopup.Value).Init(this, decs);
+			((DeclarationsPopup) m_decPopup.Value).Init(this);
 			
-			if (m_computer == null)
+			if (m_language == null)
 			{
-				m_computer = computer;
+				m_language = language;
 			}
-			else if (m_computer != computer)
+			else if (m_language != language)
 			{
-				m_computer = computer;
-				if (m_computer != null)
-					m_styler.Apply(m_computer, this.DoStylerFinished);	// we only want to call this if the document is saved under a new name because the text view starts out with that lame latin
+				m_language = language;
 			}
 		}
 		
@@ -844,25 +835,6 @@ namespace TextEditor
 			var clip = m_scrollView.Value.contentView().To<NSClipView>();
 			clip.scrollToPoint(new NSPoint(x, y));
 			m_scrollView.Value.reflectScrolledClipView(clip);
-		}
-		
-		private void DoStylerFinished()
-		{
-			if (!m_closed)
-			{
-				int edit;
-				StyleRun[] runs;
-				
-				var cachedRuns = m_boss.Get<ICachedStyleRuns>();
-				cachedRuns.Get(out edit, out runs);
-				
-				if (edit == m_editCount)
-				{
-					m_decPopup.Value.Call("textWasStyled");
-					m_applier.Apply(edit, new List<StyleRun>(runs));	// applier mutates runs...
-					m_finishedStyling = true;
-				}
-			}
 		}
 		
 		private void DoShowOpenBrace(NSRange openRange, NSRange closeRange)
@@ -1011,9 +983,9 @@ namespace TextEditor
 		private IBOutlet<NSPopUpButton> m_decPopup;
 		private IBOutlet<NSScrollView> m_scrollView;
 		private Boss m_boss;
-		private IComputeRuns m_computer;
-		private IParses m_parses;
-		private IStyler m_styler;
+		private ILanguage m_language;
+//		private IParses m_parses;
+//		private IStyler m_styler;
 		private ApplyStyles m_applier;
 		private bool m_userEdit = true;
 		private TextMetrics m_metrics = new TextMetrics(string.Empty);
@@ -1022,11 +994,11 @@ namespace TextEditor
 		private string m_cachedText;
 		private int m_cachedEditCount = -1;
 		private int m_editCount;
-		private bool m_finishedStyling;
+//		private bool m_finishedStyling;
 		private bool m_opened;
 		private bool m_closed;
 		private bool m_scrolled;
-		private string m_language;
+//		private string m_language;
 		private List<WeakReference> m_ranges = new List<WeakReference>();
 		
 		public static WarningWindow ms_warning;

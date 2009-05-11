@@ -32,7 +32,6 @@ namespace Shared
 		Spaces,			// leading or trailing spaces
 		Tabs,				// leading or trailing tabs
 		
-		Default,
 		Keyword,
 		String,			// usually includes character literals as well
 		Number,
@@ -44,7 +43,6 @@ namespace Shared
 		Member,		// name in a member declaration 
 		Type,				// name in a type declaration 
 		Error,			// build or parse error
-		Line,				// selected line
 	}
 	
 	public struct StyleRun : IComparable<StyleRun>, IEquatable<StyleRun>
@@ -53,7 +51,7 @@ namespace Shared
 		{
 #if DEBUG
 			Contract.Requires(offset >= 0, "offset is negative");
-			Contract.Requires(((type == StyleType.Line || type == StyleType.Error) && length >= 0) || length > 0, "length is not correct");
+			Contract.Requires(((type == StyleType.Error) && length >= 0) || length > 0, "length is not correct");
 #endif
 			
 			Offset = offset;

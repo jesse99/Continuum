@@ -25,6 +25,7 @@ using Shared;
 using System;
 using System.Diagnostics;
 
+#if false
 namespace TextEditor
 {
 	internal sealed class CachedStyleRuns : ICachedStyleRuns
@@ -70,3 +71,4 @@ namespace TextEditor
 		#endregion
 	}
 }
+#endif

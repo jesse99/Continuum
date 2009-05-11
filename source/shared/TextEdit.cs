@@ -31,6 +31,9 @@ namespace Shared
 		// The TextEditor boss.
 		public Boss Boss {get; set;}
 		
+		// May be null.
+		public ILanguage Language {get; set;}
+		
 		// True if the change was caused by the user editing the text (as opposed
 		// to something like reverting the file or a refactor command).
 		public bool UserEdit {get; set;}

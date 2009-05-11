@@ -107,7 +107,7 @@ namespace TextEditor
 			var text = m_boss.Get<IText>();
 			
 			Parse parse = parses.Parse(editor.Path, text.EditCount, text.Text);
-			if (parse.Edit != m_edit)
+			if (parse.Edit == text.EditCount)
 			{
 				var strings = new List<Token>();
 				var identifiers = new List<Token>();
@@ -121,7 +121,6 @@ namespace TextEditor
 						identifiers.Add(token);
 				}
 				
-				m_edit = parse.Edit;
 				m_comments = parse.Comments;
 				m_strings = strings.ToArray();
 				m_identifiers = identifiers.ToArray();
@@ -150,7 +149,6 @@ namespace TextEditor
 		
 		#region Fields
 		private Boss m_boss;
-		private int m_edit = -1;
 		private Token[] m_comments = new Token[0];
 		private Token[] m_strings = new Token[0];
 		private Token[] m_identifiers = new Token[0];

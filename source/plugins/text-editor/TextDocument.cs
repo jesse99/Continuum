@@ -146,7 +146,7 @@ namespace TextEditor
 					case "HTML":
 						Boss boss = ObjectModel.Create("TextEditorPlugin");
 						var encoding = boss.Get<ITextEncoding>();
-						m_text = ApplyStyles.GetDefaultStyledString(encoding.Decode(data).description());
+						m_text = NSAttributedString.Create(encoding.Decode(data).description());
 						break;
 					
 					// These types are based on the file's extension so we can (more or less) trust them.
@@ -370,15 +370,12 @@ namespace TextEditor
 			
 			foreach (char ch in text)
 			{
-				if ((int) ch < 0x20 || (int) ch == 0x7F)
+				if (CharHelpers.IsBadControl(ch))
 				{
-					if (ch != '\t' && ch != '\n' && ch != '\r')
-					{
-						if (chars.ContainsKey(ch))
-							chars[ch] = chars[ch] + 1;
-						else
-							chars[ch] = 1;
-					}
+					if (chars.ContainsKey(ch))
+						chars[ch] = chars[ch] + 1;
+					else
+						chars[ch] = 1;
 				}
 			}
 			

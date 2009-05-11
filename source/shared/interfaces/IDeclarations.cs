@@ -23,6 +23,7 @@ using Gear;
 using MCocoa;
 using System;
 
+#if false
 namespace Shared
 {
 	public struct Declaration
@@ -52,3 +53,4 @@ namespace Shared
 		Declaration[] Get(IText text, StyleRun[] runs);
 	}
 }
+#endif

@@ -160,7 +160,7 @@ namespace TextEditor
 					if (bigEndian)
 					{
 						if (buffer[i] == 0 && buffer[i + 1] != 0)
-							if (DoIsControl(buffer[i + 1]))
+							if (CharHelpers.IsBadControl((char) buffer[i + 1]))
 								return false;
 							else
 								++zeros;
@@ -168,7 +168,7 @@ namespace TextEditor
 					else
 					{
 						if (buffer[i] != 0 && buffer[i + 1] == 0)
-							if (DoIsControl(buffer[i]))
+							if (CharHelpers.IsBadControl((char) buffer[i]))
 								return false;
 							else
 								++zeros;
@@ -191,7 +191,7 @@ namespace TextEditor
 			else if (b >= 0xF5)
 				valid = false;
 			
-			else if (DoIsControl(b))
+			else if (CharHelpers.IsBadControl((char) b))
 				valid = false;
 			
 			return valid;
@@ -202,24 +202,12 @@ namespace TextEditor
 		{
 			bool valid = true;
 			
-			if (DoIsControl(b))
+			if (CharHelpers.IsBadControl((char) b))
 				valid = false;
 			
 			return valid;
 		}
-		
-		[ThreadModel(ThreadModel.Concurrent)]
-		private bool DoIsControl(byte b)
-		{
-			if (b < 0x20 && b != (byte) '\t' && b != (byte) '\n' && b != (byte) '\r')
-				return true;
 				
-			else if (b == 0x7F)
-				return true;
-				
-			return false;
-		}
-		
 		[ThreadModel(ThreadModel.Concurrent)]
 		private NSString DoDecode(NSData data, uint encoding)		// threaded code
 		{

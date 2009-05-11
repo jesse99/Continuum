@@ -19,27 +19,46 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-using Gear;
-using Shared;
+using Gear.Helpers;
+using MCocoa;
 using System;
 
-#if false
-namespace TextEditor
+namespace Shared
 {
-	internal interface IStyler : IInterface
+	[ThreadModel(ThreadModel.Concurrent)]
+	public struct Declaration
 	{
-		// Asynchronously computes the style runs and calls the callback on the 
-		// main thread when finished. Note that the runs given to ICachedStyleRuns
-		// will cover the text.
-//		void Apply(IComputeRuns computer, Action callback);
+		public Declaration(string name, NSRange extent, bool isType, bool isDir)
+		{
+			Name = name;
+			Extent = extent;
+			IsType = isType;
+			IsDirective = isDir;
+		}
 		
-		// Like the above except there is a delay before styling begins. Queue can 
-		// be called multiple times and any queue requests which have not yet 
-		// finished are dropped.
-//		void Queue(IComputeRuns computer, Action callback);
+		public string Name {get; private set;}
 		
-		// Cancel any pending applies.
-		void Close();
+		public NSRange Extent {get; private set;}
+		
+		public bool IsType {get; private set;}
+		
+		public bool IsDirective {get; private set;}
+	}
+	
+	[ThreadModel(ThreadModel.Concurrent)]
+	public sealed class Declarations
+	{
+		public Declarations(string path, int edit, Declaration[] decs)
+		{
+			Path = path;
+			Edit = edit;
+			Decs = decs;
+		}
+		
+		public string Path {get; private set;}
+		
+		public int Edit {get; private set;}
+		
+		public Declaration[] Decs {get; private set;}
 	}
 }
-#endif

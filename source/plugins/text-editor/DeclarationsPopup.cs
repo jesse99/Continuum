@@ -31,7 +31,7 @@ using System.Linq;
 namespace TextEditor
 {
 	[ExportClass("DeclarationsPopup", "NSPopUpButton")]
-	internal sealed class DeclarationsPopup : NSPopUpButton
+	internal sealed class DeclarationsPopup : NSPopUpButton, IObserver
 	{
 		public DeclarationsPopup(IntPtr instance) : base(instance)
 		{
@@ -39,18 +39,36 @@ namespace TextEditor
 			setAction("selectedItemChanged:");
 			setAutoenablesItems(false);
 			
+			Broadcaster.Register("computed declarations", this);
+			
 			ActiveObjects.Add(this);
 		}
 		
-		public void Init(TextController controller, IDeclarations getter)
+		public void Init(TextController controller)
 		{
 			Contract.Requires(controller != null, "controller is null");
 			
 			m_controller = controller;
-			m_getter = getter;
-
-			if (m_getter == null)
-				DoReset();
+			DoReset();
+		}
+		
+		public void Stop()
+		{
+			Broadcaster.Unregister(this);
+		}
+		
+		public void OnBroadcast(string name, object value)
+		{
+			switch (name)
+			{
+				case "computed declarations":
+					DoUpdate((Declarations) value);	// check path
+					break;
+					
+				default:
+					Contract.Assert(false, "bad name: " + name);
+					break;
+			}
 		}
 		
 		public new void mouseDown(NSEvent e)
@@ -86,11 +104,6 @@ namespace TextEditor
 				selectItem(null);
 		}
 		
-		public void textWasStyled()
-		{
-			DoReset();
-		}
-		
 		public void selectedItemChanged(NSObject sender)
 		{
 			Declaration d = m_indexTable[indexOfSelectedItem()];
@@ -106,29 +119,27 @@ namespace TextEditor
 		#region Private Methods
 		private void DoReset()
 		{
-			if (m_getter != null)
+			m_declarations = new Declaration[0];
+			m_indexTable = new Dictionary<int, Declaration>();
+			
+			removeAllItems();
+		}
+		
+		private void DoUpdate(Declarations decs)
+		{
+			if (decs.Edit == m_controller.EditCount && Paths.AreEqual(decs.Path, m_controller.Path))
 			{
-				int edit;
-				StyleRun[] runs;
-				
-				var cachedRuns = m_controller.Boss.Get<ICachedStyleRuns>();
-				cachedRuns.Get(out edit, out runs);
-				Contract.Assert(edit == m_controller.EditCount, "controller called us with a bad edit count2");
-				
-				var text = m_controller.Boss.Get<IText>();
-				m_declarations = m_getter.Get(text, runs);
-				m_edit = edit;
+				m_declarations = decs.Decs;
+				m_edit = decs.Edit;
 				
 				DoBuildUsingOffsetsOrder();
 				textSelectionChanged();
 			}
-			else
-			{
-				m_declarations = new Declaration[0];
-				m_indexTable = new Dictionary<int, Declaration>();
-				
-				removeAllItems();
-			}
+		}
+		
+		private void DoBuildUsingOffsetsOrder()
+		{
+			DoBuild(m_declarations);
 		}
 		
 		private void DoBuild(IList<Declaration> declarations)
@@ -168,11 +179,6 @@ namespace TextEditor
 				
 				m_indexTable.Add(i, declarations[i]);
 			}
-		}
-		
-		private void DoBuildUsingOffsetsOrder()
-		{
-			DoBuild(m_declarations);
 		}
 		
 		[Pure]
@@ -230,7 +236,6 @@ namespace TextEditor
 		
 		#region Fields
 		private TextController m_controller;
-		private IDeclarations m_getter;
 		private Declaration[] m_declarations = new Declaration[0];
 		private Dictionary<int, Declaration> m_indexTable = new Dictionary<int, Declaration>();
 		private int m_edit;

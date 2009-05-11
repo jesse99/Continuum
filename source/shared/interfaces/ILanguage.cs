@@ -20,26 +20,20 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
-using Shared;
+using Gear.Helpers;
 using System;
+using System.Collections.Generic;
 
-#if false
-namespace TextEditor
+namespace Shared
 {
-	internal interface IStyler : IInterface
+	// Primary interface on language bosses.
+	public interface ILanguage : IInterface
 	{
-		// Asynchronously computes the style runs and calls the callback on the 
-		// main thread when finished. Note that the runs given to ICachedStyleRuns
-		// will cover the text.
-//		void Apply(IComputeRuns computer, Action callback);
+		// Normally "CsLanguage" or "RegexLanguage".
+		string Name {get;}
 		
-		// Like the above except there is a delay before styling begins. Queue can 
-		// be called multiple times and any queue requests which have not yet 
-		// finished are dropped.
-//		void Queue(IComputeRuns computer, Action callback);
-		
-		// Cancel any pending applies.
-		void Close();
+		// Returns true if the language supports showing leading/trailing tabs and
+		// spaces.
+		bool StylesWhitespace {get;}
 	}
 }
-#endif

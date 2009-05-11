@@ -20,26 +20,46 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+//using Gear.Helpers;
+//using MCocoa;
 using Shared;
 using System;
+//using System.Diagnostics;
+//using System.Collections.Generic;
 
-#if false
-namespace TextEditor
+namespace Styler
 {
-	internal interface IStyler : IInterface
+	internal sealed class RegexLanguage : ILanguage, IStyleWith
 	{
-		// Asynchronously computes the style runs and calls the callback on the 
-		// main thread when finished. Note that the runs given to ICachedStyleRuns
-		// will cover the text.
-//		void Apply(IComputeRuns computer, Action callback);
+		public void Instantiated(Boss boss)
+		{
+			m_boss = boss;
+		}
 		
-		// Like the above except there is a delay before styling begins. Queue can 
-		// be called multiple times and any queue requests which have not yet 
-		// finished are dropped.
-//		void Queue(IComputeRuns computer, Action callback);
+		public Boss Boss
+		{
+			get {return m_boss;}
+		}
 		
-		// Cancel any pending applies.
-		void Close();
+		public string Name 
+		{
+			get {return "RegexLanguage";}
+		}
+		
+		public bool StylesWhitespace
+		{
+			get {return m_language != null ? m_language.StylesWhitespace : false;}
+		}
+		
+		public Language Language 
+		{
+			get {return m_language;}
+			set {m_language = value;}
+		}
+		
+		#region Fields
+		private Boss m_boss;
+		private Language m_language;
+		#endregion
 	}
 }
-#endif

@@ -101,7 +101,7 @@ namespace App
 				Boss b = ObjectModel.Create("CsParser");
 				var parses = b.Get<IParses>();
 				Parse parse = parses.Parse(editor.Path, text.EditCount, text.Text);
-				if (parse.ErrorLength == 0)
+				if (parse.ErrorLength == 0 && parse.Globals != null)
 				{
 					CsGlobalNamespace globals = parse.Globals;
 					CsDeclaration first = DoFindDeclaration(globals, range.location, range.length);

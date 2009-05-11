@@ -21,61 +21,14 @@
 
 using Gear;
 using Gear.Helpers;
-using System.Diagnostics;
 
 namespace Shared
 {
-	public sealed class Parse
-	{
-		public Parse(int edit, int index, int length, CsGlobalNamespace globals, Token[] comments, Token[] tokens)
-		{
-			Contract.Requires(index >= 0, "index is negative");
-			Contract.Requires(length >= 0, "length is negative");
-			Contract.Requires(comments != null, "comments is null");
-			Contract.Requires(tokens != null, "tokens is null");
-			Contract.Requires(globals != null || length >= 0, "null globals but error length is not set");
-			
-			Edit = edit;
-			ErrorIndex = index;
-			ErrorLength = length;
-			Globals = globals;
-			Comments = comments;
-			Tokens = tokens;
-		}
-		
-		// Edit count for the text this parse is associated with.
-		[ThreadModel(ThreadModel.Concurrent)]
-		public int Edit {get; private set;}
-		
-		// Index and length of the text associated with the first parser error.
-		// If there was no error ErrorLength will be zero.
-		[ThreadModel(ThreadModel.Concurrent)]
-		public int ErrorIndex {get; private set;}
-		
-		[ThreadModel(ThreadModel.Concurrent)]
-		public int ErrorLength {get; private set;}
-		
-		// May be null if the code is really messed up.
-		[ThreadModel(ThreadModel.Concurrent)]
-		public CsGlobalNamespace Globals {get; private set;}
-		
-		// This contains all of the tokens except for comments and preprocess
-		// directives.
-		public Token[] Tokens {get; private set;}
-		
-		public Token[] Comments {get; private set;}
-	}
-	
 	// Uses to access parser info for C# files. Note that this information is retained
 	// even after the associated window closes and is only released after a successful
-	// build for files with no open windo.
+	// build for files with no open window.
 	public interface IParses : IInterface
 	{
-		// Called when a text document is opened or becomes dirty. It will be parsed
-		// within a thread and when finished "parsed file" will be broadcast with the
-		// path as the argument.
-		void OnEdit(string language, string path, int edit, string text);
-		
 		// Attempts to return the current parse information for the specified file.
 		// May return null if the file has not been parsed yet or the parse info
 		// has been purged. Note that this is thread safe.

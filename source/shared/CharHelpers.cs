@@ -19,27 +19,42 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-using Gear;
-using Shared;
+using Gear.Helpers;
 using System;
 
-#if false
-namespace TextEditor
+namespace Shared
 {
-	internal interface IStyler : IInterface
+	// Some handy character related methods.
+	[ThreadModel(ThreadModel.Concurrent)]
+	public static class CharHelpers
 	{
-		// Asynchronously computes the style runs and calls the callback on the 
-		// main thread when finished. Note that the runs given to ICachedStyleRuns
-		// will cover the text.
-//		void Apply(IComputeRuns computer, Action callback);
+		// Returns true if the character is a control character that should not
+		// appear in source code.
+		public static bool IsBadControl(char c)
+		{
+			int b = (int) c;
+			
+			if (b < 0x20 && b != (int) '\t' && b != (int) '\n' && b != (int) '\r')
+				return true;
+			
+			else if (b == 0x7F)
+				return true;
+			
+			return false;
+		}
 		
-		// Like the above except there is a delay before styling begins. Queue can 
-		// be called multiple times and any queue requests which have not yet 
-		// finished are dropped.
-//		void Queue(IComputeRuns computer, Action callback);
-		
-		// Cancel any pending applies.
-		void Close();
+		public static bool IsZeroWidth(char c)
+		{
+			if (c == '\t')
+				return false;
+			
+			else if (char.IsControl(c))
+				return true;
+			
+			else if (c == Constants.ZeroWidthSpace[0] || c == Constants.ZeroWidthNonJoiner[0] || c == Constants.ZeroWidthJoiner[0])
+				return true;
+			
+			return false;
+		}
 	}
 }
-#endif

@@ -24,6 +24,7 @@ using Gear.Helpers;
 using System;
 using System.Collections.Generic;
 
+#if false
 namespace Shared
 {
 	// Primary interface on language bosses.
@@ -40,3 +41,4 @@ namespace Shared
 		bool StylesWhitespace {get;}
 	}
 }
+#endif

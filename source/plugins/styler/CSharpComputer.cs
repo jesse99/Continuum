@@ -27,6 +27,7 @@ using System;
 using System.Diagnostics;
 using System.Collections.Generic;
 
+#if false
 namespace Styler
 {
 	internal sealed class CSharpComputer : RegexComputer
@@ -112,3 +113,4 @@ namespace Styler
 		#endregion
 	}
 }
+#endif

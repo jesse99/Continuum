@@ -29,6 +29,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading;
 
+#if false
 namespace TextEditor
 {
 	internal sealed class Styler : IStyler
@@ -44,7 +45,8 @@ namespace TextEditor
 			
 			m_timer = new SafeTimer(o => DoTimer(), null, Timeout.Infinite, Timeout.Infinite);
 		}
-		
+	
+#if false
 		public void Apply(IComputeRuns computer, Action callback)
 		{
 			Contract.Requires(computer != null, "computer is null");
@@ -98,7 +100,8 @@ namespace TextEditor
 				Unused.Value = m_timer.Change(750, Timeout.Infinite);
 			}
 		}
-		
+#endif
+
 		public void Close()
 		{
 			if (!m_closed)
@@ -110,6 +113,7 @@ namespace TextEditor
 		}
 		
 		#region Private Methods
+#if false
 		private void DoQueuedApply()
 		{
 			IComputeRuns computer = null;
@@ -127,10 +131,12 @@ namespace TextEditor
 			if (callback != null)
 				Apply(computer, callback);
 		}
+#endif
 		
 		[ThreadModel(ThreadModel.SingleThread)]
 		private void DoTimer()			// threaded		TODO: might be better to use a low priority thread (tho mono 2.2 doesn't support them)
 		{
+#if false
 			string path = null;
 			string text = null;
 			int edit = 0;
@@ -155,6 +161,7 @@ namespace TextEditor
 			}
 			else if (!m_closed)
 				NSApplication.sharedApplication().BeginInvoke(DoQueuedApply);
+#endif
 		}
 		#endregion
 		
@@ -163,12 +170,13 @@ namespace TextEditor
 		private SafeTimer m_timer;
 		private volatile bool m_closed;
 		
-		private object m_mutex = new object();
-			private string m_path;
-			private string m_text;
-			private int m_edit;
-			private IComputeRuns m_computer;
-			private Action m_callback;
+//		private object m_mutex = new object();
+//			private string m_path;
+//			private string m_text;
+//			private int m_edit;
+//			private IComputeRuns m_computer;
+//			private Action m_callback;
 		#endregion
 	}
 }
+#endif
