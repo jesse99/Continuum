@@ -25,8 +25,6 @@ sudo fs_usage -f filesys
 			Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 
 * Make thread safe:
-	- get rid of: CSharpComputer, RegexComputer, IComputeRuns, ICachedStyleRuns,
-	  Styler, IStyler, IComputeStyleRuns, IDeclarations
 	- do something with IStyleWith?
 	- TryParse doesn't need to be thread safe?
 	- try to use both begin and end of applied runs
