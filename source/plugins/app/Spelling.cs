@@ -48,11 +48,11 @@ namespace App
 				if (range.length > 0)
 				{
 					items.Add(new TextContextItem(0.9f));
-
+					
 					string word = selection.Substring(range.location, range.length);
 					NSArray guesses = NSSpellChecker.sharedSpellChecker().guessesForWord(NSString.Create(word));
 					if (guesses.count() > 0)
-					{						
+					{
 						for (int i = 0; i < guesses.count(); ++i)
 						{
 							string guess = guesses.objectAtIndex((uint) i).description();
@@ -62,14 +62,14 @@ namespace App
 				}
 			}
 		}
-				
+		
 		#region Private Methods
 		private bool DoNeedsSpellCheck(string selection)
 		{
 			// If the selection is large or has multiple words then spell check it.
 			if (selection.Length > 100)
 				return true;
-				
+			
 			for (int i = 0; i < selection.Length; ++i)
 			{
 				if (char.IsWhiteSpace(selection[i]))
@@ -78,19 +78,19 @@ namespace App
 			
 			// If the selection is one word and has an interior upper case letter
 			// or underscore then don't spell check it.
-			for (int i = 1; i < selection.Length; ++i)		
+			for (int i = 1; i < selection.Length; ++i)
 			{
 				if (selection[i] == '_' || char.IsUpper(selection[i]))
 					return false;
 			}
-
+			
 			// Otherwise spell check it.
 			return true;
 		}
 		#endregion
-
+	
 		#region Fields
-		private Boss m_boss; 
+		private Boss m_boss;
 		#endregion
-	} 
+	}
 }
