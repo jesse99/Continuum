@@ -336,7 +336,7 @@ namespace ObjectModel
 		
 		public void DoAddOpenMethod(List<TextContextItem> items, IObjectModel objects, string selection, float order)
 		{
-			SourceInfo[] sources = objects.FindMethodSources(selection, 2*MaxOpenItems);
+			SourceInfo[] sources = objects.FindMethodSources(selection, 10*MaxOpenItems);
 			SourceInfo[] used = (from s in sources where !string.IsNullOrEmpty(s.Path) select s).ToArray();
 			if (used.Length > 0)
 			{

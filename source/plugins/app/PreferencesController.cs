@@ -233,6 +233,7 @@ namespace App
 			NSData data = NSArchiver.archivedDataWithRootObject(m_attributes);
 			defaults.setObject_forKey(data, NSString.Create(m_styleName + " font attributes"));
 			
+			DoUpdateButtonTitle(m_styleName);
 			Broadcaster.Invoke(m_styleName + " font changed-pre", true);
 			Broadcaster.Invoke(m_styleName + " font changed", true);
 		}

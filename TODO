@@ -22,30 +22,25 @@ ReferenceEquals used with value type
 might want a sample app
 sudo fs_usage -f filesys 
 
-* Use 18 for the default tab stops.
-* Build another foreshadow.
-* Colors aren't updating properly in attribute pref buttons.
-* make gendarme>tmp.txt isn't reloading tmp.txt
-* Transcript should not cache commands.
-* Deleting a new line should remove any eol whitespace.
-* Right click on Invoke didn't show the Broadcaster method. Also BeginInvoke.
-* Enum. completion should show enum members by default.
 * Short form should special case enums:
 	- replace the fields section with a values section
 	- would be nice to show [Flags] (or maybe all attributes)
 * Short form should not show internal members for mscorlib or gac assemblies.
 * Short form should have a separate section for operators (see DateTime).
-* Should always be able to do a find after command-e?
-	- so turn off stuff like "match entire words" if there is whitespace?
-* Might be able to use NSToolTipAttributeName for a few things:
-	- parse errors
-	- method comments
 * Short form should show extension methods:
 	- maybe could use a comment like // System.Linq Extension Methods
 * Short form should not show internal methods for system types
 * Method hiliting isn't quite right for
 	- public static explicit operator IntPtr(PtrArray value)
 * Should have Find in Dictionary. Only add this if the selection has no whitespace.
+* Should always be able to do a find after command-e?
+	- so turn off stuff like "match entire words" if there is whitespace?
+* Need to support optional line wrapping.
+* Might want to change Tables.txt to rtf.
+* Deleting a new line should remove any eol whitespace.
+* Might be able to use NSToolTipAttributeName for a few things:
+	- parse errors
+	- method comments
 * Need Save a Copy command.
 * Add some sort of Time Machine integration, maybe
 	- context menu for main windows allowing going back an hour or a day or whatever

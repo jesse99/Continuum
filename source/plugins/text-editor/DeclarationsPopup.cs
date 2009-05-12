@@ -122,7 +122,7 @@ namespace TextEditor
 		
 		private void DoUpdate(Declarations decs)
 		{
-			if (decs.Edit == m_controller.EditCount && Paths.AreEqual(decs.Path, m_controller.Path))
+			if (Paths.AreEqual(decs.Path, m_controller.Path))
 			{
 				bool changed = decs != m_declarations;
 				

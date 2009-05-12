@@ -58,8 +58,8 @@ namespace AutoComplete
 			m_stem = stem;
 			
 			m_filter.Clear();
-			IEnumerable<string> filters = from i in items select i.Filter;
-			bool isEnum = filters.Any(k => k == "System.Enum");
+			IEnumerable<string> filters = (from i in items select i.Filter).Distinct();
+			bool isEnum = filters.Any(k => k == "System.Enum") && filters.Count() > 2;	// we want enums not Enum
 			foreach (string filter in filters)
 			{
 				if (isEnum)									// for enums default to showing only the enum values

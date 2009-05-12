@@ -104,7 +104,7 @@ namespace Transcript
 					// HandleBuildError opens windows with errors. So, to avoid this we won't buffer
 					// up error output. TODO: this may bog down the UI quite a bit though if there
 					// is lots of error output.
-					if (m_currentType == type && m_currentText.Length < 4*1024 && type != Output.Error)
+					if (m_currentText.Length < 4*1024 && type == Output.Normal)
 					{
 						if (m_currentText.Length == 0)
 							Unused.Value = m_timer.Change(250, Timeout.Infinite);
@@ -114,13 +114,12 @@ namespace Transcript
 					{
 						if (m_currentText.Length > 0)
 						{
-							DoWrite(m_currentType, m_currentText.ToString());
+							DoWrite(Output.Normal, m_currentText.ToString());
 							Unused.Value = m_timer.Change(Timeout.Infinite, Timeout.Infinite);
 						}
 						
 						DoWrite(type, text);
 						
-						m_currentType = Output.Normal;
 						m_currentText = new StringBuilder();
 					}
 					m_editCount = unchecked(m_editCount + 1);
@@ -227,9 +226,8 @@ namespace Transcript
 			lock (m_lock)
 			{
 				if (m_currentText.Length > 0)
-					DoWrite(m_currentType, m_currentText.ToString());
+					DoWrite(Output.Normal, m_currentText.ToString());
 					
-				m_currentType = Output.Normal;
 				m_currentText = new StringBuilder();
 			}
 		}
@@ -268,7 +266,6 @@ namespace Transcript
 		private SafeTimer m_timer;
 		
 		private object m_lock = new object();
-			private Output m_currentType;
 			private StringBuilder m_currentText = new StringBuilder();
 		#endregion
 	}
