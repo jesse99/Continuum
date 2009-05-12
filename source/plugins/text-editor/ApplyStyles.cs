@@ -131,7 +131,17 @@ namespace TextEditor
 				m_layout.addTemporaryAttribute_value_forCharacterRange(Externs.NSUnderlineColorAttributeName, ms_errorColor, m_errorRange);
 			}
 		}
-				
+		
+		public void Reset()
+		{
+			DoApplyParagraphStyles(true);
+		}
+		
+		public bool Applied
+		{
+			get {return m_current.Applied;}
+		}
+		
 		#region Private Methods		
 		private void DoApplyStyles(StyleRuns runs)
 		{

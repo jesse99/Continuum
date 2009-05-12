@@ -89,6 +89,11 @@ namespace TextEditor
 			get {return m_edit;}
 		}
 		
+		public bool Applied
+			{
+				get {return m_applied;}
+			}
+		
 		public void Stop()
 		{
 			m_stopped = true;
@@ -245,6 +250,9 @@ namespace TextEditor
 						m_queued = true;
 						NSApplication.sharedApplication().BeginInvoke(this.DoApplyStyles, ApplyDelay);
 					}
+					else
+//						NSApplication.sharedApplication().BeginInvoke(() => {m_applied = true;});
+						m_applied = true;
 				}
 				finally
 				{
@@ -400,6 +408,7 @@ namespace TextEditor
 		private bool m_queued;
 		private int m_editStart = int.MaxValue;
 		private bool m_stopped;
+			private bool m_applied;
 		
 		private static ObserverTrampoline ms_styleObserver;
 		private static NSColor ms_errorColor = NSColor.redColor().Retain();

@@ -40,6 +40,8 @@ namespace TextEditor
 		public int[] BackColor {get; set;}
 		
 		public int Underline {get; set;}
+
+		public bool Shadow {get; set;}
 	}
 	
 	internal sealed class FactoryPrefs : IFactoryPrefs
@@ -61,7 +63,7 @@ namespace TextEditor
 			
 			DoInitStyle(dict, "text default", new Attributes{Font = "Verdana", Size = 14.0f, Color = new int[]{0, 0, 0}});
 			DoInitStyle(dict, "text keyword", new Attributes{Font = "Verdana-Bold", Size = 14.0f, Color = new int[]{7, 91, 255}});
-			DoInitStyle(dict, "text type", new Attributes{Font = "Verdana-Bold", Size = 18.0f, Color = new int[]{0, 0, 0}});
+			DoInitStyle(dict, "text type", new Attributes{Font = "Verdana-Bold", Size = 18.0f, Color = new int[]{0, 0, 0}, Shadow = true});
 			DoInitStyle(dict, "text member", new Attributes{Font = "Verdana-Bold", Size = 14.0f, Color = new int[]{0, 0, 0}});
 			DoInitStyle(dict, "text string", new Attributes{Font = "Verdana", Size = 14.0f, Color = new int[]{175, 47, 127}});
 			DoInitStyle(dict, "text number", new Attributes{Font = "Verdana", Size = 14.0f, Color = new int[]{155, 102, 83}});
@@ -81,7 +83,7 @@ namespace TextEditor
 			data = NSArchiver.archivedDataWithRootObject(color);
 			dict.setObject_forKey(data, NSString.Create("selected line color"));
 			
-			dict.setObject_forKey(NSNumber.Create(20.0f), NSString.Create("tab stops"));
+			dict.setObject_forKey(NSNumber.Create(18.0f), NSString.Create("tab stops"));
 			
 			var paths = NSMutableArray.Create("/System/Library/", "/usr/include/");
 			dict.setObject_forKey(paths, NSString.Create("preferred paths"));
@@ -120,8 +122,19 @@ namespace TextEditor
 				Contract.Assert(a.Color.Length == 3, "color does not have three components");
 				Contract.Assert(a.BackColor == null, "we don't support setting both the fore and back colors");
 				
+				var attrs = NSMutableDictionary.Create();
+				
 				NSColor color = NSColor.colorWithDeviceRed_green_blue_alpha(a.Color[0]/255.0f, a.Color[1]/255.0f, a.Color[2]/255.0f, 1.0f);
-				var attrs = NSDictionary.dictionaryWithObject_forKey(color, Externs.NSForegroundColorAttributeName);
+				attrs.setObject_forKey(color, Externs.NSForegroundColorAttributeName);
+				
+				if (a.Shadow)
+				{
+					NSShadow shadow = NSShadow.Create();
+					shadow.setShadowOffset(new NSSize(1.06066f, -1.06066f));		// these are the default values
+					shadow.setShadowColor(NSColor.colorWithDeviceRed_green_blue_alpha(0.0f, 0.0f, 0.0f, 0.517241f));
+					attrs.setObject_forKey(shadow, Externs.NSShadowAttributeName);
+				}
+				
 				var data = NSArchiver.archivedDataWithRootObject(attrs);
 				dict.setObject_forKey(data, NSString.Create(name + " font attributes"));
 			}
@@ -143,5 +156,5 @@ namespace TextEditor
 		#region Fields
 		private Boss m_boss;
 		#endregion
-	} 
+	}
 }

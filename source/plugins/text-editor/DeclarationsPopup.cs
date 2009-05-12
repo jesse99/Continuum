@@ -124,10 +124,14 @@ namespace TextEditor
 		{
 			if (decs.Edit == m_controller.EditCount && Paths.AreEqual(decs.Path, m_controller.Path))
 			{
-				if (decs != m_declarations)
+				bool changed = decs != m_declarations;
+				
+				// Note that we still need to save the new info because it has
+				// updated offsets.
+				m_declarations = decs;
+				
+				if (changed)
 				{
-					m_declarations = decs;
-					
 					DoBuildUsingOffsetsOrder();
 					textSelectionChanged();
 				}

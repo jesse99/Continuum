@@ -156,6 +156,7 @@ namespace TextEditor
 					var text = NSAttributedString.Create(value);
 					m_textView.Value.textStorage().setAttributedString(text);
 					m_textView.Value.setSelectedRange(new NSRange(0, 0));
+					m_applier.Reset();
 					
 					DoUpdateLineLabel(Text);			// use Text so metrics are up to date
 				}
@@ -183,6 +184,7 @@ namespace TextEditor
 					
 					m_textView.Value.textStorage().setAttributedString(value);
 					m_textView.Value.setSelectedRange(new NSRange(0, 0));
+					m_applier.Reset();
 					
 					DoUpdateLineLabel(Text);			// use Text so metrics are up to date
 				}
@@ -230,7 +232,7 @@ namespace TextEditor
 		{
 			if (!m_closed)
 			{
-				if (atEnd && !m_opened && !m_scrolled)
+				if (atEnd && !m_opened && m_applier.Applied && !m_scrolled)
 				{
 					DoRestoreView();
 					m_opened = true;
@@ -243,14 +245,21 @@ namespace TextEditor
 		// Count is used for the find indicator.
 		public void ShowLine(int begin, int end, int count)
 		{
-			m_textView.Value.setSelectedRange(new NSRange(begin, 0));
-			m_textView.Value.scrollRangeToVisible(new NSRange(begin, end - begin));
+			if (!m_applier.Applied)
+			{
+				NSApplication.sharedApplication().BeginInvoke(() => ShowLine(begin, end, count), TimeSpan.FromMilliseconds(100));
+			}
+			else
+			{
+				m_textView.Value.setSelectedRange(new NSRange(begin, 0));
+				m_textView.Value.scrollRangeToVisible(new NSRange(begin, end - begin));
 				
-			var thread = new System.Threading.Thread(() => DoDeferredFindIndicator(new NSRange(begin, count)));
-			thread.Name = "deferred find indicator";
-			thread.Start();
-			
-			m_scrolled = true;
+				var thread = new System.Threading.Thread(() => DoDeferredFindIndicator(new NSRange(begin, count)));
+				thread.Name = "deferred find indicator";
+				thread.Start();
+				
+				m_scrolled = true;
+			}
 		}
 		
 		public void ShowSelection()
@@ -468,7 +477,7 @@ namespace TextEditor
 			try
 			{
 				Unused.Value = Text;		// make sure m_metrics is up to date
-			
+				
 				for (int line = lastLine; line >= firstLine; --line)			// backwards so metrics doesn't get confused by our edits (it won't sync up until we call endEditing)
 				{
 					int offset = m_metrics.GetLineOffset(line);

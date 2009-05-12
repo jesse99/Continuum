@@ -22,10 +22,9 @@ ReferenceEquals used with value type
 might want a sample app
 sudo fs_usage -f filesys 
 
-			Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
-
-* Build a new foreshadow.
-* Might want to enable text shadow for types by default
+* Use 18 for the default tab stops.
+* Build another foreshadow.
+* Colors aren't updating properly in attribute pref buttons.
 * make gendarme>tmp.txt isn't reloading tmp.txt
 * Transcript should not cache commands.
 * Deleting a new line should remove any eol whitespace.
@@ -52,7 +51,7 @@ sudo fs_usage -f filesys
 	- context menu for main windows allowing going back an hour or a day or whatever
 	- old windows have a checkmark by their date and context menu allows you to replace with a new date
 	- probably need to work with dirs too
-* Do something similar with svn.
+* Do something similar with svn diff and cat.
 * Allow files and asemblies to be disasembled.
 * Fix dir editor so it doesn't collapse child dirs when an item changes.
 * After duplicating directory items select the new item(s).
