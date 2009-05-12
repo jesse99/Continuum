@@ -288,7 +288,51 @@ is a comment */
 			scanner.Advance();
 			Assert.AreEqual("15e100", scanner.Token.Text());
 			Assert.AreEqual(TokenKind.Number, scanner.Token.Kind);
+			
+			scanner.Advance();
+			Assert.AreEqual(TokenKind.Invalid, scanner.Token.Kind);
+		}
+		
+		[Test]
+		public void IckyString()
+		{
+			string ick = @"#!/bin/sh
+# Takes a list of files and opens them within xxx.
+app=yyy
 
+if [ ""$1"" = ""-?"" ] || [ ""$1"" = ""-h"" ] || [ ""$1"" = ""--help"" ] ; then
+    echo ""Usage: zzz [files]""
+    exit 0
+fi
+
+if [ -d ""$app"" ] ; then
+    open -a ""$app"" $@
+else
+    echo ""Couldn't find $app: try re-installing the tool.""
+fi
+";
+			string text = string.Format("private const string Script = @\"{0}\"", ick.Replace("\"", "\"\""));
+			
+			var scanner = new Scanner();
+			scanner.Init(text);
+			
+			Assert.AreEqual("private", scanner.Token.Text());
+			
+			scanner.Advance();
+			Assert.AreEqual("const", scanner.Token.Text());
+			
+			scanner.Advance();
+			Assert.AreEqual("string", scanner.Token.Text());
+			
+			scanner.Advance();
+			Assert.AreEqual("Script", scanner.Token.Text());
+			
+			scanner.Advance();
+			Assert.AreEqual("=", scanner.Token.Text());
+			
+			scanner.Advance();
+			Assert.AreEqual('"' + ick.Replace("\"", "\"\"") + '"', scanner.Token.Text());
+			
 			scanner.Advance();
 			Assert.AreEqual(TokenKind.Invalid, scanner.Token.Kind);
 		}

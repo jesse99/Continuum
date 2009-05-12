@@ -248,12 +248,12 @@ namespace CsParser
 				
 				string args = string.Empty;
 				if (m_scanner.Token.IsPunct("("))
-				{	
+				{
 					args = DoScanBody("(", ")", ref last);
 				}
 				
 				attrs.Add(new CsAttribute(target, name, args, first.Offset, last.Offset + last.Length - first.Offset, first.Line));
-
+				
 				if (m_scanner.Token.IsPunct(","))
 					m_scanner.Advance();
 				else
@@ -310,7 +310,9 @@ namespace CsParser
 			}
 			
 			CsBody body = new CsBody(name, start.Offset, open.Offset, close.Offset + close.Length - start.Offset, start.Line);
-			return new CsClass(nameOffset, body, members.ToArray(), types.ToArray(), bases, constraints, gargs, attrs, modifiers, name, first.Offset, last.Offset + last.Length - first.Offset, first.Line);
+			CsClass result = new CsClass(nameOffset, body, members.ToArray(), types.ToArray(), bases, constraints, gargs, attrs, modifiers, name, first.Offset, last.Offset + last.Length - first.Offset, first.Line);
+			
+			return result;
 		}
 		
 		// This is just like struct-member-declaration except it adds destructor-declaration.
@@ -338,7 +340,9 @@ namespace CsParser
 			{
 				try
 				{
+					Token old = m_scanner.Token;
 					DoParseClassMemberDeclaration2(members, types);
+					Contract.Assert(m_scanner.Token.Offset != old.Offset, "DoParseClassMemberDeclaration didn't advance from " + old);
 				}
 				catch (BaseParserException e)	
 				{
@@ -824,7 +828,7 @@ namespace CsParser
 					m_scanner.Advance();
 				}
 			}
-						
+			
 			members.Add(new CsEvent(nameOffset, type, name, attrs, modifiers, first.Offset, last.Offset + last.Length - first.Offset, first.Line));
 		}
 		
@@ -878,11 +882,11 @@ namespace CsParser
 		// field-declaration:
 		//      attributes?   field-modifiers?   type   variable-declarators  ;
 		private void DoParseFieldDeclaration(string type, List<CsMember> members, CsAttribute[] attrs, MemberModifiers modifiers, Token first)
-		{			
+		{
 			while (true)
 			{
 				DoParseFieldDeclarator(type, members, attrs, modifiers, first);
-
+				
 				if (m_scanner.Token.IsPunct(","))
 					m_scanner.Advance();
 				else
@@ -935,6 +939,7 @@ namespace CsParser
 		{
 			while (m_scanner.Token.IsValid() && !m_scanner.Token.IsPunct(")") && !m_scanner.Token.IsPunct("]"))	// ] is for indexers
 			{
+				Token old = m_scanner.Token;
 				CsAttribute[] attrs = DoParseAttributes();
 				ParameterModifier modifier = DoParseParameterModifier();
 				
@@ -944,7 +949,7 @@ namespace CsParser
 					m_scanner.Advance();
 					isParams = true;
 				}
-
+				
 				Token last = m_scanner.Token;
 				string type = DoParseType();
 				string name = DoParseIdentifier(ref last);
@@ -953,6 +958,7 @@ namespace CsParser
 					m_scanner.Advance();
 				
 				parms.Add(new CsParameter(attrs, modifier, isParams, type, name));
+				Contract.Assert(m_scanner.Token.Offset != old.Offset, "DoParseFormalParameterList didn't advance from " + old);
 			}
 		}
 		
@@ -977,6 +983,7 @@ namespace CsParser
 		{
 			while (m_scanner.Token.IsPunct("["))
 			{
+				Token old = m_scanner.Token;
 				try
 				{
 					// This is a bit tricky: we can't tell if the attribute is a global attribute until
@@ -1005,6 +1012,7 @@ namespace CsParser
 					else
 						throw;
 				}
+				Contract.Assert(m_scanner.Token.Offset != old.Offset, "DoParseGlobalAttributes didn't advance from " + old);
 			}
 		}
 		
@@ -1093,7 +1101,9 @@ namespace CsParser
 			{
 				try
 				{
+					Token old = m_scanner.Token;
 					DoParseInterfaceBody2(members,types, ref open, ref last);
+					Contract.Assert(m_scanner.Token.Offset != old.Offset, "DoParseInterfaceBody2 didn't advance from " + old);
 				}
 				catch (BaseParserException e)
 				{
@@ -1274,7 +1284,7 @@ namespace CsParser
 			if (m_scanner.Token.Kind == TokenKind.Identifier)
 				DoParseInterfaceAccessors(ref hasGet, ref hasSet, ref getAttrs, ref setAttrs);
 			last = DoParsePunct("}");
-		
+			
 			members.Add(new CsProperty(nameOffset, null, null, 0, 0, name, getAttrs, setAttrs, hasGet, hasSet, rtype, attrs, modifiers, first.Offset, last.Offset + last.Length - first.Offset, first.Line));
 		}
 		
@@ -1545,6 +1555,7 @@ namespace CsParser
 		{
 			while (m_scanner.Token.IsValid() && !m_scanner.Token.IsPunct("}"))
 			{
+				Token old = m_scanner.Token;
 				if (m_scanner.Token.IsIdentifier("namespace"))
 				{
 					DoParseNamespaceDeclaration(ref last, namespaces);
@@ -1553,6 +1564,7 @@ namespace CsParser
 				{
 					DoParseTypeDeclaration(types, MemberModifiers.Internal);
 				}
+				Contract.Assert(m_scanner.Token.Offset != old.Offset, "DoParseNamespaceMemberDeclarations didn't advance from " + old);
 			}
 		}
 		
@@ -1882,10 +1894,10 @@ namespace CsParser
 					m_scanner.Advance();
 				}
 			}
-
+			
 			return type;
 		}
-
+		
 		// type-declaration:
 		//      class-declaration				partial?   class
 		//      struct-declaration			partial?   struct
@@ -2012,7 +2024,7 @@ namespace CsParser
 					m_scanner.Advance();
 					last = DoParsePunct(")");
 				}
-
+				
 				if (m_scanner.Token.IsPunct(","))
 					m_scanner.Advance();
 				else

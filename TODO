@@ -20,18 +20,12 @@ can make readonly rule
 ReferenceEquals used with value type
 
 might want a sample app
-sudo fs_usage -f filesys
+sudo fs_usage -f filesys 
 
 			Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 
-* Make thread safe:
-	- get unit tests working again
-	- try setting typing attribues to default?	religion
-	- might want to enable text shadow for types by default
-	- review thread safety
-* AppDelegate.cs isn't styling. Also EvaluateTest.cs and ScannerTest.cs
-* Transcript flush doesn't seem to work quite right.
 * Build a new foreshadow.
+* Might want to enable text shadow for types by default
 * make gendarme>tmp.txt isn't reloading tmp.txt
 * Transcript should not cache commands.
 * Deleting a new line should remove any eol whitespace.
@@ -68,6 +62,7 @@ sudo fs_usage -f filesys
 	- could maybe tell things like the language styler that there was an edit and have
 	   it broadcast on the main thread when style runs are computed
 * Make sure spelling and grammar menu works OK.
+* Review thread safety
 * Enter should add snippets:
 	- look at CodeTemplates file
 	- $NAME is a placeholder

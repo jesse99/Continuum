@@ -106,8 +106,9 @@ namespace Transcript
 					// is lots of error output.
 					if (m_currentType == type && m_currentText.Length < 4*1024 && type != Output.Error)
 					{
+						if (m_currentText.Length == 0)
+							Unused.Value = m_timer.Change(250, Timeout.Infinite);
 						m_currentText.Append(text);
-						Unused.Value = m_timer.Change(250, Timeout.Infinite);
 					}
 					else
 					{
@@ -117,8 +118,10 @@ namespace Transcript
 							Unused.Value = m_timer.Change(Timeout.Infinite, Timeout.Infinite);
 						}
 						
-						m_currentType = type;
-						m_currentText = new StringBuilder(text);
+						DoWrite(type, text);
+						
+						m_currentType = Output.Normal;
+						m_currentText = new StringBuilder();
 					}
 					m_editCount = unchecked(m_editCount + 1);
 				}
@@ -219,7 +222,7 @@ namespace Transcript
 		
 		#region Private Methods
 		[ThreadModel(ThreadModel.SingleThread)]
-		private void DoFlush()		// threaded
+		private void DoFlush()
 		{
 			lock (m_lock)
 			{
@@ -232,7 +235,7 @@ namespace Transcript
 		}
 		
 		[ThreadModel(ThreadModel.Concurrent)]
-		private void DoWrite(Output type, string text)		// threaded
+		private void DoWrite(Output type, string text)
 		{
 			if (NSApplication.sharedApplication().InvokeRequired)
 			{

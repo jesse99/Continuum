@@ -161,14 +161,20 @@ namespace CsParser
 			// skip whitespace and comments
 			while (true)
 			{
-				if (char.IsWhiteSpace(Current) || Current == '#')
+				int old = m_index;
+				
+				if (char.IsWhiteSpace(Current))
 					DoSkipWhiteSpace();
+				else if (Current == '#')
+					DoSkipPreprocessor();
 				else if (Current == '/' && Next == '/')
 					DoSkipSingleLineComment();
 				else if (Current == '/' && Next == '*')
 					DoSkipDelimitedComment();
 				else
 					break;
+					
+				Contract.Assert(m_index != old, string.Format("failed to advance from {0} '{1}' on line {2}", Token.Kind, Token.Text().EscapeAll(), Token.Line));
 			}
 			
 			// identifier
@@ -460,7 +466,9 @@ namespace CsParser
 			
 			while (Current != '\x00')
 			{
-				if (char.IsWhiteSpace(Current) || Current == '#')
+				int old = m_index;
+				
+				if (char.IsWhiteSpace(Current))
 					DoSkipWhiteSpace();
 				else if (Current == '\\' && Next == '"')
 					m_index = m_index + 2;
@@ -470,6 +478,8 @@ namespace CsParser
 					break;
 				else
 					++m_index;
+				
+				Contract.Assert(m_index != old, string.Format("failed to advance from {0} '{1}' on line {2}", Token.Kind, Token.Text().EscapeAll(), Token.Line));
 			}
 			
 			if (Current == '"')
@@ -760,6 +770,8 @@ namespace CsParser
 		{
 			while (true)
 			{
+				int old = m_index;
+				
 				if (Current == '\n' && Next == '\r')
 				{
 					++m_line;
@@ -778,18 +790,15 @@ namespace CsParser
 				{
 					++m_index;
 				}
-				else if (Current == '#')
-				{
-					if (!DoSkipPreprocessor())
-						break;
-				}
 				else
 					break;
+				
+				Contract.Assert(m_index != old, string.Format("failed to advance from {0} '{1}' on line {2}", Token.Kind, Token.Text().EscapeAll(), Token.Line));
 			}
 		}
 		
 		// '#'   whitespace?   name   body  pp-new-line		
-		private bool DoSkipPreprocessor()
+		private void DoSkipPreprocessor()
 		{
 			// '#'
 			int oldIndex = m_index++;
@@ -802,12 +811,12 @@ namespace CsParser
 			
 			// name
 			int offset = m_index;
+			int line = m_line;
 			while (CsHelpers.CanContinueIdentifier(Current))	
 			{
 				++m_index;
 			}
 			
-			bool matched = true;
 			string name = m_text.Substring(offset, m_index - offset);
 			switch (name)
 			{
@@ -829,18 +838,15 @@ namespace CsParser
 					{
 						++m_index;
 					}
-
+					
 					string body = m_text.Substring(bodyIndex, m_index - bodyIndex);
 					m_preprocess.Add(new CsPreprocess(name, body, oldIndex, m_index - oldIndex, m_line));
 					break;
 				
 				default:
 					m_index = oldIndex;
-					matched = false;
-					break;
+					throw new ScannerException("Expected a preprocessor directive, but found '{0}' on line {1}", name, line);
 			}
-			
-			return matched;
 		}
 		
 		// single-line-comment:
@@ -887,6 +893,8 @@ namespace CsParser
 			int line = m_line;
 			while (m_index < m_text.Length - 1)
 			{
+				int old = m_index;
+				
 				if (char.IsWhiteSpace(Current))
 				{
 					DoSkipWhiteSpace();
@@ -901,6 +909,8 @@ namespace CsParser
 				{
 					++m_index;
 				}
+				
+				Contract.Assert(m_index != old, string.Format("failed to advance from {0} '{1}' on line {2}", Token.Kind, Token.Text().EscapeAll(), Token.Line));
 			}
 			
 			throw new ScannerException("Expected a terminating '*/' for line {0}", line);
