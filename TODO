@@ -23,6 +23,7 @@ might want a sample app
 sudo fs_usage -f filesys
 
 * Might want to change Tables.txt to rtf.
+* Why isn't word wrap showing up in TODO or tables context menu?
 * Need Save a Copy command.
 * Add some sort of Time Machine integration, maybe
 	- context menu, "2 months 3 hours ago"
@@ -43,6 +44,7 @@ sudo fs_usage -f filesys
 	- add support for disassemble method (and maybe type)
 	- if method is in more than one local assembly display a picker
 	- start with the assembly built last selected
+* Binary viewer (or editor?).
 * Fix dir editor so it doesn't collapse child dirs when an item changes.
 * After duplicating directory items select the new item(s).
 * Make sure spelling and grammar menu works OK.
