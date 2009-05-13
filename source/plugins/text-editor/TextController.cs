@@ -232,9 +232,11 @@ namespace TextEditor
 		{
 			if (!m_closed)
 			{
-				if (atEnd && !m_opened && m_applier.Applied && !m_scrolled)
+				if (atEnd && !m_opened && (m_applier.Applied || m_language == null) && !m_scrolled)
 				{
-					DoRestoreView();
+					// See http://www.cocoabuilder.com/archive/message/cocoa/2008/12/12/225294
+					NSApplication.sharedApplication().BeginInvoke(this.DoRestoreView);
+//					DoRestoreView();
 					m_opened = true;
 				}
 				
@@ -849,17 +851,23 @@ namespace TextEditor
 		
 		public void DoResetWordWrap()
 		{
+			// This code is a bit weird and rather delicate:
+			// 1) The container needs to be sized to the scroll view not the text view.
+			// 2) sizeToFit must be called for some reason.
+			// If this is not done the text (usually) does not wrap.
 			if (m_wordWrap)
 			{
-				NSSize contentSize = m_scrollView.Value.bounds().size;
-				m_textView.Value.textContainer().setWidthTracksTextView(true);
+				NSSize contentSize = m_scrollView.Value.contentView().bounds().size;
 				m_textView.Value.textContainer().setContainerSize(new NSSize(contentSize.width, float.MaxValue));
+				m_textView.Value.textContainer().setWidthTracksTextView(true);
 			}
 			else
 			{
 				m_textView.Value.textContainer().setContainerSize(new NSSize(float.MaxValue, float.MaxValue));
 				m_textView.Value.textContainer().setWidthTracksTextView(false);
 			}
+			
+			m_textView.Value.sizeToFit();
 		}
 		
 		private void DoRestoreView()
@@ -925,11 +933,14 @@ namespace TextEditor
 		
 		private void DoSetTextOptions()
 		{
+			// Disable word wrap by default (DoRestoreView will enable it if needed).
 			m_textView.Value.setAutoresizingMask(Enums.NSViewWidthSizable | Enums.NSViewHeightSizable);
 			m_textView.Value.setMaxSize(new NSSize(float.MaxValue, float.MaxValue));
+			
 			m_textView.Value.textContainer().setContainerSize(new NSSize(float.MaxValue, float.MaxValue));
 			m_textView.Value.textContainer().setWidthTracksTextView(false);
 			
+			// Set the text delegate.
 			m_textView.Value.textStorage().setDelegate(this);
 		}
 		

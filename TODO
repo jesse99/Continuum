@@ -22,9 +22,6 @@ ReferenceEquals used with value type
 might want a sample app
 sudo fs_usage -f filesys
 
-* Might want to change Tables.txt to rtf.
-* Why isn't word wrap showing up in TODO or tables context menu?
-* Need Save a Copy command.
 * Add some sort of Time Machine integration, maybe
 	- context menu, "2 months 3 hours ago"
 	- use file sizes (or maybe mod time) to figure out when a file changed

@@ -45,16 +45,19 @@ namespace TextEditor
 			if (selection == null)
 			{
 				TextController controller = NSApplication.sharedApplication().mainWindow().windowController() as TextController;
-				if (controller != null && controller.StylesWhitespace)
+				if (controller != null)
 				{
-					Boss b = ObjectModel.Create("Stylers");
-					var white = b.Get<IWhitespace>();
-					
 					items.Add(new TextContextItem(0.85f));
-					
-					items.Add(new TextContextItem(white.ShowSpaces ? "Hide Spaces" : "Show Spaces", this.DoToggleSpaces, 0.851f));
-					items.Add(new TextContextItem(white.ShowTabs ? "Hide Tabs" : "Show Tabs", this.DoToggleTabs, 0.852f));
 					items.Add(new TextContextItem(controller.WrapsWords ? "Don't Wrap Words" : "Wrap Words", this.DoToggleWordWrap, 0.853f));
+					
+					if (controller.StylesWhitespace)
+					{
+						Boss b = ObjectModel.Create("Stylers");
+						var white = b.Get<IWhitespace>();
+						
+						items.Add(new TextContextItem(white.ShowSpaces ? "Hide Spaces" : "Show Spaces", this.DoToggleSpaces, 0.851f));
+						items.Add(new TextContextItem(white.ShowTabs ? "Hide Tabs" : "Show Tabs", this.DoToggleTabs, 0.852f));
+					}
 				}
 			}
 		}
