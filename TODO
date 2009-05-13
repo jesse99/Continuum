@@ -25,11 +25,24 @@ sudo fs_usage -f filesys
 * Might want to change Tables.txt to rtf.
 * Need Save a Copy command.
 * Add some sort of Time Machine integration, maybe
+	- context menu, "2 months 3 hours ago"
+	- use file sizes (or maybe mod time) to figure out when a file changed
 	- context menu for main windows allowing going back an hour or a day or whatever
+	  or a drawer? or a second popup?
 	- old windows have a checkmark by their date and context menu allows you to replace with a new date
 	- probably need to work with dirs too
 * Do something similar with svn diff and cat.
-* Allow files and asemblies to be disasembled.
+* Add a get info command. Maybe an inspector.
+	- would this show method info?
+	- use html?
+	- could maybe use links to goto source files
+* Allow files and asemblies to be disasembled:
+	- might want to look at MonoDevelop's version
+	- maybe a double that goes down to methods
+	- can double click or get info on anything
+	- add support for disassemble method (and maybe type)
+	- if method is in more than one local assembly display a picker
+	- start with the assembly built last selected
 * Fix dir editor so it doesn't collapse child dirs when an item changes.
 * After duplicating directory items select the new item(s).
 * Make sure spelling and grammar menu works OK.
