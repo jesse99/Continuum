@@ -19,6 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear;
 using Gear.Helpers;
 using System;
 
@@ -27,13 +28,17 @@ namespace Shared
 	[ThreadModel(ThreadModel.Concurrent)]
 	public sealed class StyleRuns
 	{
-		public StyleRuns(string path, int edit, StyleRun[] runs)
+		public StyleRuns(Boss boss, string path, int edit, StyleRun[] runs)
 		{
+			Boss = boss;
 			Path = path;
 			Edit = edit;
 			Runs = runs;
 		}
 		
+		// The language boss associated with the runs.
+		public Boss Boss {get; private set;}
+
 		public string Path {get; private set;}
 		
 		public int Edit {get; private set;}

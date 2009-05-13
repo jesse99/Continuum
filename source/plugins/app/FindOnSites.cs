@@ -31,11 +31,11 @@ using System.Linq;
 namespace App
 {
 	internal sealed class FindOnSites : ITextContextCommands
-	{		
+	{
 		public void Instantiated(Boss boss)
-		{	
+		{
 			m_boss = boss;
-
+			
 			boss = ObjectModel.Create("Application");
 			var handler = boss.Get<IMenuHandler>();
 			
@@ -47,18 +47,18 @@ namespace App
 		{
 			get {return m_boss;}
 		}
-
+		
 		public void Get(Boss boss, string selection, List<TextContextItem> items)
 		{
 			if (selection != null && selection.Length < 100 && !selection.Any(c => char.IsWhiteSpace(c)))
 			{
 				items.Add(new TextContextItem(0.1f));
-
+				
 				if (DoNeedsFindOnApple(selection))
-					items.Add(new TextContextItem("Find on Apple", this.DoFindOnApple, 0.1f));
-	
+					items.Add(new TextContextItem("Search in Apple", this.DoFindOnApple, 0.1f));
+				
 				if (DoNeedsFindOnMSDN(selection))
-					items.Add(new TextContextItem("Find on MSDN", this.DoFindOnMSDN, 0.1f));
+					items.Add(new TextContextItem("Search in MSDN", this.DoFindOnMSDN, 0.1f));
 			}
 		}
 				
@@ -70,7 +70,7 @@ namespace App
 			Boss boss = ObjectModel.Create("TextEditorPlugin");
 			var windows = boss.Get<IWindows>();
 			boss = windows.Main();
-
+			
 			if (boss != null)
 			{
 				var text = boss.Get<IText>();

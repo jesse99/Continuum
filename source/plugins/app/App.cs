@@ -23,8 +23,8 @@ using Gear;
 using Gear.Helpers;
 using MCocoa;
 using MObjc;
-//using Shared;
 using System;
+using System.Linq;
 
 namespace App
 {
@@ -122,6 +122,26 @@ namespace App
 			}
 		}
 		
+		// Note that Dictionary.app will fall back to wikipedia for phrases so we
+		// want to allow spaces.
+		public bool canLookupInDictionary(NSString text)
+		{
+			if (NSObject.IsNullOrNil(text))
+				return false;
+				
+			if (text.length() == 0)
+				return false;
+				
+			if (!char.IsLetter(text.characterAtIndex(0)))
+				return false;
+				
+			if (text.Any(c => c == '\t' || c == '\r' || c == '\n'))
+				return false;
+				
+			return true;
+		}
+		
+		#region Private Methods
 		private NSMenuItem DoGetMenuItem(NSWindow window)
 		{
 			NSMenuItem item = null;
@@ -133,5 +153,6 @@ namespace App
 			
 			return item;
 		}
+		#endregion
 	}
 }

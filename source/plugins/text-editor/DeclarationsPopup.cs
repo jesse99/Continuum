@@ -62,7 +62,7 @@ namespace TextEditor
 			switch (name)
 			{
 				case "computed declarations":
-					DoUpdate((Declarations) value);	// check path
+					DoUpdate((Declarations) value);
 					break;
 					
 				default:
@@ -87,7 +87,7 @@ namespace TextEditor
 		{
 			NSRange selection = m_controller.TextView.selectedRange();
 			int offset = selection.location;
-			
+		
 			// Find the last declaration the selection start intersects.
 			int index = -1;
 			for (int i = 0; i < m_declarations.Decs.Length; ++i)

@@ -25,6 +25,7 @@ using MObjc;
 using Shared;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace App
 {
@@ -42,21 +43,29 @@ namespace App
 		
 		public void Get(Boss boss, string selection, List<TextContextItem> items)
 		{
-			if (selection != null && DoNeedsSpellCheck(selection))
+			if (selection != null)
 			{
-				NSRange range = NSSpellChecker.sharedSpellChecker().checkSpellingOfString_startingAt(NSString.Create(selection), 0);
-				if (range.length > 0)
+				if (NSApplication.sharedApplication().Call("canLookupInDictionary:", NSString.Create(selection)).To<bool>())
 				{
-					items.Add(new TextContextItem(0.9f));
-					
-					string word = selection.Substring(range.location, range.length);
-					NSArray guesses = NSSpellChecker.sharedSpellChecker().guessesForWord(NSString.Create(word));
-					if (guesses.count() > 0)
+					items.Add(new TextContextItem("Look Up in Dictionary", this.DoFindInDict, 0.11f));
+				}
+				
+				if (DoNeedsSpellCheck(selection))
+				{
+					NSRange range = NSSpellChecker.sharedSpellChecker().checkSpellingOfString_startingAt(NSString.Create(selection), 0);
+					if (range.length > 0)
 					{
-						for (int i = 0; i < guesses.count(); ++i)
+						items.Add(new TextContextItem(0.9f));
+						
+						string word = selection.Substring(range.location, range.length);
+						NSArray guesses = NSSpellChecker.sharedSpellChecker().guessesForWord(NSString.Create(word));
+						if (guesses.count() > 0)
 						{
-							string guess = guesses.objectAtIndex((uint) i).description();
-							items.Add(new TextContextItem(guess, s => guess, 0.9f, "Spelling Correction"));
+							for (int i = 0; i < guesses.count(); ++i)
+							{
+								string guess = guesses.objectAtIndex((uint) i).description();
+								items.Add(new TextContextItem(guess, s => guess, 0.9f, "Spelling Correction"));
+							}
 						}
 					}
 				}
@@ -64,6 +73,14 @@ namespace App
 		}
 		
 		#region Private Methods
+		private string DoFindInDict(string text)
+		{			
+			NSURL url = NSURL.URLWithString(NSString.Create("dict:///" + text.Replace(" ", "%20")));
+			NSWorkspace.sharedWorkspace().openURL(url);
+			
+			return text;
+		}
+		
 		private bool DoNeedsSpellCheck(string selection)
 		{
 			// If the selection is large or has multiple words then spell check it.

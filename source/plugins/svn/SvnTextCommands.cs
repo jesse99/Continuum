@@ -51,17 +51,11 @@ namespace Subversion
 					Svn svn = DoGetSvn();
 					string[] commands = svn.GetCommands(new string[]{path});
 					
-					bool addedSep = false;
+					items.Add(new TextContextItem(0.8f));
 					foreach (string command in commands)
 					{
 						if (m_candidates.Contains(command))
 						{
-							if (!addedSep)
-							{
-								items.Add(new TextContextItem(0.8f));
-								addedSep = true;
-							}
-
 							string c = command;
 							items.Add(new TextContextItem(command, s => {svn.Execute(c, path); return s;}, 0.8f));
 						}
@@ -69,7 +63,7 @@ namespace Subversion
 				}
 			}
 		}
-				
+		
 		#region Private Methods
 		private string DoGetPath()
 		{
@@ -78,18 +72,18 @@ namespace Subversion
 			Boss boss = ObjectModel.Create("TextEditorPlugin");
 			var windows = boss.Get<IWindows>();
 			boss = windows.Main();
-
+			
 			if (boss != null)
 			{
 				var editor = boss.Get<ITextEditor>();
 				path = editor.Path;
 			}
-
+			
 			return path;
 		}
-
+		
 		private Svn DoGetSvn()
-		{			
+		{
 			Boss boss = ObjectModel.Create("Sccs");
 			foreach (object impl in boss.Implementations)
 			{

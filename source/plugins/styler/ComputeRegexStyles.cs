@@ -119,7 +119,7 @@ namespace Styler
 			DoRegexMatch(text, sw.Language, runs);
 			Log.WriteLine(TraceLevel.Verbose, "Styler", "computed runs for {0} edit {1}", System.IO.Path.GetFileName(path), edit);
 			
-			var data = new StyleRuns(path, edit, runs.ToArray());
+			var data = new StyleRuns(language.SafeBoss(), path, edit, runs.ToArray());
 			
 			if (language.SafeBoss().Has<IStyler>())
 			{

@@ -46,6 +46,7 @@ namespace TextEditor
 		}
 		
 		private const int TabKey = 0x30;
+		private const int DeleteKey = 0x33;
 		private const int DownArrowKey = 0x7D;
 		private const int UpArrowKey = 0x7E;
 		
@@ -76,13 +77,31 @@ namespace TextEditor
 					}
 				}
 				
+				// Special case for deleting the new line at the start of a blank line
+				// (users don't normally want the whitespace to be appended to the
+				// previous line).
+				NSRange range = selectedRange();
+				if (range.location > 0 && range.length == 0)
+				{
+					if (evt.keyCode() == DeleteKey && string_().characterAtIndex((uint) range.location - 1) == '\n')
+					{
+						int count = DoGetBlankCount(string_(), range.location);
+						if (count > 0)
+						{
+							setSelectedRange(new NSRange(range.location - 1, count + 1));
+							delete(this);
+							break;
+						}
+					}
+				}
+				
 				// Default key processing.
 				Unused.Value = SuperCall("keyDown:", evt);
 				
 				// For up and down arrow in the whitespace at the start of a line
 				// we want to set the insertion point to the start of the line (this
 				// makes it much nicer to do stuff like manually comment out lines).
-				NSRange range = selectedRange();
+				range = selectedRange();
 				if (range.length == 0)
 				{
 					if (evt.keyCode() == UpArrowKey || evt.keyCode() == DownArrowKey)
@@ -98,7 +117,7 @@ namespace TextEditor
 			}
 			while (false);
 		}
-				
+		
 #if false
 		// This is kind of nice, and BBEdit does something similar but it screws
 		// up things like drag selections.
@@ -161,6 +180,11 @@ namespace TextEditor
 		{
 			NSMenu menu = NSMenu.Alloc().initWithTitle(NSString.Empty);
 			menu.autorelease();
+			
+			// We don't extend the default menu because it has tons of stuff that we
+			// don't really want. But we should add the services...
+//			NSMenu menu = SuperCall("menuForEvent:", evt).To<NSMenu>();
+//			menu.addItem(NSMenuItem.separatorItem());
 			
 			try
 			{
@@ -229,6 +253,9 @@ namespace TextEditor
 			}
 			catch (Exception e)
 			{
+				Log.WriteLine(TraceLevel.Error, "App", "Error building context menu:");
+				Log.WriteLine(TraceLevel.Error, "App", "{0}", e);
+				
 				NSString title = NSString.Create("Error building the menu.");
 				NSString message = NSString.Create(e.Message);
 				Unused.Value = Functions.NSRunAlertPanel(title, message);
@@ -336,6 +363,23 @@ namespace TextEditor
 		#endregion
 		
 		#region Private Methods
+		// If the line is blank then this will return the number of blank characters.
+		private int DoGetBlankCount(NSString text, int index)
+		{
+			for (int i = index; i < text.length(); ++i)
+			{
+				char ch = text.characterAtIndex((uint) i);
+				
+				if (ch == '\n')
+					return i - index;
+				
+				else if (ch != ' ' && ch != '\t')
+					break;
+			}
+			
+			return 0;
+		}
+		
 		// Another possibility here is that after completing a method we could set the
 		// find text to a regex which can be used to select the next identifier. This
 		// would allow command-G to be used instead of option-tab which might be

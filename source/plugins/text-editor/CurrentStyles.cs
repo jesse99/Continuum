@@ -140,46 +140,11 @@ namespace TextEditor
 			m_editStart = int.MaxValue;
 		}
 		
-		public void ApplyDefault()
-		{
-			if (m_currentRuns.Count > 0 && !m_stopped)		// no point in resetting styles if ApplyStyles isn't going to fix them up
-			{
-				m_storage.beginEditing();
-				try
-				{
-					int start = 0;
-					if (m_appliedRuns.Count > 0)
-						start = m_appliedRuns.Last().Offset + m_appliedRuns.Last().Length;
-						
-					NSRange range = new NSRange(start, (int) m_storage.length() - start);
-					
-					// Set all relevant attributes to their defaults.
-					var attrs = NSMutableDictionary.Create();
-					attrs.addEntriesFromDictionary(ms_defaultAttrs);
-					
-					foreach (NSString name in ms_nullAttributes)
-					{
-						m_storage.removeAttribute_range(name, range);
-					}
-					
-					// Override the defaults with the defaults the user has chosen.
-					attrs.addEntriesFromDictionary(ms_attributes["text default font changed"]);
-					
-					// Reset the attributes to the defaults (which will later be reset using the style runs).
-					m_storage.addAttributes_range(attrs, range);
-				}
-				finally
-				{
-					m_storage.endEditing();
-				}
-			}
-		}
-		
 		public void ApplyStyles()
 		{
 			if (!m_queued)
 			{
-				DoApplyStyles();
+				DoApplyStyles(true);
 			}
 		}
 		
@@ -214,9 +179,9 @@ namespace TextEditor
 		#region Private Methods
 		private static readonly TimeSpan ApplyDelay = TimeSpan.FromMilliseconds(100);
 		
-		public void DoApplyStyles()
+		public void DoApplyStyles(bool clearOld)
 		{
-			const int MaxApplies = 200;
+			const int MaxApplies = 100;
 			
 			m_queued = false;
 			if (m_edit == m_controller.EditCount)
@@ -224,6 +189,9 @@ namespace TextEditor
 				m_storage.beginEditing();
 				try
 				{
+					if (clearOld)
+						DoClearOld();
+						
 					// Apply the next set of runs.
 					int length = (int) m_storage.length();
 					int count = Math.Min(m_currentRuns.Count, MaxApplies);
@@ -248,7 +216,7 @@ namespace TextEditor
 					if (m_currentRuns.Count > 0)
 					{
 						m_queued = true;
-						NSApplication.sharedApplication().BeginInvoke(this.DoApplyStyles, ApplyDelay);
+						NSApplication.sharedApplication().BeginInvoke(() => DoApplyStyles(false), ApplyDelay);
 					}
 					else
 //						NSApplication.sharedApplication().BeginInvoke(() => {m_applied = true;});
@@ -263,6 +231,30 @@ namespace TextEditor
 			{
 				m_currentRuns.Clear();
 			}
+		}
+		
+		public void DoClearOld()
+		{
+			int start = 0;
+			if (m_appliedRuns.Count > 0)
+				start = m_appliedRuns.Last().Offset + m_appliedRuns.Last().Length;
+				
+			NSRange range = new NSRange(start, (int) m_storage.length() - start);
+			
+			// Set all relevant attributes to their defaults.
+			var attrs = NSMutableDictionary.Create();
+			attrs.addEntriesFromDictionary(ms_defaultAttrs);
+			
+			foreach (NSString name in ms_nullAttributes)
+			{
+				m_storage.removeAttribute_range(name, range);
+			}
+			
+			// Override the defaults with the defaults the user has chosen.
+			attrs.addEntriesFromDictionary(ms_attributes["text default font changed"]);
+			
+			// Reset the attributes to the defaults (which will later be reset using the style runs).
+			m_storage.addAttributes_range(attrs, range);
 		}
 		
 		private void DoApplyStyle(StyleRun run, int length)

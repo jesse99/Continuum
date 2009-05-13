@@ -70,13 +70,10 @@ namespace ObjectModel
 					DoAddOpenMethod(items, objects, selection, 0.3f);
 					
 					// Add type info commands. 
-					bool addedSep = false;
+					items.Add(new TextContextItem(0.4f));
 					var interfaces = from t in types where (t.Flags & TypeFlags.Interface) != 0 select t;
 					if (interfaces.Any())
 					{
-						items.Add(new TextContextItem(0.4f));
-						addedSep = true;
-						
 						items.Add(new TextContextItem(
 							"Show Implementors",
 							s => {DoShowImplementors(interfaces); return s;},
@@ -85,12 +82,6 @@ namespace ObjectModel
 					
 					if (types.Any())
 					{
-						if (!addedSep)
-						{
-							items.Add(new TextContextItem(0.4f));
-							addedSep = true;
-						}
-						
 						items.Add(new TextContextItem(
 							"Show Short Form",
 							s => {DoShowShort(types); return s;},
@@ -109,12 +100,6 @@ namespace ObjectModel
 					var unsealed = from t in types where (t.Flags & TypeFlags.Sealed) == 0 select t;
 					if (unsealed.Any())
 					{
-						if (!addedSep)
-						{
-							items.Add(new TextContextItem(0.4f));
-							addedSep = true;
-						}
-						
 						items.Add(new TextContextItem(
 							"Show Derived Classes",
 							s => {DoShowDerived(unsealed); return s;},
@@ -342,15 +327,9 @@ namespace ObjectModel
 			{
 				Array.Sort(used, (lhs, rhs) => lhs.Source.CompareTo(rhs.Source));
 				
-				bool addedSep = false;
+				items.Add(new TextContextItem(order));
 				for (int i = 0; i < Math.Min(used.Length, MaxOpenItems); ++i)
 				{
-					if (!addedSep)
-					{
-						items.Add(new TextContextItem(order));
-						addedSep = true;
-					}
-					
 					int k = i;											// need this for the delegate (or the for loop will mutate the value)
 					string title = "Open " + used[i].Source;
 					

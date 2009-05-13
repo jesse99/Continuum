@@ -54,7 +54,7 @@ namespace TextEditor
 			
 			m_textView.Value.Call("onOpened:", this);
 			
-			ActiveObjects.Add(this);
+			ActiveObjects.Add(this); 
 		}
 		
 		public void OnBroadcast(string name, object value)
@@ -264,14 +264,21 @@ namespace TextEditor
 		
 		public void ShowSelection()
 		{
-			NSRange range = m_textView.Value.selectedRange();
-			m_textView.Value.scrollRangeToVisible(range);
-			
-			var thread = new System.Threading.Thread(() => DoDeferredFindIndicator(range));
-			thread.Name = "deferred find indicator";
-			thread.Start();
-			
-			m_scrolled = true;
+			if (!m_applier.Applied)
+			{
+				NSApplication.sharedApplication().BeginInvoke(this.ShowSelection);
+			}
+			else
+			{
+				NSRange range = m_textView.Value.selectedRange();
+				m_textView.Value.scrollRangeToVisible(range);
+				
+				var thread = new System.Threading.Thread(() => DoDeferredFindIndicator(range));
+				thread.Name = "deferred find indicator";
+				thread.Start();
+				
+				m_scrolled = true;
+			}
 		}
 		
 		public NSRect window_willPositionSheet_usingRect(NSWindow window, NSWindow sheet, NSRect usingRect)
@@ -297,7 +304,7 @@ namespace TextEditor
 					int length = (int) m_textView.Value.string_().length();
 					NSPoint scrollers = m_scrollView.Value.contentView().bounds().origin;
 					NSRange selection = m_textView.Value.selectedRange();
-					WindowDatabase.Set(Path, frame, length, scrollers, selection);
+					WindowDatabase.Set(Path, frame, length, scrollers, selection, m_wordWrap);
 				}
 				
 				if (Path.Contains("/var/") && Path.Contains("/-Tmp-/"))		// TODO: seems kind of fragile
@@ -314,7 +321,7 @@ namespace TextEditor
 			}
 			
 			Broadcaster.Unregister(this);
-							
+			
 			if (m_applier != null)
 				m_applier.Stop();
 			((DeclarationsPopup) m_decPopup.Value).Stop();
@@ -567,7 +574,7 @@ namespace TextEditor
 				m_textView.Value.showFindIndicatorForRange(range);
 			}
 		}
-				
+		
 		public void dirHandler(NSObject sender)
 		{
 			if (Path != null)
@@ -578,9 +585,30 @@ namespace TextEditor
 			}
 		}
 		
+		public void toggleWordWrap(NSObject sender)
+		{
+			m_wordWrap = !m_wordWrap;
+			DoResetWordWrap();
+		}
+		
+		public void lookUpInDict(NSObject sender)
+		{
+			NSRange range = m_textView.Value.selectedRange();
+			string selection = Text.Substring(range.location, range.length);
+			selection = selection.Replace(" ", "%20");
+			
+			NSURL url = NSURL.URLWithString(NSString.Create("dict:///" + selection));
+			NSWorkspace.sharedWorkspace().openURL(url);
+		}
+		
 		public bool StylesWhitespace
 		{
 			get {return m_language != null && m_language.StylesWhitespace;}
+		}
+		
+		public bool WrapsWords
+		{
+			get {return m_wordWrap;}
 		}
 		
 		public bool validateUserInterfaceItem(NSObject item)
@@ -592,6 +620,12 @@ namespace TextEditor
 			{
 				NSRange range = m_textView.Value.selectedRange();
 				valid = range.length > 0;
+			}
+			else if (sel.Name == "lookUpInDict:")
+			{
+				NSRange range = m_textView.Value.selectedRange();
+				NSString text = m_textView.Value.textStorage().string_().substringWithRange(range);
+				valid = NSApplication.sharedApplication().Call("canLookupInDictionary:", text).To<bool>();
 			}
 			else if (sel.Name == "showSpaces:")
 			{
@@ -614,6 +648,11 @@ namespace TextEditor
 					Unused.Value = item.Call("setTitle:", white.ShowTabs ? NSString.Create("Hide Tabs") : NSString.Create("Show Tabs"));
 					valid = true;
 				}
+			}
+			else if (sel.Name == "toggleWordWrap:")
+			{
+				Unused.Value = item.Call("setTitle:", m_wordWrap ? NSString.Create("Don't Wrap Words") : NSString.Create("Wrap Words"));
+				valid = true;
 			}
 			else if (sel.Name == "dirHandler:")
 			{
@@ -808,6 +847,21 @@ namespace TextEditor
 			NSApplication.sharedApplication().BeginInvoke(() => m_textView.Value.showFindIndicatorForRange(range));
 		}
 		
+		public void DoResetWordWrap()
+		{
+			if (m_wordWrap)
+			{
+				NSSize contentSize = m_scrollView.Value.bounds().size;
+				m_textView.Value.textContainer().setWidthTracksTextView(true);
+				m_textView.Value.textContainer().setContainerSize(new NSSize(contentSize.width, float.MaxValue));
+			}
+			else
+			{
+				m_textView.Value.textContainer().setContainerSize(new NSSize(float.MaxValue, float.MaxValue));
+				m_textView.Value.textContainer().setWidthTracksTextView(false);
+			}
+		}
+		
 		private void DoRestoreView()
 		{
 			if (Path != null)
@@ -816,8 +870,15 @@ namespace TextEditor
 				NSPoint origin = NSPoint.Zero;
 				NSRange range = NSRange.Empty;
 				
-				if (WindowDatabase.GetViewSettings(Path, ref length, ref origin, ref range))
+				bool wrap = false;
+				if (WindowDatabase.GetViewSettings(Path, ref length, ref origin, ref range, ref wrap))
 				{
+					if (wrap != m_wordWrap)
+					{
+						m_wordWrap = wrap;
+						DoResetWordWrap();
+					}
+					
 					// If the file has been changed by another process we don't want
 					// to restore the origin and range since there is a good chance
 					// that that info is now invalid.
@@ -864,7 +925,6 @@ namespace TextEditor
 		
 		private void DoSetTextOptions()
 		{
-			// Instead of wrapping use the horizontal scrollbar. TODO: make this a pref? 
 			m_textView.Value.setAutoresizingMask(Enums.NSViewWidthSizable | Enums.NSViewHeightSizable);
 			m_textView.Value.setMaxSize(new NSSize(float.MaxValue, float.MaxValue));
 			m_textView.Value.textContainer().setContainerSize(new NSSize(float.MaxValue, float.MaxValue));
@@ -995,6 +1055,7 @@ namespace TextEditor
 		private bool m_opened;
 		private bool m_closed;
 		private bool m_scrolled;
+		private bool m_wordWrap;
 		private List<WeakReference> m_ranges = new List<WeakReference>();
 		
 		public static WarningWindow ms_warning;

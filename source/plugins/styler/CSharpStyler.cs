@@ -129,7 +129,7 @@ namespace Styler
 					styles = new Styles();
 					m_styles.Add(parse.Path, styles);
 				}
-				styles.ParsedStyles = new StyleRuns(parse.Path, parse.Edit, runs.ToArray());
+				styles.ParsedStyles = new StyleRuns(m_boss, parse.Path, parse.Edit, runs.ToArray());
 				
 				DoTryBroadcast(parse.Path);
 			}
@@ -149,7 +149,7 @@ namespace Styler
 					runs.AddRange(styles.ParsedStyles.Runs);
 					runs.Sort((lhs, rhs) => lhs.Offset.CompareTo(rhs.Offset));
 					
-					var data = new StyleRuns(styles.RegexStyles.Path,
+					var data = new StyleRuns(styles.RegexStyles.Boss, styles.RegexStyles.Path,
 						styles.RegexStyles.Edit, runs.ToArray());
 					
 					NSApplication.sharedApplication().BeginInvoke(

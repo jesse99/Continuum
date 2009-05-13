@@ -148,7 +148,6 @@ namespace TextEditor
 			if (m_controller.Path != null && Paths.AreEqual(runs.Path, m_controller.Path))
 			{
 				m_current.Reset(runs.Edit, runs.Runs);
-				m_current.ApplyDefault();
 				m_current.ApplyStyles();
 			}
 		}

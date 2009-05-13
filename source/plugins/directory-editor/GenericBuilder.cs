@@ -153,11 +153,6 @@ namespace DirectoryEditor
 				var editor = b.Get<ITextEditor>();
 				editor.Save();
 			}
-			
-			// There seems to be a race here where make doesn't always recognize
-			// that the file we just saved changed. So, we'll sleep a little bit to try
-			// to avoid the race.
-			System.Threading.Thread.Sleep(333);		// 200 didn't always work...
 		}
 		
 		[ThreadModel(ThreadModel.Concurrent)]

@@ -59,32 +59,35 @@ namespace Styler
 		#region Private Methods 
 		private void DoProcessStyles(StyleRuns styles)
 		{
-			string text = DoGetText(styles.Path);
-			if (text != null)
+			if (styles.Boss == m_boss)
 			{
-				var decs = new List<Declaration>();
-				string indent = string.Empty;
-				foreach (StyleRun run in styles.Runs)
+				string text = DoGetText(styles.Path);
+				if (text != null)
 				{
-					if (run.Type == StyleType.Type)
+					var decs = new List<Declaration>();
+					string indent = string.Empty;
+					foreach (StyleRun run in styles.Runs)
 					{
-						decs.Add(new Declaration(
-							text.Substring(run.Offset, run.Length),	
-							new NSRange(run.Offset, run.Length),
-							true, false));
-						indent = "    ";
+						if (run.Type == StyleType.Type)
+						{
+							decs.Add(new Declaration(
+								text.Substring(run.Offset, run.Length),
+								new NSRange(run.Offset, run.Length),
+								true, false));
+							indent = "    ";
+						}
+						else if (run.Type == StyleType.Member)
+						{
+							decs.Add(new Declaration(
+								indent + text.Substring(run.Offset, run.Length),
+								new NSRange(run.Offset, run.Length),
+								false, false));
+						}
 					}
-					else if (run.Type == StyleType.Member)
-					{
-						decs.Add(new Declaration(
-							indent + text.Substring(run.Offset, run.Length),
-							new NSRange(run.Offset, run.Length),
-							false, false));
-					}
+					
+					var data = new Declarations(styles.Path, styles.Edit, decs.ToArray());
+					Broadcaster.Invoke("computed declarations", data);
 				}
-				
-				var data = new Declarations(styles.Path, styles.Edit, decs.ToArray());
-				Broadcaster.Invoke("computed declarations", data);
 			}
 		}
 		

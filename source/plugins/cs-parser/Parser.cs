@@ -554,7 +554,7 @@ namespace CsParser
 				body = new CsBody(isImplicit ? "op_Implict" : "op_Explict", start.Offset, f.Offset, last.Offset + last.Length - f.Offset, start.Line);
 			}
 			
-			members.Add(new CsOperator(nameOffset, body, isImplicit, !isImplicit, parms.ToArray(), type, attrs, modifiers, "<conversion>", first.Offset, last.Offset + last.Length - first.Offset, first.Line));
+			members.Add(new CsOperator(nameOffset, body, isImplicit, !isImplicit, parms.ToArray(), type, attrs, modifiers, type, first.Offset, last.Offset + last.Length - first.Offset, first.Line));
 		}
 		
 		// compilation-unit:

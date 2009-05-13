@@ -53,7 +53,9 @@ namespace TextEditor
 						scrollers TEXT NOT NULL
 							CONSTRAINT no_empty_scrollers CHECK(length(scrollers) > 0),
 						selection TEXT NOT NULL
-							CONSTRAINT no_empty_selection CHECK(length(selection) > 0)
+							CONSTRAINT no_empty_selection CHECK(length(selection) > 0),
+						word_wrap INTEGER NOT NULL
+							CONSTRAINT valid_wrap CHECK(word_wrap = 0 || word_wrap = 1)
 					)");
 			});
 		}
@@ -69,10 +71,10 @@ namespace TextEditor
 			return rows.Length > 0 ? NSRect.Parse(rows[0][0]) : NSRect.Empty;
 		}
 		
-		public static bool GetViewSettings(string path, ref int length, ref NSPoint origin, ref NSRange selection)
+		public static bool GetViewSettings(string path, ref int length, ref NSPoint origin, ref NSRange selection, ref bool wordWrap)
 		{
 			string sql = string.Format(@"
-				SELECT length, scrollers, selection
+				SELECT length, scrollers, selection, word_wrap
 					FROM Windows
 				WHERE path = '{0}'", path.Replace("'", "''"));
 			string[][] rows = ms_database.QueryRows(sql);
@@ -82,22 +84,24 @@ namespace TextEditor
 				length = int.Parse(rows[0][0]);
 				origin = NSPoint.Parse(rows[0][1]);
 				selection = NSRange.Parse(rows[0][2]);
+				wordWrap = rows[0][3] == "1";
 			}
 			
 			return rows.Length > 0;
 		}
 		
-		public static void Set(string path, NSRect frame, int length, NSPoint pos, NSRange selection)
+		public static void Set(string path, NSRect frame, int length, NSPoint pos, NSRange selection, bool wordWrap)
 		{
 			ms_database.Update("update frame for " + path, () =>
 			{
 				string sql = string.Format(@"
-					INSERT OR REPLACE INTO Windows VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')",
+					INSERT OR REPLACE INTO Windows VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', {5})",
 						path.Replace("'", "''"),
 						length.ToString(),
 						frame.ToString("R"),
 						pos.ToString("R"),
-						selection.ToString("R"));
+						selection.ToString("R"),
+						wordWrap ? "1" : "0");
 				
 				ms_database.Update(sql);
 			});

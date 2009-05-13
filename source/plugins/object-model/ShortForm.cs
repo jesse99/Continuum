@@ -50,6 +50,7 @@ namespace ObjectModel
 			
 			m_assembly = null;
 			
+			// Record all of the methods, fields, properties, etc.
 			string name = fullName;
 			while (name != null)
 			{
@@ -68,7 +69,11 @@ namespace ObjectModel
 					break;
 			}
 			
-			DoWrite(original);
+			// Write the type out.
+			if (original.IsEnum)
+				DoWriteEnum(original);
+			else
+				DoWrite(original);
 		}
 		
 		public static string GetModifiers(TypeDefinition type, TypeAttributes attrs)
@@ -152,30 +157,27 @@ namespace ObjectModel
 			return type;
 		}
 		
+		public void DoWriteEnum(TypeDefinition type)
+		{
+			string indent = string.Empty;
+			
+			DoWriteProlog(type, ref indent);
+			
+			string indent2 = indent + "\t";
+			for (int i = 0; i < m_fields.Count; ++i)
+			{
+				if (m_fields[i].Name != "value__")
+					m_writer.WriteLine("{0}{1},", indent2, m_fields[i].Name);
+			}
+			
+			DoWriteEpilog(type, indent);
+		}
+		
 		public void DoWrite(TypeDefinition type)
 		{
 			string indent = string.Empty;
 			
-			m_writer.WriteLine("// {0}", Path.GetFileName(m_assembly));
-			if (!string.IsNullOrEmpty(type.Namespace))
-			{
-				if (m_addBraceLine)
-				{
-					m_writer.WriteLine("namespace {0}", type.Namespace);
-					m_writer.WriteLine("{");
-				}
-				else
-					m_writer.WriteLine("namespace {0} {1}", type.Namespace, "{");
-				indent += "\t";
-			}
-			
-			m_writer.Write(indent);
-			DoWriteType(type);
-			if (m_addBraceLine)
-			{
-				m_writer.Write(indent);
-				m_writer.WriteLine("{");
-			}
+			DoWriteProlog(type, ref indent);
 			
 			// constructors
 			string indent2 = indent + "\t";
@@ -195,7 +197,7 @@ namespace ObjectModel
 				{
 					m_writer.WriteLine("{0}{1}", indent2, m_ctors[i].Text);
 					
-					if (i + 1 < m_ctors.Count || m_events.Count > 0 || m_properties.Count > 0 || m_staticMethods.Count > 0 || m_instanceMethods.Count > 0 || m_fields.Count > 0)
+					if (i + 1 < m_ctors.Count || m_events.Count > 0 || m_properties.Count > 0 || m_staticMethods.Count > 0 || m_operators.Count > 0 || m_instanceMethods.Count > 0 || m_fields.Count > 0)
 						m_writer.WriteLine(indent2);
 				}
 			}
@@ -217,7 +219,7 @@ namespace ObjectModel
 				{
 					m_writer.WriteLine("{0}{1}", indent2, m_events[i].Text);
 					
-					if (i + 1 < m_events.Count || m_properties.Count > 0 || m_staticMethods.Count > 0 || m_instanceMethods.Count > 0 || m_fields.Count > 0)
+					if (i + 1 < m_events.Count || m_properties.Count > 0 || m_staticMethods.Count > 0 || m_operators.Count > 0 || m_instanceMethods.Count > 0 || m_fields.Count > 0)
 						m_writer.WriteLine(indent2);
 				}
 			}
@@ -239,17 +241,17 @@ namespace ObjectModel
 				{
 					m_writer.WriteLine("{0}{1}", indent2, m_properties[i].Text);
 					
-					if (i + 1 < m_properties.Count || m_staticMethods.Count > 0 || m_instanceMethods.Count > 0 || m_fields.Count > 0)
+					if (i + 1 < m_properties.Count || m_staticMethods.Count > 0 || m_operators.Count > 0 || m_instanceMethods.Count > 0 || m_fields.Count > 0)
 						m_writer.WriteLine(indent2);
 				}
 			}
 			
-			// static methods
-			if (m_staticMethods.Count > 0)
+			// operators
+			if (m_operators.Count > 0)
 			{
-				m_writer.WriteLine("{0}// static methods", indent2);
+				m_writer.WriteLine("{0}// operators", indent2);
 				
-				m_staticMethods.Sort((lhs, rhs) =>
+				m_operators.Sort((lhs, rhs) =>
 				{
 					int result = rhs.Access.CompareTo(lhs.Access);
 					if (result == 0)
@@ -259,11 +261,11 @@ namespace ObjectModel
 					return result;
 				});
 				
-				for (int i = 0; i < m_staticMethods.Count; ++i)
+				for (int i = 0; i < m_operators.Count; ++i)
 				{
-					m_writer.WriteLine("{0}{1}", indent2, m_staticMethods[i].Text);
+					m_writer.WriteLine("{0}{1}", indent2, m_operators[i].Text);
 					
-					if (i + 1 < m_staticMethods.Count || m_instanceMethods.Count > 0 || m_fields.Count > 0)
+					if (i + 1 < m_operators.Count || m_instanceMethods.Count > 0 || m_fields.Count > 0 || m_staticMethods.Count > 0)
 						m_writer.WriteLine(indent2);
 				}
 			}
@@ -287,7 +289,31 @@ namespace ObjectModel
 				{
 					m_writer.WriteLine("{0}{1}", indent2, m_instanceMethods[i].Text);
 					
-					if (i + 1 < m_instanceMethods.Count || m_fields.Count > 0)
+					if (i + 1 < m_instanceMethods.Count || m_fields.Count > 0 || m_staticMethods.Count > 0)
+						m_writer.WriteLine(indent2);
+				}
+			}
+			
+			// static methods
+			if (m_staticMethods.Count > 0)
+			{
+				m_writer.WriteLine("{0}// static methods", indent2);
+				
+				m_staticMethods.Sort((lhs, rhs) =>
+				{
+					int result = rhs.Access.CompareTo(lhs.Access);
+					if (result == 0)
+						result = lhs.Name.CompareTo(rhs.Name);
+					if (result == 0)
+						result = lhs.Text.Length.CompareTo(rhs.Text.Length);
+					return result;
+				});
+				
+				for (int i = 0; i < m_staticMethods.Count; ++i)
+				{
+					m_writer.WriteLine("{0}{1}", indent2, m_staticMethods[i].Text);
+					
+					if (i + 1 < m_staticMethods.Count || m_fields.Count > 0)
 						m_writer.WriteLine(indent2);
 				}
 			}
@@ -314,6 +340,35 @@ namespace ObjectModel
 				}
 			}
 			
+			DoWriteEpilog(type, indent);
+		}
+		
+		public void DoWriteProlog(TypeDefinition type, ref string indent)
+		{
+			m_writer.WriteLine("// {0}", Path.GetFileName(m_assembly));
+			if (!string.IsNullOrEmpty(type.Namespace))
+			{
+				if (m_addBraceLine)
+				{
+					m_writer.WriteLine("namespace {0}", type.Namespace);
+					m_writer.WriteLine("{");
+				}
+				else
+					m_writer.WriteLine("namespace {0} {1}", type.Namespace, "{");
+				indent += "\t";
+			}
+			
+			m_writer.Write(indent);
+			DoWriteType(type);
+			if (m_addBraceLine)
+			{
+				m_writer.Write(indent);
+				m_writer.WriteLine("{");
+			}
+		}
+		
+		public void DoWriteEpilog(TypeDefinition type, string indent)
+		{
 			m_writer.Write(indent);
 			m_writer.WriteLine("}");
 			if (!string.IsNullOrEmpty(type.Namespace))
@@ -449,106 +504,161 @@ namespace ObjectModel
 			return builder.ToString();
 		}
 		
+		private bool DoShouldAdd(string ns)
+		{
+			bool add = true;
+			
+			if (ns == "System" || ns.StartsWith("System."))	// TODO: better to see if the method's assembly is local
+				add = false;
+			
+			else if (ns == "Mono" || ns.StartsWith("Mono."))
+				add = false;
+			
+			return add;
+		}
+		
+		private bool DoShouldAdd(MethodDefinition method)
+		{
+			bool add = true;
+			
+			if (method.IsAssembly || method.IsFamilyAndAssembly)
+			{
+				string ns = method.DeclaringType.Namespace;
+				add = DoShouldAdd(ns);
+			}
+			
+			return add;
+		}
+		
+		private bool DoShouldAdd(FieldDefinition field)
+		{
+			bool add = true;
+			
+			if (field.IsAssembly || field.IsFamilyAndAssembly)
+			{
+				string ns = field.DeclaringType.Namespace;
+				add = DoShouldAdd(ns);
+			}
+			
+			return add;
+		}
+		
 		private void DoGetCtor(TypeDefinition type, MethodDefinition method)
 		{
-			var builder = new StringBuilder();
-			
-			DoGetMethodModifiers(type, builder, method.Attributes);
-			string name = DoGetTypeName(type, false);
-			builder.Append(name);
-			if (method.HasGenericParameters)
-				DoGetGenericParams(builder, method.GenericParameters);
-			DoGetParams(builder, method.Parameters);
-			
-			DoAdd(m_ctors, new Member(name, method.Attributes & MethodAttributes.MemberAccessMask, builder.ToString()));
+			if (DoShouldAdd(method))
+			{
+				var builder = new StringBuilder();
+				
+				DoGetMethodModifiers(type, builder, method.Attributes);
+				string name = DoGetTypeName(type, false);
+				builder.Append(name);
+				if (method.HasGenericParameters)
+					DoGetGenericParams(builder, method.GenericParameters);
+				DoGetParams(builder, method.Parameters);
+				
+				DoAdd(m_ctors, new Member(name, method.Attributes & MethodAttributes.MemberAccessMask, builder.ToString()));
+			}
 		}
 		
 		private void DoGetEvent(TypeDefinition type, EventDefinition e)
 		{
-			var builder = new StringBuilder();
-			
 			MethodDefinition m = e.AddMethod ?? e.InvokeMethod ?? e.RemoveMethod;
-			
-			DoGetMethodModifiers(type, builder, m.Attributes);
-			builder.Append("event ");
-			builder.Append(DoGetQualifiedTypeName(e.EventType, true));
-			builder.AppendFormat(" {0};", e.Name);
-			
-			DoAdd(m_events, new Member(e.Name, m.Attributes & MethodAttributes.MemberAccessMask, builder.ToString()));
+			if (DoShouldAdd(m))
+			{
+				var builder = new StringBuilder();
+				
+				DoGetMethodModifiers(type, builder, m.Attributes);
+				builder.Append("event ");
+				builder.Append(DoGetQualifiedTypeName(e.EventType, true));
+				builder.AppendFormat(" {0};", e.Name);
+				
+				DoAdd(m_events, new Member(e.Name, m.Attributes & MethodAttributes.MemberAccessMask, builder.ToString()));
+			}
 		}
 		
 		private void DoGetProperty(TypeDefinition type, PropertyDefinition prop, MethodDefinition getter, MethodDefinition setter)
 		{
-			var builder = new StringBuilder();
-			
 			MethodDefinition m = getter ?? setter;
-			
-			DoGetMethodModifiers(type, builder, m.Attributes);
-			builder.Append(DoGetQualifiedTypeName(prop.PropertyType, true));
-			if (prop.HasParameters)				// TODO: might want to include the prop.Name as IndexerNameAttribute for languages that don't support the array indexer notation
+			if (DoShouldAdd(m))
 			{
-				if (m_addSpace)
-					builder.Append(" this [");
+				var builder = new StringBuilder();
+				
+				DoGetMethodModifiers(type, builder, m.Attributes);
+				builder.Append(DoGetQualifiedTypeName(prop.PropertyType, true));
+				if (prop.HasParameters)				// TODO: might want to include the prop.Name as IndexerNameAttribute for languages that don't support the array indexer notation
+				{
+					if (m_addSpace)
+						builder.Append(" this [");
+					else
+						builder.Append(" this[");
+					builder.Append(DoGetQualifiedTypeName(m.Parameters[0].ParameterType, true));
+					builder.Append(" ");
+					builder.Append(m.Parameters[0].Name);
+					builder.AppendFormat("] {0}", "{");					// need this weird code or string.Format freaks out
+				}
 				else
-					builder.Append(" this[");
-				builder.Append(DoGetQualifiedTypeName(m.Parameters[0].ParameterType, true));
-				builder.Append(" ");
-				builder.Append(m.Parameters[0].Name);
-				builder.AppendFormat("] {0}", "{");					// need this weird code or string.Format freaks out
-			}
-			else
-				builder.AppendFormat(" {0} {1}", prop.Name, "{");
-				
-			if (m_addSpace)
-				builder.Append(' ');
-				
-			if (getter != null)
-			{
-				builder.Append("get;");
-				if (setter != null)
+					builder.AppendFormat(" {0} {1}", prop.Name, "{");
+					
+				if (m_addSpace)
 					builder.Append(' ');
+					
+				if (getter != null)
+				{
+					builder.Append("get;");
+					if (setter != null)
+						builder.Append(' ');
+				}
+				if (setter != null)
+				{
+					if ((m.Attributes & MethodAttributes.MemberAccessMask) != (setter.Attributes & MethodAttributes.MemberAccessMask))
+						DoGetMethodModifiers(type, builder, setter.Attributes & MethodAttributes.MemberAccessMask);
+					builder.Append("set;");
+				}
+				if (m_addSpace)
+					builder.Append(' ');
+				builder.Append("}");
+				
+				DoAdd(m_properties, new Member(prop.Name, m.Attributes & MethodAttributes.MemberAccessMask, builder.ToString(), m));
 			}
-			if (setter != null)
-			{
-				if ((m.Attributes & MethodAttributes.MemberAccessMask) != (setter.Attributes & MethodAttributes.MemberAccessMask))
-					DoGetMethodModifiers(type, builder, setter.Attributes & MethodAttributes.MemberAccessMask);
-				builder.Append("set;");
-			}
-			if (m_addSpace)
-				builder.Append(' ');
-			builder.Append("}");
-			
-			DoAdd(m_properties, new Member(prop.Name, m.Attributes & MethodAttributes.MemberAccessMask, builder.ToString(), m));
 		}
 		
 		private void DoGetMethod(TypeDefinition type, MethodDefinition method)
 		{
-			var builder = new StringBuilder();
-			
-			DoGetMethodModifiers(type, builder, method.Attributes);
-			if (method.Name != "op_Implicit" && method.Name != "op_Explicit")
-				builder.Append(DoGetQualifiedTypeName(method.ReturnType.ReturnType, true));
-			string name = DoGetMethodName(method);
-			builder.AppendFormat(" {0}", name);
-			if (method.HasGenericParameters)
-				DoGetGenericParams(builder, method.GenericParameters);
-			DoGetParams(builder, method.Parameters);
-			
-			if (method.IsStatic)
-				DoAdd(m_staticMethods, new Member(name, method.Attributes & MethodAttributes.MemberAccessMask, builder.ToString(), method));
-			else
-				DoAdd(m_instanceMethods, new Member(name, method.Attributes & MethodAttributes.MemberAccessMask, builder.ToString(), method));
+			if (DoShouldAdd(method))
+			{
+				var builder = new StringBuilder();
+				
+				DoGetMethodModifiers(type, builder, method.Attributes);
+				if (method.Name != "op_Implicit" && method.Name != "op_Explicit")
+					builder.Append(DoGetQualifiedTypeName(method.ReturnType.ReturnType, true));
+				string name = DoGetMethodName(method);
+				builder.AppendFormat(" {0}", name);
+				if (method.HasGenericParameters)
+					DoGetGenericParams(builder, method.GenericParameters);
+				DoGetParams(builder, method.Parameters);
+				
+				if (method.IsStatic)
+					if (method.Name.StartsWith("op"))
+						DoAdd(m_operators, new Member(name, method.Attributes & MethodAttributes.MemberAccessMask, builder.ToString(), method));
+					else
+						DoAdd(m_staticMethods, new Member(name, method.Attributes & MethodAttributes.MemberAccessMask, builder.ToString(), method));
+				else
+					DoAdd(m_instanceMethods, new Member(name, method.Attributes & MethodAttributes.MemberAccessMask, builder.ToString(), method));
+			}
 		}
 		
 		private void DoGetField(FieldDefinition field)
 		{
-			var builder = new StringBuilder();
-			
-			DoGetFieldModifiers(builder, field.Attributes);
-			builder.Append(DoGetQualifiedTypeName(field.FieldType, true));
-			builder.AppendFormat(" {0};", field.Name);
-			
-			DoAdd(m_fields, new Member(field.Name, (MethodAttributes) (ushort) (field.Attributes & FieldAttributes.FieldAccessMask), builder.ToString()));
+			if (DoShouldAdd(field))
+			{
+				var builder = new StringBuilder();
+				
+				DoGetFieldModifiers(builder, field.Attributes);
+				builder.Append(DoGetQualifiedTypeName(field.FieldType, true));
+				builder.AppendFormat(" {0};", field.Name);
+				
+				DoAdd(m_fields, new Member(field.Name, (MethodAttributes) (ushort) (field.Attributes & FieldAttributes.FieldAccessMask), builder.ToString()));
+			}
 		}
 		
 		private string DoGetMethodName(MethodDefinition method)
@@ -917,6 +1027,7 @@ namespace ObjectModel
 		private List<Member> m_events = new List<Member>();
 		private List<Member> m_properties = new List<Member>();
 		private List<Member> m_staticMethods = new List<Member>();
+		private List<Member> m_operators = new List<Member>();
 		private List<Member> m_instanceMethods = new List<Member>();
 		private List<Member> m_fields = new List<Member>();
 		#endregion

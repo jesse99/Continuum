@@ -68,7 +68,12 @@ namespace TextEditor
 		{
 			NSDocument doc = m_window.windowController().document();
 			if (!NSObject.IsNullOrNil(doc.fileURL()) && doc.isDocumentEdited())
+			{
 				doc.saveDocument(m_window.windowController());
+				
+				TextController controller = (TextController) m_window.windowController();
+				controller.TextView.breakUndoCoalescing();
+			}
 		}
 		
 		public static int GetOffset(string text, int line, int col, int tabWidth)
@@ -215,6 +220,9 @@ namespace TextEditor
 		// IReload
 		public void Reload()
 		{
+			Contract.Assert(!NSObject.IsNullOrNil(m_window.windowController().document()), "doc is null");
+			Contract.Assert(m_window.windowController().document() is TextDocument, "doc is a " + m_window.windowController().document().GetType());
+			
 			var doc = (TextDocument) m_window.windowController().document();
 			if (doc.HasChangedOnDisk())
 			{

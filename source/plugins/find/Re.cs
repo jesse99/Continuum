@@ -48,8 +48,18 @@ namespace Find
 				
 			if (!UseRegex)
 				pattern = Escape(pattern);
+				
 			if (MatchWords)
-				pattern = @"\b" + pattern + @"\b";
+			{
+				// Note that, even with this code, MatchWords may still lead to unexpected
+				// results when doing regex searches.
+				if (pattern.Length > 0 && char.IsLetter(pattern[0]))
+					pattern = @"\b" + pattern;
+				
+				if (pattern.Length > 0 && char.IsLetter(pattern[pattern.Length - 1]))
+					pattern = pattern + @"\b";
+			}
+			
 			if (WithinText != null && WithinText.Length > 0 && WithinText != Constants.Ellipsis)
 				pattern = DoSearchWithin(pattern, WithinText, ref options);
 				
