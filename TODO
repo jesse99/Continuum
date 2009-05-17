@@ -34,36 +34,14 @@ use the app bundle name in the launcher script
 update wrapping section on the wiki
 docs
 
-* Got an error closing a file quickly:
-objc[39635]: FREED(id): message beginEditing sent to freed object=0x167d86b0
-Ignoring BeginInvoke exception: 
-System.ExecutionEngineException: SIGILL
-  at (wrapper managed-to-native) MObjc.DirectCalls:Callv (intptr,intptr,intptr&)
-  at MCocoa.NSMutableAttributedString.beginEditing () [0x00006] in /Users/jessejones/Source/mcocoa/source/foundation/generated/NSAttributedString.cs:350 
-  at TextEditor.CurrentStyles.DoApplyStyles (Boolean clearOld) [0x0001d] in /Users/jessejones/Source/Continuum/source/plugins/text-editor/CurrentStyles.cs:189 
-  at TextEditor.CurrentStyles.<DoApplyStyles>m__0 () [0x00000] in /Users/jessejones/Source/Continuum/source/plugins/text-editor/CurrentStyles.cs:219 
-  at MCocoa.AppHelper.onDelayedAction (MCocoa.NSNumber id) [0x00048] in /Users/jessejones/Source/mcocoa/source/appkit/AppHelper.cs:91 
-* Add some sort of Time Machine integration, maybe
-	- context menu, "2 months 3 hours ago"
-	- use file sizes (or maybe mod time) to figure out when a file changed
-	- context menu for main windows allowing going back an hour or a day or whatever
-	  or a drawer? or a second popup?
-	- old windows have a checkmark by their date and context menu allows you to replace with a new date
-	- probably need to work with dirs too
-* Make a new foreshadow.
-* Menus should say "wrap lines" not "wrap words"
-* Typing tabs is still too slow.
-* Got two separators when right clicking on openDocumentWithContentsOfURL_display_error
-* Styler uses one too many runs from applied:
-	- eg replacing a word in a string with paste
-* Short form of an interface should show base interfaces too
-	- e.g. IDictionary
-* Why does TODO styling sometimes flake out?
-* Default window should be a bit wider.
+* Args weren't completing inside the Fuum ctor.
+* Fuum f; f. doesn't complete.
+* Nested classes don't complete? E.g. Boss::State also TimeMachine::Backup.
 * Does auto-complete work with abstract parsed methods?
 * Does auto-complete work with abstract database methods?
-* Nested classes don't complete? E.g. Boss::State also TimeMachine::Backup.
+* Make a new foreshadow.
 * Do something similar with svn diff and cat.
+* Why does TODO styling sometimes flake out?
 * Add a get info command. Maybe an inspector.
 	- would this show method info?
 	- use html?
@@ -513,6 +491,7 @@ System.ExecutionEngineException: SIGILL
 	  that were edited)
 	- would be cool if invariant support could be added via a script		
 * Release checklist:
+	- update generated config file logging categories
 	- update the version number
 	- delete build_num
 	- make sure text editor boss goes away (after forcing a GC)

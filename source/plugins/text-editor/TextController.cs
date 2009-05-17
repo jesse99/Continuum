@@ -674,7 +674,7 @@ namespace TextEditor
 			}
 			else if (sel.Name == "toggleWordWrap:")
 			{
-				Unused.Value = item.Call("setTitle:", m_wordWrap ? NSString.Create("Don't Wrap Words") : NSString.Create("Wrap Words"));
+				Unused.Value = item.Call("setTitle:", m_wordWrap ? NSString.Create("Don't Wrap Lines") : NSString.Create("Wrap Lines"));
 				valid = true;
 			}
 			else if (sel.Name == "dirHandler:")

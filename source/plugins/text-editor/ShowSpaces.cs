@@ -48,7 +48,7 @@ namespace TextEditor
 				if (controller != null)
 				{
 					items.Add(new TextContextItem(0.85f));
-					items.Add(new TextContextItem(controller.WrapsWords ? "Don't Wrap Words" : "Wrap Words", this.DoToggleWordWrap, 0.853f));
+					items.Add(new TextContextItem(controller.WrapsWords ? "Don't Wrap Lines" : "Wrap Lines", this.DoToggleWordWrap, 0.853f));
 					
 					if (controller.StylesWhitespace)
 					{

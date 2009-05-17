@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Jesse Jones
+// Copyright (C) 2008-2009 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -236,6 +236,14 @@ namespace TextEditor
 				
 				m_entries.Sort();
 				
+				for (int i = m_entries.Count - 1; i > 0; --i)
+				{
+					if (m_entries[i].Name == null && m_entries[i - 1].Name == null)
+						m_entries.RemoveAt(i);
+				}
+				if (m_entries[0].Name == null)
+					m_entries.RemoveAt(0);
+				
 				// Build the menu.
 				for (int i = 0; i < m_entries.Count; ++i)
 				{
@@ -254,7 +262,7 @@ namespace TextEditor
 							item = NSMenuItem.Create(Constants.Ellipsis);
 						item.setTag(i);
 					}
-					else if (i > 0)
+					else
 					{
 						Contract.Assert(m_entries[i].Handler == null, "names is null, but handlers is not");
 						item = NSMenuItem.separatorItem();

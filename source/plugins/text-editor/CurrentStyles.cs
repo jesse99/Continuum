@@ -123,7 +123,7 @@ namespace TextEditor
 			
 			int matchCount = 0;
 			int max = Math.Min(m_appliedRuns.Count, runs.Length);
-			for (int i = 0; i < max && m_appliedRuns[i] == runs[i] && m_appliedRuns[i].Offset < m_editStart; ++i)
+			for (int i = 0; i < max && m_appliedRuns[i] == runs[i] && m_appliedRuns[i].Offset + m_appliedRuns[i].Length < m_editStart; ++i)
 			{
 				++matchCount;
 			}
@@ -184,7 +184,7 @@ namespace TextEditor
 			const int MaxApplies = 100;
 			
 			m_queued = false;
-			if (m_edit == m_controller.EditCount)
+			if (!m_stopped && m_edit == m_controller.EditCount)
 			{
 				m_storage.beginEditing();
 				try

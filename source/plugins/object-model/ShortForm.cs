@@ -51,9 +51,12 @@ namespace ObjectModel
 			m_assembly = null;
 			
 			// Record all of the methods, fields, properties, etc.
-			string name = fullName;
-			while (name != null)
+			var names = new List<string>{fullName};
+			int i = 0;
+			while (i < names.Count)
 			{
+				string name = names[i++];
+				
 				TypeDefinition type = DoProcessType(assembly, name, name == fullName);
 				if (type == null)
 					if (name != fullName)
@@ -63,10 +66,18 @@ namespace ObjectModel
 						
 				if (original == null)
 					original = type;
+					
+				if (type.BaseType != null)
+				{
+					DoAddName(names, type.BaseType.FullName);
+					if (type.BaseType.FullName == "System.Object")
+						break;
+				}
 				
-				name = type.BaseType != null ? type.BaseType.FullName : null;
-				if ("System.Object" == name)			// note that we don't want to do this in the loop condition in case we are displaying System.Object
-					break;
+				foreach (TypeReference tr in type.Interfaces)
+				{
+					DoAddName(names, tr.FullName);
+				}
 			}
 			
 			// Write the type out.
@@ -136,6 +147,15 @@ namespace ObjectModel
 		}
 		
 		#region Private Methods
+		private void DoAddName(List<string> names, string name)
+		{
+			int i = name.IndexOf('<');
+			if (i > 0)
+				name = name.Substring(0, i);
+				
+			names.AddIfMissing(name);
+		}
+		
 		private TypeDefinition DoProcessType(int assembly, string fullName, bool includeCtors)
 		{
 			TypeDefinition type = null;

@@ -161,7 +161,14 @@ namespace AutoComplete
 			TimeSpan delta = DateTime.Now - m_lastTabTime;
 			if (range.location > 2 && delta.TotalSeconds < GetDblTime()/60.0 && range.location == m_lastTabIndex + 1)
 			{
-				handled = DoComplete(this.DoCompleteStem, view, range);
+				string text = m_boss.Get<IText>().Text;
+				char c1 = range.location >= 1 ? text[range.location - 1] : '\x00';
+				char c2 = range.location >= 2 ? text[range.location - 2] : '\x00';
+						
+				// DoUpdateCache is kind of slow so we want to avoid it if the user is just 
+				// typing a bunch of tabs.
+				if (c1 == '\t' && c2 != '\t')
+					handled = DoComplete(this.DoCompleteStem, view, range);
 			}
 			
 			m_lastTabTime = DateTime.Now;
