@@ -49,7 +49,10 @@ namespace App
 			var pool = NSAutoreleasePool.Create();
 			NSMutableDictionary dict = NSMutableDictionary.Create();
 			dict.setObject_forKey(NSNumber.Create(20), NSString.Create("NSRecentDocumentsLimit"));	// TODO: add a pref for this
-			m_boss.CallRepeated<IFactoryPrefs>(i => i.OnInitFactoryPref(dict));
+			foreach (IFactoryPrefs factory in m_boss.GetRepeated<IFactoryPrefs>())
+			{
+				factory.OnInitFactoryPref(dict);
+			}
 			NSUserDefaultsController.sharedUserDefaultsController().setInitialValues(dict);
 			NSUserDefaults.standardUserDefaults().registerDefaults(dict);	
 			Log.WriteLine(TraceLevel.Verbose, "Startup", "initialized default prefs");

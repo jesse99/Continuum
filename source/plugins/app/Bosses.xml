@@ -27,6 +27,7 @@
 		<Implementation interfaces = "IInterface +ITextContextCommands" name = "Spelling"/>
 		<Implementation interfaces = "IInterface +ITextContextCommands" name = "FindOnSites"/>
 		<Implementation interfaces = "IInterface +ITextContextCommands" name = "ScriptsMenu"/>
+		<Implementation interfaces = "IInterface +ITextContextCommands" name = "TimeMachine"/>
 	</Boss>
 	
 	<Boss name = "TextEditor">

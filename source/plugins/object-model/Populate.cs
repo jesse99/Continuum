@@ -609,7 +609,10 @@ namespace ObjectModel
 				AssemblyDefinition assembly = AssemblyCache.Load(path, true);
 				
 				Log.WriteLine(TraceLevel.Info, "ObjectModel", "parsing {0} {1} {2}", row["name"], row["culture"], row["version"]);
-				m_boss.CallRepeated<IParseAssembly>(i => i.Parse(path, assembly, row["assembly"], fullParse));
+				foreach (IParseAssembly parser in m_boss.GetRepeated<IParseAssembly>())
+				{
+					parser.Parse(path, assembly, row["assembly"], fullParse);
+				}
 				
 				m_database.Update("parsed", () =>
 				{

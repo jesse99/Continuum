@@ -54,7 +54,7 @@ namespace TextEditor
 			
 			m_textView.Value.Call("onOpened:", this);
 			
-			ActiveObjects.Add(this); 
+			ActiveObjects.Add(this);
 		}
 		
 		public void OnBroadcast(string name, object value)
@@ -197,8 +197,13 @@ namespace TextEditor
 		
 		public void Open()
 		{
+			Broadcaster.Invoke("opening document window", m_boss);
+			
 			window().makeKeyAndOrderFront(this);
 			m_textView.Value.layoutManager().setDelegate(this);
+				
+			Broadcaster.Invoke("opened document window", m_boss);
+			synchronizeWindowTitleWithDocumentName();		// bit of a hack, but we need something like this for IDocumentWindowTitle to work
 		}
 		
 		public NSTextView TextView
@@ -206,7 +211,7 @@ namespace TextEditor
 			get
 			{
 				Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
-			
+				
 				return m_textView.Value;
 			}
 		}
@@ -291,8 +296,22 @@ namespace TextEditor
 				return usingRect;
 		}
 		
+		public new NSString windowTitleForDocumentDisplayName(NSString displayName)
+		{
+			NSString result = displayName;
+			
+			if (m_boss.Has<IDocumentWindowTitle>())
+			{
+				var title = m_boss.Get<IDocumentWindowTitle>();
+				result = NSString.Create(title.GetTitle(displayName.ToString()));
+			}
+			
+			return result;
+		}
+		
 		public void windowWillClose(NSObject notification)
 		{
+			Broadcaster.Invoke("closing document window", m_boss);
 			m_closed= true;
 			
 			if (Path != null)
@@ -333,6 +352,8 @@ namespace TextEditor
 			m_textView.Value.layoutManager().setDelegate(null);
 			
 			autorelease();
+			NSApplication.sharedApplication().BeginInvoke(	// we only want to broadcast this once the window actually closed, but we don't get a notification for that...
+				() => Broadcaster.Invoke("closed document window", m_boss), TimeSpan.FromMilliseconds(250));
 		}
 		
 		public void openSelection(NSObject sender)
@@ -812,17 +833,13 @@ namespace TextEditor
 			
 			ILanguage language = null;
 			Boss boss = ObjectModel.Create("Stylers");
-			if (boss.Has<IFindLanguage>())
+			foreach (IFindLanguage find in boss.GetRepeated<IFindLanguage>())
 			{
-				var find = boss.Get<IFindLanguage>();
-				while (find != null && language == null)
+				Boss lboss = find.Find(fileName);
+				if (lboss != null)
 				{
-					Boss lboss = find.Find(fileName);
-					if (lboss != null)
-					{
-						language = lboss.Get<ILanguage>();
-					}
-					find = boss.GetNext<IFindLanguage>(find);
+					language = lboss.Get<ILanguage>();
+					break;
 				}
 			}
 			

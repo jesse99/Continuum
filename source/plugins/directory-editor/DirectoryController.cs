@@ -30,7 +30,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
-namespace DirectoryEditor	
+namespace DirectoryEditor
 {
 	// TODO: need to get the path menu when command-click in title bar
 	[ExportClass("DirectoryController", "NSWindowController", Outlets = "table targets build cancel prefsController")]
@@ -89,8 +89,11 @@ namespace DirectoryEditor
 //			m_watcher.Created += this.DoDirChanged;
 //			m_watcher.Deleted += this.DoDirChanged;
 //			m_watcher.Renamed += this.DoDirChanged;
-			
-			m_boss.CallRepeated<IOpened>(i => i.Opened());
+
+			foreach (IOpened open in m_boss.GetRepeated<IOpened>())
+			{
+				open.Opened();
+			}
 			Broadcaster.Invoke("opened directory", m_boss);
 			
 			ActiveObjects.Add(this);

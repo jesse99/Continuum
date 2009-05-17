@@ -127,6 +127,8 @@ namespace TextEditor
 			{
 				DoResetURL(url);
 				m_controller.OnPathChanged();
+				
+				Broadcaster.Invoke("document path changed", m_controller.Boss);
 			}
 		}
 		

@@ -48,7 +48,11 @@ namespace App
 		{
 			m_boss = ObjectModel.Create("Application");
 			Log.WriteLine(TraceLevel.Verbose, "Startup", "invoking IStartup");
-			m_boss.CallRepeated<IStartup>(i => i.OnStartup());
+			
+			foreach (IStartup start in m_boss.GetRepeated<IStartup>())
+			{
+				start.OnStartup();
+			}
 			
 			// Initialize the Sccs menu.
 			NSMenu menu = this["SccsMenu"].To<NSMenu>();
@@ -96,7 +100,10 @@ namespace App
 		
 		public void applicationWillTerminate(NSObject notification)
 		{
-			m_boss.CallRepeated<IShutdown>(i => i.OnShutdown());
+			foreach (IShutdown downer in m_boss.GetRepeated<IShutdown>())
+			{
+				downer.OnShutdown();
+			}
 			
 //			NSUserDefaults.standardUserDefaults().synchronize();
 

@@ -30,7 +30,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-namespace DirectoryEditor	
+namespace DirectoryEditor
 {
 	[Serializable]
 	public enum State {Opened, Building, Built, Canceled}
@@ -256,7 +256,10 @@ namespace DirectoryEditor
 			var errors = new List<BuildError>();
 			
 			Boss boss = ObjectModel.Create("Application");
-			boss.CallRepeated<IParseErrors>(parser => parser.Parse(text, errors));
+			foreach (IParseErrors parser in boss.GetRepeated<IParseErrors>())
+			{
+				parser.Parse(text, errors);
+			}
 			
 			var handler = boss.Get<IHandleBuildError>();
 			if (errors.Count == 0)
@@ -272,12 +275,12 @@ namespace DirectoryEditor
 			
 			foreach (string path in System.IO.Directory.GetFiles(dir))
 			{
-				boss.CallRepeated<ICanBuild>(can =>
+				foreach (ICanBuild can in boss.GetRepeated<ICanBuild>())
 				{
 					IBuilder b = can.GetBuilder(path);
 					if (b != null)
 						builders.Add(path, b);
-				});
+				}
 			}
 			
 			if (builders.Count > 1)	// TODO: probably better to popup an alert and return null

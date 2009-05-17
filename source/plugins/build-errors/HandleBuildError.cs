@@ -80,7 +80,10 @@ namespace BuildErrors
 		public void Close()
 		{
 			m_controller.window().orderOut(m_controller);
-			m_boss.CallRepeated<IDisplayBuildError>(i => i.Clear());
+			foreach (IDisplayBuildError display in m_boss.GetRepeated<IDisplayBuildError>())
+			{
+				display.Clear();
+			}
 		}
 		
 		public void Set(string dirPath, BuildError[] errors)
@@ -163,9 +166,19 @@ namespace BuildErrors
 			}
 			
 			if (path != null && error.Line > 0)
-				m_boss.CallRepeated<IDisplayBuildError>(i => i.Display(path, error.Line, error.Column, tabWidth));
+			{
+				foreach (IDisplayBuildError display in m_boss.GetRepeated<IDisplayBuildError>())
+				{
+					display.Display(path, error.Line, error.Column, tabWidth);
+				}
+			}
 			else
-				m_boss.CallRepeated<IDisplayBuildError>(i => i.Clear());
+			{
+				foreach (IDisplayBuildError display in m_boss.GetRepeated<IDisplayBuildError>())
+				{
+					display.Clear();
+				}
+			}
 		}
 		
 		private void DoUpdateLines(TextEdit edit)

@@ -42,16 +42,10 @@ namespace Shared
 			{
 				// Use a real sccs,
 				Boss boss = ObjectModel.Create("Sccs");
-				if (boss.Has<ISccs>())
+				foreach (ISccs candidate in boss.GetRepeated<ISccs>())
 				{
-					var candidate = boss.Get<ISccs>();
-					while (candidate != null)
-					{
-						if (candidate.Rename(oldPath, newPath))
-							return;
-						
-						candidate = boss.GetNext<ISccs>(candidate);
-					}
+					if (candidate.Rename(oldPath, newPath))
+						return;
 				}
 				
 				// or the fallback.
@@ -76,16 +70,10 @@ namespace Shared
 			{
 				// Use a real sccs,
 				Boss boss = ObjectModel.Create("Sccs");
-				if (boss.Has<ISccs>())
+				foreach (ISccs candidate in boss.GetRepeated<ISccs>())
 				{
-					var candidate = boss.Get<ISccs>();
-					while (candidate != null)
-					{
-						if (candidate.Duplicate(path))
-							return;
-						
-						candidate = boss.GetNext<ISccs>(candidate);
-					}
+					if (candidate.Duplicate(path))
+						return;
 				}
 				
 				// or the fallback.
@@ -109,14 +97,9 @@ namespace Shared
 			var commands = new Dictionary<string, string[]>();
 			
 			Boss boss = ObjectModel.Create("Sccs");
-			if (boss.Has<ISccs>())
+			foreach (ISccs sccs in boss.GetRepeated<ISccs>())
 			{
-				var sccs = boss.Get<ISccs>();
-				while (sccs != null)
-				{
-					commands.Add(sccs.Name, sccs.GetCommands());
-					sccs = boss.GetNext<ISccs>(sccs);
-				}
+				commands.Add(sccs.Name, sccs.GetCommands());
 			}
 			
 			// or the fallback.
@@ -136,14 +119,9 @@ namespace Shared
 			if (paths.Count() > 0)
 			{
 				Boss boss = ObjectModel.Create("Sccs");
-				if (boss.Has<ISccs>())
+				foreach (ISccs sccs in boss.GetRepeated<ISccs>())
 				{
-					var sccs = boss.Get<ISccs>();
-					while (sccs != null)
-					{
-						commands.Add(sccs.Name, sccs.GetCommands(paths));
-						sccs = boss.GetNext<ISccs>(sccs);
-					}
+					commands.Add(sccs.Name, sccs.GetCommands(paths));
 				}
 				
 				// or the fallback.
@@ -165,18 +143,12 @@ namespace Shared
 			{
 				// Use a real sccs,
 				Boss boss = ObjectModel.Create("Sccs");
-				if (boss.Has<ISccs>())
+				foreach (ISccs candidate in boss.GetRepeated<ISccs>())
 				{
-					var candidate = boss.Get<ISccs>();
-					while (candidate != null)
+					if (Array.IndexOf(candidate.GetCommands(), command) >= 0)
 					{
-						if (Array.IndexOf(candidate.GetCommands(), command) >= 0)
-						{
-							candidate.Execute(command, path);
-							return;
-						}
-						
-						candidate = boss.GetNext<ISccs>(candidate);
+						candidate.Execute(command, path);
+						return;
 					}
 				}
 				

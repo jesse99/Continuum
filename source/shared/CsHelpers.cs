@@ -58,22 +58,18 @@ namespace Shared
 			
 			string fileName = System.IO.Path.GetFileName(path);
 			
-			bool found = false;
-			
 			Boss boss = ObjectModel.Create("Stylers");
 			if (boss.Has<IFindLanguage>())
 			{
-				var find = boss.Get<IFindLanguage>();
-				while (find != null && !found)
+				foreach (IFindLanguage find in boss.GetRepeated<IFindLanguage>())
 				{
 					Boss language = find.Find(fileName);
-					found = language != null && language.Name == "CsLanguage";
-					
-					find = boss.GetNext<IFindLanguage>(find);
+					if (language != null && language.Name == "CsLanguage")
+						return true;
 				}
 			}
 			
-			return found;
+			return false;
 		}
 		
 		public static bool IsInterface(string name)

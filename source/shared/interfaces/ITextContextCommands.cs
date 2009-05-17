@@ -33,6 +33,11 @@ namespace Shared
 		{
 		}
 		
+		public TextContextItem(string name, float sortOrder)
+			: this(name, null, sortOrder, null)
+		{
+		}
+		
 		public TextContextItem(string name, Func<string, string> handler, float sortOrder)
 			: this(name, handler, sortOrder, null)
 		{
@@ -56,7 +61,8 @@ namespace Shared
 		public string Name {get; private set;}
 		
 		// The handler will be passed the original selection and can either return a new value
-		// which will replace the original selection or the input selection.
+		// which will replace the original selection or the input selection. If null the item is
+		// disabled.
 		public Func<string, string> Handler {get; private set;}
 		
 		// Lower values are placed towards the start of the menu. The standard commands
@@ -70,13 +76,16 @@ namespace Shared
 		// If not null this will be used for the menu item title. Note that this should be
 		// in the autorelease pool.
 		public NSAttributedString Title {get; private set;}
-
+		
+		// 1 = checked, 0 = unchecked
+		public int State {get; set;}
+		
 		public override string ToString()
 		{
 			return Name ?? "separator";
 		}
 	}
-
+	
 	// Repeated interface on TextEditorPlugin used to generate the context
 	// menu for text views.
 	public interface ITextContextCommands : IInterface
@@ -85,5 +94,5 @@ namespace Shared
 		// be null (if there is no selection) but will not be empty. Boss will be
 		// the directory editor boss.
 		void Get(Boss boss, string selection, List<TextContextItem> items);		
-	} 
+	}
 }

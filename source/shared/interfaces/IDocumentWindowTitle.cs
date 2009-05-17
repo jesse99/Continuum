@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Jesse Jones
+// Copyright (C) 2009 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -20,46 +20,16 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
-using Shared;
-using System;
-using System.Linq;
+using MCocoa;
 
-namespace TextEditor
+namespace Shared
 {
-	internal sealed class CanOpen : ICanOpen
+	// Optional interface which can be used to extend TextEditor bosses.
+	public interface IDocumentWindowTitle : IInterface
 	{
-		public void Instantiated(Boss boss)
-		{
-			m_boss = boss;
-		}
-		
-		public Boss Boss
-		{
-			get {return m_boss;}
-		}
-		
-		public bool Can(string fileName)
-		{
-			// See if the extension is one we want to handle.
-			// TODO: might want a rich-text language so users can have more
-			// control over this.
-			string ext = System.IO.Path.GetExtension(fileName);
-			if (ext == ".rtf")
-				return true;
-			
-			// See if the extension matches one of our languages.
-			Boss boss = ObjectModel.Create("Stylers");
-			foreach (IFindLanguage find in boss.GetRepeated<IFindLanguage>())
-			{
-				if (find.Find(fileName) != null)
-					return true;
-			}
-			
-			return false;
-		}
-		
-		#region Fields 
-		private Boss m_boss;
-		#endregion
+		// This is used to customize the window title for document windows.
+		// DisplayName will be the last path component under which the
+		// document is saved.
+		string GetTitle(string displayName);
 	}
 }

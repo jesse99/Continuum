@@ -157,6 +157,25 @@ namespace TextEditor
 			}
 		}
 		
+		public new bool validateUserInterfaceItem(NSObject item)
+		{
+			Selector sel = (Selector) item.Call("action");
+			
+			bool valid = false;
+			if (sel.Name == "processHandler:")
+			{
+				int i = item.Call("tag").To<int>();
+				item.Call("setState:", m_entries[i].State);
+				valid = m_entries[i].Handler != null;
+			}
+			else if (SuperCall("respondsToSelector:", new Selector("validateUserInterfaceItem:")).To<bool>())
+			{
+				valid = SuperCall("validateUserInterfaceItem:", item).To<bool>();
+			}
+			
+			return valid;
+		}
+		
 		// args[0] = text range, args[1] = text which will replace the range, args[2] = undo text
 		public void replaceSelection(NSArray args)
 		{
@@ -291,6 +310,11 @@ namespace TextEditor
 			public Func<string, string> Handler
 			{
 				get {return m_item.Handler;}
+			}
+			
+			public int State
+			{
+				get {return m_item.State;}
 			}
 			
 			public override bool Equals(object obj)
@@ -430,7 +454,7 @@ namespace TextEditor
 			Boss dirBoss = ((TextController) window().windowController()).GetDirEditorBoss();
 			
 			Boss boss = ObjectModel.Create("TextEditorPlugin");
-			boss.CallRepeated<ITextContextCommands>(i =>
+			foreach (ITextContextCommands i in boss.GetRepeated<ITextContextCommands>())
 			{
 				var items = new List<TextContextItem>();
 				i.Get(dirBoss, selection, items);
@@ -447,7 +471,7 @@ namespace TextEditor
 						++group;
 					}
 				}
-			});
+			}
 		}
 		
 		private int DoGetLineStart(NSString text, int index)
