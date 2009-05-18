@@ -130,7 +130,8 @@ namespace AutoComplete
 			DoFindType(name);
 			
 			if (m_fullName == null && !target.Contains("."))
-				DoFindType(context.DeclaringType.FullName + "/" + name);
+				if (context != null)
+					DoFindType(context.DeclaringType.FullName + "/" + name);
 			
 			for (int i = 0; i < globals.Namespaces.Length && m_fullName == null; ++i)
 			{

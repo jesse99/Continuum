@@ -253,7 +253,7 @@ namespace Subversion
 			
 			Boss boss = ObjectModel.Create("FileSystem");
 			var fs = boss.Get<IFileSystem>();
-			string file = fs.GetTempFile("svn blame " + Path.GetFileName(path), ".txt");
+			string file = fs.GetTempFile(Path.GetFileNameWithoutExtension(path), ".svn-blame");
 			
 			using (StreamWriter writer = new StreamWriter(file))
 			{
@@ -273,7 +273,7 @@ namespace Subversion
 			
 			Boss boss = ObjectModel.Create("FileSystem");
 			var fs = boss.Get<IFileSystem>();
-			string file = fs.GetTempFile("svn cat " + Path.GetFileName(path), Path.GetExtension(path));
+			string file = fs.GetTempFile(Path.GetFileNameWithoutExtension(path) + " (HEAD)", Path.GetExtension(path));
 			
 			using (StreamWriter writer = new StreamWriter(file))
 			{
@@ -307,7 +307,7 @@ namespace Subversion
 			
 			Boss boss = ObjectModel.Create("FileSystem");
 			var fs = boss.Get<IFileSystem>();
-			string file = fs.GetTempFile("svn diff " + Path.GetFileName(path), ".diff");
+			string file = fs.GetTempFile(Path.GetFileNameWithoutExtension(path), ".diff");
 			
 			using (StreamWriter writer = new StreamWriter(file))
 			{
@@ -360,7 +360,7 @@ namespace Subversion
 			
 			Boss boss = ObjectModel.Create("FileSystem");
 			var fs = boss.Get<IFileSystem>();
-			string file = fs.GetTempFile("svn log " + Path.GetFileName(path), ".txt");
+			string file = fs.GetTempFile(Path.GetFileNameWithoutExtension(path), ".svn-log");
 			
 			using (StreamWriter writer = new StreamWriter(file))
 			{
@@ -381,7 +381,7 @@ namespace Subversion
 			if (newName != null && newName != oldName)
 			{
 				string oldDir = Path.GetDirectoryName(path);
-				string newPath = Path.Combine(oldDir, newName); 
+				string newPath = Path.Combine(oldDir, newName);
 				
 				var result = DoCommand("move '{0}' '{1}'", path, newPath);
 				if (!string.IsNullOrEmpty(result.Second))

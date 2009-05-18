@@ -843,16 +843,8 @@ namespace TextEditor
 				}
 			}
 			
+			m_language = language;
 			((DeclarationsPopup) m_decPopup.Value).Init(this);
-			
-			if (m_language == null)
-			{
-				m_language = language;
-			}
-			else if (m_language != language)
-			{
-				m_language = language;
-			}
 		}
 		
 		// This is retarded, but showFindIndicatorForRange only works if the window is

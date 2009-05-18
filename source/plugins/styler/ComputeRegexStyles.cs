@@ -117,7 +117,7 @@ namespace Styler
 			var runs = new List<StyleRun>();
 			var sw = language.SafeBoss().Get<IStyleWith>();
 			DoRegexMatch(text, sw.Language, runs);
-			Log.WriteLine(TraceLevel.Verbose, "Styler", "computed runs for {0} edit {1}", System.IO.Path.GetFileName(path), edit);
+			Log.WriteLine(TraceLevel.Verbose, "Styler", "computed {0} runs for {1} edit {2}", runs.Count, System.IO.Path.GetFileName(path), edit);
 			
 			var data = new StyleRuns(language.SafeBoss(), path, edit, runs.ToArray());
 			

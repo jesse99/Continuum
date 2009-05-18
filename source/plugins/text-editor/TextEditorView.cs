@@ -241,7 +241,7 @@ namespace TextEditor
 					if (m_entries[i].Name == null && m_entries[i - 1].Name == null)
 						m_entries.RemoveAt(i);
 				}
-				if (m_entries[0].Name == null)
+				if (m_entries.Count > 0 && m_entries[0].Name == null)
 					m_entries.RemoveAt(0);
 				
 				// Build the menu.

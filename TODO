@@ -24,29 +24,16 @@ sudo fs_usage -f filesys
 
 http://macosx.com/forums/archive/t-299331.html
 
-Call<T>()?
-fields
+ Log.WriteLine("App", "path changed to {0}", Path);
 
-nant
-	monoobj
-	extra binaries
-use the app bundle name in the launcher script
-update wrapping section on the wiki
-docs
-
-* Does auto-complete work with abstract parsed methods?
-* Does auto-complete work with abstract database methods?
-* Make a new foreshadow.
-* Do something similar with svn diff and cat.
-* Why does TODO styling sometimes flake out?
-* Add a get info command. Maybe an inspector.
-	- would this show method info?
-	- use html?
-	- could maybe use links to goto source files
+* Why does TODO styling sometimes flake out?  
 * Allow files and asemblies to be disasembled:
-	- might want to look at MonoDevelop's version
-	- maybe a double that goes down to methods
-	- can double click or get info on anything
+	- should be able to right click a dll/exe or open it
+	- have a list view with all the types/members
+	- double click on a member pops up a window with the il for that member
+	- should be able to Get Info for everything in the list view, maybe with an
+	  inspector window
+	- make sure something reasonable happens if a non-.net exe is opened
 	- add support for disassemble method (and maybe type)
 	- if method is in more than one local assembly display a picker
 	- start with the assembly built last selected
@@ -54,6 +41,10 @@ docs
 * Fix dir editor so it doesn't collapse child dirs when an item changes.
 * After duplicating directory items select the new item(s).
 * Make sure spelling and grammar menu works OK.
+* Add support for building with nant:
+	- make sure Monobj examples can be built
+	- might need an extra binaries project pref for builders who drop the binaries in
+	  weird places
 * Might want to display a picker if the user selects an ellipsis from a context menu.
 * Review thread safety
 * Enter should add snippets:

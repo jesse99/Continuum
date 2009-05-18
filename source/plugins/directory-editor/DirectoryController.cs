@@ -538,9 +538,12 @@ namespace DirectoryEditor
 			defaults.setObject_forKey(NSString.Create(value), NSString.Create(key));
 			
 			// default target
-			key = Path + "-defaultTarget";
-			value = m_builder.Target;
-			defaults.setObject_forKey(NSString.Create(value), NSString.Create(key));
+			if (m_builder.Target != null)
+			{
+				key = Path + "-defaultTarget";
+				value = m_builder.Target;
+				defaults.setObject_forKey(NSString.Create(value), NSString.Create(key));
+			}
 		}
 		
 		private void DoLoadPrefs(string path)

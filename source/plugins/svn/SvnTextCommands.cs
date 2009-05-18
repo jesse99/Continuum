@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Jesse Jones
+// Copyright (C) 2008-2009 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -97,10 +97,10 @@ namespace Subversion
 			return null;
 		}
 		#endregion
-
+		
 		#region Fields
-		private Boss m_boss; 
-		private readonly string[] m_candidates = new string[]{"Svn add", "Svn diff", "Svn log", "Svn revert"};
+		private Boss m_boss;
+		private readonly string[] m_candidates = new string[]{"Svn add", "Svn cat", "Svn diff", "Svn log", "Svn revert"};
 		#endregion
-	} 
+	}
 }
