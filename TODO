@@ -34,9 +34,6 @@ use the app bundle name in the launcher script
 update wrapping section on the wiki
 docs
 
-* Args weren't completing inside the Fuum ctor.
-* Fuum f; f. doesn't complete.
-* Nested classes don't complete? E.g. Boss::State also TimeMachine::Backup.
 * Does auto-complete work with abstract parsed methods?
 * Does auto-complete work with abstract database methods?
 * Make a new foreshadow.

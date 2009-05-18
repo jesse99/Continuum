@@ -42,7 +42,7 @@ namespace AutoComplete
 		}
 		
 		// May return null.
-		public ResolvedTarget Resolve(string type, CsGlobalNamespace globals, bool isInstance, bool isStatic)
+		public ResolvedTarget Resolve(string type, CsMember context, CsGlobalNamespace globals, bool isInstance, bool isStatic)
 		{
 			Contract.Requires(!string.IsNullOrEmpty(type), "type is null or empty");
 			Profile.Start("ResolveType::Resolve1");
@@ -66,7 +66,7 @@ namespace AutoComplete
 			type = DoGetTypeName(type);
 			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "used type: {0}", type);
 			
-			DoResolve(globals, type);
+			DoResolve(globals, type, context);
 			if (m_fullName != null || m_type != null)
 				result = new ResolvedTarget(m_fullName, m_type, isInstance, isStatic);
 			
@@ -119,7 +119,7 @@ namespace AutoComplete
 		}
 		
 		#region Private Methods
-		private void DoResolve(CsGlobalNamespace globals, string target)
+		private void DoResolve(CsGlobalNamespace globals, string target, CsMember context)
 		{
 			string name = target;
 			name = DoGetTypeName(name);
@@ -128,6 +128,9 @@ namespace AutoComplete
 			m_fullName = null;
 			m_type = null;
 			DoFindType(name);
+			
+			if (m_fullName == null && !target.Contains("."))
+				DoFindType(context.DeclaringType.FullName + "/" + name);
 			
 			for (int i = 0; i < globals.Namespaces.Length && m_fullName == null; ++i)
 			{

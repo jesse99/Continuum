@@ -62,7 +62,7 @@ namespace AutoComplete
 				string[] operands = DoGetOperands(expr);
 		
 				int first = 0;
-				result = DoGetOperandType(operands, ref first);
+				result = DoGetOperandType(context, operands, ref first);
 				Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "operand type: {0}", result);
 				
 				for (int i = first; i < operands.Length; ++i)
@@ -84,7 +84,7 @@ namespace AutoComplete
 		
 		#region Private Methods
 		// Handle cases like `System.String.Empty.`.
-		private ResolvedTarget DoGetOperandType(string[] operands, ref int first)
+		private ResolvedTarget DoGetOperandType(CsMember context, string[] operands, ref int first)
 		{
 			ResolvedTarget result = null;
 			
@@ -93,7 +93,7 @@ namespace AutoComplete
 			while (i < operands.Length - 1)
 			{
 				type += type.Length == 0 ? operands[i] : ("." + operands[i]);
-				ResolvedTarget candidate = m_typeResolver.Resolve(type, m_globals, false, true);;
+				ResolvedTarget candidate = m_typeResolver.Resolve(type, context, m_globals, false, true);;
 				++i;
 				if (candidate != null)
 				{
@@ -269,7 +269,7 @@ namespace AutoComplete
 					{
 						if (items.All(m => m.Type == items.First().Type))
 						{
-							result = m_typeResolver.Resolve(items.First().Type, m_globals, true, false);
+							result = m_typeResolver.Resolve(items.First().Type, context, m_globals, true, false);
 						}
 						else
 						{

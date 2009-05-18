@@ -40,6 +40,7 @@ namespace AutoComplete
 			m_typeResolver = new ResolveType(database);
 			m_globals = globals;
 			m_offset = offset;
+			m_context = context;
 			
 #if TEST
 			m_locals = new CsParser.LocalsParser();
@@ -49,7 +50,7 @@ namespace AutoComplete
 #endif
 			
 			m_member = DoFindMember(m_globals);
-			m_variables = DoGetVariables(context, text, locals);
+			m_variables = DoGetVariables(text, locals);
 			Profile.Stop("ResolveName::ctor");
 		}
 				
@@ -94,7 +95,7 @@ namespace AutoComplete
 			if (result == null)
 			{
 				Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "trying type name");
-				result = m_typeResolver.Resolve(name, m_globals, false, true);
+				result = m_typeResolver.Resolve(name, m_context, m_globals, false, true);
 			}
 			
 			// char literal (we don't complete integers because it's too annoying for the common case
@@ -104,7 +105,7 @@ namespace AutoComplete
 				if (name.Length >= 2 && name[0] == '\'' && name.Last() == '\'')
 				{
 					Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "trying char literal name");
-					result = m_typeResolver.Resolve("System.Char", m_globals, true, false);
+					result = m_typeResolver.Resolve("System.Char", m_context, m_globals, true, false);
 				}
 			}
 				
@@ -114,7 +115,7 @@ namespace AutoComplete
 				if (name.Length >= 2 && name[0] == '"' && name.Last() == '"')
 				{
 					Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "trying string literal name");
-					result = m_typeResolver.Resolve("System.String", m_globals, true, false);
+					result = m_typeResolver.Resolve("System.String", m_context, m_globals, true, false);
 				}
 			}
 			
@@ -127,7 +128,7 @@ namespace AutoComplete
 		#region Private Methods
 		// This is a bit overkill if all we want to do is identify the name, but we also
 		// need this info to do expression completion.
-		private Variable[] DoGetVariables(CsMember context, string text, ICsLocalsParser locals)
+		private Variable[] DoGetVariables(string text, ICsLocalsParser locals)
 		{
 			var vars = new List<Variable>();
 			
@@ -181,11 +182,11 @@ namespace AutoComplete
 			// case of a property named after a type resolves to the property instead of the type)
 			if (m_member != null && m_member.DeclaringType != null)
 			{
-				ResolvedTarget target = m_typeResolver.Resolve(m_member.DeclaringType.FullName, m_globals, true, true);
+				ResolvedTarget target = m_typeResolver.Resolve(m_member.DeclaringType.FullName, m_context, m_globals, true, true);
 				if (target != null)
 				{
 					var resolveMembers = new ResolveMembers(m_database);
-					Item[] items = resolveMembers.Resolve(context, target, m_globals);
+					Item[] items = resolveMembers.Resolve(m_context, target, m_globals);
 					foreach (Item item in items)
 					{
 						if (!(item is MethodItem))
@@ -259,7 +260,7 @@ namespace AutoComplete
 				{
 					string[] bases = m_member.DeclaringType.Bases.Names;
 					string b = (bases.Length > 0 && !CsHelpers.IsInterface(bases[0])) ? bases[0] : "System.Object";
-					result = m_typeResolver.Resolve(b, m_globals, true, false);
+					result = m_typeResolver.Resolve(b, m_context, m_globals, true, false);
 				}
 			}
 			
@@ -314,7 +315,7 @@ namespace AutoComplete
 					}
 					else
 					{
-						result = m_typeResolver.Resolve(type, m_globals, true, false);
+						result = m_typeResolver.Resolve(type, m_context, m_globals, true, false);
 					}
 				}
 			}
@@ -425,16 +426,24 @@ namespace AutoComplete
 				member = DoFindMember(ns.Namespaces[i]);
 			}
 			
-			for (int i = 0; i < ns.Types.Length && member == null; ++i)
+			var types = new List<CsType>();
+			types.AddRange(ns.Types);
+			
+			int j = 0;
+			while (j < types.Count && member == null)
 			{
-				CsType type = ns.Types[i];
-				
-				for (int j = 0; j < type.Members.Length && member == null; ++j)
+				CsType type = types[j++];
+					
+				for (int k = 0; k < type.Members.Length && member == null; ++k)
 				{
-					CsMember candidate = type.Members[j];
+					CsMember candidate = type.Members[k];
 					if (candidate.Offset <= m_offset && m_offset < candidate.Offset + candidate.Length)
+					{
 						member = candidate;
+					}
 				}
+				
+				types.AddRange(type.Types);
 			}
 			
 			return member;
@@ -449,6 +458,7 @@ namespace AutoComplete
 		private int m_offset;
 		private CsMember m_member;
 		private CsGlobalNamespace m_globals;
+		private CsMember m_context;
 		
 		private Regex ms_getRE = new Regex(@"\w+ \s* \. \s* Get \s* < \s* (\w+) \s* > \s* \( \s* \)", RegexOptions.IgnorePatternWhitespace);
 		#endregion
