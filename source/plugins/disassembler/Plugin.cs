@@ -1,4 +1,4 @@
-// Copyright (C) 2008-2009 Jesse Jones
+// Copyright (C) 2009 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -20,13 +20,30 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using System;
+using System.IO;
+using System.Reflection;
 
-namespace Shared
+namespace Disassembler
 {
-	// Repeated interface on the Application boss used to determine if the
-	// file can be opened as a Continuum document.
-	public interface ICanOpen : IInterface
+	[Plugin]
+	public static class Plugin
 	{
-		bool Can(string fileName);
+		public static void OnLoaded()
+		{
+			DoInitObjectModel();
+		}
+		
+		private static void DoInitObjectModel()
+		{
+			string loc = Assembly.GetExecutingAssembly().Location;
+			string root = Path.GetDirectoryName(loc);
+			string path = Path.Combine(root, "Bosses.xml");
+			
+			using (StreamReader reader = new StreamReader(path))
+			{
+				XmlModel.Read(reader.BaseStream);
+			}
+		}
 	}
 }

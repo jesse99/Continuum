@@ -1,0 +1,5 @@
+<Bosses namespaces = "Gear Shared Disassembler">
+	<Extend name = "Application">
+		<Implementation interfaces = "IInterface +ICanOpen" name = "CanOpen"/>
+	</Extend>
+</Bosses>

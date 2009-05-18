@@ -2,11 +2,11 @@
 	<Extend name = "Application">
 		<Implementation interfaces = "IInterface +IFactoryPrefs" name = "FactoryPrefs"/>
 		<Implementation interfaces = "IInterface +IDisplayBuildError" name = "DisplayError"/>
+		<Implementation interfaces = "IInterface +ICanOpen" name = "CanOpen"/>
 	</Extend>
 	
 	<Extend name = "TextEditorPlugin">
 		<Implementation interfaces = "IWindows" name = "Windows"/>
-		<Implementation interfaces = "ICanOpen" name = "CanOpen"/>
 		<Implementation interfaces = "ITextEncoding" name = "TextEncoding"/>
 		<Implementation interfaces = "IOpenSelection" name = "OpenSelection"/>
 		<Implementation interfaces = "IUnicodeName" name = "UnicodeName"/>

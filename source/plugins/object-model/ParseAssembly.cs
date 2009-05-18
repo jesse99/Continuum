@@ -331,7 +331,7 @@ namespace ObjectModel
 					var location = DoGetSourceAndLine(method);
 				
 					string extendName = string.Empty;
-					if (method.IsPublic && DoHasExtensionAtribute(method.CustomAttributes))
+					if (method.IsPublic && method.IsExtension())
 					{
 						if (method.Parameters[0].ParameterType.IsSpecial())
 						{
@@ -509,26 +509,14 @@ namespace ObjectModel
 			// arg-types
 			if (method.HasParameters)
 			{
-				bool isExtension = DoHasExtensionAtribute(method.CustomAttributes);
 				for (int i = 0; i < method.Parameters.Count; ++i)
 				{
+					text.Append(method.GetParameterModifier(i));
+					
 					ParameterDefinition p = method.Parameters[i];
-					
-					if (isExtension && i == 0)
-						text.Append("this ");
-					
-					if (DoIsParams(p))
-						text.Append("params ");
-					
 					string typeName = p.ParameterType.FullName;
 					if (typeName.EndsWith("&"))
-					{
-						if (p.IsOut)
-							text.Append("out ");
-						else
-							text.Append("ref ");
 						typeName = typeName.Remove(typeName.Length - 1);
-					}
 					text.Append(DoGetDisplayType(typeName));
 					
 					if (i + 1 < method.Parameters.Count)
@@ -927,34 +915,6 @@ namespace ObjectModel
 				
 				else if (fullName == "System.Runtime.CompilerServices.CompilerGeneratedAttribute")
 					return true;
-			}
-			
-			return false;
-		}
-		
-		[ThreadModel(ThreadModel.SingleThread)]
-		private bool DoHasExtensionAtribute(CustomAttributeCollection attrs)	// theaded
-		{
-			foreach (CustomAttribute attr in attrs)
-			{
-				string fullName = attr.Constructor.DeclaringType.FullName;
-				if (fullName == "System.Runtime.CompilerServices.ExtensionAttribute")
-					return true;
-			}
-			
-			return false;
-		}
-		
-		[ThreadModel(ThreadModel.SingleThread)]
-		private bool DoIsParams(ParameterDefinition param)
-		{
-			if (param.HasCustomAttributes)
-			{
-				foreach (CustomAttribute a in param.CustomAttributes)
-				{
-					if (a.Constructor.DeclaringType.Name == "ParamArrayAttribute")
-						return true;
-				}
 			}
 			
 			return false;

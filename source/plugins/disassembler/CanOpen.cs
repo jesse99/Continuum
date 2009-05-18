@@ -1,4 +1,4 @@
-// Copyright (C) 2008-2009 Jesse Jones
+// Copyright (C) 2009 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -20,13 +20,33 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using Shared;
+using System;
+//using System.Linq;
 
-namespace Shared
+namespace Disassembler
 {
-	// Repeated interface on the Application boss used to determine if the
-	// file can be opened as a Continuum document.
-	public interface ICanOpen : IInterface
+	internal sealed class CanOpen : ICanOpen
 	{
-		bool Can(string fileName);
+		public void Instantiated(Boss boss)
+		{
+			m_boss = boss;
+		}
+		
+		public Boss Boss
+		{
+			get {return m_boss;}
+		}
+		
+		public bool Can(string fileName)
+		{
+			string ext = System.IO.Path.GetExtension(fileName);
+			
+			return ext == ".exe" || ext == ".dll";
+		}
+		
+		#region Fields 
+		private Boss m_boss;
+		#endregion
 	}
 }

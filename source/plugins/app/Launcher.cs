@@ -46,9 +46,7 @@ namespace App
 		{
 			try
 			{
-				Boss boss = ObjectModel.Create("TextEditorPlugin");
-				var can = boss.Get<ICanOpen>();
-				if (can.Can(System.IO.Path.GetFileName(path)))
+				if (DoCanOpen(path))
 				{
 					NSError err;
 					NSURL url = NSURL.fileURLWithPath(NSString.Create(path));
@@ -64,7 +62,7 @@ namespace App
 				}
 				else
 				{
-					boss = ObjectModel.Create("FileSystem");
+					Boss boss = ObjectModel.Create("FileSystem");
 					var fs = boss.Get<IFileSystem>();
 					fs.Launch(path);
 				}
@@ -81,9 +79,7 @@ namespace App
 		{
 			try
 			{
-				Boss boss = ObjectModel.Create("TextEditorPlugin");
-				var can = boss.Get<ICanOpen>();
-				if (can.Can(System.IO.Path.GetFileName(path)))
+				if (DoCanOpen(path))
 				{
 					NSError err;
 					NSURL url = NSURL.fileURLWithPath(NSString.Create(path));
@@ -98,7 +94,7 @@ namespace App
 				}
 				else
 				{
-					boss = ObjectModel.Create("FileSystem");
+					Boss boss = ObjectModel.Create("FileSystem");
 					var fs = boss.Get<IFileSystem>();
 					fs.Launch(path);
 				}
@@ -112,6 +108,20 @@ namespace App
 		}
 		
 		#region Private Methods
+		private bool DoCanOpen(string path)
+		{
+			string fileName = Path.GetFileName(path);
+			
+			Boss boss = ObjectModel.Create("Application");
+			foreach (var can in boss.GetRepeated<ICanOpen>())
+			{
+				if (can.Can(fileName))
+					return true;
+			}
+			
+			return false;
+		}
+		
 		private void DoSetSelection(string path, NSRange selection)
 		{
 			Boss boss = ObjectModel.Create("TextEditorPlugin");

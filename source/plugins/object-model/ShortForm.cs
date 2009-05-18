@@ -574,7 +574,7 @@ namespace ObjectModel
 				builder.Append(name);
 				if (method.HasGenericParameters)
 					DoGetGenericParams(builder, method.GenericParameters);
-				DoGetParams(builder, method.Parameters);
+				DoGetParams(builder, method);
 				
 				DoAdd(m_ctors, new Member(name, method.Attributes & MethodAttributes.MemberAccessMask, builder.ToString()));
 			}
@@ -655,7 +655,7 @@ namespace ObjectModel
 				builder.AppendFormat(" {0}", name);
 				if (method.HasGenericParameters)
 					DoGetGenericParams(builder, method.GenericParameters);
-				DoGetParams(builder, method.Parameters);
+				DoGetParams(builder, method);
 				
 				if (method.IsStatic)
 					if (method.Name.StartsWith("op"))
@@ -807,44 +807,26 @@ namespace ObjectModel
 			}
 		}
 		
-		private void DoGetParams(StringBuilder builder, ParameterDefinitionCollection pc)
+		private void DoGetParams(StringBuilder builder, MethodDefinition method)
 		{
 			if (m_addSpace)
 				builder.Append(" (");
 			else
 				builder.Append("(");
-			for (int i = 0; i < pc.Count; ++i)
+			for (int i = 0; i < method.Parameters.Count; ++i)
 			{
-				ParameterDefinition param = pc[i];
+				builder.Append(method.GetParameterModifier(i));
 				
-				if (param.HasCustomAttributes)
-				{
-					foreach (CustomAttribute a in param.CustomAttributes)
-					{
-						if (a.Constructor.DeclaringType.Name == "ParamArrayAttribute")
-						{
-							builder.Append("params ");
-							break;
-						}
-					}
-				}
-				
+				ParameterDefinition param = method.Parameters[i];
 				string tname = DoGetQualifiedTypeName(param.ParameterType, true);
 				if (tname.EndsWith("&"))
-				{
-					if (param.IsOut)
-						builder.Append("out ");
-					else
-						builder.Append("ref ");
-					
 					tname = tname.Remove(tname.Length - 1);
-				}
 				
 				builder.Append(tname);
 				builder.Append(" ");
 				builder.Append(param.Name);
 				
-				if (i + 1 < pc.Count)
+				if (i + 1 < method.Parameters.Count)
 					builder.Append(", ");
 			}
 			builder.Append(");");

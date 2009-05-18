@@ -24,20 +24,25 @@ sudo fs_usage -f filesys
 
 http://macosx.com/forums/archive/t-299331.html
 
- Log.WriteLine("App", "path changed to {0}", Path);
-
-* Why does TODO styling sometimes flake out?  
 * Allow files and asemblies to be disasembled:
-	- should be able to right click a dll/exe or open it
-	- have a list view with all the types/members
 	- double click on a member pops up a window with the il for that member
+	- make sure nested types work correctly (they're in globals atm)
+	- doc needs to release the items
+	- items need to release their children (or maybe use an NSArray)
 	- should be able to Get Info for everything in the list view, maybe with an
 	  inspector window
-	- make sure something reasonable happens if a non-.net exe is opened
+	- make sure get info has stuff like AssemblyTitle and AssemblyDescription
+	- probably should be able to double click a type to popup a type browser
+	- can we use command click in window title to go up?
+	- remember window positions
+	- make sure disassembly objects go away
+	- might be neat if il opcodes had get info support
 	- add support for disassemble method (and maybe type)
 	- if method is in more than one local assembly display a picker
 	- start with the assembly built last selected
+* Autocomplete doesn't seem to work with stuff like fields when the context is a getter.
 * Binary viewer (or editor?).
+* Add a resources section to the disassembler.
 * Fix dir editor so it doesn't collapse child dirs when an item changes.
 * After duplicating directory items select the new item(s).
 * Make sure spelling and grammar menu works OK.

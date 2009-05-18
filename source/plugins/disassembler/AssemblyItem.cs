@@ -1,4 +1,4 @@
-// Copyright (C) 2008-2009 Jesse Jones
+// Copyright (C) 2009 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -19,14 +19,25 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-using Gear;
+using MCocoa;
+using MObjc;
+using Shared;
+using System;
 
-namespace Shared
+namespace Disassembler
 {
-	// Repeated interface on the Application boss used to determine if the
-	// file can be opened as a Continuum document.
-	public interface ICanOpen : IInterface
+	// Base class for items that can appear in the disassembly outline view.
+	[ExportClass("AssemblyItem", "NSObject")]
+	internal abstract class AssemblyItem : NSObject
 	{
-		bool Can(string fileName);
+		protected AssemblyItem(IntPtr instance) : base(instance)
+		{
+		}
+		
+		public abstract string Label {get;}
+		
+		public abstract int ChildCount {get;}
+		
+		public abstract AssemblyItem GetChild(int index);
 	}
 }

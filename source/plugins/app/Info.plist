@@ -36,6 +36,26 @@
 		</dict>
 		
 		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>exe</string>
+				<string>dll</string>
+			</array>
+			
+			<key>CFBundleTypeName</key>
+			<string>Assembly</string>
+			
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			
+			<key>NSDocumentClass</key>
+			<string>AssemblyDocument</string>
+		</dict>
+		
+		<dict>
 			<key>CFBundleTypeName</key>
 			<string>Plain Text, UTF16 Encoded</string>
 			
