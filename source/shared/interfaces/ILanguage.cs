@@ -32,6 +32,10 @@ namespace Shared
 		// Normally "CsLanguage" or "RegexLanguage".
 		string Name {get;}
 		
+		// First tab stop to be used in documents with this language. Note that
+		// the units this is expressed in is the default tab interval.
+		int InitialTab {get;}
+		
 		// Returns true if the language supports showing leading/trailing tabs and
 		// spaces.
 		bool StylesWhitespace {get;}

@@ -4,10 +4,10 @@
 			Schema for Continuum language files.
 		</xsd:documentation>
 	</xsd:annotation>
-
+	
 	<!-- root element -->
 	<xsd:element name="Language" type="LanguageType"/>
-
+	
 	<!-- All of the strings are .NET regular expressions. See http://msdn.microsoft.com/en-us/library/az24scfc(vs.71).aspx
 	and http://blogs.msdn.com/bclteam/archive/2005/03/15/396452.aspx for details. The regexen 
 	use the following options: Multiline | IgnorePatternWhitespace. 
@@ -27,6 +27,7 @@
 			<xsd:element name="member" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
 		</xsd:sequence>
 		<xsd:attribute name="name" type="xsd:string" use="required"/>
+		<xsd:attribute name="initial_tab" type="xsd:integer" default="0"/>
 		<xsd:attribute name="ignore_whitespace" type="xsd:boolean" default="false"/>
 	</xsd:complexType>
 </xsd:schema>

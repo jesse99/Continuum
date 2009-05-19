@@ -221,6 +221,11 @@ namespace TextEditor
 			get {return m_language != null ? m_language.Name : null;}
 		}
 		
+		public int InitialTab
+		{
+			get {return m_language != null ? m_language.InitialTab : 0;}
+		}
+		
 		public Boss GetDirEditorBoss()
 		{
 			Boss boss = ObjectModel.Create("DirectoryEditorPlugin");
@@ -845,6 +850,7 @@ namespace TextEditor
 			
 			m_language = language;
 			((DeclarationsPopup) m_decPopup.Value).Init(this);
+			m_applier.ResetTabs();
 		}
 		
 		// This is retarded, but showFindIndicatorForRange only works if the window is

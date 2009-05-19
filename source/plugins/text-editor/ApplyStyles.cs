@@ -34,13 +34,6 @@ namespace TextEditor
 	// Handles all of the styling for text views.
 	internal sealed class ApplyStyles : IObserver
 	{
-		static ApplyStyles()
-		{
-			ms_tabObserver = new ObserverTrampoline(ApplyStyles.DoResetTabStops);
-			Broadcaster.Register("tab stops changed-pre", ms_tabObserver);
-			DoResetTabStops("tab stops changed-pre", null);
-		}
-		
 		public ApplyStyles(TextController controller, NSTextView text)
 		{
 			Contract.Requires(text.textStorage().layoutManagers().count() == 1, "expected one layout not " + text.textStorage().layoutManagers().count());
@@ -58,9 +51,17 @@ namespace TextEditor
 			
 			if (ms_selectedLineColor == null)
 				DoSetTempAttrs();
+			
+			DoResetTabStops();
 			DoApplyParagraphStyles(true);
 			
 			ActiveObjects.Add(this);
+		}
+		
+		public void ResetTabs()
+		{
+			DoResetTabStops();
+			DoApplyParagraphStyles(true);
 		}
 		
 		public void OnBroadcast(string name, object value)
@@ -68,6 +69,7 @@ namespace TextEditor
 			switch (name)
 			{
 				case "tab stops changed":
+					DoResetTabStops();
 					DoApplyParagraphStyles((bool) value);
 					break;
 					
@@ -152,16 +154,20 @@ namespace TextEditor
 			}
 		}
 		
-		private static void DoResetTabStops(string name, object value)
+		private void DoResetTabStops()
 		{
 			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
-			float stops = defaults.floatForKey(NSString.Create("tab stops"));
-			
 			NSMutableParagraphStyle style = NSMutableParagraphStyle.Create();
-			style.setTabStops(NSMutableArray.Create());
+			
+			float stops = defaults.floatForKey(NSString.Create("tab stops"));
 			style.setDefaultTabInterval(stops);
 			
-			ms_paragraphAttrs.setObject_forKey(style, Externs.NSParagraphStyleAttributeName);
+			float initial = m_controller.InitialTab*stops;
+	Console.WriteLine("initial: {0}", initial);
+			NSObject tab = NSTextTab.Alloc().initWithType_location(Enums.NSLeftTabStopType, initial);
+			style.setTabStops(NSMutableArray.Create(tab));
+			
+			m_paragraphAttrs.setObject_forKey(style, Externs.NSParagraphStyleAttributeName);
 		}
 		
 		private void DoApplyParagraphStyles(bool commit)
@@ -169,7 +175,7 @@ namespace TextEditor
 			if (commit)
 			{
 				NSRange range = new NSRange(0, (int) m_storage.length());
-				m_storage.addAttributes_range(ms_paragraphAttrs, range);
+				m_storage.addAttributes_range(m_paragraphAttrs, range);
 			}
 		}
 		
@@ -209,11 +215,10 @@ namespace TextEditor
 		private CurrentStyles m_current;
 		private NSRange m_lineRange;
 		private NSRange m_errorRange;
+		private NSMutableDictionary m_paragraphAttrs = NSMutableDictionary.Create().Retain();
 		
-		private static ObserverTrampoline ms_tabObserver;
 		private static NSColor ms_selectedLineColor;
 		private static NSColor ms_errorColor;
-		private static NSMutableDictionary ms_paragraphAttrs = NSMutableDictionary.Create().Retain();
 		#endregion
 	}
 }

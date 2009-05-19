@@ -43,6 +43,11 @@ namespace Styler
 			get {return "CsLanguage";}
 		}
 		
+		public int InitialTab
+		{
+			get {return m_language.InitialTab;}
+		}
+		
 		public bool StylesWhitespace
 		{
 			get {return m_language != null ? m_language.StylesWhitespace : false;}

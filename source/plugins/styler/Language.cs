@@ -34,6 +34,7 @@ namespace Styler
 		public Language(XmlNode node)
 		{
 			m_name = node.Attributes["name"].Value;
+			m_initialTab = int.Parse(node.Attributes["initial_tab"].Value);
 			m_expr = DoBuildExpr(node);
 			
 			ActiveObjects.Add(this);
@@ -42,6 +43,11 @@ namespace Styler
 		public string Name
 		{
 			get {return m_name;}
+		}
+		
+		public int InitialTab
+		{
+			get {return m_initialTab;}
 		}
 		
 		// May return null.
@@ -175,6 +181,7 @@ namespace Styler
 		#region Fields
 		private string m_expr;
 		private string m_name;
+		private int m_initialTab;
 		private Regex m_regex;
 		private bool m_styleWhitespace;
 		private Dictionary<int, StyleType> m_indexTable = new Dictionary<int, StyleType>();
