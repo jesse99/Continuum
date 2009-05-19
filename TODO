@@ -51,10 +51,8 @@ http://macosx.com/forums/archive/t-299331.html
 			}
 			
 * Allow files and asemblies to be disasembled:
-	- do a checkin
-	- method style
-	- show custom attributes
-	- show standard attributes
+	- get types working
+	- make sure NSObject attrs are ok
 	- doc needs to release the items
 	- items need to release their children (or maybe use an NSArray)
 	- should be able to Get Info for everything in the list view, maybe with an

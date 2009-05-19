@@ -10,4 +10,5 @@
 	<string>&quot; (?: [^&quot;\r\n\\] | \\.)* &quot;</string>
 	<string>@&quot; (?: [^&quot;\\] | \\. | (?: &quot; &quot;))* &quot;</string>
 	<string>&apos; (?: [^&apos;\r\n\\] | \\.)* &apos;</string>
+	<member>(?&lt;= \ ) [a-zA-Z] \w* (?= \()</member>
 </Language>

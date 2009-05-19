@@ -68,12 +68,7 @@ namespace Disassembler
 					else
 						builder.Append('\t');
 					
-					if (ins.Operand is string)
-						builder.AppendFormat("\"{0}\"", ins.Operand.ToString().EscapeAll());
-					else if (ins.Operand is Instruction)
-						builder.AppendFormat("{0:X4}", ((Instruction) ins.Operand).Offset);
-					else
-						builder.Append(ins.Operand.ToString());
+					builder.Append(DoArgToString(ins.Operand));
 				}
 				
 				builder.AppendLine();
@@ -134,7 +129,15 @@ namespace Disassembler
 		
 		private static void DoAppendHeader(StringBuilder builder, MethodDefinition method)
 		{
-			// TODO: custom attributes
+			if (method.HasCustomAttributes)
+				DoAppendCustomAttributes(builder, method.CustomAttributes);
+			if (method.PInvokeInfo != null)
+				DoAppendPInvoke(builder, method, method.PInvokeInfo);
+			if (method.HasSecurityDeclarations)
+				DoAppendSecurity(builder, method.SecurityDeclarations);
+			if (method.ImplAttributes != MethodImplAttributes.IL)
+				builder.AppendFormat("[System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.{0})]{1}", method.ImplAttributes, Environment.NewLine);
+			
 			DoAppendAttributes(builder, method.Attributes);
 			
 			if (!method.IsConstructor)
@@ -143,14 +146,87 @@ namespace Disassembler
 				builder.Append(' ');
 			}
 			
-			builder.Append(method.DeclaringType.FullName);
-			builder.Append("::");
 			builder.Append(method.Name);
 			if (method.HasGenericParameters)
 				DoAppendGenericParams(builder, method.GenericParameters);
 				
 			DoAppendParams(builder, method);
 			builder.AppendLine();
+		}
+		
+		private static void DoAppendPInvoke(StringBuilder builder, MethodDefinition method, PInvokeInfo info)
+		{
+			builder.Append("[System.Runtime.InteropServices.DllImportAttribute(\"");
+			builder.Append(info.Module.Name);
+			if (info.EntryPoint != method.Name)
+			{
+				builder.Append("\", EntryPoint = \"");
+				builder.Append(info.EntryPoint);
+			}
+			builder.AppendLine("\")]");
+		}
+		
+		private static void DoAppendSecurity(StringBuilder builder, SecurityDeclarationCollection secs)
+		{
+			foreach (SecurityDeclaration sec in secs)
+			{
+				if (sec.PermissionSet.IsUnrestricted())
+				{
+					builder.AppendFormat("[{0} {1}]{2}", sec.Action, "unrestricted", Environment.NewLine);
+				}
+				else
+				{
+					builder.AppendFormat("[{0} {1}]{2}", sec.Action, sec.PermissionSet, Environment.NewLine);
+				}
+				
+				foreach (object o in sec.PermissionSet)
+				{
+					builder.AppendFormat("[{0}]{1}", o, Environment.NewLine);
+				}
+			}
+		}
+		
+		private static void DoAppendCustomAttributes(StringBuilder builder, CustomAttributeCollection attrs)
+		{
+			foreach (CustomAttribute attr in attrs)
+			{
+				var args = new List<string>();
+				
+				attr.Resolve ();			// we need to do this so things like the enums used within arguments show up correctly
+				foreach (object o in attr.ConstructorParameters)
+				{
+					args.Add(DoArgToString(o));
+				}
+				
+				foreach (System.Collections.DictionaryEntry d in attr.Properties)
+				{
+					args.Add(string.Format("{0} = {1}", d.Key, DoArgToString(d.Value)));
+				}
+				
+				foreach (System.Collections.DictionaryEntry d in attr.Fields)
+				{
+					args.Add(string.Format("{0} = {1}", d.Key, DoArgToString(d.Value)));
+				}
+				
+				string name = attr.Constructor.DeclaringType.FullName;
+				builder.AppendFormat("[{0}({1})]", name, string.Join(", ", args.ToArray()));
+				builder.AppendLine();
+			}
+		}
+		
+		private static string DoArgToString(object arg)
+		{
+			if (arg == null)
+				return string.Empty;
+			
+			else if (arg is string)
+				return string.Format("\"{0}\"", arg);
+			
+			else if (arg is Instruction)
+				return string.Format("{0:X4}", ((Instruction) arg).Offset);
+			
+			else
+				return arg.ToString();
 		}
 		
 		private static void DoAppendAttributes(StringBuilder builder, MethodAttributes attrs)

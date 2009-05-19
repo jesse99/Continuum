@@ -90,7 +90,7 @@ namespace Disassembler
 			{
 				Boss boss = ObjectModel.Create("FileSystem");
 				var fs = boss.Get<IFileSystem>();
-				string file = fs.GetTempFile(item.FullName.Replace("::", "."), ".cil");
+				string file = fs.GetTempFile(item.Label.Replace(".", string.Empty), ".cil");
 				
 				using (StreamWriter writer = new StreamWriter(file))
 				{
