@@ -24,14 +24,10 @@ sudo fs_usage -f filesys
 
 http://macosx.com/forums/archive/t-299331.html
 
-* Allow files and asemblies to be disasembled:	65
-	- add an optional initial tab stop to language files, should be multiple of interval
-	- need to load symbols so we get local variable names
-		` see CocoaException::Raise
-	- double click on a member pops up a window with the il for that member
-	- might want to style method name
-	- might want to style types
+* Allow files and asemblies to be disasembled:
 	- get exception handlers working
+		` probably need tab_stops instead of initial_tab
+	- look at monodevelop again
 	- doc needs to release the items
 	- items need to release their children (or maybe use an NSArray)
 	- should be able to Get Info for everything in the list view, maybe with an
@@ -42,6 +38,9 @@ http://macosx.com/forums/archive/t-299331.html
 	- remember window positions
 	- make sure disassembly objects go away
 	- might be neat if il opcodes had get info support
+		http://74.125.155.132/search?q=cache:Lc2lJmRj9HcJ:www.cn-web.com/attachment.php%3Fid%3D7+castclass+ckfinite+newarr+reference&cd=8&hl=en&ct=clnk&gl=us&client=firefox-a
+		http://ctp.di.fct.unl.pt/lei/lp2/cil.html
+		http://74.125.155.132/search?q=cache:icKKuq6gVhkJ:www.ssw.uni-linz.ac.at/Teaching/Lectures/Sem/2001/Literatur/ILinstrset.doc+castclass+ckfinite+newarr+reference&cd=13&hl=en&ct=clnk&gl=us&client=firefox-a
 	- add support for disassemble method (and maybe type)
 	- if method is in more than one local assembly display a picker
 	- start with the assembly built last selected

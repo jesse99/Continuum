@@ -60,6 +60,8 @@ namespace Disassembler
 						
 					if (ins.Operand is string)
 						builder.AppendFormat("\"{0}\"", ins.Operand.ToString().EscapeAll());
+					else if (ins.Operand is Instruction)
+						builder.AppendFormat("{0:X4}", ((Instruction) ins.Operand).Offset);
 					else
 						builder.Append(ins.Operand.ToString());
 				}

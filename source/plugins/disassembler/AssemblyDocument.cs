@@ -27,6 +27,7 @@ using Mono.Cecil;
 using Shared;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 
@@ -52,10 +53,12 @@ namespace Disassembler
 			
 			try
 			{
-				byte[] bytes = new byte[data.length()];
-				Marshal.Copy(data.bytes(), bytes, 0, bytes.Length);
+				// Note that we have to use the path instead of data so that Cecil knows
+				// where to look for the mdb file.
+				string path = fileURL().path().description();
 				
-				AssemblyDefinition assembly = AssemblyFactory.GetAssembly(bytes);
+				AssemblyDefinition assembly = AssemblyFactory.GetAssembly(path);
+				DoLoadSymbols(assembly);
 				DoGetNamespaces(assembly);
 			}
 			catch (Exception e)
@@ -66,6 +69,9 @@ namespace Disassembler
 				
 				NSObject error = NSError.errorWithDomain_code_userInfo(Externs.Cocoa3Domain, 1, userInfo);
 				Marshal.WriteIntPtr(outError, error);
+				
+				Log.WriteLine(TraceLevel.Error, "App", "Couldn't read the assembly:");
+				Log.WriteLine(TraceLevel.Error, "App", "{0}", e);
 				
 				read = false;
 			}
@@ -79,6 +85,25 @@ namespace Disassembler
 		}
 		
 		#region Private Methods
+		// We need to do this so that we get local variable names.
+		private void DoLoadSymbols(AssemblyDefinition assembly)
+		{
+			// For some reason we have to force the Mdb assembly to load. 
+			// If we don't it isn't found.
+			Unused.Value = typeof(Mono.Cecil.Mdb.MdbFactory);
+			try
+			{
+				foreach (ModuleDefinition module in assembly.Modules)
+				{
+					module.LoadSymbols();
+				}
+			}
+			catch (System.IO.FileNotFoundException)
+			{
+				// mdb file is missing
+			}
+		}
+		
 		// HasCustomAttributes/CustomAttributes
 		// HasSecurityDeclarations/SecurityDeclarations
 		// Kind
