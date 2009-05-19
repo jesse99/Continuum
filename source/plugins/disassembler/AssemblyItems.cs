@@ -170,7 +170,7 @@ namespace Disassembler
 		
 		public override string GetText()
 		{
-			return string.Empty;
+			return m_type.Disassemble();
 		}
 		
 		public override AssemblyItem GetChild(int index)

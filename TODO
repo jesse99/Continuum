@@ -50,9 +50,10 @@ http://macosx.com/forums/archive/t-299331.html
 					Console.WriteLine("FilterEnd: {0:X4}", handler.FilterEnd.Offset);
 			}
 			
+[System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Explicit, Size=16, CharSet=System.Runtime.InteropServices.CharSet.Ansi)]
+
+
 * Allow files and asemblies to be disasembled:
-	- get types working
-	- make sure NSObject attrs are ok
 	- doc needs to release the items
 	- items need to release their children (or maybe use an NSArray)
 	- should be able to Get Info for everything in the list view, maybe with an

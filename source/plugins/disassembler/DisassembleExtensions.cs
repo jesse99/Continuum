@@ -25,26 +25,222 @@ using Mono.Cecil.Cil;
 using Shared;
 using System;
 using System.Collections.Generic;
+using System.Security;
+using System.Security.Permissions;
 using System.Text;
 
 namespace Disassembler
 {
 	internal static class DisassembleExtensions
 	{
+		public static string Disassemble(this TypeDefinition type)
+		{
+			var builder = new StringBuilder();
+			
+			DoAppendTypeHeader(builder, type);
+			builder.AppendLine();
+			
+			for (int i = 0; i < type.Constructors.Count; ++i)
+			{
+				DoAppendMethod(builder, type.Constructors[i]);
+				
+				if (i + 1 < type.Constructors.Count || type.Methods.Count > 0 || type.Fields.Count > 0)
+					builder.AppendLine();
+			}
+			
+			for (int i = 0; i < type.Methods.Count; ++i)
+			{
+				DoAppendMethod(builder, type.Methods[i]);
+				
+				if (i + 1 < type.Methods.Count || type.Fields.Count > 0)
+					builder.AppendLine();
+			}
+			
+			for (int i = 0; i < type.Fields.Count; ++i)
+			{
+				DoAppendField(builder, type.Fields[i]);
+				
+				if (i + 1 < type.Fields.Count)
+					builder.AppendLine();
+			}
+			
+			return builder.ToString();
+		}
+		
 		public static string Disassemble(this MethodDefinition method)
 		{
 			var builder = new StringBuilder();
 			
-			DoAppendHeader(builder, method);
-			if (method.HasBody)
-				DoAppendBody(builder, method.Body);
-			else
-				builder.AppendLine("// no body");
+			DoAppendMethod(builder, method);
 				
 			return builder.ToString();
 		}
 		
 		#region Private Methods
+		private static void DoAppendTypeHeader(StringBuilder builder, TypeDefinition type)
+		{
+			if (type.HasCustomAttributes)
+				DoAppendCustomAttributes(builder, type.CustomAttributes);
+			if ((type.Attributes & TypeAttributes.LayoutMask) != 0 ||					// note that we have to use the 0 literal or the runtime gets confused about which zero enum we're referring to
+				(type.Attributes & TypeAttributes.StringFormatMask) != 0 ||
+				type.PackingSize != 0)
+				DoAppendLayout(builder, type);
+			if (type.HasSecurityDeclarations)
+				DoAppendSecurity(builder, type.SecurityDeclarations);
+			if (type.IsSerializable)
+				builder.AppendLine("[System.SerializableAttribute()]");
+			
+			DoAppendTypeAttributes(builder, type.Attributes);
+			
+			if (type.IsEnum)
+				builder.Append("enum ");
+			else if (type.IsInterface)
+				builder.Append("interface ");
+			else if (type.IsValueType)
+				builder.Append("struct ");
+			else
+				builder.Append("class ");
+			
+			DoAppendTypeName(builder, type);
+			
+			if (type.BaseType != null || type.HasInterfaces)
+			{
+				builder.Append(" : ");
+				
+				if (type.BaseType != null)
+				{
+					DoAppendTypeName(builder, type.BaseType);
+					
+					if (type.HasInterfaces)
+						builder.Append(", ");
+				}
+				
+				for (int i = 0; i < type.Interfaces.Count; ++i)
+				{
+					DoAppendTypeName(builder, type.Interfaces[i]);
+					
+					if (i + 1 < type.Interfaces.Count)
+						builder.Append(", ");
+				}
+			}
+			
+			builder.AppendLine();
+		}
+		
+		private static void DoAppendField(StringBuilder builder, FieldDefinition field)
+		{
+			if (field.HasCustomAttributes)
+				DoAppendCustomAttributes(builder, field.CustomAttributes);
+			if (field.IsNotSerialized)
+				builder.AppendLine("[System.NonSerializedAttribute()]");
+				
+			DoAppendFieldAttributes(builder, field.Attributes);
+			if (field.IsLiteral)
+				builder.Append("const ");
+			if (field.IsInitOnly)
+				builder.Append("readonly ");
+			
+			builder.Append(field.FieldType.FullName);
+			builder.Append(' ');
+			builder.Append(field.Name);
+			
+			if (field.Constant != null)
+			{
+				builder.Append(" = ");												// this works for ints but not for strings
+				builder.Append(DoArgToString(field.Constant));	
+			}
+			else if (field.InitialValue != null)
+			{
+				builder.Append(" = ");												// not sure when this works
+				builder.Append(BitConverter.ToString(field.InitialValue));
+			}
+			
+			builder.AppendLine();
+		}
+		
+		private static void DoAppendLayout(StringBuilder builder, TypeDefinition type)
+		{
+			builder.Append("[System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.");
+			
+			TypeAttributes attrs = type.Attributes;
+			switch (attrs & TypeAttributes.LayoutMask)
+			{
+				case TypeAttributes.AutoLayout:
+					builder.Append("Auto");
+					break;
+					
+				case TypeAttributes.SequentialLayout:
+					builder.Append("Sequential");
+					break;
+					
+				case TypeAttributes.ExplicitLayout:
+					builder.Append("Explicit");
+					break;
+					
+				default:
+					Contract.Assert(false, "bad layout: " + (attrs & TypeAttributes.LayoutMask));
+					break;
+			}
+			
+			if (type.PackingSize != 0)
+			{
+				builder.AppendFormat(", Size = {0}", type.PackingSize);
+			}
+			
+			if ((type.Attributes & TypeAttributes.StringFormatMask) != TypeAttributes.AnsiClass)
+			{
+				builder.Append(", CharSet = System.Runtime.InteropServices.CharSet.");
+				
+				switch (attrs & TypeAttributes.StringFormatMask)
+				{
+					case TypeAttributes.AnsiClass:
+						builder.Append("Ansi");
+						break;
+						
+					case TypeAttributes.UnicodeClass:
+						builder.Append("Unicode");
+						break;
+						
+					case TypeAttributes.AutoClass:
+						builder.Append("Auto");
+						break;
+						
+					default:
+						Contract.Assert(false, "bad string format: " + (attrs & TypeAttributes.StringFormatMask));
+						break;
+				}
+			}
+			
+			builder.AppendLine(")]");
+		}
+		
+		private static void DoAppendTypeName(StringBuilder builder, TypeReference type)
+		{
+			if (type.DeclaringType != null)
+			{
+				DoAppendTypeName(builder, type.DeclaringType);
+				builder.Append('/');
+			}
+			
+			if (!string.IsNullOrEmpty(type.Namespace))
+			{
+				builder.Append(type.Namespace);
+				builder.Append('.');
+			}
+			
+			builder.Append(type.Name);
+			
+			if (type.HasGenericParameters)
+				DoAppendGenericParams(builder, type.GenericParameters);
+		}
+		
+		public static void DoAppendMethod(StringBuilder builder,  MethodDefinition method)
+		{
+			DoAppendMethodHeader(builder, method);
+			if (method.HasBody)
+				DoAppendBody(builder, method.Body);
+		}
+		
 		// The ExceptionHandlers are a little bit weird: there is one ExceptionHandler for
 		// each catch/finally block and each ExceptionHandler includes the range for the
 		// corresponding try block.
@@ -127,7 +323,7 @@ namespace Disassembler
 			return null;
 		}
 		
-		private static void DoAppendHeader(StringBuilder builder, MethodDefinition method)
+		private static void DoAppendMethodHeader(StringBuilder builder, MethodDefinition method)
 		{
 			if (method.HasCustomAttributes)
 				DoAppendCustomAttributes(builder, method.CustomAttributes);
@@ -138,7 +334,7 @@ namespace Disassembler
 			if (method.ImplAttributes != MethodImplAttributes.IL)
 				builder.AppendFormat("[System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.{0})]{1}", method.ImplAttributes, Environment.NewLine);
 			
-			DoAppendAttributes(builder, method.Attributes);
+			DoAppendMethodAttributes(builder, method.Attributes);
 			
 			if (!method.IsConstructor)
 			{
@@ -172,16 +368,25 @@ namespace Disassembler
 			{
 				if (sec.PermissionSet.IsUnrestricted())
 				{
-					builder.AppendFormat("[{0} {1}]{2}", sec.Action, "unrestricted", Environment.NewLine);
+					builder.AppendFormat("[System.Security.Permissions.SecurityPermission(System.Security.Permissions.SecurityAction.{0}, Unrestricted = true)]{1}", sec.Action, Environment.NewLine);
 				}
 				else
 				{
-					builder.AppendFormat("[{0} {1}]{2}", sec.Action, sec.PermissionSet, Environment.NewLine);
-				}
-				
-				foreach (object o in sec.PermissionSet)
-				{
-					builder.AppendFormat("[{0}]{1}", o, Environment.NewLine);
+					builder.AppendFormat("[System.Security.Permissions.SecurityPermission(System.Security.Permissions.SecurityAction.{0}", sec.Action);
+					foreach (IPermission o in sec.PermissionSet)	// SecurityPermission
+					{
+						// This outputs the permission as XML which is really ugly but there are zillions of IPermission
+						// implementators so it would be a lot of work to do something better. We will special case
+						// one or two of the most common attributes however.
+						SecurityPermission sp = o as SecurityPermission;
+						if (sp != null)
+						{
+							builder.AppendFormat(", {0} = true", sp.Flags);
+						}
+						else
+							builder.AppendFormat(", {0}", o);
+					}
+					builder.AppendFormat(")]{0}", Environment.NewLine);
 				}
 			}
 		}
@@ -229,7 +434,99 @@ namespace Disassembler
 				return arg.ToString();
 		}
 		
-		private static void DoAppendAttributes(StringBuilder builder, MethodAttributes attrs)
+		private static void DoAppendTypeAttributes(StringBuilder builder, TypeAttributes attrs)
+		{
+			switch (attrs & TypeAttributes.VisibilityMask)
+			{
+				case TypeAttributes.NotPublic:
+				case TypeAttributes.NestedAssembly:
+					builder.Append("assembly ");
+					break;
+					
+				case TypeAttributes.Public:
+				case TypeAttributes.NestedPublic:
+					builder.Append("public ");
+					break;
+					
+				case TypeAttributes.NestedPrivate:
+					builder.Append("private ");
+					break;
+					
+				case TypeAttributes.NestedFamily:
+					builder.Append("family ");
+					break;
+					
+				case TypeAttributes.NestedFamANDAssem:
+					builder.Append("family-and-assembly ");
+					break;
+					
+				case TypeAttributes.NestedFamORAssem:
+					builder.Append("family-or-assembly ");
+					break;
+					
+				default:
+					Contract.Assert(false, "bad visibility: " + (attrs & TypeAttributes.VisibilityMask));
+					break;
+			}
+			
+			if ((attrs & TypeAttributes.Abstract) == TypeAttributes.Abstract)
+				builder.Append("abstract ");
+			
+			if ((attrs & TypeAttributes.Sealed) == TypeAttributes.Sealed)
+				builder.Append("sealed ");
+			
+			if ((attrs & TypeAttributes.SpecialName) == TypeAttributes.SpecialName)
+				builder.Append("special-name ");
+			
+			if ((attrs & TypeAttributes.Import) == TypeAttributes.Import)
+				builder.Append("import ");
+		}
+		
+		private static void DoAppendFieldAttributes(StringBuilder builder, FieldAttributes attrs)
+		{
+			switch (attrs & FieldAttributes.FieldAccessMask)
+			{
+				case FieldAttributes.Compilercontrolled:
+					builder.Append("compiler-controlled ");
+					break;
+					
+				case FieldAttributes.Private:
+					builder.Append("private ");
+					break;
+					
+				case FieldAttributes.FamANDAssem:
+					builder.Append("family-and-assembly ");
+					break;
+					
+				case FieldAttributes.Assembly:
+					builder.Append("assembly ");
+					break;
+					
+				case FieldAttributes.Family:
+					builder.Append("family ");
+					break;
+					
+				case FieldAttributes.FamORAssem:
+					builder.Append("family-or-assembly ");
+					break;
+					
+				case FieldAttributes.Public:
+					builder.Append("public ");
+					break;
+					
+				default:
+					Contract.Assert(false, "bad access: " + (attrs & FieldAttributes.FieldAccessMask));
+					break;
+			}
+			
+			if ((attrs & FieldAttributes.Static) == FieldAttributes.Static)
+				builder.Append("static ");
+			
+			if ((attrs & FieldAttributes.SpecialName) == FieldAttributes.SpecialName)
+				builder.Append("special-name ");
+		}
+		
+		private static void DoAppendMethodAttributes(StringBuilder builder, MethodAttributes attrs)
 		{
 			switch (attrs & MethodAttributes.MemberAccessMask)
 			{
