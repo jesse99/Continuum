@@ -45,11 +45,18 @@ namespace Disassembler
 		}
 		
 		#region Private Methods
+		// The ExceptionHandlers are a little bit weird: there is one ExceptionHandler for
+		// each catch/finally block and each ExceptionHandler includes the range for the
+		// corresponding try block.
 		private static void DoAppendBody(StringBuilder builder, MethodBody body)
 		{
+			int indent = 0;
 			foreach (Instruction ins in body.Instructions)
 			{
+				DoAppendHandler(builder, body, ins, ref indent);
+				
 				builder.AppendFormat("{0:X4} ", ins.Offset);
+				builder.Append('\t', indent);
 				
 				string name = ins.OpCode.Name;
 				builder.Append(name);
@@ -68,6 +75,58 @@ namespace Disassembler
 				
 				builder.AppendLine();
 			}
+		}
+		
+		private static void DoAppendHandler(StringBuilder builder, MethodBody body, Instruction ins, ref int indent)
+		{
+			if (body.HasExceptionHandlers)
+			{
+				string text = null;
+				int oldIndent = indent;
+				
+				if (DoMatchHandler(body, ins, h => h.TryStart) != null)
+				{
+					text = "try";
+					++indent;
+				}
+				else if (DoMatchHandler(body, ins, h => h.TryEnd) != null)
+				{
+					--indent;
+				}
+				else if (DoMatchHandler(body, ins, h => h.HandlerEnd) != null)
+				{
+					--indent;
+				}
+				
+				ExceptionHandler handler = DoMatchHandler(body, ins, h => h.HandlerStart);
+				if (handler != null)
+				{
+					text = handler.Type.ToString().ToLower();
+					if (handler.CatchType != null)
+						text += ' ' + handler.CatchType.FullName;
+					--oldIndent;
+					++indent;
+				}
+				
+				if (text != null)
+				{
+					builder.AppendFormat("{0:X4} ", ins.Offset);
+					builder.Append('\t', oldIndent);
+					builder.AppendLine(text);
+				}
+			}
+		}
+		
+		// This could be optimized a fair amount.
+		private static ExceptionHandler DoMatchHandler(MethodBody body, Instruction ins, Func<ExceptionHandler, Instruction> callback)
+		{
+			foreach (ExceptionHandler handler in body.ExceptionHandlers)
+			{
+				if (callback(handler).Offset == ins.Offset)
+					return handler;
+			}
+			
+			return null;
 		}
 		
 		private static void DoAppendHeader(StringBuilder builder, MethodDefinition method)

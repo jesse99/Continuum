@@ -24,9 +24,35 @@ sudo fs_usage -f filesys
 
 http://macosx.com/forums/archive/t-299331.html
 
+			foreach (ExceptionHandler handler in body.ExceptionHandlers)
+			{
+				Console.WriteLine("Type: {0}", handler.Type);
+				
+				if (handler.CatchType != null)
+					Console.WriteLine("CatchType: {0}", handler.CatchType.FullName);
+				
+				if (handler.TryStart != null)
+					Console.WriteLine("TryStart: {0:X4}", handler.TryStart.Offset);
+				
+				if (handler.TryEnd != null)
+					Console.WriteLine("TryEnd: {0:X4}", handler.TryEnd.Offset);
+				
+				if (handler.HandlerStart != null)
+					Console.WriteLine("HandlerStart: {0:X4}", handler.HandlerStart.Offset);
+				
+				if (handler.HandlerEnd != null)
+					Console.WriteLine("HandlerEnd: {0:X4}", handler.HandlerEnd.Offset);
+				
+				if (handler.FilterStart != null)
+					Console.WriteLine("FilterStart: {0:X4}", handler.FilterStart.Offset);
+				
+				if (handler.FilterEnd != null)
+					Console.WriteLine("FilterEnd: {0:X4}", handler.FilterEnd.Offset);
+			}
+			
 * Allow files and asemblies to be disasembled:
-	- get exception handlers working
-		` probably need tab_stops instead of initial_tab
+	- add tab stops
+	- build a new foreshadow
 	- look at monodevelop again
 	- doc needs to release the items
 	- items need to release their children (or maybe use an NSArray)
