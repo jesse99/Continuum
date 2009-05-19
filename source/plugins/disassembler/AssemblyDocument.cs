@@ -19,7 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-using Gear;
+//using Gear;
 using Gear.Helpers;
 using MCocoa;
 using MObjc;
@@ -27,10 +27,8 @@ using Mono.Cecil;
 using Shared;
 using System;
 using System.Collections.Generic;
-//using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-//using System.Text;
 
 namespace Disassembler
 {
@@ -102,10 +100,16 @@ namespace Disassembler
 				{
 					Contract.Assert(type.Namespace != null);
 					
-					NamespaceItem item = m_namespaces.Find(n => n.Namespace == type.Namespace);
+					string ns;
+					if (type.DeclaringType != null)
+						ns = type.DeclaringType.Namespace;
+					else
+						ns = type.Namespace;
+					
+					NamespaceItem item = m_namespaces.Find(n => n.Namespace == ns);
 					if (item == null)
 					{
-						item = new NamespaceItem(type.Namespace);
+						item = new NamespaceItem(ns);
 						item.retain();
 						m_namespaces.Add(item);
 					}

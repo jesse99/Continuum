@@ -36,8 +36,12 @@ namespace Disassembler
 		
 		public abstract string Label {get;}
 		
+		public abstract string FullName {get;}
+		
 		public abstract int ChildCount {get;}
 		
 		public abstract AssemblyItem GetChild(int index);
+		
+		public abstract string GetText();
 	}
 }

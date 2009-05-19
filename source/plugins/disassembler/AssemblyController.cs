@@ -25,14 +25,11 @@ using MCocoa;
 using MObjc;
 using Shared;
 using System;
-//using System.Collections.Generic;
-//using System.Diagnostics;
-//using System.IO;
-//using System.Linq;
+using System.IO;
 
 namespace Disassembler
 {
-	[ExportClass("AssemblyController", "NSWindowController")]
+	[ExportClass("AssemblyController", "NSWindowController", Outlets = "table")]
 	internal sealed class AssemblyController : NSWindowController
 	{
 		public AssemblyController(AssemblyDocument doc) : base(NSObject.AllocNative("AssemblyController"))
@@ -40,22 +37,30 @@ namespace Disassembler
 			m_doc = doc;
 			
 			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("disassembler"), this);
-//			m_table = new IBOutlet<NSOutlineView>(this, "table");
 
 //			window().setTitle(NSString.Create(m_name));
 //			Unused.Value = window().setFrameAutosaveName(NSString.Create(window().title().ToString() + " editor"));
 //			window().makeKeyAndOrderFront(this);
 			
-//			m_table.Value.setDoubleAction("doubleClicked:");
-//			m_table.Value.setTarget(this);
-
+			m_table = new IBOutlet<NSOutlineView>(this, "table").Value;
+			m_table.setDoubleAction("doubleClicked:");
+			m_table.setTarget(this);
+			
 			ActiveObjects.Add(this);
 		}
 		
-//		public void doubleClicked(NSOutlineView sender)
-//		{
-//			DoOpenSelection();
-//		}
+		public void doubleClicked(NSOutlineView sender)
+		{
+			NSIndexSet selections = m_table.selectedRowIndexes();
+			uint row = selections.firstIndex();
+			while (row != Enums.NSNotFound)
+			{
+				AssemblyItem item = (AssemblyItem) (m_table.itemAtRow((int) row));
+				DoOpen(item);
+				
+				row = selections.indexGreaterThanIndex(row);
+			}
+		}
 		
 		public int outlineView_numberOfChildrenOfItem(NSOutlineView table, AssemblyItem item)
 		{
@@ -78,11 +83,34 @@ namespace Disassembler
 		}
 		
 		#region Private Methods
+		private void DoOpen(AssemblyItem item)
+		{
+			string text = item.GetText();
+			if (text.Length > 0)
+			{
+				Boss boss = ObjectModel.Create("FileSystem");
+				var fs = boss.Get<IFileSystem>();
+				string file = fs.GetTempFile(item.FullName.Replace("::", "."), ".cil");
+				
+				using (StreamWriter writer = new StreamWriter(file))
+				{
+					writer.WriteLine("{0}", text);
+				}
+				
+				boss = ObjectModel.Create("Application");
+				var launcher = boss.Get<ILaunch>();
+				launcher.Launch(file, -1, -1, 1);
+			}
+			else
+			{
+				Functions.NSBeep();
+			}
+		}
 		#endregion
 		
 		#region Fields
 		private AssemblyDocument m_doc;
-//		private IBOutlet<NSOutlineView> m_table;
+		private NSOutlineView m_table;
 		#endregion
 	}
 }

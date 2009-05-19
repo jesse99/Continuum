@@ -24,9 +24,14 @@ sudo fs_usage -f filesys
 
 http://macosx.com/forums/archive/t-299331.html
 
-* Allow files and asemblies to be disasembled:
+* Allow files and asemblies to be disasembled:	65
+	- add an optional initial tab stop to language files, should be multiple of interval
+	- need to load symbols so we get local variable names
+		` see CocoaException::Raise
 	- double click on a member pops up a window with the il for that member
-	- make sure nested types work correctly (they're in globals atm)
+	- might want to style method name
+	- might want to style types
+	- get exception handlers working
 	- doc needs to release the items
 	- items need to release their children (or maybe use an NSArray)
 	- should be able to Get Info for everything in the list view, maybe with an

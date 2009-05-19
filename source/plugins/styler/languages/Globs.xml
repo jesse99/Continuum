@@ -1,6 +1,7 @@
 <Globs>
 	<!-- If this is edited you should probably review DirectoryItemStyler.DoSetDefaultPrefs. -->
 	<Glob language = "c">*.c</Glob>
+	<Glob language = "cil">*.cil</Glob>
 	<Glob language = "c#">*.cs</Glob>
 	<Glob language = "html">*.html *.htm</Glob>
 	<Glob language = "ignore">*.ignore</Glob>

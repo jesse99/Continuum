@@ -64,9 +64,19 @@ namespace Disassembler
 			get {return m_namespace.Length == 0 ? "globals" : m_namespace;}
 		}
 		
+		public override string FullName
+		{
+			get {return Label;}
+		}
+		
 		public override int ChildCount
 		{
 			get {return m_types.Count;}
+		}
+		
+		public override string GetText()
+		{
+			return string.Empty;
 		}
 		
 		public override AssemblyItem GetChild(int index)
@@ -106,8 +116,6 @@ namespace Disassembler
 		
 		public void OnLoaded()
 		{
-			m_methods.Sort((lhs, rhs) => lhs.Label.CompareTo(rhs.Label));
-			
 			for (int i = 0; i < m_methods.Count; ++i)
 			{
 				MethodItem m1 = m_methods[i];
@@ -121,16 +129,48 @@ namespace Disassembler
 					}
 				}
 			}
+			
+			m_methods.Sort((lhs, rhs) =>
+			{
+				int result = 0;
+				
+				if (result == 0)
+					result = lhs.Method.Name.CompareTo(rhs.Method.Name);
+				
+				if (result == 0)
+					result = lhs.Method.Parameters.Count.CompareTo(rhs.Method.Parameters.Count);
+				
+				if (result == 0)
+					result = lhs.Label.CompareTo(rhs.Label);
+					
+				return result;
+			});
 		}
 		
 		public override string Label
 		{
-			get {return m_type.Name;}
+			get
+			{
+				if (m_type.DeclaringType != null)
+					return m_type.DeclaringType.Name + "/" + m_type.Name;
+				else
+					return m_type.Name;
+			}
+		}
+		
+		public override string FullName
+		{
+			get {return m_type.FullName;}
 		}
 		
 		public override int ChildCount
 		{
 			get {return m_methods.Count;}
+		}
+		
+		public override string GetText()
+		{
+			return string.Empty;
 		}
 		
 		public override AssemblyItem GetChild(int index)
@@ -180,14 +220,29 @@ namespace Disassembler
 			m_label = builder.ToString();
 		}
 		
+		public MethodDefinition Method
+		{
+			get {return m_method;}
+		}
+		
 		public override string Label
 		{
 			get {return m_label;}
 		}
 		
+		public override string FullName
+		{
+			get {return m_method.ToString();}
+		}
+		
 		public override int ChildCount
 		{
 			get {return 0;}
+		}
+		
+		public override string GetText()
+		{
+			return m_method.Disassemble();
 		}
 		
 		public override AssemblyItem GetChild(int index)
