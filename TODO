@@ -51,9 +51,10 @@ http://macosx.com/forums/archive/t-299331.html
 			}
 			
 * Allow files and asemblies to be disasembled:
-	- add tab stops
-	- build a new foreshadow
-	- look at monodevelop again
+	- do a checkin
+	- method style
+	- show custom attributes
+	- show standard attributes
 	- doc needs to release the items
 	- items need to release their children (or maybe use an NSArray)
 	- should be able to Get Info for everything in the list view, maybe with an
@@ -70,6 +71,7 @@ http://macosx.com/forums/archive/t-299331.html
 	- add support for disassemble method (and maybe type)
 	- if method is in more than one local assembly display a picker
 	- start with the assembly built last selected
+* Time Machine didn't show an age (just "ago")
 * Autocomplete doesn't seem to work with stuff like fields when the context is a getter.
 * Binary viewer (or editor?).
 * Add a resources section to the disassembler.

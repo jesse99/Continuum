@@ -43,9 +43,9 @@ namespace Styler
 			get {return "CsLanguage";}
 		}
 		
-		public int InitialTab
+		public int[] TabStops
 		{
-			get {return m_language.InitialTab;}
+			get {return m_language.TabStops;}
 		}
 		
 		public bool StylesWhitespace

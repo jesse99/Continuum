@@ -27,7 +27,7 @@
 			<xsd:element name="member" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
 		</xsd:sequence>
 		<xsd:attribute name="name" type="xsd:string" use="required"/>
-		<xsd:attribute name="initial_tab" type="xsd:integer" default="0"/>
+		<xsd:attribute name="tab_stops" type="xsd:string" default="0"/>
 		<xsd:attribute name="ignore_whitespace" type="xsd:boolean" default="false"/>
 	</xsd:complexType>
 </xsd:schema>

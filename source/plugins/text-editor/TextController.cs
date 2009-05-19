@@ -221,9 +221,9 @@ namespace TextEditor
 			get {return m_language != null ? m_language.Name : null;}
 		}
 		
-		public int InitialTab
+		public int[] TabStops
 		{
-			get {return m_language != null ? m_language.InitialTab : 0;}
+			get {return m_language != null ? m_language.TabStops : new int[0];}
 		}
 		
 		public Boss GetDirEditorBoss()

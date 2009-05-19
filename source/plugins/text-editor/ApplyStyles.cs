@@ -159,13 +159,15 @@ namespace TextEditor
 			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
 			NSMutableParagraphStyle style = NSMutableParagraphStyle.Create();
 			
-			float stops = defaults.floatForKey(NSString.Create("tab stops"));
-			style.setDefaultTabInterval(stops);
+			float interval = defaults.floatForKey(NSString.Create("tab stops"));
+			style.setDefaultTabInterval(interval);
 			
-			float initial = m_controller.InitialTab*stops;
-	Console.WriteLine("initial: {0}", initial);
-			NSObject tab = NSTextTab.Alloc().initWithType_location(Enums.NSLeftTabStopType, initial);
-			style.setTabStops(NSMutableArray.Create(tab));
+			IEnumerable<NSObject> stops =
+				from
+					s in m_controller.TabStops
+				select
+					NSTextTab.Alloc().initWithType_location(Enums.NSLeftTabStopType, s*interval);
+			style.setTabStops(NSMutableArray.Create(stops.ToArray()));
 			
 			m_paragraphAttrs.setObject_forKey(style, Externs.NSParagraphStyleAttributeName);
 		}

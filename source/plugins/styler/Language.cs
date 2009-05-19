@@ -24,6 +24,7 @@ using Shared;
 using System;
 using System.Diagnostics;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml;
 
@@ -34,8 +35,10 @@ namespace Styler
 		public Language(XmlNode node)
 		{
 			m_name = node.Attributes["name"].Value;
-			m_initialTab = int.Parse(node.Attributes["initial_tab"].Value);
 			m_expr = DoBuildExpr(node);
+			
+			string[] stops = node.Attributes["tab_stops"].Value.Split(new char[]{' '}, StringSplitOptions.RemoveEmptyEntries);
+			m_tabStops = (from s in stops select int.Parse(s)).ToArray();
 			
 			ActiveObjects.Add(this);
 		}
@@ -45,9 +48,9 @@ namespace Styler
 			get {return m_name;}
 		}
 		
-		public int InitialTab
+		public int[] TabStops
 		{
-			get {return m_initialTab;}
+			get {return m_tabStops;}
 		}
 		
 		// May return null.
@@ -181,7 +184,7 @@ namespace Styler
 		#region Fields
 		private string m_expr;
 		private string m_name;
-		private int m_initialTab;
+		private int[] m_tabStops;
 		private Regex m_regex;
 		private bool m_styleWhitespace;
 		private Dictionary<int, StyleType> m_indexTable = new Dictionary<int, StyleType>();

@@ -63,8 +63,11 @@ namespace Disassembler
 				
 				if (ins.Operand != null)
 				{
-					builder.Append('\t');
-						
+					if (name.Length <= 4)
+						builder.Append("\t\t");
+					else
+						builder.Append('\t');
+					
 					if (ins.Operand is string)
 						builder.AppendFormat("\"{0}\"", ins.Operand.ToString().EscapeAll());
 					else if (ins.Operand is Instruction)
