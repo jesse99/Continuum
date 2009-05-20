@@ -103,6 +103,29 @@ namespace ObjectModel
 			return types.ToArray();
 		}
 		
+		public SourceInfo[] FindMethodSources(string typeName, string methodName, int max)
+		{
+			string tName = typeName;
+			int i = tName.IndexOf('`');
+			if (i > 0)
+				tName = tName.Substring(0, i);
+			
+			string sql = string.Format(@"
+				SELECT Methods.display_text, Methods.file_path, Methods.line, Methods.kind
+					FROM Methods, Types
+				WHERE (Types.root_name = '{0}' OR Types.name = '{1}') AND 
+					Types.root_name = Methods.declaring_root_name AND
+					Methods.Name = '{2}' AND
+					Methods.file_path != 0
+				LIMIT {3}", typeName, tName, methodName, max);
+			var rows = new List<string[]>(m_database.QueryRows(sql));
+			
+			var sources = from r in rows
+				select new SourceInfo(DoGetMethodName(r[0], int.Parse(r[3])), DoGetPath(r[1]), int.Parse(r[2]));
+			
+			return sources.ToArray();
+		}
+		
 		public SourceInfo[] FindMethodSources(string name, int max)
 		{
 			string sql = string.Format(@"

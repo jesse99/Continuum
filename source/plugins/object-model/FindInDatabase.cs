@@ -50,6 +50,10 @@ namespace ObjectModel
 		{
 			if (boss != null)
 			{
+				// This will happen when clicking on the method in disassembled generic types.
+				if (selection != null && selection.StartsWith("::"))
+					selection = selection.Substring(2);
+					
 				m_dirBoss = boss;
 				
 				if (selection != null && selection.Length < 100 && !selection.Any(c => char.IsWhiteSpace(c)))
@@ -61,13 +65,23 @@ namespace ObjectModel
 						timer.Start();
 					}
 					
+					string typeName = selection;
+					string methodName = selection;
+					
+					int i = selection.IndexOf("::");
+					if (i > 0)
+					{
+						typeName = selection.Substring(0, i);
+						methodName = selection.Substring(i + 2);
+					}
+					
 					// Add open types.
 					var objects = m_dirBoss.Get<IObjectModel>();
-					TypeInfo[] types = objects.FindTypes(selection, 2*MaxOpenItems);
-					DoAddOpenType(items, objects, types, selection, 0.2f);
+					TypeInfo[] types = objects.FindTypes(typeName, 2*MaxOpenItems);
+					DoAddOpenType(items, objects, types, typeName, 0.2f);
 					
 					// Add open methods.
-					DoAddOpenMethod(items, objects, selection, 0.3f);
+					DoAddOpenMethod(items, objects, typeName, methodName, 0.3f);
 					
 					// Add type info commands. 
 					items.Add(new TextContextItem(0.4f));
@@ -319,9 +333,14 @@ namespace ObjectModel
 			return localPaths.ToArray();
 		}
 		
-		public void DoAddOpenMethod(List<TextContextItem> items, IObjectModel objects, string selection, float order)
+		public void DoAddOpenMethod(List<TextContextItem> items, IObjectModel objects, string typeName, string methodName, float order)
 		{
-			SourceInfo[] sources = objects.FindMethodSources(selection, 10*MaxOpenItems);
+			SourceInfo[] sources;
+			if (typeName != methodName)
+				sources = objects.FindMethodSources(typeName, methodName, 10*MaxOpenItems);
+			else
+				sources = objects.FindMethodSources(methodName, 10*MaxOpenItems);
+			
 			SourceInfo[] used = (from s in sources where !string.IsNullOrEmpty(s.Path) select s).ToArray();
 			if (used.Length > 0)
 			{

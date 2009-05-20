@@ -21,7 +21,6 @@
 
 using Gear;
 using Mono.Cecil;
-//using Shared;
 using System;
 using System.Collections.Generic;
 
@@ -91,6 +90,8 @@ namespace ObjectModel
 		TypeInfo[] FindTypes(string name, int max);
 		
 		SourceInfo[] FindMethodSources(string name, int max);
+		
+		SourceInfo[] FindMethodSources(string typeName, string methodName, int max);
 		
 		SourceInfo[] FindTypeSources(string[] rootNames, int max);
 		
