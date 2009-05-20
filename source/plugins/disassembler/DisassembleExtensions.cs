@@ -88,7 +88,7 @@ namespace Disassembler
 			if (type.HasSecurityDeclarations)
 				DoAppendSecurity(builder, type.SecurityDeclarations);
 			if (type.IsSerializable)
-				builder.AppendLine("[System.SerializableAttribute()]");
+				builder.AppendLine("[System.Serializable()]");
 			
 			DoAppendTypeAttributes(builder, type.Attributes);
 			
@@ -132,7 +132,7 @@ namespace Disassembler
 			if (field.HasCustomAttributes)
 				DoAppendCustomAttributes(builder, field.CustomAttributes);
 			if (field.IsNotSerialized)
-				builder.AppendLine("[System.NonSerializedAttribute()]");
+				builder.AppendLine("[System.NonSerialized()]");
 				
 			DoAppendFieldAttributes(builder, field.Attributes);
 			if (field.IsLiteral)
@@ -332,7 +332,7 @@ namespace Disassembler
 			if (method.HasSecurityDeclarations)
 				DoAppendSecurity(builder, method.SecurityDeclarations);
 			if (method.ImplAttributes != MethodImplAttributes.IL)
-				builder.AppendFormat("[System.Runtime.CompilerServices.MethodImplAttribute(System.Runtime.CompilerServices.MethodImplOptions.{0})]{1}", method.ImplAttributes, Environment.NewLine);
+				builder.AppendFormat("[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.{0})]{1}", method.ImplAttributes, Environment.NewLine);
 			
 			DoAppendMethodAttributes(builder, method.Attributes);
 			
@@ -352,7 +352,7 @@ namespace Disassembler
 		
 		private static void DoAppendPInvoke(StringBuilder builder, MethodDefinition method, PInvokeInfo info)
 		{
-			builder.Append("[System.Runtime.InteropServices.DllImportAttribute(\"");
+			builder.Append("[System.Runtime.InteropServices.DllImport(\"");
 			builder.Append(info.Module.Name);
 			if (info.EntryPoint != method.Name)
 			{
@@ -366,28 +366,7 @@ namespace Disassembler
 		{
 			foreach (SecurityDeclaration sec in secs)
 			{
-				if (sec.PermissionSet.IsUnrestricted())
-				{
-					builder.AppendFormat("[System.Security.Permissions.SecurityPermission(System.Security.Permissions.SecurityAction.{0}, Unrestricted = true)]{1}", sec.Action, Environment.NewLine);
-				}
-				else
-				{
-					builder.AppendFormat("[System.Security.Permissions.SecurityPermission(System.Security.Permissions.SecurityAction.{0}", sec.Action);
-					foreach (IPermission o in sec.PermissionSet)	// SecurityPermission
-					{
-						// This outputs the permission as XML which is really ugly but there are zillions of IPermission
-						// implementators so it would be a lot of work to do something better. We will special case
-						// one or two of the most common attributes however.
-						SecurityPermission sp = o as SecurityPermission;
-						if (sp != null)
-						{
-							builder.AppendFormat(", {0} = true", sp.Flags);
-						}
-						else
-							builder.AppendFormat(", {0}", o);
-					}
-					builder.AppendFormat(")]{0}", Environment.NewLine);
-				}
+				builder.AppendLine(sec.ToText());
 			}
 		}
 		
@@ -395,27 +374,7 @@ namespace Disassembler
 		{
 			foreach (CustomAttribute attr in attrs)
 			{
-				var args = new List<string>();
-				
-				attr.Resolve ();			// we need to do this so things like the enums used within arguments show up correctly
-				foreach (object o in attr.ConstructorParameters)
-				{
-					args.Add(DoArgToString(o));
-				}
-				
-				foreach (System.Collections.DictionaryEntry d in attr.Properties)
-				{
-					args.Add(string.Format("{0} = {1}", d.Key, DoArgToString(d.Value)));
-				}
-				
-				foreach (System.Collections.DictionaryEntry d in attr.Fields)
-				{
-					args.Add(string.Format("{0} = {1}", d.Key, DoArgToString(d.Value)));
-				}
-				
-				string name = attr.Constructor.DeclaringType.FullName;
-				builder.AppendFormat("[{0}({1})]", name, string.Join(", ", args.ToArray()));
-				builder.AppendLine();
+				builder.AppendLine(attr.ToText());
 			}
 		}
 		

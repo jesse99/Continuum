@@ -63,9 +63,9 @@ namespace Disassembler
 				// where to look for the mdb file.
 				string path = fileURL().path().description();
 				
-				AssemblyDefinition assembly = AssemblyFactory.GetAssembly(path);
-				DoLoadSymbols(assembly);
-				DoGetNamespaces(assembly);
+				m_assembly = AssemblyFactory.GetAssembly(path);
+				DoLoadSymbols(m_assembly);
+				DoGetNamespaces(m_assembly);
 			}
 			catch (Exception e)
 			{
@@ -83,6 +83,11 @@ namespace Disassembler
 			}
 			
 			return read;
+		}
+		
+		public AssemblyDefinition Assembly
+		{
+			get {return m_assembly;}
 		}
 		
 		public NamespaceItem[] Namespaces
@@ -110,21 +115,8 @@ namespace Disassembler
 			}
 		}
 		
-		// HasCustomAttributes/CustomAttributes
-		// HasSecurityDeclarations/SecurityDeclarations
-		// Kind
-		// Name
-		// Runtime
 		private void DoGetNamespaces(AssemblyDefinition assembly)
 		{
-			// AssemblyReferences
-			// HasCustomAttributes/CustomAttributes
-			// ExternTypes
-			// Image
-			// MemberReferences
-			// ModuleReferences
-			// Resources
-			// TypeReferences
 			foreach (ModuleDefinition module in assembly.Modules)
 			{
 				foreach (TypeDefinition type in module.Types)
@@ -154,6 +146,7 @@ namespace Disassembler
 		#endregion
 		
 		#region Fields
+		private AssemblyDefinition m_assembly;
 		private List<NamespaceItem> m_namespaces = new List<NamespaceItem>();
 		#endregion
 	}

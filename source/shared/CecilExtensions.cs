@@ -19,19 +19,44 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-//using Gear;
 using Gear.Helpers;
 using Mono.Cecil;
 using System;
-//using System.Collections.Generic;
-//using System.Diagnostics;
-//using System.Globalization;
+using System.Collections.Generic;
+using System.Security;
+using System.Security.Permissions;
 
 namespace Shared
 {
 	[ThreadModel(ThreadModel.Concurrent)]
 	public static class CecilExtensions
 	{
+		public static string ToText(this CustomAttribute attr)
+		{
+			var args = new List<string>();
+			
+			attr.Resolve ();						// we need to do this so things like the enums used within arguments show up correctly
+			foreach (object o in attr.ConstructorParameters)
+			{
+				args.Add(DoArgToString(o));
+			}
+			
+			foreach (System.Collections.DictionaryEntry d in attr.Properties)
+			{
+				args.Add(string.Format("{0} = {1}", d.Key, DoArgToString(d.Value)));
+			}
+			
+			foreach (System.Collections.DictionaryEntry d in attr.Fields)
+			{
+				args.Add(string.Format("{0} = {1}", d.Key, DoArgToString(d.Value)));
+			}
+			
+			string name = attr.Constructor.DeclaringType.FullName;
+			if (name.EndsWith("Attribute"))
+				name = name.Substring(0, name.Length - "Attribute".Length);
+			return string.Format("[{0}({1})]", name, string.Join(", ", args.ToArray()));
+		}
+		
 		public static bool HasAttribute(this CustomAttributeCollection attrs, string name)
 		{
 			foreach (CustomAttribute attr in attrs)
@@ -72,6 +97,48 @@ namespace Shared
 			}
 			
 			return builder.ToString();
+		}
+		
+		public static string ToText(this SecurityDeclaration sec)
+		{
+			if (sec.PermissionSet.IsUnrestricted())
+			{
+				return string.Format("[System.Security.Permissions.SecurityPermission(System.Security.Permissions.SecurityAction.{0}, Unrestricted = true)]", sec.Action);
+			}
+			else
+			{
+				var builder = new System.Text.StringBuilder();
+				
+				builder.AppendFormat("[System.Security.Permissions.SecurityPermission(System.Security.Permissions.SecurityAction.{0}", sec.Action);
+				foreach (IPermission o in sec.PermissionSet)
+				{
+					// This outputs the permission as XML which is really ugly but there are zillions of 
+					// IPermission implementators so it would be a lot of work to do something better. 
+					// We will special case one or two of the most common attributes however.
+					SecurityPermission sp = o as SecurityPermission;
+					if (sp != null)
+					{
+						builder.AppendFormat(", {0} = true", sp.Flags);
+					}
+					else
+						builder.AppendFormat(", {0}", o);
+				}
+				builder.AppendFormat(")]");
+				
+				return builder.ToString();
+			}
+		}
+		
+		private static string DoArgToString(object arg)
+		{
+			if (arg == null)
+				return string.Empty;
+			
+			else if (arg is string)
+				return string.Format("\"{0}\"", arg);
+			
+			else
+				return arg.ToString();
 		}
 	}
 }

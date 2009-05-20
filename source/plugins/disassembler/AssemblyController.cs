@@ -23,8 +23,11 @@ using Gear;
 using Gear.Helpers;
 using MCocoa;
 using MObjc;
+using Mono.Cecil;
+using Mono.Cecil.Binary;
 using Shared;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Disassembler
@@ -71,6 +74,24 @@ namespace Disassembler
 			}
 		}
 		
+		public void getInfo(NSObject sender)
+		{
+			NSIndexSet selections = m_table.selectedRowIndexes();
+			if (selections.count() > 0)
+			{
+				uint row = selections.firstIndex();
+				while (row != Enums.NSNotFound)
+				{
+					AssemblyItem item = (AssemblyItem) (m_table.itemAtRow((int) row));
+					DoGetInfo(item);
+					
+					row = selections.indexGreaterThanIndex(row);
+				}
+			}
+			else
+				DoGetAssemblyInfo();
+		}
+		
 		public int outlineView_numberOfChildrenOfItem(NSOutlineView table, AssemblyItem item)
 		{
 			return item == null ? m_doc.Namespaces.Length : item.ChildCount;
@@ -92,6 +113,102 @@ namespace Disassembler
 		}
 		
 		#region Private Methods
+		private void DoGetAssemblyInfo()
+		{
+			var builder = new System.Text.StringBuilder();
+			
+			AssemblyDefinition assembly = m_doc.Assembly;
+			
+			DoAppendList(builder, "Attributes:", assembly.CustomAttributes, i => assembly.CustomAttributes[i].ToText());
+			builder.AppendLine("Culture:" + (assembly.Name.Culture.Length > 0 ? " " + assembly.Name.Culture: string.Empty));
+			builder.AppendLine("Entry Point: " + (assembly.EntryPoint != null ? assembly.EntryPoint.ToString() : "none"));
+			builder.AppendLine("Flags: " + assembly.Name.Flags);
+			builder.AppendLine("Hash: " + (assembly.Name.Hash != null && assembly.Name.Hash.Length > 0 ? BitConverter.ToString(assembly.Name.Hash) : "none"));
+			builder.AppendLine("Hash Algorithm: " + assembly.Name.HashAlgorithm);
+			builder.AppendLine("Kind: " + assembly.Kind);
+			builder.AppendLine("MetadataToken: " + assembly.MetadataToken);
+			builder.AppendLine("Name: " + assembly.Name.Name);
+			builder.AppendLine("PublicKeyToken: " + (assembly.Name.PublicKeyToken != null ? BitConverter.ToString(assembly.Name.PublicKeyToken) : "none"));
+			builder.AppendLine("Runtime: " + assembly.Runtime);
+			DoAppendList(builder, "Security:", assembly.SecurityDeclarations);
+			builder.AppendLine("Version: " + assembly.Name.Version);
+			
+			foreach (ModuleDefinition module in assembly.Modules)
+			{
+				builder.AppendLine();
+				
+				DoAppendList(builder, "Assembly References:", module.AssemblyReferences, i => module.AssemblyReferences[i].FullName);
+				DoAppendList(builder, "Attributes:", module.CustomAttributes, i => module.CustomAttributes[i].ToText());
+				DoAppendList(builder, "Extern Types:", module.ExternTypes, i => module.ExternTypes[i].FullName);
+				builder.AppendLine("Image Characteristics: " + (module.Image != null ? module.Image.PEFileHeader.Characteristics.ToString() : "no image"));
+				builder.AppendLine("Is Main: " + (module.Main ? "true" : "false"));
+				DoAppendList(builder, "Member References:", module.MemberReferences, i => module.MemberReferences[i].ToString());
+				builder.AppendLine("MetadataToken: " + module.MetadataToken);
+				builder.AppendLine("Module Name: " + module.Name);
+				builder.AppendLine("Path: " + (module.Image != null && module.Image.FileInformation != null ? module.Image.FileInformation.FullName : "none"));
+				builder.AppendLine("Runtime Flags: " + (module.Image != null ? module.Image.CLIHeader.Flags.ToString() : "no image"));
+				DoAppendList(builder, "Type References:", module.TypeReferences, i => module.TypeReferences[i].FullName);
+			}
+			
+			DoShowInfo(builder.ToString(), assembly.Name.Name);
+		}
+		
+		// SecurityDeclarationCollection isn't an IList or even an ICollection.
+		private void DoAppendList(System.Text.StringBuilder builder, string name, SecurityDeclarationCollection c)
+		{
+			var l = new List<SecurityDeclaration>();
+			
+			if (c != null)
+				foreach (SecurityDeclaration s in c)
+					l.Add(s);
+			
+			DoAppendList(builder, name, l, i => l[i].ToText());
+		}
+		
+		private void DoAppendList(System.Text.StringBuilder builder, string name, System.Collections.IList c, Func<int, string> namer)
+		{
+			builder.AppendLine(name);
+			
+			var l = new List<string>(c.Count);
+			for (int i = 0; i < c.Count; ++i)
+				l.Add(namer(i));
+				
+			if (l.Count > 0)
+			{
+				l.Sort();
+				
+				foreach (string n in l)
+					builder.AppendLine("\t" + n);
+			}
+			else
+					builder.AppendLine("\tnone");
+		}
+		
+		private void DoGetInfo(AssemblyItem item)
+		{
+			string text = item.GetInfo();
+			if (text.Length > 0)
+				DoShowInfo(text, item.Label);
+			else
+				Functions.NSBeep();
+		}
+		
+		private void DoShowInfo(string text, string label)
+		{
+			Boss boss = ObjectModel.Create("FileSystem");
+			var fs = boss.Get<IFileSystem>();
+			string file = fs.GetTempFile(label.Replace(".", string.Empty), ".info");
+			
+			using (StreamWriter writer = new StreamWriter(file))
+			{
+				writer.WriteLine("{0}", text);
+			}
+			
+			boss = ObjectModel.Create("Application");
+			var launcher = boss.Get<ILaunch>();
+			launcher.Launch(file, -1, -1, 1);
+		}
+		
 		private void DoOpen(AssemblyItem item)
 		{
 			string text = item.GetText();

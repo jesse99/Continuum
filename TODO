@@ -51,23 +51,21 @@ http://macosx.com/forums/archive/t-299331.html
 			}
 			
 * Allow files and asemblies to be disasembled:
-	- should be able to Get Info for everything in the list view, maybe with an
-	  inspector window
-	- make sure get info has stuff like AssemblyTitle and AssemblyDescription, fow now
-	  could handle this with an info language
+	- context menu needs to support type::name
+	- add support for viewing resources
+		` bin language
+		` extensions are stuff like dylib and mdb
+	- add get ifno for resources
 	- remember window positions
-	- make sure disassembly objects go away
 	- add support for disassemble method (and maybe type)
 	- if method is in more than one local assembly display a picker
 	- start with the assembly built last selected
 * Time Machine didn't show an age (just "ago")
 * Find doesn't always show the selection
 * Autocomplete doesn't seem to work with stuff like fields when the context is a getter.
-* Binary viewer:
-	- bin language
-	- dylib, mdb, etc extensions
 * Add a resources section to the disassembler.
 * Open selection should use a picker if too many candidates.
+* Add (all) attributes and security to short form types and methods.
 * Fix dir editor so it doesn't collapse child dirs when an item changes.
 * After duplicating directory items select the new item(s).
 * Make sure spelling and grammar menu works OK.

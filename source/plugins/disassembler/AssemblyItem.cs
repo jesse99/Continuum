@@ -42,6 +42,8 @@ namespace Disassembler
 		
 		public abstract AssemblyItem GetChild(int index);
 		
+		public abstract string GetInfo();
+		
 		public abstract string GetText();
 	}
 }

@@ -81,6 +81,18 @@ namespace Disassembler
 			get {return m_types.Count;}
 		}
 		
+		public override string GetInfo()
+		{
+			var builder = new System.Text.StringBuilder();
+			
+			foreach (TypeItem type in m_types)
+			{
+				builder.AppendLine(type.FullName);
+			}
+			
+			return builder.ToString();
+		}
+		
 		public override string GetText()
 		{
 			return string.Empty;
@@ -181,6 +193,21 @@ namespace Disassembler
 			get {return m_methods.Count;}
 		}
 		
+		public override string GetInfo()
+		{
+			var builder = new System.Text.StringBuilder();
+			
+			TypeAttributes attrs = m_type.Attributes;
+			builder.AppendLine("BeforeFieldInit: " + ((attrs & TypeAttributes.BeforeFieldInit) == TypeAttributes.BeforeFieldInit));
+			builder.AppendLine("ClassSize: " + m_type.ClassSize);
+			builder.AppendLine("FullName: " + m_type.FullName);
+			builder.AppendLine("MetadataToken: " + m_type.MetadataToken);
+			builder.AppendLine("Module: " + m_type.Module.Name);
+			builder.AppendLine("RTSpecialName: " + ((attrs & TypeAttributes.RTSpecialName) == TypeAttributes.RTSpecialName));
+			
+			return builder.ToString();
+		}
+		
 		public override string GetText()
 		{
 			return m_type.Disassemble();
@@ -253,6 +280,24 @@ namespace Disassembler
 			get {return 0;}
 		}
 		
+		public override string GetInfo()
+		{
+			var builder = new System.Text.StringBuilder();
+			
+			MethodAttributes attrs = m_method.Attributes;
+			builder.AppendLine("CallingConvention: " + m_method.CallingConvention);
+			builder.AppendLine("CodeSize: " + (m_method.Body != null ? m_method.Body.CodeSize : 0));
+			builder.AppendLine("HideBySig: " + ((attrs & MethodAttributes.HideBySig) == MethodAttributes.HideBySig));
+			builder.AppendLine("ImplAttributes: " + DoImplToText(m_method.ImplAttributes));
+			builder.AppendLine("InitLocals: " + (m_method.Body != null ? m_method.Body.InitLocals : false));
+			builder.AppendLine("MaxStack: " + (m_method.Body != null ? m_method.Body.MaxStack : 0));
+			builder.AppendLine("MetadataToken: " + m_method.MetadataToken);
+			builder.AppendLine("RequireSecObject: " + ((attrs & MethodAttributes.RequireSecObject) == MethodAttributes.RequireSecObject));
+			builder.AppendLine("SemanticsAttributes: " + m_method.SemanticsAttributes);
+			
+			return builder.ToString();
+		}
+		
 		public override string GetText()
 		{
 			return m_method.Disassemble();
@@ -262,6 +307,59 @@ namespace Disassembler
 		{
 			throw new InvalidOperationException("methods have no children");
 		}
+		
+		#region Private Methods
+		// MethodImplAttributes has multiple fields with the same values so ToString
+		// won't always return the correct names.
+		private static string DoImplToText(MethodImplAttributes attrs)
+		{
+			var builder = new System.Text.StringBuilder();
+			
+			MethodImplAttributes type = attrs & MethodImplAttributes.CodeTypeMask;
+			switch (type)
+			{
+				case MethodImplAttributes.IL:
+					builder.Append("IL");
+					break;
+					
+				case MethodImplAttributes.Native:
+					builder.Append("Native");
+					break;
+					
+				case MethodImplAttributes.OPTIL:
+					builder.Append("OPTIL");
+					break;
+					
+				case MethodImplAttributes.Runtime:
+					builder.Append("Runtime");
+					break;
+				
+				default:
+					Contract.Assert(false, "bad type: " + type);
+					break;
+			}
+			
+			if ((attrs & MethodImplAttributes.Unmanaged) == MethodImplAttributes.Unmanaged)
+				builder.Append(" | Unmanaged");
+			
+			if ((attrs & MethodImplAttributes.ForwardRef) == MethodImplAttributes.ForwardRef)
+				builder.Append(" | ForwardRef");
+			
+			if ((attrs & MethodImplAttributes.PreserveSig) == MethodImplAttributes.PreserveSig)
+				builder.Append(" | PreserveSig");
+			
+			if ((attrs & MethodImplAttributes.InternalCall) == MethodImplAttributes.InternalCall)
+				builder.Append(" | InternalCall");
+			
+			if ((attrs & MethodImplAttributes.Synchronized) == MethodImplAttributes.Synchronized)
+				builder.Append(" | Synchronized");
+			
+			if ((attrs & MethodImplAttributes.NoInlining) == MethodImplAttributes.NoInlining)
+				builder.Append(" | NoInlining");
+			
+			return builder.ToString();
+		}
+		#endregion
 		
 		#region Fields
 		private MethodDefinition m_method;

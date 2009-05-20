@@ -4,6 +4,7 @@
 	<Glob language = "cil">*.cil</Glob>
 	<Glob language = "c#">*.cs</Glob>
 	<Glob language = "html">*.html *.htm</Glob>
+	<Glob language = "info">*.info</Glob>
 	<Glob language = "ignore">*.ignore</Glob>
 	<Glob language = "makefile">Makefile Makefile.am *.make *.mk</Glob> <!-- may want a custom language for automake files -->
 	<Glob language = "objective-c">*.h *.m</Glob>
