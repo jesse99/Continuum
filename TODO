@@ -50,30 +50,24 @@ http://macosx.com/forums/archive/t-299331.html
 					Console.WriteLine("FilterEnd: {0:X4}", handler.FilterEnd.Offset);
 			}
 			
-[System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Explicit, Size=16, CharSet=System.Runtime.InteropServices.CharSet.Ansi)]
-
-
 * Allow files and asemblies to be disasembled:
-	- doc needs to release the items
-	- items need to release their children (or maybe use an NSArray)
 	- should be able to Get Info for everything in the list view, maybe with an
 	  inspector window
-	- make sure get info has stuff like AssemblyTitle and AssemblyDescription
-	- probably should be able to double click a type to popup a type browser
-	- can we use command click in window title to go up?
+	- make sure get info has stuff like AssemblyTitle and AssemblyDescription, fow now
+	  could handle this with an info language
 	- remember window positions
 	- make sure disassembly objects go away
-	- might be neat if il opcodes had get info support
-		http://74.125.155.132/search?q=cache:Lc2lJmRj9HcJ:www.cn-web.com/attachment.php%3Fid%3D7+castclass+ckfinite+newarr+reference&cd=8&hl=en&ct=clnk&gl=us&client=firefox-a
-		http://ctp.di.fct.unl.pt/lei/lp2/cil.html
-		http://74.125.155.132/search?q=cache:icKKuq6gVhkJ:www.ssw.uni-linz.ac.at/Teaching/Lectures/Sem/2001/Literatur/ILinstrset.doc+castclass+ckfinite+newarr+reference&cd=13&hl=en&ct=clnk&gl=us&client=firefox-a
 	- add support for disassemble method (and maybe type)
 	- if method is in more than one local assembly display a picker
 	- start with the assembly built last selected
 * Time Machine didn't show an age (just "ago")
+* Find doesn't always show the selection
 * Autocomplete doesn't seem to work with stuff like fields when the context is a getter.
-* Binary viewer (or editor?).
+* Binary viewer:
+	- bin language
+	- dylib, mdb, etc extensions
 * Add a resources section to the disassembler.
+* Open selection should use a picker if too many candidates.
 * Fix dir editor so it doesn't collapse child dirs when an item changes.
 * After duplicating directory items select the new item(s).
 * Make sure spelling and grammar menu works OK.

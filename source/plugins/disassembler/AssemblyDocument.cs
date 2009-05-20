@@ -19,7 +19,6 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-//using Gear;
 using Gear.Helpers;
 using MCocoa;
 using MObjc;
@@ -39,6 +38,13 @@ namespace Disassembler
 		private AssemblyDocument(IntPtr instance) : base(instance)
 		{
 			ActiveObjects.Add(this);
+		}
+		
+		protected override void OnDealloc()
+		{
+			m_namespaces.ForEach(n => n.release());
+			
+			base.OnDealloc();
 		}
 		
 		public new void makeWindowControllers()
@@ -135,7 +141,6 @@ namespace Disassembler
 					if (item == null)
 					{
 						item = new NamespaceItem(ns);
-						item.retain();
 						m_namespaces.Add(item);
 					}
 					

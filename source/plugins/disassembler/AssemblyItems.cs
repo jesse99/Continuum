@@ -49,8 +49,15 @@ namespace Disassembler
 			Contract.Requires(type != null, "type is null");
 			
 			var item = new TypeItem(type);
-			item.retain();
 			m_types.Add(item);
+		}
+		
+		protected override void OnDealloc()
+		{
+			m_types.ForEach(t => t.release());
+			m_types.Clear();
+			
+			base.OnDealloc();
 		}
 		
 		public void OnLoaded()
@@ -102,16 +109,22 @@ namespace Disassembler
 			foreach (MethodDefinition method in type.Constructors)
 			{
 				var item = new MethodItem(method);
-				item.retain();
 				m_methods.Add(item);
 			}
 			
 			foreach (MethodDefinition method in type.Methods)
 			{
 				var item = new MethodItem(method);
-				item.retain();
 				m_methods.Add(item);
 			}
+		}
+		
+		protected override void OnDealloc()
+		{
+			m_methods.ForEach(m => m.release());
+			m_methods.Clear();
+			
+			base.OnDealloc();
 		}
 		
 		public void OnLoaded()

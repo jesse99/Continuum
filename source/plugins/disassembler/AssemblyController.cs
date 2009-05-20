@@ -37,6 +37,7 @@ namespace Disassembler
 			m_doc = doc;
 			
 			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("disassembler"), this);
+			window().setDelegate(this);
 
 //			window().setTitle(NSString.Create(m_name));
 //			Unused.Value = window().setFrameAutosaveName(NSString.Create(window().title().ToString() + " editor"));
@@ -47,6 +48,14 @@ namespace Disassembler
 			m_table.setTarget(this);
 			
 			ActiveObjects.Add(this);
+			autorelease();							// get rid of the retain done by AllocNative
+		}
+		
+		public void windowWillClose(NSObject notification)
+		{
+			m_table.setDelegate(null);
+			
+			window().release();
 		}
 		
 		public void doubleClicked(NSOutlineView sender)
