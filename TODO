@@ -24,13 +24,6 @@ sudo fs_usage -f filesys
 
 http://macosx.com/forums/archive/t-299331.html
 
-* Getting "language binary is not associated with a glob" warnings.
-	- also for info
-* Need a custom document for binary files. Or a special case in the text document?
-	- if a special case is used make sure we can't save
-	- extensions are stuff like dylib and mdb
-	- open as command?
-	- probably should have a warning if the file is really large
 * Open selection should use a picker if too many candidates. Or allow ellipsis to be
    selected?
 * Add (all) attributes and security to short form types and methods.

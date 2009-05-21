@@ -64,7 +64,6 @@ namespace DirectoryEditor
 		
 		public new NSMenu menuForEvent(NSEvent evt)
 		{
-			
 			NSMenu menu = NSMenu.Alloc().initWithTitle(NSString.Empty);
 			menu.autorelease();
 			
@@ -94,6 +93,16 @@ namespace DirectoryEditor
 			}
 			
 			// Build the menu.
+			foreach (string path in paths)
+			{
+				if (System.IO.File.Exists(path))
+				{
+					Unused.Value = menu.addItemWithTitle_action_keyEquivalent(
+						NSString.Create("Open as Binary"), "openBinaries:", NSString.Empty);
+					break;
+				}
+			}
+			
 			Dictionary<string, string[]> commands = Sccs.GetCommands(paths);
 			foreach (var entry in commands)
 			{

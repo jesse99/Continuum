@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Jesse Jones
+// Copyright (C) 2008-2009 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -60,6 +60,11 @@ namespace TextEditor
 				m_text = null;
 			}
 			m_controller.Open();
+		}
+		
+		public bool isBinary()
+		{
+			return m_binary;
 		}
 		
 		public bool HasChangedOnDisk()
@@ -134,71 +139,50 @@ namespace TextEditor
 		
 		public bool readFromData_ofType_error(NSData data, NSString typeName, IntPtr outError)
 		{
-			bool read = true;
+			bool read = false;
 			
 			try
 			{
 				Contract.Assert(NSObject.IsNullOrNil(m_text), "m_text is not null");
 				
-				switch (typeName.description())
+				if (DoShouldOpen(data.length()))
 				{
-					// Note that this does not mean that the file is utf8, instead it means that the
-					// file is our default document type which means we need to deduce the encoding.
-					case "Plain Text, UTF8 Encoded":
-					case "HTML":
-						Boss boss = ObjectModel.Create("TextEditorPlugin");
-						var encoding = boss.Get<ITextEncoding>();
-						m_text = NSAttributedString.Create(encoding.Decode(data).description());
-						break;
+					DoReadData(data, typeName);
+					if (NSObject.IsNullOrNil(m_text))
+						throw new InvalidOperationException("Couldn't decode the file.");
 					
-					// These types are based on the file's extension so we can (more or less) trust them.
-					case "Rich Text Format (RTF)":
-						m_text = DoReadWrapped(data, Externs.NSRTFTextDocumentType);
-						break;
+					if (m_text != null)
+						DoCheckForControlChars(m_text.string_().description());
 						
-					case "Word 97 Format (doc)":
-						m_text = DoReadWrapped(data, Externs.NSDocFormatTextDocumentType);
-						break;
-						
-					case "Word 2007 Format (docx)":
-						m_text = DoReadWrapped(data, Externs.NSOfficeOpenXMLTextDocumentType);
-						break;
-						
-					case "Open Document Text (odt)":
-						m_text = DoReadWrapped(data, Externs.NSOpenDocumentTextDocumentType);
-						break;
+					m_size = data.length();
 					
-					default:
-						Contract.Assert(false, "bad typeName: " + typeName.description());
-						break;
-				}
-				
-				if (NSObject.IsNullOrNil(m_text))
-					throw new InvalidOperationException("Couldn't decode the file.");
-				
-				if (m_text != null)
-					DoCheckForControlChars(m_text.string_().description());
-					
-				m_size = data.length();
-				
-				if (m_controller != null)			// will be null for initial open, but non-null for revert
-				{
-					m_controller.RichText = m_text;
-					m_text = null;
+					if (m_controller != null)			// will be null for initial open, but non-null for revert
+					{
+						m_controller.RichText = m_text;
+						m_text = null;
+					}
+					else
+						m_text.retain();
+						
+					read = true;
 				}
 				else
-					m_text.retain();
+				{
+					NSObject error = NSError.errorWithDomain_code_userInfo(Externs.Cocoa3Domain, Enums.NSUserCancelledError, null);
+					Marshal.WriteIntPtr(outError, error);
+				}
 			}
 			catch (Exception e)
 			{
+				Log.WriteLine(TraceLevel.Error, "App", "Couldn't open {0:D}", fileURL());
+				Log.WriteLine(TraceLevel.Error, "App", "{0}", e);
+				
 				NSMutableDictionary userInfo = NSMutableDictionary.Create();
 				userInfo.setObject_forKey(NSString.Create("Couldn't read the document data."), Externs.NSLocalizedDescriptionKey);
 				userInfo.setObject_forKey(NSString.Create(e.Message), Externs.NSLocalizedFailureReasonErrorKey);
 				
 				NSObject error = NSError.errorWithDomain_code_userInfo(Externs.Cocoa3Domain, 1, userInfo);
 				Marshal.WriteIntPtr(outError, error);
-				
-				read = false;
 			}
 			
 			return read;
@@ -277,6 +261,75 @@ namespace TextEditor
 		}
 		
 		#region Private Methods
+		private bool DoShouldOpen(uint bytes)
+		{
+			const uint MaxBytes = 512*1024;		// I think this is around 16K lines of source
+			
+			bool open = true;
+			
+			if (bytes > MaxBytes)
+			{
+				string path = fileURL().path().description();
+				string file = System.IO.Path.GetFileName(path);
+				
+				NSString title = NSString.Create(file);
+				NSString message = NSString.Create("This file is over {0}K. Are you sure you want to open it?", bytes/1024);
+				
+				int button = Functions.NSRunAlertPanel(
+					title,									// title
+					message, 							// message
+					NSString.Create("No"),	// default button
+					NSString.Create("Yes"),	// alt button
+					null);								// other button
+					
+				open = button == Enums.NSAlertAlternateReturn;
+			}
+			
+			return open;
+		}
+		
+		private void DoReadData(NSData data, NSString typeName)
+		{
+			switch (typeName.description())
+			{
+				// Note that this does not mean that the file is utf8, instead it means that the
+				// file is our default document type which means we need to deduce the encoding.
+				case "Plain Text, UTF8 Encoded":
+				case "HTML":
+					Boss boss = ObjectModel.Create("TextEditorPlugin");
+					var encoding = boss.Get<ITextEncoding>();
+					m_text = NSAttributedString.Create(encoding.Decode(data).description());
+					break;
+				
+				// These types are based on the file's extension so we can (more or less) trust them.
+				case "Rich Text Format (RTF)":
+					m_text = DoReadWrapped(data, Externs.NSRTFTextDocumentType);
+					break;
+					
+				case "Word 97 Format (doc)":
+					m_text = DoReadWrapped(data, Externs.NSDocFormatTextDocumentType);
+					break;
+					
+				case "Word 2007 Format (docx)":
+					m_text = DoReadWrapped(data, Externs.NSOfficeOpenXMLTextDocumentType);
+					break;
+					
+				case "Open Document Text (odt)":
+					m_text = DoReadWrapped(data, Externs.NSOpenDocumentTextDocumentType);
+					break;
+					
+				// Open as Binary
+				case "binary":
+					m_text = NSAttributedString.Create(data.bytes().ToText());
+					m_binary = true;
+					break;
+				
+				default:
+					Contract.Assert(false, "bad typeName: " + typeName.description());
+					break;
+			}
+		}
+		
 		private void DoResetURL(NSURL url)
 		{
 			if (url != m_url)
@@ -390,6 +443,7 @@ namespace TextEditor
 		private NSAttributedString m_text;
 		private NSURL m_url;
 		private uint m_size;
+		private bool m_binary;
 		
 		private static Dictionary<char, string> ms_controlNames = new Dictionary<char, string>
 		{

@@ -834,8 +834,11 @@ namespace TextEditor
 		private void DoGetStyler()
 		{
 			string fileName = System.IO.Path.GetFileName(Path);
-			m_language = null;
+			if (document().Call("isBinary").To<bool>())
+				fileName = "foo.bin";
 			
+			m_language = null;
+				
 			ILanguage language = null;
 			Boss boss = ObjectModel.Create("Stylers");
 			foreach (IFindLanguage find in boss.GetRepeated<IFindLanguage>())

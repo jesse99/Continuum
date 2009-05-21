@@ -555,34 +555,7 @@ namespace Disassembler
 		
 		public override string GetText()
 		{
-			var builder = new System.Text.StringBuilder();
-			
-			int i = 0;
-			while (i < m_resource.Data.Length)
-			{
-				builder.AppendFormat("{0:X8}\t", i);
-				
-				for (int d = 0; d < 16 && i + d < m_resource.Data.Length; ++d)
-				{
-					builder.AppendFormat("{0:X2} ", m_resource.Data[i + d]);
-					if (d == 7)
-						builder.Append("   ");
-				}
-				
-				builder.Append('\t');
-				for (int j = i; j < i + 16 && j < m_resource.Data.Length; ++j)
-				{
-					if (m_resource.Data[j] < 0x20 || m_resource.Data[j] >= 0x7f)
-						builder.AppendFormat(Shared.Constants.Replacement);
-					else
-						builder.AppendFormat("{0}", (char) m_resource.Data[j]);
-				}
-				
-				i += 16;
-				builder.AppendLine();
-			}
-			
-			return builder.ToString();
+			return m_resource.Data.ToText();
 		}
 		
 		#region Fields

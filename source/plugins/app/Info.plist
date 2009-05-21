@@ -36,6 +36,17 @@
 		</dict>
 		
 		<dict>
+			<key>CFBundleTypeName</key>
+			<string>binary</string>
+			
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			
+			<key>NSDocumentClass</key>
+			<string>TextDocument</string>
+		</dict>
+		
+		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
 				<string>exe</string>

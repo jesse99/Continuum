@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Jesse Jones
+// Copyright (C) 2008-2009 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -131,6 +131,34 @@ namespace App
 				bool enable = commands.Values.Any(a => Array.IndexOf(a, command) >= 0);
 				
 				item.setEnabled(enable);
+			}
+		}
+		
+		public void openBinary(NSObject sender)
+		{
+			NSOpenPanel panel = NSOpenPanel.Create();
+			panel.setTitle(NSString.Create("Open as Binary"));
+			panel.setTreatsFilePackagesAsDirectories(true);
+			panel.setAllowsMultipleSelection(true);
+			
+			int btn = panel.runModal();
+			
+			if (btn == Enums.NSOKButton)
+			{
+				foreach (NSString path in panel.filenames())
+				{
+					DoOpenBinary(path);
+				}
+			}
+		}
+		
+		public void openBinaries(NSObject sender)
+		{
+			string[] paths = DoGetSelectedPaths();
+			foreach (string path in paths)
+			{
+				if (System.IO.File.Exists(path))
+					DoOpenBinary(NSString.Create(path));
 			}
 		}
 		
@@ -430,6 +458,42 @@ fi
 		}
 		
 		#region Private Methods
+		private void DoOpenBinary(NSString path)
+		{
+			try
+			{
+				NSURL url = NSURL.fileURLWithPath(path);
+				NSDocumentController controller = NSDocumentController.sharedDocumentController();
+				
+				NSDocument doc = controller.documentForURL(url);
+				if (NSObject.IsNullOrNil(doc))
+				{
+					NSError err;
+					doc = controller.makeDocumentWithContentsOfURL_ofType_error(
+						url, NSString.Create("binary"), out err);
+					if (!NSObject.IsNullOrNil(err))
+						err.Raise();
+						
+					controller.addDocument(doc);
+					doc.makeWindowControllers();
+				}
+				
+				doc.showWindows();
+			}
+			catch (OperationCanceledException)
+			{
+			}
+			catch (Exception e)
+			{
+				Log.WriteLine(TraceLevel.Error, "App", "Couldn't open {0:D}", path);
+				Log.WriteLine(TraceLevel.Error, "App", "{0}", e);
+				
+				NSString title = NSString.Create("Couldn't open '{0:D}'.", path);
+				NSString message = NSString.Create(e.Message);
+				Unused.Value = Functions.NSRunAlertPanel(title, message);
+			}
+		}
+		
 		private string DoGetAppPath()
 		{
 			string asmPath = System.Reflection.Assembly.GetExecutingAssembly().Location;

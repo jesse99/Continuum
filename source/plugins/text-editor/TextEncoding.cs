@@ -94,14 +94,8 @@ namespace TextEditor
 			uint encoding = 0;
 			const int HeaderBytes = 2*64;
 			
-			IntPtr ptr = Marshal.AllocHGlobal(HeaderBytes);
-			for (int i = 0; i < HeaderBytes; ++i)					// getBytes_length may not fill the entire buffer so we need to seed it with something
-				Marshal.WriteByte(ptr, i, (byte) '?');
-			data.getBytes_length(ptr, HeaderBytes);
-			
-			byte[] buffer = new byte[HeaderBytes];
-			Marshal.Copy(ptr, buffer, 0, HeaderBytes);
-			Marshal.FreeHGlobal(ptr);
+			byte[] buffer;
+			data.getBytes_length(out buffer, HeaderBytes);
 			
 			// Check for a BOM.
 			if (buffer[0] == 0x00 && buffer[1] == 0x00 && buffer[2] == 0xFE && buffer[3] == 0xFF)
