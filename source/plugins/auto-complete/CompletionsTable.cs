@@ -174,7 +174,7 @@ namespace AutoComplete
 		{
 			NSString chars = evt.characters();
 			
-			if (chars.Equals("\t") || chars.Equals("\r"))
+			if (chars.Equals("\t") || chars.Equals("\r") || chars.Equals(" "))
 			{
 				DoComplete(false, selectedRow());
 			}

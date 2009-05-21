@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using Gear.Helpers;
 using MCocoa;
 using MObjc;
 using Shared;
@@ -32,11 +33,12 @@ using System.Xml.Schema;
 
 namespace Styler
 {
-	internal sealed class FactoryPrefs : IFactoryPrefs
+	internal sealed class FactoryPrefs : IFactoryPrefs, IObserver
 	{
 		public void Instantiated(Boss boss)
 		{
 			m_boss = boss;
+			Broadcaster.Register("starting event loop", this);
 		}
 		
 		public Boss Boss
@@ -48,14 +50,42 @@ namespace Styler
 		{
 			XmlNode xml = DoLoadXml();
 			
-			NSDictionary globs = DoReadGlobs(xml);
+			var globs = NSDictionary.Create();
 			dict.setObject_forKey(globs, NSString.Create("language globs"));
-
+			
 			string[] languages = DoReadLanguages(xml);
 			dict.setObject_forKey(NSArray.Create(languages), NSString.Create("languages"));
 		}
 		
+		public void OnBroadcast(string name, object value)
+		{
+			switch (name)
+			{
+				case "starting event loop":
+					DoUpdateGlobs();
+					break;
+					
+				default:
+					Contract.Assert(false, "bad name: " + name);
+					break;
+			}
+		}
+		
 		#region Private Methods
+		// Note that we don't want to use IFactoryPrefs for globs because new ones
+		// added Continuum need to show up.
+		private void DoUpdateGlobs()
+		{
+			XmlNode xml = DoLoadXml();
+			NSMutableDictionary globs = DoReadGlobs(xml);
+			
+			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
+			var user = defaults.objectForKey(NSString.Create("language globs")).To<NSDictionary>();
+			globs.addEntriesFromDictionary(user);
+			
+			defaults.setObject_forKey(globs, NSString.Create("language globs"));
+		}
+		
 		private XmlNode DoLoadXml()
 		{
 			XmlDocument xml;
@@ -90,9 +120,9 @@ namespace Styler
 			return xml;
 		}
 		
-		private NSDictionary DoReadGlobs(XmlNode xml)
+		private NSMutableDictionary DoReadGlobs(XmlNode xml)
 		{
-			NSMutableDictionary dict = NSMutableDictionary.Create();
+			var dict = NSMutableDictionary.Create();
 			
 			foreach (XmlNode child in xml.ChildNodes)
 			{

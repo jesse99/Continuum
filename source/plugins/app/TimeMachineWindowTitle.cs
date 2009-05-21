@@ -60,13 +60,24 @@ namespace App
 			const int Month = 30*Day;
 			const int Year = 12*Month;
 			
-			double hours = delta.TotalHours;
-			
 			var builder = new System.Text.StringBuilder();
+			
+			double hours = delta.TotalHours;
 			DoAppend(builder, ref hours, Year, "year");
 			DoAppend(builder, ref hours, Month, "month");
 			DoAppend(builder, ref hours, Day, "day");
 			DoAppend(builder, ref hours, 1, "hour");
+			
+			if (builder.Length == 0)
+			{
+				double minutes = delta.TotalMinutes;
+				DoAppend(builder, ref minutes, 1, "minute");
+			}
+			if (builder.Length == 0)
+			{
+				double seconds = delta.Seconds;
+				DoAppend(builder, ref seconds, 1, "second");
+			}
 			
 			builder.Append("ago");
 			

@@ -62,9 +62,11 @@ namespace App
 			// up it opens continuum.exe as a document. The following line suppresses cocoa's argument
 			// processing... 
 			NSUserDefaults.standardUserDefaults().setObject_forKey(NSString.Create("NO"), NSString.Create("NSTreatUnknownArgumentsAsOpen"));
-			pool.release();
 			
 			Log.WriteLine(TraceLevel.Verbose, "Startup", "starting event loop");
+			Broadcaster.Invoke("starting event loop", null);
+			pool.release();
+
 			app.run();
 		}
 		
