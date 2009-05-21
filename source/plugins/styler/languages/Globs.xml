@@ -1,5 +1,6 @@
 <Globs>
 	<!-- If this is edited you should probably review DirectoryItemStyler.DoSetDefaultPrefs. -->
+	<Glob language = "binary">*.bin</Glob>
 	<Glob language = "c">*.c</Glob>
 	<Glob language = "cil">*.cil</Glob>
 	<Glob language = "c#">*.cs</Glob>

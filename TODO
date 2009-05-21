@@ -24,38 +24,7 @@ sudo fs_usage -f filesys
 
 http://macosx.com/forums/archive/t-299331.html
 
-			foreach (ExceptionHandler handler in body.ExceptionHandlers)
-			{
-				Console.WriteLine("Type: {0}", handler.Type);
-				
-				if (handler.CatchType != null)
-					Console.WriteLine("CatchType: {0}", handler.CatchType.FullName);
-				
-				if (handler.TryStart != null)
-					Console.WriteLine("TryStart: {0:X4}", handler.TryStart.Offset);
-				
-				if (handler.TryEnd != null)
-					Console.WriteLine("TryEnd: {0:X4}", handler.TryEnd.Offset);
-				
-				if (handler.HandlerStart != null)
-					Console.WriteLine("HandlerStart: {0:X4}", handler.HandlerStart.Offset);
-				
-				if (handler.HandlerEnd != null)
-					Console.WriteLine("HandlerEnd: {0:X4}", handler.HandlerEnd.Offset);
-				
-				if (handler.FilterStart != null)
-					Console.WriteLine("FilterStart: {0:X4}", handler.FilterStart.Offset);
-				
-				if (handler.FilterEnd != null)
-					Console.WriteLine("FilterEnd: {0:X4}", handler.FilterEnd.Offset);
-			}
-			
 * Allow files and asemblies to be disasembled:
-	- add support for viewing resources
-		` bin language
-		` extensions are stuff like dylib and mdb
-	- add get info for resources
-	- remember window positions
 	- add support for disassemble method (and maybe type)
 	- if method is in more than one local assembly display a picker, or maybe just use
 	  the last assembly written to
@@ -63,6 +32,10 @@ http://macosx.com/forums/archive/t-299331.html
 * Time Machine didn't show an age (just "ago")
 * Find doesn't always show the selection
 * Autocomplete doesn't seem to work with stuff like fields when the context is a getter.
+* Allow space to be used in the table.
+* Need a custom document for binary files. Or a special case in the text document?
+	- if a special case is used make sure we can't save
+	- extensions are stuff like dylib and mdb
 * Open selection should use a picker if too many candidates.
 * Add (all) attributes and security to short form types and methods.
 * Fix dir editor so it doesn't collapse child dirs when an item changes.

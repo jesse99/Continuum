@@ -23,6 +23,7 @@ using Gear.Helpers;
 using MCocoa;
 using MObjc;
 using Mono.Cecil;
+using Mono.Cecil.Binary;
 using Shared;
 using System;
 using System.Collections.Generic;
@@ -43,6 +44,7 @@ namespace Disassembler
 		protected override void OnDealloc()
 		{
 			m_namespaces.ForEach(n => n.release());
+			m_resources.release();
 			
 			base.OnDealloc();
 		}
@@ -90,6 +92,11 @@ namespace Disassembler
 			get {return m_assembly;}
 		}
 		
+		public ResourcesItem Resources
+		{
+			get {return m_resources;}
+		}
+		
 		public NamespaceItem[] Namespaces
 		{
 			get {return m_namespaces.ToArray();}
@@ -119,6 +126,11 @@ namespace Disassembler
 		{
 			foreach (ModuleDefinition module in assembly.Modules)
 			{
+				foreach (Resource r in module.Resources)
+				{
+					m_resources.Add(r);
+				}
+				
 				foreach (TypeDefinition type in module.Types)
 				{
 					Contract.Assert(type.Namespace != null);
@@ -147,6 +159,7 @@ namespace Disassembler
 		
 		#region Fields
 		private AssemblyDefinition m_assembly;
+		private ResourcesItem m_resources = new ResourcesItem().Retain();
 		private List<NamespaceItem> m_namespaces = new List<NamespaceItem>();
 		#endregion
 	}

@@ -366,4 +366,256 @@ namespace Disassembler
 		private string m_label;
 		#endregion
 	}
+	
+	[ExportClass("ResourcesItem", "AssemblyItem")]
+	internal sealed class ResourcesItem : AssemblyItem
+	{
+		public ResourcesItem() : base(NSObject.AllocNative("ResourcesItem"))
+		{
+		}
+		
+		public new ResourcesItem Retain()
+		{
+			Unused.Value = retain();
+			return this;
+		}
+		
+		public void Add(Resource resource)
+		{
+			Contract.Requires(resource != null, "resource is null");
+			
+			do
+			{
+				AssemblyLinkedResource alr = resource as AssemblyLinkedResource;
+				if (alr != null)
+				{
+					m_resources.Add(new AssemblyResourceItem(alr));
+					break;
+				}
+				
+				EmbeddedResource er = resource as EmbeddedResource;
+				if (er != null)
+				{
+					m_resources.Add(new EmbeddedResourceItem(er));
+					break;
+				}
+				
+				LinkedResource lr = resource as LinkedResource;
+				if (lr != null)
+				{
+					m_resources.Add(new LinkedResourceItem(lr));
+					break;
+				}
+				
+				Contract.Assert(false, "bad resource type: " + resource.GetType());
+			}
+			while (false);
+		}
+		
+		protected override void OnDealloc()
+		{
+			m_resources.ForEach(r => r.release());
+			m_resources.Clear();
+			
+			base.OnDealloc();
+		}
+		
+		public void OnLoaded()
+		{
+			m_resources.Sort((lhs, rhs) => lhs.Label.CompareTo(rhs.Label));
+		}
+		
+		public override string Label
+		{
+			get {return "resources";}
+		}
+		
+		public override string FullName
+		{
+			get {return Label;}
+		}
+		
+		public override int ChildCount
+		{
+			get {return m_resources.Count;}
+		}
+		
+		public override string GetInfo()
+		{
+			var builder = new System.Text.StringBuilder();
+			
+			foreach (ResourceItem r in m_resources)
+			{
+				builder.AppendLine(r.FullName);
+			}
+			
+			return builder.ToString();
+		}
+		
+		public override string GetText()
+		{
+			return string.Empty;
+		}
+		
+		public override AssemblyItem GetChild(int index)
+		{
+			return m_resources[index];
+		}
+		
+		#region Fields
+		private List<ResourceItem> m_resources = new List<ResourceItem>();
+		#endregion
+	}
+
+	[ExportClass("ResourceItem", "AssemblyItem")]
+	internal abstract class ResourceItem : AssemblyItem
+	{
+		protected ResourceItem(Resource resource, string type) : base(NSObject.AllocNative(type))
+		{
+			Contract.Requires(resource != null, "resource is null");
+
+			m_name = resource.Name;
+		}
+		
+		public override string Label
+		{
+			get {return m_name;}
+		}
+		
+		public override string FullName
+		{
+			get {return m_name;}
+		}
+		
+		public override int ChildCount
+		{
+			get {return 0;}
+		}
+		
+		public override AssemblyItem GetChild(int index)
+		{
+			throw new InvalidOperationException("resources have no children");
+		}
+		
+		public override string Extension()
+		{
+			return ".bin";
+		}
+		
+		#region Fields
+		private string m_name;
+		#endregion
+	}
+	
+	[ExportClass("AssemblyResourceItem", "ResourceItem")]
+	internal sealed class AssemblyResourceItem : ResourceItem
+	{
+		public AssemblyResourceItem(AssemblyLinkedResource resource) : base(resource, "AssemblyResourceItem")
+		{
+			m_resource = resource;
+		}
+		
+		public override string GetInfo()
+		{
+			var builder = new System.Text.StringBuilder();
+			
+			builder.AppendLine("Assembly: " + m_resource.Assembly.FullName);
+			builder.AppendLine("Flags: " + m_resource.Flags);
+			
+			return builder.ToString();
+		}
+		
+		public override string GetText()
+		{
+			return string.Empty;
+		}
+		
+		#region Fields
+		private AssemblyLinkedResource m_resource;
+		#endregion
+	}
+	
+	[ExportClass("EmbeddedResourceItem", "ResourceItem")]
+	internal sealed class EmbeddedResourceItem : ResourceItem
+	{
+		public EmbeddedResourceItem(EmbeddedResource resource) : base(resource, "EmbeddedResourceItem")
+		{
+			m_resource = resource;
+		}
+		
+		public override string GetInfo()
+		{
+			var builder = new System.Text.StringBuilder();
+			
+			builder.AppendLine("Flags: " + m_resource.Flags);
+			builder.AppendLine("Size: " + m_resource.Data.Length + " bytes");
+			
+			return builder.ToString();
+		}
+		
+		public override string GetText()
+		{
+			var builder = new System.Text.StringBuilder();
+			
+			int i = 0;
+			while (i < m_resource.Data.Length)
+			{
+				builder.AppendFormat("{0:X8}\t", i);
+				
+				for (int d = 0; d < 16 && i + d < m_resource.Data.Length; ++d)
+				{
+					builder.AppendFormat("{0:X2} ", m_resource.Data[i + d]);
+					if (d == 7)
+						builder.Append("   ");
+				}
+				
+				builder.Append('\t');
+				for (int j = i; j < i + 16 && j < m_resource.Data.Length; ++j)
+				{
+					if (m_resource.Data[j] < 0x20 || m_resource.Data[j] >= 0x7f)
+						builder.AppendFormat(Shared.Constants.Replacement);
+					else
+						builder.AppendFormat("{0}", (char) m_resource.Data[j]);
+				}
+				
+				i += 16;
+				builder.AppendLine();
+			}
+			
+			return builder.ToString();
+		}
+		
+		#region Fields
+		private EmbeddedResource m_resource;
+		#endregion
+	}
+	
+	[ExportClass("LinkedResourceItem", "ResourceItem")]
+	internal sealed class LinkedResourceItem : ResourceItem
+	{
+		public LinkedResourceItem(LinkedResource resource) : base(resource, "LinkedResourceItem")
+		{
+			m_resource = resource;
+		}
+		
+		public override string GetInfo()
+		{
+			var builder = new System.Text.StringBuilder();
+			
+			builder.AppendLine("File: " + m_resource.File);
+			builder.AppendLine("Flags: " + m_resource.Flags);
+			builder.AppendLine("Hash: " + (m_resource.Hash != null && m_resource.Hash.Length > 0 ? BitConverter.ToString(m_resource.Hash) : "none"));
+			
+			return builder.ToString();
+		}
+		
+		public override string GetText()
+		{
+			return string.Empty;
+		}
+		
+		#region Fields
+		private LinkedResource m_resource;
+		#endregion
+	}
 }

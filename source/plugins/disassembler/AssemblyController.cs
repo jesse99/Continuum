@@ -41,10 +41,6 @@ namespace Disassembler
 			
 			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("disassembler"), this);
 			window().setDelegate(this);
-
-//			window().setTitle(NSString.Create(m_name));
-//			Unused.Value = window().setFrameAutosaveName(NSString.Create(window().title().ToString() + " editor"));
-//			window().makeKeyAndOrderFront(this);
 			
 			m_table = new IBOutlet<NSOutlineView>(this, "table").Value;
 			m_table.setDoubleAction("doubleClicked:");
@@ -94,17 +90,41 @@ namespace Disassembler
 		
 		public int outlineView_numberOfChildrenOfItem(NSOutlineView table, AssemblyItem item)
 		{
-			return item == null ? m_doc.Namespaces.Length : item.ChildCount;
+			if (item == null)
+				if (m_doc.Resources.ChildCount > 0)
+					return 1 + m_doc.Namespaces.Length;
+				else
+					return m_doc.Namespaces.Length;
+			else
+				return item.ChildCount;
 		}
 		
 		public bool outlineView_isItemExpandable(NSOutlineView table, AssemblyItem item)
 		{
-			return item == null ? true : item.ChildCount > 0;
+			if (item == null)
+				return true;
+			else
+				return item.ChildCount > 0;
 		}
 		
 		public NSObject outlineView_child_ofItem(NSOutlineView table, int index, AssemblyItem item)
 		{
-			return item == null ? m_doc.Namespaces[index] : item.GetChild(index);
+			if (item == null)
+			{
+				if (m_doc.Resources.ChildCount > 0)
+				{
+					if (index == 0)
+						return m_doc.Resources;
+					else
+						return m_doc.Namespaces[index - 1];
+				}
+				else
+				{
+					return m_doc.Namespaces[index];
+				}
+			}
+			else
+				return item.GetChild(index);
 		}
 		
 		public NSObject outlineView_objectValueForTableColumn_byItem(NSOutlineView table, NSTableColumn col, AssemblyItem item)
@@ -216,7 +236,7 @@ namespace Disassembler
 			{
 				Boss boss = ObjectModel.Create("FileSystem");
 				var fs = boss.Get<IFileSystem>();
-				string file = fs.GetTempFile(item.Label.Replace(".", string.Empty), ".cil");
+				string file = fs.GetTempFile(item.Label.Replace(".", string.Empty), item.Extension());
 				
 				using (StreamWriter writer = new StreamWriter(file))
 				{

@@ -45,5 +45,10 @@ namespace Disassembler
 		public abstract string GetInfo();
 		
 		public abstract string GetText();
+		
+		public virtual string Extension()
+		{
+			return ".cil";
+		}
 	}
 }
