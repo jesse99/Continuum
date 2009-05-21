@@ -2,4 +2,8 @@
 	<Extend name = "Application">
 		<Implementation interfaces = "IInterface +ICanOpen" name = "CanOpen"/>
 	</Extend>
+	
+	<Extend name = "TextEditorPlugin">
+		<Implementation interfaces = "IInterface +ITextContextCommands" name = "ContextMenu"/>
+	</Extend>
 </Bosses>

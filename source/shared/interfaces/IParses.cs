@@ -24,9 +24,9 @@ using Gear.Helpers;
 
 namespace Shared
 {
-	// Uses to access parser info for C# files. Note that this information is retained
+	// Used to access parser info for C# files. Note that this information is retained
 	// even after the associated window closes and is only released after a successful
-	// build for files with no open window.
+	// build for files with no open window. This is on the CsParser boss.
 	public interface IParses : IInterface
 	{
 		// Attempts to return the current parse information for the specified file.

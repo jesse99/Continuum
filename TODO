@@ -24,11 +24,6 @@ sudo fs_usage -f filesys
 
 http://macosx.com/forums/archive/t-299331.html
 
-* Allow files and asemblies to be disasembled:
-	- add support for disassemble method (and maybe type)
-	- if method is in more than one local assembly display a picker, or maybe just use
-	  the last assembly written to
-	- start with the assembly built last selected
 * Time Machine didn't show an age (just "ago")
 * Find doesn't always show the selection
 * Autocomplete doesn't seem to work with stuff like fields when the context is a getter.
@@ -36,6 +31,7 @@ http://macosx.com/forums/archive/t-299331.html
 * Need a custom document for binary files. Or a special case in the text document?
 	- if a special case is used make sure we can't save
 	- extensions are stuff like dylib and mdb
+	- probably should have a warning if the file is really large
 * Open selection should use a picker if too many candidates.
 * Add (all) attributes and security to short form types and methods.
 * Fix dir editor so it doesn't collapse child dirs when an item changes.
@@ -47,6 +43,11 @@ http://macosx.com/forums/archive/t-299331.html
 	  weird places
 * Might want to display a picker if the user selects an ellipsis from a context menu.
 * Review thread safety
+
+* Short form should have doc comments:
+	- style these
+* Auto-complete table should have comments too.
+* Look into iron python.
 * Enter should add snippets:
 	- look at CodeTemplates file
 	- $NAME is a placeholder
@@ -109,14 +110,6 @@ http://macosx.com/forums/archive/t-299331.html
 * Implement IDisposable added throw to a private method.
 * Expose CsGlobalNamespace.Malformed to refactor. Or don't refactor if there are
    parse errors.
-* Rework Apply:
-	- use an AppliedRunsTable
-	- table is updated (using a thread) for edits
-	- table does a binary search of two tables (normal and type runs)
-	- probably want a unit test
-	- apply is one pass
-	- apply can special case default runs when doing a full apply
-	- use a thread to figure out which runs need to be applied
 * Could probably speed up editing of large files if we got a pointer to the text from
   native code and operated on that with unsafe code.
 * Code that executes in response to an edit should be constant time. If not queue
@@ -153,7 +146,6 @@ http://macosx.com/forums/archive/t-299331.html
 * Use the 2.2 cecil?
 * Move Continuum directory to prefs or maybe app support? Has really big files
    though so its not clear we should hide it like this.
-* Need some way to install the continuum script.
 * Probably want an uninstall script.
 * May want to bundle cecil with the app.
 * Confirmation if opening a big file.
@@ -165,38 +157,18 @@ http://macosx.com/forums/archive/t-299331.html
    
 * Add support for auto backing up files. keepBackupFile
 * Should be able to style txt files (or maybe just rtf file).
-* Need to do something with the spelling and grammar menu.
-* Support optional word wrap.
-* Window, scroller position, word wrap should be saved in a (project) database.
-* Work on intellisense.
-* Allow utf-16 to be read.
 * Allow files to be saved with different line endings.
 * Need a menu (like TextEdit) to specify encoding on load.
 * Would also be nice if directory editor context menu had support for opening as 
   different encodings or file types.
 * Warn on mixed line endings read.
 * Need to set file type for saved files.
-* Should be able to open locked files.
 * Should be able to run from read-only media.
 * Database file names should probably include a hash or something for the dir path.
 * Might want to expose CsPreprocess to refactor.
 * Add ChangeLog support.
 * Add better support for svn commits.
-* Add text get info:
-	- selection offset
-	- selection length
-	- bytes
-	- number of lines
-	- full path
-* Add file get info:
-	- work with multiple selection
-	- do something reasonable with both files and directories
-	- print bytes
-	- print directory valence
-	- print flags
-* Open selection should use some sort of picker.
 * Look at startup times.
-* Add support for nant.
 * Add support for scons.
 * Might want to allow enter to complete types and statements:
 	- should be template files
@@ -212,8 +184,6 @@ http://macosx.com/forums/archive/t-299331.html
 	- only change local files
 * Need a way to build weird projects like Cecil, probably a pref with a build
   command line which overrides make builder.
-* Add an assembly viewer
-* Show IL (for member/type) command.
 * Look at iron python scripting (might also be able to use this for the refactor language)
 * Add a hex viewer. Should work with big files. Maybe memory map them.
 * Command-8, or 2, or -, should switch between frontmost and next frontmost text windows.
@@ -254,7 +224,6 @@ http://macosx.com/forums/archive/t-299331.html
   - context menu could allow output format(s) to be set
 * Libraries (but not apps) should always be built as debug?
 	- need to check to see if anything would be slow
-* Pref file has an awful lot of -origin-x entries.
 * Would be nice to have a monkey. Would probably need to disable save and things
    like move to trash or svn revert.
 * Work on features to make debugging and maintainability easier:
@@ -262,11 +231,8 @@ http://macosx.com/forums/archive/t-299331.html
 	- method popup
 	- queries?
 * Editor should work as well as bbedit:
-	- method widget
-	- languages xml might need an option for word wrap
 	- use setAutosaveExpandedItems?
 	- might want a favorites menu
-* Would be cool to support saving styles as rtf and html.
 * Should support rectangular selections (option-shift-drag).
 * Support bookmarks:
 	- make sure we can embed graphics in the text, or use a floating window?
@@ -285,12 +251,6 @@ http://macosx.com/forums/archive/t-299331.html
 	- probably should default to deleting the db on exit
 	- try using an assembly id instead of the hash for the key
 	- get the db size and the time for the second use of context menu
-* Seem to be problems with leaks:
-	- most NSConcreteTextStorage are going away but not all of them
-	- NSConcreteTextStorage retain counts look OK so maybe cocoa is caching them
-	- someone has a reference, maybe Styler
-	- might want to register Styler and some other objects with a WeakList to see
-	  if they are going away
 * Might want to use alert sheets:
 	http://developer.apple.com/DOCUMENTATION/Cocoa/Conceptual/Sheets/Tasks/UsingAlertSheets.html#//apple_ref/doc/uid/20001045
 * Might want to add an align columns script. Kind of tricky to do though if the font
@@ -299,12 +259,6 @@ http://macosx.com/forums/archive/t-299331.html
 * Might want goto begin end of declaration commands.
 * Would be nice to degrade gracefully if sqlite is not installed (or has the wrong
    version)
-* Get code completion working:
-	- use dir editor windows as project roots
-	- note that we don't need a full blown parser: can get by with a top-level
-	  class parser and a scanner for locals (var types will probably need a 
-	  simple expr scanne). Or blow off parsing and just use cecil.
-	- note that NSTextView already has some support for text completion
 * Undo has some problems with saving:
 	http://www.cocoabuilder.com/archive/message/cocoa/2002/12/28/62337
 * Need a way to easily open recent dirs.
@@ -313,7 +267,6 @@ http://macosx.com/forums/archive/t-299331.html
 	integrated svn
 	queries
 	scid
-	time machine
 	alternate key bindings
 	integrated gendarme
 	diff
@@ -324,14 +277,6 @@ http://macosx.com/forums/archive/t-299331.html
 * Good manifesto:
 	http://alarmingdevelopment.org/index.php?p=5
 	schematic tables
-* Add widgets:
-	- fun popup
-	- fun should have classes and methods
-	- option click should sort
-	- popup value should change as insertion pt moves
-* Can we up the limit on the number of files in the open recent menu, Supposed to
-  be able to use maximumRecentDocumentCount, but when I tried it was not called.
-* Do we want to use the entity approach? What does that mean for dir editor?
 * Do some more work on the svn plugin:
 	- ignore list, could probably use propget and propset
 	- add an svn manage command to do stuff like diffs and updates for the whole tree
@@ -385,14 +330,6 @@ http://macosx.com/forums/archive/t-299331.html
 	  were 12 errors from the background build." and let users do a next error
 	- recursive makes are hard to cancel
 * Might want to use row types.
-* Support DBC via a python script
-	- google for dbc and c#
-	- google for c# parser/grammar
-	- if an assert fails exception should include assert expr and names/values for the
-	  variables
-	- post should support old(argName)
-	- inject calls to Invariant if one is present, optionally disable via an attibute
-	  or comment
 * Work on object-model plugin:
 	- windows showing query results should probably be live
 	- when doing a lookup need to only return the assemblies used by the file being
@@ -413,7 +350,7 @@ http://macosx.com/forums/archive/t-299331.html
   in a variable name?
 * Allow most everything to be collapsable?
 * Maybe have some visual cue for gross performance.
-* Can we link methods and tests somwhow?
+* Can we link methods and tests somehow?
 * Do we want to make the app scriptable and recordable?
 * Might be nice to have a structured c# editor. Would allow nice stuff like 
   user specific formating, local variable tab completion, smart statement 
@@ -426,18 +363,12 @@ http://macosx.com/forums/archive/t-299331.html
 		` app wide (code flow, threads, memory, assemblies)
 		` inter-procedural (threads, who called this)
 		` local (debugger, logging)
-* Should be able to easily form simple custom relations, eg
-  nant target <--> log file
-* Need to store revisions for custom relation objects.
-* Might want selected smokey rules always on (eg bad casts)
 * Lot's of good scid examples here:
 	http://mindprod.com/project/scid.html
 * Also
 	http://wesnerm.blogs.com/net_undocumented/2004/06/whidbey_may_mis.html
-* Have to be careful of language lockin.
 * Might be able to do some refactors with drag and drop.
 * Look into lisp and smalltalk ides. Squeak and etoys.
-* Review intentional programming.
 * Look at other editors, eg TextMate.
 * Should be able to diff two entity instances.
 * Experiment with a runtime monitor plugin:
