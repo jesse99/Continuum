@@ -139,7 +139,7 @@ namespace Disassembler
 			
 			AssemblyDefinition assembly = m_doc.Assembly;
 			
-			DoAppendList(builder, "Attributes:", assembly.CustomAttributes, i => assembly.CustomAttributes[i].ToText());
+			DoAppendList(builder, "Attributes:", assembly.CustomAttributes, i => assembly.CustomAttributes[i].ToText(true));
 			builder.AppendLine("Culture:" + (assembly.Name.Culture.Length > 0 ? " " + assembly.Name.Culture: string.Empty));
 			builder.AppendLine("Entry Point: " + (assembly.EntryPoint != null ? assembly.EntryPoint.ToString() : "none"));
 			builder.AppendLine("Flags: " + assembly.Name.Flags);
@@ -158,7 +158,7 @@ namespace Disassembler
 				builder.AppendLine();
 				
 				DoAppendList(builder, "Assembly References:", module.AssemblyReferences, i => module.AssemblyReferences[i].FullName);
-				DoAppendList(builder, "Attributes:", module.CustomAttributes, i => module.CustomAttributes[i].ToText());
+				DoAppendList(builder, "Attributes:", module.CustomAttributes, i => module.CustomAttributes[i].ToText(true));
 				DoAppendList(builder, "Extern Types:", module.ExternTypes, i => module.ExternTypes[i].FullName);
 				builder.AppendLine("Image Characteristics: " + (module.Image != null ? module.Image.PEFileHeader.Characteristics.ToString() : "no image"));
 				builder.AppendLine("Is Main: " + (module.Main ? "true" : "false"));
@@ -182,7 +182,7 @@ namespace Disassembler
 				foreach (SecurityDeclaration s in c)
 					l.Add(s);
 			
-			DoAppendList(builder, name, l, i => l[i].ToText());
+			DoAppendList(builder, name, l, i => l[i].ToText(true));
 		}
 		
 		private void DoAppendList(System.Text.StringBuilder builder, string name, System.Collections.IList c, Func<int, string> namer)

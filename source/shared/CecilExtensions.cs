@@ -31,7 +31,7 @@ namespace Shared
 	[ThreadModel(ThreadModel.Concurrent)]
 	public static class CecilExtensions
 	{
-		public static string ToText(this CustomAttribute attr)
+		public static string ToText(this CustomAttribute attr, bool includeNamespace)
 		{
 			var args = new List<string>();
 			
@@ -51,10 +51,18 @@ namespace Shared
 				args.Add(string.Format("{0} = {1}", d.Key, DoArgToString(d.Value)));
 			}
 			
-			string name = attr.Constructor.DeclaringType.FullName;
+			string name;
+			if (includeNamespace)
+				name = attr.Constructor.DeclaringType.FullName;
+			else
+				name = attr.Constructor.DeclaringType.Name;
 			if (name.EndsWith("Attribute"))
 				name = name.Substring(0, name.Length - "Attribute".Length);
-			return string.Format("[{0}({1})]", name, string.Join(", ", args.ToArray()));
+			
+			if (!includeNamespace && args.Count == 0)
+				return string.Format("[{0}]", name);
+			else
+				return string.Format("[{0}({1})]", name, string.Join(", ", args.ToArray()));
 		}
 		
 		public static bool HasAttribute(this CustomAttributeCollection attrs, string name)
@@ -99,29 +107,52 @@ namespace Shared
 			return builder.ToString();
 		}
 		
-		public static string ToText(this SecurityDeclaration sec)
+		public static string ToText(this SecurityDeclaration sec, bool includeNamespace)
 		{
 			if (sec.PermissionSet.IsUnrestricted())
 			{
-				return string.Format("[System.Security.Permissions.SecurityPermission(System.Security.Permissions.SecurityAction.{0}, Unrestricted = true)]", sec.Action);
+				if (includeNamespace)
+					return string.Format("[System.Security.Permissions.SecurityPermission(System.Security.Permissions.SecurityAction.{0}, Unrestricted = true)]", sec.Action);
+				else
+					return string.Format("[SecurityPermission(SecurityAction.{0}, Unrestricted = true)]", sec.Action);
 			}
 			else
 			{
 				var builder = new System.Text.StringBuilder();
 				
-				builder.AppendFormat("[System.Security.Permissions.SecurityPermission(System.Security.Permissions.SecurityAction.{0}", sec.Action);
+				if (includeNamespace)
+					builder.AppendFormat("[System.Security.Permissions.SecurityPermission(System.Security.Permissions.SecurityAction.{0}", sec.Action);
+				else
+					builder.AppendFormat("[SecurityPermission(SecurityAction.{0}", sec.Action);
 				foreach (IPermission o in sec.PermissionSet)
 				{
 					// This outputs the permission as XML which is really ugly but there are zillions of 
 					// IPermission implementators so it would be a lot of work to do something better. 
 					// We will special case one or two of the most common attributes however.
-					SecurityPermission sp = o as SecurityPermission;
-					if (sp != null)
+					do
 					{
-						builder.AppendFormat(", {0} = true", sp.Flags);
-					}
-					else
+						var sp = o as SecurityPermission;
+						if (sp != null)
+						{
+							builder.AppendFormat(", {0} = true", sp.Flags);
+							break;
+						}
+						
+						var snp = o as StrongNameIdentityPermission;
+						if (snp != null)
+						{
+							if (!string.IsNullOrEmpty(snp.Name))
+								builder.AppendFormat(", Name = \"{0}\"", snp.Name);
+							if (snp.Version != null && snp.Version != new Version(0, 0))
+								builder.AppendFormat(", Version = {0}", snp.Version);
+							if (snp.PublicKey != null)
+								builder.AppendFormat(", PublicKey = {0}", snp.PublicKey);
+							break;
+						}
+						
 						builder.AppendFormat(", {0}", o);
+					}
+					while (false);
 				}
 				builder.AppendFormat(")]");
 				
@@ -129,11 +160,80 @@ namespace Shared
 			}
 		}
 		
+		public static string LayoutToText(this TypeDefinition type, bool includeNamespace)
+		{
+			var builder = new System.Text.StringBuilder();
+			
+			if (includeNamespace)
+				builder.Append("[System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.");
+			else
+				builder.Append("[StructLayout(LayoutKind.");
+			
+			TypeAttributes attrs = type.Attributes;
+			switch (attrs & TypeAttributes.LayoutMask)
+			{
+				case TypeAttributes.AutoLayout:
+					builder.Append("Auto");
+					break;
+					
+				case TypeAttributes.SequentialLayout:
+					builder.Append("Sequential");
+					break;
+					
+				case TypeAttributes.ExplicitLayout:
+					builder.Append("Explicit");
+					break;
+					
+				default:
+					Contract.Assert(false, "bad layout: " + (attrs & TypeAttributes.LayoutMask));
+					break;
+			}
+			
+			if (type.PackingSize != 0)
+			{
+				builder.AppendFormat(", Size = {0}", type.PackingSize);
+			}
+			
+			if ((type.Attributes & TypeAttributes.StringFormatMask) != TypeAttributes.AnsiClass)
+			{
+				if (includeNamespace)
+					builder.Append(", CharSet = System.Runtime.InteropServices.CharSet.");
+				else
+					builder.Append(", CharSet = CharSet.");
+				
+				switch (attrs & TypeAttributes.StringFormatMask)
+				{
+					case TypeAttributes.AnsiClass:
+						builder.Append("Ansi");
+						break;
+						
+					case TypeAttributes.UnicodeClass:
+						builder.Append("Unicode");
+						break;
+						
+					case TypeAttributes.AutoClass:
+						builder.Append("Auto");
+						break;
+						
+					default:
+						Contract.Assert(false, "bad string format: " + (attrs & TypeAttributes.StringFormatMask));
+						break;
+				}
+			}
+			
+			builder.Append(")]");
+			
+			return builder.ToString();
+		}
+		
 		private static string DoArgToString(object arg)
 		{
 			if (arg == null)
 				return string.Empty;
-			
+				
+			else if (arg is bool)
+				return (bool) arg ? " true" : "false";
+				
 			else if (arg is string)
 				return string.Format("\"{0}\"", arg);
 			

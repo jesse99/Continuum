@@ -215,6 +215,7 @@ namespace ObjectModel
 				
 				for (int i = 0; i < m_ctors.Count; ++i)
 				{
+					Array.ForEach(m_ctors[i].Attributes, s => m_writer.WriteLine("{0}{1}", indent2, s));
 					m_writer.WriteLine("{0}{1}", indent2, m_ctors[i].Text);
 					
 					if (i + 1 < m_ctors.Count || m_events.Count > 0 || m_properties.Count > 0 || m_staticMethods.Count > 0 || m_operators.Count > 0 || m_instanceMethods.Count > 0 || m_fields.Count > 0)
@@ -237,6 +238,7 @@ namespace ObjectModel
 				
 				for (int i = 0; i < m_events.Count; ++i)
 				{
+					Array.ForEach(m_events[i].Attributes, s => m_writer.WriteLine("{0}{1}", indent2, s));
 					m_writer.WriteLine("{0}{1}", indent2, m_events[i].Text);
 					
 					if (i + 1 < m_events.Count || m_properties.Count > 0 || m_staticMethods.Count > 0 || m_operators.Count > 0 || m_instanceMethods.Count > 0 || m_fields.Count > 0)
@@ -259,6 +261,7 @@ namespace ObjectModel
 				
 				for (int i = 0; i < m_properties.Count; ++i)
 				{
+					Array.ForEach(m_properties[i].Attributes, s => m_writer.WriteLine("{0}{1}", indent2, s));
 					m_writer.WriteLine("{0}{1}", indent2, m_properties[i].Text);
 					
 					if (i + 1 < m_properties.Count || m_staticMethods.Count > 0 || m_operators.Count > 0 || m_instanceMethods.Count > 0 || m_fields.Count > 0)
@@ -283,6 +286,7 @@ namespace ObjectModel
 				
 				for (int i = 0; i < m_operators.Count; ++i)
 				{
+					Array.ForEach(m_operators[i].Attributes, s => m_writer.WriteLine("{0}{1}", indent2, s));
 					m_writer.WriteLine("{0}{1}", indent2, m_operators[i].Text);
 					
 					if (i + 1 < m_operators.Count || m_instanceMethods.Count > 0 || m_fields.Count > 0 || m_staticMethods.Count > 0)
@@ -307,6 +311,7 @@ namespace ObjectModel
 				
 				for (int i = 0; i < m_instanceMethods.Count; ++i)
 				{
+					Array.ForEach(m_instanceMethods[i].Attributes, s => m_writer.WriteLine("{0}{1}", indent2, s));
 					m_writer.WriteLine("{0}{1}", indent2, m_instanceMethods[i].Text);
 					
 					if (i + 1 < m_instanceMethods.Count || m_fields.Count > 0 || m_staticMethods.Count > 0)
@@ -331,6 +336,7 @@ namespace ObjectModel
 				
 				for (int i = 0; i < m_staticMethods.Count; ++i)
 				{
+					Array.ForEach(m_staticMethods[i].Attributes, s => m_writer.WriteLine("{0}{1}", indent2, s));
 					m_writer.WriteLine("{0}{1}", indent2, m_staticMethods[i].Text);
 					
 					if (i + 1 < m_staticMethods.Count || m_fields.Count > 0)
@@ -353,6 +359,7 @@ namespace ObjectModel
 				
 				for (int i = 0; i < m_fields.Count; ++i)
 				{
+					Array.ForEach(m_fields[i].Attributes, s => m_writer.WriteLine("{0}{1}", indent2, s));
 					m_writer.WriteLine("{0}{1}", indent2, m_fields[i].Text);
 					
 					if (i + 1 < m_fields.Count)
@@ -378,8 +385,7 @@ namespace ObjectModel
 				indent += "\t";
 			}
 			
-			m_writer.Write(indent);
-			DoWriteType(type);
+			DoWriteType(indent, type);
 			if (m_addBraceLine)
 			{
 				m_writer.Write(indent);
@@ -414,8 +420,20 @@ namespace ObjectModel
 		}
 #endif
 		
-		private void DoWriteType(TypeDefinition type)
+		private void DoWriteType(string indent, TypeDefinition type)
 		{
+			if (type.HasCustomAttributes)
+				DoAppendCustomAttributes(indent, type.CustomAttributes);
+			if ((type.Attributes & TypeAttributes.LayoutMask) != 0 ||					// note that we have to use the 0 literal or the runtime gets confused about which zero enum we're referring to
+				(type.Attributes & TypeAttributes.StringFormatMask) != 0 ||
+				type.PackingSize != 0)
+				m_writer.WriteLine(indent + type.LayoutToText(false));
+			if (type.HasSecurityDeclarations)
+				DoAppendSecurity(indent, type.SecurityDeclarations);
+			if (type.IsSerializable)
+				m_writer.WriteLine(indent + "[Serializable]");
+			
+			m_writer.Write(indent);
 			m_writer.Write("{0}", GetModifiers(type, type.Attributes));
 			m_writer.Write(DoGetQualifiedTypeName(type, false));
 			if (type.BaseType != null)
@@ -441,6 +459,24 @@ namespace ObjectModel
 			if (!m_addBraceLine)
 				m_writer.Write(" {0}", "{");
 			m_writer.WriteLine();
+		}
+		
+		private void DoAppendCustomAttributes(string indent, CustomAttributeCollection attrs)
+		{
+			foreach (CustomAttribute attr in attrs)
+			{
+				m_writer.Write(indent);
+				m_writer.WriteLine(attr.ToText(false));
+			}
+		}
+		
+		private void DoAppendSecurity(string indent, SecurityDeclarationCollection secs)
+		{
+			foreach (SecurityDeclaration sec in secs)
+			{
+				m_writer.Write(indent);
+				m_writer.WriteLine(sec.ToText(false));
+			}
 		}
 		
 		public void DoGetMembers(TypeDefinition type, bool includeCtors)
@@ -569,6 +605,16 @@ namespace ObjectModel
 			{
 				var builder = new StringBuilder();
 				
+				var attrs = new List<string>();
+				foreach (CustomAttribute attr in method.CustomAttributes)
+				{
+					attrs.Add(attr.ToText(false));
+				}
+				foreach (SecurityDeclaration sec in method.SecurityDeclarations)
+				{
+					attrs.Add(sec.ToText(false));
+				}
+				
 				DoGetMethodModifiers(type, builder, method.Attributes);
 				string name = DoGetTypeName(type, false);
 				builder.Append(name);
@@ -576,7 +622,7 @@ namespace ObjectModel
 					DoGetGenericParams(builder, method.GenericParameters);
 				DoGetParams(builder, method);
 				
-				DoAdd(m_ctors, new Member(name, method.Attributes & MethodAttributes.MemberAccessMask, builder.ToString()));
+				DoAdd(m_ctors, new Member(name, method.Attributes & MethodAttributes.MemberAccessMask, builder.ToString(), attrs.ToArray()));
 			}
 		}
 		
@@ -587,12 +633,18 @@ namespace ObjectModel
 			{
 				var builder = new StringBuilder();
 				
+				var attrs = new List<string>();
+				foreach (CustomAttribute attr in e.CustomAttributes)
+				{
+					attrs.Add(attr.ToText(false));
+				}
+				
 				DoGetMethodModifiers(type, builder, m.Attributes);
 				builder.Append("event ");
 				builder.Append(DoGetQualifiedTypeName(e.EventType, true));
 				builder.AppendFormat(" {0};", e.Name);
 				
-				DoAdd(m_events, new Member(e.Name, m.Attributes & MethodAttributes.MemberAccessMask, builder.ToString()));
+				DoAdd(m_events, new Member(e.Name, m.Attributes & MethodAttributes.MemberAccessMask, builder.ToString(), attrs.ToArray()));
 			}
 		}
 		
@@ -602,6 +654,12 @@ namespace ObjectModel
 			if (DoShouldAdd(m))
 			{
 				var builder = new StringBuilder();
+				
+				var attrs = new List<string>();
+				foreach (CustomAttribute attr in prop.CustomAttributes)
+				{
+					attrs.Add(attr.ToText(false));
+				}
 				
 				DoGetMethodModifiers(type, builder, m.Attributes);
 				builder.Append(DoGetQualifiedTypeName(prop.PropertyType, true));
@@ -638,7 +696,7 @@ namespace ObjectModel
 					builder.Append(' ');
 				builder.Append("}");
 				
-				DoAdd(m_properties, new Member(prop.Name, m.Attributes & MethodAttributes.MemberAccessMask, builder.ToString(), m));
+				DoAdd(m_properties, new Member(prop.Name, m.Attributes & MethodAttributes.MemberAccessMask, builder.ToString(), attrs.ToArray(), m));
 			}
 		}
 		
@@ -647,6 +705,16 @@ namespace ObjectModel
 			if (DoShouldAdd(method))
 			{
 				var builder = new StringBuilder();
+				
+				var attrs = new List<string>();
+				foreach (CustomAttribute attr in method.CustomAttributes)
+				{
+					attrs.Add(attr.ToText(false));
+				}
+				foreach (SecurityDeclaration sec in method.SecurityDeclarations)
+				{
+					attrs.Add(sec.ToText(false));
+				}
 				
 				DoGetMethodModifiers(type, builder, method.Attributes);
 				if (method.Name != "op_Implicit" && method.Name != "op_Explicit")
@@ -659,11 +727,11 @@ namespace ObjectModel
 				
 				if (method.IsStatic)
 					if (method.Name.StartsWith("op"))
-						DoAdd(m_operators, new Member(name, method.Attributes & MethodAttributes.MemberAccessMask, builder.ToString(), method));
+						DoAdd(m_operators, new Member(name, method.Attributes & MethodAttributes.MemberAccessMask, builder.ToString(), attrs.ToArray(), method));
 					else
-						DoAdd(m_staticMethods, new Member(name, method.Attributes & MethodAttributes.MemberAccessMask, builder.ToString(), method));
+						DoAdd(m_staticMethods, new Member(name, method.Attributes & MethodAttributes.MemberAccessMask, builder.ToString(), attrs.ToArray(), method));
 				else
-					DoAdd(m_instanceMethods, new Member(name, method.Attributes & MethodAttributes.MemberAccessMask, builder.ToString(), method));
+					DoAdd(m_instanceMethods, new Member(name, method.Attributes & MethodAttributes.MemberAccessMask, builder.ToString(), attrs.ToArray(), method));
 			}
 		}
 		
@@ -673,11 +741,19 @@ namespace ObjectModel
 			{
 				var builder = new StringBuilder();
 				
+				var attrs = new List<string>();
+				foreach (CustomAttribute attr in field.CustomAttributes)
+				{
+					attrs.Add(attr.ToText(false));
+				}
+				if (field.IsNotSerialized)
+					attrs.Add("[NonSerialized]");
+				
 				DoGetFieldModifiers(builder, field.Attributes);
 				builder.Append(DoGetQualifiedTypeName(field.FieldType, true));
 				builder.AppendFormat(" {0};", field.Name);
 				
-				DoAdd(m_fields, new Member(field.Name, (MethodAttributes) (ushort) (field.Attributes & FieldAttributes.FieldAccessMask), builder.ToString()));
+				DoAdd(m_fields, new Member(field.Name, (MethodAttributes) (ushort) (field.Attributes & FieldAttributes.FieldAccessMask), builder.ToString(), attrs.ToArray()));
 			}
 		}
 		
@@ -985,20 +1061,22 @@ namespace ObjectModel
 		#region Private Types
 		private sealed class Member
 		{
-			public Member(string name, MethodAttributes access, string text)
+			public Member(string name, MethodAttributes access, string text, string[] attrs)
 			{
 				Name = name;
 				Access = access;
 				Text = text;
 				Key = text;
+				Attributes = attrs;
 			}
 			
-			public Member(string name, MethodAttributes access, string text, MethodDefinition key)
+			public Member(string name, MethodAttributes access, string text, string[] attrs, MethodDefinition key)
 			{
 				Name = name;
 				Access = access;
 				Text = text;
 				Key = key.Name;
+				Attributes = attrs;
 				
 				for (int i = 0; i < key.Parameters.Count; ++i)
 				{
@@ -1010,6 +1088,9 @@ namespace ObjectModel
 			public string Name {get; private set;}
 			
 			public MethodAttributes Access {get; private set;}
+			
+			// E.g. "[Serializable]".
+			public string[] Attributes {get; private set;}
 			
 			// E.g. "internal  string FullPath {get;}".
 			public string Text {get; private set;}

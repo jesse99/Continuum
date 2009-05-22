@@ -24,9 +24,7 @@ sudo fs_usage -f filesys
 
 http://macosx.com/forums/archive/t-299331.html
 
-* Open selection should use a picker if too many candidates. Or allow ellipsis to be
-   selected?
-* Add (all) attributes and security to short form types and methods.
+* Context menu needs to remove trailing separator (e.g. for "Serializable").
 * After duplicating directory items select the new item(s).
 * Make sure windows line endian can be opened and saved.
 * Make sure encoding is preserved when saving.
@@ -38,7 +36,6 @@ http://macosx.com/forums/archive/t-299331.html
 	- make sure Monobj examples can be built
 	- might need an extra binaries project pref for builders who drop the binaries in
 	  weird places
-* Might want to display a picker if the user selects an ellipsis from a context menu.
 * Review thread safety
 
 * Short form should have doc comments:
@@ -55,6 +52,8 @@ http://macosx.com/forums/archive/t-299331.html
 	- if a local snippet dir exists also copy any new snippets (on startup and on dir changed)
 	- snippets: add class, iterface, struct, exception, unit test, method rule, type rule
 	- get rid of Create Exception refactor
+* Open selection should use a picker if too many candidates. Or allow ellipsis to be
+   selected?
 * Can we do some sort of notification when assemblies finish parsing? Or to show parse
    error message? Maybe a notifications window? Or directory window can have a
    label somewhere? Also NSToolTipAttributeName

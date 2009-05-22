@@ -84,7 +84,7 @@ namespace Disassembler
 			if ((type.Attributes & TypeAttributes.LayoutMask) != 0 ||					// note that we have to use the 0 literal or the runtime gets confused about which zero enum we're referring to
 				(type.Attributes & TypeAttributes.StringFormatMask) != 0 ||
 				type.PackingSize != 0)
-				DoAppendLayout(builder, type);
+				builder.AppendLine(type.LayoutToText(true));
 			if (type.HasSecurityDeclarations)
 				DoAppendSecurity(builder, type.SecurityDeclarations);
 			if (type.IsSerializable)
@@ -156,62 +156,6 @@ namespace Disassembler
 			}
 			
 			builder.AppendLine();
-		}
-		
-		private static void DoAppendLayout(StringBuilder builder, TypeDefinition type)
-		{
-			builder.Append("[System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.");
-			
-			TypeAttributes attrs = type.Attributes;
-			switch (attrs & TypeAttributes.LayoutMask)
-			{
-				case TypeAttributes.AutoLayout:
-					builder.Append("Auto");
-					break;
-					
-				case TypeAttributes.SequentialLayout:
-					builder.Append("Sequential");
-					break;
-					
-				case TypeAttributes.ExplicitLayout:
-					builder.Append("Explicit");
-					break;
-					
-				default:
-					Contract.Assert(false, "bad layout: " + (attrs & TypeAttributes.LayoutMask));
-					break;
-			}
-			
-			if (type.PackingSize != 0)
-			{
-				builder.AppendFormat(", Size = {0}", type.PackingSize);
-			}
-			
-			if ((type.Attributes & TypeAttributes.StringFormatMask) != TypeAttributes.AnsiClass)
-			{
-				builder.Append(", CharSet = System.Runtime.InteropServices.CharSet.");
-				
-				switch (attrs & TypeAttributes.StringFormatMask)
-				{
-					case TypeAttributes.AnsiClass:
-						builder.Append("Ansi");
-						break;
-						
-					case TypeAttributes.UnicodeClass:
-						builder.Append("Unicode");
-						break;
-						
-					case TypeAttributes.AutoClass:
-						builder.Append("Auto");
-						break;
-						
-					default:
-						Contract.Assert(false, "bad string format: " + (attrs & TypeAttributes.StringFormatMask));
-						break;
-				}
-			}
-			
-			builder.AppendLine(")]");
 		}
 		
 		private static void DoAppendTypeName(StringBuilder builder, TypeReference type)
@@ -366,7 +310,7 @@ namespace Disassembler
 		{
 			foreach (SecurityDeclaration sec in secs)
 			{
-				builder.AppendLine(sec.ToText());
+				builder.AppendLine(sec.ToText(true));
 			}
 		}
 		
@@ -374,7 +318,7 @@ namespace Disassembler
 		{
 			foreach (CustomAttribute attr in attrs)
 			{
-				builder.AppendLine(attr.ToText());
+				builder.AppendLine(attr.ToText(true));
 			}
 		}
 		
