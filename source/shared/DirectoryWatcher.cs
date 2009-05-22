@@ -37,6 +37,8 @@ namespace Shared
 			Paths = paths;
 		}
 		
+		// These paths will be the paths to the directories or files which changed.
+		// They will be rooted at the path being watched.
 		public string[] Paths {get; private set;}
 	}
 	

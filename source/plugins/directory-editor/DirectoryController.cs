@@ -43,24 +43,24 @@ namespace DirectoryEditor
 			m_dirStyler = new DirectoryItemStyler(path);
 			
 			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("directory-editor"), this);	
-			m_table = new IBOutlet<NSOutlineView>(this, "table");
-			m_targets = new IBOutlet<NSPopUpButton>(this, "targets");
-			m_prefs = new IBOutlet<DirPrefsController>(this, "prefsController");
+			m_table = new IBOutlet<NSOutlineView>(this, "table").Value;
+			m_targets = new IBOutlet<NSPopUpButton>(this, "targets").Value;
+			m_prefs = new IBOutlet<DirPrefsController>(this, "prefsController").Value;
 			
 			m_name = System.IO.Path.GetFileName(path);
 			window().setTitle(NSString.Create(m_name));
 			Unused.Value = window().setFrameAutosaveName(NSString.Create(window().title().ToString() + " editor"));
 			window().makeKeyAndOrderFront(this);
 			
-			m_table.Value.setDoubleAction("doubleClicked:");
-			m_table.Value.setTarget(this);
+			m_table.setDoubleAction("doubleClicked:");
+			m_table.setTarget(this);
 			
 			var wind = m_boss.Get<IWindow>();
 			wind.Window = window();
 			
 			m_builder = new GenericBuilder(path);
 			
-			m_targets.Value.removeAllItems();
+			m_targets.removeAllItems();
 			if (m_builder.CanBuild)
 			{
 				var handler = m_boss.Get<IMenuHandler>();
@@ -77,8 +77,8 @@ namespace DirectoryEditor
 			else
 				DoLoadPrefs(path);
 			
-			m_root = new DirectoryItem(m_path, m_dirStyler, m_ignoredItems);
-			Reload();
+			m_root = new FolderItem(m_path, m_dirStyler, m_ignoredItems);
+			m_table.reloadData();
 			
 			m_watcher = DoCreateWatcher(path);
 			if (m_watcher != null)
@@ -129,10 +129,8 @@ namespace DirectoryEditor
 				var root = m_root;
 				m_root = null;
 				
-				m_table.Value.setDelegate(null);
-				m_table.Value.reloadData();
-				
-				root.Close();
+				m_table.setDelegate(null);
+				m_table.reloadData();
 				root.release();
 			}
 			
@@ -147,22 +145,18 @@ namespace DirectoryEditor
 		
 		public NSOutlineView Table
 		{
-			get {return m_table.Value;}
+			get {return m_table;}
 		}
 		
 		public void Reload()
 		{
-			m_dirStyler.Reload();
-			
-			var root = new DirectoryItem(m_path, m_dirStyler, m_ignoredItems);
 			if (m_root != null)
 			{
-				m_root.Close();
-				m_root.release();
+				m_dirStyler.Reload();
+				m_root.Reload(null);
+				
+				m_table.reloadData();
 			}
-			m_root = root;
-			
-			m_table.Value.reloadData();		// TODO: collapses all the items...
 		}
 		
 		public string Path
@@ -197,7 +191,7 @@ namespace DirectoryEditor
 				if (!value.EqualValues(m_ignoredItems))
 				{
 					m_ignoredItems = value;
-					Reload();							// TODO: collapses all the items...
+					Reload();
 					DoSavePrefs();
 				}
 			}
@@ -234,7 +228,7 @@ namespace DirectoryEditor
 			get {return m_startTime;}
 		}
 		
-		public void outlineView_setObjectValue_forTableColumn_byItem(NSTableView table, NSObject value, NSTableColumn col, DirectoryItem item)
+		public void outlineView_setObjectValue_forTableColumn_byItem(NSTableView table, NSObject value, NSTableColumn col, TableItem item)
 		{
 			string newName = value.description();
 			DoRename(item, newName);
@@ -248,11 +242,11 @@ namespace DirectoryEditor
 		
 		public void renameItem(NSObject sender)
 		{
-			NSIndexSet selections = m_table.Value.selectedRowIndexes();
+			NSIndexSet selections = m_table.selectedRowIndexes();
 			if (selections.count() == 1)
 			{
 				uint row = selections.firstIndex();
-				DirectoryItem item = (DirectoryItem) (m_table.Value.itemAtRow((int) row));
+				TableItem item = (TableItem) (m_table.itemAtRow((int) row));
 				string oldName = System.IO.Path.GetFileName(item.Path);
 				
 				var get = new GetString{Title = "New Name", Label = "Name:", Text = oldName};
@@ -261,15 +255,16 @@ namespace DirectoryEditor
 					DoRename(item, newName);
 			}
 		}
-				
+		
 		// Duplicate is such a common operation that we provide a shortcut for it.
 		public void duplicate(NSObject sender)
 		{
-			foreach (uint row in m_table.Value.selectedRowIndexes())
+			foreach (TableItem item in DoGetSelectedItems())
 			{
-				DirectoryItem item = (DirectoryItem) (m_table.Value.itemAtRow((int) row));
 				Sccs.Duplicate(item.Path);
 			}
+			
+			m_table.deselectAll(this);
 		}
 		
 		public void dirHandler(NSObject sender)
@@ -308,13 +303,13 @@ namespace DirectoryEditor
 			}
 			else if (sel.Name == "renameItem:")
 			{
-				NSIndexSet selections = m_table.Value.selectedRowIndexes();
+				NSIndexSet selections = m_table.selectedRowIndexes();
 				enabled = selections.count() == 1;
 			}
 			else if (sel.Name == "duplicate:")
 			{
-				NSIndexSet selections = m_table.Value.selectedRowIndexes();
-				enabled = selections.count() > 0 && m_table.Value.editedRow() < 0;	// cocoa crashes if we do a duplicate while editing...
+				NSIndexSet selections = m_table.selectedRowIndexes();
+				enabled = selections.count() > 0 && m_table.editedRow() < 0;	// cocoa crashes if we do a duplicate while editing...
 			}
 			else if (respondsToSelector(sel))
 			{
@@ -341,7 +336,7 @@ namespace DirectoryEditor
 				Unused.Value = SuperCall("keyDown:", evt);
 		}
 		
-		public int outlineView_numberOfChildrenOfItem(NSOutlineView table, DirectoryItem item)
+		public int outlineView_numberOfChildrenOfItem(NSOutlineView table, TableItem item)
 		{
 			if (m_root == null)
 				return 0;
@@ -349,12 +344,12 @@ namespace DirectoryEditor
 			return item == null ? m_root.Count : item.Count;
 		}
 		
-		public bool outlineView_isItemExpandable(NSOutlineView table, DirectoryItem item)
+		public bool outlineView_isItemExpandable(NSOutlineView table, TableItem item)
 		{
-			return item == null ? true : item.Count != -1;
+			return item == null ? true : item.IsExpandable;
 		}
 		
-		public NSObject outlineView_child_ofItem(NSOutlineView table, int index, DirectoryItem item)
+		public NSObject outlineView_child_ofItem(NSOutlineView table, int index, TableItem item)
 		{
 			if (m_root == null)
 				return null;
@@ -362,7 +357,7 @@ namespace DirectoryEditor
 			return item == null ? m_root[index] : item[index];
 		}
 		
-		public NSObject outlineView_objectValueForTableColumn_byItem(NSOutlineView table, NSTableColumn col, DirectoryItem item)
+		public NSObject outlineView_objectValueForTableColumn_byItem(NSOutlineView table, NSTableColumn col, TableItem item)
 		{
 			if (m_root == null)
 				return NSString.Empty;
@@ -374,7 +369,7 @@ namespace DirectoryEditor
 		}
 		
 		#region Private Methods
-		private void DoRename(DirectoryItem item, string newName)
+		private void DoRename(TableItem item, string newName)
 		{
 			string oldPath = item.Path;
 			string oldName = System.IO.Path.GetFileName(oldPath);
@@ -400,7 +395,7 @@ namespace DirectoryEditor
 				var transcript = boss.Get<ITranscript>();
 				
 				transcript.WriteLine(Output.Error, "Can't update the window in response to changes to '{0}'.", path);
-				transcript.WriteLine(Output.Error, e.ToString());	
+				transcript.WriteLine(Output.Error, e.ToString());
 			}
 			
 			return watcher;
@@ -408,23 +403,71 @@ namespace DirectoryEditor
 		
 		private void DoDirChanged(object sender, DirectoryWatcherEventArgs e)
 		{
+			// Remember whatever we have selected. Note that we can't simply
+			// use the IEnumerable result because it will be lazily computed which
+			// won't work in this context.
+			TableItem[] oldSelections = DoGetSelectedItems().ToArray();
+			
+			// Update which ever items are open.
+			bool changed = false;
+			var added = new List<TableItem>();
 			foreach (string path in e.Paths)
 			{
 				NSString spath = NSString.Create(path).stringByStandardizingPath();
-				DirectoryItem item = m_root.Find(spath);
-				if (item != null)				// TODO: note that the reloads will close any items beneath the item being closed
+				TableItem item = m_root.Find(spath);
+				if (item != null)
 				{
-					item.Reset();
-					if (item == m_root)
+					if (item.Reload(added))
 					{
-						item.Reset();
-						m_table.Value.reloadItem_reloadChildren(null, true);
+						m_table.reloadItem_reloadChildren(item, true);
+						changed = true;
 					}
-					else
+				}
+			}
+			
+			// If an item has changed then we'll need to fixup the table selections.
+			if (changed)
+			{
+				m_table.deselectAll(this);
+				
+				// Note that the refcounts of the items in oldSelections may be zero at
+				// this point (so we can't use things like Name).
+				NSMutableIndexSet newSelections = NSMutableIndexSet.Create();
+				if (oldSelections.Any())
+				{
+					// Selections are based on row index instead of the item so if we
+					// don't do this then the selection will switch to a different item.
+					foreach (TableItem item in oldSelections)
 					{
-						item.Reset();
-						m_table.Value.reloadItem_reloadChildren(item, true);
+						int row = m_table.rowForItem(item);
+						if (row >= 0)											// item may no longer exist
+						{
+							newSelections.addIndex((uint) row);
+						}
 					}
+				}
+				else
+				{
+					// If there were no old selections then we'll select whatever was
+					// added (this is a nice thing to do for duplicate and hopefully
+					// will not prove annoying elsewhere).
+					foreach (TableItem item in added)
+					{
+						int row = m_table.rowForItem(item);
+						if (row >= 0)
+						{
+							newSelections.addIndex((uint) row);
+						}
+					}
+				}
+				
+				// Select the new items or fixup the selections for old selections.
+				if (newSelections.count() > 0)
+				{
+					m_table.selectRowIndexes_byExtendingSelection(newSelections, false);
+					
+					if (newSelections.count() == 1)
+						m_table.scrollRowToVisible((int) newSelections.First());
 				}
 			}
 		}
@@ -435,7 +478,7 @@ namespace DirectoryEditor
 			m_builder.Build();
 		}
 		
-		private bool DoBuildEnabled()	
+		private bool DoBuildEnabled()
 		{
 			return m_builder != null && (m_builder.State == State.Opened || m_builder.State == State.Built || m_builder.State == State.Canceled);
 		}
@@ -462,14 +505,9 @@ namespace DirectoryEditor
 		
 		private void DoOpenSelection()
 		{
-			NSIndexSet selections = m_table.Value.selectedRowIndexes();
-			uint row = selections.firstIndex();
-			while (row != Enums.NSNotFound)
+			foreach (TableItem item in DoGetSelectedItems())
 			{
-				DirectoryItem item = (DirectoryItem) (m_table.Value.itemAtRow((int) row));
 				DoOpen(item.Path);
-				
-				row = selections.indexGreaterThanIndex(row);
 			}
 		}
 		
@@ -493,24 +531,33 @@ namespace DirectoryEditor
 					titles.AddIfMissing(title);
 			}
 			
-			if (titles.Count != m_targets.Value.itemTitles().count())
+			if (titles.Count != m_targets.itemTitles().count())
 			{
-				m_targets.Value.removeAllItems();
-				m_targets.Value.addItemsWithTitles(NSArray.Create(titles.ToArray()));
+				m_targets.removeAllItems();
+				m_targets.addItemsWithTitles(NSArray.Create(titles.ToArray()));
 				
 				if (Array.IndexOf(ignored, m_builder.Target) < 0 && Array.IndexOf(m_ignoredTargets, m_builder.Target) < 0)
-					m_targets.Value.selectItemWithTitle(NSString.Create(m_builder.Target));
+					m_targets.selectItemWithTitle(NSString.Create(m_builder.Target));
 				else
-					m_builder.Target = m_targets.Value.titleOfSelectedItem().description();
+					m_builder.Target = m_targets.titleOfSelectedItem().description();
+			}
+		}
+		
+		public IEnumerable<TableItem> DoGetSelectedItems()
+		{
+			foreach (uint row in m_table.selectedRowIndexes())
+			{
+				TableItem item = (TableItem) (m_table.itemAtRow((int) row));
+				yield return item;
 			}
 		}
 		
 		private void DoShowPrefs()
 		{
 			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("dir-prefs"), this);
-			Contract.Assert(!NSObject.IsNullOrNil(m_prefs.Value), "nib didn't set prefsController");
+			Contract.Assert(!NSObject.IsNullOrNil(m_prefs), "nib didn't set prefsController");
 			
-			m_prefs.Value.Open(this);
+			m_prefs.Open(this);
 		}
 		
 		private void DoSavePrefs()
@@ -590,10 +637,10 @@ namespace DirectoryEditor
 		
 		#region Fields
 		private string m_path;
-		private DirectoryItem m_root;
-		private IBOutlet<NSOutlineView> m_table;
-		private IBOutlet<NSPopUpButton> m_targets;
-		private IBOutlet<DirPrefsController> m_prefs;
+		private FolderItem m_root;
+		private NSOutlineView m_table;
+		private NSPopUpButton m_targets;
+		private DirPrefsController m_prefs;
 		private GenericBuilder m_builder;
 		private DateTime m_startTime = DateTime.MinValue;
 		private string m_name;
@@ -604,7 +651,6 @@ namespace DirectoryEditor
 		private Boss m_boss;
 		private DirectoryItemStyler m_dirStyler;
 		private DirectoryWatcher m_watcher;
-//		private FileSystemWatcher m_watcher;
 		#endregion
 	}
-}	
+}

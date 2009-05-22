@@ -236,13 +236,16 @@ namespace TextEditor
 				
 				m_entries.Sort();
 				
+				// Remove duplicate separators and any at the start or end.
 				for (int i = m_entries.Count - 1; i > 0; --i)
 				{
 					if (m_entries[i].Name == null && m_entries[i - 1].Name == null)
 						m_entries.RemoveAt(i);
 				}
-				if (m_entries.Count > 0 && m_entries[0].Name == null)
+				while (m_entries.Count > 0 && m_entries[0].Name == null)
 					m_entries.RemoveAt(0);
+				while (m_entries.Count > 0 && m_entries[m_entries.Count - 1].Name == null)
+					m_entries.RemoveAt(m_entries.Count - 1);
 				
 				// Build the menu.
 				for (int i = 0; i < m_entries.Count; ++i)

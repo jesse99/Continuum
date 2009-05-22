@@ -24,20 +24,21 @@ sudo fs_usage -f filesys
 
 http://macosx.com/forums/archive/t-299331.html
 
-* Context menu needs to remove trailing separator (e.g. for "Serializable").
-* After duplicating directory items select the new item(s).
 * Make sure windows line endian can be opened and saved.
 * Make sure encoding is preserved when saving.
 * Add TextDocument get info support:
 	- allow line endian, encoding, and language to be changed
-* Fix dir editor so it doesn't collapse child dirs when an item changes.
 * Make sure spelling and grammar menu works OK.
+* Din't get any make targets opening the mono-2.4 directory.
+* Might want an m4 language.
 * Add support for building with nant:
 	- make sure Monobj examples can be built
 	- might need an extra binaries project pref for builders who drop the binaries in
 	  weird places
 * Review thread safety
 
+* Add some better support to mobj for leak detection. Maybe record (an optional?)
+   stack trace with each new-ed NSObject.
 * Short form should have doc comments:
 	- style these
 * Auto-complete table should have comments too.

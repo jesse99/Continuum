@@ -88,7 +88,7 @@ namespace DirectoryEditor
 			var paths = new List<string>();
 			foreach (uint index in selectedRowIndexes())
 			{
-				DirectoryItem item = (DirectoryItem) (itemAtRow((int) index));
+				TableItem item = (TableItem) (itemAtRow((int) index));
 				paths.Add(item.Path);
 			}
 			

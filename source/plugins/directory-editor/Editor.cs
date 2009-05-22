@@ -70,7 +70,7 @@ namespace DirectoryEditor
 			
 			foreach (uint row in table.selectedRowIndexes())
 			{
-				DirectoryItem item = (DirectoryItem) (table.itemAtRow((int) row));
+				TableItem item = (TableItem) (table.itemAtRow((int) row));
 				paths.Add(item.Path);
 			}
 			
