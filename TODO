@@ -24,22 +24,14 @@ sudo fs_usage -f filesys
 
 http://macosx.com/forums/archive/t-299331.html
 
-* Root directory item is not updating when duplicating files
-	- also got a crash deleting a root file
-* Sort lines didn't work.
-* Open selection dialog should trim spaces.
-* Why didn't LineEndian complete? (Seemed to be confused by the property).
-* Got a error trying to show LineEndian short form.
-* Got two "Open generated/NSMutableAttributedString.cs" context menu items.
-* Why don't runs update after typing, eg typing a new comment doesn't redraw
-   until an arrow key is hit.
-* Scroll bar heigh isn't correct when opening files, eg AppleStyles.cs
-* Binary should have a tab in the chars.
 * Work on disassembler:
 	- stloc.1 should show the local name, also ldloc (see getBytes_length)
 	- ditto with ldloc
 	- would be really nice to include source lines when possible
 	- also include the path/line to the method
+* Why don't runs update after typing, eg typing a new comment doesn't redraw
+   until an arrow key is hit.
+* Scroll bar height isn't correct when opening files, eg AppleStyles.cs
 * Might want to get rid of the custom NSWindowController ctor.
 * Make sure spelling and grammar menu works OK.
 * Didn't get any make targets opening the mono-2.4 directory.

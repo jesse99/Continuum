@@ -79,6 +79,11 @@ namespace DirectoryEditor
 		// directory beneath the root item. Returns true if the item changed.
 		public abstract bool Reload(List<TableItem> added);
 		
+		public new NSString description()
+		{
+			return NSString.Create(m_path);
+		}
+		
 		#region Protected Methods
 		protected override void OnDealloc()
 		{

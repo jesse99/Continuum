@@ -47,27 +47,30 @@ namespace Shared
 				{
 					builder.AppendFormat("{0:X2} ", data[i + d]);
 					if (d == 7)
-						builder.Append("   ");
+						builder.Append("\t");
 				}
 				
 				// Char values
 				builder.Append('\t');
-				for (int j = i; j < i + 16 && j < data.Length; ++j)
+				for (int d = 0; d < 16 && i + d < data.Length; ++d)
 				{
-					if (data[j] == '\n')
+					if (data[i + d] == '\n')
 						builder.AppendFormat(DownArrow);
 					
-					else if (data[j] == '\r')
+					else if (data[i + d] == '\r')
 						builder.AppendFormat(DownHookedArrow);
 					
-					else if (data[j] == '\t')
+					else if (data[i + d] == '\t')
 						builder.AppendFormat(RightArrow);
 					
-					else if (data[j] < 0x20 || data[j] >= 0x7f)
+					else if (data[i + d] < 0x20 || data[i + d] >= 0x7f)
 						builder.AppendFormat(Constants.Replacement);
 					
 					else
-						builder.AppendFormat("{0}", (char) data[j]);
+						builder.AppendFormat("{0}", (char) data[i + d]);
+					
+					if (d == 7)
+						builder.Append("   ");
 				}
 				
 				i += 16;

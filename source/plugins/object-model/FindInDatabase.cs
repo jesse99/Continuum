@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Jesse Jones
+// Copyright (C) 2008-2009 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -295,6 +295,8 @@ namespace ObjectModel
 				SourceInfo[] used = (from s in sources where !string.IsNullOrEmpty(s.Path) select s).ToArray();
 				if (used.Length > 0)
 				{
+					var added = new List<string>();
+					
 					items.Add(new TextContextItem(order));
 					for (int i = 0; i < Math.Min(used.Length, MaxOpenItems); ++i)
 					{
@@ -305,14 +307,18 @@ namespace ObjectModel
 							title = Path.Combine(title, used[i].Source);
 						}
 						
-						int k = i;											// need this for the delegate (or the for loop will mutate the value)
-						items.Add(new TextContextItem(
-							"Open " + title,
-							s => {DoOpenFile(used[k].Path, used[k].Line); return s;},
-							order));
+						if (!added.Contains(title))
+						{
+							int k = i;											// need this for the delegate (or the for loop will mutate the value)
+							items.Add(new TextContextItem(
+								"Open " + title,
+								s => {DoOpenFile(used[k].Path, used[k].Line); return s;},
+								order));
+							added.Add(title);
+						}
 					}
 					
-					if (used.Length > MaxOpenItems)
+					if (added.Count > MaxOpenItems)
 						items.Add(new TextContextItem(Shared.Constants.Ellipsis, null, order));
 				}
 			}

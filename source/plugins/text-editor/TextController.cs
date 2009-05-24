@@ -427,8 +427,10 @@ namespace TextEditor
 			if (!valid)
 			{
 				string text = new GetString{Title = "Open Selection", ValidRegex = validator}.Run();
-				
 				if (text != null)
+					text = text.Trim();
+					
+				if (!string.IsNullOrEmpty(text))
 					if (!opener.Open(text))
 						Functions.NSBeep();
 			}

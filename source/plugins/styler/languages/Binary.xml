@@ -1,5 +1,5 @@
 <Language name = "binary" tab_stops = "5">
 	<comment>// .* $</comment>
 	<number>^ \d [0-9a-fA-F]*</number>
-	<other1>. . . . . . . . . . . . . . . . $</other1>
+	<other1>. . . . . . . . . . . . . . . . . . .$</other1>
 </Language>

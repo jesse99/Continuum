@@ -419,7 +419,7 @@ namespace DirectoryEditor
 				{
 					if (item.Reload(added))
 					{
-						m_table.reloadItem_reloadChildren(item, true);
+						m_table.reloadItem_reloadChildren(item == m_root ? null : item, true);
 						changed = true;
 					}
 				}
