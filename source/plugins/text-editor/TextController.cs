@@ -49,7 +49,7 @@ namespace TextEditor
 			m_applier = new ApplyStyles(this, m_textView.Value);
 			DoSetTextOptions();
 			
-			Broadcaster.Register("text default color changed", this);	
+			Broadcaster.Register("text default color changed", this);
 			DoUpdateDefaultColor(string.Empty, null);
 			
 			m_textView.Value.Call("onOpened:", this);
@@ -101,7 +101,7 @@ namespace TextEditor
 		{
 			if (Path != null)
 			{
-				DoGetStyler();
+				DoFindLanguage();
 				
 				NSRect frame = WindowDatabase.GetFrame(Path);
 				if (frame != NSRect.Empty)
@@ -216,9 +216,40 @@ namespace TextEditor
 			}
 		}
 		
-		public string Language
+		public ILanguage Language
 		{
-			get {return m_language != null ? m_language.Name : null;}
+			get {return m_language;}
+			set
+			{
+				if (value != m_language)
+				{
+					if (value != null && value.FriendlyName != "plain-text")
+						m_language = value;
+					else
+						m_language = null;
+					
+					((DeclarationsPopup) m_decPopup.Value).Init(this);
+					m_applier.ResetTabs();
+					m_applier.ClearStyles();
+					
+					// force runs to be rebuilt
+					if (m_language != null)
+					{
+						m_editCount = unchecked(m_editCount + 1);
+						m_applier.EditedRange(NSRange.Empty);
+						
+						var edit = new TextEdit{
+							Boss = m_boss,
+							Language = m_language,
+							UserEdit = true,
+							EditedRange = NSRange.Empty,
+							ChangeInLength = 0,
+							ChangeInLines = 0,
+							StartLine = 1};
+						Broadcaster.Invoke("text changed", edit);
+					}
+				}
+			}
 		}
 		
 		public int[] TabStops
@@ -361,6 +392,12 @@ namespace TextEditor
 				() => Broadcaster.Invoke("closed document window", m_boss), TimeSpan.FromMilliseconds(250));
 		}
 		
+		public void getInfo(NSObject sender)
+		{
+			TextDocument doc = (TextDocument) document();
+			Unused.Value = new TextInfoController(doc);
+		}
+		
 		public void openSelection(NSObject sender)
 		{
 			Boss boss = ObjectModel.Create("TextEditorPlugin");
@@ -410,7 +447,7 @@ namespace TextEditor
 				
 				if (codePoint < 32)
 				{
-					if (codePoint != 9 && codePoint != 10 && codePoint != 13)	// tab, new line, and carriage return are OK
+					if (codePoint != '\t' && codePoint != '\n')	// note that carriage return is not OK because documents are supposed to use new lines in memory
 					{
 						index = i;
 					}
@@ -831,7 +868,7 @@ namespace TextEditor
 		}
 		
 		#region Private Methods
-		private void DoGetStyler()
+		private void DoFindLanguage()
 		{
 			string fileName = System.IO.Path.GetFileName(Path);
 			if (document().Call("isBinary").To<bool>())
@@ -843,17 +880,15 @@ namespace TextEditor
 			Boss boss = ObjectModel.Create("Stylers");
 			foreach (IFindLanguage find in boss.GetRepeated<IFindLanguage>())
 			{
-				Boss lboss = find.Find(fileName);
-				if (lboss != null)
-				{
-					language = lboss.Get<ILanguage>();
+				language = find.FindByExtension(fileName);
+				if (language != null)
 					break;
-				}
 			}
 			
 			m_language = language;
 			((DeclarationsPopup) m_decPopup.Value).Init(this);
 			m_applier.ResetTabs();
+			m_applier.ClearStyles();
 		}
 		
 		// This is retarded, but showFindIndicatorForRange only works if the window is

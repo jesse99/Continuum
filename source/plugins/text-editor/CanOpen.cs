@@ -51,7 +51,7 @@ namespace TextEditor
 			Boss boss = ObjectModel.Create("Stylers");
 			foreach (IFindLanguage find in boss.GetRepeated<IFindLanguage>())
 			{
-				if (find.Find(fileName) != null)
+				if (find.FindByExtension(fileName) != null)
 					return true;
 			}
 			

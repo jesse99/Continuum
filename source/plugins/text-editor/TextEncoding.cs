@@ -44,22 +44,25 @@ namespace TextEditor
 		}
 		
 		[ThreadModel(ThreadModel.Concurrent)]
-		public NSString Decode(NSData data)	// threaded code
+		public NSString Decode(NSData data)
 		{
 			uint encoding;
 			return Decode(data, out encoding);
 		}
 		
 		[ThreadModel(ThreadModel.Concurrent)]
-		public NSString Decode(NSData data, out uint encoding)	// threaded code
+		public NSString Decode(NSData data, out uint encoding)
 		{
 			Contract.Requires(data != null, "data is null");
 			
 			NSString result = null;
 			
-			encoding = DoGetEncoding(data);
+			int skipBytes = 0;
+			encoding = DoGetEncoding(data, ref skipBytes);
 			if (encoding != 0)
 			{
+				if (skipBytes > 0)
+					data = data.subdataWithRange(new NSRange(skipBytes, (int) data.length() - skipBytes));
 				result = DoDecode(data, encoding);
 				
 				// The first few bytes of most legacy documents will look like utf8 so
@@ -79,7 +82,7 @@ namespace TextEditor
 		}
 		
 		[ThreadModel(ThreadModel.Concurrent)]
-		public NSData Encode(NSString text, uint encoding)	// threaded code
+		public NSData Encode(NSString text, uint encoding)
 		{
 			Contract.Requires((object) text != null, "text is null");
 			Contract.Requires(encoding != 0, "encoding is zero");
@@ -89,7 +92,7 @@ namespace TextEditor
 		
 		#region Private Methods
 		[ThreadModel(ThreadModel.Concurrent)]
-		private uint DoGetEncoding(NSData data)
+		private uint DoGetEncoding(NSData data, ref int skipBytes)
 		{
 			uint encoding = 0;
 			const int HeaderBytes = 2*64;
@@ -99,23 +102,41 @@ namespace TextEditor
 			
 			// Check for a BOM.
 			if (buffer[0] == 0x00 && buffer[1] == 0x00 && buffer[2] == 0xFE && buffer[3] == 0xFF)
+			{
 				encoding = Enums.NSUTF32BigEndianStringEncoding;
-			
+				skipBytes = 4;
+			}
 			else if (buffer[0] == 0xFF && buffer[1] == 0xFE && buffer[2] == 0x00 && buffer[3] == 0x00)
+			{
 				encoding = Enums.NSUTF32LittleEndianStringEncoding;
-			
+				skipBytes = 4;
+			}
 			else if (buffer[0] == 0xFE && buffer[1] == 0xFF)
+			{
 				encoding = Enums.NSUTF16BigEndianStringEncoding;
-			
+				skipBytes = 2;
+			}
 			else if (buffer[0] == 0xFF && buffer[1] == 0xFE)
+			{
 				encoding = Enums.NSUTF16LittleEndianStringEncoding;
+				skipBytes = 2;
+			}
+			
+			// See if it looks like utf-32.
+			if (encoding == 0)
+			{
+				if (DoLooksLikeUTF32(buffer, true, buffer.Length))
+					encoding = Enums.NSUTF32BigEndianStringEncoding;
+				else if (DoLooksLikeUTF32(buffer, false, buffer.Length))
+					encoding = Enums.NSUTF32LittleEndianStringEncoding;
+			}
 			
 			// See if it looks like utf-16.
 			if (encoding == 0)
 			{
-				if (DoLooksLikeUTF16(buffer, true, HeaderBytes))
+				if (DoLooksLikeUTF16(buffer, true, buffer.Length))
 					encoding = Enums.NSUTF16BigEndianStringEncoding;
-				else if (DoLooksLikeUTF16(buffer, false, HeaderBytes))
+				else if (DoLooksLikeUTF16(buffer, false, buffer.Length))
 					encoding = Enums.NSUTF16LittleEndianStringEncoding;
 			}
 			
@@ -147,26 +168,54 @@ namespace TextEditor
 			
 			for (int i = 0; i + 1 < headerBytes; i += 2)
 			{
-				if (buffer[i] != (byte) '?')		// there might be a '?' in the header (or even two together) so we'll keep going if we find one
+				++count;
+				
+				if (bigEndian)
 				{
-					++count;
-					
-					if (bigEndian)
-					{
-						if (buffer[i] == 0 && buffer[i + 1] != 0)
-							if (CharHelpers.IsBadControl((char) buffer[i + 1]))
-								return false;
-							else
-								++zeros;
-					}
-					else
-					{
-						if (buffer[i] != 0 && buffer[i + 1] == 0)
-							if (CharHelpers.IsBadControl((char) buffer[i]))
-								return false;
-							else
-								++zeros;
-					}
+					if (buffer[i] == 0 && buffer[i + 1] != 0)
+						if (CharHelpers.IsBadControl((char) buffer[i + 1]))
+							return false;
+						else
+							++zeros;
+				}
+				else
+				{
+					if (buffer[i] != 0 && buffer[i + 1] == 0)
+						if (CharHelpers.IsBadControl((char) buffer[i]))
+							return false;
+						else
+							++zeros;
+				}
+			}
+			
+			return zeros > 0.25*count;
+		}
+		
+		[ThreadModel(ThreadModel.Concurrent)]
+		private bool DoLooksLikeUTF32(byte[] buffer, bool bigEndian, int headerBytes)
+		{
+			int zeros = 0;
+			int count = 0;
+			
+			for (int i = 0; i + 3 < headerBytes; i += 4)
+			{
+				++count;
+				
+				if (bigEndian)
+				{
+					if (buffer[i] == 0 && buffer[i + 1] == 0 && buffer[i + 2] == 0 && buffer[i + 3] != 0)
+						if (CharHelpers.IsBadControl((char) buffer[i + 3]))
+							return false;
+						else
+							++zeros;
+				}
+				else
+				{
+					if (buffer[i] != 0 && buffer[i + 1] == 0 && buffer[i + 2] == 0 && buffer[i + 3] == 0)
+						if (CharHelpers.IsBadControl((char) buffer[i]))
+							return false;
+						else
+							++zeros;
 				}
 			}
 			
@@ -201,9 +250,9 @@ namespace TextEditor
 			
 			return valid;
 		}
-				
+		
 		[ThreadModel(ThreadModel.Concurrent)]
-		private NSString DoDecode(NSData data, uint encoding)		// threaded code
+		private NSString DoDecode(NSData data, uint encoding)
 		{
 			NSString result = NSString.Alloc().initWithData_encoding(data, encoding);
 			

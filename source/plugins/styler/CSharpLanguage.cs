@@ -43,6 +43,11 @@ namespace Styler
 			get {return "CsLanguage";}
 		}
 		
+		public string FriendlyName
+		{
+			get {return "c#";}
+		}
+		
 		public int[] TabStops
 		{
 			get {return m_language.TabStops;}

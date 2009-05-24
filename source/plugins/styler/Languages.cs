@@ -33,7 +33,7 @@ namespace Styler
 {
 	internal static class Languages
 	{
-		public static Language Find(string fileName)
+		public static Language FindByExtension(string fileName)
 		{
 			if (!ms_inited)
 				DoInit();
@@ -49,6 +49,29 @@ namespace Styler
 			}
 			
 			return null;
+		}
+		
+		public static Language FindByFriendlyName(string name)
+		{
+			if (!ms_inited)
+				DoInit();
+				
+			Language result;
+			if (!ms_languages.TryGetValue(name, out result))
+				throw new ArgumentException("Couldn't find language " + name);
+			
+			return result;
+		}
+		
+		public static IEnumerable<string> GetFriendlyNames()
+		{
+			if (!ms_inited)
+				DoInit();
+				
+			foreach (string name in ms_languages.Keys)
+			{
+				yield return name;
+			}
 		}
 		
 		#region Private Methods

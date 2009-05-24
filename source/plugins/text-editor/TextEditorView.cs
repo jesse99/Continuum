@@ -55,7 +55,7 @@ namespace TextEditor
 			do
 			{
 				TextController controller = (TextController) window().windowController();
-				if ("CsLanguage" == controller.Language)			// order is important: Language may be null
+				if (controller.Language != null && controller.Language.Name == "CsLanguage")
 				{
 					// Handle auto-complete initiated with '.' or enter.
 					if (m_autoComplete.HandleKey(this, evt))

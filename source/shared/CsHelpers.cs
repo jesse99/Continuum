@@ -63,8 +63,8 @@ namespace Shared
 			{
 				foreach (IFindLanguage find in boss.GetRepeated<IFindLanguage>())
 				{
-					Boss language = find.Find(fileName);
-					if (language != null && language.Name == "CsLanguage")
+					ILanguage language = find.FindByExtension(fileName);
+					if (language != null && language.Boss.Name == "CsLanguage")
 						return true;
 				}
 			}

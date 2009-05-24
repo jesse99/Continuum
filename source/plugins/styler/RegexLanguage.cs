@@ -43,6 +43,11 @@ namespace Styler
 			get {return "RegexLanguage";}
 		}
 		
+		public string FriendlyName
+		{
+			get {return m_language.FriendlyName;}
+		}
+		
 		public int[] TabStops
 		{
 			get {return m_language.TabStops;}

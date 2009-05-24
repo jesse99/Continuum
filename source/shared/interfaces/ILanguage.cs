@@ -32,6 +32,9 @@ namespace Shared
 		// Normally "CsLanguage" or "RegexLanguage".
 		string Name {get;}
 		
+		// "c#", "python", etc.
+		string FriendlyName {get;}
+		
 		// These are the initial tab stops used by text views for this language.
 		// Any tabs which appear after these will use the tab interval from the
 		// prefs. Note that the stops are expressed as multiples of the tab interval.

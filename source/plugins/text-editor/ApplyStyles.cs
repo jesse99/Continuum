@@ -99,6 +99,11 @@ namespace TextEditor
 			Broadcaster.Unregister(this);
 		}
 		
+		public void ClearStyles()
+		{
+			m_current.ClearStyles();
+		}
+		
 		public void EditedRange(NSRange range)
 		{
 			m_current.EditedRange(range);

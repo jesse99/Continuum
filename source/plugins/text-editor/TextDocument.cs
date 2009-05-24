@@ -33,6 +33,23 @@ using System.Text;
 
 namespace TextEditor
 {
+	internal enum LineEndian
+	{
+		Mac,					// "\r"
+		Unix,				// "\n"
+		Windows,			// "\r\n"
+	}
+	
+	internal enum TextFormat
+	{
+		PlainText,
+		RTF,
+		HTML,
+		Word97,
+		Word2007,
+		OpenDoc,
+	}
+	
 	[ExportClass("TextDocument", "NSDocument")]
 	internal sealed class TextDocument : NSDocument
 	{
@@ -60,6 +77,51 @@ namespace TextEditor
 				m_text = null;
 			}
 			m_controller.Open();
+		}
+		
+		public TextController Controller
+		{
+			get {return m_controller;}
+		}
+		
+		public LineEndian Endian
+		{
+			get {return m_endian;}
+			set
+			{
+				if (value != m_endian)
+				{
+					m_endian = value;
+					updateChangeCount(Enums.NSChangeDone);
+				}
+			}
+		}
+		
+		// Valid only if the format is plain text.
+		public uint Encoding
+		{
+			get {return m_encoding;}
+			set
+			{
+				if (value != m_encoding)
+				{
+					m_encoding = value;
+					updateChangeCount(Enums.NSChangeDone);
+				}
+			}
+		}
+		
+		public TextFormat Format
+		{
+			get {return m_format;}
+			set
+			{
+				if (value != m_format)
+				{
+					m_format = value;
+					updateChangeCount(Enums.NSChangeDone);
+				}
+			}
 		}
 		
 		public bool isBinary()
@@ -151,8 +213,9 @@ namespace TextEditor
 					if (NSObject.IsNullOrNil(m_text))
 						throw new InvalidOperationException("Couldn't decode the file.");
 					
-					if (m_text != null)
-						DoCheckForControlChars(m_text.string_().description());
+					string text = m_text.string_().description();
+					DoSetEndian(text);
+					DoCheckForControlChars(text);
 						
 					m_size = data.length();
 					
@@ -197,42 +260,40 @@ namespace TextEditor
 			{
 				DoCheckForControlChars(m_controller.Text);
 				
-				switch (typeName.description())
+				NSMutableAttributedString astr = m_controller.TextView.textStorage().mutableCopy().To<NSMutableAttributedString>();
+				NSMutableString str = astr.mutableString();
+				astr.autorelease();
+				
+				DoRestoreEndian(str);
+				
+				switch (m_format)
 				{
-					case "Plain Text, UTF8 Encoded":
-						data = DoGetEncodedString(Enums.NSUTF8StringEncoding);
+					case TextFormat.PlainText:
+						data = str.dataUsingEncoding_allowLossyConversion(m_encoding, true);
 						break;
 						
-					case "Plain Text, UTF16 Encoded":
-						data = DoGetEncodedString(Enums.NSUTF16LittleEndianStringEncoding);
+					case TextFormat.RTF:
+						data = DoWriteWrapped(astr, Externs.NSRTFTextDocumentType);
 						break;
 						
-					case "Plain Text, 7-Bit ASCII Encoded":
-						data = DoGetEncodedString(Enums.NSASCIIStringEncoding);
+					case TextFormat.HTML:
+						data = DoWriteWrapped(astr, Externs.NSHTMLTextDocumentType);
 						break;
 						
-					case "Rich Text Format (RTF)":
-						data = DoWriteWrapped(Externs.NSRTFTextDocumentType);
+					case TextFormat.Word97:
+						data = DoWriteWrapped(astr, Externs.NSDocFormatTextDocumentType);
 						break;
 						
-					case "HTML":
-						data = DoWriteWrapped(Externs.NSHTMLTextDocumentType);
-						break;
-					
-					case "Word 97 Format (doc)":
-						data = DoWriteWrapped(Externs.NSDocFormatTextDocumentType);
+					case TextFormat.Word2007:
+						data = DoWriteWrapped(astr, Externs.NSOfficeOpenXMLTextDocumentType);
 						break;
 						
-					case "Word 2007 Format (docx)":
-						data = DoWriteWrapped(Externs.NSOfficeOpenXMLTextDocumentType);
+					case TextFormat.OpenDoc:
+						data = DoWriteWrapped(astr, Externs.NSOpenDocumentTextDocumentType);
 						break;
 						
-					case "Open Document Text (odt)":
-						data = DoWriteWrapped(Externs.NSOpenDocumentTextDocumentType);
-						break;
-					
 					default:
-						Contract.Assert(false, "bad typeName: " + typeName.description());
+						Contract.Assert(false, "bad format: " + m_format);
 						break;
 				}
 				
@@ -240,6 +301,9 @@ namespace TextEditor
 			}
 			catch (Exception e)
 			{
+				Log.WriteLine(TraceLevel.Error, "App", "couldn't save:");
+				Log.WriteLine(TraceLevel.Error, "App", "{0}", e);
+				
 				NSMutableDictionary userInfo = NSMutableDictionary.Create();
 				userInfo.setObject_forKey(NSString.Create("Couldn't convert the document to NSData."), Externs.NSLocalizedDescriptionKey);
 				userInfo.setObject_forKey(NSString.Create(e.Message), Externs.NSLocalizedFailureReasonErrorKey);
@@ -298,36 +362,124 @@ namespace TextEditor
 				case "HTML":
 					Boss boss = ObjectModel.Create("TextEditorPlugin");
 					var encoding = boss.Get<ITextEncoding>();
-					m_text = NSAttributedString.Create(encoding.Decode(data).description());
+					NSString str = encoding.Decode(data, out m_encoding);
+					m_text = NSMutableAttributedString.Alloc().initWithString(str).To<NSMutableAttributedString>();
+					m_format = TextFormat.PlainText;
 					break;
 				
 				// These types are based on the file's extension so we can (more or less) trust them.
 				case "Rich Text Format (RTF)":
 					m_text = DoReadWrapped(data, Externs.NSRTFTextDocumentType);
+					m_format = TextFormat.RTF;
 					break;
 					
 				case "Word 97 Format (doc)":
 					m_text = DoReadWrapped(data, Externs.NSDocFormatTextDocumentType);
+					m_format = TextFormat.Word97;
 					break;
 					
 				case "Word 2007 Format (docx)":
 					m_text = DoReadWrapped(data, Externs.NSOfficeOpenXMLTextDocumentType);
+					m_format = TextFormat.Word2007;
 					break;
 					
 				case "Open Document Text (odt)":
 					m_text = DoReadWrapped(data, Externs.NSOpenDocumentTextDocumentType);
+					m_format = TextFormat.OpenDoc;
 					break;
 					
 				// Open as Binary
 				case "binary":
-					m_text = NSAttributedString.Create(data.bytes().ToText());
+					m_text = NSMutableAttributedString.Create(data.bytes().ToText());
 					m_binary = true;
+					m_format = TextFormat.PlainText;
+					m_encoding = Enums.NSUTF8StringEncoding;
 					break;
 				
 				default:
 					Contract.Assert(false, "bad typeName: " + typeName.description());
 					break;
 			}
+		}
+		
+		private void DoSetEndian(string text)
+		{
+			int[] counts = new int[]{0, 0, 0};
+			
+			int windows = (int) LineEndian.Windows;
+			int mac = (int) LineEndian.Mac;
+			int unix = (int) LineEndian.Unix;
+			
+			// Find out how many line endings of each type the file has.
+			int i = 0;
+			while (i < text.Length)
+			{
+				if (i + 1 < text.Length && text[i] == '\r' && text[i + 1] == '\n')
+				{
+					counts[windows] += 1;
+					i += 2;
+				}
+				else if (text[i] == '\r')
+				{
+					counts[mac] += 1;
+					i += 1;
+				}
+				else if (text[i] == '\n')
+				{
+					counts[unix] += 1;
+					i += 1;
+				}
+				else
+				{
+					i += 1;
+				}
+			}
+			
+			// Set the endian to whichever is the most common.
+			if (counts[windows] > counts[mac] && counts[windows] > counts[unix])
+				m_endian = LineEndian.Windows;
+			
+			else if (counts[mac] > counts[windows] && counts[mac] > counts[unix])
+				m_endian = LineEndian.Mac;
+			
+			else
+				m_endian = LineEndian.Unix;
+				
+			// To make life easier on ourselves text documents in memory are always
+			// unix endian (this will also fixup files with mixed line endings).
+			if (counts[windows] > 0)
+				DoFixup("\r\n", "\n");
+			
+			if (counts[mac] > 0)
+				DoFixup("\r", "\n");
+		}
+		
+		private void DoRestoreEndian(NSMutableString str )
+		{
+			NSRange range = new NSRange(0, (int) str.length());
+			NSString target = NSString.Create("\n");
+			
+			if (m_endian == LineEndian.Windows)
+			{
+				NSString replacement = NSString.Create("\r\n");
+				str.replaceOccurrencesOfString_withString_options_range(target, replacement, Enums.NSLiteralSearch, range);
+			}
+			else if (m_endian == LineEndian.Mac)
+			{
+				NSString replacement = NSString.Create("\r");
+				str.replaceOccurrencesOfString_withString_options_range(target, replacement, Enums.NSLiteralSearch, range);
+			}
+		}
+		
+		private void DoFixup(string src, string dst)
+		{
+			NSMutableString str = m_text.mutableString();
+			
+			NSString target = NSString.Create(src);
+			NSString replacement = NSString.Create(dst);
+			NSRange range = new NSRange(0, (int) str.length());
+			
+			str.replaceOccurrencesOfString_withString_options_range(target, replacement, Enums.NSLiteralSearch, range);
 		}
 		
 		private void DoResetURL(NSURL url)
@@ -344,16 +496,8 @@ namespace TextEditor
 			}
 		}
 		
-		private NSData DoGetEncodedString(uint encoding)
+		private NSData DoWriteWrapped(NSAttributedString str, NSString type)
 		{
-			NSString str = m_controller.TextView.string_();
-			return str.dataUsingEncoding_allowLossyConversion(encoding, true);
-		}
-		
-		private NSData DoWriteWrapped(NSString type)
-		{
-			NSAttributedString str = m_controller.TextView.textStorage();
-			
 			NSRange range = new NSRange(0, (int) str.length());
 			NSDictionary dict = NSDictionary.dictionaryWithObject_forKey(type, Externs.NSDocumentTypeDocumentAttribute);
 			NSError error;
@@ -364,11 +508,11 @@ namespace TextEditor
 			return result;
 		}
 		
-		private NSAttributedString DoReadWrapped(NSData data, NSString type)
+		private NSMutableAttributedString DoReadWrapped(NSData data, NSString type)
 		{
 			NSDictionary options = NSDictionary.dictionaryWithObject_forKey(type, Externs.NSDocumentTypeDocumentAttribute);
 			NSError error;
-			NSAttributedString str = NSAttributedString.Alloc().initWithData_options_documentAttributes_error(data, options, IntPtr.Zero, out error).To<NSAttributedString>();
+			NSMutableAttributedString str = NSMutableAttributedString.Alloc().initWithData_options_documentAttributes_error(data, options, IntPtr.Zero, out error).To<NSMutableAttributedString>();
 			if (!NSObject.IsNullOrNil(error))
 				error.Raise();
 				
@@ -440,10 +584,13 @@ namespace TextEditor
 		
 		#region Fields
 		private TextController m_controller;
-		private NSAttributedString m_text;
+		private NSMutableAttributedString m_text;
 		private NSURL m_url;
 		private uint m_size;
 		private bool m_binary;
+		private LineEndian m_endian;
+		private uint m_encoding;
+		private TextFormat m_format;
 		
 		private static Dictionary<char, string> ms_controlNames = new Dictionary<char, string>
 		{

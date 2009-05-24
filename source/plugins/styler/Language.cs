@@ -43,7 +43,7 @@ namespace Styler
 			ActiveObjects.Add(this);
 		}
 		
-		public string Name
+		public string FriendlyName
 		{
 			get {return m_name;}
 		}

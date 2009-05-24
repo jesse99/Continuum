@@ -265,7 +265,10 @@ namespace Find
 				}
 			}
 			catch (Exception e)
-			{				
+			{
+				Log.WriteLine(TraceLevel.Error, "App", "Couldn't do the search/replace for '{0}':", file);
+				Log.WriteLine(TraceLevel.Error, "App", "{0}", e);
+				
 				m_transcript.WriteLine(Output.Error, "Couldn't do the search/replace for '{0}'.", file);
 				m_transcript.WriteLine(Output.Error, e.Message);
 			}

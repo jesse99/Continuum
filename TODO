@@ -24,23 +24,39 @@ sudo fs_usage -f filesys
 
 http://macosx.com/forums/archive/t-299331.html
 
-* Make sure windows line endian can be opened and saved.
-* Make sure encoding is preserved when saving.
-* Add TextDocument get info support:
-	- allow line endian, encoding, and language to be changed
+* Root directory item is not updating when duplicating files
+	- also got a crash deleting a root file
+* Sort lines didn't work.
+* Open selection dialog should trim spaces.
+* Why didn't LineEndian complete? (Seemed to be confused by the property).
+* Got a error trying to show LineEndian short form.
+* Got two "Open generated/NSMutableAttributedString.cs" context menu items.
+* Why don't runs update after typing, eg typing a new comment doesn't redraw
+   until an arrow key is hit.
+* Scroll bar heigh isn't correct when opening files, eg AppleStyles.cs
+* Binary should have a tab in the chars.
+* Work on disassembler:
+	- stloc.1 should show the local name, also ldloc (see getBytes_length)
+	- ditto with ldloc
+	- would be really nice to include source lines when possible
+	- also include the path/line to the method
+* Might want to get rid of the custom NSWindowController ctor.
 * Make sure spelling and grammar menu works OK.
-* Din't get any make targets opening the mono-2.4 directory.
+* Didn't get any make targets opening the mono-2.4 directory.
+* Might want to try some other make files.
 * Might want an m4 language.
 * Add support for building with nant:
-	- make sure Monobj examples can be built
+	- make sure Monobj examples can be built 
 	- might need an extra binaries project pref for builders who drop the binaries in
 	  weird places
 * Review thread safety
 
+* Look at other editors, eg TextMate, VS Expess.
 * Add some better support to mobj for leak detection. Maybe record (an optional?)
    stack trace with each new-ed NSObject.
 * Short form should have doc comments:
 	- style these
+	- maybe use an html view, could have links to/from summary form and remarks
 * Auto-complete table should have comments too.
 * Look into iron python.
 * Enter should add snippets:
@@ -366,7 +382,6 @@ http://macosx.com/forums/archive/t-299331.html
 	http://wesnerm.blogs.com/net_undocumented/2004/06/whidbey_may_mis.html
 * Might be able to do some refactors with drag and drop.
 * Look into lisp and smalltalk ides. Squeak and etoys.
-* Look at other editors, eg TextMate.
 * Should be able to diff two entity instances.
 * Experiment with a runtime monitor plugin:
 	- have a low priority thread which monitors memory usage

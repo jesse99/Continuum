@@ -112,6 +112,13 @@ namespace TextEditor
 			m_currentRuns.Clear();
 		}
 		
+		public void ClearStyles()
+		{
+			m_appliedRuns.Clear();
+			m_currentRuns.Clear();
+			DoClearOld();
+		}
+		
 		// Note that we don't apply the runs at the start which match runs we have already
 		// applied. This speeds things up a fair amount and also prevents the text from
 		// jumping around when lines have different heights (the text view has to redo

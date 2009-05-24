@@ -772,7 +772,7 @@ namespace CsParser
 			{
 				int old = m_index;
 				
-				if (Current == '\n' && Next == '\r')
+				if (Current == '\r' && Next == '\n')
 				{
 					++m_line;
 					m_index += 2;
@@ -862,7 +862,7 @@ namespace CsParser
 		{
 			int offset = m_index;
 			
-			while (Current != '\n' && Current != '\r' && Current != '\x00')
+			while (Current != '\r' && Current != '\n' && Current != '\x00')
 			{
 				++m_index;
 			}

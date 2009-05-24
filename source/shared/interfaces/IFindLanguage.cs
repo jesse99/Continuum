@@ -21,6 +21,7 @@
 
 using Gear;
 using System;
+using System.Collections.Generic;
 
 namespace Shared
 {
@@ -28,7 +29,11 @@ namespace Shared
 	// interfaces associated with a file.
 	public interface IFindLanguage : IInterface
 	{
-		// Returns either null or a boss with an ILanguage interface. 
-		Boss Find(string fileName);
+		// Returns null if no language with a matching extension can be found. 
+		ILanguage FindByExtension(string fileName);
+		
+		ILanguage FindByFriendlyName(string name);
+		
+		IEnumerable<string> GetFriendlyNames();
 	}
 }

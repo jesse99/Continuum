@@ -471,6 +471,10 @@ namespace ObjectModel
 			{
 				// not an assembly
 			}
+			catch (FormatException)
+			{
+				// mdb doesn't match assembly
+			}
 			catch (IOException ie)
 			{
 				// the file system may change as we are trying to process assemblies

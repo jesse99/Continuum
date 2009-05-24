@@ -22,6 +22,7 @@
 using Gear;
 using Shared;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace Styler
@@ -38,14 +39,14 @@ namespace Styler
 			m_boss = boss;
 		}
 		
-		public Boss Find(string fileName)
+		public ILanguage FindByExtension(string fileName)
 		{
-			Language language =  Languages.Find(fileName);
+			Language language =  Languages.FindByExtension(fileName);
 			
 			Boss result = null;
 			if (language != null)
 			{
-				if (language.Name == "c#")
+				if (language.FriendlyName == "c#")
 					result = ObjectModel.Create("CsLanguage");
 				else
 					result = ObjectModel.Create("RegexLanguage");
@@ -53,8 +54,32 @@ namespace Styler
 				var with = result.Get<IStyleWith>();
 				with.Language = language;
 			}
-				
-			return result;
+			
+			return result != null ? result.Get<ILanguage>() : null;
+		}
+		
+		public ILanguage FindByFriendlyName(string name)
+		{
+			Language language =  Languages.FindByFriendlyName(name);
+			
+			Boss result = null;
+			if (language != null)
+			{
+				if (name == "c#")
+					result = ObjectModel.Create("CsLanguage");
+				else
+					result = ObjectModel.Create("RegexLanguage");
+					
+				var with = result.Get<IStyleWith>();
+				with.Language = language;
+			}
+			
+			return result != null ? result.Get<ILanguage>() : null;
+		}
+		
+		public IEnumerable<string> GetFriendlyNames()
+		{
+			return Languages.GetFriendlyNames();
 		}
 		
 		#region Fields 
