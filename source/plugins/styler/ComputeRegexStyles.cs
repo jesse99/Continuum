@@ -136,20 +136,23 @@ namespace Styler
 		[ThreadModel(ThreadModel.Concurrent)]
 		private void DoRegexMatch(string text, Language language, List<StyleRun> runs)
 		{
-			MatchCollection matches = language.Regex.Matches(text);
-			foreach (Match match in matches)
+			if (language.Regex != null)
 			{
-				GroupCollection groups = match.Groups;
-				for (int i = 1; i <= language.StyleCount; ++i)
+				MatchCollection matches = language.Regex.Matches(text);
+				foreach (Match match in matches)
 				{
-					Group g = groups[i];
-					if (g.Success)
+					GroupCollection groups = match.Groups;
+					for (int i = 1; i <= language.StyleCount; ++i)
 					{
-						if (i == 1 && language.StylesWhitespace)
-							DoMatchWhitespace(text, g, language, runs);
-						else
-							runs.Add(new StyleRun(g.Index, g.Length, language.Style(i)));
-						break;
+						Group g = groups[i];
+						if (g.Success)
+						{
+							if (i == 1 && language.StylesWhitespace)
+								DoMatchWhitespace(text, g, language, runs);
+							else
+								runs.Add(new StyleRun(g.Index, g.Length, language.Style(i)));
+							break;
+						}
 					}
 				}
 			}

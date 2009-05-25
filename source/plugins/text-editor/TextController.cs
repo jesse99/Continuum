@@ -41,6 +41,7 @@ namespace TextEditor
 			m_lineLabel = new IBOutlet<NSButton>(this, "lineLabel");
 			m_decPopup = new IBOutlet<NSPopUpButton>(this, "decsPopup");
 			m_scrollView = new IBOutlet<NSScrollView>(this, "scrollView");
+			m_restorer = new RestoreViewState(this);
 			
 			m_boss = ObjectModel.Create("TextEditor");
 			var wind = m_boss.Get<IWindow>();
@@ -125,7 +126,10 @@ namespace TextEditor
 				string dir = System.IO.Path.GetDirectoryName(Path);
 				m_dir = NSString.Create(dir).stringByResolvingSymlinksInPath().Retain();
 				m_watcher = new DirectoryWatcher(m_dir.description(), TimeSpan.FromMilliseconds(250));
-				m_watcher.Changed += this.DoDirChanged;	
+				m_watcher.Changed += this.DoDirChanged;
+				
+				if (m_restorer != null)
+					m_restorer.SetPath(Path);
 			}
 			else
 				((DeclarationsPopup) m_decPopup.Value).Init(this);
@@ -257,6 +261,11 @@ namespace TextEditor
 			get {return m_language != null ? m_language.TabStops : new int[0];}
 		}
 		
+		internal NSScrollView ScrollView
+		{
+			get {return m_scrollView.Value;}
+		}
+		
 		public Boss GetDirEditorBoss()
 		{
 			Boss boss = ObjectModel.Create("DirectoryEditorPlugin");
@@ -269,17 +278,13 @@ namespace TextEditor
 		
 		// We can't restore the scoller until layout has completed (because the scroller 
 		// doesn't know how many lines there are until this happens).
-		public void layoutManager_didCompleteLayoutForTextContainer_atEnd(NSLayoutManager mgr, NSTextContainer container, bool atEnd)
+		public void layoutManager_didCompleteLayoutForTextContainer_atEnd(NSLayoutManager layout, NSTextContainer container, bool atEnd)
 		{
 			if (!m_closed)
 			{
-				if (atEnd && !m_opened && (m_applier.Applied || m_language == null) && !m_scrolled)
-				{
-					// See http://www.cocoabuilder.com/archive/message/cocoa/2008/12/12/225294
-					NSApplication.sharedApplication().BeginInvoke(this.DoRestoreView);
-//					DoRestoreView();
-					m_opened = true;
-				}
+				if (m_restorer != null && m_applier.Applied)
+					if (m_restorer.OnCompletedLayout(layout, atEnd))
+						m_restorer = null;
 				
 				DoFireRanges();
 			}
@@ -288,9 +293,9 @@ namespace TextEditor
 		// Count is used for the find indicator.
 		public void ShowLine(int begin, int end, int count)
 		{
-			if (!m_applier.Applied)
+			if (m_restorer != null)
 			{
-				NSApplication.sharedApplication().BeginInvoke(() => ShowLine(begin, end, count), TimeSpan.FromMilliseconds(100));
+				m_restorer.ShowLine(begin, end, count);
 			}
 			else
 			{
@@ -300,27 +305,23 @@ namespace TextEditor
 				var thread = new System.Threading.Thread(() => DoDeferredFindIndicator(new NSRange(begin, count)));
 				thread.Name = "deferred find indicator";
 				thread.Start();
-				
-				m_scrolled = true;
 			}
 		}
 		
 		public void ShowSelection()
 		{
-			if (!m_applier.Applied)
+			NSRange range = m_textView.Value.selectedRange();
+			if (m_restorer != null)
 			{
-				NSApplication.sharedApplication().BeginInvoke(this.ShowSelection);
+				m_restorer.ShowSelection(range);
 			}
 			else
 			{
-				NSRange range = m_textView.Value.selectedRange();
 				m_textView.Value.scrollRangeToVisible(range);
 				
 				var thread = new System.Threading.Thread(() => DoDeferredFindIndicator(range));
 				thread.Name = "deferred find indicator";
 				thread.Start();
-				
-				m_scrolled = true;
 			}
 		}
 		
@@ -890,7 +891,6 @@ namespace TextEditor
 			m_language = language;
 			((DeclarationsPopup) m_decPopup.Value).Init(this);
 			m_applier.ResetTabs();
-			m_applier.ClearStyles();
 		}
 		
 		// This is retarded, but showFindIndicatorForRange only works if the window is
@@ -925,42 +925,6 @@ namespace TextEditor
 			m_textView.Value.sizeToFit();
 		}
 		
-		private void DoRestoreView()
-		{
-			if (Path != null)
-			{
-				int length = 0;
-				NSPoint origin = NSPoint.Zero;
-				NSRange range = NSRange.Empty;
-				
-				bool wrap = false;
-				if (WindowDatabase.GetViewSettings(Path, ref length, ref origin, ref range, ref wrap))
-				{
-					if (wrap != m_wordWrap)
-					{
-						m_wordWrap = wrap;
-						DoResetWordWrap();
-					}
-					
-					// If the file has been changed by another process we don't want
-					// to restore the origin and range since there is a good chance
-					// that that info is now invalid.
-					if (length == m_textView.Value.string_().length())
-					{
-						DoRestoreScrollers(origin.x, origin.y);
-						m_textView.Value.setSelectedRange(range);
-					}
-				}
-			}
-		}
-		
-		private void DoRestoreScrollers(float x, float y)
-		{
-			var clip = m_scrollView.Value.contentView().To<NSClipView>();
-			clip.scrollToPoint(new NSPoint(x, y));
-			m_scrollView.Value.reflectScrolledClipView(clip);
-		}
-		
 		private void DoShowOpenBrace(NSRange openRange, NSRange closeRange)
 		{
 			m_textView.Value.scrollRangeToVisible(openRange);
@@ -988,7 +952,7 @@ namespace TextEditor
 		
 		private void DoSetTextOptions()
 		{
-			// Disable word wrap by default (DoRestoreView will enable it if needed).
+			// Disable word wrap by default (OnCompletedLayout will enable it if needed).
 			m_textView.Value.setAutoresizingMask(Enums.NSViewWidthSizable | Enums.NSViewHeightSizable);
 			m_textView.Value.setMaxSize(new NSSize(float.MaxValue, float.MaxValue));
 			
@@ -1118,9 +1082,8 @@ namespace TextEditor
 		private string m_cachedText;
 		private int m_cachedEditCount = -1;
 		private int m_editCount;
-		private bool m_opened;
 		private bool m_closed;
-		private bool m_scrolled;
+		private RestoreViewState m_restorer;
 		private bool m_wordWrap;
 		private List<WeakReference> m_ranges = new List<WeakReference>();
 		

@@ -22,19 +22,34 @@ ReferenceEquals used with value type
 might want a sample app
 sudo fs_usage -f filesys
 
-* Open items don't get updated when their color changes.
-* Why don't runs update after typing, eg typing a new comment doesn't redraw
-   until an arrow key is hit.
-* Scroll bar height isn't correct when opening files, eg AppleStyles.cs
-* Might want to get rid of the custom NSWindowController ctor.
-* Make sure spelling and grammar menu works OK.
-* Didn't get any make targets opening the mono-2.4 directory.
-* Might want to try some other make files.
-* Might want an m4 language.
+open file should restore
+show line should work (eg open method)			also shows find indicator
+show selection should work (find)						also shows find indicator
+open brand new file should do nothing
+
+* Work on restore view:
+	- show isn't showing the selection
+	- do we need to do this aync?
+			// See http://www.cocoabuilder.com/archive/message/cocoa/2008/12/12/225294
+	- can we use firstUnlaidCharacterIndex?
+	- try the various cases
+* Scroll bar height isn't correct when opening files, eg ApplyStyles.cs
+* Locked up increasing font size.
+* Make sure changing to plain text files works.
+* Didn't scroll into view when finding "change" in aclocal.m4
+* Error right clicking on text window which wasn't main:
+App Error     Error building context menu:
+App Error     System.NullReferenceException: Object reference not set to an instance of an object
+                at Disassembler.ContextMenu.Get (Gear.Boss boss, System.String selection, System.Collections.Generic.List`1 items) [0x0000e] in /Users/jessejones/Source/Continuum/source/plugins/disassembler/ContextMenu.cs:51 
+                at TextEditor.TextEditorView.DoGetEntries (System.String selection) [0x0004f] in /Users/jessejones/Source/Continuum/source/plugins/text-editor/TextEditorView.cs:471 
+                at TextEditor.TextEditorView.menuForEvent (MCocoa.NSEvent evt) [0x000d5] in /Users/jessejones/Source/Continuum/source/plugins/text-editor/TextEditorView.cs:231 
+* Find in files directories don't seem to be updated when directories are edited.
 * Add support for building with nant:
 	- make sure Monobj examples can be built 
 	- might need an extra binaries project pref for builders who drop the binaries in
 	  weird places
+* Why don't runs update after typing, eg typing a new comment doesn't redraw
+   until an arrow key is hit.
 * Review thread safety
 
 * Look at other editors, eg TextMate, VS Expess.
@@ -45,6 +60,17 @@ sudo fs_usage -f filesys
 	- maybe use an html view, could have links to/from summary form and remarks
 * Auto-complete table should have comments too.
 * Look into iron python.
+*Add a general svn command. Something like:
+	- floating window
+	- left side has a directory view showing directory items and revision numbers
+	- need to watch the root
+	- context menu should open the window and show the selected item
+	- top has popdowns with command, revision 1 (defaults to head), and revision 2
+	  (defaults to nothing)
+	- middle has editable text field with the command to be executed
+	- bottom has help and execute buttons
+	- output goes to either transcript or a new window
+	- probably need a way to set the more uncommon options
 * Enter should add snippets:
 	- look at CodeTemplates file
 	- $NAME is a placeholder

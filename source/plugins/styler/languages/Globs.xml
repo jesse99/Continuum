@@ -8,6 +8,7 @@
 	<Glob language = "info">*.info</Glob>
 	<Glob language = "ignore">*.ignore</Glob>
 	<Glob language = "makefile">Makefile Makefile.am *.make *.mk</Glob> <!-- may want a custom language for automake files -->
+	<Glob language = "m4">*.m4</Glob>
 	<Glob language = "objective-c">*.h *.m</Glob>
 	<Glob language = "patch">diff *.patch *.diff</Glob>
 	<Glob language = "plain-text">BUILDING README AUTHORS CHANGES ChangeLog *.txt *.text *.svn-blame *.svn-log</Glob>

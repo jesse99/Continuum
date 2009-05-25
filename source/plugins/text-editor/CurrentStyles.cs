@@ -90,9 +90,9 @@ namespace TextEditor
 		}
 		
 		public bool Applied
-			{
-				get {return m_applied;}
-			}
+		{
+			get {return m_applied;}
+		}
 		
 		public void Stop()
 		{
@@ -225,9 +225,9 @@ namespace TextEditor
 						m_queued = true;
 						NSApplication.sharedApplication().BeginInvoke(() => DoApplyStyles(false), ApplyDelay);
 					}
-					else
+//					else
 //						NSApplication.sharedApplication().BeginInvoke(() => {m_applied = true;});
-						m_applied = true;
+					m_applied = true;
 				}
 				finally
 				{
