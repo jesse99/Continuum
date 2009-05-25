@@ -45,7 +45,7 @@ namespace DirectoryEditor
 			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("directory-editor"), this);	
 			m_table = new IBOutlet<NSOutlineView>(this, "table").Value;
 			m_targets = new IBOutlet<NSPopUpButton>(this, "targets").Value;
-			m_prefs = new IBOutlet<DirPrefsController>(this, "prefsController").Value;
+			m_prefs = new IBOutlet<DirPrefsController>(this, "prefsController");
 			
 			m_name = System.IO.Path.GetFileName(path);
 			window().setTitle(NSString.Create(m_name));
@@ -555,9 +555,9 @@ namespace DirectoryEditor
 		private void DoShowPrefs()
 		{
 			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("dir-prefs"), this);
-			Contract.Assert(!NSObject.IsNullOrNil(m_prefs), "nib didn't set prefsController");
+			Contract.Assert(!NSObject.IsNullOrNil(m_prefs.Value), "nib didn't set prefsController");
 			
-			m_prefs.Open(this);
+			m_prefs.Value.Open(this);
 		}
 		
 		private void DoSavePrefs()
@@ -640,7 +640,7 @@ namespace DirectoryEditor
 		private FolderItem m_root;
 		private NSOutlineView m_table;
 		private NSPopUpButton m_targets;
-		private DirPrefsController m_prefs;
+		private IBOutlet<DirPrefsController> m_prefs;
 		private GenericBuilder m_builder;
 		private DateTime m_startTime = DateTime.MinValue;
 		private string m_name;

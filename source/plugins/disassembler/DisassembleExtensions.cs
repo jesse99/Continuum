@@ -45,7 +45,10 @@ namespace Disassembler
 				DoAppendMethod(builder, type.Constructors[i]);
 				
 				if (i + 1 < type.Constructors.Count || type.Methods.Count > 0 || type.Fields.Count > 0)
+				{
 					builder.AppendLine();
+					builder.AppendLine();
+				}
 			}
 			
 			for (int i = 0; i < type.Methods.Count; ++i)
@@ -53,7 +56,10 @@ namespace Disassembler
 				DoAppendMethod(builder, type.Methods[i]);
 				
 				if (i + 1 < type.Methods.Count || type.Fields.Count > 0)
+				{
 					builder.AppendLine();
+					builder.AppendLine();
+				}
 			}
 			
 			for (int i = 0; i < type.Fields.Count; ++i)
@@ -182,18 +188,63 @@ namespace Disassembler
 		{
 			DoAppendMethodHeader(builder, method);
 			if (method.HasBody)
-				DoAppendBody(builder, method.Body);
+				DoAppendBody(builder, method);
 		}
 		
-		// The ExceptionHandlers are a little bit weird: there is one ExceptionHandler for
-		// each catch/finally block and each ExceptionHandler includes the range for the
-		// corresponding try block.
-		private static void DoAppendBody(StringBuilder builder, MethodBody body)
+		private const int PdbHiddenLine = 0xFEEFEE;
+		
+		private static string[] DoGetSource(MethodDefinition method)
 		{
-			int indent = 0;
-			foreach (Instruction ins in body.Instructions)
+			string[] source = null;
+			
+			// Find the first sequence point (it won't always be at the first instruction).
+			Instruction ins = method.Body.Instructions[0];
+			while (ins != null && ins.SequencePoint == null)
+				ins = ins.Next;
+			
+			// Load the source. TODO: Document has a Hash property that we could use
+			// to check to see if the source file matches the file used to compile the assembly
+			// but it does not appear to be set with gmcs 2.4.
+			if (ins != null && ins.SequencePoint.Document != null && ins.SequencePoint.Document.Url != null)
 			{
-				DoAppendHandler(builder, body, ins, ref indent);
+				source = System.IO.File.ReadAllLines(ins.SequencePoint.Document.Url);
+			}
+			
+			return source;
+		}
+		
+		private static void DoAppendBody(StringBuilder builder, MethodDefinition method)
+		{
+			string[] source = DoGetSource(method);
+			
+			int indent = 0;
+			int lastLine = -1;
+			foreach (Instruction ins in method.Body.Instructions)
+			{
+				if (source != null && ins.SequencePoint != null)
+				{
+					if (ins.SequencePoint.StartLine != PdbHiddenLine && ins.SequencePoint.StartLine > lastLine)
+					{
+						if (ins.SequencePoint.StartLine - 1 < source.Length)
+						{
+							builder.AppendLine();
+							if (lastLine > 0)
+							{
+								for (int i = lastLine + 1; i < ins.SequencePoint.StartLine; ++i)
+								{
+									builder.AppendFormat("// {0}", source[i - 1]);
+									builder.AppendLine();
+								}
+							}
+							builder.AppendFormat("// {0}", source[ins.SequencePoint.StartLine - 1]);
+							builder.AppendLine();
+							
+							lastLine = ins.SequencePoint.StartLine;
+						}
+					}
+				}
+				
+				DoAppendHandler(builder, method.Body, ins, ref indent);
 				
 				builder.AppendFormat("{0:X4} ", ins.Offset);
 				builder.Append('\t', indent);
@@ -201,20 +252,67 @@ namespace Disassembler
 				string name = ins.OpCode.Name;
 				builder.Append(name);
 				
-				if (ins.Operand != null)
+				string operand = DoGetOperand(method, ins);
+				if (operand != null)
 				{
 					if (name.Length <= 4)
 						builder.Append("\t\t");
 					else
 						builder.Append('\t');
 					
-					builder.Append(DoArgToString(ins.Operand));
+					builder.Append(operand);
 				}
 				
 				builder.AppendLine();
 			}
 		}
 		
+		private static string DoGetOperand(MethodDefinition method, Instruction ins)
+		{
+			string text = null;
+			
+			switch (ins.OpCode.Code)
+			{
+				case Code.Ldarg_0:
+				case Code.Ldarg_1:
+				case Code.Ldarg_2:
+				case Code.Ldarg_3:
+					int index = ins.OpCode.Code - Code.Ldarg_0;
+					if (!method.IsStatic)
+						index--;
+					
+					if (index >= 0)
+						text = DoArgToString(method.Parameters[index]);
+					else
+						text = "this";
+					break;
+					
+				case Code.Ldloc_0:
+				case Code.Ldloc_1:
+				case Code.Ldloc_2:
+				case Code.Ldloc_3:
+					text = DoArgToString(method.Body.Variables[ins.OpCode.Code - Code.Ldloc_0]);
+					break;
+				
+				case Code.Stloc_0:
+				case Code.Stloc_1:
+				case Code.Stloc_2:
+				case Code.Stloc_3:
+					text = DoArgToString(method.Body.Variables[ins.OpCode.Code - Code.Stloc_0]);
+					break;
+				
+				default:
+					if (ins.Operand != null)
+						text = DoArgToString(ins.Operand);
+					break;
+			}
+			
+			return text;
+		}
+		
+		// The ExceptionHandlers are a little bit weird: there is one ExceptionHandler for
+		// each catch/finally block and each ExceptionHandler includes the range for the
+		// corresponding try block.
 		private static void DoAppendHandler(StringBuilder builder, MethodBody body, Instruction ins, ref int indent)
 		{
 			if (body.HasExceptionHandlers)

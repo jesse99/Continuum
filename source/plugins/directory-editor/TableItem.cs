@@ -19,6 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear.Helpers;
 using MCocoa;
 using MObjc;
 using Shared;
@@ -29,19 +30,30 @@ namespace DirectoryEditor
 {
 	// Represents a file or directory in the directory editor outline view.
 	[ExportClass("TableItem", "NSObject")]
-	internal abstract class TableItem : NSObject
+	internal abstract class TableItem : NSObject, IObserver
 	{
 		public TableItem(string path, DirectoryItemStyler styler, string type) : base(NSObject.AllocNative(type))
 		{
 			m_path = path;
 			m_styler = styler;
 			
-			string name = System.IO.Path.GetFileName(path);
-			m_name = NSMutableAttributedString.Create(name).Retain();
+			DoRefreshName();
 			
-			var attrs = NSMutableDictionary.Create();
-			OnSetNameAttributes(attrs, name);
-			m_name.setAttributes_range(attrs, new NSRange(0, (int) m_name.length()));
+			Broadcaster.Register("directory prefs changed", this);
+		}
+		
+		public void OnBroadcast(string name, object value)
+		{
+			switch (name)
+			{
+				case "directory prefs changed":
+					DoRefreshName();						// this will refresh all the directories being edited, but that shouldn't be much of a problem
+					break;
+					
+				default:
+					Contract.Assert(false, "bad name: " + name);
+					break;
+			}
 		}
 		
 		public string Path
@@ -101,10 +113,28 @@ namespace DirectoryEditor
 		}
 		#endregion
 		
+		#region Private Methods
+		private void DoRefreshName()
+		{
+			if (m_name != null)
+			{
+				m_name.release();
+				m_name = null;
+			}
+			
+			string name = System.IO.Path.GetFileName(m_path);
+			m_name = NSMutableAttributedString.Create(name).Retain();
+			
+			var attrs = NSMutableDictionary.Create();
+			OnSetNameAttributes(attrs, name);
+			m_name.setAttributes_range(attrs, new NSRange(0, (int) m_name.length()));
+		}
+		#endregion
+		
 		#region Fields
 		private readonly string m_path;
-		private readonly NSMutableAttributedString m_name;
 		private readonly DirectoryItemStyler m_styler;
+		private NSMutableAttributedString m_name;
 		#endregion
 	}
 }

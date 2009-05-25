@@ -22,13 +22,7 @@ ReferenceEquals used with value type
 might want a sample app
 sudo fs_usage -f filesys
 
-http://macosx.com/forums/archive/t-299331.html
-
-* Work on disassembler:
-	- stloc.1 should show the local name, also ldloc (see getBytes_length)
-	- ditto with ldloc
-	- would be really nice to include source lines when possible
-	- also include the path/line to the method
+* Open items don't get updated when their color changes.
 * Why don't runs update after typing, eg typing a new comment doesn't redraw
    until an arrow key is hit.
 * Scroll bar height isn't correct when opening files, eg AppleStyles.cs
