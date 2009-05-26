@@ -48,33 +48,36 @@ namespace Disassembler
 			if (selection != null)
 			{
 				boss = DoGetTextBoss();
-				var editor = boss.Get<ITextEditor>();
-				if (editor.Path != null)
+				if (boss != null)
 				{
-					Boss b = ObjectModel.Create("CsParser");
-					var parses = b.Get<IParses>();
-					var text = boss.Get<IText>();
-					
-					Parse parse = parses.Parse(editor.Path, text.EditCount, text.Text);
-					if (parse.Globals != null)
+					var editor = boss.Get<ITextEditor>();
+					if (editor.Path != null)
 					{
-						CsType type = DoFindType(parse.Globals, text.Selection);
-						if (type != null)
+						Boss b = ObjectModel.Create("CsParser");
+						var parses = b.Get<IParses>();
+						var text = boss.Get<IText>();
+						
+						Parse parse = parses.Parse(editor.Path, text.EditCount, text.Text);
+						if (parse.Globals != null)
 						{
-							items.Add(new TextContextItem(
-								"Disassemble " + type.Name, 
-								s => {DoDisassembleType(type); return s;}, 
-								0.29f));
-						}
-						else
-						{
-							CsMethod method = DoFindMethod(parse.Globals, text.Selection);
-							if (method != null)
+							CsType type = DoFindType(parse.Globals, text.Selection);
+							if (type != null)
 							{
 								items.Add(new TextContextItem(
-									"Disassemble " + method.Name, 
-									s => {DoDisassembleMethod(method); return s;}, 
-									0.31f));
+									"Disassemble " + type.Name,
+									s => {DoDisassembleType(type); return s;},
+									0.29f));
+							}
+							else
+							{
+								CsMethod method = DoFindMethod(parse.Globals, text.Selection);
+								if (method != null)
+								{
+									items.Add(new TextContextItem(
+										"Disassemble " + method.Name,
+										s => {DoDisassembleMethod(method); return s;},
+										0.31f));
+								}
 							}
 						}
 					}
