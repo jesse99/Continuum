@@ -38,25 +38,30 @@ namespace Shared
 		// Window title.
 		public string Title {get; set;}
 		
-		public T[] Items {private get; set;}
+		public T[] Items {get; set;}
 		
-		// Returns null on cancel.
-		public T Run(Func<T, string> key)
+		public bool AllowsMultiple {get; set;}
+		
+		// Returns an empty array on cancel.
+		public T[] Run(Func<T, string> key)
 		{
 			Contract.Requires(key != null, "key is null");
 			
 			if (ms_controller == null)
 				ms_controller = new GetItemController();
 				
-			T result = default(T);
-			
 			NSWindow window = ms_controller.window();
 			window.setTitle(NSString.Create(Title));	
 			ms_controller.Items = (from i in Items select key(i)).ToArray();
+			ms_controller.AllowsMultiple = AllowsMultiple;
 			
-			string name = ms_controller.Run();
-			if (name != null)
-				result = Items.First(i => key(i) == name);
+			string[] names = ms_controller.Run();
+			
+			T[] result;
+			if (names != null && names.Length > 0)
+				result = (from n in names select Items.First(i => key(i) == n)).ToArray();
+			else
+				result = new T[0];
 			
 			return result;
 		}

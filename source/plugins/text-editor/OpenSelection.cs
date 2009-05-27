@@ -237,21 +237,7 @@ namespace TextEditor
 					}
 					
 					// Open all of the paths we found.
-					if (paths.Count > 0 && paths.Count < 10)		// TODO: use a picker if there is more than one file
-					{
-						boss = ObjectModel.Create("Application");
-						var launcher = boss.Get<ILaunch>();
-					
-						foreach (string p in paths)
-						{
-							launcher.Launch(p, line, col, 1);
-							opened = true;
-						}
-						
-						Log.WriteLine(TraceLevel.Verbose, "Open Selection", "opened {0} relative files", paths.Count);
-					}
-					else if (paths.Count > 0)
-						Log.WriteLine("Open Selection", "open relative failed ({0} is too many paths)", paths.Count);
+					opened = DoOpenPath(paths, line, col);
 				}
 			}
 			catch
@@ -293,21 +279,7 @@ namespace TextEditor
 					}
 					
 					// Open all of the paths we found.
-					if (paths.Count > 0 && paths.Count < 10)		// TODO: use a picker if there is more than one file
-					{
-						boss = ObjectModel.Create("Application");
-						var launcher = boss.Get<ILaunch>();
-					
-						foreach (string p in paths)
-						{
-							launcher.Launch(p, line, col, 1);
-							opened = true;
-						}
-						
-						Log.WriteLine(TraceLevel.Verbose, "Open Selection", "opened {0} local files", paths.Count);
-					}
-					else if (paths.Count > 0)
-						Log.WriteLine("Open Selection", "open local failed ({0} is too many paths)", paths.Count);
+					opened = DoOpenPath(paths, line, col);
 				}
 			}
 			catch
@@ -374,22 +346,40 @@ namespace TextEditor
 					if (paths.Count == 0)
 						paths.AddRange(candidates);
 						
-					if (paths.Count > 0 && paths.Count < 10)		// TODO: use a picker if there is more than one file
-					{
-						foreach (string p in paths)
-						{
-							launcher.Launch(p, line, col, 1);
-							opened = true;
-						}
-						
-						Log.WriteLine(TraceLevel.Verbose, "Open Selection", "global opened {0} files", paths.Count);
-					}
-					else if (paths.Count > 0)
-						Log.WriteLine("Open Selection", "global open failed ({0} is too many candidates)", paths.Count);
+					opened = DoOpenPath(paths, line, col);
 				}
 			}
 			catch
 			{
+			}
+			
+			return opened;
+		}
+		
+		private bool DoOpenPath(List<string> candidates, int line, int col)
+		{
+			Contract.Requires(candidates.Count > 0);
+			
+			var paths = new List<string>(candidates);
+			if (paths.Count > 2)
+			{
+				paths.Sort();
+				
+				var getter = new GetItem<string>{Title = "Choose Files", Items = paths.ToArray(), AllowsMultiple = true};
+				paths = new List<string>(getter.Run(i => i));
+			}
+			
+			bool opened = false;
+			if (paths.Count > 0)
+			{
+				Boss boss = ObjectModel.Create("Application");
+				var launcher = boss.Get<ILaunch>();
+			
+				foreach (string p in paths)
+				{
+					launcher.Launch(p, line, col, 1);
+					opened = true;
+				}
 			}
 			
 			return opened;

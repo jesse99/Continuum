@@ -57,20 +57,26 @@ namespace Shared
 			set {window().setTitle(NSString.Create(value));}
 		}
 		
+		public bool AllowsMultiple
+		{
+			get {return m_table.allowsMultipleSelection();}
+			set {m_table.setAllowsMultipleSelection(value);}
+		}
+		
 		public string[] Items
 		{
 			set
 			{
 				if (m_items != null)
 					m_items.release();
-					
+				
 				m_items = NSArray.Create(value).Retain();
 			}
 		}
 		
-		public string Run()
+		public string[] Run()
 		{
-			string result = null;
+			string[] result = null;
 			
 			m_table.reloadData();
 			DoUpdateButtons();
@@ -78,8 +84,16 @@ namespace Shared
 			int button = NSApplication.sharedApplication().runModalForWindow(window());
 			if (button == Enums.NSOKButton)
 			{
-				int row = m_table.selectedRow();
-				result = m_items.objectAtIndex((uint) row).description();
+				NSIndexSet indexes = m_table.selectedRowIndexes();
+				result = new string[indexes.count()];
+				
+				int i = 0;
+				uint index = indexes.firstIndex();
+				while (index < Enums.NSNotFound)
+				{
+					result[i++] = m_items.objectAtIndex((uint) index).description();
+					index = indexes.indexGreaterThanIndex(index);
+				}
 			}
 			
 			return result;

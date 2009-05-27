@@ -304,7 +304,9 @@ namespace DirectoryEditor
 				Array.Sort(paths);
 				
 				var getter = new GetItem<string>{Title = "Choose Build File", Items = paths};
-				path = getter.Run(i => System.IO.Path.GetFileName(i));
+				string[] result = getter.Run(i => System.IO.Path.GetFileName(i));
+				if (result.Length > 0)
+					path = result[0];
 			}
 			else if (builders.Count == 1)
 			{
