@@ -54,6 +54,8 @@ namespace AutoComplete
 		// be true when completing expressions.
 		public bool IsStatic {get; private set;}
 		
+		public bool BaseKeyword {get; set;}
+		
 		public override string ToString()
 		{
 			var builder = new StringBuilder();

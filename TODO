@@ -23,7 +23,6 @@ might want a sample app
 sudo fs_usage -f filesys
 
 
-* Why didn't OnDealloc complete inside GetItemController? Because it's protected?
 * Why don't runs update after typing, eg typing a new comment doesn't redraw
    until an arrow key is hit.
 * Review thread safety

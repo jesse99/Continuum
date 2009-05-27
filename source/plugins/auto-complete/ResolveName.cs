@@ -261,6 +261,9 @@ namespace AutoComplete
 					string[] bases = m_member.DeclaringType.Bases.Names;
 					string b = (bases.Length > 0 && !CsHelpers.IsInterface(bases[0])) ? bases[0] : "System.Object";
 					result = m_typeResolver.Resolve(b, m_context, m_globals, true, false);
+					
+					if (result != null)
+						result.BaseKeyword = true;
 				}
 			}
 			

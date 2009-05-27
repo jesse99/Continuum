@@ -52,7 +52,7 @@ namespace AutoComplete
 			var interfaceNames = new List<string>();
 			string[] allNames = DoGetBases(globals, target.TypeName, types, baseNames, interfaceNames);
 			
-			bool includeProtected = context != null && allNames.Contains(context.DeclaringType.FullName);
+			bool includeProtected = (context != null && allNames.Contains(context.DeclaringType.FullName)) || target.BaseKeyword;
 			foreach (CsType type in types)
 			{
 				bool includePrivate = context != null && type.FullName == context.DeclaringType.FullName;
