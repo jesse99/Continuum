@@ -1,0 +1,9 @@
+<Bosses namespaces = "Gear Shared NantBuilder">
+	<Extend name = "Builders">
+		<Implementation interfaces = "IInterface +ICanBuild" name = "CanBuild"/>
+	</Extend>
+	
+	<Boss name = "NantBuilder">
+		<Implementation interfaces = "IBuilder" name = "Builder"/>
+	</Boss>
+</Bosses>

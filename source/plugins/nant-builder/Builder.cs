@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Jesse Jones
+// Copyright (C) 2009 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -28,8 +28,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Xml;
 
-namespace MakeBuilder
+namespace NantBuilder
 {
 	internal sealed class Builder : IBuilder
 	{
@@ -46,44 +47,64 @@ namespace MakeBuilder
 		public void Init(string path)
 		{
 			m_path = path;
+			m_prefs = new Prefs(path);
 			
-			uint encoding;
-			NSError error;
-			NSString contents = NSString.stringWithContentsOfFile_usedEncoding_error(
-				NSString.Create(path), out encoding, out error);
-				
-			if (error != null)	
-				error.Raise();
-			
-			m_parser = new MakeParser(contents);
-			m_variables = new List<Variable>(m_parser.Variables);
+			XmlDocument xml = DoReadXml(path);
+			DoParseXml(xml);
 			
 			DoLoadPrefs();
 		}
 		
 		public string DefaultTarget
 		{
-			get {return m_parser.Targets.Length > 0 ? m_parser.Targets[0] : null;}	// TODO: use a pref somewhere
+			get {return m_defaultTarget;}
 		}
 		
 		public string[] Targets
 		{
-			get {return m_parser.Targets;}
+			get {return m_targets;}
 		}
 		
 		public string Command
 		{
-			get {return m_parser.Command;}
+			get {return m_command;}
 		}
 		
 		public Process Build(string target)
 		{
-			return m_parser.Build(m_path, target, m_variables, m_flags);
+			string args;
+			
+			if (target == "projecthelp")
+			{
+				args = "-projecthelp";
+			}
+			else
+			{
+				args = "-nologo " + m_prefs.GetArgs();
+				
+				foreach (Variable v in m_variables)
+					if (v.Value.Length > 0 && v.Value != v.DefaultValue)
+						args += string.Format("-D:{0}={1} ", v.Name, v.Value.Replace(" ", "\\ "));
+				
+				args += target;
+			}
+			
+			m_command = "nant " + args + Environment.NewLine;
+			
+			Process process = new Process();
+			process.StartInfo.FileName = "nant";
+			process.StartInfo.Arguments = args;
+			process.StartInfo.RedirectStandardError = true;
+			process.StartInfo.RedirectStandardOutput = true;
+			process.StartInfo.UseShellExecute = false;
+			process.StartInfo.WorkingDirectory = Path.GetDirectoryName(m_path);
+			
+			return process;
 		}
 		
 		public void SetBuildFlags()
 		{
-			var controller = new FlagsController(m_flags);
+			var controller = new NantFlagsController(m_prefs);
 			Unused.Value = NSApplication.sharedApplication().runModalForWindow(controller.window());
 			controller.release();
 		}
@@ -97,9 +118,67 @@ namespace MakeBuilder
 		}
 		
 		#region Private Methods
+		private XmlDocument DoReadXml(string path)
+		{
+			XmlDocument xml;
+			
+			using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read))
+			{
+				using (XmlReader reader = XmlReader.Create(stream))
+				{
+					xml = new XmlDocument();
+					xml.Load(reader);
+				}
+			}
+			
+			return xml;
+		}
+		
+		private void DoParseXml(XmlDocument xml)
+		{
+			foreach (XmlNode child in xml.ChildNodes)
+			{
+				if (child.Name == "project")
+				{
+					if (child.Attributes["default"] != null)
+						m_defaultTarget = child.Attributes["default"].Value;
+					DoParseProject(child);
+				}
+			}
+		}
+		
+		private void DoParseProject(XmlNode project)
+		{
+			var targets = new List<string>();
+			
+			foreach (XmlNode child in project.ChildNodes)
+			{
+				if (child.Name == "target")
+				{
+					if (child.Attributes["name"].Value != "*")
+						targets.Add(child.Attributes["name"].Value);
+				}
+				else if (child.Name == "property")
+				{
+					if (child.Attributes["name"] != null && child.Attributes["overwrite"] != null)
+						if (child.Attributes["overwrite"].Value == "false" || child.Attributes["overwrite"].Value == "0")
+							if (child.Attributes["value"] != null)
+								m_variables.AddIfMissing(new Variable(child.Attributes["name"].Value, child.Attributes["value"].Value));
+							else
+								m_variables.AddIfMissing(new Variable(child.Attributes["name"].Value, string.Empty));
+				}
+			}
+			
+			for (int i = 0; i < 4; ++i)			// add some blank lines so the user can define new variables that we couldn't pull out of the make file
+				m_variables.Add(new Variable(string.Empty, string.Empty));
+			
+			targets.Add("projecthelp");
+			
+			m_targets = targets.ToArray();
+		}
+		
 		private void DoSavePrefs()
 		{
-			// environment variables
 			string key = m_path + "-variables";		// this will break if the project is moved, but that should be rather rare
 			
 			NSMutableDictionary dict = NSMutableDictionary.Create();
@@ -115,7 +194,6 @@ namespace MakeBuilder
 		
 		private void DoLoadPrefs()
 		{
-			// environment variables
 			string key = m_path + "-variables";
 			string value;
 			
@@ -153,10 +231,11 @@ namespace MakeBuilder
 		#region Fields
 		private Boss m_boss;
 		private string m_path;
-		private MakeParser m_parser;
-		
-		private List<Variable> m_variables;
-		private Dictionary<string, int> m_flags = new Dictionary<string, int>();
+		private string m_defaultTarget;
+		private string[] m_targets = new string[0];
+		private string m_command = string.Empty;
+		private Prefs m_prefs;
+		private List<Variable> m_variables = new List<Variable>();
 		#endregion
 	}
 }

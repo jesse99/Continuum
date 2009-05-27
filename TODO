@@ -22,10 +22,9 @@ ReferenceEquals used with value type
 might want a sample app
 sudo fs_usage -f filesys
 
-* Add support for building with nant:
-	- make sure Monobj examples can be built 
-	- might need an extra binaries project pref for builders who drop the binaries in
-	  weird places
+
+* Open selection should use the picker.
+* Why didn't OnDealloc complete inside GetItemController? Because it's protected?
 * Why don't runs update after typing, eg typing a new comment doesn't redraw
    until an arrow key is hit.
 * Review thread safety

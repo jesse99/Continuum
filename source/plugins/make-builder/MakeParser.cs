@@ -103,7 +103,7 @@ namespace MakeBuilder
 			get {return m_command;}
 		}
 		
-		#region Private Methods ---------------------------------------------------
+		#region Private Methods
 		private void DoParse()
 		{		
 			while (!m_scanner.isAtEnd())
@@ -115,8 +115,7 @@ namespace MakeBuilder
 					{
 						Variable v = DoParseDefine();
 						if (v != null)
-							if (!m_variables.Any(x => x.Name == v.Name))
-								m_variables.Add(v);
+							m_variables.AddIfMissing(v);
 					}
 					else if (m_scanner.scanString_intoString(NSString.Create(":"), out token))
 					{
@@ -182,7 +181,7 @@ namespace MakeBuilder
 		}
 		#endregion
 			
-		#region Fields ------------------------------------------------------------
+		#region Fields
 		private List<string> m_targets = new List<string>();
 		private List<Variable> m_variables = new List<Variable>();
 		private string m_command;

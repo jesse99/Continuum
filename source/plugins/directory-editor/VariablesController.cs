@@ -27,7 +27,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace MakeBuilder
+namespace DirectoryEditor
 {
 	[ExportClass("VariablesController", "NSWindowController", Outlets = "table")]
 	internal sealed class VariablesController : NSWindowController
@@ -44,14 +44,10 @@ namespace MakeBuilder
 			
 			Unused.Value = window().setFrameAutosaveName(NSString.Create("build-variables window"));
 			window().makeKeyAndOrderFront(this);
-			
-			ActiveObjects.Add(this);
 		}
-							
+		
 		public void envOK(NSObject sender)
 		{
-			Unused.Value = sender;
-			
 			NSApplication.sharedApplication().stopModalWithCode(Enums.NSOKButton);
 			m_table.Value.setDataSource(null);				// need this or the table sometimes calls back into us after we go away (the table isn't sticking around so this seems to be some sort of teardown order issue)
 			window().orderOut(this);
@@ -63,8 +59,6 @@ namespace MakeBuilder
 	
 		public void envCancel(NSObject sender)
 		{
-			Unused.Value = sender;
-			
 			NSApplication.sharedApplication().stopModalWithCode(Enums.NSCancelButton);
 			window().orderOut(this);
 			window().release();
@@ -72,50 +66,40 @@ namespace MakeBuilder
 	
 		public void restoreDefaults(NSObject sender)
 		{
-			Unused.Value = sender;
-			
 			for (int i = 0; i < m_newVariables.Count; ++i)
 			{
 				Variable old = m_newVariables[i];
 				m_newVariables[i] = new Variable(old.Name, old.DefaultValue, old.DefaultValue);
 			}
-				
+			
 			m_table.Value.reloadData();
 		}
 		
 		public int numberOfRowsInTableView(NSTableView table)
 		{
-			Unused.Value = table;
-			
 			return m_newVariables.Count;
 		}
-	
-		[Register("tableView:objectValueForTableColumn:row:")]		
-		public NSObject GetCell(NSTableView table, NSTableColumn column, int row)
-		{
-			Unused.Value = table;
-			
-			Variable variable = m_newVariables[row];
 		
+		public NSObject tableView_objectValueForTableColumn_row(NSTableView table, NSTableColumn column, int row)
+		{
+			Variable variable = m_newVariables[row];
+			
 			if (column.identifier().ToString() == "1")
 				return NSString.Create(variable.Name);
-			else 
+			else
 				if (variable.Value.Length > 0)
 					return NSString.Create(variable.Value);
 				else
 					return NSString.Create(variable.DefaultValue);
 		}
-	
-		[Register("tableView:setObjectValue:forTableColumn:row:")]		
-		public void SetCell(NSTableView table, NSObject v, NSTableColumn column, int row)
-		{		
-			Unused.Value = table;
-			
+		
+		public void tableView_setObjectValue_forTableColumn_row(NSTableView table, NSObject v, NSTableColumn column, int row)
+		{
 			Variable old = m_newVariables[row];
 			
 			if ("1" == column.identifier().ToString())
 				m_newVariables[row] = new Variable(v.ToString(), old.DefaultValue, old.Value);
-	
+			
 			else if ("2" == column.identifier().ToString())
 				m_newVariables[row] = new Variable(old.Name, old.DefaultValue, v.ToString());
 				

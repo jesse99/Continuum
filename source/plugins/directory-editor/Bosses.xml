@@ -1,17 +1,18 @@
 <Bosses namespaces = "Gear Shared DirectoryEditor">
-	<Extend name = "Application">			
+	<Extend name = "Application">
 		<Implementation interfaces = "IInterface +IStartup +IFactoryPrefs" name = "Startup"/>
 		<Implementation interfaces = "IInterface +IShutdown" name = "Shutdown"/>
 		<Implementation interfaces = "IBuildStatus" name = "ShowBuildResults"/>
 	</Extend>
-
-	<Boss name = "DirectoryEditorPlugin" singleton = "true">			
+	
+	<Boss name = "DirectoryEditorPlugin" singleton = "true">
 		<Implementation interfaces = "IWindows" name = "Windows"/>
 		<Implementation interfaces = "IOpen" name = "OpenDir"/>
 		<Implementation interfaces = "IFindDirectoryEditor" name = "FindDirectoryEditor"/>
+		<Implementation interfaces = "IBuildVariables" name = "ChangeBuildVariables"/>
 	</Boss>
-
-	<Boss name = "DirectoryEditor">			
+	
+	<Boss name = "DirectoryEditor">
 		<Implementation interfaces = "IWindow IDirectoryEditor" name = "Editor"/>
 		<Implementation interfaces = "IMenuHandler" name = "MenuHandler"/>
 	</Boss>

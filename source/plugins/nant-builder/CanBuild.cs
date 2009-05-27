@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Jesse Jones
+// Copyright (C) 2009 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -19,28 +19,40 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-namespace MakeBuilder
+using Gear;
+using Shared;
+using System;
+using System.IO;
+
+namespace NantBuilder
 {
-	internal sealed class Variable
+	internal sealed class CanBuild : ICanBuild
 	{
-		public Variable(string name, string defaultValue)
+		public void Instantiated(Boss boss)
 		{
-			Name = name;
-			Value = string.Empty;
-			DefaultValue = defaultValue;
+			m_boss = boss;
 		}
 		
-		public Variable(string name, string defaultValue, string value)
+		public Boss Boss
 		{
-			Name = name;
-			Value = value;
-			DefaultValue = defaultValue;
+			get {return m_boss;}
 		}
 		
-		public string Name {get; private set;}
-	
-		public string Value {get; private set;}
-	
-		public string DefaultValue {get; set;}
+		public IBuilder GetBuilder(string path)
+		{
+			IBuilder builder = null;
+			
+			if (Path.GetExtension(path).ToLower() == ".build")
+			{
+				Boss boss = ObjectModel.Create("NantBuilder");
+				builder = boss.Get<IBuilder>();
+			}
+			
+			return builder;
+		}
+		
+		#region Fields 
+		private Boss m_boss;
+		#endregion
 	}
 }

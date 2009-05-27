@@ -283,13 +283,35 @@ namespace DirectoryEditor
 				}
 			}
 			
-			if (builders.Count > 1)	// TODO: probably better to popup an alert and return null
-				throw new InvalidOperationException("Multiple build files: " + string.Join(", ", builders.Keys.ToList().ToArray()));
+			IBuilder builder = null;
+			string path2 = DoChooseBuilder(builders);
+			if (path2 != null)
+			{
+				builder = builders[path2];
+				builder.Init(path2);
+			}
 			
-			IBuilder builder = builders.Count > 0 ? builders.Values.First() : null;
-			if (builder != null)
-				builder.Init(builders.Keys.First());
 			return builder;
+		}
+		
+		private string DoChooseBuilder(Dictionary<string, IBuilder> builders)
+		{
+			string path = null;
+			
+			if (builders.Count > 1)
+			{
+				string[] paths = builders.Keys.ToArray();
+				Array.Sort(paths);
+				
+				var getter = new GetItem<string>{Title = "Choose Build File", Items = paths};
+				path = getter.Run(i => System.IO.Path.GetFileName(i));
+			}
+			else if (builders.Count == 1)
+			{
+				path = builders.Keys.First();
+			}
+			
+			return path;
 		}
 		#endregion
 		

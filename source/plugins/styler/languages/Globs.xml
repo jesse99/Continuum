@@ -16,5 +16,5 @@
 	<Glob language = "python">*.py SConstruct</Glob>
 	<Glob language = "shell">*.sh</Glob>
 	<Glob language = "todo">TODO NOTES</Glob>
-	<Glob language = "xml">*.xml *.xsdl *.xsl *.schema *.config *.plist *.dtd</Glob>
+	<Glob language = "xml">*.xml *.xsdl *.xsl *.schema *.config *.plist *.dtd *.build</Glob>
 </Globs>
