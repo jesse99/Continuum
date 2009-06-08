@@ -138,6 +138,8 @@ namespace ObjectModel
 			
 			if ((attrs & TypeAttributes.ClassSemanticMask) == TypeAttributes.Interface)
 				result += "interface ";
+			else if (type != null && type.IsEnum)
+				result += "enum ";
 			else if (type != null && type.IsValueType)
 				result += "struct ";
 			else
@@ -436,7 +438,16 @@ namespace ObjectModel
 			m_writer.Write(indent);
 			m_writer.Write("{0}", GetModifiers(type, type.Attributes));
 			m_writer.Write(DoGetQualifiedTypeName(type, false));
-			if (type.BaseType != null)
+			if (type.IsEnum)
+			{
+				FieldDefinition field = type.Fields.GetField("value__");
+				if (field != null && field.FieldType.FullName != "System.Int32")
+				{
+					m_writer.Write(" : ");
+					m_writer.Write(DoGetQualifiedTypeName(field.FieldType, false));
+				}
+			}
+			else if (type.BaseType != null)
 			{
 				m_writer.Write(" : ");
 				m_writer.Write(DoGetQualifiedTypeName(type.BaseType, false));

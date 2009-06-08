@@ -36,19 +36,52 @@ namespace Shared
 			var args = new List<string>();
 			
 			attr.Resolve ();						// we need to do this so things like the enums used within arguments show up correctly
-			foreach (object o in attr.ConstructorParameters)
+			for (int i = 0; i < attr.ConstructorParameters.Count; ++i)
 			{
-				args.Add(DoArgToString(o));
+				TypeReference ptype = attr.Constructor.Parameters[i].ParameterType;
+				object pvalue = attr.ConstructorParameters[i];
+				
+				args.Add(ArgToString(ptype, pvalue, includeNamespace));
 			}
 			
-			foreach (System.Collections.DictionaryEntry d in attr.Properties)
+			TypeDefinition type = attr.Constructor.DeclaringType.Resolve();
+			if (type != null)
 			{
-				args.Add(string.Format("{0} = {1}", d.Key, DoArgToString(d.Value)));
+				foreach (System.Collections.DictionaryEntry d in attr.Properties)
+				{
+					PropertyDefinition[] props = type.Properties.GetProperties((string) d.Key);
+					if (props.Length == 1)
+					{
+						TypeReference ptype = props[0].PropertyType;
+						object pvalue = d.Value;
+						
+						args.Add(string.Format("{0} = {1}", d.Key, ArgToString(ptype, pvalue, includeNamespace)));
+					}
+					else
+						args.Add(string.Format("{0} = {1}", d.Key, ArgToString(d.Value)));
+				}
+				
+				foreach (System.Collections.DictionaryEntry d in attr.Fields)
+				{
+					FieldDefinition field = type.Fields.GetField((string) d.Key);
+					
+					TypeReference ptype = field.FieldType;
+					object pvalue = d.Value;
+					
+					args.Add(string.Format("{0} = {1}", d.Key, ArgToString(ptype, pvalue, includeNamespace)));
+				}
 			}
-			
-			foreach (System.Collections.DictionaryEntry d in attr.Fields)
+			else
 			{
-				args.Add(string.Format("{0} = {1}", d.Key, DoArgToString(d.Value)));
+				foreach (System.Collections.DictionaryEntry d in attr.Properties)
+				{
+					args.Add(string.Format("{0} = {1}", d.Key, ArgToString(d.Value)));
+				}
+				
+				foreach (System.Collections.DictionaryEntry d in attr.Fields)
+				{
+					args.Add(string.Format("{0} = {1}", d.Key, ArgToString(d.Value)));
+				}
 			}
 			
 			string name;
@@ -226,7 +259,60 @@ namespace Shared
 			return builder.ToString();
 		}
 		
-		private static string DoArgToString(object arg)
+		public static string ArgToString(TypeReference type, object value, bool includeNamespace)
+		{
+			string result = null;
+			
+			TypeDefinition td = type.Resolve();
+			if (td != null && td.IsEnum)
+			{
+				// First see if an enum value exists which exactly matches the integer value.
+				foreach (FieldDefinition field in td.Fields)
+				{
+					if (field.Constant != null && field.Constant.Equals(value))
+						if (includeNamespace && !string.IsNullOrEmpty(td.Namespace))
+							return td.Namespace + '.' + td.Name + '.' + field.Name;
+						else
+							return td.Name + '.' + field.Name;
+				}
+				
+				// Then try to find a combination of values which match the enum (note that
+				// we don't check for FlagsAttribute because it is not always used for enums
+				// which can be combined).
+				try
+				{
+					var names = new List<string>();
+					ulong union = Convert.ToUInt64(value);
+					
+					foreach (FieldDefinition field in td.Fields)
+					{
+						if (field.Constant != null)
+						{
+							ulong operand = Convert.ToUInt64(field.Constant);
+							if ((union & operand) == operand)
+							{
+								if (includeNamespace && !string.IsNullOrEmpty(td.Namespace))
+									names.Add(td.Namespace + '.' + td.Name + '.' + field.Name);
+								else
+									names.Add(td.Name + '.' + field.Name);
+								
+								union &= ~operand;
+							}
+						}
+					}
+					
+					if (union == 0)
+						return string.Join(" | ", names.ToArray());
+				}
+				catch
+				{
+				}
+			}
+			
+			return result ?? ArgToString(value);
+		}
+		
+		public static string ArgToString(object arg)
 		{
 			if (arg == null)
 				return string.Empty;
@@ -236,6 +322,9 @@ namespace Shared
 				
 			else if (arg is string)
 				return string.Format("\"{0}\"", arg);
+			
+			else if (arg is Mono.Cecil.Cil.Instruction)
+				return string.Format("{0:X4}", ((Mono.Cecil.Cil.Instruction) arg).Offset);
 			
 			else
 				return arg.ToString();

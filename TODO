@@ -20,19 +20,9 @@ http://www.mono-project.com/StudentProjects#MonoDevelop
 can make readonly rule
 ReferenceEquals used with value type
 
-might want a sample app
 select declaring_root_name,return_type_name from Methods where name = 'get_BaseTypes';
 sudo fs_usage -f filesys
 
-* Time code is totally busted.
-* Add to short form and disassembler:
-			if (member.ImplAttributes >= MethodImplAttributes.Unmanaged)
-				attrs.Add(member.ImplAttributes.ToText(false));
-* Make sure short and disassembly include enum backing type if it is not int.
-* Should be able to convert attribute enum args to the enum name.
-* Searching Xml Comments for cref didn't always scroll.
-* Create dir didn't work.
-* Set Parses.m_highwater back to 20.
 * Get css working with stuff like 
 	P
 	{
@@ -40,13 +30,13 @@ sudo fs_usage -f filesys
 	}
 * Also this didn't work quite right:
 	CAPTION {font-size: large; text-align: left}
-* Css files should not be colored like html.
 * Couldn't read zero size css file.
 * Auto-complete table should complete if . or , is pressed.
 * Couldn't complete info for:
 		var info = navigator as System.Xml.IXmlLineInfo;
 * Saving a new file as rtf saved it as plain text.
 * Add a default item colors line for assemblies.
+* Css files should not be colored like html.
 * Add another line for item colors.
 * Short form can call a class static if it is both sealed and abstract.
 * Think right click to revert window in background reverted foreground window.
@@ -56,6 +46,7 @@ sudo fs_usage -f filesys
 * Couldn't complete "new str", but new Str completes.
 * Need to reload items if ignored items changes (or maybe this is just a problem
    with the root).
+* Uses the new cecil.
 * Review thread safety
 
 * Look at other editors, eg TextMate, VS Expess.

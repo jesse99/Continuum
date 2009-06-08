@@ -153,7 +153,7 @@ namespace Disassembler
 			if (field.Constant != null)
 			{
 				builder.Append(" = ");												// this works for ints but not for strings
-				builder.Append(DoArgToString(field.Constant));	
+				builder.Append(CecilExtensions.ArgToString(field.FieldType, field.Constant, true));	
 			}
 			else if (field.InitialValue != null)
 			{
@@ -223,6 +223,13 @@ namespace Disassembler
 		{
 			string[] source = DoGetSource(method);
 			
+			// The tab stops in the disassembly are unusual so the source code looks better
+			// if we get rid of tabs.
+			for (int i = 0; i < source.Length; ++i)
+			{
+				source[i] = source[i].Replace("\t", "    ");
+			}
+			
 			int indent = 0;
 			int lastLine = -1;
 			foreach (Instruction ins in method.Body.Instructions)
@@ -288,7 +295,7 @@ namespace Disassembler
 						index--;
 					
 					if (index >= 0)
-						text = DoArgToString(method.Parameters[index]);
+						text = method.Parameters[index].ToString();
 					else
 						text = "this";
 					break;
@@ -297,19 +304,19 @@ namespace Disassembler
 				case Code.Ldloc_1:
 				case Code.Ldloc_2:
 				case Code.Ldloc_3:
-					text = DoArgToString(method.Body.Variables[ins.OpCode.Code - Code.Ldloc_0]);
+					text = method.Body.Variables[ins.OpCode.Code - Code.Ldloc_0].ToString();
 					break;
 				
 				case Code.Stloc_0:
 				case Code.Stloc_1:
 				case Code.Stloc_2:
 				case Code.Stloc_3:
-					text = DoArgToString(method.Body.Variables[ins.OpCode.Code - Code.Stloc_0]);
+					text = method.Body.Variables[ins.OpCode.Code - Code.Stloc_0].ToString();
 					break;
 				
 				default:
 					if (ins.Operand != null)
-						text = DoArgToString(ins.Operand);
+						text = CecilExtensions.ArgToString(ins.Operand);
 					break;
 			}
 			
@@ -424,21 +431,6 @@ namespace Disassembler
 			{
 				builder.AppendLine(attr.ToText(true));
 			}
-		}
-		
-		private static string DoArgToString(object arg)
-		{
-			if (arg == null)
-				return string.Empty;
-			
-			else if (arg is string)
-				return string.Format("\"{0}\"", arg);
-			
-			else if (arg is Instruction)
-				return string.Format("{0:X4}", ((Instruction) arg).Offset);
-			
-			else
-				return arg.ToString();
 		}
 		
 		private static void DoAppendTypeAttributes(StringBuilder builder, TypeAttributes attrs)

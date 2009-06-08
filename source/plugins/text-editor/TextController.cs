@@ -284,7 +284,7 @@ namespace TextEditor
 		{
 			if (!m_closed)
 			{
-				if (m_restorer != null && m_applier.Applied)
+				if (m_restorer != null && (m_applier.Applied || m_language == null))
 					if (m_restorer.OnCompletedLayout(layout, atEnd))
 						m_restorer = null;
 				
