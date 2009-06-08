@@ -416,6 +416,21 @@ namespace AutoComplete
 					}
 				}
 			}
+			
+			foreach (CsEvent e in type.Events)
+			{
+				if (DoShouldAdd(isInstance, isStatic, e.Modifiers))
+				{
+					if (includePrivates || e.Access != MemberModifiers.Private)
+					{
+						if (includeProtected || e.Access != MemberModifiers.Protected)
+						{
+							string rtype = "event-type";
+							items.AddIfMissing(new NameItem(e.Name, "event " + e.Name, e.FullName, rtype));
+						}
+					}
+				}
+			}
 		}
 		#endregion
 		

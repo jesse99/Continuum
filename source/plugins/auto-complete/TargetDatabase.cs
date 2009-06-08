@@ -371,20 +371,34 @@ namespace AutoComplete
 				string sql;
 				if (instanceCall && isStaticCall)
 					sql = string.Format(@"
-						SELECT display_text, declaring_root_name, kind, return_type_name
+						SELECT display_text, declaring_root_name, kind, return_type_name, name
 							FROM Methods 
-						WHERE kind <= 2 AND {1} AND ({0})", types.ToString(), access);
+						WHERE (kind <= 2 OR kind = 5) AND {1} AND ({0})", types.ToString(), access);
 				else
 					sql = string.Format(@"
-						SELECT display_text, declaring_root_name, kind, return_type_name
+						SELECT display_text, declaring_root_name, kind, return_type_name, name
 							FROM Methods 
-						WHERE static = {1} AND kind <= 2 AND {2} AND ({0})", types.ToString(), isStaticCall ? "1" : "0", access);
+						WHERE static = {1} AND (kind <= 2 OR kind = 5) AND {2} AND ({0})", types.ToString(), isStaticCall ? "1" : "0", access);
 				
 				NamedRows rows = m_database.QueryNamedRows(sql);
 				foreach (NamedRow r in rows)
 				{
-					Item item = DoCreateItem(r["display_text"], r["declaring_root_name"], int.Parse(r["kind"]), r["return_type_name"]);
-					items.AddIfMissing(item);
+					int kind = int.Parse(r["kind"]);
+					
+					if (kind <= 2)
+					{
+						Item item = DoCreateItem(r["display_text"], r["declaring_root_name"], kind, r["return_type_name"]);
+						items.AddIfMissing(item);
+					}
+					else
+					{
+						string eName = r["name"];
+						int i = eName.IndexOf('_');
+						eName = eName.Substring(i + 1);
+						
+						Item item = new NameItem(eName, "event " + eName, r["declaring_root_name"], "event-type");
+						items.AddIfMissing(item);
+					}
 				}
 			}
 			
@@ -413,22 +427,36 @@ namespace AutoComplete
 				string sql;
 				if (instanceCall && isStaticCall)
 					sql = string.Format(@"
-						SELECT display_text, declaring_root_name, kind, return_type_name
+						SELECT display_text, declaring_root_name, kind, return_type_name, name
 							FROM Methods 
 						WHERE (name = '{0}' OR name = '{1}') AND params_count = {2} AND 
-							kind <= 2 AND {4} AND ({3})", name, "get_" + name, arity, types.ToString(), access);
+							(kind <= 2 OR kind = 5) AND {4} AND ({3})", name, "get_" + name, arity, types.ToString(), access);
 				else
 					sql = string.Format(@"
-						SELECT display_text, declaring_root_name, kind, return_type_name
+						SELECT display_text, declaring_root_name, kind, return_type_name, name
 							FROM Methods 
 						WHERE (name = '{0}' OR name = '{1}') AND params_count = {2} AND 
-							static = {4} AND {5} AND kind <= 2 AND ({3})", name, "get_" + name, arity, types.ToString(), isStaticCall ? "1" : "0", access);
+							static = {4} AND {5} AND (kind <= 2 OR kind = 5) AND ({3})", name, "get_" + name, arity, types.ToString(), isStaticCall ? "1" : "0", access);
 				
 				NamedRows rows = m_database.QueryNamedRows(sql);
 				foreach (NamedRow r in rows)
 				{
-					Item item = DoCreateItem(r["display_text"], r["declaring_root_name"], int.Parse(r["kind"]), r["return_type_name"]);
-					items.AddIfMissing(item);
+					int kind = int.Parse(r["kind"]);
+					
+					if (kind <= 2)
+					{
+						Item item = DoCreateItem(r["display_text"], r["declaring_root_name"], kind, r["return_type_name"]);
+						items.AddIfMissing(item);
+					}
+					else
+					{
+						string eName = r["name"];
+						int i = eName.IndexOf('_');
+						eName = eName.Substring(i + 1);
+						
+						Item item = new NameItem(eName, "event " + eName, r["declaring_root_name"], "event-type");
+						items.AddIfMissing(item);
+					}
 				}
 			}
 			
