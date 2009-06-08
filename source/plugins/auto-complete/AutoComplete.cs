@@ -93,27 +93,39 @@ namespace AutoComplete
 		{
 			bool handled = false;
 			
-			if (m_database != null)
+			try
 			{
-				NSRange range = view.selectedRange();
+				if (m_database != null)
+				{
+					NSRange range = view.selectedRange();
+					
+					NSString chars = evt.characters();
+					if (range.length == 0 && chars.length() == 1 && chars[0] == '.')
+					{
+						view.insertText(NSString.Create('.'));
+						Unused.Value = DoComplete(this.DoCompleteDot, view, range);
+						handled = true;
+					}
+					else if (range.length == 0 && chars.length() == 1 && chars[0] == '\t')
+					{
+						handled = DoCompleteTab(view, evt, range);
+					}
+					
+					if (!handled)
+					{
+						var annotation = m_boss.Get<IArgsAnnotation>();
+						handled = annotation.HandleKey(view, evt);
+					}
+				}
+			}
+			catch (Exception e)
+			{
+				Log.WriteLine(TraceLevel.Error, "Errors", "Autocomplete failed:");
+				Log.WriteLine(TraceLevel.Error, "Errors", e.Message);
 				
-				NSString chars = evt.characters();
-				if (range.length == 0 && chars.length() == 1 && chars[0] == '.')
-				{
-					view.insertText(NSString.Create('.'));
-					Unused.Value = DoComplete(this.DoCompleteDot, view, range);
-					handled = true;
-				}
-				else if (range.length == 0 && chars.length() == 1 && chars[0] == '\t')
-				{
-					handled = DoCompleteTab(view, evt, range);
-				}
-				
-				if (!handled)
-				{
-					var annotation = m_boss.Get<IArgsAnnotation>();
-					handled = annotation.HandleKey(view, evt);
-				}
+				NSString title = NSString.Create("Auto-complete failed.");
+				NSString message = NSString.Create(e.Message);
+				Unused.Value = Functions.NSRunAlertPanel(title, message);
 			}
 			
 			return handled;

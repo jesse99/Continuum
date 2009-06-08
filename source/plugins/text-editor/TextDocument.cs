@@ -510,13 +510,20 @@ namespace TextEditor
 		
 		private NSMutableAttributedString DoReadWrapped(NSData data, NSString type)
 		{
-			NSDictionary options = NSDictionary.dictionaryWithObject_forKey(type, Externs.NSDocumentTypeDocumentAttribute);
-			NSError error;
-			NSMutableAttributedString str = NSMutableAttributedString.Alloc().initWithData_options_documentAttributes_error(data, options, IntPtr.Zero, out error).To<NSMutableAttributedString>();
-			if (!NSObject.IsNullOrNil(error))
-				error.Raise();
+			NSMutableAttributedString str;
+			
+			if (data.length() > 0)
+			{
+				NSDictionary options = NSDictionary.dictionaryWithObject_forKey(type, Externs.NSDocumentTypeDocumentAttribute);
+				NSError error;
+				str = NSMutableAttributedString.Alloc().initWithData_options_documentAttributes_error(data, options, IntPtr.Zero, out error).To<NSMutableAttributedString>();
+				if (!NSObject.IsNullOrNil(error))
+					error.Raise();
 				
-			str.autorelease();
+				str.autorelease();
+			}
+			else
+				str = NSMutableAttributedString.Create();
 			
 			return str;
 		}

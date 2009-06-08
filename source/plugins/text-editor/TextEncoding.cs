@@ -57,27 +57,35 @@ namespace TextEditor
 			
 			NSString result = null;
 			
-			int skipBytes = 0;
-			encoding = DoGetEncoding(data, ref skipBytes);
-			if (encoding != 0)
+			if (data.length() > 0)
 			{
-				if (skipBytes > 0)
-					data = data.subdataWithRange(new NSRange(skipBytes, (int) data.length() - skipBytes));
-				result = DoDecode(data, encoding);
-				
-				// The first few bytes of most legacy documents will look like utf8 so
-				// if we couldn't decode it using utf8 we need to fall back onto Mac
-				// OS Roman.
-				if (NSObject.IsNullOrNil(result) && encoding == Enums.NSUTF8StringEncoding)
+				int skipBytes = 0;
+				encoding = DoGetEncoding(data, ref skipBytes);
+				if (encoding != 0)
 				{
-					encoding = Enums.NSMacOSRomanStringEncoding;
+					if (skipBytes > 0)
+						data = data.subdataWithRange(new NSRange(skipBytes, (int) data.length() - skipBytes));
 					result = DoDecode(data, encoding);
+					
+					// The first few bytes of most legacy documents will look like utf8 so
+					// if we couldn't decode it using utf8 we need to fall back onto Mac
+					// OS Roman.
+					if (NSObject.IsNullOrNil(result) && encoding == Enums.NSUTF8StringEncoding)
+					{
+						encoding = Enums.NSMacOSRomanStringEncoding;
+						result = DoDecode(data, encoding);
+					}
 				}
+				
+				if (NSObject.IsNullOrNil(result))
+					throw new InvalidOperationException("Couldn't read the file as Unicode or Mac OS Roman.");	// should only happen if there are embedded control characters in the header
 			}
-			
-			if (NSObject.IsNullOrNil(result))
-				throw new InvalidOperationException("Couldn't read the file as Unicode or Mac OS Roman.");	// should only happen if there are embedded control characters in the header
-			
+			else
+			{
+				result = NSString.Empty;
+				encoding = Enums.NSUTF8StringEncoding;
+			}
+				
 			return result;
 		}
 		
