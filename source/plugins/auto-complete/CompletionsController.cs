@@ -31,7 +31,7 @@ namespace AutoComplete
 	[ExportClass("CompletionsController", "NSWindowController", Outlets = "table label")]
 	internal sealed class CompletionsController : NSWindowController
 	{
-		public CompletionsController() : base(NSObject.AllocNative("CompletionsController"))
+		public CompletionsController() : base(NSObject.AllocAndInitInstance("CompletionsController"))
 		{
 			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("completions"), this);
 			Unused.Value = window().setFrameAutosaveName(NSString.Create("auto-complete window"));

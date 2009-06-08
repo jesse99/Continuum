@@ -36,7 +36,7 @@ namespace App
 	[ExportClass("CopyHandler", "NSObject")]
 	internal sealed class CopyHandler : NSObject
 	{
-		public CopyHandler() : base(NSObject.AllocNative("CopyHandler"))
+		public CopyHandler() : base(NSObject.AllocAndInitInstance("CopyHandler"))
 		{
 			ActiveObjects.Add(this);
 		}

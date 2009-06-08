@@ -36,7 +36,7 @@ namespace DirectoryEditor
 	[ExportClass("DirectoryController", "NSWindowController", Outlets = "table targets build cancel prefsController")]
 	internal sealed class DirectoryController : NSWindowController, IObserver
 	{
-		public DirectoryController(string path) : base(NSObject.AllocNative("DirectoryController"))
+		public DirectoryController(string path) : base(NSObject.AllocAndInitInstance("DirectoryController"))
 		{
 			m_boss = ObjectModel.Create("DirectoryEditor");
 			m_path = path;

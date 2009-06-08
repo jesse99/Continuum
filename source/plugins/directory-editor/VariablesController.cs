@@ -32,7 +32,7 @@ namespace DirectoryEditor
 	[ExportClass("VariablesController", "NSWindowController", Outlets = "table")]
 	internal sealed class VariablesController : NSWindowController
 	{
-		public VariablesController(List<Variable> variables) : base(NSObject.AllocNative("VariablesController"))
+		public VariablesController(List<Variable> variables) : base(NSObject.AllocAndInitInstance("VariablesController"))
 		{
 			m_docVariables = variables;
 			m_newVariables = new List<Variable>(variables);

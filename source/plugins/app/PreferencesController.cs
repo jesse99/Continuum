@@ -32,7 +32,7 @@ namespace App
 	[ExportClass("PreferencesController", "NSWindowController", Outlets = "globsTable text_memberButton text_typeButton text_preprocessButton monoRoot lineWell transcriptWell errorsWell pathsController defaultWell spacesWell argsWell tabsWell contents tabs transcript_commandButton transcript_stdoutButton transcript_stderrButton errorsButton globalIgnores text_defaultButton text_keywordButton text_identifierButton text_stringButton text_numberButton text_commentButton text_other1Button text_other2Button")]
 	internal sealed class PreferencesController : NSWindowController
 	{
-		public PreferencesController() : base(NSObject.AllocNative("PreferencesController"))
+		public PreferencesController() : base(NSObject.AllocAndInitInstance("PreferencesController"))
 		{
 			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("Preferences"), this);	
 			Unused.Value = window().setFrameAutosaveName(NSString.Create("preferences window"));

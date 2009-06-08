@@ -33,7 +33,7 @@ namespace DirectoryEditor
 	[ExportClass("DummyUserInterfaceItem", "NSObject")]
 	internal sealed class DummyUserInterfaceItem : NSObject
 	{
-		public DummyUserInterfaceItem(string selector) : base(NSObject.AllocNative("DummyUserInterfaceItem"))
+		public DummyUserInterfaceItem(string selector) : base(NSObject.AllocAndInitInstance("DummyUserInterfaceItem"))
 		{
 			m_selector = new Selector(selector);
 			autorelease();

@@ -32,7 +32,7 @@ namespace TextEditor
 	[ExportClass("TextInfoController", "NSWindowController", Outlets = "endian encoding format language")]
 	internal sealed class TextInfoController : NSWindowController
 	{
-		public TextInfoController(TextDocument doc) : base(NSObject.AllocNative("TextInfoController"))
+		public TextInfoController(TextDocument doc) : base(NSObject.AllocAndInitInstance("TextInfoController"))
 		{
 			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("text-info"), this);
 			

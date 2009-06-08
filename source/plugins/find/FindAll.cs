@@ -41,7 +41,7 @@ namespace Find
 				m_styledContext.release();
 		}
 		
-		public FindInstance(string path, string context, int offset, int index, int length) : base(NSObject.AllocNative("FindInstance"))
+		public FindInstance(string path, string context, int offset, int index, int length) : base(NSObject.AllocAndInitInstance("FindInstance"))
 		{
 			m_path = path;
 			m_context = NSString.Create(context).Retain();
@@ -125,7 +125,7 @@ namespace Find
 				m_styledPath.release();
 		}
 		
-		public FindsForFile(string path, string text, MatchCollection matches) : base(NSObject.AllocNative("FindsForFile"))
+		public FindsForFile(string path, string text, MatchCollection matches) : base(NSObject.AllocAndInitInstance("FindsForFile"))
 		{
 			m_path = NSString.Create(path).Retain();
 			m_instances = new FindInstance[matches.Count];

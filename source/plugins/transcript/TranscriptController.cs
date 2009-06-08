@@ -33,8 +33,10 @@ namespace Transcript
 	[ExportClass("TranscriptController", "NSWindowController", Outlets = "output")]
 	internal sealed class TranscriptController : NSWindowController, IObserver
 	{
-		public TranscriptController() : base("TranscriptController", "transcript")
+		public TranscriptController() : base(NSObject.AllocAndInitInstance("TranscriptController"))
 		{
+			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("transcript"), this);
+			
 			m_output = new IBOutlet<NSTextView>(this, "output");
 			
 			Unused.Value = window().setFrameAutosaveName(NSString.Create("transcript window"));

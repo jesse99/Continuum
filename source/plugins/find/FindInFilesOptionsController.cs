@@ -32,9 +32,9 @@ namespace Find
 	[ExportClass("FindInFilesOptionsController", "NSWindowController", Outlets = "dirsTable canRemove")]
 	internal sealed class FindInFilesOptionsController : NSWindowController
 	{
-		public FindInFilesOptionsController(FindInFilesController find) : base(NSObject.AllocNative("FindInFilesOptionsController"))
+		public FindInFilesOptionsController(FindInFilesController find) : base(NSObject.AllocAndInitInstance("FindInFilesOptionsController"))
 		{		
-			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("find-in-files-options"), this);	
+			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("find-in-files-options"), this);
 			m_find = find;
 			
 			m_canRemove = new IBOutlet<NSNumber>(this, "canRemove");

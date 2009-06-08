@@ -31,7 +31,7 @@ namespace MakeBuilder
 	[ExportClass("FlagsController", "NSWindowController")]
 	internal sealed class FlagsController : NSWindowController
 	{
-		public FlagsController(Dictionary<string, int> flags) : base(NSObject.AllocNative("FlagsController"))
+		public FlagsController(Dictionary<string, int> flags) : base(NSObject.AllocAndInitInstance("FlagsController"))
 		{
 			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("make-flags"), this);	
 			

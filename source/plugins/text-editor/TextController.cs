@@ -35,8 +35,10 @@ namespace TextEditor
 	[ExportClass("TextController", "NSWindowController", Outlets = "textView lineLabel decsPopup scrollView")]
 	internal sealed class TextController : NSWindowController, IObserver
 	{
-		public TextController() : base("TextController", "text-editor")
+		public TextController() : base(NSObject.AllocAndInitInstance("TextController"))
 		{
+			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("text-editor"), this);
+			
 			m_textView = new IBOutlet<NSTextView>(this, "textView");
 			m_lineLabel = new IBOutlet<NSButton>(this, "lineLabel");
 			m_decPopup = new IBOutlet<NSPopUpButton>(this, "decsPopup");

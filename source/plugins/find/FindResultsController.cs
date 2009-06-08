@@ -34,29 +34,25 @@ namespace Find
 	[ExportClass("FindResultsController", "NSWindowController", Outlets = "view")]
 	internal sealed class FindResultsController : NSWindowController, IObserver
 	{
-		public FindResultsController(FindAll find) : base("FindResultsController", "find-results")
+		public FindResultsController(FindAll find) : base(NSObject.AllocAndInitInstance("FindResultsController"))
 		{
+			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("find-results"), this);
+			
 			m_find = find;
 			m_table = new IBOutlet<NSOutlineView>(this, "view");
+			
+			m_table.Value.setDoubleAction("doubleClicked:");
+			m_table.Value.setTarget(this);
+			m_table.Value.setDelegate(this);
 			
 			window().setDelegate(this);
 			Unused.Value = window().setFrameAutosaveName(NSString.Create("find results window"));
 			window().makeKeyAndOrderFront(null);
 			
-			ms_controllers.Add(this);
-		}
-		
-		public void awakeFromNib()
-		{
-			m_table.Value.setDoubleAction("doubleClicked:");
-			m_table.Value.setTarget(this);
-			m_table.Value.setDelegate(this);
-			
-			if (superclass().respondsToSelector("awakeFromNib"))
-				Unused.Value = SuperCall("awakeFromNib");
-			
 			Broadcaster.Register("text changed", this);
 			NSApplication.sharedApplication().BeginInvoke(this.DoUpdate, TimeSpan.FromMilliseconds(50));
+			
+			ms_controllers.Add(this);
 		}
 		
 		public void OnBroadcast(string name, object value)

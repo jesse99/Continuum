@@ -50,7 +50,7 @@ namespace BuildErrors
 		}
 		
 		public new NSMenu menuForEvent(NSEvent evt)
-		{			
+		{
 			NSMenu menu = NSMenu.Create();
 			
 			Boss boss = ObjectModel.Create("Application");
@@ -71,12 +71,14 @@ namespace BuildErrors
 			return menu;
 		}
 	}
-
+	
 	[ExportClass("ErrorsController", "NSWindowController", Outlets = "textView")]
 	internal sealed class ErrorsController : NSWindowController, IObserver
 	{
-		public ErrorsController() : base("ErrorsController", "build-errors")
+		public ErrorsController() : base(NSObject.AllocAndInitInstance("ErrorsController"))
 		{
+			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("build-errors"), this);
+			
 			m_textView = new IBOutlet<NSTextView>(this, "textView");
 			
 			Unused.Value = window().setFrameAutosaveName(NSString.Create("build-errors window"));

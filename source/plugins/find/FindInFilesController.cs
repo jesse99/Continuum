@@ -34,7 +34,7 @@ namespace Find
 	[ExportClass("FindInFilesController", "BaseFindController", Outlets = "dirPopup directoryList include includeList exclude excludeList")]
 	internal sealed class FindInFilesController : BaseFindController, IObserver
 	{
-		public FindInFilesController() : base(NSObject.AllocNative("FindInFilesController"), "find-in-files")
+		public FindInFilesController() : base(NSObject.AllocAndInitInstance("FindInFilesController"), "find-in-files")
 		{
 			Unused.Value = window().setFrameAutosaveName(NSString.Create("find in files window"));
 			

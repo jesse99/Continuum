@@ -32,7 +32,7 @@ namespace Shared
 	[ExportClass("GetItemController", "NSWindowController", Outlets = "table okButton")]
 	internal sealed class GetItemController : NSWindowController
 	{
-		public GetItemController() : base(NSObject.AllocNative("GetItemController"))
+		public GetItemController() : base(NSObject.AllocAndInitInstance("GetItemController"))
 		{
 			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("get-item"), this);	
 			Unused.Value = window().setFrameAutosaveName(NSString.Create("get-item window"));

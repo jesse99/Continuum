@@ -32,7 +32,7 @@ namespace DirectoryEditor
 	[ExportClass("TableItem", "NSObject")]
 	internal abstract class TableItem : NSObject, IObserver
 	{
-		public TableItem(string path, DirectoryItemStyler styler, string type) : base(NSObject.AllocNative(type))
+		public TableItem(string path, DirectoryItemStyler styler, string type) : base(NSObject.AllocAndInitInstance(type))
 		{
 			m_path = path;
 			m_styler = styler;

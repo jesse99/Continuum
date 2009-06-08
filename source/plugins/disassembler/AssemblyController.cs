@@ -35,7 +35,7 @@ namespace Disassembler
 	[ExportClass("AssemblyController", "NSWindowController", Outlets = "table")]
 	internal sealed class AssemblyController : NSWindowController
 	{
-		public AssemblyController(AssemblyDocument doc) : base(NSObject.AllocNative("AssemblyController"))
+		public AssemblyController(AssemblyDocument doc) : base(NSObject.AllocAndInitInstance("AssemblyController"))
 		{
 			m_doc = doc;
 			
@@ -47,7 +47,7 @@ namespace Disassembler
 			m_table.setTarget(this);
 			
 			ActiveObjects.Add(this);
-			autorelease();							// get rid of the retain done by AllocNative
+			autorelease();							// get rid of the retain done by AllocAndInitInstance
 		}
 		
 		public void windowWillClose(NSObject notification)

@@ -32,7 +32,7 @@ namespace Disassembler
 	[ExportClass("NamespaceItem", "AssemblyItem")]
 	internal sealed class NamespaceItem : AssemblyItem
 	{
-		public NamespaceItem(string ns) : base(NSObject.AllocNative("NamespaceItem"))
+		public NamespaceItem(string ns) : base(NSObject.AllocAndInitInstance("NamespaceItem"))
 		{
 			Contract.Requires(ns != null, "ns is null");
 			
@@ -112,7 +112,7 @@ namespace Disassembler
 	[ExportClass("TypeItem", "AssemblyItem")]
 	internal sealed class TypeItem : AssemblyItem
 	{
-		public TypeItem(TypeDefinition type) : base(NSObject.AllocNative("TypeItem"))
+		public TypeItem(TypeDefinition type) : base(NSObject.AllocAndInitInstance("TypeItem"))
 		{
 			Contract.Requires(type != null, "type is null");
 			
@@ -227,7 +227,7 @@ namespace Disassembler
 	[ExportClass("MethodItem", "AssemblyItem")]
 	internal sealed class MethodItem : AssemblyItem
 	{
-		public MethodItem(MethodDefinition method) : base(NSObject.AllocNative("MethodItem"))
+		public MethodItem(MethodDefinition method) : base(NSObject.AllocAndInitInstance("MethodItem"))
 		{
 			Contract.Requires(method != null, "method is null");
 			
@@ -370,7 +370,7 @@ namespace Disassembler
 	[ExportClass("ResourcesItem", "AssemblyItem")]
 	internal sealed class ResourcesItem : AssemblyItem
 	{
-		public ResourcesItem() : base(NSObject.AllocNative("ResourcesItem"))
+		public ResourcesItem() : base(NSObject.AllocAndInitInstance("ResourcesItem"))
 		{
 		}
 		
@@ -470,10 +470,10 @@ namespace Disassembler
 	[ExportClass("ResourceItem", "AssemblyItem")]
 	internal abstract class ResourceItem : AssemblyItem
 	{
-		protected ResourceItem(Resource resource, string type) : base(NSObject.AllocNative(type))
+		protected ResourceItem(Resource resource, string type) : base(NSObject.AllocAndInitInstance(type))
 		{
 			Contract.Requires(resource != null, "resource is null");
-
+			
 			m_name = resource.Name;
 		}
 		

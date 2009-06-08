@@ -31,7 +31,7 @@ namespace NantBuilder
 	[ExportClass("NantFlagsController", "NSWindowController", Outlets = "debug extension indent listener logfile logger quiet target verbose")]
 	internal sealed class NantFlagsController : NSWindowController
 	{
-		public NantFlagsController(Prefs prefs) : base(NSObject.AllocNative("NantFlagsController"))
+		public NantFlagsController(Prefs prefs) : base(NSObject.AllocAndInitInstance("NantFlagsController"))
 		{
 			m_prefs = prefs;
 			

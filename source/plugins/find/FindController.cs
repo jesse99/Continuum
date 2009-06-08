@@ -22,7 +22,6 @@
 using Gear.Helpers;
 using MCocoa;
 using MObjc;
-//using Shared;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -32,11 +31,11 @@ namespace Find
 	[ExportClass("FindController", "BaseFindController")]
 	internal sealed class FindController : BaseFindController
 	{
-		public FindController() : base(NSObject.AllocNative("FindController"), "find")
-		{		
+		public FindController() : base(NSObject.AllocAndInitInstance("FindController"), "find")
+		{
 			Unused.Value = window().setFrameAutosaveName(NSString.Create("find window"));
 		}
-																				
+		
 		public void next(NSObject sender)
 		{
 			Unused.Value = sender;
@@ -44,7 +43,7 @@ namespace Find
 			OnUpdateLists();
 			Finder.FindNext();
 		}
-				
+		
 		public void replace(NSObject sender)
 		{
 			Unused.Value = sender;

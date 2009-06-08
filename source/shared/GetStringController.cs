@@ -32,7 +32,7 @@ namespace Shared
 	[ExportClass("GetStringController", "NSWindowController", Outlets = "text label okButton")]
 	internal sealed class GetStringController : NSWindowController
 	{
-		public GetStringController() : base(NSObject.AllocNative("GetStringController"))
+		public GetStringController() : base(NSObject.AllocAndInitInstance("GetStringController"))
 		{		
 			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("get-string"), this);	
 			Unused.Value = window().setFrameAutosaveName(NSString.Create("get-string window"));

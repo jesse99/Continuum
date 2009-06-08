@@ -31,7 +31,7 @@ namespace Shared
 	[ExportClass("GetTextController", "NSWindowController", Outlets = "text")]
 	internal sealed class GetTextController : NSWindowController
 	{
-		public GetTextController() : base(NSObject.AllocNative("GetTextController"))
+		public GetTextController() : base(NSObject.AllocAndInitInstance("GetTextController"))
 		{		
 			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("get-text"), this);	
 			Unused.Value = window().setFrameAutosaveName(NSString.Create("get-text window"));
