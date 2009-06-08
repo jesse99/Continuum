@@ -100,7 +100,10 @@ namespace DirectoryEditor
 		protected override void OnDealloc()
 		{
 			if (m_name != null)
+			{
 				m_name.release();
+				m_name = null;
+			}
 			
 			base.OnDealloc();
 		}

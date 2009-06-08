@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Jesse Jones
+// Copyright (C) 2008-2009 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -27,9 +27,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace DirectoryEditor	
+namespace DirectoryEditor
 {
-	[ExportClass("DirPrefsController", "NSWindowController", Outlets = "addBraceLine addSpace sheet ignoredItems ignoredTargets pathColor files1Color files2Color files3Color files4Color files5Color files6Color files1Globs files2Globs files3Globs files4Globs files5Globs files6Globs")]
+	[ExportClass("DirPrefsController", "NSWindowController", Outlets = "addBraceLine addSpace sheet ignoredItems ignoredTargets pathColor files1Color files2Color files3Color files4Color files5Color files6Color files7Color files1Globs files2Globs files3Globs files4Globs files5Globs files6Globs files7Globs")]
 	internal sealed class DirPrefsController : NSWindowController
 	{
 		private DirPrefsController(IntPtr instance) : base(instance)

@@ -130,9 +130,12 @@ namespace ObjectModel
 			if ((attrs & TypeAttributes.ClassSemanticMask) != TypeAttributes.Interface && !(type != null && type.IsValueType))
 			{
 				if ((attrs & TypeAttributes.Abstract) == TypeAttributes.Abstract)
-					result += "abstract ";
+					if ((attrs & TypeAttributes.Sealed) == TypeAttributes.Sealed)
+						result += "static ";
+					else
+						result += "abstract ";
 				
-				if ((attrs & TypeAttributes.Sealed) == TypeAttributes.Sealed)
+				else if ((attrs & TypeAttributes.Sealed) == TypeAttributes.Sealed)
 					result += "sealed ";
 			}
 			

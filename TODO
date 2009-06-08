@@ -23,13 +23,6 @@ ReferenceEquals used with value type
 select declaring_root_name,return_type_name from Methods where name = 'get_BaseTypes';
 sudo fs_usage -f filesys
 
-* Auto-complete table should complete if . or , is pressed.
-* Couldn't complete info for:
-		var info = navigator as System.Xml.IXmlLineInfo;
-* Add a default item colors line for assemblies.
-* Css files should not be colored like html.
-* Add another line for item colors.
-* Short form can call a class static if it is both sealed and abstract.
 * Think right click to revert window in background reverted foreground window.
 * Do events complete? E.g. for +=.
 * Explicit interface definitions are completing.

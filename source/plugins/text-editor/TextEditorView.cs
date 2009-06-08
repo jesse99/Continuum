@@ -200,6 +200,10 @@ namespace TextEditor
 			NSMenu menu = NSMenu.Alloc().initWithTitle(NSString.Empty);
 			menu.autorelease();
 			
+			// ITextContextCommands expect that the main window is the one the user
+			// is working with.
+			window().makeKeyAndOrderFront(this);
+			
 			// We don't extend the default menu because it has tons of stuff that we
 			// don't really want. But we should add the services...
 //			NSMenu menu = SuperCall("menuForEvent:", evt).To<NSMenu>();

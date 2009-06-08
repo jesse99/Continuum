@@ -304,7 +304,7 @@ namespace AutoComplete
 							Match m = ms_getRE.Match(value);
 							if (m.Success)
 							{
-								value = m.Groups[1].Value;	
+								value = m.Groups[1].Value;
 							}
 						}
 						
@@ -355,20 +355,26 @@ namespace AutoComplete
 		
 		private string DoGetAsValue(string value)
 		{
-			Token next = new Token(0);
-			string type = m_locals.ParseType(value, 4, value.Length, ref next);
-	Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "as cast type: {0}, next: '{1}'", type, next);
+			string type = null;
 			
-			if (type != null)
+			int i = value.LastIndexOf(" as ");
+			if (i > 0)
 			{
-				if (type.EndsWith("[ ]"))
-					type = "array-type";
+				Token next = new Token(0);
+				type = m_locals.ParseType(value, i + 4, value.Length, ref next);
+		Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "as cast type: {0}, next: '{1}'", type, next);
 				
-				else if (type.EndsWith("?"))
-					type = "nullable-type";
-				
-				else if (type.EndsWith("*"))
-					type = "pointer-type";
+				if (type != null)
+				{
+					if (type.EndsWith("[ ]"))
+						type = "array-type";
+					
+					else if (type.EndsWith("?"))
+						type = "nullable-type";
+					
+					else if (type.EndsWith("*"))
+						type = "pointer-type";
+				}
 			}
 			
 			return type;
