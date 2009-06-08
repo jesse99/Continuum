@@ -113,12 +113,81 @@ namespace TextEditor
 		
 		public TextFormat Format
 		{
-			get {return m_format;}
+			get
+			{
+				TextFormat result = TextFormat.PlainText;
+				
+				if (!NSObject.IsNullOrNil(fileURL()))
+				{
+					switch (fileType().description())
+					{
+						case "Plain Text, UTF8 Encoded":
+						case "binary":
+							result = TextFormat.PlainText;
+							break;
+						
+						case "HTML":
+							result = TextFormat.HTML;
+							break;
+						
+						case "Rich Text Format (RTF)":
+							result = TextFormat.RTF;
+							break;
+							
+						case "Word 97 Format (doc)":
+							result = TextFormat.Word97;
+							break;
+							
+						case "Word 2007 Format (docx)":
+							result = TextFormat.Word2007;
+							break;
+							
+						case "Open Document Text (odt)":
+							result = TextFormat.OpenDoc;
+							break;
+						
+						default:
+							Contract.Assert(false, "bad fileType: " + fileType().description());
+							break;
+					}
+				}
+				
+				return result;
+			}
 			set
 			{
-				if (value != m_format)
+				if (value != Format)
 				{
-					m_format = value;
+					switch (value)
+					{
+						case TextFormat.PlainText:
+							setFileType(NSString.Create("Plain Text, UTF8 Encoded"));
+							break;
+						
+						case TextFormat.HTML:
+							setFileType(NSString.Create("HTML"));
+							break;
+						
+						case TextFormat.RTF:
+							setFileType(NSString.Create("Rich Text Format (RTF)"));
+							break;
+						
+						case TextFormat.Word97:
+							setFileType(NSString.Create("Word 97 Format (doc)"));
+							break;
+						
+						case TextFormat.Word2007:
+							setFileType(NSString.Create("Word 2007 Format (docx)"));
+							break;
+						
+						case TextFormat.OpenDoc:
+							setFileType(NSString.Create("Open Document Text (odt)"));
+							break;
+						
+						default:
+							Contract.Assert(false, "bad format: " + value);
+							break;
+					}
 					updateChangeCount(Enums.NSChangeDone);
 				}
 			}
@@ -266,34 +335,34 @@ namespace TextEditor
 				
 				DoRestoreEndian(str);
 				
-				switch (m_format)
+				switch (typeName.description())
 				{
-					case TextFormat.PlainText:
+					case "Plain Text, UTF8 Encoded":
 						data = str.dataUsingEncoding_allowLossyConversion(m_encoding, true);
 						break;
-						
-					case TextFormat.RTF:
-						data = DoWriteWrapped(astr, Externs.NSRTFTextDocumentType);
-						break;
-						
-					case TextFormat.HTML:
+					
+					case "HTML":
 						data = DoWriteWrapped(astr, Externs.NSHTMLTextDocumentType);
 						break;
 						
-					case TextFormat.Word97:
+					case "Rich Text Format (RTF)":
+						data = DoWriteWrapped(astr, Externs.NSRTFTextDocumentType);
+						break;
+						
+					case "Word 97 Format (doc)":
 						data = DoWriteWrapped(astr, Externs.NSDocFormatTextDocumentType);
 						break;
 						
-					case TextFormat.Word2007:
+					case "Word 2007 Format (docx)":
 						data = DoWriteWrapped(astr, Externs.NSOfficeOpenXMLTextDocumentType);
 						break;
 						
-					case TextFormat.OpenDoc:
+					case "Open Document Text (odt)":
 						data = DoWriteWrapped(astr, Externs.NSOpenDocumentTextDocumentType);
 						break;
 						
 					default:
-						Contract.Assert(false, "bad format: " + m_format);
+						Contract.Assert(false, "bad typeName: " + typeName.description());
 						break;
 				}
 				
@@ -364,35 +433,29 @@ namespace TextEditor
 					var encoding = boss.Get<ITextEncoding>();
 					NSString str = encoding.Decode(data, out m_encoding);
 					m_text = NSMutableAttributedString.Alloc().initWithString(str).To<NSMutableAttributedString>();
-					m_format = TextFormat.PlainText;
 					break;
 				
 				// These types are based on the file's extension so we can (more or less) trust them.
 				case "Rich Text Format (RTF)":
 					m_text = DoReadWrapped(data, Externs.NSRTFTextDocumentType);
-					m_format = TextFormat.RTF;
 					break;
 					
 				case "Word 97 Format (doc)":
 					m_text = DoReadWrapped(data, Externs.NSDocFormatTextDocumentType);
-					m_format = TextFormat.Word97;
 					break;
 					
 				case "Word 2007 Format (docx)":
 					m_text = DoReadWrapped(data, Externs.NSOfficeOpenXMLTextDocumentType);
-					m_format = TextFormat.Word2007;
 					break;
 					
 				case "Open Document Text (odt)":
 					m_text = DoReadWrapped(data, Externs.NSOpenDocumentTextDocumentType);
-					m_format = TextFormat.OpenDoc;
 					break;
 					
 				// Open as Binary
 				case "binary":
 					m_text = NSMutableAttributedString.Create(data.bytes().ToText());
 					m_binary = true;
-					m_format = TextFormat.PlainText;
 					m_encoding = Enums.NSUTF8StringEncoding;
 					break;
 				
@@ -597,7 +660,6 @@ namespace TextEditor
 		private bool m_binary;
 		private LineEndian m_endian;
 		private uint m_encoding;
-		private TextFormat m_format;
 		
 		private static Dictionary<char, string> ms_controlNames = new Dictionary<char, string>
 		{

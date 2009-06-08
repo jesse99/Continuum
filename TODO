@@ -23,7 +23,6 @@ ReferenceEquals used with value type
 select declaring_root_name,return_type_name from Methods where name = 'get_BaseTypes';
 sudo fs_usage -f filesys
 
-* Saving a new file as rtf saved it as plain text.
 * Auto-complete table should complete if . or , is pressed.
 * Couldn't complete info for:
 		var info = navigator as System.Xml.IXmlLineInfo;

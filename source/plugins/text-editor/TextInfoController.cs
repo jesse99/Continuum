@@ -57,10 +57,16 @@ namespace TextEditor
 			}
 			if (doc.Controller.Language != null)
 				language.selectItemWithTitle(NSString.Create(doc.Controller.Language.FriendlyName));
+			else
+				language.selectItem(null);
 			
 			m_doc = doc;
-			NSString title = doc.fileURL().path().lastPathComponent() + " Info";
-			window().setTitle(title);
+			NSURL url = doc.fileURL();
+			if (!NSObject.IsNullOrNil(url))
+			{
+				NSString title = url.path().lastPathComponent() + " Info";
+				window().setTitle(title);
+			}
 			DoEnableButtons();
 			
 			window().setDelegate(this);

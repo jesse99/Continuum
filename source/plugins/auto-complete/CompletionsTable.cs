@@ -174,6 +174,8 @@ namespace AutoComplete
 		{
 			NSString chars = evt.characters();
 			
+			// TODO: Would be nice to also complete for '.' and ','. This should insert
+			// the punctuation and, for '.', start a new completion.
 			if (chars.Equals("\t") || chars.Equals("\r") || chars.Equals(" "))
 			{
 				DoComplete(false, selectedRow());
