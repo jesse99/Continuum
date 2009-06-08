@@ -253,6 +253,7 @@ namespace AutoComplete
 				Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "new target: {0}", target);
 			}
 			
+			// Handle other calls.
 			if (target != null && result == null)
 			{
 				int numArgs = DoGetNumArgs(operand);
@@ -269,6 +270,7 @@ namespace AutoComplete
 					{
 						if (items.All(m => m.Type == items.First().Type))
 						{
+							Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "{0}:{1} with {2} args resolved to {3}", target, name, numArgs, items.First().Type);
 							result = m_typeResolver.Resolve(items.First().Type, context, m_globals, true, false);
 						}
 						else

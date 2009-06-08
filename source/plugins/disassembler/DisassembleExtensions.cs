@@ -207,7 +207,13 @@ namespace Disassembler
 			// but it does not appear to be set with gmcs 2.4.
 			if (ins != null && ins.SequencePoint.Document != null && ins.SequencePoint.Document.Url != null)
 			{
-				source = System.IO.File.ReadAllLines(ins.SequencePoint.Document.Url);
+				try
+				{
+					source = System.IO.File.ReadAllLines(ins.SequencePoint.Document.Url);
+				}
+				catch
+				{
+				}
 			}
 			
 			return source;

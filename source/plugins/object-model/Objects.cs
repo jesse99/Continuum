@@ -78,8 +78,11 @@ namespace ObjectModel
 			if (name.Contains("`"))
 			{
 				int k = name.IndexOf('<');
-				gargs = k > 0 ? int.Parse(name.Substring(i + 1, k - i - 1)) : int.Parse(name.Substring(i + 1));
-				name = name.Substring(0, i);
+				if (k >= 0)							// name may not actually be a type name so we need this check
+				{
+					gargs = k > 0 ? int.Parse(name.Substring(i + 1, k - i - 1)) : int.Parse(name.Substring(i + 1));
+					name = name.Substring(0, i);
+				}
 			}
 			
 			string sql;

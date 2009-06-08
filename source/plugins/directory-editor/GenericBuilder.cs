@@ -231,8 +231,6 @@ namespace DirectoryEditor
 				m_results.WriteOutput(string.Format("built in {0:0.0} secs", elapsed.TotalSeconds));
 				m_results.WriteOutput(Environment.NewLine);
 				m_results.WriteOutput(Environment.NewLine);
-				
-				Broadcaster.Invoke("built target", m_target);
 			}
 			else
 			{
@@ -240,6 +238,9 @@ namespace DirectoryEditor
 				m_results.WriteError(Environment.NewLine);
 				m_results.WriteError(Environment.NewLine);
 			}
+			
+			if (m_process.ExitCode == 0)
+				Broadcaster.Invoke("built target", m_target);
 			
 			DoHandleErrors(errors);
 			

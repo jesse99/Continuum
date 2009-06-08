@@ -3,6 +3,7 @@
 	<Glob language = "binary">*.bin</Glob>
 	<Glob language = "c">*.c</Glob>
 	<Glob language = "cil">*.cil</Glob>
+	<Glob language = "css">*.css</Glob>
 	<Glob language = "c#">*.cs</Glob>
 	<Glob language = "html">*.html *.htm</Glob>
 	<Glob language = "info">*.info</Glob>

@@ -1,5 +1,6 @@
 http://msdn.microsoft.com/en-us/devlabs/dd491992.aspx
-
+Foundations of F#
+ 
 https://home.comcast.net/~jesse98/public/Continuum-0.2.222.0.tar.gz
 
 BMPN - flow charts
@@ -20,17 +21,61 @@ can make readonly rule
 ReferenceEquals used with value type
 
 might want a sample app
+select declaring_root_name,return_type_name from Methods where name = 'get_BaseTypes';
 sudo fs_usage -f filesys
 
-
-* Why don't runs update after typing, eg typing a new comment doesn't redraw
-   until an arrow key is hit.
+* Make sure *.xsd is an xml extension.
+* Got a failure trying to open "NSObject.h"
+* Error from (I think) refreshing a file:
+App Error     Couldn't open file://localhost/Users/jessejones/Source/mmmdoc/docs/types/mmmdoc-Program-file.html
+App Error     System.ArgumentNullException: Argument cannot be null.
+              Parameter name: src
+                at (wrapper managed-to-native) System.Runtime.InteropServices.Marshal:copy_from_unmanaged (intptr,int,System.Array,int)
+                at System.Runtime.InteropServices.Marshal.Copy (IntPtr source, System.Byte[] destination, Int32 startIndex, Int32 length) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.4/mcs/class/corlib/System.Runtime.InteropServices/Marshal.cs:161 
+                at MCocoa.NSData.getBytes_length (System.Byte[]& buffer, UInt32 length) [0x0001d] in /Users/jessejones/Source/mcocoa/source/foundation/NSData.cs:56 
+                at TextEditor.TextEncoding.DoGetEncoding (MCocoa.NSData data, System.Int32& skipBytes) [0x00002] in /Users/jessejones/Source/Continuum/source/plugins/text-editor/TextEncoding.cs:101 
+                at TextEditor.TextEncoding.Decode (MCocoa.NSData data, System.UInt32& encoding) [0x00015] in /Users/jessejones/Source/Continuum/source/plugins/text-editor/TextEncoding.cs:61 
+                at TextEditor.TextDocument.DoReadData (MCocoa.NSData data, MCocoa.NSString typeName) [0x000c9] in /Users/jessejones/Source/Continuum/source/plugins/text-editor/TextDocument.cs:365 
+                at TextEditor.TextDocument.readFromData_ofType_error (MCocoa.NSData data, MCocoa.NSString typeName, IntPtr outError) [0x00028] in /Users/jessejones/Source/Continuum/source/plugins/text-editor/TextDocument.cs:212 
+* Time code is totally busted.
+* Add to short form and disassembler:
+			if (member.ImplAttributes >= MethodImplAttributes.Unmanaged)
+				attrs.Add(member.ImplAttributes.ToText(false));
+* Make sure short and disassemblty include enum backing type if it is not int.
+* Should be able to convert attribute enum args to the enum name.
+* Searching Xml Comments for cref didn't always scroll.
+* Create dir didn't work.
+* Set Parses.m_highwater back to 20.
+* Get css working with stuff like 
+	P
+	{
+		margin: 2em
+	}
+* Also this didn't work quite right:
+	CAPTION {font-size: large; text-align: left}
+* Css files should not be colored like html.
+* Couldn't read zero size css file.
+* Auto-complete table should complete if . or , is pressed.
+* Couldn't complete info for:
+		var info = navigator as System.Xml.IXmlLineInfo;
+* Saving a new file as rtf saved it as plain text.
+* Add a default item colors line for assemblies.
+* Add another line for item colors.
+* Short form can call a class static if it is both sealed and abstract.
+* Think right click to revert window in background reverted foreground window.
+* Explicit interface definitions are completing.
+* Explicit interface definitions aren't showing up in the disassembly (see TypeDefinition
+   Annonations).
+* Couldn't complete "new str", but new Str completes.
+* Need to reload items if ignored items changes (or maybe this is just a problem
+   with the root).
 * Review thread safety
 
 * Look at other editors, eg TextMate, VS Expess.
 * Add some better support to mobj for leak detection. Maybe record (an optional?)
    stack trace with each new-ed NSObject.
 * Short form should have doc comments:
+	- arg completion window should have param and typeparam comments
 	- style these
 	- maybe use an html view, could have links to/from summary form and remarks
 * Auto-complete table should have comments too.

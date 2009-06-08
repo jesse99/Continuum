@@ -399,12 +399,12 @@ namespace ObjectModel
 					DoValidateRoot("root_name", method.DeclaringType);
 					
 					string returnName;
-//					if (method.ReturnType.ReturnType.IsSpecial())			// TODO: should use this code
-//					{
-//						DoAddSpecialType(method.ReturnType.ReturnType);
-//						returnName = method.ReturnType.ReturnType.FullName;
-//					}
-//					else
+					if (method.ReturnType.ReturnType.IsSpecial())
+					{
+						DoAddSpecialType(method.ReturnType.ReturnType);
+						returnName = method.ReturnType.ReturnType.FullName;
+					}
+					else
 						returnName = DoGetRootName(method.ReturnType.ReturnType);
 					
 					m_database.InsertOrReplace("Methods",

@@ -51,14 +51,12 @@ namespace Shared
 			return "[" + string.Join(", ", items.ToArray()) + "]";
 		}
 		
-		public delegate string Converter<T>(T item);
-		
 		[Pure]
-		public static string ToDebugString<T>(this IEnumerable<T> list, Converter<T> converter)
+		public static string ToDebugString<T>(this IEnumerable<T> list, Func<T, string> converter)
 		{
 			Contract.Requires(list != null, "list is null");
 			Contract.Requires(converter != null, "converter is null");
-						
+			
 			var items = new List<string>();
 			
 			foreach (T item in list)
