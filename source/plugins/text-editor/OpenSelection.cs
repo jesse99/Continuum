@@ -180,7 +180,7 @@ namespace TextEditor
 					if (url.scheme().length() > 0)
 					{
 						Log.WriteLine(TraceLevel.Verbose, "Open Selection", "and the scheme is {0:D}", url.scheme());
-						Unused.Value = NSWorkspace.sharedWorkspace().openURL(url);	
+						Unused.Value = NSWorkspace.sharedWorkspace().openURL(url);
 						opened = true;
 					}
 				}
@@ -275,7 +275,8 @@ namespace TextEditor
 					foreach (string candidate in candidates)
 					{
 						if (localPaths.Any(p => candidate.StartsWith(p)))
-							paths.Add(candidate);
+							if (System.IO.File.Exists(candidate))
+								paths.Add(candidate);
 					}
 					
 					// Open all of the paths we found.
@@ -329,14 +330,17 @@ namespace TextEditor
 					
 					// Otherwise we'll prefer files within the preferred directories.
 					string[] preferred = DoGetPreferredPaths();
-					foreach (string path in candidates)	
+					foreach (string path in candidates)
 					{
 						foreach (string sp in preferred)
 						{
 							if (path.StartsWith(sp) && System.IO.Path.GetFileName(path).ToLower() == name.ToLower())
 							{
-								paths.Add(path);
-								break;
+								if (System.IO.File.Exists(path))
+								{
+									paths.Add(path);
+									break;
+								}
 							}
 						}
 					}
@@ -374,11 +378,26 @@ namespace TextEditor
 			{
 				Boss boss = ObjectModel.Create("Application");
 				var launcher = boss.Get<ILaunch>();
-			
+				
+				var bad = new List<string>();
 				foreach (string p in paths)
 				{
-					launcher.Launch(p, line, col, 1);
-					opened = true;
+					try
+					{
+						launcher.Launch(p, line, col, 1);
+						opened = true;
+					}
+					catch
+					{
+						bad.Add(p);
+					}
+				}
+				
+				if (bad.Count > 0)
+				{
+					NSString title = NSString.Create("Couldn't open.");
+					NSString message = NSString.Create(string.Join("\n", bad.ToArray()));
+					Unused.Value = Functions.NSRunAlertPanel(title, message);
 				}
 			}
 			
