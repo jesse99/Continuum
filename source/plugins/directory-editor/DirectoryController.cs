@@ -77,7 +77,7 @@ namespace DirectoryEditor
 			else
 				DoLoadPrefs(path);
 			
-			m_root = new FolderItem(m_path, m_dirStyler, m_ignoredItems);
+			m_root = new FolderItem(m_path, m_dirStyler, this);
 			m_table.reloadData();
 			
 			m_watcher = DoCreateWatcher(path);

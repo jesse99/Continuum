@@ -23,12 +23,6 @@ ReferenceEquals used with value type
 select declaring_root_name,return_type_name from Methods where name = 'get_BaseTypes';
 sudo fs_usage -f filesys
 
-* Explicit interface definitions are completing.
-* Explicit interface definitions aren't showing up in the disassembly (see TypeDefinition
-   Annonations).
-* Couldn't complete "new str", but new Str completes.
-* Need to reload items if ignored items changes (or maybe this is just a problem
-   with the root).
 * Uses the new cecil (people can use svn or copy it from the binary distro).
 * Review thread safety
 

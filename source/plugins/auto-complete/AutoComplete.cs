@@ -322,30 +322,36 @@ namespace AutoComplete
 				if (stem.Length > 0)
 				{
 					string label = string.Empty;
-					Item[] items;
+					var items = new List<Item>();
 					bool isInstance = false, isStatic = false;
 				
 					if (stem.StartsWith("new "))
 					{
 						stem = stem.Substring(stem.IndexOf(' ') + 1);
+						string oldStem = stem;
 						
 						Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "DoCompleteStem is getting ctors");
 						label = "Constructors";
-						items = DoGetConstructorsNamed(globals, ref stem);
+						items.AddRange(DoGetConstructorsNamed(globals, ref stem));
+						
+						if (oldStem == stem)
+						{
+							items.AddRange(DoGetAliasedConstructorsNamed(globals, stem));
+						}
 					}
 					else
 					{
 						Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "DoCompleteStem is getting names");
 						label = "Names";
-						items = DoGetNames(globals, range.location - 1, stem, ref isInstance, ref isStatic);
+						items.AddRange(DoGetNames(globals, range.location - 1, stem, ref isInstance, ref isStatic));
 					}
 					
-					if (items.Length > 0)
+					if (items.Count > 0)
 					{
 						if (m_controller == null)	
 							m_controller = new CompletionsController();
 						
-						m_controller.Show(m_boss.Get<ITextEditor>(), view, label, items, stem, isInstance, isStatic);
+						m_controller.Show(m_boss.Get<ITextEditor>(), view, label, items.ToArray(), stem, isInstance, isStatic);
 					}
 					
 					handled = true;			// if it was recognized as a double tab then we never want to add the second tab
@@ -451,6 +457,22 @@ namespace AutoComplete
 			}
 			
 			Profile.Stop("AutoComplete::DoGetNamespacesNamed");
+			return items.ToArray();
+		}
+		
+		private Item[] DoGetAliasedConstructorsNamed(CsGlobalNamespace globals, string stem)
+		{
+			var items = new List<Item>();
+			
+			foreach (string alias in CsHelpers.GetAliasedNames())
+			{
+				if (alias.StartsWith(stem))
+				{
+					string name = CsHelpers.GetRealName(alias);
+					items.AddRange(DoGetConstructorsNamed(globals, ref name));
+				}
+			}
+			
 			return items.ToArray();
 		}
 		

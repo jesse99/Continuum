@@ -96,6 +96,11 @@ namespace DirectoryEditor
 			return NSString.Create(m_path);
 		}
 		
+		public override string ToString()
+		{
+			return m_path;
+		}
+		
 		#region Protected Methods
 		protected override void OnDealloc()
 		{

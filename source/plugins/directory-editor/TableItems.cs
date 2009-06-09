@@ -34,9 +34,9 @@ namespace DirectoryEditor
 	[ExportClass("FolderItem", "TableItem")]
 	internal sealed class FolderItem : TableItem
 	{
-		public FolderItem(string path, DirectoryItemStyler styler, string[] ignoredItems) : base(path, styler, "FolderItem")
+		public FolderItem(string path, DirectoryItemStyler styler, DirectoryController controller) : base(path, styler, "FolderItem")
 		{
-			m_ignoredItems = ignoredItems;
+			m_controller = controller;
 		}
 		
 		public override bool IsExpandable
@@ -152,7 +152,7 @@ namespace DirectoryEditor
 					if (System.IO.File.Exists(path) || NSWorkspace.sharedWorkspace().isFilePackageAtPath(NSString.Create(path)))
 						item = new FileItem(path, Styler);
 					else
-						item = new FolderItem(path, Styler, m_ignoredItems);
+						item = new FolderItem(path, Styler, m_controller);
 					
 					m_children.Add(item);
 					if (added != null)
@@ -204,9 +204,9 @@ namespace DirectoryEditor
 		
 		private bool DoIsIgnored(string name)
 		{
-			if (m_ignoredItems != null)
+			if (m_controller.IgnoredItems != null)
 			{
-				foreach (string glob in m_ignoredItems)
+				foreach (string glob in m_controller.IgnoredItems)
 				{
 					if (Glob.Match(glob, name))
 						return true;
@@ -219,7 +219,7 @@ namespace DirectoryEditor
 		
 		#region Fields
 		private List<TableItem> m_children;		// null => children have not been loaded
-		private string[] m_ignoredItems;
+		private DirectoryController m_controller;
 		#endregion
 	}
 
