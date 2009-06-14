@@ -38,7 +38,7 @@ namespace TextEditor
 	// /Users/jessejones/Source/Continuum/source/plugins/find/AssemblyInfo.cs		absolute path
 	// http://dev.mysql.com/tech-resources/articles/why-data-modeling.html			url
 	// NSWindow.h																							file in preferred directory																
-	// C#.cs																										file not in preferred directory
+	// c#.cs																										file not in preferred directory
 	internal sealed class OpenSelection : IOpenSelection
 	{
 		public void Instantiated(Boss boss)
@@ -57,10 +57,10 @@ namespace TextEditor
 			Log.WriteLine(TraceLevel.Verbose, "Open Selection", "trying to open '{0}'", text);
 			
 			if (!opened)
-				opened = DoOpenURL(text, 0, text.Length);
+				opened = DoOpenFile(text, 0, text.Length);
 				
 			if (!opened)
-				opened = DoOpenFile(text, 0, text.Length);
+				opened = DoOpenURL(text, 0, text.Length);
 				
 			if (!opened)
 				Log.WriteLine("Open Selection", "open failed");
@@ -77,16 +77,16 @@ namespace TextEditor
 			{
 				int loc = location;
 				int len = length;
-				DoExtendSelection(this.DoHtmlTest, text, ref loc, ref len);
-				opened = DoOpenURL(text, loc, len);
+				DoExtendSelection(this.DoFileTest, text, ref loc, ref len);
+				opened = DoOpenFile(text, loc, len);
 			}
 			
 			if (!opened)
 			{
 				int loc = location;
 				int len = length;
-				DoExtendSelection(this.DoFileTest, text, ref loc, ref len);
-				opened = DoOpenFile(text, loc, len);
+				DoExtendSelection(this.DoHtmlTest, text, ref loc, ref len);
+				opened = DoOpenURL(text, loc, len);
 			}
 			
 			return opened;
@@ -97,7 +97,7 @@ namespace TextEditor
 		{
 			string name = text.Substring(loc, len);
 			Log.WriteLine(TraceLevel.Verbose, "Open Selection", "trying url '{0}'", name);
-			return 	DoOpenURL(name);
+			return DoOpenURL(name);
 		}
 		
 		private bool DoOpenFile(string text, int loc, int len)
@@ -166,7 +166,8 @@ namespace TextEditor
 			}
 		}
 		
-		// If the name looks like an URL we'll launch it with a browser.
+		// If the name looks like an URL we'll launch it with a browser. Note that
+		// this can return true even if an URL isn't actually opened.
 		private bool DoOpenURL(string name)
 		{
 			bool opened = false;
@@ -275,8 +276,12 @@ namespace TextEditor
 					foreach (string candidate in candidates)
 					{
 						if (localPaths.Any(p => candidate.StartsWith(p)))
+						{
 							if (System.IO.File.Exists(candidate))
+							{
 								paths.Add(candidate);
+							}
+						}
 					}
 					
 					// Open all of the paths we found.
@@ -371,6 +376,10 @@ namespace TextEditor
 				
 				var getter = new GetItem<string>{Title = "Choose Files", Items = paths.ToArray(), AllowsMultiple = true};
 				paths = new List<string>(getter.Run(i => i));
+				
+				// If the user canceled then we don't want to proceed so we'll say we opened it.
+				if (paths.Count == 0)
+					return true;
 			}
 			
 			bool opened = false;
@@ -417,7 +426,7 @@ namespace TextEditor
 				++length;
 		}
 		
-		private bool DoHtmlTest(string text, int index) 
+		private bool DoHtmlTest(string text, int index)
 		{
 			if (index >= 0 && index < text.Length)
 			{
@@ -432,7 +441,7 @@ namespace TextEditor
 			return false;
 		}
 		
-		private bool DoFileTest(string text, int index) 
+		private bool DoFileTest(string text, int index)
 		{
 			if (index >= 0 && index < text.Length)
 			{

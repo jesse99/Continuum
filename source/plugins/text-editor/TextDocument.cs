@@ -297,6 +297,7 @@ namespace TextEditor
 						m_text.retain();
 						
 					read = true;
+					Marshal.WriteIntPtr(outError, IntPtr.Zero);
 				}
 				else
 				{

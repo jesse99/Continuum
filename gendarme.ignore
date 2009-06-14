@@ -180,6 +180,7 @@ A: continuum
 A: cs-parser
 A: cs-refactor
 A: directory-editor
+A: disassembler
 A: file-system
 A: find
 A: make-builder
@@ -198,6 +199,7 @@ A: continuum
 A: cs-parser
 A: cs-refactor
 A: directory-editor
+A: disassembler
 A: file-system
 A: find
 A: make-builder
@@ -288,6 +290,7 @@ A: continuum
 A: cs-parser
 A: cs-refactor
 A: directory-editor
+A: disassembler
 A: file-system
 A: find
 A: make-builder
@@ -342,6 +345,7 @@ A: continuum
 A: cs-parser
 A: cs-refactor
 A: directory-editor
+A: disassembler
 A: file-system
 A: find
 A: make-builder
@@ -467,7 +471,7 @@ T: CsRefactor.Script.ParserException
 T: CsRefactor.Script.ScannerException
 T: Shared.ScriptException
 
-# This rule is (almost always) lame.
+# These rules are (almost always) lame.
 R: Gendarme.Rules.Performance.ConsiderCustomAccessorsForNonVisibleEventsRule
 A: text-editor
 
@@ -480,6 +484,24 @@ A: cs-parser
 A: cs-refactor
 A: object-model
 A: shared
+
+R: Gendarme.Rules.Performance.AvoidMethodWithLargeMaximumStackSize
+A: app
+A: auto-complete
+A: build-errors
+A: continuum
+A: cs-parser
+A: cs-refactor
+A: directory-editor
+A: file-system
+A: find
+A: make-builder
+A: object-model
+A: shared
+A: svn
+A: styler
+A: text-editor
+A: transcript
 
 # This rule would be a lot nicer if it didn't fire for private methods.
 R: Gendarme.Rules.Maintainability.AvoidUnnecessarySpecializationRule
@@ -528,6 +550,8 @@ R: Gendarme.Rules.Naming.UseCorrectPrefixRule
 T: CsRefactor.Script.RefactorType/Binary`3
 T: CsRefactor.Script.RefactorType/Unary`2
 T: CsRefactor.Script.RefactorType/Binary`3
+T: Shared.UniqueIndexer`2
+T: Styler.CSharpDeclarations
 
 R: Gendarme.Rules.Performance.AvoidRepetitiveCastsRule
 M: System.Object CsRefactor.Script.ScriptType::DoAsk(CsRefactor.Script.Script,System.String,System.Object)

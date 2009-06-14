@@ -1,4 +1,5 @@
-# Adds ToString(string, IFormatProvider).
+# Adds ToString(), ToString(string), ToString(string, IFormatProvider) and the
+# IFormattable base.
 define Run()
 	if Scope is TypeDeclaration then
 		Process(Scope)
@@ -13,6 +14,7 @@ end
 
 define Process(type)
 	Globals.AddUsing("System")
+	type.AddBase("IFormattable")
 	
 	if not type.HasMember("ToString", []) then
 		type.AddMember(

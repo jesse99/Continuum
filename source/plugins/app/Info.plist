@@ -207,7 +207,7 @@
 	<string>????</string>
 	
 	<key>CFBundleVersion</key>
-	<string>${BUILDNUM}</string> 
+	<string>${BUILDNUM}</string>
 	
 	<key>NSAppleScriptEnabled</key>
 	<string>YES</string>

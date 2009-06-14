@@ -68,6 +68,8 @@ namespace Disassembler
 				m_assembly = AssemblyFactory.GetAssembly(path);
 				DoLoadSymbols(m_assembly);
 				DoGetNamespaces(m_assembly);
+				
+				Marshal.WriteIntPtr(outError, IntPtr.Zero);
 			}
 			catch (Exception e)
 			{

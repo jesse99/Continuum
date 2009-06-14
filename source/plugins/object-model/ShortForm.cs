@@ -731,10 +731,19 @@ namespace ObjectModel
 				}
 				
 				DoGetMethodModifiers(type, builder, method.Attributes);
+				
+				string name;
 				if (method.Name != "op_Implicit" && method.Name != "op_Explicit")
+				{
 					builder.Append(DoGetQualifiedTypeName(method.ReturnType.ReturnType, true));
-				string name = DoGetMethodName(method);
-				builder.AppendFormat(" {0}", name);
+					name = DoGetMethodName(method);
+					builder.AppendFormat(" {0}", name);
+				}
+				else
+				{
+					name = DoGetMethodName(method);
+					builder.AppendFormat(name);
+				}
 				if (method.HasGenericParameters)
 					DoGetGenericParams(builder, method.GenericParameters);
 				DoGetParams(builder, method);
@@ -1009,7 +1018,7 @@ namespace ObjectModel
 						builder.Append("override ");
 					else if ((attrs & MethodAttributes.Final) == 0)
 						builder.Append("virtual ");
-						
+				
 				if ((attrs & MethodAttributes.Final) == MethodAttributes.Final)
 					builder.Append("sealed ");
 			}

@@ -6,7 +6,7 @@
 	<keyword>\b(?:  __asm__ | __inline__ | __typeof__ | __unix__ | __vax__ | asm | inline | typeof | unix | vax)\b</keyword>	<!-- gcc -->
 	<keyword>\b(?:  NULL)\b</keyword>
 	<number>(?&lt;= \W) \d+ (?= \W)</number>
-	<preprocessor>\x23if | \x23ifdef | \x23ifndef | \x23else | \x23elif | \x23endif | \x23define | \x23undef | \x23warning | \x23error | \x23line | \x23pragma | \x23include</preprocessor>
+	<preprocessor>\x23ifdef | \x23ifndef | \x23if | \x23else | \x23elif | \x23endif | \x23define | \x23undef | \x23warning | \x23error | \x23line | \x23pragma | \x23include</preprocessor>
 	<string>&quot; (?: [^&quot;\r\n\\] | \\.)* &quot;</string>
 	<string>&apos; (?: [^&apos;\r\n\\] | \\.)* &apos;</string>
 </Language>
