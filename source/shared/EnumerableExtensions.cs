@@ -72,6 +72,6 @@ namespace Shared
 			
 			return "[" + string.Join(", ", items.ToArray()) + "]";
 		}
-	}
 #endif	// DEBUG
+	}
 }

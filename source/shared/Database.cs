@@ -199,7 +199,9 @@ namespace Shared
 			
 			m_name = name;
 			m_threadID = Thread.CurrentThread.ManagedThreadId;
+#if DEBUG
 			DoSaveThis(this);
+#endif
 			
 			OpenFlags flags = OpenFlags.READWRITE | OpenFlags.CREATE | OpenFlags.FULLMUTEX;
 			Error err = sqlite3_open_v2(path, out m_database, flags, IntPtr.Zero);
@@ -294,7 +296,9 @@ namespace Shared
 					{
 						Log.WriteLine(TraceLevel.Info, "Database", "Transactions deadlocked:");
 						m_command = string.Format("failed to acquire a lock for {0}, try {1} of {2}", name, i, MaxTries);
+#if DEBUG
 						DoDumpState(TraceLevel.Info);
+#endif
 						
 						Thread.Sleep(100);		// max commit time is 400 msecs on a fast machine
 					}
@@ -302,7 +306,9 @@ namespace Shared
 					{
 						Log.WriteLine(TraceLevel.Error, "Database", "Transactions deadlocked:");
 						m_command = "failed to acquire a lock for " + name;
+#if DEBUG
 						DoDumpState(TraceLevel.Error);
+#endif
 						throw;
 					}
 				}
@@ -570,7 +576,7 @@ namespace Shared
 			return -1;
 		}
 		
-		[Conditional("DEBUG")]
+#if DEBUG
 		private static void DoDumpState(TraceLevel level)
 		{
 			lock (ms_mutex)
@@ -591,7 +597,6 @@ namespace Shared
 			}
 		}
 		
-		[Conditional("DEBUG")]
 		private static void DoSaveThis(Database db)
 		{
 			lock (ms_mutex)
@@ -599,6 +604,7 @@ namespace Shared
 				ms_connections.Add(new WeakReference(db));
 			}
 		}
+#endif
 		#endregion
 		
 		#region P/Invokes

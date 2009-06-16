@@ -25,22 +25,14 @@ ReferenceEquals used with value type
 select declaring_root_name,return_type_name from Methods where name = 'get_BaseTypes';
 sudo fs_usage -f filesys
 
+* Should be able to add an assembly even if the mdb file doesn't match (eg building mobjc's
+   sample app as release).
+* Make Database log category a warning again.
+* The below is opened as a file:
+	<http://code.google.com/p/mobjc/w/list>
+* Also the below should not open anything:
+	Dict
 * Release checklist:
-	- make sure text editor boss goes away (after forcing a GC)
-	- make sure text objects go away
-	- make sure auto complete objects go away
-	- make sure directory editor boss goes away
-	- make sure directory objects go away
-	- run continuum with no prefs
-	- run continuum with no databases (including the windows db)
-	- run continuum with no Continuum Files dir
-	- review generated config log categories
-	- look at memory usage
-	- run unit tests in debug
-	- run unit tests in release
-	- make sure untitled docs work OK
-	- review config file
-	- run from the finder
 	- review tar targets
 	- use svn log -r 1:HEAD > CHANGE_LOG
 	- update CHANGES file
@@ -48,17 +40,16 @@ sudo fs_usage -f filesys
 	- upload the new binary
 	- build a new foreshadow
 
+* Might want to log memory and NSObject highwater marks.
 * Review thread safety
 * Look at other editors, eg TextMate, VS Expess.
-* Add some better support to mobj for leak detection. Maybe record (an optional?)
-   stack trace with each new-ed NSObject.
 * Short form should have doc comments:
 	- arg completion window should have param and typeparam comments
 	- style these
 	- maybe use an html view, could have links to/from summary form and remarks
 * Auto-complete table should have comments too.
 * Look into iron python.
-*Add a general svn command. Something like:
+* Add a general svn command. Something like:
 	- floating window
 	- left side has a directory view showing directory items and revision numbers
 	- need to watch the root
@@ -439,15 +430,14 @@ sudo fs_usage -f filesys
 	- update generated config file logging categories
 	- update the version number
 	- delete build_num
-	- make sure text editor boss goes away (after forcing a GC)
-	- make sure text objects go away
+	- make sure text objects go away (after forcing a GC)
+	- make sure text editor boss goes away
 	- make sure auto complete objects go away
-	- make sure directory editor boss goes away
 	- make sure directory objects go away
+	- make sure directory editor boss goes away
 	- run continuum with no prefs
 	- run continuum with no databases (including the windows db)
 	- run continuum with no Continuum Files dir
-	- review generated config log categories
 	- look at memory usage
 	- run unit tests in debug
 	- run unit tests in release

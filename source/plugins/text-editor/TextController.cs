@@ -390,7 +390,7 @@ namespace TextEditor
 			// we get a crash when Cocoa tries to call our delegate.
 			m_textView.Value.layoutManager().setDelegate(null);
 			
-			autorelease();
+			window().autorelease();
 			NSApplication.sharedApplication().BeginInvoke(	// we only want to broadcast this once the window actually closed, but we don't get a notification for that...
 				() => Broadcaster.Invoke("closed document window", m_boss), TimeSpan.FromMilliseconds(250));
 		}

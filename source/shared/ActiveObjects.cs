@@ -52,6 +52,6 @@ namespace Shared
 		}
 		
 		private static WeakList<object> ms_objects = new WeakList<object>(32);
-	}
 #endif
+	}
 }

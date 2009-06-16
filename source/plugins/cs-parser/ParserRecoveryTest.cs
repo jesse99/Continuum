@@ -46,7 +46,11 @@ namespace CsParser
 			string name = "Good";
 			Assert.IsTrue(globals.Classes.Length > 0, "no classes");
 			Assert.IsTrue(globals.Classes[0].Methods.Length > 0, "no methods");
+#if DEBUG
 			Assert.IsTrue(globals.Classes[0].Methods.SingleOrDefault(m => m.Name == name) != null, string.Format("didn't find {0} in {1}", name, globals.Classes[0].Methods.ToDebugString()));
+#else
+			Assert.IsTrue(globals.Classes[0].Methods.SingleOrDefault(m => m.Name == name) != null);
+#endif
 		}
 		
 		[TestFixtureSetUp]

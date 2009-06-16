@@ -445,11 +445,13 @@ namespace AutoComplete
 		{
 			Profile.Start("AutoComplete::DoGetNamespacesNamed");
 			var items = new List<Item>(m_database.GetNamespaces(name));
-			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "db namespaces: {0}", items.ToDebugString());
 			
 			string[] names = m_parses.FindNamespaces(name);
+#if DEBUG
+			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "db namespaces: {0}", items.ToDebugString());
 			Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "parsed namespaces: {0}", names.ToDebugString());
-			
+#endif
+						
 			foreach (string n in names)
 			{
 				var item = new NameItem(n, name + '.' + n, name + " types");

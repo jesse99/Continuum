@@ -62,6 +62,7 @@ namespace TextEditor
 		{
 			m_controller = new TextController();
 			addWindowController(m_controller);
+			m_controller.autorelease();
 			
 			DoResetURL(fileURL());
 			m_controller.OnPathChanged();
