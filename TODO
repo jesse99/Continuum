@@ -25,13 +25,13 @@ ReferenceEquals used with value type
 select declaring_root_name,return_type_name from Methods where name = 'get_BaseTypes';
 sudo fs_usage -f filesys
 
-* Should be able to add an assembly even if the mdb file doesn't match (eg building mobjc's
-   sample app as release).
-* Make Database log category a warning again.
 * The below is opened as a file:
 	<http://code.google.com/p/mobjc/w/list>
 * Also the below should not open anything:
 	Dict
+*  <AppKit/NSResponder.h>
+* Make sure open selection checklist works.
+* Do a checkin.
 * Release checklist:
 	- review tar targets
 	- use svn log -r 1:HEAD > CHANGE_LOG

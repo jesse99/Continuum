@@ -114,6 +114,10 @@ namespace Shared
 					{
 						// mdb file is missing
 					}
+					catch (FormatException)
+					{
+						// mdb file is invalid or doesn't match the assembly
+					}
 					
 					m_loadedSymbols = true;
 				}

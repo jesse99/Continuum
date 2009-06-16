@@ -102,31 +102,42 @@ namespace TextEditor
 		
 		private bool DoOpenFile(string text, int loc, int len)
 		{
-			string name = text.Substring(loc, len);
+			string path = text.Substring(loc, len);
 			int line = -1, col = -1;
 			DoGetLineAndCol(text, loc, len, ref line, ref col);
-			Log.WriteLine(TraceLevel.Verbose, "Open Selection", "trying path '{0}'", name);
+			Log.WriteLine(TraceLevel.Verbose, "Open Selection", "trying path '{0}'", path);
 			
 			bool found = false;
 			
-			if (!found)
-				found = DoOpenAbsolutePath(name, line, col);
-			
-			if (!found)
-				found = DoOpenRelativePath(name, line, col);
-			
-			if (!found)
+			// We don't want to try paths like "//code.google.com/p/mobjc/w/list" because
+			// we'll find "/Developer/SDKs/MacOSX10.5.sdk/usr/include/c++/4.0.0/list".
+			if (!path.StartsWith("//"))
 			{
-				name = System.IO.Path.GetFileName(name);
+				if (!found)
+					found = DoOpenAbsolutePath(path, line, col);
 				
-				Boss boss = ObjectModel.Create("FileSystem");
-				var fs = boss.Get<IFileSystem>();
-				string[] candidates = fs.LocatePath("/" + name);
+				if (!found)
+					found = DoOpenRelativePath(path, line, col);
 				
-				if (candidates.Length > 0)
-					found = DoOpenLocalPath(candidates, name, line, col) || DoOpenGlobalPath(candidates, name, line, col);
-				else
-					Log.WriteLine(TraceLevel.Verbose, "Open Selection", "open using locate failed (no candidates)");
+				if (!found)
+				{
+					string name = System.IO.Path.GetFileName(path);
+					
+					Boss boss = ObjectModel.Create("FileSystem");
+					var fs = boss.Get<IFileSystem>();
+					var candidates = new List<string>(fs.LocatePath("/" + name));
+					
+					// This isn't as tight a test as we would like, but I don't think we can
+					// do much better because of links. For example, <AppKit/NSResponder.h>
+					// maps to a path like:
+					//  "/System/Library/Frameworks/AppKit.framework/Versions/C/Headers/NSResponder.h".
+					candidates.RemoveAll(c => System.IO.Path.GetFileName(path) != name);
+					
+					if (candidates.Count > 0)
+						found = DoOpenLocalPath(candidates.ToArray(), name, line, col) || DoOpenGlobalPath(candidates.ToArray(), name, line, col);
+					else
+						Log.WriteLine(TraceLevel.Verbose, "Open Selection", "open using locate failed (no candidates)");
+				}
 			}
 			
 			return found;
@@ -343,6 +354,7 @@ namespace TextEditor
 							{
 								if (System.IO.File.Exists(path))
 								{
+									Log.WriteLine(TraceLevel.Verbose, "Open Selection", "found preferred '{0}'", path);
 									paths.Add(path);
 									break;
 								}

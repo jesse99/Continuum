@@ -20,7 +20,7 @@ source-files := bin/$(exe-name)-sources
 
 # assembly 
 source/AssemblyVersion.cs: build_num
-	@./gen_version.sh $(version) source/AssemblyVersion.cs
+	@mgen_version.sh $(version) source/AssemblyVersion.cs
 
 $(source-files): source/continuum/*.cs source/AssemblyVersion.cs
 	@echo "$^" > $@
