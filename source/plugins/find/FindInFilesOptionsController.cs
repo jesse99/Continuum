@@ -22,7 +22,6 @@
 using Gear.Helpers;
 using MCocoa;
 using MObjc;
-//using Shared;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -33,7 +32,7 @@ namespace Find
 	internal sealed class FindInFilesOptionsController : NSWindowController
 	{
 		public FindInFilesOptionsController(FindInFilesController find) : base(NSObject.AllocAndInitInstance("FindInFilesOptionsController"))
-		{		
+		{
 			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("find-in-files-options"), this);
 			m_find = find;
 			
@@ -41,23 +40,21 @@ namespace Find
 			this.willChangeValueForKey(NSString.Create("canRemove"));
 			m_canRemove.Value = NSNumber.Create(true);
 			this.didChangeValueForKey(NSString.Create("canRemove"));
-
+			
 			m_dirsTable = new IBOutlet<NSTableView>(this, "dirsTable");
 			m_dirsTable.Value.setDelegate(this);
-
+			
 			Unused.Value = window().setFrameAutosaveName(NSString.Create("find in files options panel"));
 		}
-											
+		
 		public void addDir(NSObject sender)
 		{
-			Unused.Value = sender;
-			
-			NSOpenPanel panel = NSOpenPanel.openPanel();	
+			NSOpenPanel panel = NSOpenPanel.openPanel();
 			panel.setCanChooseFiles(false);
 			panel.setCanChooseDirectories(true);
 			panel.setAllowsMultipleSelection(true);
 			panel.setCanCreateDirectories(false);
-
+			
 			int result = panel.runModalForDirectory_file_types(null, null, null);
 			if (result == Enums.NSOKButton && panel.filenames().count() > 0)
 			{
@@ -65,7 +62,7 @@ namespace Find
 				
 				NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
 				dirs.addObjectsFromArray(defaults.arrayForKey(NSString.Create("default find directories")));
-
+				
 				foreach (NSString path in panel.filenames())
 				{
 					if (!dirs.containsObject(path))
@@ -75,34 +72,30 @@ namespace Find
 				defaults.setObject_forKey(dirs, NSString.Create("default find directories"));
 				m_find.AddDefaultDirs();
 			}
-		}								
-									
+		}
+		
 		public void removeDirs(NSObject sender)
 		{
-			Unused.Value = sender;
-
 			NSIndexSet selections = m_dirsTable.Value.selectedRowIndexes();
-			NSMutableArray dirs = NSMutableArray.Create();			
+			NSMutableArray dirs = NSMutableArray.Create();
 			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
 			dirs.addObjectsFromArray(defaults.arrayForKey(NSString.Create("default find directories")));
-
+			
 			dirs.removeObjectsAtIndexes(selections);
 			defaults.setObject_forKey(dirs, NSString.Create("default find directories"));
 		}
-									
+		
 		public void restoreDefaults(NSObject sender)
 		{
-			Unused.Value = sender;
-			
 			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
-
+			
 			NSMutableArray dirs = NSMutableArray.Create();
 			foreach (string path in Startup.DefaultDirs)
 			{
 				dirs.addObject(NSString.Create(path));
 			}
 			defaults.setObject_forKey(dirs, NSString.Create("default find directories"));
-
+			
 			defaults.setObject_forKey(NSString.Create(Startup.DefaultInclude), NSString.Create("default include glob"));
 			defaults.setObject_forKey(NSString.Create(Startup.AlwaysExclude), NSString.Create("always exclude globs"));
 		}
@@ -112,20 +105,18 @@ namespace Find
 		// http://www.cocoadev.com/index.pl?NSTableView
 		public void tableViewSelectionDidChange(NSNotification notification)
 		{
-			Unused.Value = notification;
-			
 			this.willChangeValueForKey(NSString.Create("canRemove"));
-
+			
 			NSIndexSet selections = m_dirsTable.Value.selectedRowIndexes();
 			m_canRemove.Value = NSNumber.Create(selections.count() > 0);
-
+			
 			this.didChangeValueForKey(NSString.Create("canRemove"));
 		}
 		
 		public bool validateUserInterfaceItem(NSObject item)
 		{
 			Selector sel = (Selector) item.Call("action");
-
+			
 			bool valid = false;
 			if (sel.Name == "removeDirs:")
 			{
@@ -136,15 +127,15 @@ namespace Find
 			{
 				valid = true;
 			}
-			else if (SuperCall("respondsToSelector:", new Selector("validateUserInterfaceItem:")).To<bool>())
+			else if (SuperCall(NSWindowController.Class, "respondsToSelector:", new Selector("validateUserInterfaceItem:")).To<bool>())
 			{
-				valid = SuperCall("validateUserInterfaceItem:", item).To<bool>();
+				valid = SuperCall(NSWindowController.Class, "validateUserInterfaceItem:", item).To<bool>();
 			}
 			
 			return valid;
 		}
-
-		#region Fields --------------------------------------------------------
+		
+		#region Fields
 		private FindInFilesController m_find;
 		private IBOutlet<NSTableView> m_dirsTable;
 		private IBOutlet<NSNumber> m_canRemove;

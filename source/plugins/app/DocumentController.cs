@@ -37,7 +37,7 @@ namespace App
 		{
 			openPanel.setTreatsFilePackagesAsDirectories(true);
 			
-			return SuperCall("runModalOpenPanel:forTypes:", openPanel, types).To<int>();
+			return SuperCall(NSDocumentController.Class, "runModalOpenPanel:forTypes:", openPanel, types).To<int>();
 		}
 	}
 }

@@ -76,11 +76,11 @@ namespace TextEditor
 			if ((e.modifierFlags() & Enums.NSAlternateKeyMask) != 0)
 			{
 				DoBuildUsingNamesOrder();
-				SuperCall("mouseDown:", e);
+				SuperCall(NSPopUpButton.Class, "mouseDown:", e);
 				DoBuildUsingOffsetsOrder();
 			}
 			else
-				SuperCall("mouseDown:", e);
+				SuperCall(NSPopUpButton.Class, "mouseDown:", e);
 		}
 		
 		public void textSelectionChanged()

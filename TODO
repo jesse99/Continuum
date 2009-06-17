@@ -25,13 +25,21 @@ ReferenceEquals used with value type
 select declaring_root_name,return_type_name from Methods where name = 'get_BaseTypes';
 sudo fs_usage -f filesys
 
-* The below is opened as a file:
-	<http://code.google.com/p/mobjc/w/list>
-* Also the below should not open anything:
-	Dict
-*  <AppKit/NSResponder.h>
-* Make sure open selection checklist works.
-* Do a checkin.
+* Double clicking on error window doesn't work.
+* Exception:
+Managed exception: Void doubleClicked(MCocoa.NSOutlineView)
+System.Reflection.TargetInvocationException: Exception has been thrown by the target of an invocation. ---> System.NullReferenceException: Object reference not set to an instance of an object
+  at Disassembler.DisassembleExtensions.DoAppendBody (System.Text.StringBuilder builder, Mono.Cecil.MethodDefinition method) [0x00023] in /Users/jessejones/Source/Continuum/source/plugins/disassembler/DisassembleExtensions.cs:228 
+  at Disassembler.DisassembleExtensions.DoAppendMethod (System.Text.StringBuilder builder, Mono.Cecil.MethodDefinition method) [0x00012] in /Users/jessejones/Source/Continuum/source/plugins/disassembler/DisassembleExtensions.cs:191 
+  at Disassembler.DisassembleExtensions.Disassemble (Mono.Cecil.MethodDefinition method) [0x00006] in /Users/jessejones/Source/Continuum/source/plugins/disassembler/DisassembleExtensions.cs:80 
+  at Disassembler.MethodItem.GetText () [0x00000] in /Users/jessejones/Source/Continuum/source/plugins/disassembler/AssemblyItems.cs:303 
+  at Disassembler.AssemblyController.DoOpen (Disassembler.AssemblyItem item) [0x00000] in /Users/jessejones/Source/Continuum/source/plugins/disassembler/AssemblyController.cs:234 
+  at Disassembler.AssemblyController.doubleClicked (MCocoa.NSOutlineView sender) [0x0002b] in /Users/jessejones/Source/Continuum/source/plugins/disassembler/AssemblyController.cs:67 
+  at (wrapper managed-to-native) System.Reflection.MonoMethod:InternalInvoke (object,object[],System.Exception&)
+  at System.Reflection.MonoMethod.Invoke (System.Object obj, BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x00057] in /private/tmp/monobuild/build/BUILD/mono-2.4/mcs/class/corlib/System.Reflection/MonoMethod.cs:159 
+  --- End of inner exception stack trace ---
+  at System.Reflection.MonoMethod.Invoke (System.Object obj, BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x00071] in /private/tmp/monobuild/build/BUILD/mono-2.4/mcs/class/corlib/System.Reflection/MonoMethod.cs:169 
+* Think the SuperCall 0.6 dissassembly is wrong?
 * Release checklist:
 	- review tar targets
 	- use svn log -r 1:HEAD > CHANGE_LOG

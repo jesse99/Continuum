@@ -46,7 +46,7 @@ namespace TextEditor
 		// to make room for some widgets next to the horz scroller.
 		public new void tile()
 		{
-			SuperCall("tile");
+			SuperCall(NSScrollView.Class, "tile");
 			
 			NSScroller horzScroller = horizontalScroller();
 			NSRect horzFrame = horzScroller.frame();

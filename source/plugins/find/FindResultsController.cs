@@ -97,7 +97,7 @@ namespace Find
 			if (evt.keyCode() == 36)
 				DoOpenSelection();
 			else
-				Unused.Value = SuperCall("keyDown:", evt);
+				Unused.Value = SuperCall(NSWindowController.Class, "keyDown:", evt);
 		}
 		
 		public int outlineView_numberOfChildrenOfItem(NSOutlineView table, NSObject item)

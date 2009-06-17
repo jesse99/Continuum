@@ -739,9 +739,9 @@ namespace TextEditor
 			{
 				valid = true;
 			}
-			else if (SuperCall("respondsToSelector:", new Selector("validateUserInterfaceItem:")).To<bool>())
+			else if (SuperCall(NSWindowController.Class, "respondsToSelector:", new Selector("validateUserInterfaceItem:")).To<bool>())
 			{
-				valid = SuperCall("validateUserInterfaceItem:", item).To<bool>();
+				valid = SuperCall(NSWindowController.Class, "validateUserInterfaceItem:", item).To<bool>();
 			}
 			
 			return valid;

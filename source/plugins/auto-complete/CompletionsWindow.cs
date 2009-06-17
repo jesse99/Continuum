@@ -57,11 +57,11 @@ namespace AutoComplete
 		
 		public new void setFrame_display(NSRect frame, bool display)
 		{
-			this.SuperCall("setFrame:display:", frame, display);
+			this.SuperCall(NSWindow.Class, "setFrame:display:", frame, display);
 			NSRect current = this.frame();
 			NSRect constrained = DoConstrainToScreen(current);
 			if (constrained != current)
-				this.SuperCall("setFrame:display:", constrained, display);
+				this.SuperCall(NSWindow.Class, "setFrame:display:", constrained, display);
 		}
 		
 		#region Private Methods

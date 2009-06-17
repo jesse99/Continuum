@@ -222,7 +222,7 @@ namespace AutoComplete
 			}
 			else
 			{
-				Unused.Value = SuperCall("keyDown:", evt);
+				Unused.Value = SuperCall(NSTableView.Class, "keyDown:", evt);
 			}
 		}
 		

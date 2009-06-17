@@ -449,10 +449,6 @@ fi
 			{
 				enabled = true;
 			}
-			else if (SuperCall("respondsToSelector:", new Selector("validateUserInterfaceItem")).To<bool>())
-			{
-				enabled = SuperCall("validateUserInterfaceItem:", sender).To<bool>();
-			}
 			
 			return enabled;
 		}

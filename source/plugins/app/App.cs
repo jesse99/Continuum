@@ -37,7 +37,7 @@ namespace App
 		
 		public new void addWindowsItem_title_filename(NSWindow window, NSString title, bool isFileName)
 		{
-			Unused.Value = SuperCall("addWindowsItem:title:filename:", window, title, isFileName);
+			Unused.Value = SuperCall(NSApplication.Class, "addWindowsItem:title:filename:", window, title, isFileName);
 			
 			// Make directory windows bold.
 			NSObject controller = window.windowController();
@@ -99,7 +99,7 @@ namespace App
 		
 		public new void updateWindowsItem(NSWindow window)
 		{
-			Unused.Value = SuperCall("updateWindowsItem:", window);
+			Unused.Value = SuperCall(NSApplication.Class, "updateWindowsItem:", window);
 			
 			NSWindowController controller = window.windowController();
 			NSObject obj = controller;

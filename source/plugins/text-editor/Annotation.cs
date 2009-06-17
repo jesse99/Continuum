@@ -142,7 +142,7 @@ namespace TextEditor
 		// so that we can still use IB to set our window up.
 		public new NSWindow initWithContentRect_styleMask_backing_defer(NSRect contentRect, uint style, uint backing, bool defer)
 		{
-			NSWindow result = SuperCall("initWithContentRect:styleMask:backing:defer:",
+			NSWindow result = SuperCall(NSView.Class, "initWithContentRect:styleMask:backing:defer:",
 				NSRect.Empty, (uint) Enums.NSBorderlessWindowMask, (uint) Enums.NSBackingStoreBuffered, false).To<NSWindow>();
 			
 			result.setAcceptsMouseMovedEvents(true);
@@ -230,9 +230,9 @@ namespace TextEditor
 			{
 				valid = true;
 			}
-			else if (SuperCall("respondsToSelector:", new Selector("validateUserInterfaceItem:")).To<bool>())
+			else if (SuperCall(NSView.Class, "respondsToSelector:", new Selector("validateUserInterfaceItem:")).To<bool>())
 			{
-				valid = SuperCall("validateUserInterfaceItem:", item).To<bool>();
+				valid = SuperCall(NSView.Class, "validateUserInterfaceItem:", item).To<bool>();
 			}
 			
 			return valid;
@@ -359,7 +359,7 @@ namespace TextEditor
 		public new void mouseDown(NSEvent theEvent)
 		{
 			m_text.showFindIndicatorForRange(Anchor);
-			SuperCall("mouseDown:", theEvent);
+			SuperCall(NSView.Class, "mouseDown:", theEvent);
 		}
 		
 		public new void mouseUp(NSEvent theEvent)
@@ -371,7 +371,7 @@ namespace TextEditor
 				NSRect baseFrame = DoGetFrame(currentFrame.size);
 				m_offset = currentFrame.origin - baseFrame.origin;
 			
-				SuperCall("mouseUp:", theEvent);
+				SuperCall(NSView.Class, "mouseUp:", theEvent);
 			}
 			else
 			{

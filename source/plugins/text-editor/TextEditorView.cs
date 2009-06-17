@@ -96,7 +96,7 @@ namespace TextEditor
 				}
 				
 				// Default key processing.
-				Unused.Value = SuperCall("keyDown:", evt);
+				Unused.Value = SuperCall(NSTextView.Class, "keyDown:", evt);
 				
 				// For up and down arrow in the whitespace at the start of a line
 				// we want to set the insertion point to the start of the line (this
@@ -142,7 +142,7 @@ namespace TextEditor
 			}
 			
 			if (!done)
-				SuperCall("mouseDown:", evt);
+				SuperCall(NSTextView.Class, "mouseDown:", evt);
 		}
 #endif
 		
@@ -168,9 +168,9 @@ namespace TextEditor
 				item.Call("setState:", m_entries[i].State);
 				valid = m_entries[i].Handler != null;
 			}
-			else if (SuperCall("respondsToSelector:", new Selector("validateUserInterfaceItem:")).To<bool>())
+			else if (SuperCall(NSTextView.Class, "respondsToSelector:", new Selector("validateUserInterfaceItem:")).To<bool>())
 			{
-				valid = SuperCall("validateUserInterfaceItem:", item).To<bool>();
+				valid = SuperCall(NSTextView.Class, "validateUserInterfaceItem:", item).To<bool>();
 			}
 			
 			return valid;

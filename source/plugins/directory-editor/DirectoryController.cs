@@ -315,9 +315,9 @@ namespace DirectoryEditor
 			{
 				enabled = true;
 			}
-			else if (SuperCall("respondsToSelector:", new Selector("validateUserInterfaceItem:")).To<bool>())
+			else if (SuperCall(NSWindowController.Class, "respondsToSelector:", new Selector("validateUserInterfaceItem:")).To<bool>())
 			{
-				enabled = SuperCall("validateUserInterfaceItem:", sender).To<bool>();
+				enabled = SuperCall(NSWindowController.Class, "validateUserInterfaceItem:", sender).To<bool>();
 			}
 			
 			return enabled;
@@ -333,7 +333,7 @@ namespace DirectoryEditor
 			if (evt.keyCode() == 36)
 				DoOpenSelection();
 			else
-				Unused.Value = SuperCall("keyDown:", evt);
+				Unused.Value = SuperCall(NSWindowController.Class, "keyDown:", evt);
 		}
 		
 		public int outlineView_numberOfChildrenOfItem(NSOutlineView table, TableItem item)

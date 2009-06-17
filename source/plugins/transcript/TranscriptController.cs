@@ -89,9 +89,9 @@ namespace Transcript
 			{
 				return true;
 			}
-			else if (SuperCall("respondsToSelector:", new Selector("validateMenuItem:")).To<bool>())
+			else if (SuperCall(NSWindowController.Class, "respondsToSelector:", new Selector("validateMenuItem:")).To<bool>())
 			{
-				return SuperCall("validateMenuItem:", item).To<bool>();
+				return SuperCall(NSWindowController.Class, "validateMenuItem:", item).To<bool>();
 			}
 			
 			return false;

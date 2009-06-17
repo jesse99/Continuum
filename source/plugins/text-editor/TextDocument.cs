@@ -258,7 +258,7 @@ namespace TextEditor
 		// This is called every time the document is saved...
 		public new void setFileURL(NSURL url)
 		{
-			Unused.Value = SuperCall("setFileURL:", url);
+			Unused.Value = SuperCall(NSDocument.Class, "setFileURL:", url);
 			
 			if (m_controller != null && url != m_url)
 			{
