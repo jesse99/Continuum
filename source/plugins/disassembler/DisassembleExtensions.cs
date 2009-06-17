@@ -225,7 +225,7 @@ namespace Disassembler
 			
 			// The tab stops in the disassembly are unusual so the source code looks better
 			// if we get rid of tabs.
-			for (int i = 0; i < source.Length; ++i)
+			for (int i = 0; source != null && i < source.Length; ++i)
 			{
 				source[i] = source[i].Replace("\t", "    ");
 			}

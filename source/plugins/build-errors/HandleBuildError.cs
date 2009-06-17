@@ -186,7 +186,9 @@ namespace BuildErrors
 			var editor = edit.Boss.Get<ITextEditor>();
 			string path = editor.Path;
 			
-			if (path != null)
+			// Need the user edit check so that re-opening the file doesn't
+			// hose our line numbers.
+			if (path != null && edit.UserEdit)
 			{
 				foreach (BuildError error in m_errors)
 				{
@@ -211,9 +213,9 @@ namespace BuildErrors
 			try
 			{
 				string[] dirs = Directory.GetDirectories(root);
-				foreach (string dir in dirs)		
+				foreach (string dir in dirs)	
 				{
-					if (Path.GetFileName(dir)[0] != '.') 
+					if (Path.GetFileName(dir)[0] != '.')
 					{
 						string candidate = Path.Combine(dir, path);
 						if (File.Exists(candidate))
@@ -245,5 +247,5 @@ namespace BuildErrors
 		private int m_current;
 		private ErrorsController m_controller;
 		#endregion
-	} 
+	}
 }
