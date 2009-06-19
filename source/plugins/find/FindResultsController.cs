@@ -215,7 +215,10 @@ namespace Find
 				if (m_find.ProcessedCount >= m_find.FileCount)
 				{
 					int numMatches = m_finds.Aggregate(0, (total, next) => total + next.Length);
-					window().setTitle(NSString.Create("{0} has {1} matches.", m_find.Title, numMatches));
+					if (numMatches == 1)
+						window().setTitle(NSString.Create("{0} has one match.", m_find.Title));
+					else
+						window().setTitle(NSString.Create("{0} has {1} matches.", m_find.Title, numMatches));
 				}
 				else
 				{

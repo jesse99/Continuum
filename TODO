@@ -34,6 +34,11 @@ sudo fs_usage -f filesys
 	- upload the new binary
 	- build a new foreshadow
 
+* Odd things can happen when case differs in file paths. Should things like WindowDatabase
+   normalize path casing? An example is a make file which uses a line like Source/*.cs where
+   the case of Source does not match the file system. If there are errors in a source file then
+   the window jumps around a bit and double clicking the error window doesn't work.
+   - what if the file system is case sensitive?
 * Might want to log memory and NSObject highwater marks.
 * Review thread safety
 * Look at other editors, eg TextMate, VS Expess.
