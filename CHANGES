@@ -1,3 +1,84 @@
+Version 0.5 (r226)
+
+* Added support for building via nant.
+* Added support for disassembling assemblies. You can dissasemble entire assemblies by
+   opening them using the Open command or disassemble a type/methid using the context 
+   menu. Note that the disassembly is much nicer than monodis. Among other things it is color 
+   coded, nests exception handlers, and includes the source file in comments (if the assembly 
+   has an mdb file).
+* Added Open as Binary command.
+* Added support for viewing files in Time Machine. This is done by choosing Find in Time
+   Machine using the context menu which will open the latest version of the file from Time
+   Machine. Older versions can also be opened using the context menu on the files from
+   within Time Machine.
+* Added a Save To command.
+* Added a text document info window which allows line ending, format, encoding, and language
+   to be viewed and changed.
+* Text files can now be optionally word wrapped.
+* Added support for decoding utf-32.
+* Added a Reverse Lines script.
+* Added a Look Up in Dictionary command (which will use Wikipedia as well as the built-in
+   dictionary).
+* Added support for styling the m4 and css languages.
+* Added svn cat to the context menu.
+* Improved the directory window:
+   - It's now a lot more efficient for very large directory trees.
+   - Directories are no longer collapsed when an item underneath them changes.
+   - The selection is managed a lot better as the directories change.
+   - Assemblies now default to being drawn in red.
+* Improved auto-complete:
+   - Fixed two crashes for files with no using directives.
+   - The right members are now shown if System.Enum is being completed (as opposed 
+   to an enum type).
+   - Auto-completing the base keyword will now show protected members.
+   - Fixed completion for var variables which use as expressions.
+   - Improved auto-complete chaining for methods which return arrays.
+   - Events now auto-complete.
+   - Double tab now completes "new xxx" where xxx is the stem of an aliased type.
+   - Auto-completion inside nested classes wasn't finding locals and arguments.
+   - Auto-complete was not finding nested class names.
+* Improved show short form:
+   - Enums are now special cased so they look a lot nicer.
+   - Attributes are now included for types and members.
+   - Operators now have their own section.
+   - Moved static members to the end.
+   - Types which are both asbtract and sealed are now shown as static.
+* Improved the Open Selection command:
+   - It will now popup a dialog allowing you to select the paths you want to open if there
+   are more than two possibilities (instead of opening up to ten and beeping if there are
+   more than ten).
+   - The text is now trimmed before the command tries to open it.
+   - Try to open files before urls (we didn't always get errors when trying to open bogus urls).
+   - It now does a better job finding files with the locate command when some of the
+   files it returns no longer exist.
+* Type names in type declarations now default to being styled with a cool shadow.
+* Rewrote the language element styler so that it's more responsive and reliable.
+* Renamed "Find on Apple" "Search in Apple".
+* Renamed "Find on MSDN" "Search in MSDN".
+* Tab stops defaults to 18 instead of 20.
+* Changed the window name used with svn blame, cat, diff, and log.
+* Edited find results were not being dimmed when the edit happened.
+* Dirty files were not always being saved correctly before make was run. This was because
+   of undo coalescing in the document.
+* The match entire words find option now works much better if the search text does not 
+   start or end with a letter
+* Made *.svn-blame and *.svn-log plain text.
+* Zero length text files were not being opened correctly.
+* Fixed a bug which sometimes caused infinite loops if preprocessor directives were
+   embedded in verbatim strings.
+* Text style button titles weren't always updating when the text attributes changed.
+* Open file for types/members now works a bit better when some of the types/members
+   have no associated path (e.g. we couldn't find an mdb file for some assemblies).
+* Make windows the main window on right clicks so the context commands don't get confused.
+* Renamed Add Formatted ToString refactor Implement IFormattable and changed
+   it so it adds the IFormattable base if it is not already present.
+* Fixed regexen for C and Obejctive-C so #ifdef is styled correctly.
+* Type database no longer aborts processing assemblies when the assemblies mdb file doesn't
+   match the assembly.
+* Updated the default makefile target ignore list.
+* Conversion operators are now named using the type instead of "<conversion>" so that
+   they now work properly with syntax hiliting.
+   
 Version 0.4 (r156)
 
 * (Mostly) implemented auto-complete.

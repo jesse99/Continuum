@@ -2216,3 +2216,1078 @@ Index: source/plugins/auto-complete/AutoComplete.cs
 
 
 ------------------------------------------------------------------------
+r156 | jesjones@mindspring.com | 2009-05-03 20:35:09 -0700 (Sun, 03 May 2009) | 30 lines
+
+Index: README
+* Added some verbiage about auto-complete and known issues.
+
+Index: CHANGES
+Index: CHANGE_LOG
+* Added.
+
+Index: rules.xml
+* Removed (it was only there to allow the smells rules to be used, but they don't seem
+  very useful).
+  
+Index: source/plugins/cs-parser/Scanner.cs
+* Whitespace also starts with a '#'.
+
+Index: source/plugins/app/AppDelegate.cs
+* dumpBosses should not print abstract bosses.
+
+Index: source/plugins/app/Application.cs
+* mono-root searching wasn't quite right.
+
+Index: source/plugins/text-editor/TextDocument.cs
+* Made a log verbose.
+
+Index: source/plugins/auto-complete/ResolveMembers.cs
+* Fix for unit tests.
+
+Index: Makefile
+* Incremented version.
+* Updated tar targets.
+
+------------------------------------------------------------------------
+r157 | jesjones@mindspring.com | 2009-05-05 16:35:21 -0700 (Tue, 05 May 2009) | 8 lines
+
+Index: source/shared/CsHelpers.cs
+Index: source/plugins/app/Refactors.cs
+* Fixed a couple of null access exceptions (which didn't really cause any harm) when
+   trying to enable the refactor window with untitled windows.
+   
+Index: CHANGES
+* Tweaked.
+
+------------------------------------------------------------------------
+r158 | jesjones@mindspring.com | 2009-05-06 15:03:46 -0700 (Wed, 06 May 2009) | 7 lines
+
+* Comented out 'using Shared;' from a lot of files.
+* Added 'using Gear.Helpers;' to many files.
+* Removed the Contract class (use the Gear or Mobjc helpers version).
+* Removed the Unused class (use the Gear or Mobjc helpers version).
+* Added a custom SafeTimer delegate so that we can add a threading attribute to it.
+* Fixed the gendarme make target.
+
+------------------------------------------------------------------------
+r159 | jesjones@mindspring.com | 2009-05-07 08:30:29 -0700 (Thu, 07 May 2009) | 20 lines
+
+Index: source/plugins/object-model/Populate.cs
+Index: source/plugins/object-model/ParseAssembly.cs
+Index: source/shared/DirectoryWatcher.cs
+Index: source/shared/StringExtensions.cs
+Index: source/shared/CsHelpers.cs
+Index: source/shared/Tuple.cs
+Index: source/shared/SafeTimer.cs
+Index: source/shared/Log.cs
+Index: source/shared/AssemblyCache.cs
+Index: source/shared/Database.cs
+Index: source/plugins/object-model/StringExtensions.cs
+Index: source/plugins/object-model/DatabaseExtensions.cs
+Index: source/plugins/object-model/IParseAssembly.cs
+Index: source/plugins/object-model/CecilExtensions.cs
+* Started documenting the threading model supported by the code using a custom
+   attribute.
+
+Index: gendarme.ignore
+* Disabled a bunch more defects/rules.
+
+------------------------------------------------------------------------
+r160 | jesjones@mindspring.com | 2009-05-07 11:13:10 -0700 (Thu, 07 May 2009) | 3 lines
+
+Fixed two auto-complete crashes for files with no using directives.
+
+
+------------------------------------------------------------------------
+r161 | jesjones@mindspring.com | 2009-05-07 18:39:28 -0700 (Thu, 07 May 2009) | 3 lines
+
+Continued adding threading attributes to the code.
+
+
+------------------------------------------------------------------------
+r162 | jesjones@mindspring.com | 2009-05-07 22:31:07 -0700 (Thu, 07 May 2009) | 3 lines
+
+More work on adding threading attributes.
+
+
+------------------------------------------------------------------------
+r163 | jesjones@mindspring.com | 2009-05-08 17:26:44 -0700 (Fri, 08 May 2009) | 3 lines
+
+More thread model work.
+
+
+------------------------------------------------------------------------
+r164 | jesjones@mindspring.com | 2009-05-08 19:53:44 -0700 (Fri, 08 May 2009) | 3 lines
+
+More thread model work.
+
+
+------------------------------------------------------------------------
+r165 | jesjones@mindspring.com | 2009-05-09 09:55:26 -0700 (Sat, 09 May 2009) | 3 lines
+
+Finally got all the threaded code decorated.
+
+
+------------------------------------------------------------------------
+r166 | jesjones@mindspring.com | 2009-05-09 16:27:29 -0700 (Sat, 09 May 2009) | 14 lines
+
+Index: source/plugins/find/FindResultsController.cs
+Index: source/plugins/find/FindAll.cs
+* Edited find results were not being dimmed when the edit happened.
+
+Index: source/plugins/text-editor/TextController.cs
+Index: source/plugins/build-errors/HandleBuildError.cs
+Index: source/shared/TextEdit.cs
+* There is now one edit broadcast instead of two and it uses a custom class to
+   contain the edit info instead of a lame tuple.
+   
+Index: source/plugins/find/BaseFindInFiles.cs
+* Removed some obsolete comments.
+
+
+------------------------------------------------------------------------
+r167 | jesjones@mindspring.com | 2009-05-10 22:51:53 -0700 (Sun, 10 May 2009) | 5 lines
+
+* Reworking the way style runs and parses are handled. Instead of thread safe interfaces
+   allowing you to get the cached data they are now computed on the fly within a thread
+   and then the data is broadcast using the main thread.
+* Started rewriting AppleStyles so that it's simpler, more responsive and hopefully more reliable.
+
+------------------------------------------------------------------------
+r168 | jesjones@mindspring.com | 2009-05-10 22:59:35 -0700 (Sun, 10 May 2009) | 3 lines
+
+Removed obsolete files.
+
+
+------------------------------------------------------------------------
+r169 | jesjones@mindspring.com | 2009-05-11 09:51:24 -0700 (Mon, 11 May 2009) | 16 lines
+
+Index: source/plugins/cs-parser/Parses.cs
+* Removed the check for a newer edit before broadcasting (screws things up when we
+  re-open files).
+  
+Index: source/plugins/styler/ComputeRegexStyles.cs
+Index: source/plugins/styler/ComputeParseStyles.cs
+Index: source/plugins/text-editor/ApplyStyles.cs
+Index: source/plugins/text-editor/CurrentStyles.cs
+Index: source/shared/interfaces/IStyler.cs
+* StyleRuns can now be updated using an IStyles interface on the language boss.
+* For C# files there is now one computed styles broadcast instead of two.
+
+Index: source/plugins/styler/Bosses.xml
+* Language bosses are now singletons.
+
+
+------------------------------------------------------------------------
+r170 | jesjones@mindspring.com | 2009-05-11 09:53:15 -0700 (Mon, 11 May 2009) | 3 lines
+
+Renamed a file.
+
+
+------------------------------------------------------------------------
+r171 | jesjones@mindspring.com | 2009-05-11 10:48:24 -0700 (Mon, 11 May 2009) | 18 lines
+
+Index: source/plugins/styler/ComputeRegexStyles.cs
+Index: source/plugins/styler/RegexLanguage.cs
+Index: source/plugins/styler/CSharpStyler.cs
+Index: source/plugins/styler/Language.cs
+Index: source/plugins/styler/CSharpLanguage.cs
+Index: source/plugins/styler/Whitespace.cs
+Index: source/plugins/styler/IStyleWith.cs
+Index: source/shared/interfaces/IParses.cs
+Index: source/shared/interfaces/IWhitespace.cs
+Index: source/plugins/cs-parser/Parses.cs
+* Added ThreadModel attributes to some code that needed it. Removed it from a few 
+   places where it is no longer needed.
+
+Index: source/shared/InterfaceExtensions.cs
+Index: gendarme.ignore
+* Added a SafeBoss IInterface extension for threaded code.
+
+
+------------------------------------------------------------------------
+r172 | jesjones@mindspring.com | 2009-05-11 16:09:29 -0700 (Mon, 11 May 2009) | 3 lines
+
+Declarations popup is now only rebuilt if the declarations changed.
+
+
+------------------------------------------------------------------------
+r173 | jesjones@mindspring.com | 2009-05-11 16:16:31 -0700 (Mon, 11 May 2009) | 3 lines
+
+Re-used Shared namespace so the unit tests work again.
+
+
+------------------------------------------------------------------------
+r174 | jesjones@mindspring.com | 2009-05-11 18:12:24 -0700 (Mon, 11 May 2009) | 13 lines
+
+Index: source/plugins/cs-parser/Scanner.cs
+Index: source/plugins/cs-parser/ScannerTest.cs
+* Added some asserts to ensure that the scan progresses.
+* Fixed scanning of preprocessor directives (it was trying to scan these in verbatim
+   strings which soemtimes lead to infinite loops).
+   
+Index: source/plugins/cs-parser/Parser.cs
+* Added some asserts to ensure that the parse progresses.
+
+Index: source/plugins/transcript/Transcript.cs
+* Flushing now happens in no longer than 250 msecs.
+
+
+------------------------------------------------------------------------
+r175 | jesjones@mindspring.com | 2009-05-11 20:50:18 -0700 (Mon, 11 May 2009) | 14 lines
+
+Index: source/plugins/text-editor/TextController.cs
+Index: source/plugins/text-editor/ApplyStyles.cs
+Index: source/plugins/text-editor/CurrentStyles.cs
+* Re-apply paragraph styles after text is reset.
+* Fix ShowLine so that it works when styles haven't been applied yet.
+
+Index: source/plugins/text-editor/DeclarationsPopup.cs
+* Save the new declarations even if they compare the same so we get the new offsets.
+
+Index: source/plugins/text-editor/FactoryPrefs.cs
+* Type style defaults to using a shadow.
+* Tab stops defaults to 18 instead of 20.
+
+
+------------------------------------------------------------------------
+r176 | jesjones@mindspring.com | 2009-05-11 21:52:50 -0700 (Mon, 11 May 2009) | 22 lines
+
+Index: source/plugins/app/PreferencesController.cs
+* Button titles are now updated when the attributes change.
+
+Index: source/plugins/auto-complete/CompletionsTable.cs
+* Need to show System.Enum methods if we're completing System.Enum (as opposed
+   to an enum type).
+   
+Index: source/plugins/object-model/FindInDatabase.cs
+* Get more method candidates so we work better when most of the candidates have no path
+   (e.g. Invoke).
+   
+Index: source/plugins/text-editor/DeclarationsPopup.cs
+* Save the declarations even if the edit doesn't match the controller (it should still
+   be more up to date than what we had).
+   
+Index: source/plugins/transcript/Transcript.cs
+* Don't buffer command output.
+
+Index: Tables.txt
+* Updated some out of date language.
+
+
+------------------------------------------------------------------------
+r177 | jesjones@mindspring.com | 2009-05-12 10:11:11 -0700 (Tue, 12 May 2009) | 3 lines
+
+Whitespace.
+
+
+------------------------------------------------------------------------
+r178 | jesjones@mindspring.com | 2009-05-12 18:26:38 -0700 (Tue, 12 May 2009) | 49 lines
+
+Index: source/plugins/text-editor/ShowSpaces.cs
+Index: source/plugins/text-editor/WindowDatabase.cs
+* Added support for word wrapping files.
+
+Index: source/plugins/app/MainMenu.nib/keyedobjects.nib
+Index: source/plugins/app/MainMenu.nib/designable.nib
+Index: source/plugins/app/Spelling.cs
+Index: source/plugins/app/App.cs
+* Added "Look Up in Dictionary" command.
+ 
+Index: source/plugins/object-model/ShortForm.cs
+* Special cases enums.
+* Operators are now in their own section.
+* Static methods are now at the end.
+
+Index: source/plugins/text-editor/TextEditorView.cs
+* Special case delete of a new line at the start of a blank line so the whitespace is not
+   added to the previous line.
+
+Index: source/plugins/directory-editor/GenericBuilder.cs
+Index: source/plugins/text-editor/Editor.cs
+* Build command no longer does a sleep after saving dirty files. Instead we now call
+   breakUndoCoalescing after saveDocument which I think is the real fix.
+   
+Index: source/plugins/find/Re.cs
+* Match entire words now works better if the search text does not start or end with a letter.
+
+Index: source/plugins/cs-parser/Parser.cs
+Index: source/plugins/cs-parser/ParserTest.cs
+* Conversion operators are now named using the type instead of "<conversion>" so that
+   they now work properly with syntax hiliting.
+   
+Index: source/plugins/app/FindOnSites.cs
+* Renamed "Find on Apple" "Search in Apple".
+* Renamed "Find on MSDN" "Search in MSDN".
+
+Index: source/plugins/styler/RegexDeclarations.cs
+Index: source/plugins/styler/ComputeRegexStyles.cs
+Index: source/plugins/styler/CSharpStyler.cs
+Index: source/shared/StyleRuns.cs
+* Regex styler no longer broadcasts for c# code.
+
+Index: source/plugins/text-editor/TextController.cs
+* ShowSelection now works if the styles haven't been applied yet.
+
+Index: source/plugins/text-editor/ApplyStyles.cs
+Index: source/plugins/text-editor/CurrentStyles.cs
+* Optimized clearing old styles a bit.
+
+------------------------------------------------------------------------
+r179 | jesjones@mindspring.com | 2009-05-13 07:15:55 -0700 (Wed, 13 May 2009) | 3 lines
+
+Converted Tables.txt to an rtf file.
+
+
+------------------------------------------------------------------------
+r180 | jesjones@mindspring.com | 2009-05-13 07:28:22 -0700 (Wed, 13 May 2009) | 3 lines
+
+Reformatted Tables.rtf.
+
+
+------------------------------------------------------------------------
+r181 | jesjones@mindspring.com | 2009-05-13 09:54:53 -0700 (Wed, 13 May 2009) | 11 lines
+
+Index: source/plugins/app/MainMenu.nib/keyedobjects.nib
+Index: source/plugins/app/MainMenu.nib/designable.nib
+* Added Save To command.
+
+Index: source/plugins/text-editor/ShowSpaces.cs
+* Add word wrap command even if StylesWhitespace is false.
+
+Index: source/plugins/text-editor/TextController.cs
+* Added magic sizeToFit call so toggling word wrap works reliably.
+
+
+------------------------------------------------------------------------
+r182 | jesjones@mindspring.com | 2009-05-17 08:31:47 -0700 (Sun, 17 May 2009) | 34 lines
+
+Index: source/plugins/app/MainMenu.nib/keyedobjects.nib
+Index: source/plugins/app/MainMenu.nib/designable.nib
+Index: source/plugins/app/TimeMachine.cs
+Index: source/plugins/app/Bosses.xml
+Index: source/plugins/app/TimeMachineWindowTitle.cs
+* Added support for viewing files in Time Machine.
+
+Index: source/shared/interfaces/IDocumentWindowTitle.cs
+Index: source/plugins/text-editor/TextController.cs
+* Added IDocumentWindowTitle.
+
+Index: source/plugins/text-editor/DeclarationsPopup.cs
+* Fixed a null deref for untitled windows.
+
+Index: source/shared/interfaces/ITextContextCommands.cs
+Index: source/plugins/text-editor/TextEditorView.cs
+* Context menu items can now be disabled and checked.
+
+Index: source/shared/MultiIndex.cs
+Index: source/shared/Indexer.cs
+* Added MultiIndex class.
+
+Index: source/shared/Sccs.cs
+Index: source/shared/CsHelpers.cs
+Index: source/plugins/build-errors/HandleBuildError.cs
+Index: source/plugins/text-editor/CanOpen.cs
+Index: source/plugins/directory-editor/DirectoryController.cs
+Index: source/plugins/directory-editor/GenericBuilder.cs
+Index: source/plugins/object-model/Populate.cs
+Index: source/plugins/app/Application.cs
+Index: source/plugins/app/AppDelegate.cs
+* Updated for Gear changes.
+
+
+------------------------------------------------------------------------
+r183 | jesjones@mindspring.com | 2009-05-17 16:35:48 -0700 (Sun, 17 May 2009) | 28 lines
+
+Index: source/plugins/object-model/ShortForm.cs
+* Fixed the lookup of bound generic base types.
+* Now gets members of base interfaces.
+
+Index: source/plugins/text-editor/TextController.cs
+Index: source/plugins/text-editor/ShowSpaces.cs
+Index: source/plugins/app/MainMenu.nib/designable.nib
+Index: source/plugins/app/MainMenu.nib/keyedobjects.nib
+* Renamed "Wrap Words" menu items "Wrap Lines".
+
+Index: source/plugins/text-editor/text-editor.nib/keyedobjects.nib
+Index: source/plugins/text-editor/text-editor.nib/designable.nib
+* Made the default text window a bit wider.
+
+Index: source/plugins/text-editor/CurrentStyles.cs
+* Fixed an off by one error that rarely caused the first changed run to not be applied.
+* Don't apply runs if we're stopped.
+
+Index: source/plugins/text-editor/TextEditorView.cs
+* Remove duplicate separators from the context menu.
+
+Index: source/plugins/auto-complete/TargetDatabase.cs
+* Fixed another sql syntax error for files with no namespace directives.
+
+Index: source/plugins/auto-complete/AutoComplete.cs
+* Speed up (non-complete) tab key handling.
+
+
+------------------------------------------------------------------------
+r184 | jesjones@mindspring.com | 2009-05-17 18:32:48 -0700 (Sun, 17 May 2009) | 7 lines
+
+Index: source/plugins/auto-complete/ResolveExpr.cs
+Index: source/plugins/auto-complete/ResolveName.cs
+Index: source/plugins/auto-complete/ResolveType.cs
+* Auto-completion inside nested classes wasn't finding locals and arguments.
+* Auto-complete was not finding nested class names.
+
+
+------------------------------------------------------------------------
+r185 | jesjones@mindspring.com | 2009-05-17 22:51:52 -0700 (Sun, 17 May 2009) | 19 lines
+
+Index: source/plugins/styler/languages/Globs.xml
+* Made *.svn-blame and *.svn-log plain text.
+
+Index: source/plugins/svn/SvnTextCommands.cs
+* Added svn cat to the context menu.
+
+Index: source/plugins/svn/Svn.cs
+* Changed the window name used with svn blame, cat, diff, and log.
+
+Index: source/plugins/directory-editor/DirectoryController.cs
+* Fixed a null deref exception (which was trapped by cocoa).
+
+Index: source/plugins/text-editor/TextEditorView.cs
+* Fixed an indexing error in some new code.
+
+Index: source/plugins/auto-complete/ResolveType.cs
+* Context can be null.
+
+
+------------------------------------------------------------------------
+r186 | jesjones@mindspring.com | 2009-05-18 13:41:08 -0700 (Mon, 18 May 2009) | 30 lines
+
+Index: source/plugins/disassembler/AssemblyInfo.cs
+Index: source/plugins/disassembler/AssemblyDocument.cs
+Index: source/plugins/disassembler/AssemblyItem.cs
+Index: source/plugins/disassembler/Plugin.cs
+Index: source/plugins/disassembler/disassembler.nib/keyedobjects.nib
+Index: source/plugins/disassembler/disassembler.nib/designable.nib
+Index: source/plugins/disassembler/AssemblyItems.cs
+Index: source/plugins/disassembler/AssemblyController.cs
+Index: source/plugins/disassembler/CanOpen.cs
+Index: source/plugins/disassembler/module.mk
+Index: source/plugins/disassembler/Bosses.xml
+Index: source/plugins/app/Info.plist
+* Started adding support for disassembling assemblies.
+
+Index: source/shared/interfaces/ICanOpen.cs
+Index: source/plugins/app/Launcher.cs
+Index: source/plugins/text-editor/Bosses.xml
+* Made ICanOpen a repeated interface on the Application boss so that it works better
+   with additional document types.
+    
+Index: source/plugins/styler/Bosses.xml
+* RegexLanguage is no longer a singleton (it has some state that can't be shared across
+   documents).
+   
+Index: source/plugins/object-model/ShortForm.cs
+Index: source/plugins/object-model/ParseAssembly.cs
+Index: source/shared/CecilExtensions.cs
+* Added a GetParameterModifier extension method.
+
+
+------------------------------------------------------------------------
+r187 | jesjones@mindspring.com | 2009-05-18 18:34:36 -0700 (Mon, 18 May 2009) | 2 lines
+
+More work on disassembling.
+
+------------------------------------------------------------------------
+r188 | jesjones@mindspring.com | 2009-05-18 19:02:28 -0700 (Mon, 18 May 2009) | 4 lines
+
+Language files now support an optional initial_tab
+attribute to allow for column based languages like cil.
+
+
+------------------------------------------------------------------------
+r189 | jesjones@mindspring.com | 2009-05-18 20:50:10 -0700 (Mon, 18 May 2009) | 7 lines
+
+Index: source/plugins/disassembler/DisassembleExtensions.cs
+* Special case Instruction operands.
+
+Index: source/plugins/disassembler/AssemblyDocument.cs
+Index: source/plugins/disassembler/module.mk
+* Load the mdb file so we get local variable names.
+
+------------------------------------------------------------------------
+r190 | jesjones@mindspring.com | 2009-05-18 21:55:14 -0700 (Mon, 18 May 2009) | 8 lines
+
+Index: source/plugins/disassembler/DisassembleExtensions.cs
+* Disassembles exception handlers.
+ 
+Index: source/plugins/styler/languages/Cil.xml
+* Added exception handler keywords.
+* Fix number regex so it doesn't match !1 and `1.
+
+
+------------------------------------------------------------------------
+r191 | jesjones@mindspring.com | 2009-05-19 09:30:50 -0700 (Tue, 19 May 2009) | 13 lines
+
+Index: source/shared/interfaces/ILanguage.cs
+Index: source/plugins/styler/languages/Cil.xml
+Index: source/plugins/styler/languages/Language.schema
+Index: source/plugins/styler/CSharpLanguage.cs
+Index: source/plugins/styler/Language.cs
+Index: source/plugins/styler/RegexLanguage.cs
+Index: source/plugins/text-editor/TextController.cs
+Index: source/plugins/text-editor/ApplyStyles.cs
+* Replaced the initial_tab language attribute with tab stops.
+
+Index: source/plugins/disassembler/DisassembleExtensions.cs
+* Add an extra tab for short opcode names.
+
+------------------------------------------------------------------------
+r192 | jesjones@mindspring.com | 2009-05-19 10:34:17 -0700 (Tue, 19 May 2009) | 10 lines
+
+Index: source/plugins/disassembler/DisassembleExtensions.cs
+* Add attributes to the method.
+
+Index: source/plugins/disassembler/AssemblyController.cs
+* Use the label for the file name instead of the full name.
+
+Index: source/plugins/styler/languages/Cil.xml
+* Added a regex for the method name.
+
+
+------------------------------------------------------------------------
+r193 | jesjones@mindspring.com | 2009-05-19 12:48:43 -0700 (Tue, 19 May 2009) | 2 lines
+
+* Got types disassembling.
+
+------------------------------------------------------------------------
+r194 | jesjones@mindspring.com | 2009-05-19 21:41:50 -0700 (Tue, 19 May 2009) | 5 lines
+
+Index: source/plugins/disassembler/AssemblyDocument.cs
+Index: source/plugins/disassembler/AssemblyItems.cs
+Index: source/plugins/disassembler/AssemblyController.cs
+* Got the objects releasing correctly.
+
+------------------------------------------------------------------------
+r195 | jesjones@mindspring.com | 2009-05-20 10:37:04 -0700 (Wed, 20 May 2009) | 19 lines
+
+Index: source/plugins/disassembler/AssemblyItem.cs
+Index: source/plugins/disassembler/AssemblyItems.cs
+Index: source/plugins/disassembler/AssemblyController.cs
+Index: source/plugins/disassembler/AssemblyDocument.cs
+Index: source/plugins/app/MainMenu.nib/keyedobjects.nib
+Index: source/plugins/app/MainMenu.nib/designable.nib
+* Added Get Info support to disassembled assemblies, namspaces, types, and methods.
+
+Index: source/plugins/styler/languages/Info.xml
+Index: source/plugins/styler/languages/Globs.xml
+* Added.
+
+Index: source/plugins/disassembler/DisassembleExtensions.cs
+* Don't append "Attribute" to attributes.
+
+Index: source/shared/CecilExtensions.cs
+* Added CustomAttribute and SecurityDeclaration ToText methods.
+
+
+------------------------------------------------------------------------
+r196 | jesjones@mindspring.com | 2009-05-20 16:09:36 -0700 (Wed, 20 May 2009) | 6 lines
+
+Index: source/plugins/object-model/FindInDatabase.cs
+Index: source/plugins/object-model/IObjectModel.cs
+Index: source/plugins/object-model/Objects.cs
+* Handle clicking on cecil style method names (e.g. from disassemblies).
+
+
+------------------------------------------------------------------------
+r197 | jesjones@mindspring.com | 2009-05-20 17:52:13 -0700 (Wed, 20 May 2009) | 11 lines
+
+Index: source/plugins/disassembler/AssemblyDocument.cs
+Index: source/plugins/disassembler/AssemblyItem.cs
+Index: source/plugins/disassembler/AssemblyItems.cs
+Index: source/plugins/disassembler/AssemblyController.cs
+* Can now browse resources embedded in the disassembled assembly.
+
+Index: source/plugins/styler/languages/Binary.xml
+Index: source/plugins/styler/languages/Globs.xml
+* Added.
+
+
+------------------------------------------------------------------------
+r198 | jesjones@mindspring.com | 2009-05-21 07:13:47 -0700 (Thu, 21 May 2009) | 9 lines
+
+Index: source/plugins/disassembler/Bosses.xml
+Index: source/plugins/disassembler/ContextMenu.cs
+* Can now disassemble types and methods using the text context menu.
+
+Index: source/shared/interfaces/ITextContextCommands.cs
+Index: source/shared/interfaces/IParses.cs
+* Added some comments.
+
+
+------------------------------------------------------------------------
+r199 | jesjones@mindspring.com | 2009-05-21 09:39:13 -0700 (Thu, 21 May 2009) | 12 lines
+
+Index: source/plugins/styler/FactoryPrefs.cs
+Index: source/plugins/app/Application.cs
+* Fixed glob handling so we pickup on new globs added by Continuum (when the user
+   has edited the list).
+
+Index: source/plugins/app/TimeMachineWindowTitle.cs
+* Use minutes or seconds if the file in time machine has an age under one hour.
+
+Index: source/plugins/auto-complete/CompletionsTable.cs
+* Allow space to be used to complete names.
+
+
+------------------------------------------------------------------------
+r200 | jesjones@mindspring.com | 2009-05-21 15:59:09 -0700 (Thu, 21 May 2009) | 19 lines
+
+Index: source/plugins/app/AppDelegate.cs
+Index: source/plugins/app/MainMenu.nib/keyedobjects.nib
+Index: source/plugins/app/MainMenu.nib/designable.nib
+Index: source/plugins/app/Info.plist
+Index: source/plugins/directory-editor/DirectoryView.cs
+Index: source/plugins/text-editor/TextController.cs
+* Added Open as Binary command.
+
+Index: source/plugins/text-editor/TextDocument.cs
+* Prompt users before opening files over 512K.
+
+Index: source/plugins/disassembler/AssemblyItems.cs
+Index: source/shared/ByteArrayExtensions.cs
+* Binary viewer now uses unicode arrow symbols for new line return, and tab
+   characters instead of the replacement character.
+   
+Index: source/plugins/text-editor/TextEncoding.cs
+* Updated for mcocoa NSData changes.
+
+------------------------------------------------------------------------
+r201 | jesjones@mindspring.com | 2009-05-21 18:14:57 -0700 (Thu, 21 May 2009) | 10 lines
+
+Index: source/plugins/object-model/ShortForm.cs
+* Now includes attributes for types and members.
+
+Index: source/plugins/disassembler/DisassembleExtensions.cs
+Index: source/plugins/disassembler/AssemblyController.cs
+Index: source/shared/CecilExtensions.cs
+* Moved StructLayout goo into shared.
+* Attribute ToText methods now take an includeNamespace argument.
+
+
+------------------------------------------------------------------------
+r202 | jesjones@mindspring.com | 2009-05-22 15:57:17 -0700 (Fri, 22 May 2009) | 17 lines
+
+Index: source/plugins/directory-editor/DirectoryItem.cs
+Index: source/plugins/directory-editor/Editor.cs
+Index: source/plugins/directory-editor/TableItems.cs
+Index: source/plugins/directory-editor/DirectoryView.cs
+Index: source/plugins/directory-editor/TableItem.cs
+* Rewrote so that it only loads the items which are open.
+
+Index: source/plugins/directory-editor/directory-editor.nib/keyedobjects.nib
+Index: source/plugins/directory-editor/directory-editor.nib/designable.nib
+Index: source/plugins/directory-editor/DirectoryController.cs
+* Directories are no longer collapsed when an item underneath them changes.
+* Does a better job managing the current selection when directories or files change.
+
+Index: source/plugins/text-editor/TextEditorView.cs
+* Remove any separators at the very end of the menu.
+
+
+------------------------------------------------------------------------
+r203 | jesjones@mindspring.com | 2009-05-24 10:20:29 -0700 (Sun, 24 May 2009) | 35 lines
+
+Index: source/plugins/text-editor/TextDocument.cs
+Index: source/plugins/text-editor/module.mk
+Index: source/plugins/text-editor/TextController.cs
+Index: source/plugins/text-editor/ApplyStyles.cs
+Index: source/plugins/text-editor/text-info.nib/keyedobjects.nib
+Index: source/plugins/text-editor/text-info.nib/designable.nib
+Index: source/plugins/text-editor/CurrentStyles.cs
+Index: source/plugins/text-editor/TextEditorView.cs
+Index: source/plugins/text-editor/TextInfoController.cs
+* Added a text document info window which allows line ending, format, encoding, and language
+   to be viewed and changed.
+
+Index: source/plugins/text-editor/TextEncodingTest.cs
+Index: source/plugins/text-editor/TextEncoding.cs
+* BOM is no longer included in the text when decoding.
+* Added support for decoding urf-32.
+
+Index: source/plugins/cs-parser/Scanner.cs
+* Fixed check for windows line endings.
+
+Index: source/shared/interfaces/ILanguage.cs
+Index: source/plugins/styler/RegexLanguage.cs
+Index: source/plugins/styler/Language.cs
+Index: source/plugins/styler/CSharpLanguage.cs
+* Added FriendlyName getter.
+
+Index: source/shared/interfaces/IFindLanguage.cs
+Index: source/plugins/styler/FindLanguage.cs
+Index: source/plugins/styler/Languages.cs
+Index: source/plugins/text-editor/CanOpen.cs
+Index: source/shared/CsHelpers.cs
+* Renamed Find FindByExtension.
+* Added FindByFriendlyName and GetFriendlyNames.
+
+
+------------------------------------------------------------------------
+r204 | jesjones@mindspring.com | 2009-05-24 11:36:25 -0700 (Sun, 24 May 2009) | 17 lines
+
+Index: source/plugins/app/scripts/Reverse Lines.py
+* Added.
+
+Index: source/plugins/text-editor/TextController.cs
+* Trim the open selection dialog text before using it.
+
+Index: source/shared/ByteArrayExtensions.cs
+Index: source/plugins/styler/languages/Binary.xml
+* Tweaked layout.
+
+Index: source/plugins/object-model/FindInDatabase.cs
+* Don't add duplicate open file items.
+
+Index: source/plugins/directory-editor/DirectoryController.cs
+* Need a special case when reloading the root item.
+
+
+------------------------------------------------------------------------
+r205 | jesjones@mindspring.com | 2009-05-24 17:53:59 -0700 (Sun, 24 May 2009) | 12 lines
+
+Index: source/plugins/styler/languages/Cil.xml
+Index: source/plugins/disassembler/DisassembleExtensions.cs
+* Now includes source lines.
+
+Index: source/plugins/directory-editor/TableItem.cs
+* Rebuild name attributed string after changing prefs.
+
+Index: source/plugins/directory-editor/DirectoryController.cs
+* m_prefs needs to be an IBOutlet.
+
+
+
+------------------------------------------------------------------------
+r206 | jesjones@mindspring.com | 2009-05-25 16:54:24 -0700 (Mon, 25 May 2009) | 17 lines
+
+Index: source/plugins/text-editor/RestoreViewState.cs
+Index: source/plugins/text-editor/TextController.cs
+Index: source/plugins/text-editor/CurrentStyles.cs
+* Fixed a race between restoring the view and showing line/selection.
+
+Index: source/plugins/styler/languages/M4.xml
+Index: source/plugins/styler/languages/Globs.xml
+* Added.
+
+Index: source/plugins/directory-editor/Startup.cs
+* Updated the default makefile target ignore list.
+
+Index: source/plugins/styler/ComputeRegexStyles.cs
+* Check for null regex before trying to use it (which may happen if there was a syntax
+   error in the regex in the language xml file).
+   
+
+------------------------------------------------------------------------
+r207 | jesjones@mindspring.com | 2009-05-25 17:41:09 -0700 (Mon, 25 May 2009) | 4 lines
+
+Index: source/plugins/disassembler/ContextMenu.cs
+* Fixed a null deref when right clicking on a window which isn't main.
+
+
+------------------------------------------------------------------------
+r208 | jesjones@mindspring.com | 2009-05-27 08:00:17 -0700 (Wed, 27 May 2009) | 41 lines
+
+Index: source/plugins/nant-builder/AssemblyInfo.cs
+Index: source/plugins/nant-builder/nant-flags.nib/keyedobjects.nib
+Index: source/plugins/nant-builder/nant-flags.nib/designable.nib
+Index: source/plugins/nant-builder/Plugin.cs
+Index: source/plugins/nant-builder/Prefs.cs
+Index: source/plugins/nant-builder/CanBuild.cs
+Index: source/plugins/nant-builder/NantFlagsController.cs
+Index: source/plugins/nant-builder/Builder.cs
+Index: source/plugins/nant-builder/module.mk
+Index: source/plugins/nant-builder/Bosses.xml
+* Added support for building via nant.
+
+Index: source/plugins/directory-editor/GenericBuilder.cs
+* Pop up a picker if the directory has more than one build file.
+
+Index: source/plugins/styler/languages/Globs.xml
+* Added *.build to xml globs.
+
+Index: source/plugins/directory-editor/module.mk
+Index: source/plugins/directory-editor/Bosses.xml
+Index: source/plugins/directory-editor/ChangeBuildVariables.cs
+Index: source/plugins/make-builder/VariablesController.cs
+Index: source/plugins/make-builder/Variable.cs
+Index: source/plugins/make-builder/Builder.cs
+Index: source/plugins/make-builder/module.mk
+Index: source/plugins/make-builder/build-variables.nib/keyedobjects.nib
+Index: source/plugins/make-builder/build-variables.nib/designable.nib
+Index: source/plugins/make-builder/make-flags.nib/keyedobjects.nib
+Index: source/plugins/make-builder/make-flags.nib/designable.nib
+Index: source/shared/interfaces/IBuildVariables.cs
+* Moved the build variables dialog into directory-editor and added an interface to 
+   access it.
+ 
+Index: source/shared/get-item.nib/keyedobjects.nib
+Index: source/shared/get-item.nib/designable.nib
+Index: source/shared/module.mk
+Index: source/shared/GetItem.cs
+Index: source/shared/GetItemController.cs
+* Added.
+
+
+------------------------------------------------------------------------
+r209 | jesjones@mindspring.com | 2009-05-27 08:30:29 -0700 (Wed, 27 May 2009) | 10 lines
+
+Index: source/plugins/text-editor/OpenSelection.cs
+* Pops up a picker if there are more than two files to open (instead of beeping if there are
+   more than ten files).
+   
+Index: source/shared/GetItem.cs
+Index: source/shared/GetItemController.cs
+Index: source/plugins/directory-editor/GenericBuilder.cs
+* GetItem now has an AllowMultiple property.
+
+
+------------------------------------------------------------------------
+r210 | jesjones@mindspring.com | 2009-05-27 10:00:59 -0700 (Wed, 27 May 2009) | 6 lines
+
+Index: source/plugins/auto-complete/ResolvedTarget.cs
+Index: source/plugins/auto-complete/ResolveMembers.cs
+Index: source/plugins/auto-complete/ResolveName.cs
+* Added a lame special case to allow the base keyword to resolve protected members.
+
+
+------------------------------------------------------------------------
+r211 | jesjones@mindspring.com | 2009-06-07 18:14:33 -0700 (Sun, 07 Jun 2009) | 19 lines
+
+Index: source/plugins/styler/languages/Css.xml
+Index: source/plugins/styler/languages/Globs.xml
+* First cut at a css language.
+
+Index: source/plugins/directory-editor/GenericBuilder.cs
+* Broadcast "built target" if the return code is zero (instead of a zero return code and
+  no stderr output).
+  
+Index: source/plugins/object-model/Objects.cs
+* Made FindTypes a bit more robust for names that aren't actually types.
+
+Index: source/plugins/object-model/ParseAssembly.cs
+* Treat special return types as special again (will make the databases a bit larger but
+   it's needed to chain things like array return types).
+   
+Index: source/plugins/disassembler/DisassembleExtensions.cs
+* Ignore errors when trying to load the source file.
+
+
+------------------------------------------------------------------------
+r212 | jesjones@mindspring.com | 2009-06-07 18:33:28 -0700 (Sun, 07 Jun 2009) | 3 lines
+
+Updated for mcocoa/mobjc changes.
+
+
+------------------------------------------------------------------------
+r213 | jesjones@mindspring.com | 2009-06-07 19:05:54 -0700 (Sun, 07 Jun 2009) | 7 lines
+
+Index: source/plugins/text-editor/OpenSelection.cs
+* Does a better job handling files returned by the locate command which don't actually exist.
+
+Index: source/plugins/styler/languages/Globs.xml
+* Added *.xsd to the xml globs.
+
+
+------------------------------------------------------------------------
+r214 | jesjones@mindspring.com | 2009-06-07 21:54:01 -0700 (Sun, 07 Jun 2009) | 14 lines
+
+Index: source/shared/CecilExtensions.cs
+* ArgToString maps ints to enum field names.
+
+Index: source/plugins/object-model/ShortForm.cs
+* Enums now say enum instead of struct and show the backing type as the base
+   instead of Enum.
+   
+Index: source/plugins/text-editor/TextController.cs
+* Resets m_restorer when there is no language.
+
+Index: source/plugins/disassembler/DisassembleExtensions.cs
+* Replace tabs with spaces for the source lines.
+
+
+------------------------------------------------------------------------
+r215 | jesjones@mindspring.com | 2009-06-08 11:01:20 -0700 (Mon, 08 Jun 2009) | 13 lines
+
+Index: source/plugins/text-editor/TextDocument.cs
+* Don't fall down when reading zero length wrapped files.
+
+Index: source/plugins/text-editor/TextEncoding.cs
+* Don't fall down when decoding zero length files.
+
+Index: source/plugins/auto-complete/AutoComplete.cs
+* Trap exceptions.
+
+Index: source/plugins/styler/languages/Css.xml
+* Tweaked two of the regexen.
+
+
+------------------------------------------------------------------------
+r216 | jesjones@mindspring.com | 2009-06-08 12:01:14 -0700 (Mon, 08 Jun 2009) | 11 lines
+
+Index: source/plugins/text-editor/TextDocument.cs
+* Save now uses the fileType instead of the cached format so the popup in the save
+  dialog no longer is sometimes ignored.
+* Format setter now changes the fileType.
+
+Index: source/plugins/text-editor/TextInfoController.cs
+* Fixed for documents which are not on disk.
+
+Index: source/plugins/auto-complete/CompletionsTable.cs
+* Added a comment.
+
+------------------------------------------------------------------------
+r217 | jesjones@mindspring.com | 2009-06-08 14:56:52 -0700 (Mon, 08 Jun 2009) | 19 lines
+
+Index: source/plugins/directory-editor/DirPrefsController.cs
+Index: source/plugins/directory-editor/DirectoryItemStyler.cs
+Index: source/plugins/directory-editor/dir-prefs.nib/keyedobjects.nib
+Index: source/plugins/directory-editor/dir-prefs.nib/designable.nib
+* Assemblies now default to using a red color.
+* Added another line of file glob/colors to the directory pref dialog.
+
+Index: source/plugins/object-model/ShortForm.cs
+* Types which are both abstract and sealed are static classes.
+
+Index: source/plugins/text-editor/TextEditorView.cs
+* Select the window on right click (so ITextContextCommands use the right window).
+
+Index: source/plugins/auto-complete/ResolveName.cs
+* Fixed completion for var variables which use as expressions.
+
+Index: source/plugins/directory-editor/TableItem.cs
+* Need to reset m_name to null in OnDealloc.
+
+------------------------------------------------------------------------
+r218 | jesjones@mindspring.com | 2009-06-08 15:21:37 -0700 (Mon, 08 Jun 2009) | 4 lines
+
+Index: source/plugins/auto-complete/TargetDatabase.cs
+Index: source/plugins/auto-complete/ResolveMembers.cs
+* Events now auto-complete.
+
+------------------------------------------------------------------------
+r219 | jesjones@mindspring.com | 2009-06-08 21:18:33 -0700 (Mon, 08 Jun 2009) | 8 lines
+
+Index: source/plugins/directory-editor/TableItems.cs
+Index: source/plugins/directory-editor/DirectoryController.cs
+* Outline view again updates when ignored items changes.
+
+Index: source/plugins/auto-complete/AutoComplete.cs
+* Double tab now completes "new xxx" where xxx is the stem of an aliased type.
+
+
+------------------------------------------------------------------------
+r220 | jesjones@mindspring.com | 2009-06-14 16:51:41 -0700 (Sun, 14 Jun 2009) | 30 lines
+
+Index: source/plugins/text-editor/OpenSelection.cs
+* Check files before urls (since we get good error messages from trying to open
+missing files, but not always for bad urls).
+
+Index: source/plugins/app/refactors/Implement IFormattable.ref
+Index: source/plugins/app/refactors/Add Formatted ToString.ref
+* Renamed Add Formatted ToString refactor Implement IFormattable and changed
+it so it adds the IFormattable base if it is not already present.
+
+Index: source/plugins/styler/languages/C.xml
+* Reordered preprocessor regexen so #ifdef works properly.
+
+Index: BUILDING
+* Need to use a newer Mono.Cecil.dll than the one in mono 2.4 (and Mono.Cecil.Mdb
+is needed to).
+ 
+Index: source/plugins/object-model/ShortForm.cs
+* Got rid of an extra space in conversion operators.
+
+Index: source/plugins/text-editor/TextDocument.cs
+Index: source/plugins/disassembler/AssemblyDocument.cs
+* readFromData_ofType_error resets outError on success.
+
+Index: gendarme.ignore
+* More ignores.
+
+Index: Makefile
+* Incremented version number.
+* Added a few more log categories to the generated config file.
+
+------------------------------------------------------------------------
+r221 | jesjones@mindspring.com | 2009-06-16 06:48:05 -0700 (Tue, 16 Jun 2009) | 10 lines
+
+Index: source/shared/Database.cs
+Index: source/plugins/auto-complete/AutoComplete.cs
+Index: source/plugins/cs-parser/ParserRecoveryTest.cs
+* Compiles in release.
+
+Index: source/plugins/text-editor/text-editor.nib/keyedobjects.nib
+Index: source/plugins/text-editor/text-editor.nib/designable.nib
+* Removed an unused outlet.
+
+
+------------------------------------------------------------------------
+r222 | jesjones@mindspring.com | 2009-06-16 07:17:22 -0700 (Tue, 16 Jun 2009) | 17 lines
+
+Index: source/shared/AssemblyCache.cs
+* Don't abort processing an assembly if the mdb file doesn't match the assembly.
+
+Index: gen_version.sh
+Index: source/continuum/module.mk
+* Replaced gen_version.sh with the one installed by mobjc.
+
+Index: get_version.sh
+Index: Makefile
+* Replaced get_version.sh with the one installed by mobjc.
+
+Index: source/plugins/text-editor/OpenSelection.cs
+* Don't try to open //path paths as files.
+* Only use the file names from the locate command if the file name matches what
+   we looked for.
+   
+
+------------------------------------------------------------------------
+r223 | jesjones@mindspring.com | 2009-06-16 17:11:44 -0700 (Tue, 16 Jun 2009) | 2 lines
+
+* Updated for mobj changes.
+
+------------------------------------------------------------------------
+r224 | jesjones@mindspring.com | 2009-06-16 18:25:47 -0700 (Tue, 16 Jun 2009) | 7 lines
+
+Index: source/plugins/build-errors/HandleBuildError.cs
+* DoUpdateLines checks for user edits so that we don't modify line numbers
+   when re-opening files.
+   
+Index: source/plugins/disassembler/DisassembleExtensions.cs
+* Added check for null source lines.
+
+------------------------------------------------------------------------
+r225 | jesjones@mindspring.com | 2009-06-19 11:58:30 -0700 (Fri, 19 Jun 2009) | 10 lines
+
+Index: source/plugins/find/FindResultsController.cs
+* If there is one match then set the title to "one match" instead of "1 matches".
+
+Index: source/plugins/styler/languages/ObjectiveC.xml
+* Reorder regexen so #ifdef works properly.
+
+Index: source/plugins/text-editor/Annotation.cs
+* Fix SuperCalls so they use the right base class.
+
+
+------------------------------------------------------------------------
+r226 | jesjones@mindspring.com | 2009-06-22 09:38:28 -0700 (Mon, 22 Jun 2009) | 8 lines
+
+Index: source/plugins/directory-editor/Startup.cs
+* Added bin to default ignore target list.
+* Removed some targets from the list which are standard user targets per gnu.
+
+Index: Makefile
+* tar-bin no longer creates a tar file with a bin directory.
+* Updated tar-src target.
+
+------------------------------------------------------------------------
