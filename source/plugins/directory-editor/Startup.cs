@@ -72,10 +72,13 @@ namespace DirectoryEditor
 		
 		// These are the prefs associated with the app's preferences panel
 		// (DirectoryController handles the prefs associated with a directory).
-		private void DoInitPrefs(NSMutableDictionary dict)	
+		// Note that we don't include the standard user targets. See:
+		// http://www.gnu.org/software/automake/manual/standards/Standard-Targets.html#Standard-Targets
+		private void DoInitPrefs(NSMutableDictionary dict)
 		{
 			string ignores = @"all-am
 am--refresh
+bin
 check-am
 clean-am
 clean-generic
@@ -97,32 +100,22 @@ dist-zip
 distclean-hdr
 distclean-libtool
 dvi-am
-dvi
 extra-bin
 GTAGS
-html
 ID
 info-am
 install-am
 install-binSCRIPTS
 install-data-am
 install-data
-install-dvi
 install-exec-am
 install-exec
-install-html
-install-info
-install-man
-install-pdf
 install-pixmapDATA
-install-ps
-install-strip
 installcheck-am
 installdirs-am
 maintainer-clean-am
 maintainer-clean-generic
 maintainer-clean-recursive
-maintainer-clean
 Makefile
 mostlyclean-am
 mostlyclean-generic
@@ -132,7 +125,6 @@ push
 ps-am
 stamp-h1
 tags-recursive
-TAGS
 uninstall-am
 uninstall-binSCRIPTS
 uninstall-info-am
@@ -142,7 +134,7 @@ zip-bin";
 			dict.setObject_forKey(NSString.Create(ignores), NSString.Create("globalIgnores"));
 		}
 		#endregion
-	
+		
 		#region Fields 
 		private Boss m_boss;
 		#endregion

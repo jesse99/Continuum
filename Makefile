@@ -112,12 +112,14 @@ mini-clean:
 	-rm -rf bin/install-tool*
 	
 tar-bin: mini-clean app
+	@cp -R bin/Continuum.app Continuum.app
 	tar --create --compress --file=Continuum-$(version).tar.gz \
-		CHANGES README bin/Continuum.app
+		CHANGES README Continuum.app
+	@rm -rf Continuum.app
 
 tar-src:
 	tar --create --compress --exclude \*/.svn --exclude \*/.svn/\* --file=Continuum-src-$(version).tar.gz \
-		BUILDING CHANGES CHANGE_LOG Dictionary.txt GOALS MIT.X11 Makefile README Tables.txt gendarme.ignore install-tool.c make-foreshadow source
+		BUILDING CHANGES CHANGE_LOG Dictionary.txt GOALS MIT.X11 Makefile README Tables.rtf gendarme.ignore install-tool.c make-foreshadow source
 
 # Note that it's important to delete the config files so that we run with the same environment
 # as users.
