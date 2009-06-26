@@ -20,7 +20,6 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear.Helpers;
-//using Shared;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -38,13 +37,13 @@ namespace CsRefactor.Script
 		}
 		
 		public Context Context {get; private set;}
-
+		
 		public Method[] Methods {get; private set;}
 		
 		public RefactorCommand[] Evaluate(Context context)
-		{	
+		{
 			ScriptType.Instance.RegisterCustomMethods(context, Methods);
-						
+			
 			Context = context;
 			try
 			{
@@ -57,10 +56,10 @@ namespace CsRefactor.Script
 					object value = method.Evaluate(0, context, new object[0]);
 					context.TracingEnabled = Equals(value, true);
 				}
-
+				
 				method = Methods.First(m => m.Name == "Run");	// parser will ensure this exists
 				object result = method.Evaluate(0, context, new object[0]);
-
+				
 				if (result != null && !typeof(RefactorCommand).IsAssignableFrom(result.GetType()))
 					throw new EvaluateException(1, "Run should return null or an Edit, not {0}.", RefactorType.GetName(result.GetType()));
 			}
@@ -98,5 +97,5 @@ namespace CsRefactor.Script
 		}
 		
 		private List<string> m_saved = new List<string>();
-	} 
+	}
 }

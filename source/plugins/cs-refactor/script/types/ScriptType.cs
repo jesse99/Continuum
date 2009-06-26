@@ -89,6 +89,7 @@ namespace CsRefactor.Script
 			type.Register<Script, string, object>("Ask", this.DoAsk);
 			type.Register<Script>("get_HasSelection", this.DoGetHasSelection);
 			type.Register<Script>("get_Globals", this.DoGetGlobals);
+			type.Register<Script>("get_Selection", this.DoGetSelection);
 			type.Register<Script, string>("GetUniqueName", this.DoGetUniqueName);
 			type.Register<Script, string>("Indent", this.DoIndent);
 			type.Register<Script, string>("InsertAfterSelection", this.DoInsertAfterSelection);
@@ -146,6 +147,11 @@ namespace CsRefactor.Script
 		private object DoGetGlobals(Script script)
 		{
 			return script.Context.Globals;
+		}
+		
+		private object DoGetSelection(Script script)
+		{
+			return script.Context.Text.Substring(script.Context.SelStart, script.Context.SelLen);
 		}
 		
 		private CsDeclaration DoFindScope(CsDeclaration declaration, int offset)

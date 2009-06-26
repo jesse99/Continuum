@@ -1,9 +1,9 @@
 {\rtf1\ansi\ansicpg1252\cocoartf949\cocoasubrtf430
 {\fonttbl\f0\fnil\fcharset0 Verdana;}
 {\colortbl;\red255\green255\blue255;\red255\green255\blue177;\red0\green91\blue255;\red45\green148\blue76;
-\red242\green0\blue88;}
-\deftab400
-\pard\pardeftab400\ql\qnatural\pardirnatural
+\red4\green91\blue255;\red4\green91\blue255;\red242\green0\blue88;}
+\deftab360
+\pard\pardeftab360\ql\qnatural\pardirnatural
 
 \f0\b\fs36 \cf0 \cb2 I. Introduction
 \b0\fs28 \
@@ -46,7 +46,7 @@ Types are classes and may have methods, properties, and operators. Scripts may d
 \b0  : Declaration\
 Represents a .NET attribute declaration.\
 String \cf3 Arguments\cf0 	The arguments supplied to the attribute, e.g. "false". May be empty, but will not be null.\
-String \cf3 Name\cf0 			The attribute name, e.g. "CLSCompliant".\
+String \cf3 Name\cf0 				The attribute name, e.g. "CLSCompliant".\
 String \cf3 Target\cf0 			Name of the object the attribute applies to, e.g. "assembly". May be null.\
 \
 
@@ -130,7 +130,7 @@ Boolean \cf3 HasSetter\cf0 					\
 Sequence<Parameter> \cf3 Parameters\cf0 				\
 String \cf3 ReturnType\cf0 									E.g. "Dictionary<string,int>. Will not have whitespace.\
 String \cf3 SetterAccess\cf0 									If not null then this overrides the indexer access.\
-Sequence<Attribute> \cf3 SetterAttributes\cf0 		Null if there is no setter or it is abstract.\
+Sequence<Attribute> \cf3 SetterAttributes\cf0 	Null if there is no setter or it is abstract.\
 Body \cf3 SetterBody\cf0 										Null if there is no setter or it is abstract.\
 \
 
@@ -147,7 +147,7 @@ Edit \cf4 AddMemberAfter\cf0 (text)			It's an error to call this with a member s
 Edit \cf4 AddMemberBefore\cf0 (text)		It's an error to call this with a member signature that is already used by the type.\
 Sequence<Attribute> \cf3 Attributes\cf0 			\
 Edit \cf4 ChangeAccess\cf0 (access)			Change "public", "private", etc to a different value.\
-TypeDeclaration \cf3 DeclaringType\cf0 		The type the member is declared within. Will be null for delegates and enums declared in a namespace.\
+TypeDeclaration \cf3 DeclaringType\cf0 	The type the member is declared within. Will be null for delegates and enums declared in a namespace.\
 String \cf3 FullName\cf0 								\
 Boolean \cf3 IsAbstract\cf0 				\
 Boolean \cf3 IsConst\cf0 					\
@@ -185,7 +185,7 @@ Edit \cf4 AddUsing\cf0 (name)							Add a new using directive. No-op if the name
 Sequence<UsingAlias> \cf3 Aliases\cf0 				\
 Sequence<ExternAlias> \cf3 Externs\cf0 				\
 Boolean \cf3 TypeMatches\cf0 (type, name)		Returns true if the type matches the name (e.g. TypeMatches(field.Type, "System.IntPtr")). Note that this accounts for using directives, namespace aliases, and type aliases.  \
-String \cf3 Name\cf0 										E.g. "System.IO" or "<globals>".\
+String \cf3 Name\cf0 											E.g. "System.IO" or "<globals>".\
 Sequence<Namespace> \cf3 Namespaces\cf0 		\
 Sequence<UsingDirective> \cf3 Uses\cf0 					\
 \
@@ -203,7 +203,7 @@ Boolean operator \cf3 is\cf0 (value, name)		Returns true if value is or derives 
 Represents an operator declaration.\
 Body \cf3 Body\cf0 										Null if the operator has no body.\
 Boolean \cf3 IsConversion\cf0 								\
-Boolean \cf3 IsExplicit\cf0 							Returns true if the operator is an explicit conversion operator.\
+Boolean \cf3 IsExplicit\cf0 								Returns true if the operator is an explicit conversion operator.\
 Boolean \cf3 IsImplicit\cf0 							Returns true if the operator is an implicit conversion operator.\
 Sequence<Parameter> \cf3 Parameters\cf0 					\
 String \cf3 ReturnType\cf0 							Will not have whitespace.\
@@ -240,16 +240,17 @@ members:\
 Boolean \cf3 EnableTracing\cf0 					If this returns true method calls are written to stdout.\
 String \cf3 GetUniqueName\cf0 (name)		Creates a name that is unique within Scope.\
 GlobalNamespace \cf3 Globals\cf0 									\
-Boolean \cf4 HasSelection\cf0 					Returns true if the selection is not empty.\
-Edit \cf4 Indent\cf0 (tabs)						Insert zero or more tab characters to the start of each line which intersects the selection.\
+Boolean \cf5 HasSelection\cf0 					Returns true if the selection is not empty.\
+Edit \cf4 Indent\cf0 (tabs)							Insert zero or more tab characters to the start of each line which intersects the selection.\
 Edit \cf4 InsertAfterSelection\cf0 (text)		Inserts one or more lines after the last line in the selection.\
 Edit \cf4 InsertBeforeSelection\cf0 (text)	Inserts one or more lines before the first line in the selection.\
-Object \cf3 Ask\cf0 (prompt, default)\cf3 			\cf0 Pops up a dialog asking the user a question. Default may be a string or boolean.\
+Object \cf3 Ask\cf0 (prompt, default)\cf3 		\cf0 Pops up a dialog asking the user a question. Default may be a string or boolean.\
 Void \cf3 Raise\cf0 (message)					Abort the script with an error message.\
 Void \cf3 Run\cf0 ()									Entry point for scripts. Must be defined by all scripts.\
 Declaration \cf3 Scope\cf0 						The declaration the insertion point is within.\
+String \cf6 Selection\cf0 							Returns the selection.\
 Edit \cf3 Write\cf0 (o)\cf3 		\cf0 						Write an object to stdout.\
-Edit \cf3 WriteLine\cf0 (o)\cf3 	\cf0 					Writes an object and a new-line to stdout.\
+Edit \cf3 WriteLine\cf0 (o)\cf3 	\cf0 						Writes an object and a new-line to stdout.\
 \
 
 \b Sequence
@@ -258,12 +259,12 @@ Represents a list of values.\cf3 \
 \cf0 Boolean \cf3 Contains\cf0 (e)		Returns true if the sequence contains the specified element.\
 Object \cf3 Fifth\cf0 					Returns the object at index 4.\
 Object \cf3 First\cf0 					Returns the object at index 0.\
-Object \cf3 Fourth\cf0 					Returns the object at index 3.\
+Object \cf3 Fourth\cf0 				Returns the object at index 3.\
 Object \cf3 Head	\cf0 				Returns the first element of the sequence.\
-Boolean \cf3 IsEmpty\cf0 				Returns true if the sequence has no elements.\
+Boolean \cf3 IsEmpty\cf0 			Returns true if the sequence has no elements.\
 Object \cf3 Last	\cf0 				Returns the last object.\
 Object \cf3 Second\cf0 				Returns the object at index 1.\
-Sequence \cf3 Tail	\cf0 				Returns all but the first element of the sequence. Can be called on an empty sequence.\
+Sequence \cf3 Tail	\cf0 			Returns all but the first element of the sequence. Can be called on an empty sequence.\
 Object \cf3 Third\cf0 					Returns the object at index 2.\
 \
 
@@ -271,7 +272,7 @@ Object \cf3 Third\cf0 					Returns the object at index 2.\
 \b0  : Object\
 Represents a list of characters. \
 String operator \cf3 +\cf0 (rhs)				Concatenates a string and an arbitrary object.\
-Boolean \cf3 Contains\cf0 (s)				Returns true if the target contains the specified string.\
+Boolean \cf3 Contains\cf0 (s)					Returns true if the target contains the specified string.\
 Boolean \cf3 EndsWith\cf0 (s)				Returns true if the target ends with the specified string.\
 Boolean \cf3 IsEmpty\cf0 						Returns true if the string has no characters.\
 String \cf3 Join\cf0 (list)						Converts every element in the list to a string and concatenates them using the original string as a separator.\
@@ -293,12 +294,12 @@ Edit \cf4 AddMember\cf0 (text)						Adds a new method to the type. It's an error
 Sequence<Attribute> \cf3 Attributes\cf0 				\
 Sequence<String> \cf3 Bases\cf0 					E.g. ["IBar", "IFoo"].\
 String \cf3 Constraints\cf0 							E.g. "where KEY : new ()". May be null.\
-TypeDeclaration \cf3 DeclaringType\cf0 			The type this type is declared within. Will be null if the type is not a nested type.\
+TypeDeclaration \cf3 DeclaringType\cf0 		The type this type is declared within. Will be null if the type is not a nested type.\
 Sequence<Event> \cf3 Events\cf0 					\
 Sequence<Field> \cf3 Fields\cf0 									\
 String \cf3 FullName\cf0 								\
 String \cf3 GenericArguments\cf0 				E.g. "KEY,VALUE" Will not have whitespace and will be null if the method is not generic.\
-String \cf3 GetFieldName\cf0 (name)				Gets a unique field name. May add a prefix or suffix.\
+String \cf3 GetFieldName\cf0 (name)			Gets a unique field name. May add a prefix or suffix.\
 String \cf3 GetUniqueName\cf0 (name)			Creates a member name that is unique within type (but possibly not its base classes).\
 Boolean \cf3 HasMember\cf0 (name, types)	Returns true if the type has a member with the specified name and argument types (types should be a sequence of type name strings).\
 Sequence<Indexer> \cf3 Indexers\cf0 				\
@@ -308,7 +309,7 @@ Boolean \cf3 IsPartial\cf0 						\
 Boolean \cf3 IsPrivate\cf0 					\
 Boolean \cf3 IsProtected\cf0 					\
 Boolean \cf3 IsPublic\cf0 						\
-Boolean \cf3 IsSealed\cf0 							Returns true if the type is a struct or is decorated with the sealed keyword.\
+Boolean \cf3 IsSealed\cf0 								Returns true if the type is a struct or is decorated with the sealed keyword.\
 Boolean \cf3 IsStatic\cf0 						\
 Sequence <Member> \cf3 Members\cf0 				\
 Sequence <Method> \cf3 Methods\cf0 					\
@@ -352,8 +353,7 @@ This is the type of the null literal. This type defines no new methods.\
 
 \b\fs36 VI. Grammar
 \b0\fs28 \
-\pard\pardeftab400\ql\qnatural\pardirnatural
-\cf5 # Declarations\cf0 \
+\cf7 # Declarations\cf0 \
 CompilationUnit := Declaration+\
 \
 Declaration := MethodDeclaration | PropertyDeclaration\
@@ -367,7 +367,7 @@ FormalArgs := '(' IdentifierList? ')'\
 IdentifierList := Identifier (',' Identifier)*\
 \
 \
-\cf5 # Statements\cf0 \
+\cf7 # Statements\cf0 \
 Statement := IfStatement | ForStatement | LetStatement | MethodStatement | ReturnStatement\
 \
 IfStatement := IfClause ElifClause* ElseClause? '\cf3 end\cf0 '\
@@ -382,7 +382,7 @@ MethodStatement := CallExpression			\
 \
 ForStatement := ForClause WhereClause? '\cf3 do\cf0 ' Statement* '\cf3 end\cf0 '\
 \
-ForClause := '\cf3 for\cf0 ' Identifier '\cf3 in\cf0 ' CallExpression	\cf5 # Expression may be null\cf0 \
+ForClause := '\cf3 for\cf0 ' Identifier '\cf3 in\cf0 ' CallExpression	\cf7 # Expression may be null\cf0 \
 \
 WhereClause := '\cf3 where\cf0 ' OrExpression\
 \
@@ -393,7 +393,7 @@ LetLocal := Identifier '=' Expression\
 ReturnStatement := '\cf3 return\cf0 ' Expression\
 \
 \
-\cf5 # Expressions\cf0 \
+\cf7 # Expressions\cf0 \
 Expression := OrExpression | FromExpression | WhenExpression\
 \
 FromExpression := FromClause ('\cf3 where\cf0 ' OrExpression)? ('\cf3 select\cf0 ' OrExpression)?\
@@ -429,8 +429,8 @@ ExpressionList := Expression (',' Expression)*\
 ParenthesizedExpression := '(' Expression ')'\
 \
 \
-\cf5 # Lexical\cf0 \
-Identifier := IdentifierStart IdentifierSuffix*		\cf5 # but not a Keyword\cf0 \
+\cf7 # Lexical\cf0 \
+Identifier := IdentifierStart IdentifierSuffix*		\cf7 # but not a Keyword\cf0 \
 \
 IdentifierStart := ascii letter or underscore\
 \

@@ -104,10 +104,10 @@ namespace CsRefactor.Script
 			if (m_commands.Count == 0 || m_commands[m_commands.Count - 1] != command)
 				m_commands.Add(command);
 		}
-
+		
 		#region Fields		
 		private List<RefactorCommand> m_commands = new List<RefactorCommand>();
 		private List<Dictionary<string, object>> m_locals = new List<Dictionary<string, object>>();
 		#endregion
-	} 
+	}
 }

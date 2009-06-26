@@ -19,7 +19,6 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-//using Shared;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -35,13 +34,13 @@ namespace CsRefactor.Script
 		{
 		}
 		
-		public static StringType Instance 
+		public static StringType Instance
 		{
-			get 
+			get
 			{
 				if (ms_instance == null)
 					ms_instance = new StringType();
-					
+				
 				return ms_instance;
 			}
 		}
@@ -55,7 +54,7 @@ namespace CsRefactor.Script
 		{
 			get {return "String";}
 		}
-
+		
 		public override Type ManagedType
 		{
 			get {return typeof(string);}
@@ -80,22 +79,22 @@ namespace CsRefactor.Script
 			
 			return s1 + s2;
 		}
-
+		
 		private object DoContains(string str, string rhs)
 		{
 			return str.Contains(rhs);
 		}
-
+		
 		private object DoEndsWith(string str, string rhs)
 		{
 			return str.EndsWith(rhs);
 		}
-
+		
 		private object DoIsEmpty(string str)
 		{
 			return str.Length == 0;
 		}
-
+		
 		private object DoJoin(string str, object[] data)
 		{
 			var list = new List<string>(data.Length);
@@ -106,18 +105,18 @@ namespace CsRefactor.Script
 			
 			return string.Join(str, list.ToArray());
 		}
-
+		
 		private object DoReplace(string str, string os, string ns)
 		{
 			return str.Replace(os, ns);
 		}
-
+		
 		private object DoStartsWith(string str, string rhs)
 		{
 			return str.StartsWith(rhs);
 		}
 		#endregion
-
+	
 		private static StringType ms_instance;
-	} 
+	}
 }
