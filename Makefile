@@ -136,6 +136,12 @@ clean:
 	-rm -rf bin/tests.dll
 	-rm -rf bin/tests.dll.mdb
 	-rm -rf bin/install-tool*
+	
+dist-clean:
+	-rm -rf bin
+	-rm build_num
+	-rm foreshadow.log
+	-rm source/AssemblyVersion.cs
 
 bin/continuum.exe.config:
 	@echo "generating bin/continuum.exe.config"
