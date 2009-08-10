@@ -24,14 +24,24 @@ http://www.jetbrains.com/resharper/features/
 select declaring_root_name,return_type_name from Methods where name = 'get_BaseTypes';
 sudo fs_usage -f filesys
 
-* Allow auto-completion via "CamelHumps"
+* Would be nice to support hyperlinks in rich text files
+	http://developer.apple.com/qa/qa2006/qa1487.html
+* Handle languages like scripts.
+	- TODO could go here
+	- should be able to override built in languages
+	- what about globs? can globs be overriden?
+	- might want a language for gendarme console reports, what extension?
+* Might be neat if could figure out languages for files with no extension using
+   the shebang (if present).
+* File compare.
+* Directory compare.
+* Allow auto-completion via "CamelHumps"?
 	- ie for "WriteLine" can type "WL"
-* Would be really nice if new expressions auto completed.
-* Override keyword should trigger auto-complete? Or a double tab?
 * Add ToString refactror should default to returning fields and auto-props
 * Do the same for implement IFormatable.
 * Stagger windows, especially find results and assembly browser.
 * Shouldn't be able to open the same directory more than once.
+* Is the members popup smart about classes with fields at the start? Or strewn all about?
 * Unit test target should be named "check".
 
 * Do something different with /// styling?
@@ -105,8 +115,6 @@ sudo fs_usage -f filesys
    - could say stuff like "parsing mscorlib...", "parsing mscorlib...done", "[parser]
      expected '}' on line 56"
 * Build errors should use annotations. What about the "Error 1 of 10" text?
-* Might be neat if could figure out languages for files with no extension using
-   the shebang (if present).
 * Would be neat to have mcocoa project templates:
 	- generate source files, nibs, info.plist
 	- also either make or nant
@@ -168,11 +176,6 @@ sudo fs_usage -f filesys
 * Find button locations look a bit odd.
 * Need a preference for Type.GetFieldName
 * Get parse errors for show base class. Maybe use an rtf format instead of cs.
-* Handle languages like scripts.
-	- TODO could go here
-	- should be able to override built in languages
-	- what about globs? can globs be overriden?
-	- might want a language for gendarme console reports, what extension?
 * Add a ChangeLog language?
 * Need a directory for custom plugins:
 	- google code search might be a good example

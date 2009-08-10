@@ -60,23 +60,23 @@ namespace TextEditor
 					// Handle auto-complete initiated with '.' or enter.
 					if (m_autoComplete.HandleKey(this, evt))
 						break;
-					
-					// Option-tab selects the next identifier.
-					if (evt.keyCode() == TabKey && (evt.modifierFlags() & Enums.NSAlternateKeyMask) != 0)
-					{
-						if ((evt.modifierFlags() & Enums.NSShiftKeyMask) == 0)
-						{
-							if (DoSelectNextIdentifier())
-								break;
-						}
-						else
-						{
-							if (DoSelectPreviousIdentifier())
-								break;
-						}
-					}
 				}
 				
+				// Option-tab selects the next identifier.
+				if (evt.keyCode() == TabKey && (evt.modifierFlags() & Enums.NSAlternateKeyMask) != 0)
+				{
+					if ((evt.modifierFlags() & Enums.NSShiftKeyMask) == 0)
+					{
+						if (DoSelectNextIdentifier(controller))
+							break;
+					}
+					else
+					{
+						if (DoSelectPreviousIdentifier(controller))
+							break;
+					}
+				}
+												
 				// Special case for deleting the new line at the start of a blank line
 				// (users don't normally want the whitespace to be appended to the
 				// previous line).
@@ -424,40 +424,84 @@ namespace TextEditor
 		// would allow command-G to be used instead of option-tab which might be
 		// a bit more natural. Although it would also zap the user's find text and screw
 		// up the find history popup.
-		private bool DoSelectNextIdentifier()
+		private bool DoSelectNextIdentifier(TextController controller)
 		{
-			bool handled = false;
-			
 			NSRange range = selectedRange();
-			var tokens = m_boss.Get<ISearchTokens>();
+	
+			NSRange next;
+			if (controller.Language != null && controller.Language.Name == "CsLanguage")
+			{
+				// TODO: ISearchTokens should probably be moved into the language boss.
+				// It might also be worthwhile to split it into multiple interfaces.
+				var tokens = m_boss.Get<ISearchTokens>();
+				next = tokens.GetNextIdentifier(range.location + range.length);
+			}
+			else
+			{
+				// If we're in the middle of an identifier then skip past it.
+				next.location = range.location + range.length;
+				next.location += DoSkip(next.location, +1, (c) => char.IsLetterOrDigit(c) || c == '_');
+				
+				// Skip to the start of the next identifier.
+				next.location += DoSkip(next.location, +1, (c) => !char.IsLetter(c) && c != '_');
+				
+				// Get the length of the identifier.
+				next.length = DoSkip(next.location, +1, (c) => char.IsLetterOrDigit(c) || c == '_');
+			}
 			
-			NSRange next = tokens.GetNextIdentifier(range.location + range.length);
 			if (next.length > 0)
 			{
 				setSelectedRange(next);
 				scrollRangeToVisible(next);
-				handled = true;
 			}
 			
-			return handled;
+			return true;	// if we don't return true then NSTextView adds some weird indent
 		}
 		
-		private bool DoSelectPreviousIdentifier()
+		private bool DoSelectPreviousIdentifier(TextController controller)
 		{
-			bool handled = false;
-			
 			NSRange range = selectedRange();
-			var tokens = m_boss.Get<ISearchTokens>();
 			
-			NSRange previous = tokens.GetPreviousIdentifier(range.location);
+			NSRange previous;
+			if (controller.Language != null && controller.Language.Name == "CsLanguage")
+			{
+				var tokens = m_boss.Get<ISearchTokens>();
+				previous = tokens.GetPreviousIdentifier(range.location);
+			}
+			else
+			{
+				// If we're in the middle of an identifier then skip past it.
+				previous.location = range.location;
+				previous.location -= DoSkip(previous.location, -1, (c) => char.IsLetterOrDigit(c) || c == '_');
+				
+				// Skip to the end of the previous identifier.
+				previous.location -= DoSkip(previous.location, -1, (c) => !char.IsLetterOrDigit(c) && c != '_');
+				
+				// Get the length of the identifier.
+				previous.length = DoSkip(previous.location, -1, (c) => char.IsLetterOrDigit(c) || c == '_');	// TODO: this will find numbers
+				previous.location -= previous.length - 1;
+			}
+			
 			if (previous.length > 0)
 			{
 				setSelectedRange(previous);
 				scrollRangeToVisible(previous);
-				handled = true;
 			}
 			
-			return handled;
+			return true;
+		}
+		
+		private int DoSkip(int start, int delta, Predicate<char> predicate)	
+		{
+			NSString text = string_();
+			
+			int i = start;
+			while (i >= 0 && i < text.length() && predicate(text.characterAtIndex((uint) i)))
+			{
+				i += delta;
+			}
+			
+			return Math.Abs(i - start);
 		}
 		
 		private void DoGetEntries(string selection)

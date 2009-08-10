@@ -12,7 +12,7 @@
 	<Glob language = "m4">*.m4</Glob>
 	<Glob language = "objective-c">*.h *.m</Glob>
 	<Glob language = "patch">diff *.patch *.diff</Glob>
-	<Glob language = "plain-text">BUILDING README AUTHORS CHANGES ChangeLog *.txt *.text *.svn-blame *.svn-log</Glob>
+	<Glob language = "plain-text">BUILDING README AUTHORS CHANGES ChangeLog *.txt *.text *.svn-blame *.svn-log *.log</Glob>
 	<Glob language = "refactor">*.ref</Glob>
 	<Glob language = "python">*.py SConstruct</Glob>
 	<Glob language = "shell">*.sh</Glob>

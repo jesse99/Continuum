@@ -180,7 +180,7 @@ namespace AutoComplete
 			{
 				DoComplete(false, selectedRow());
 			}
-			else if (evt.keyCode() == 76)		// enter key
+			else if (evt.keyCode() == Constants.EnterKey)
 			{
 				DoComplete(true, selectedRow());
 			}
