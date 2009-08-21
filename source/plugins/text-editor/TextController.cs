@@ -849,7 +849,7 @@ namespace TextEditor
 //			if (m_language != null)
 			{
 				int line = -1;
-				int offset = 0;
+				int offset = -1;
 				int length = 0;
 				
 				// Change the background color of the line the selection is within if the
@@ -857,7 +857,7 @@ namespace TextEditor
 				NSRange range = m_textView.Value.selectedRange();
 				if (range.length < 200)				// don't search for new lines if the selection is something crazy like the entire document
 				{
-					if (text.IndexOf('\n', range.location, range.length) < 0)
+					if (range.location < text.Length && text.IndexOf('\n', range.location, range.length) < 0)
 					{
 						line = m_metrics.GetLine(range.location);
 						offset = m_metrics.GetLineOffset(line);
@@ -865,7 +865,8 @@ namespace TextEditor
 					}
 				}
 				
-				m_applier.HighlightLine(offset, length);
+				if (offset >= 0)
+					m_applier.HighlightLine(offset, length);
 			}
 			
 			DoUpdateLineLabel(text);

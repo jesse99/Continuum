@@ -28,7 +28,7 @@ public sealed class #{name} : Exception
 	{
 	}
 	
-	public #{name}•(string message, Exception inner) : base•(message)
+	public #{name}•(string message, Exception inner) : base•(message, inner)
 	{
 	}
 	

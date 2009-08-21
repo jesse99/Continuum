@@ -5,6 +5,7 @@
 	<Glob language = "cil">*.cil</Glob>
 	<Glob language = "css">*.css</Glob>
 	<Glob language = "c#">*.cs</Glob>
+	<Glob language = "c++">*.cpp *.hpp</Glob>
 	<Glob language = "html">*.html *.htm</Glob>
 	<Glob language = "info">*.info</Glob>
 	<Glob language = "ignore">*.ignore</Glob>
@@ -17,5 +18,5 @@
 	<Glob language = "python">*.py SConstruct</Glob>
 	<Glob language = "shell">*.sh</Glob>
 	<Glob language = "todo">TODO NOTES</Glob>
-	<Glob language = "xml">*.xml *.xsd *.xsdl *.xsl *.schema *.config *.plist *.dtd *.build</Glob>
+	<Glob language = "xml">*.xml *.xsd *.xsdl *.xsl *.schema *.config *.plist *.dtd *.build *.resx</Glob>
 </Globs>

@@ -116,11 +116,10 @@ namespace Transcript
 						{
 							DoWrite(Output.Normal, m_currentText.ToString());
 							Unused.Value = m_timer.Change(Timeout.Infinite, Timeout.Infinite);
+							m_currentText.Length = 0;
 						}
 						
 						DoWrite(type, text);
-						
-						m_currentText = new StringBuilder();
 					}
 					m_editCount = unchecked(m_editCount + 1);
 				}
@@ -226,9 +225,11 @@ namespace Transcript
 			lock (m_lock)
 			{
 				if (m_currentText.Length > 0)
+				{
 					DoWrite(Output.Normal, m_currentText.ToString());
 					
-				m_currentText = new StringBuilder();
+					m_currentText.Length = 0;
+				}
 			}
 		}
 		

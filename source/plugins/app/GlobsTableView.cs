@@ -71,7 +71,10 @@ namespace App
 				NSString lang = entry.Value.To<NSString>();
 				
 				uint index = m_languages.indexOfObject(lang);
-				m_globs.Add(Tuple.Make(glob, (int) index));
+				if (index < m_languages.count())
+					m_globs.Add(Tuple.Make(glob, (int) index));
+				else
+					Console.Error.WriteLine("Couldn't find a language for glob: {0}, lang: {1:D}", glob, lang);
 			}
 			
 			DoSortByGlobs();

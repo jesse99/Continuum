@@ -29,7 +29,7 @@ sudo fs_usage -f filesys
 * Handle languages like scripts.
 	- TODO could go here
 	- should be able to override built in languages
-	- what about globs? can globs be overriden?
+	- what about globs? can globs be overriden? probably have to update GlobsTableView ctor
 	- might want a language for gendarme console reports, what extension?
 * Might be neat if could figure out languages for files with no extension using
    the shebang (if present).
