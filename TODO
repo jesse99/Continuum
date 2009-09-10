@@ -23,7 +23,17 @@ http://www.jetbrains.com/resharper/features/
 
 select declaring_root_name,return_type_name from Methods where name = 'get_BaseTypes';
 sudo fs_usage -f filesys
+ 
+Main.cpp:18: error: '::main' must return 'int'
 
+* Add support for opening g++ errors.
+* Implement IDisposable shouldnt added the ObjectDisposedException to private methods.
+* Make sure EscapeAll is OK.
+* Infer type for typeof expressions.
+* Might want an add attribute refactor.
+* http://monodevelop.com/Download/What%27s_new_in_MonoDevelop_2.2
+* Look at snow leopard change list.
+* Look at the new error bubbles in snow leopard.
 * Would be nice to support hyperlinks in rich text files
 	http://developer.apple.com/qa/qa2006/qa1487.html
 * Handle languages like scripts.
@@ -33,6 +43,10 @@ sudo fs_usage -f filesys
 	- might want a language for gendarme console reports, what extension?
 * Might be neat if could figure out languages for files with no extension using
    the shebang (if present).
+* Find needs to work in transcript.
+* Refactor to generate forwarding methods? Maybe can select methods and then it generates
+   forwarding methods which can be cut and pasted. Or select a field and it pops up a dialog
+   allowing user to pick which methods he wants to forward.
 * File compare.
 * Directory compare.
 * Allow auto-completion via "CamelHumps"?
