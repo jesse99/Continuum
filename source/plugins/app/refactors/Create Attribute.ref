@@ -1,0 +1,32 @@
+# Creates a new attribute class in the file's first namespace.
+define Run()
+	if Globals.Namespaces.IsEmpty then
+		Process(Globals)
+	else
+		Process(Globals.Namespaces.Head)
+	end
+end
+
+define Process(namespace)
+	let name = Ask("Attribute name:", "MyAttribute") in
+		namespace.Body.InsertFirst(
+"[Serializable]
+[AttributeUsage•(AttributeTargets.All, AllowMultiple = false)]
+internal sealed class #{name} : Attribute
+{
+	public #{name}•(int alpha)
+	{
+		Alpha = alpha;
+	}
+	
+	// Alpha appears in the constructor so it is a required argument
+	// and should not have a public setter.
+	public int Alpha {get; private set;}
+	
+	// Beta does not appear in the constructor so it is an optional
+	// argument. It's set using the named argument syntax.
+	public int Beta {get; set;}
+}
+")
+	end
+end
