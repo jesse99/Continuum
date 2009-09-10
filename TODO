@@ -24,10 +24,7 @@ http://www.jetbrains.com/resharper/features/
 select declaring_root_name,return_type_name from Methods where name = 'get_BaseTypes';
 sudo fs_usage -f filesys
  
-Main.cpp:18: error: '::main' must return 'int'
-
-* Add support for opening g++ errors.
-* Implement IDisposable shouldnt added the ObjectDisposedException to private methods.
+* Implement IDisposable shouldnt add the ObjectDisposedException to private methods.
 * Make sure EscapeAll is OK.
 * Infer type for typeof expressions.
 * Might want an add attribute refactor.

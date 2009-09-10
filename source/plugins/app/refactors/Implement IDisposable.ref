@@ -38,8 +38,10 @@ end
 # Note that event accessors should normally not throw.
 define AddExceptions(type)
 	for method in type.Methods where method.Body != null and not method.IsStatic and not method.IsFinalizer and not method.IsConstructor do
-		if method.Name != "Equals" and method.Name != "Compare" and method.Name != "GetHashCode" and method.Name != "ToString" and method.Name != "Dispose" then
-			InsertThrow(method.Body)
+		if not method.IsPrivate then
+			if method.Name != "Equals" and method.Name != "Compare" and method.Name != "GetHashCode" and method.Name != "ToString" and method.Name != "Dispose" then
+				InsertThrow(method.Body)
+			end
 		end
 	end
 	
