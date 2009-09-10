@@ -292,6 +292,11 @@ namespace AutoComplete
 							// var result = from ...;
 							value = "System.Collections.Generic.IEnumerable`1";
 						}
+						else if (value.StartsWith("typeof"))
+						{
+							// var result = typeof(...);
+							value = DoGetTypeofValue(value);
+						}
 						else if (value.Contains(" as "))
 						{
 							// var result = ... as type;
@@ -337,7 +342,7 @@ namespace AutoComplete
 				Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "type {0} was followed by '{1}', but '(' was expected", type, next);
 				type = null;
 			}
-
+			
 			if (type != null)
 			{
 				if (type.EndsWith("[ ]"))
@@ -348,6 +353,19 @@ namespace AutoComplete
 				
 				else if (type.EndsWith("*"))
 					type = "pointer-type";
+			}
+			
+			return type;
+		}
+		
+		private string DoGetTypeofValue(string value)
+		{
+			string type = null;
+			
+			Match m = ms_typeofRE.Match(value);
+			if (m.Success)
+			{
+				type = "System.Type";
 			}
 			
 			return type;
@@ -469,7 +487,8 @@ namespace AutoComplete
 		private CsGlobalNamespace m_globals;
 		private CsMember m_context;
 		
-		private Regex ms_getRE = new Regex(@"\w+ \s* \. \s* Get \s* < \s* (\w+) \s* > \s* \( \s* \)", RegexOptions.IgnorePatternWhitespace);
+		private Regex ms_getRE = new Regex(@"\w+ \s* \. \s* Get \s* < \s* (\w+._) \s* > \s* \( \s* \)", RegexOptions.IgnorePatternWhitespace);
+		private Regex ms_typeofRE = new Regex(@"typeof \s* \( \s* [\w._]+ \s* \) \s* $", RegexOptions.IgnorePatternWhitespace);
 		#endregion
 	}
 }

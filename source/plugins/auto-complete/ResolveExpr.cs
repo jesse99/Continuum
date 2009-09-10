@@ -264,21 +264,29 @@ namespace AutoComplete
 				{
 					Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "trying {0}({1} args) item operand", name, numArgs);
 					
-					Item[] candidates = m_memberResolver.Find(context, target, m_globals, name, numArgs);
-					IEnumerable<Item> items = from c in candidates where c.Type != null select c;
-					if (items.Any())
+					if (name == "typeof" && numArgs == 1)
 					{
-						if (items.All(m => m.Type == items.First().Type))
+						Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "resolved to System.Type");
+						result = new ResolvedTarget("System.Type", null, true, false);
+					}
+					else
+					{
+						Item[] candidates = m_memberResolver.Find(context, target, m_globals, name, numArgs);
+						IEnumerable<Item> items = from c in candidates where c.Type != null select c;
+						if (items.Any())
 						{
-							Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "{0}:{1} with {2} args resolved to {3}", target, name, numArgs, items.First().Type);
-							result = m_typeResolver.Resolve(items.First().Type, context, m_globals, true, false);
-						}
-						else
-						{
-							Log.WriteLine("AutoComplete", "{0} has an ambiguous return type:", name);
-							foreach (Item item in items)
+							if (items.All(m => m.Type == items.First().Type))
 							{
-								Log.WriteLine("AutoComplete", "    {0} {1}", item.Type, item);
+								Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "{0}:{1} with {2} args resolved to {3}", target, name, numArgs, items.First().Type);
+								result = m_typeResolver.Resolve(items.First().Type, context, m_globals, true, false);
+							}
+							else
+							{
+								Log.WriteLine("AutoComplete", "{0} has an ambiguous return type:", name);
+								foreach (Item item in items)
+								{
+									Log.WriteLine("AutoComplete", "    {0} {1}", item.Type, item);
+								}
 							}
 						}
 					}
