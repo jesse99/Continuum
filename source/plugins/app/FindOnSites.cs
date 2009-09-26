@@ -137,19 +137,16 @@ namespace App
 			bool valid = false;
 			if (selection.Length > 3)
 			{
-				if (selection[0] == 'N' && selection[1] == 'S' && char.IsUpper(selection[2]))
-					valid = true;
-
-				else if (selection[0] == 'C' && selection[1] == 'F' && char.IsUpper(selection[2]))
-					valid = true;
-
-				else if (selection[0] == 'F' && selection[1] == 'S' && char.IsUpper(selection[2]))
-					valid = true;
-
-				else if (selection[0] == 'L' && selection[1] == 'S' && char.IsUpper(selection[2]))
-					valid = true;
-
-				else if (char.IsLower(selection[0]))
+				foreach (string prefix in ms_applePrefixes)
+				{
+					if (selection.StartsWith(prefix) && char.IsUpper(selection[prefix.Length]))
+					{
+						valid = true;
+						break;
+					}
+				}
+				
+				if (char.IsLower(selection[0]))
 					valid = true;
 			}
 			
@@ -162,16 +159,28 @@ namespace App
 		private bool DoNeedsFindOnMSDN(string selection)
 		{
 			bool valid = selection.Length > 2 && !DoNeedsFindOnApple(selection);
-
+			
 			if (valid)
 				valid = selection.Any(c => !char.IsWhiteSpace(c));
 			
 			return valid;
 		}
 		#endregion
-
+	
 		#region Fields
-		private Boss m_boss; 
+		private Boss m_boss;
+		
+		private static string[] ms_applePrefixes = new string[]
+		{
+			"CA",
+			"CF",
+			"CG",
+			"FS",
+			"LS",
+			"NS",
+			"QC",
+			"SB",
+		};
 		#endregion
-	} 
+	}
 }

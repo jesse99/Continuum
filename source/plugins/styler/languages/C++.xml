@@ -5,7 +5,7 @@
 	<keyword>\b(?:  asm | bool | catch | class | const_cast | delete | dynamic_cast | explicit | false | friend | inline | mutable | namespace | new | operator | private | protected | public | reinterpret_cast | static_cast | template | this | throw | true | try | typeid | typename | using | virtual | wchar_t)\b</keyword> <!-- c++ -->
 	<keyword>\b(?:  list | map | multi_map | multi_set | NULL | set | std | string | vector)\b</keyword> <!-- other -->
 	<number>(?&lt;= \W) \d+ (?= \W)</number>
-	<preprocessor>\x23ifdef | \x23ifndef | \x23if | \x23else | \x23elif | \x23endif | \x23define | \x23undef | \x23warning | \x23error | \x23line | \x23pragma | \x23include</preprocessor>
+	<preprocessor>\x23 \s* (?: ifdef | ifndef | if | else | elif | endif | define | undef | warning | error | line | pragma | include)</preprocessor>
 	<string>&quot; (?: [^&quot;\r\n\\] | \\.)* &quot;</string>
 	<string>&apos; (?: [^&apos;\r\n\\] | \\.)* &apos;</string>
 </Language>

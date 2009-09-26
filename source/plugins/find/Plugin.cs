@@ -20,7 +20,6 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
-//using Shared;
 using System;
 using System.IO;
 using System.Reflection;
@@ -29,22 +28,22 @@ namespace TextEditor
 {
 	[Plugin]
 	public static class Plugin
-	{		
-		public static void OnLoaded() 
- 		{
-			DoInitObjectModel();			
- 		}
-  
+	{
+		public static void OnLoaded()
+		{
+			DoInitObjectModel();
+		}
+		
 		private static void DoInitObjectModel()
- 		{
+		{
 			string loc = Assembly.GetExecutingAssembly().Location;
 			string root = Path.GetDirectoryName(loc);
 			string path = Path.Combine(root, "Bosses.xml");
- 			
+			
 			using (StreamReader reader = new StreamReader(path))
 			{
-				XmlModel.Read(reader.BaseStream); 
+				XmlModel.Read(reader.BaseStream);
 			}
- 		}
-	} 
-}	
+		}
+	}
+}

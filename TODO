@@ -24,9 +24,7 @@ http://www.jetbrains.com/resharper/features/
 select declaring_root_name,return_type_name from Methods where name = 'get_BaseTypes';
 sudo fs_usage -f filesys
 
-* Add core foundation to default list of dirs to search.
-* Find on site should look on apple for QC* files. Also CA* files. Also SB* files. Also CG
-* Need to handle stuff like # define and # include
+* Need to handle stuff like # define and # include in styles regexen
 * Special case std c++ headers so that they open in continuum.
 * New keywords: auto, decltype, nullptr
 * Use peg-sharp.

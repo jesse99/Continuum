@@ -5,7 +5,7 @@
 	<keyword>\b(?: id | self | super | _cmd | Class | SEL | IMP | bycopy | byref | in | out | inline | inout | oneway | nil | Nil | BOOL | YES | NO )\b</keyword>	
 	<keyword>(?: @class | @property | @synthesize | @public | @private | @protected | @contained | @interface | @implementation | @protocol | @contained | @try | @catch | @finally | @throw | @contained | @end | @defs | @contained | @encode | @protocol | @selector | @contained | @synchronized | @contained )\b</keyword>	
 	<number>(?&lt;= \W) \d+ (?= \W)</number>
-	<preprocessor>\x23ifdef | \x23ifndef | \x23if | \x23else | \x23elif | \x23endif | \x23define | \x23undef | \x23warning | \x23error | \x23line | \x23pragma | \x23include | \x23import</preprocessor>
+	<preprocessor>\x23 \s* (?: ifdef | ifndef | if | else | elif | endif | define | undef | warning | error | line | pragma | include | import)</preprocessor>
 	<string>&quot; (?: [^&quot;\r\n\\] | \\.)* &quot;</string>
 	<string>&apos; (?: [^&apos;\r\n\\] | \\.)* &apos;</string>
 </Language>
