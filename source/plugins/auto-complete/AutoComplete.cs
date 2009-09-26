@@ -121,7 +121,7 @@ namespace AutoComplete
 			catch (Exception e)
 			{
 				Log.WriteLine(TraceLevel.Error, "Errors", "Autocomplete failed:");
-				Log.WriteLine(TraceLevel.Error, "Errors", e.Message);
+				Log.WriteLine(TraceLevel.Error, "Errors", e.ToString());
 				
 				NSString title = NSString.Create("Auto-complete failed.");
 				NSString message = NSString.Create(e.Message);

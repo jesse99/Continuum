@@ -167,7 +167,7 @@ namespace TextEditor
 			float interval = defaults.floatForKey(NSString.Create("tab stops"));
 			style.setDefaultTabInterval(interval);
 			
-			IEnumerable<NSObject> stops =
+			IEnumerable<NSTextTab> stops =
 				from
 					s in m_controller.TabStops
 				select

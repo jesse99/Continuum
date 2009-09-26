@@ -23,8 +23,15 @@ http://www.jetbrains.com/resharper/features/
 
 select declaring_root_name,return_type_name from Methods where name = 'get_BaseTypes';
 sudo fs_usage -f filesys
- 
+
+* Add core foundation to default list of dirs to search.
+* Find on site should look on apple for QC* files. Also CA* files. Also SB* files. Also CG
+* Need to handle stuff like # define and # include
+* Special case std c++ headers so that they open in continuum.
+* New keywords: auto, decltype, nullptr
+* Use peg-sharp.
 * http://monodevelop.com/Download/What%27s_new_in_MonoDevelop_2.2
+	- Organize Usings is supposed to be sweet
 * Look at snow leopard change list.
 * Look at the new error bubbles in snow leopard.
 * Would be nice to support hyperlinks in rich text files
