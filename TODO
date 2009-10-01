@@ -24,14 +24,17 @@ http://www.jetbrains.com/resharper/features/
 select declaring_root_name,return_type_name from Methods where name = 'get_BaseTypes';
 sudo fs_usage -f filesys
 
-* Need to handle stuff like # define and # include in styles regexen
-* Special case std c++ headers so that they open in continuum.
-* New keywords: auto, decltype, nullptr
+* Resolve Namespace context menu:
+	- need to expose RefactorCommands via an interface
+	- click on type
+	- adds a using declaration if needed for that type
+	- if type name appears in multiple namespaces then popup a picker
+* Remove Unused Using declarations. Do this using cecil?
+* Get auto-save working.
 * Use peg-sharp.
-* http://monodevelop.com/Download/What%27s_new_in_MonoDevelop_2.2
-	- Organize Usings is supposed to be sweet
+* Might be able to do some new refactors now like rename and extract method.
 * Look at snow leopard change list.
-* Look at the new error bubbles in snow leopard.
+* Look at the new error bubbles in snow leopard's XCode.
 * Would be nice to support hyperlinks in rich text files
 	http://developer.apple.com/qa/qa2006/qa1487.html
 * Handle languages like scripts.
@@ -55,6 +58,7 @@ sudo fs_usage -f filesys
 * Shouldn't be able to open the same directory more than once.
 * Is the members popup smart about classes with fields at the start? Or strewn all about?
 * Unit test target should be named "check".
+* Need to do a better job with Refactor Language.rtf (prose and the grammar)
 
 * Do something different with /// styling?
 * Make Add WriteLine a standard refactor?
@@ -69,6 +73,7 @@ sudo fs_usage -f filesys
 	- might also want custom context menu when right clicking on "override"
 * Rename type refactor
 * Rename member refactor.
+* MonoDevelop has an interesting Dynamic Abbrev Command: http://monodevelop.com/Download/What%27s_new_in_MonoDevelop_2.2
 * Extract method refactor.
 * Extract class refactor.
 * Safe delete refactor.

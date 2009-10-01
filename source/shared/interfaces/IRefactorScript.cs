@@ -29,7 +29,7 @@ namespace Shared
 		// Returns the new source code.
 		string Execute(string script, IText source, int selStart, int selLen);
 		
-		// Replaces buller characters with new lines or spaces depending upon
+		// Replaces bullet characters with new lines or spaces depending upon
 		// pref settings.
 		string Expand(Boss textBoss, string text);
 	}
