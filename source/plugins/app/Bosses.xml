@@ -10,6 +10,7 @@
 		<Implementation interfaces = "IScripts +IStartup" name = "Scripts"/>
 		<Implementation interfaces = "IRegisterRefactor +IStartup" name = "Refactors"/>
 		<Implementation interfaces = "IInterface +IStartup" name = "MoveSelectionToFile"/>
+		<Implementation interfaces = "IInterface +IStartup" name = "ResolveNamespace"/>
 	</Boss>
 	
 	<Boss name = "Builders" singleton = "true">	

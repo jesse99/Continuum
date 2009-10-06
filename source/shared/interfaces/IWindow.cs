@@ -23,11 +23,11 @@ using Gear;
 using MCocoa;
 
 namespace Shared
-{	
+{
 	// Encapsulates a platform window associated with the boss.
 	public interface IWindow : IInterface
 	{
 		// The setter is normally called only by the plugin.
 		NSWindow Window {get; set;}
-	} 
+	}
 }

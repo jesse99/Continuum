@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Jesse Jones
+// Copyright (C) 2009 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -20,18 +20,12 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
-using System;
 
 namespace Shared
 {
-	// Used to find the DirectoryEditor boss associated with a window or the default
-	// directory editor if there is no such association.
-	public interface IFindDirectoryEditor : IInterface
+	// Returns the database associated with a directory boss.
+	public interface IDatabase : IInterface
 	{
-		// If the window is not directly associated with a directory (e.g. an untitled 
-		// window, the transcript window, or a short form window) then one is chosen 
-		// based on criteria such as which was built last. Will return null iff no directory
-		// windows are open. Window may be null.
-		Boss GetDirectoryEditor(Boss window);
+		Database GetDatabase();
 	}
 }

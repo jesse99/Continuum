@@ -24,13 +24,19 @@ http://www.jetbrains.com/resharper/features/
 select declaring_root_name,return_type_name from Methods where name = 'get_BaseTypes';
 sudo fs_usage -f filesys
 
+can we write an error class which requires that the value in the last copy be checked?
+how can we specify how the layers in ipNode work? with Alloy?
+
 * Resolve Namespace context menu:
-	- need to expose RefactorCommands via an interface
-	- click on type
-	- adds a using declaration if needed for that type
-	- if type name appears in multiple namespaces then popup a picker
-* Remove Unused Using declarations. Do this using cecil?
+	- review DoGetNamespace
+	- make sure the picker works
+* Make sure MoveSelectionToFile uses the right exception.
+* var text = boss.Get<IText>(); special case doesn't seem to work.
+* Get refactors enabling and disabling.
+* Add refactors to context menu.
 * Get auto-save working.
+* Build foreshadow.
+* Make sure var text = boss.Get<IText>(); auto-completes.
 * Use peg-sharp.
 * Might be able to do some new refactors now like rename and extract method.
 * Look at snow leopard change list.
@@ -77,6 +83,11 @@ sudo fs_usage -f filesys
 * Extract method refactor.
 * Extract class refactor.
 * Safe delete refactor.
+* Remove Unused Using declarations:
+	- this should remove declarations that are definitely not needed
+	- error if file is newer than assembly
+	- process assembly and find the namespaces which were used
+	- remove any which were listed but not actually used
 * Change signature refactor.
 * Complete Statement would be nice:
 	- adds parens, braces, semi-colons, etc

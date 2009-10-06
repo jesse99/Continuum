@@ -34,7 +34,7 @@ using System.Text;
 
 namespace ObjectModel
 {
-	internal sealed class Objects : IObjectModel, IOpened, IObserver
+	internal sealed class Objects : IDatabase, IObjectModel, IOpened, IObserver
 	{
 		public void Instantiated(Boss boss)
 		{
@@ -44,6 +44,11 @@ namespace ObjectModel
 		public Boss Boss
 		{
 			get {return m_boss;}
+		}
+		
+		public Database GetDatabase()
+		{
+			return m_database;
 		}
 		
 		public void Opened()
