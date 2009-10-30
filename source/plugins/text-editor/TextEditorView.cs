@@ -76,7 +76,7 @@ namespace TextEditor
 							break;
 					}
 				}
-												
+				
 				// Special case for deleting the new line at the start of a blank line
 				// (users don't normally want the whitespace to be appended to the
 				// previous line).

@@ -777,7 +777,7 @@ namespace TextEditor
 			if ((storage.editedMask() & Enums.NSTextStorageEditedCharacters) != 0)
 			{
 				m_editCount = unchecked(m_editCount + 1);
-			
+				
 				int oldNumLines = m_metrics.LineCount;
 				string text = Text;										// TODO: this is slow for very large files
 				
@@ -790,6 +790,8 @@ namespace TextEditor
 				
 				if (m_userEdit)
 				{
+					document().updateChangeCount(Enums.NSChangeDone);
+					
 					// If the user typed a closing brace and it is balanced,
 					int left = m_metrics.BalanceLeft(text, range.location + range.length - 1);
 					if (left != -2)

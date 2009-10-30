@@ -222,8 +222,10 @@ namespace TextEditor
 					// The modification date is a bit too coarse to work properly if the file is being
 					// written to as we are trying to reload it so we need to also check the file size.
 					NSNumber size = attrs.objectForKey(Externs.NSFileSize).To<NSNumber>();
-					if (size != null && m_size != size.unsignedIntValue())
+					if (size != null && size.unsignedIntValue() > m_size)
+					{
 						changed = true;
+					}
 				}
 			}
 			

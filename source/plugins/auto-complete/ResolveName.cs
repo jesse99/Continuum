@@ -304,7 +304,7 @@ namespace AutoComplete
 						}
 						else
 						{
-							// var result = Get<Type>();
+							// var result = xxx.Get<Type>();
 							// TODO: need something more general here 
 							Match m = ms_getRE.Match(value);
 							if (m.Success)
@@ -487,7 +487,7 @@ namespace AutoComplete
 		private CsGlobalNamespace m_globals;
 		private CsMember m_context;
 		
-		private Regex ms_getRE = new Regex(@"\w+ \s* \. \s* Get \s* < \s* (\w+._) \s* > \s* \( \s* \)", RegexOptions.IgnorePatternWhitespace);
+		private Regex ms_getRE = new Regex(@"[\w._]+ \s* \. \s* Get \s* < \s* ([\w._]+) \s* > \s* \( \s* \)", RegexOptions.IgnorePatternWhitespace);
 		private Regex ms_typeofRE = new Regex(@"typeof \s* \( \s* [\w._]+ \s* \) \s* $", RegexOptions.IgnorePatternWhitespace);
 		#endregion
 	}

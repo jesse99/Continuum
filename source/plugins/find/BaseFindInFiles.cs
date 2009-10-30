@@ -97,10 +97,10 @@ namespace Find
 		
 		#region Protected Methods
 		[ThreadModel(ThreadModel.Concurrent)]
-		protected abstract NSFileHandle OnOpenFile(string path);	// threaded
+		protected abstract NSFileHandle OnOpenFile(string path);
 		
 		[ThreadModel(ThreadModel.Concurrent)]
-		protected abstract string OnProcessFile(string file, string text);	// threaded
+		protected abstract string OnProcessFile(string file, string text);
 		#endregion
 		
 		#region Private Methods
@@ -147,7 +147,7 @@ namespace Find
 			}
 		}
 		
-		private void DoGetFiles(string directory)		
+		private void DoGetFiles(string directory)
 		{
 			try
 			{
@@ -217,7 +217,7 @@ namespace Find
 		}
 		
 		[ThreadModel(ThreadModel.SingleThread)]
-		private void DoThread()			// threaded
+		private void DoThread()
 		{
 			// Then process each file in turn.
 			for (int i = 0; i < m_files.Count && !m_cancelled; ++i)
@@ -240,7 +240,7 @@ namespace Find
 		}
 		
 		[ThreadModel(ThreadModel.SingleThread)]
-		private void DoProcessFile(string file)		// threaded
+		private void DoProcessFile(string file)
 		{
 			NSAutoreleasePool pool = NSAutoreleasePool.Create();
 			

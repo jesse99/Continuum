@@ -21,7 +21,6 @@
 
 using MCocoa;
 using MObjc;
-//using Shared;
 using System;
 
 namespace App
@@ -31,6 +30,12 @@ namespace App
 	{
 		private DocumentController(IntPtr instance) : base(instance)
 		{
+		}
+		
+		public new void init()
+		{
+			SuperCall(NSDocumentController.Class, "init");
+			setAutosavingDelay(10.0);
 		}
 		
 		public new int runModalOpenPanel_forTypes(NSOpenPanel openPanel, NSArray types)

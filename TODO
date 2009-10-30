@@ -24,21 +24,10 @@ http://www.jetbrains.com/resharper/features/
 select declaring_root_name,return_type_name from Methods where name = 'get_BaseTypes';
 sudo fs_usage -f filesys
 
-can we write an error class which requires that the value in the last copy be checked?
-how can we specify how the layers in ipNode work? with Alloy?
-
-* Resolve Namespace context menu:
-	- review DoGetNamespace
-	- make sure the picker works
-* Make sure MoveSelectionToFile uses the right exception.
-* var text = boss.Get<IText>(); special case doesn't seem to work.
-* Get refactors enabling and disabling.
-* Add refactors to context menu.
-* Get auto-save working.
+* Newly opened files are dirtied.
+* Do a checkin.
 * Build foreshadow.
-* Make sure var text = boss.Get<IText>(); auto-completes.
 * Use peg-sharp.
-* Might be able to do some new refactors now like rename and extract method.
 * Look at snow leopard change list.
 * Look at the new error bubbles in snow leopard's XCode.
 * Would be nice to support hyperlinks in rich text files
@@ -54,10 +43,9 @@ how can we specify how the layers in ipNode work? with Alloy?
 * Refactor to generate forwarding methods? Maybe can select methods and then it generates
    forwarding methods which can be cut and pasted. Or select a field and it pops up a dialog
    allowing user to pick which methods he wants to forward.
-* File compare.
-* Directory compare.
 * Allow auto-completion via "CamelHumps"?
 	- ie for "WriteLine" can type "WL"
+* MonoDevelop has an interesting Dynamic Abbrev Command: http://monodevelop.com/Download/What%27s_new_in_MonoDevelop_2.2
 * Add ToString refactror should default to returning fields and auto-props
 * Do the same for implement IFormatable.
 * Stagger windows, especially find results and assembly browser.
@@ -65,7 +53,13 @@ how can we specify how the layers in ipNode work? with Alloy?
 * Is the members popup smart about classes with fields at the start? Or strewn all about?
 * Unit test target should be named "check".
 * Need to do a better job with Refactor Language.rtf (prose and the grammar)
+* Use the new mono.
+* Upgrade to snow leopard.
+* Do a release.
 
+* Get refactors enabling and disabling.
+* Add refactors to context menu.
+* Might be able to do some new refactors now like rename and extract method.
 * Do something different with /// styling?
 * Make Add WriteLine a standard refactor?
 * Add Find Type command:
@@ -79,7 +73,8 @@ how can we specify how the layers in ipNode work? with Alloy?
 	- might also want custom context menu when right clicking on "override"
 * Rename type refactor
 * Rename member refactor.
-* MonoDevelop has an interesting Dynamic Abbrev Command: http://monodevelop.com/Download/What%27s_new_in_MonoDevelop_2.2
+* File compare.
+* Directory compare.
 * Extract method refactor.
 * Extract class refactor.
 * Safe delete refactor.
