@@ -222,7 +222,7 @@ namespace TextEditor
 					// The modification date is a bit too coarse to work properly if the file is being
 					// written to as we are trying to reload it so we need to also check the file size.
 					NSNumber size = attrs.objectForKey(Externs.NSFileSize).To<NSNumber>();
-					if (size != null && size.unsignedIntValue() > m_size)
+					if (size != null && size.unsignedIntValue() != m_size)
 					{
 						changed = true;
 					}
@@ -370,7 +370,8 @@ namespace TextEditor
 						break;
 				}
 				
-				m_size = data.length();
+				if (!m_autoSaving)
+					m_size = data.length();
 			}
 			catch (Exception e)
 			{
@@ -386,6 +387,20 @@ namespace TextEditor
 			}
 			
 			return data;
+		}
+		
+		public void autosaveDocumentWithDelegate_didAutosaveSelector_contextInfo(NSObject delegate_, IntPtr selector, IntPtr context)
+		{
+			m_autoSaving = true;
+			
+			try
+			{
+				SuperCall(NSDocument.Class, "autosaveDocumentWithDelegate:didAutosaveSelector:contextInfo:", delegate_, selector, context);
+			}
+			finally
+			{
+				m_autoSaving = false;
+			}
 		}
 		
 		// Used to reload a document for which the file changed.
@@ -664,6 +679,7 @@ namespace TextEditor
 		private bool m_binary;
 		private LineEndian m_endian;
 		private uint m_encoding;
+		private bool m_autoSaving;
 		
 		private static Dictionary<char, string> ms_controlNames = new Dictionary<char, string>
 		{
