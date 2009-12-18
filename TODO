@@ -24,14 +24,75 @@ http://www.jetbrains.com/resharper/features/
 select declaring_root_name,return_type_name from Methods where name = 'get_BaseTypes';
 sudo fs_usage -f filesys
 
-* Newly opened files are dirtied.
-* Do a checkin.
-* Build foreshadow.
-* Use peg-sharp.
-* Look at snow leopard change list.
-* Look at the new error bubbles in snow leopard's XCode.
-* Would be nice to support hyperlinks in rich text files
-	http://developer.apple.com/qa/qa2006/qa1487.html
+get a hand-written version working for one of these
+write hand-written versions for the more important of these
+	http://clang.llvm.org/docs/BlockImplementation.txt
+Ignoring NSArray::enumerateObjectsUsingBlock: (it uses a block)
+Ignoring NSArray::enumerateObjectsWithOptions:usingBlock: (it uses a block)
+Ignoring NSArray::enumerateObjectsAtIndexes:options:usingBlock: (it uses a block)
+Ignoring NSArray::indexOfObjectPassingTest: (it uses a block)
+Ignoring NSArray::indexOfObjectWithOptions:passingTest: (it uses a block)
+Ignoring NSArray::indexOfObjectAtIndexes:options:passingTest: (it uses a block)
+Ignoring NSArray::indexesOfObjectsPassingTest: (it uses a block)
+Ignoring NSArray::indexesOfObjectsWithOptions:passingTest: (it uses a block)
+Ignoring NSArray::indexesOfObjectsAtIndexes:options:passingTest: (it uses a block)
+Ignoring NSAttributedString::enumerateAttributesInRange:options:usingBlock: (it uses a block)
+Ignoring NSAttributedString::enumerateAttribute:inRange:options:usingBlock: (it uses a block)
+Ignoring NSDictionary::enumerateKeysAndObjectsUsingBlock: (it uses a block)
+Ignoring NSDictionary::enumerateKeysAndObjectsWithOptions:usingBlock: (it uses a block)
+Ignoring NSDictionary::keysOfEntriesPassingTest: (it uses a block)
+Ignoring NSDictionary::keysOfEntriesWithOptions:passingTest: (it uses a block)
+Ignoring NSExpression::expressionForBlock:arguments: (it uses a block)
+Ignoring NSExpression::expressionBlock (it uses a block)
+Ignoring NSFileManager::enumeratorAtURL:includingPropertiesForKeys:options:errorHandler: (it uses a block)
+Ignoring NSIndexSet::enumerateIndexesUsingBlock: (it uses a block)
+Ignoring NSIndexSet::enumerateIndexesWithOptions:usingBlock: (it uses a block)
+Ignoring NSIndexSet::enumerateIndexesInRange:options:usingBlock: (it uses a block)
+Ignoring NSIndexSet::indexPassingTest: (it uses a block)
+Ignoring NSIndexSet::indexWithOptions:passingTest: (it uses a block)
+Ignoring NSIndexSet::indexInRange:options:passingTest: (it uses a block)
+Ignoring NSIndexSet::indexesPassingTest: (it uses a block)
+Ignoring NSIndexSet::indexesWithOptions:passingTest: (it uses a block)
+Ignoring NSIndexSet::indexesInRange:options:passingTest: (it uses a block)
+Ignoring NSNotificationCenter::addObserverForName:object:queue:usingBlock: (it uses a block)
+Ignoring NSOperation::completionBlock (it uses a block)
+Ignoring NSOperation::setCompletionBlock: (it uses a block)
+Ignoring NSBlockOperation::blockOperationWithBlock: (it uses a block)
+Ignoring NSBlockOperation::addExecutionBlock: (it uses a block)
+Ignoring NSOperationQueue::addOperationWithBlock: (it uses a block)
+Ignoring NSPredicate::predicateWithBlock: (it uses a block)
+Ignoring NSSet::enumerateObjectsUsingBlock: (it uses a block)
+Ignoring NSSet::enumerateObjectsWithOptions:usingBlock: (it uses a block)
+Ignoring NSSet::objectsPassingTest: (it uses a block)
+Ignoring NSSet::objectsWithOptions:passingTest: (it uses a block)
+Ignoring NSString::enumerateSubstringsInRange:options:usingBlock: (it uses a block)
+Ignoring NSString::enumerateLinesUsingBlock: (it uses a block)
+
+Ignoring NSEvent::addGlobalMonitorForEventsMatchingMask:handler: (it uses a block)
+Ignoring NSEvent::addLocalMonitorForEventsMatchingMask:handler: (it uses a block)
+Ignoring NSSavePanel::beginSheetModalForWindow:completionHandler: (it uses a block)
+Ignoring NSSavePanel::beginWithCompletionHandler: (it uses a block)
+Ignoring NSSpellChecker::requestCheckingOfString:range:types:options:inSpellDocumentWithTag:completionHandler: (it uses a block)
+Ignoring NSView::showDefinitionForAttributedString:range:options:baselineOriginProvider: (it uses a block)
+Ignoring NSWorkspace::recycleURLs:completionHandler: (it uses a block)
+Ignoring NSWorkspace::duplicateURLs:completionHandler: (it uses a block)
+
+* Double clicks are picking up the dot in foo.bar
+	- would be nice if this was tied into a language regex
+* Upgrade to the new mono.
+* Might want some notes in the readme about debugging:
+	- setting up logging
+	- /tmp/continuum.log
+	- running from terminal
+* Upgrade to snow leopard:
+	- rebuild mcocoa
+	- make sure the examples work
+	- update-libraries for Continuum
+	- rebuild Continuum and make sure it still works
+	- get blocks working
+* README needs to mention:
+	sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.locate.plist
+* Unit test target should be named "check".
 * Handle languages like scripts.
 	- TODO could go here
 	- should be able to override built in languages
@@ -40,23 +101,28 @@ sudo fs_usage -f filesys
 * Might be neat if could figure out languages for files with no extension using
    the shebang (if present).
 * Find needs to work in transcript.
+* Add ToString refactror should default to returning fields and auto-props
+* Do the same for implement IFormatable.
+* Shouldn't be able to open the same directory more than once.
+* Instead of using _c and _i just use _c?
+* Do a release.
+
+* Look at snow leopard change list.
+* Look at the soft debugger in mono 2.6
+* Look at the new error bubbles in snow leopard's XCode.	
+* Would be nice to support hyperlinks in rich text files
+	http://developer.apple.com/qa/qa2006/qa1487.html
+* Stagger windows, especially find results and assembly browser.
+* Is the members popup smart about classes with fields at the start? Or strewn all about?
+* Need to do a better job with Refactor Language.rtf (prose and the grammar)
+* Read up on MEF
+	http://www.codeplex.com/MEF
 * Refactor to generate forwarding methods? Maybe can select methods and then it generates
    forwarding methods which can be cut and pasted. Or select a field and it pops up a dialog
    allowing user to pick which methods he wants to forward.
 * Allow auto-completion via "CamelHumps"?
 	- ie for "WriteLine" can type "WL"
 * MonoDevelop has an interesting Dynamic Abbrev Command: http://monodevelop.com/Download/What%27s_new_in_MonoDevelop_2.2
-* Add ToString refactror should default to returning fields and auto-props
-* Do the same for implement IFormatable.
-* Stagger windows, especially find results and assembly browser.
-* Shouldn't be able to open the same directory more than once.
-* Is the members popup smart about classes with fields at the start? Or strewn all about?
-* Unit test target should be named "check".
-* Need to do a better job with Refactor Language.rtf (prose and the grammar)
-* Use the new mono.
-* Upgrade to snow leopard.
-* Do a release.
-
 * Get refactors enabling and disabling.
 * Add refactors to context menu.
 * Might be able to do some new refactors now like rename and extract method.

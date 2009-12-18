@@ -124,11 +124,11 @@ tar-src:
 # Note that it's important to delete the config files so that we run with the same environment
 # as users.
 clean:
-	-rm bin/csc_flags
-	-rm $(clean-files)
+	-rm -f bin/csc_flags
+	-rm -f $(clean-files)
 	-rm -rf $(clean-dirs)
 	-rm -rf bin/plugins
-	-rm bin/*-sources
+	-rm -f bin/*-sources
 	-rm -rf bin/*.config
 	-rm -rf bin/*.nib
 	-rm -rf bin/TestResult.xml
@@ -136,12 +136,13 @@ clean:
 	-rm -rf bin/tests.dll
 	-rm -rf bin/tests.dll.mdb
 	-rm -rf bin/install-tool*
+	-rm  -f bin/csc_flags
 	
 dist-clean:
 	-rm -rf bin
-	-rm build_num
-	-rm foreshadow.log
-	-rm source/AssemblyVersion.cs
+	-rm -f build_num
+	-rm -f foreshadow.log
+	-rm -f source/AssemblyVersion.cs
 
 bin/continuum.exe.config:
 	@echo "generating bin/continuum.exe.config"

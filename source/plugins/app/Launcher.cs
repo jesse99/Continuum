@@ -33,7 +33,7 @@ namespace App
 	internal sealed class Launcher : ILaunch
 	{
 		public void Instantiated(Boss boss)
-		{	
+		{
 			m_boss = boss;
 		}
 		
@@ -69,6 +69,9 @@ namespace App
 			}
 			catch (Exception e)
 			{
+				Log.WriteLine(TraceLevel.Error, "App", "Couldn't open '{0}'", path);
+				Log.WriteLine(TraceLevel.Error, "App", e);
+				
 				NSString title = NSString.Create("Couldn't open '{0}'.", path);
 				NSString message = NSString.Create(e.Message);
 				Unused.Value = Functions.NSRunAlertPanel(title, message);
@@ -101,6 +104,9 @@ namespace App
 			}
 			catch (Exception e)
 			{
+				Log.WriteLine(TraceLevel.Error, "App", "Couldn't open '{0}'", path);
+				Log.WriteLine(TraceLevel.Error, "App", e);
+				
 				NSString title = NSString.Create("Couldn't open '{0}'.", path);
 				NSString message = NSString.Create(e.Message);
 				Unused.Value = Functions.NSRunAlertPanel(title, message);
@@ -154,7 +160,7 @@ namespace App
 			}
 		}
 		#endregion
-
+	
 		#region Fields
 		private Boss m_boss;
 		#endregion
