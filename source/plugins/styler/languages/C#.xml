@@ -15,4 +15,5 @@
 	<string>&quot; (?: [^&quot;\r\n\\] | \\.)* &quot;</string>
 	<string>@&quot; (?: [^&quot;\\] | \\. | (?: &quot; &quot;))* &quot;</string>
 	<string>&apos; (?: [^&apos;\r\n\\] | \\.)* &apos;</string>
+	<word>[\w\p{Lm}\p{Nl}\p{Mn}_~] [\w\p{Lm}\p{Nl}\p{Mn}_]*</word> 
 </Language>

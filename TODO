@@ -77,9 +77,15 @@ Ignoring NSView::showDefinitionForAttributedString:range:options:baselineOriginP
 Ignoring NSWorkspace::recycleURLs:completionHandler: (it uses a block)
 Ignoring NSWorkspace::duplicateURLs:completionHandler: (it uses a block)
 
-* Double clicks are picking up the dot in foo.bar
-	- would be nice if this was tied into a language regex
-* Upgrade to the new mono.
+* Work on double clicking:
+	- probably want to do something with option shift arrow
+	- DoExtendSelection
+	- option-tab? probably can just call selectionRangeForProposedRange_granularity
+* Might want to build a new foreshadow.
+* mcocoa should define NSSelectionGranularity.
+	- update TextEditorView (several places)
+* Use the new mcocoa and mobjc.
+* Upgrade to the new mono. Grab the source too.
 * Might want some notes in the readme about debugging:
 	- setting up logging
 	- /tmp/continuum.log
@@ -90,6 +96,7 @@ Ignoring NSWorkspace::duplicateURLs:completionHandler: (it uses a block)
 	- update-libraries for Continuum
 	- rebuild Continuum and make sure it still works
 	- get blocks working
+	- new scrollToEndOfDocument method
 * README needs to mention:
 	sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.locate.plist
 * Unit test target should be named "check".
@@ -98,9 +105,11 @@ Ignoring NSWorkspace::duplicateURLs:completionHandler: (it uses a block)
 	- should be able to override built in languages
 	- what about globs? can globs be overriden? probably have to update GlobsTableView ctor
 	- might want a language for gendarme console reports, what extension?
+* Using command-I to set the language doesn't trigger syntax hiliting.
 * Might be neat if could figure out languages for files with no extension using
    the shebang (if present).
 * Find needs to work in transcript.
+* New documents don't seem to respect the default font pref.
 * Add ToString refactror should default to returning fields and auto-props
 * Do the same for implement IFormatable.
 * Shouldn't be able to open the same directory more than once.

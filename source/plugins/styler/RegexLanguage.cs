@@ -23,6 +23,7 @@ using Gear;
 using Gear.Helpers;
 using Shared;
 using System;
+using System.Text.RegularExpressions;
 
 namespace Styler
 {
@@ -56,6 +57,11 @@ namespace Styler
 		public bool StylesWhitespace
 		{
 			get {return m_language != null ? m_language.StylesWhitespace : false;}
+		}
+		
+		public Regex Word
+		{
+			get {return m_language.Word;} 
 		}
 		
 		[ThreadModel(ThreadModel.Concurrent)]

@@ -84,6 +84,17 @@ namespace Styler
 			get {return m_styleWhitespace;}
 		}
 		
+		public Regex Word
+		{
+			get 
+			{
+				if (m_word == null)
+					m_word = DoMakeWordRe(@"[\w_] [\w_]*");
+				
+				return m_word;
+			}
+		}
+		
 		#region Private Methods		
 		// Compiling regexen is expensive so we won't do it unless we need to. Also
 		// this method may execute concurrently but that should not cause any actual
@@ -93,7 +104,7 @@ namespace Styler
 		{
 			try
 			{
-				m_regex = new Regex(m_expr, RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
+				m_regex = new Regex(m_expr, ReOptions);
 			}
 			catch (Exception e)
 			{
@@ -116,6 +127,7 @@ namespace Styler
 				exprs.Add(@"((?: ^ [\t ]+) | (?: [\t ]+ $))");
 			}
 			
+			var word = new List<string>();
 			foreach (XmlNode child in node.ChildNodes)	
 			{
 				for (int i = 0; i < child.InnerText.Length; ++i)
@@ -134,11 +146,26 @@ namespace Styler
 					}
 				}
 				
-				m_indexTable.Add(index++, DoGetToken(child.Name));
+				if (child.Name == "word")
+					word.Add("( " + child.InnerText + " )");
+				else
+					m_indexTable.Add(index++, DoGetToken(child.Name));
 				exprs.Add("( " + child.InnerText + " )");
+			}
+			 
+			if (word.Count > 0)
+			{
+				string re = "(" + string.Join(" | ", word.ToArray()) + ")";
+				m_word = DoMakeWordRe(re);
 			}
 			
 			return string.Join(" | ", exprs.ToArray());
+		}
+		
+		private Regex DoMakeWordRe(string re)
+		{
+			re = re + @"( [\u0000-\uFFFF]+? " + re + ")*"; 
+			return new Regex(re, ReOptions);
 		}
 		
 		private StyleType DoGetToken(string name)
@@ -182,10 +209,13 @@ namespace Styler
 		#endregion
 		
 		#region Fields
+		private const RegexOptions ReOptions = RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled;
+		
 		private string m_expr;
 		private string m_name;
 		private int[] m_tabStops;
 		private Regex m_regex;
+		private Regex m_word;
 		private bool m_styleWhitespace;
 		private Dictionary<int, StyleType> m_indexTable = new Dictionary<int, StyleType>();
 		#endregion

@@ -28,6 +28,7 @@ using System;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace TextEditor
 {
@@ -47,6 +48,8 @@ namespace TextEditor
 		
 		private const int TabKey = 0x30;
 		private const int DeleteKey = 0x33;
+		private const int LeftArrowKey = 0x7B;
+		private const int RightArrowKey = 0x7C;
 		private const int DownArrowKey = 0x7D;
 		private const int UpArrowKey = 0x7E;
 		
@@ -75,6 +78,20 @@ namespace TextEditor
 						if (DoSelectPreviousIdentifier(controller))
 							break;
 					}
+				}
+				
+				// Special case option-shift-arrow because Apple is too lame to call selectionRangeForProposedRange_granularity
+				// for us.
+				int shiftOption = Enums.NSShiftKeyMask | Enums.NSAlternateKeyMask;
+				if (evt.keyCode() == LeftArrowKey && (evt.modifierFlags() & shiftOption) == shiftOption)
+				{
+					if (DoExtendSelectionLeft())
+						break;
+				}
+				else if (evt.keyCode() == RightArrowKey && (evt.modifierFlags() & shiftOption) == shiftOption)
+				{
+					if (DoExtendSelectionRight())
+						break;
 				}
 				
 				// Special case for deleting the new line at the start of a blank line
@@ -119,12 +136,12 @@ namespace TextEditor
 		}
 		
 #if false
-		// This is kind of nice, and BBEdit does something similar but it screws
-		// up things like drag selections.
 		public new void mouseDown(NSEvent evt)
 		{
 			bool done = false;
 			
+			// This is kind of nice, and BBEdit does something similar but it screws
+			// up things like drag selections.
 			if (evt.modifierFlags() == 256)
 			{
 				int index = DoMouseEventToIndex(evt);
@@ -145,6 +162,35 @@ namespace TextEditor
 				SuperCall(NSTextView.Class, "mouseDown:", evt);
 		}
 #endif
+	
+		public NSRange selectionRangeForProposedRange_granularity(NSRange proposedSelRange, int granularity)
+		{
+			NSRange result;
+			
+			TextController controller = (TextController) window().windowController();
+			if (granularity == 1 && controller.Language != null)
+			{
+				NSString text = string_();
+				result = proposedSelRange;
+				
+				while (result.location > 0 && DoMatchesWord(text, result.location - 1, result.length + 1, controller.Language.Word))
+				{
+					--result.location;
+					++result.length;
+				}
+				
+				while (result.location + result.length < text.length() && DoMatchesWord(text, result.location, result.length + 1, controller.Language.Word))
+				{
+					++result.length;
+				}
+			}
+			else
+			{
+				result = SuperCall(NSTextView.Class, "selectionRangeForProposedRange:granularity:", proposedSelRange, granularity).To<NSRange>();
+			}
+			
+			return result;
+		}
 		
 		public void processHandler(NSObject sender)
 		{
@@ -222,7 +268,11 @@ namespace TextEditor
 				else
 				{
 					if (m_range.length == 0 || !m_range.Intersects(index))
-						m_range = DoExtendSelection(index);
+					{
+						m_range = new NSRange(index, 1);
+						m_range = selectionRangeForProposedRange_granularity(m_range, 1);
+						setSelectedRange(m_range);
+					}
 					
 					m_selection = null;
 					if (m_range.length > 0)
@@ -402,6 +452,76 @@ namespace TextEditor
 		#endregion
 		
 		#region Private Methods
+		private bool DoMatchesWord(NSString text, int location, int length, Regex word)
+		{
+			string str;
+			text.getCharacters_range(new NSRange(location, length), out str);
+			Match match = word.Match(str);
+			return match.Success && match.Length == str.Length;
+		}
+		
+		private bool DoExtendSelectionLeft()
+		{
+			bool extended = false;
+			
+			TextController controller = (TextController) window().windowController();
+			if (controller.Language != null)
+			{
+				NSString text = string_();
+				NSRange range = selectedRange();
+				
+				while (range.location > 0 &&
+					char.IsWhiteSpace(text.characterAtIndex((uint) (range.location - 1))))
+				{
+					--range.location;
+					++range.length;
+				}
+				
+				if (range.location > 0)
+				{
+					--range.location;
+					++range.length;
+					
+					range = selectionRangeForProposedRange_granularity(range, 1);
+					setSelectedRange(range);
+					
+					extended = true;
+				}
+			}
+			
+			return extended;
+		}
+		
+		private bool DoExtendSelectionRight()
+		{
+			bool extended = false;
+			
+			TextController controller = (TextController) window().windowController();
+			if (controller.Language != null)
+			{
+				NSString text = string_();
+				NSRange range = selectedRange();
+				
+				while (range.location + range.length + 1 < text.length() &&
+					char.IsWhiteSpace(text.characterAtIndex((uint) (range.location + range.length + 1))))
+				{
+					++range.length;
+				}
+				
+				if (range.location + range.length + 1 < text.length())
+				{
+					++range.length;
+					
+					range = selectionRangeForProposedRange_granularity(range, 1);
+					setSelectedRange(range);
+					
+					extended = true;
+				}
+			}
+			
+			return extended;
+		}
+		
 		// If the line is blank then this will return the number of blank characters.
 		private int DoGetBlankCount(NSString text, int index)
 		{
@@ -451,6 +571,7 @@ namespace TextEditor
 			
 			if (next.length > 0)
 			{
+				next = selectionRangeForProposedRange_granularity(next, 1);
 				setSelectedRange(next);
 				scrollRangeToVisible(next);
 			}
@@ -484,6 +605,7 @@ namespace TextEditor
 			
 			if (previous.length > 0)
 			{
+				previous = selectionRangeForProposedRange_granularity(previous, 1);
 				setSelectedRange(previous);
 				scrollRangeToVisible(previous);
 			}
@@ -554,42 +676,6 @@ namespace TextEditor
 			NSPoint baseLoc = evt.locationInWindow();
 			NSPoint viewLoc = convertPointFromBase(baseLoc);
 			return (int) characterIndexForInsertionAtPoint(viewLoc);
-		}
-		
-		private NSRange DoExtendSelection(int location)
-		{
-			NSString text = string_();
-			int length = 0;
-			
-			while (location > 0 && DoIsWordChar(text, location - 1))
-			{
-				--location;
-				++length;
-			}
-			
-			while (location + length < text.length() && DoIsWordChar(text, location + length))
-			{
-				++length;
-			}
-			
-			NSRange range = new NSRange(location, length);
-			if (length > 0)
-				setSelectedRange(range);
-			
-			return range;
-		}
-		
-		private bool DoIsWordChar(NSString text, int index)		// TODO: probably should pull this info from a languages.xml file
-		{
-			char ch = text.characterAtIndex((uint) index);
-			
-			if (NSCharacterSet.alphanumericCharacterSet().characterIsMember(ch))
-				return true;
-				
-			if (ch == '_' || ch == ':' || ch == '`')
-				return true;
-				
-			return false;
 		}
 		#endregion
 		

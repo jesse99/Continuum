@@ -8,4 +8,5 @@
 	<preprocessor>\x23 \s* (?: ifdef | ifndef | if | else | elif | endif | define | undef | warning | error | line | pragma | include | import)</preprocessor>
 	<string>&quot; (?: [^&quot;\r\n\\] | \\.)* &quot;</string>
 	<string>&apos; (?: [^&apos;\r\n\\] | \\.)* &apos;</string>
+	<word>[\w_] [\w_:]*</word> 
 </Language>

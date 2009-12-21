@@ -23,6 +23,7 @@ using Gear;
 using Gear.Helpers;
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace Shared
 {
@@ -43,5 +44,9 @@ namespace Shared
 		// Returns true if the language supports showing leading/trailing tabs and
 		// spaces.
 		bool StylesWhitespace {get;}
+		
+		// Returns a regex used to define what the language considers a word (for
+		// things like double clicking).
+		Regex Word {get;}
 	}
 }

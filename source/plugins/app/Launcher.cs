@@ -25,6 +25,7 @@ using MCocoa;
 using MObjc;
 using Shared;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 
@@ -70,7 +71,7 @@ namespace App
 			catch (Exception e)
 			{
 				Log.WriteLine(TraceLevel.Error, "App", "Couldn't open '{0}'", path);
-				Log.WriteLine(TraceLevel.Error, "App", e);
+				Log.WriteLine(TraceLevel.Error, "App", e.ToString());
 				
 				NSString title = NSString.Create("Couldn't open '{0}'.", path);
 				NSString message = NSString.Create(e.Message);
@@ -105,7 +106,7 @@ namespace App
 			catch (Exception e)
 			{
 				Log.WriteLine(TraceLevel.Error, "App", "Couldn't open '{0}'", path);
-				Log.WriteLine(TraceLevel.Error, "App", e);
+				Log.WriteLine(TraceLevel.Error, "App", e.ToString());
 				
 				NSString title = NSString.Create("Couldn't open '{0}'.", path);
 				NSString message = NSString.Create(e.Message);
