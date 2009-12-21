@@ -152,7 +152,7 @@ namespace Styler
 					m_indexTable.Add(index++, DoGetToken(child.Name));
 				exprs.Add("( " + child.InnerText + " )");
 			}
-			 
+			
 			if (word.Count > 0)
 			{
 				string re = "(" + string.Join(" | ", word.ToArray()) + ")";
@@ -164,7 +164,7 @@ namespace Styler
 		
 		private Regex DoMakeWordRe(string re)
 		{
-			re = re + @"( [\u0000-\uFFFF]+? " + re + ")*"; 
+			re = string.Format(@"{0} ([\u0000-\uFFFF]+? {0})*", re);
 			return new Regex(re, ReOptions);
 		}
 		

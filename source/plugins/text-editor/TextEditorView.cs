@@ -470,19 +470,20 @@ namespace TextEditor
 				NSString text = string_();
 				NSRange range = selectedRange();
 				
-				while (range.location > 0 &&
-					char.IsWhiteSpace(text.characterAtIndex((uint) (range.location - 1))))
+				int i = range.location;
+				while (i > 0 && char.IsWhiteSpace(text.characterAtIndex((uint) (i - 1))))
 				{
-					--range.location;
-					++range.length;
+					--i;
 				}
 				
-				if (range.location > 0)
+				if (i > 0)
 				{
-					--range.location;
-					++range.length;
+					--i;
 					
-					range = selectionRangeForProposedRange_granularity(range, 1);
+					NSRange temp = new NSRange(i, 1);
+					temp = selectionRangeForProposedRange_granularity(temp, 1);
+					
+					range = new NSRange(temp.location, range.location + range.length - temp.location);
 					setSelectedRange(range);
 					
 					extended = true;
@@ -502,17 +503,21 @@ namespace TextEditor
 				NSString text = string_();
 				NSRange range = selectedRange();
 				
-				while (range.location + range.length + 1 < text.length() &&
-					char.IsWhiteSpace(text.characterAtIndex((uint) (range.location + range.length + 1))))
+				int j = range.location + range.length;
+				while (j + 1 < text.length() &&
+					char.IsWhiteSpace(text.characterAtIndex((uint) (j + 1))))
 				{
-					++range.length;
+					++j;
 				}
 				
-				if (range.location + range.length + 1 < text.length())
+				if (j + 1 < text.length())
 				{
-					++range.length;
+					++j;
 					
-					range = selectionRangeForProposedRange_granularity(range, 1);
+					NSRange temp = new NSRange(j, 1);
+					temp = selectionRangeForProposedRange_granularity(temp, 1);
+					
+					range = new NSRange(range.location, temp.location + temp.length - range.location);
 					setSelectedRange(range);
 					
 					extended = true;

@@ -77,14 +77,8 @@ Ignoring NSView::showDefinitionForAttributedString:range:options:baselineOriginP
 Ignoring NSWorkspace::recycleURLs:completionHandler: (it uses a block)
 Ignoring NSWorkspace::duplicateURLs:completionHandler: (it uses a block)
 
-* Work on double clicking:
-	- probably want to do something with option shift arrow
-	- DoExtendSelection
-	- option-tab? probably can just call selectionRangeForProposedRange_granularity
-* Might want to build a new foreshadow.
-* mcocoa should define NSSelectionGranularity.
-	- update TextEditorView (several places)
 * Use the new mcocoa and mobjc.
+* Update TextEditorView (several places) with the NSSelectionGranularity constant.
 * Upgrade to the new mono. Grab the source too.
 * Might want some notes in the readme about debugging:
 	- setting up logging
