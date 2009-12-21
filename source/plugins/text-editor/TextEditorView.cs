@@ -66,9 +66,9 @@ namespace TextEditor
 				}
 				
 				// Option-tab selects the next identifier.
-				if (evt.keyCode() == TabKey && (evt.modifierFlags() & Enums.NSAlternateKeyMask) != 0)
+				if (evt.keyCode() == TabKey && (evt.modifierFlags_i() & Enums.NSAlternateKeyMask) != 0)
 				{
-					if ((evt.modifierFlags() & Enums.NSShiftKeyMask) == 0)
+					if ((evt.modifierFlags_i() & Enums.NSShiftKeyMask) == 0)
 					{
 						if (DoSelectNextIdentifier(controller))
 							break;
@@ -83,12 +83,12 @@ namespace TextEditor
 				// Special case option-shift-arrow because Apple is too lame to call selectionRangeForProposedRange_granularity
 				// for us.
 				int shiftOption = Enums.NSShiftKeyMask | Enums.NSAlternateKeyMask;
-				if (evt.keyCode() == LeftArrowKey && (evt.modifierFlags() & shiftOption) == shiftOption)
+				if (evt.keyCode() == LeftArrowKey && (evt.modifierFlags_i() & shiftOption) == shiftOption)
 				{
 					if (DoExtendSelectionLeft())
 						break;
 				}
-				else if (evt.keyCode() == RightArrowKey && (evt.modifierFlags() & shiftOption) == shiftOption)
+				else if (evt.keyCode() == RightArrowKey && (evt.modifierFlags_i() & shiftOption) == shiftOption)
 				{
 					if (DoExtendSelectionRight())
 						break;
@@ -142,7 +142,7 @@ namespace TextEditor
 			
 			// This is kind of nice, and BBEdit does something similar but it screws
 			// up things like drag selections.
-			if (evt.modifierFlags() == 256)
+			if (evt.modifierFlags_i() == 256)
 			{
 				int index = DoMouseEventToIndex(evt);
 				NSString text = string_();
@@ -168,7 +168,7 @@ namespace TextEditor
 			NSRange result;
 			
 			TextController controller = (TextController) window().windowController();
-			if (granularity == 1 && controller.Language != null)
+			if (granularity == Enums.NSSelectByWord && controller.Language != null)
 			{
 				NSString text = string_();
 				result = proposedSelRange;
@@ -270,7 +270,7 @@ namespace TextEditor
 					if (m_range.length == 0 || !m_range.Intersects(index))
 					{
 						m_range = new NSRange(index, 1);
-						m_range = selectionRangeForProposedRange_granularity(m_range, 1);
+						m_range = selectionRangeForProposedRange_granularity(m_range, Enums.NSSelectByWord);
 						setSelectedRange(m_range);
 					}
 					
@@ -481,7 +481,7 @@ namespace TextEditor
 					--i;
 					
 					NSRange temp = new NSRange(i, 1);
-					temp = selectionRangeForProposedRange_granularity(temp, 1);
+					temp = selectionRangeForProposedRange_granularity(temp, Enums.NSSelectByWord);
 					
 					range = new NSRange(temp.location, range.location + range.length - temp.location);
 					setSelectedRange(range);
@@ -515,7 +515,7 @@ namespace TextEditor
 					++j;
 					
 					NSRange temp = new NSRange(j, 1);
-					temp = selectionRangeForProposedRange_granularity(temp, 1);
+					temp = selectionRangeForProposedRange_granularity(temp, Enums.NSSelectByWord);
 					
 					range = new NSRange(range.location, temp.location + temp.length - range.location);
 					setSelectedRange(range);
@@ -576,7 +576,7 @@ namespace TextEditor
 			
 			if (next.length > 0)
 			{
-				next = selectionRangeForProposedRange_granularity(next, 1);
+				next = selectionRangeForProposedRange_granularity(next, Enums.NSSelectByWord);
 				setSelectedRange(next);
 				scrollRangeToVisible(next);
 			}
@@ -610,7 +610,7 @@ namespace TextEditor
 			
 			if (previous.length > 0)
 			{
-				previous = selectionRangeForProposedRange_granularity(previous, 1);
+				previous = selectionRangeForProposedRange_granularity(previous, Enums.NSSelectByWord);
 				setSelectedRange(previous);
 				scrollRangeToVisible(previous);
 			}

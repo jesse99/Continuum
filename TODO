@@ -77,20 +77,14 @@ Ignoring NSView::showDefinitionForAttributedString:range:options:baselineOriginP
 Ignoring NSWorkspace::recycleURLs:completionHandler: (it uses a block)
 Ignoring NSWorkspace::duplicateURLs:completionHandler: (it uses a block)
 
-* Use the new mcocoa and mobjc.
-* Update TextEditorView (several places) with the NSSelectionGranularity constant.
+* Upgrade to snow leopard:
+	- get blocks working
+	- new scrollToEndOfDocument method
 * Upgrade to the new mono. Grab the source too.
 * Might want some notes in the readme about debugging:
 	- setting up logging
 	- /tmp/continuum.log
 	- running from terminal
-* Upgrade to snow leopard:
-	- rebuild mcocoa
-	- make sure the examples work
-	- update-libraries for Continuum
-	- rebuild Continuum and make sure it still works
-	- get blocks working
-	- new scrollToEndOfDocument method
 * README needs to mention:
 	sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.locate.plist
 * Unit test target should be named "check".

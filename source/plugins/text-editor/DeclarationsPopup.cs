@@ -73,7 +73,7 @@ namespace TextEditor
 		
 		public new void mouseDown(NSEvent e)
 		{
-			if ((e.modifierFlags() & Enums.NSAlternateKeyMask) != 0)
+			if ((e.modifierFlags_i() & Enums.NSAlternateKeyMask) != 0)
 			{
 				DoBuildUsingNamesOrder();
 				SuperCall(NSPopUpButton.Class, "mouseDown:", e);
