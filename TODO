@@ -24,63 +24,9 @@ http://www.jetbrains.com/resharper/features/
 select declaring_root_name,return_type_name from Methods where name = 'get_BaseTypes';
 sudo fs_usage -f filesys
 
-get a hand-written version working for one of these
-write hand-written versions for the more important of these
-	http://clang.llvm.org/docs/BlockImplementation.txt
-Ignoring NSArray::enumerateObjectsUsingBlock: (it uses a block)
-Ignoring NSArray::enumerateObjectsWithOptions:usingBlock: (it uses a block)
-Ignoring NSArray::enumerateObjectsAtIndexes:options:usingBlock: (it uses a block)
-Ignoring NSArray::indexOfObjectPassingTest: (it uses a block)
-Ignoring NSArray::indexOfObjectWithOptions:passingTest: (it uses a block)
-Ignoring NSArray::indexOfObjectAtIndexes:options:passingTest: (it uses a block)
-Ignoring NSArray::indexesOfObjectsPassingTest: (it uses a block)
-Ignoring NSArray::indexesOfObjectsWithOptions:passingTest: (it uses a block)
-Ignoring NSArray::indexesOfObjectsAtIndexes:options:passingTest: (it uses a block)
-Ignoring NSAttributedString::enumerateAttributesInRange:options:usingBlock: (it uses a block)
-Ignoring NSAttributedString::enumerateAttribute:inRange:options:usingBlock: (it uses a block)
-Ignoring NSDictionary::enumerateKeysAndObjectsUsingBlock: (it uses a block)
-Ignoring NSDictionary::enumerateKeysAndObjectsWithOptions:usingBlock: (it uses a block)
-Ignoring NSDictionary::keysOfEntriesPassingTest: (it uses a block)
-Ignoring NSDictionary::keysOfEntriesWithOptions:passingTest: (it uses a block)
-Ignoring NSExpression::expressionForBlock:arguments: (it uses a block)
-Ignoring NSExpression::expressionBlock (it uses a block)
-Ignoring NSFileManager::enumeratorAtURL:includingPropertiesForKeys:options:errorHandler: (it uses a block)
-Ignoring NSIndexSet::enumerateIndexesUsingBlock: (it uses a block)
-Ignoring NSIndexSet::enumerateIndexesWithOptions:usingBlock: (it uses a block)
-Ignoring NSIndexSet::enumerateIndexesInRange:options:usingBlock: (it uses a block)
-Ignoring NSIndexSet::indexPassingTest: (it uses a block)
-Ignoring NSIndexSet::indexWithOptions:passingTest: (it uses a block)
-Ignoring NSIndexSet::indexInRange:options:passingTest: (it uses a block)
-Ignoring NSIndexSet::indexesPassingTest: (it uses a block)
-Ignoring NSIndexSet::indexesWithOptions:passingTest: (it uses a block)
-Ignoring NSIndexSet::indexesInRange:options:passingTest: (it uses a block)
-Ignoring NSNotificationCenter::addObserverForName:object:queue:usingBlock: (it uses a block)
-Ignoring NSOperation::completionBlock (it uses a block)
-Ignoring NSOperation::setCompletionBlock: (it uses a block)
-Ignoring NSBlockOperation::blockOperationWithBlock: (it uses a block)
-Ignoring NSBlockOperation::addExecutionBlock: (it uses a block)
-Ignoring NSOperationQueue::addOperationWithBlock: (it uses a block)
-Ignoring NSPredicate::predicateWithBlock: (it uses a block)
-Ignoring NSSet::enumerateObjectsUsingBlock: (it uses a block)
-Ignoring NSSet::enumerateObjectsWithOptions:usingBlock: (it uses a block)
-Ignoring NSSet::objectsPassingTest: (it uses a block)
-Ignoring NSSet::objectsWithOptions:passingTest: (it uses a block)
-Ignoring NSString::enumerateSubstringsInRange:options:usingBlock: (it uses a block)
-Ignoring NSString::enumerateLinesUsingBlock: (it uses a block)
-
-Ignoring NSEvent::addGlobalMonitorForEventsMatchingMask:handler: (it uses a block)
-Ignoring NSEvent::addLocalMonitorForEventsMatchingMask:handler: (it uses a block)
-Ignoring NSSavePanel::beginSheetModalForWindow:completionHandler: (it uses a block)
-Ignoring NSSavePanel::beginWithCompletionHandler: (it uses a block)
-Ignoring NSSpellChecker::requestCheckingOfString:range:types:options:inSpellDocumentWithTag:completionHandler: (it uses a block)
-Ignoring NSView::showDefinitionForAttributedString:range:options:baselineOriginProvider: (it uses a block)
-Ignoring NSWorkspace::recycleURLs:completionHandler: (it uses a block)
-Ignoring NSWorkspace::duplicateURLs:completionHandler: (it uses a block)
-
-* Upgrade to snow leopard:
-	- get blocks working
-	- new scrollToEndOfDocument method
 * Upgrade to the new mono. Grab the source too.
+	- see if the cecil libs from the gac work
+* Typing seems slower than it used to be, eg when typing a comment.
 * Might want some notes in the readme about debugging:
 	- setting up logging
 	- /tmp/continuum.log

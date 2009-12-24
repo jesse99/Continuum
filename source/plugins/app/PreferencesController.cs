@@ -27,6 +27,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
+// Allow deprecated methods so that we can continue to run on leopard.
+#pragma warning disable 618
+
 namespace App
 {
 	[ExportClass("PreferencesController", "NSWindowController", Outlets = "globsTable text_memberButton text_typeButton text_preprocessButton monoRoot lineWell transcriptWell errorsWell pathsController defaultWell spacesWell argsWell tabsWell contents tabs transcript_commandButton transcript_stdoutButton transcript_stderrButton errorsButton globalIgnores text_defaultButton text_keywordButton text_identifierButton text_stringButton text_numberButton text_commentButton text_other1Button text_other2Button")]

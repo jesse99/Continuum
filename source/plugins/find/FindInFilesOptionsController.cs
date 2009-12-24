@@ -26,6 +26,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
+// Allow deprecated methods so that we can continue to run on leopard.
+#pragma warning disable 618
+
 namespace Find
 {
 	[ExportClass("FindInFilesOptionsController", "NSWindowController", Outlets = "dirsTable canRemove")]

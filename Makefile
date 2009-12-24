@@ -11,7 +11,7 @@ ifdef RELEASE
 	CSC_FLAGS += -checked+ -debug+ -warn:4 -nowarn:1591 -optimize+ -d:TRACE
 	MONO_FLAGS += --desktop
 else
-	CSC_FLAGS += -checked+ -debug+ -warn:4 -nowarn:1591 -d:DEBUG -d:TRACE -d:CONTRACTS_FULL
+	CSC_FLAGS += -checked+ -debug+ -warnaserror+ -warn:4 -nowarn:1591 -d:DEBUG -d:TRACE -d:CONTRACTS_FULL
 	MONO_FLAGS += --desktop --debug
 endif
 

@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
 		
 	if (err != errAuthorizationSuccess)
 	{
-		fprintf(stderr, "AuthorizationCreate failed with error %d\n", err);
+		fprintf(stderr, "AuthorizationCreate failed with error %ld\n", err);
 		return err;
 	}
 	
@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
 			err = AuthorizationCopyRights(cookie, &rights, NULL, flags, NULL);
 			if (err != errAuthorizationSuccess)
 			{
-				fprintf(stderr, "AuthorizationCopyRights failed with error %d\n", err);
+				fprintf(stderr, "AuthorizationCopyRights failed with error %ld\n", err);
 				break;
 			}
 		}
@@ -54,7 +54,7 @@ int main(int argc, char* argv[])
 				NULL);
 			if (err != errAuthorizationSuccess)
 			{
-				fprintf(stderr, "AuthorizationExecuteWithPrivileges failed with error %d\n", err);
+				fprintf(stderr, "AuthorizationExecuteWithPrivileges failed with error %ld\n", err);
 				break;
 			}
 		}

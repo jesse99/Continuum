@@ -31,6 +31,9 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
+// Allow deprecated methods so that we can continue to run on leopard.
+#pragma warning disable 618
+
 namespace TextEditor
 {
 	internal enum LineEndian

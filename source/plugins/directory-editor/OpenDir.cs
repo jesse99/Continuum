@@ -25,6 +25,9 @@ using MObjc;
 using Shared;
 using System;
 
+// Allow deprecated methods so that we can continue to run on leopard.
+#pragma warning disable 618
+
 namespace DirectoryEditor
 {
 	internal sealed class OpenDir : IOpen

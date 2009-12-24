@@ -29,6 +29,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 
+// Allow deprecated methods so that we can continue to run on leopard.
+#pragma warning disable 618
+
 namespace App
 {
 	internal static class StringBuilderExtensions

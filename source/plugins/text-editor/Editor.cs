@@ -161,7 +161,7 @@ namespace TextEditor
 			NSMutableArray objects = NSMutableArray.Create();
 			dict.setObject_forKey(objects, NSNib.NSNibTopLevelObjects);
 			
-			bool loaded = NSBundle.mainBundle().loadNibFile_externalNameTable_withZone_i(
+			bool loaded = NSBundle.mainBundle().loadNibFile_externalNameTable_withZone(
 				NSString.Create("Annotation.nib"),
 				dict,
 				view.zone());

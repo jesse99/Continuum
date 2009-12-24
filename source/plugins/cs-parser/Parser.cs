@@ -2088,7 +2088,7 @@ namespace CsParser
 			
 			if (m_bad.Length == 0)
 			{
-				Log.WriteLine(TraceLevel.Info, "Errors", "{0}", error);
+				Log.WriteLine(TraceLevel.Verbose, "Errors", "{0}", error);
 				m_bad = m_scanner.Token;
 			}
 			else

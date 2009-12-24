@@ -29,6 +29,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
+// Allow deprecated methods so that we can continue to run on leopard.
+#pragma warning disable 618
+
 namespace Find
 {
 	[ExportClass("FindInFilesController", "BaseFindController", Outlets = "dirPopup directoryList include includeList exclude excludeList")]
@@ -285,7 +288,7 @@ namespace Find
 					string path = main.Get<ITextEditor>().Path;
 					if (path != null)
 					{
-						boss = dwindows.All().SingleOrDefault(b => path.StartsWith(b.Get<IDirectoryEditor>().Path));
+						boss = dwindows.All().FirstOrDefault(b => path.StartsWith(b.Get<IDirectoryEditor>().Path));
 						if (boss != null)
 							dir = boss.Get<IDirectoryEditor>().Path;		// use the directory we have open if possible
 						else

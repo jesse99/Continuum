@@ -66,9 +66,9 @@ namespace TextEditor
 				}
 				
 				// Option-tab selects the next identifier.
-				if (evt.keyCode() == TabKey && (evt.modifierFlags_i() & Enums.NSAlternateKeyMask) != 0)
+				if (evt.keyCode() == TabKey && (evt.modifierFlags() & Enums.NSAlternateKeyMask) != 0)
 				{
-					if ((evt.modifierFlags_i() & Enums.NSShiftKeyMask) == 0)
+					if ((evt.modifierFlags() & Enums.NSShiftKeyMask) == 0)
 					{
 						if (DoSelectNextIdentifier(controller))
 							break;
@@ -83,12 +83,12 @@ namespace TextEditor
 				// Special case option-shift-arrow because Apple is too lame to call selectionRangeForProposedRange_granularity
 				// for us.
 				int shiftOption = Enums.NSShiftKeyMask | Enums.NSAlternateKeyMask;
-				if (evt.keyCode() == LeftArrowKey && (evt.modifierFlags_i() & shiftOption) == shiftOption)
+				if (evt.keyCode() == LeftArrowKey && (evt.modifierFlags() & shiftOption) == shiftOption)
 				{
 					if (DoExtendSelectionLeft())
 						break;
 				}
-				else if (evt.keyCode() == RightArrowKey && (evt.modifierFlags_i() & shiftOption) == shiftOption)
+				else if (evt.keyCode() == RightArrowKey && (evt.modifierFlags() & shiftOption) == shiftOption)
 				{
 					if (DoExtendSelectionRight())
 						break;
@@ -485,6 +485,7 @@ namespace TextEditor
 					
 					range = new NSRange(temp.location, range.location + range.length - temp.location);
 					setSelectedRange(range);
+					scrollRangeToVisible(new NSRange(range.location, 1));
 					
 					extended = true;
 				}
@@ -519,6 +520,7 @@ namespace TextEditor
 					
 					range = new NSRange(range.location, temp.location + temp.length - range.location);
 					setSelectedRange(range);
+					scrollRangeToVisible(new NSRange(range.location + range.length - 1, 1));
 					
 					extended = true;
 				}
