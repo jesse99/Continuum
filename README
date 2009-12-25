@@ -70,6 +70,4 @@ preferences panel which is a bit too inflexible.
 * Open selection won't open the files if there are more than ten of them. It should
 instead popup some sort of window allowing the user to pick which he wants to open.
 
-* There should be an option to word wrap files instead of using a horizontal scrollbar.
-
 jesjones@mindspring.com

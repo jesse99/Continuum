@@ -24,10 +24,10 @@ http://www.jetbrains.com/resharper/features/
 select declaring_root_name,return_type_name from Methods where name = 'get_BaseTypes';
 sudo fs_usage -f filesys
 
-* Upgrade to the new mono. Grab the source too.
-	- see if the cecil libs from the gac work
+
+* Try enabling the native GC.
 * Typing seems slower than it used to be, eg when typing a comment.
-* Might want some notes in the readme about debugging:
+* Might want some notes in the readme about debugging:	
 	- setting up logging
 	- /tmp/continuum.log
 	- running from terminal
@@ -43,14 +43,13 @@ sudo fs_usage -f filesys
 * Might be neat if could figure out languages for files with no extension using
    the shebang (if present).
 * Find needs to work in transcript.
+* DO an mcocoa release.
 * New documents don't seem to respect the default font pref.
 * Add ToString refactror should default to returning fields and auto-props
 * Do the same for implement IFormatable.
 * Shouldn't be able to open the same directory more than once.
-* Instead of using _c and _i just use _c?
 * Do a release.
 
-* Look at snow leopard change list.
 * Look at the soft debugger in mono 2.6
 * Look at the new error bubbles in snow leopard's XCode.	
 * Would be nice to support hyperlinks in rich text files

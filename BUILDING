@@ -13,9 +13,8 @@ and 'sudo make install'.
 * Copy Mono.Cecil.dll and Mono.Cecil.Mdb into Continuum's bin directory (create 
 the bin directory if it does not exist). For Mono.Cecil.Mdb you should be able to
 use the one in the gac which is normally at a path like:
-/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/gac. However
-the Mono.Cecil.dll distributed with mono 2.4.0 is a bit too old: either grab the
-one from the Continuum binary distribution or build it from source.
+/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/gac. For
+Mono.Cecil.dll you can use the one on the gac if you have Mono 2.6, but for earlier mono's you'll want to grab the one from the Continuum binary distribution or build it from source.
 
  * Execute 'make run-app'. This will build the Continuum app and run it from the Terminal.
 Console output will appear in the Terminal instead of the Console app.
