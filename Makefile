@@ -71,10 +71,10 @@ app: bin/install-tool $(program-targets) bin/continuum.exe.config
 run-app: app
 	$(macos-path)/launcher
 	
-test: bin/tests.dll
+check: bin/tests.dll
 	cd bin && "$(NUNIT)" -nologo tests.dll
 
-test1: bin/tests.dll
+check1: bin/tests.dll
 	cd bin && "$(NUNIT)" -nologo -fixture=$(TEST1) tests.dll
 
 # ------------------------------------------------------------------------

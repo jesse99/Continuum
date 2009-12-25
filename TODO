@@ -24,26 +24,21 @@ http://www.jetbrains.com/resharper/features/
 select declaring_root_name,return_type_name from Methods where name = 'get_BaseTypes';
 sudo fs_usage -f filesys
 
-
-* Try enabling the native GC.
-* Typing seems slower than it used to be, eg when typing a comment.
-* Might want some notes in the readme about debugging:	
-	- setting up logging
-	- /tmp/continuum.log
-	- running from terminal
-* README needs to mention:
-	sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.locate.plist
-* Unit test target should be named "check".
 * Handle languages like scripts.
+	- should have standard and user directories
 	- TODO could go here
+	- should have a README
+	- user globs file overrides the standard globs file (for the languages it mentions)
 	- should be able to override built in languages
 	- what about globs? can globs be overriden? probably have to update GlobsTableView ctor
 	- might want a language for gendarme console reports, what extension?
+	- can we dynamically update our state if a file changes?
+	- might want a button or menu item to open the languages directory
 * Using command-I to set the language doesn't trigger syntax hiliting.
 * Might be neat if could figure out languages for files with no extension using
    the shebang (if present).
 * Find needs to work in transcript.
-* DO an mcocoa release.
+* Do an mcocoa release.
 * New documents don't seem to respect the default font pref.
 * Add ToString refactror should default to returning fields and auto-props
 * Do the same for implement IFormatable.
@@ -52,10 +47,10 @@ sudo fs_usage -f filesys
 
 * Look at the soft debugger in mono 2.6
 * Look at the new error bubbles in snow leopard's XCode.	
+* Typing seems slower than it used to be, eg when typing in the middle of a comment.
 * Would be nice to support hyperlinks in rich text files
 	http://developer.apple.com/qa/qa2006/qa1487.html
 * Stagger windows, especially find results and assembly browser.
-* Is the members popup smart about classes with fields at the start? Or strewn all about?
 * Need to do a better job with Refactor Language.rtf (prose and the grammar)
 * Read up on MEF
 	http://www.codeplex.com/MEF
