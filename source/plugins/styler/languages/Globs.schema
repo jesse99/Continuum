@@ -10,7 +10,7 @@
 
 	<xsd:complexType name="GlobsType">
 		<xsd:sequence>
-			<xsd:element name="Glob" type="GlobType" maxOccurs="unbounded"/>
+			<xsd:element name="Glob" type="GlobType" minOccurs="0" maxOccurs="unbounded"/>
 		</xsd:sequence>
 	</xsd:complexType>
 

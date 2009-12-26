@@ -48,13 +48,21 @@ namespace Styler
 		
 		public void OnInitFactoryPref(NSMutableDictionary dict)
 		{
-			XmlNode xml = DoLoadXml();
+			DoCreateDirectories();
+			DoCopyMissingFiles();
+			DoOverwriteFiles();
 			
 			var globs = NSDictionary.Create();
 			dict.setObject_forKey(globs, NSString.Create("language globs"));
 			
-			string[] languages = DoReadLanguages(xml);
-			dict.setObject_forKey(NSArray.Create(languages), NSString.Create("languages"));
+			List<string> languages = new List<string>();
+			XmlNode xml = DoLoadXml("standard");
+			DoReadLanguages(xml, languages);
+			
+			xml = DoLoadXml("user");
+			DoReadLanguages(xml, languages);
+			
+			dict.setObject_forKey(NSArray.Create(languages.ToArray()), NSString.Create("languages"));
 		}
 		
 		public void OnBroadcast(string name, object value)
@@ -72,28 +80,129 @@ namespace Styler
 		}
 		
 		#region Private Methods
+		private void DoCreateDirectories()
+		{
+			string installedPath = Path.Combine(Paths.ScriptsPath, "languages");
+			if (!Directory.Exists(installedPath))
+				Directory.CreateDirectory(installedPath);
+			
+			string path = Path.Combine(installedPath, "standard");
+			if (!Directory.Exists(path))
+				Directory.CreateDirectory(path);
+			
+			path = Path.Combine(installedPath, "user");
+			if (!Directory.Exists(path))
+				Directory.CreateDirectory(path);
+		}
+		
+		private void DoCopyMissingFiles()
+		{
+			string installedPath = Path.Combine(Paths.ScriptsPath, "languages");
+			string path = NSBundle.mainBundle().resourcePath().description();
+			string resourcesPath = Path.Combine(path, "languages");
+			
+			string standardPath = Path.Combine(installedPath, "standard");
+			string[] resourceFiles = Directory.GetFiles(resourcesPath);
+			
+			var scripts = new List<string>();
+			scripts.AddRange(Directory.GetFiles(standardPath));
+			
+			try
+			{
+				foreach (string src in resourceFiles)
+				{
+					string name = Path.GetFileName(src);
+					if (name[0] != '.')
+					{
+						if (!scripts.Exists(s => Path.GetFileName(s) == name))
+						{
+							string dst = Path.Combine(standardPath, name);
+							File.Copy(src, dst);
+						}
+					}
+				}
+				
+				string globsFile = Path.Combine(installedPath, "user/Globs.xml");
+				if (!File.Exists(globsFile))
+				{
+					string contents = @"<!-- See ../standard/README for help on adding a custom language. -->
+<!-- This file overrides the globs defined in ../standard/Globs.xml. -->
+<!-- The Language Globs preferences panel overrides globs defined in this file. -->
+<Globs>
+</Globs>
+";
+					File.WriteAllText(globsFile, contents);
+				}
+			}
+			catch (Exception e)
+			{
+				Log.WriteLine(TraceLevel.Warning, "Errors", "Couldn't copy files to '{0}'.", standardPath);
+				Log.WriteLine(TraceLevel.Warning, "Errors", e.Message);
+			}
+		}
+		
+		private void DoOverwriteFiles()
+		{
+			string installedPath = Path.Combine(Paths.ScriptsPath, "languages");
+			string standardPath = Path.Combine(installedPath, "standard");
+			
+			string path = NSBundle.mainBundle().resourcePath().description();
+			string resourcesPath = Path.Combine(path, "languages");
+			string[] resourceScripts = Directory.GetFiles(resourcesPath);
+			
+			try
+			{
+				foreach (string src in resourceScripts)
+				{
+					string name = Path.GetFileName(src);
+					string dst = Path.Combine(standardPath, name);
+					
+					if (name[0] != '.')
+					{
+						if (File.Exists(dst))
+						{
+							if (File.GetLastWriteTime(src) > File.GetLastWriteTime(dst))
+							{
+								File.Delete(dst);
+								File.Copy(src, dst);
+							}
+						}
+					}
+				}
+			}
+			catch (Exception e)
+			{
+				Log.WriteLine(TraceLevel.Warning, "Errors", "Couldn't update files in '{0}'.", installedPath);
+				Log.WriteLine(TraceLevel.Warning, "Errors", e.Message);
+			}
+		}
+		
 		// Note that we don't want to use IFactoryPrefs for globs because new ones
-		// added Continuum need to show up.
+		// added by Continuum need to show up.
 		private void DoUpdateGlobs()
 		{
-			XmlNode xml = DoLoadXml();
+			XmlNode xml = DoLoadXml("standard");
 			NSMutableDictionary globs = DoReadGlobs(xml);
 			
+			xml = DoLoadXml("user");
+			NSMutableDictionary globs2 = DoReadGlobs(xml);
+			globs.addEntriesFromDictionary(globs2);
+			
 			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
-			var user = defaults.objectForKey(NSString.Create("language globs")).To<NSDictionary>();
-			globs.addEntriesFromDictionary(user);
+			var prefs = defaults.objectForKey(NSString.Create("language globs")).To<NSDictionary>();
+			globs.addEntriesFromDictionary(prefs);
 			
 			defaults.setObject_forKey(globs, NSString.Create("language globs"));
 		}
 		
-		private XmlNode DoLoadXml()
+		private XmlNode DoLoadXml(string directory)
 		{
 			XmlDocument xml;
 			
 			// Load the schema.
-			string resourcesPath = NSBundle.mainBundle().resourcePath().ToString();
-			string languagesPath = Path.Combine(resourcesPath, "Languages");
-			string globsSchemaPath = Path.Combine(languagesPath, "Globs.schema");
+			string installedPath = Path.Combine(Paths.ScriptsPath, "languages");
+			string standardPath = Path.Combine(installedPath, "standard");
+			string globsSchemaPath = Path.Combine(standardPath, "Globs.schema");
 			using (Stream stream = new FileStream(globsSchemaPath, FileMode.Open, FileAccess.Read))
 			{
 				XmlSchema schema = XmlSchema.Read(stream, this.DoValidationEvent);
@@ -106,6 +215,7 @@ namespace Styler
 				settings.Schemas.Add(schema);
 				
 				// Load the xml file.
+				string languagesPath = Path.Combine(installedPath, directory);
 				string globsPath = Path.Combine(languagesPath, "Globs.xml");
 				using (Stream stream2 = new FileStream(globsPath, FileMode.Open, FileAccess.Read))
 				{
@@ -151,10 +261,8 @@ namespace Styler
 			return dict;
 		}
 		
-		private string[] DoReadLanguages(XmlNode xml)
+		private void DoReadLanguages(XmlNode xml, List<string> languages)
 		{
-			var languages = new List<string>();
-			
 			foreach (XmlNode child in xml.ChildNodes)
 			{
 				if (child.Name == "Globs")
@@ -170,8 +278,6 @@ namespace Styler
 					}
 				}
 			}
-			
-			return languages.ToArray();
 		}
 		
 		private void DoValidationEvent(object sender, ValidationEventArgs e)

@@ -25,6 +25,7 @@ using MObjc;
 using Shared;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Xml;
 using System.Xml.Schema;
@@ -79,6 +80,9 @@ namespace Styler
 		{
 			try
 			{
+				ms_dirName = "languages";
+				ms_installedPath = Path.Combine(Paths.ScriptsPath, ms_dirName);
+				
 				ms_observer = new ObserverTrampoline(Languages.DoLoadGlobs);
 				Broadcaster.Register("language globs changed", ms_observer);
 				DoLoadGlobs("language globs changed", null);
@@ -94,7 +98,7 @@ namespace Styler
 				foreach (string name in ms_languages.Keys)
 				{
 					if (!ms_globs.ContainsValue(name))
-						Console.Error.WriteLine("language {0} is not associated with a glob", name);
+						Console.Error.WriteLine("language '{0}' is not associated with a glob", name);
 				}
 			}
 			catch (Exception e)
@@ -125,9 +129,8 @@ namespace Styler
 		private static void DoLoadLanguages()
 		{
 			// Load the schema.
-			string resourcesPath = NSBundle.mainBundle().resourcePath().ToString();
-			string languagesPath = Path.Combine(resourcesPath, "Languages");
-			string globsSchemaPath = Path.Combine(languagesPath, "Language.schema");
+			string standardPath = Path.Combine(ms_installedPath, "standard");
+			string globsSchemaPath = Path.Combine(standardPath, "Language.schema");
 			using (Stream stream = new FileStream(globsSchemaPath, FileMode.Open, FileAccess.Read))
 			{
 				XmlSchema schema = XmlSchema.Read(stream, DoValidationEvent);
@@ -139,37 +142,47 @@ namespace Styler
 				settings.IgnoreComments = true;
 				settings.Schemas.Add(schema);
 				
-				// Load the xml files.		
-				foreach (string path in Directory.GetFiles(languagesPath, "*.xml"))
+				// Load the xml files.
+				DoLoadLanguages(standardPath, settings);
+				
+				string userPath = Path.Combine(ms_installedPath, "user");
+				DoLoadLanguages(userPath, settings);
+			}
+		}
+		
+		// TODO: Would be nice if this would dynamically update.
+		private static void DoLoadLanguages(string languagesPath, XmlReaderSettings settings)
+		{
+			// Load the xml files.
+			foreach (string path in Directory.GetFiles(languagesPath, "*.xml"))
+			{
+				if (!path.Contains(".schema.") && !path.EndsWith("Globs.xml"))
 				{
-					if (!path.Contains(".schema.") && !path.EndsWith("Globs.xml"))
+					try
 					{
-						try
+						using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read))
 						{
-							using (Stream stream2 = new FileStream(path, FileMode.Open, FileAccess.Read))
+							using (XmlReader reader = XmlReader.Create(stream, settings))
 							{
-								using (XmlReader reader = XmlReader.Create(stream2, settings))
-								{
-									XmlDocument xml = new XmlDocument();
-									xml.Load(reader);
-									
-									// Process the xml file.
-									XmlNode node = xml.ChildNodes[0];
-									string name = node.Attributes["name"].Value;
-									
-									if (!ms_languages.ContainsKey(name))
-										ms_languages.Add(name, new Language(node));
-									else
-										Console.Error.WriteLine("language '{0}' was declared twice.", name);
-								}
+								XmlDocument xml = new XmlDocument();
+								xml.Load(reader);
+								
+								// Process the xml file.
+								XmlNode node = xml.ChildNodes[0];
+								string name = node.Attributes["name"].Value;
+								
+								if (!ms_languages.ContainsKey(name))
+									ms_languages.Add(name, new Language(node));
+								else
+									Console.Error.WriteLine("language '{0}' was declared twice.", name);
 							}
 						}
-						catch (Exception e)
-						{
-							Console.Error.WriteLine("failed to parse '{0}'", path);
-							Console.Error.WriteLine(e.Message);
-							Console.Error.WriteLine();
-						}
+					}
+					catch (Exception e)
+					{
+						Console.Error.WriteLine("failed to parse '{0}'", path);
+						Console.Error.WriteLine(e.Message);
+						Console.Error.WriteLine();
 					}
 				}
 			}
@@ -185,6 +198,8 @@ namespace Styler
 		#endregion
 		
 		#region Fields
+		private static string ms_dirName;
+		private static string ms_installedPath;
 		private static bool ms_inited;
 		private static ObserverTrampoline ms_observer;
 		private static Dictionary<string, string> ms_globs = new Dictionary<string, string>();					// glob => language name

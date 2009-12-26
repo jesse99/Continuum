@@ -1,5 +1,0 @@
-<Language name = "todo" ignore_whitespace = "true">
-	<keyword>^ \x2a</keyword>
-	<keyword>^ \s* -</keyword>
-</Language>
-

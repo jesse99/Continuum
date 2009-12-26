@@ -24,20 +24,11 @@ http://www.jetbrains.com/resharper/features/
 select declaring_root_name,return_type_name from Methods where name = 'get_BaseTypes';
 sudo fs_usage -f filesys
 
-* Handle languages like scripts.
-	- should have standard and user directories
-	- TODO could go here
-	- should have a README
-	- user globs file overrides the standard globs file (for the languages it mentions)
-	- should be able to override built in languages
-	- what about globs? can globs be overriden? probably have to update GlobsTableView ctor
-	- might want a language for gendarme console reports, what extension?
-	- can we dynamically update our state if a file changes?
-	- might want a button or menu item to open the languages directory
 * Using command-I to set the language doesn't trigger syntax hiliting.
 * Might be neat if could figure out languages for files with no extension using
    the shebang (if present).
 * Find needs to work in transcript.
+* Build a new foreshadow.
 * Do an mcocoa release.
 * New documents don't seem to respect the default font pref.
 * Add ToString refactror should default to returning fields and auto-props

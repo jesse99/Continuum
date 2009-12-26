@@ -309,6 +309,14 @@ namespace App
 			}
 		}
 		
+		public void openLanguages(NSObject sender)
+		{
+			string path = System.IO.Path.Combine(Paths.ScriptsPath, "languages/standard/");
+			
+			NSWorkspace.sharedWorkspace().selectFile_inFileViewerRootedAtPath(
+				NSString.Create(path), NSString.Empty);
+		}
+		
 		public void removePreferred(NSObject sender)
 		{
 			var controller = this["pathsController"].To<NSArrayController>();
