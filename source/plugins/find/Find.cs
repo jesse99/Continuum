@@ -87,6 +87,9 @@ namespace Find
 			}
 			catch (Exception e)
 			{
+				Log.WriteLine(TraceLevel.Error, "App", "Couldn't find next");
+				Log.WriteLine(TraceLevel.Error, "App", e.ToString());
+				
 				NSString message = NSString.Create(e.Message);
 				Unused.Value = Functions.NSRunCriticalAlertPanel(null, message);
 			}
@@ -137,6 +140,9 @@ namespace Find
 			}
 			catch (Exception e)
 			{
+				Log.WriteLine(TraceLevel.Error, "App", "Couldn't find previous");
+				Log.WriteLine(TraceLevel.Error, "App", e.ToString());
+				
 				NSString message = NSString.Create(e.Message);
 				Unused.Value = Functions.NSRunCriticalAlertPanel(null, message);
 			}
@@ -155,7 +161,7 @@ namespace Find
 				Match match = m_re.Match(text.Text, index, length);
 				if (match.Success)
 				{
-					string result = match.Result(ReplaceText);				
+					string result = match.Result(ReplaceText);
 					text.Replace(result, match.Index, match.Length, "Replace");
 					
 					text.Selection = new NSRange(match.Index, result.Length);
@@ -166,6 +172,9 @@ namespace Find
 			}
 			catch (Exception e)
 			{
+				Log.WriteLine(TraceLevel.Error, "App", "Couldn't replace");
+				Log.WriteLine(TraceLevel.Error, "App", e.ToString());
+				
 				NSString message = NSString.Create(e.Message);
 				Unused.Value = Functions.NSRunCriticalAlertPanel(null, message);
 			}
@@ -182,7 +191,7 @@ namespace Find
 				Match match = m_re.Match(text.Text, text.Selection.location, text.Selection.length);
 				if (match.Success)
 				{
-					string result = match.Result(ReplaceText);				
+					string result = match.Result(ReplaceText);
 					text.Replace(result, match.Index, match.Length, "Replace");
 				}
 				
@@ -191,6 +200,9 @@ namespace Find
 			}
 			catch (Exception e)
 			{
+				Log.WriteLine(TraceLevel.Error, "App", "Couldn't find replace and find");
+				Log.WriteLine(TraceLevel.Error, "App", e.ToString());
+				
 				NSString message = NSString.Create(e.Message);
 				Unused.Value = Functions.NSRunCriticalAlertPanel(null, message);
 			}
@@ -218,6 +230,9 @@ namespace Find
 			}
 			catch (Exception e)
 			{
+				Log.WriteLine(TraceLevel.Error, "App", "Couldn't replace all");
+				Log.WriteLine(TraceLevel.Error, "App", e.ToString());
+				
 				NSString message = NSString.Create(e.Message);
 				Unused.Value = Functions.NSRunCriticalAlertPanel(null, message);
 			}

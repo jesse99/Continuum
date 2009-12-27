@@ -115,6 +115,14 @@ namespace TextEditor
 				// Default key processing.
 				Unused.Value = SuperCall(NSTextView.Class, "keyDown:", evt);
 				
+				// Hack to allow the default style to be applies to brand-new documents.
+				// (I tried to do this earlier in some sensible place but it didn't take effect).
+				if (m_firstEdit)
+				{
+					controller.ResetStyles();
+					m_firstEdit = false;
+				}
+				
 				// For up and down arrow in the whitespace at the start of a line
 				// we want to set the insertion point to the start of the line (this
 				// makes it much nicer to do stuff like manually comment out lines).
@@ -690,6 +698,7 @@ namespace TextEditor
 		private Boss m_boss;
 		private NSRange m_range;
 		private string m_selection;
+		private bool m_firstEdit = true;
 		private List<Entry> m_entries = new List<Entry>();
 		private IAutoComplete m_autoComplete;
 		#endregion

@@ -52,9 +52,6 @@ generic types (List<string> foo; foo.First().).
 var but this only works when the expression is a new expression, an as cast, a
 function call like Get<T>(), or a linq query.
 
-* The syntax hiliting isn't quite right when lines are edited. In particular the tab
-hiliting is sometimes incorrect for the last line edited.
-
 * Cocoa doesn't handle aliases very well so work needs to be done to support it
 ourselves.
 
@@ -68,5 +65,8 @@ should work fine).
 
 * The file type (e.g. C#, Shell, Plain Text, etc) is controlled solely by the globs in the
 preferences panel which is a bit too inflexible.
+
+* Syntax hilighting requires that the document have a path so creating a new file and
+using the info window to set the language won't work until it is saved.
 
 jesjones@mindspring.com

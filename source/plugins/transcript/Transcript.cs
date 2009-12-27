@@ -30,7 +30,7 @@ using System.Threading;
 
 namespace Transcript
 {
-	internal sealed class Transcript : ITranscript, IText, IFactoryPrefs
+	internal sealed class Transcript : ITranscript, IText, IWindow, IFactoryPrefs
 	{
 		public Boss Boss
 		{
@@ -91,6 +91,12 @@ namespace Transcript
 			m_controller.window().makeKeyAndOrderFront(null);
 		}
 		
+		public NSWindow Window
+		{
+			get {return m_controller.window();}
+			set {Contract.Assert(false);}
+		}
+
 		[ThreadModel(ThreadModel.Concurrent)]
 		public void Write(Output type, string text)
 		{

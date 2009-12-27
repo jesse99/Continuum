@@ -207,7 +207,7 @@ namespace TextEditor
 			
 			window().makeKeyAndOrderFront(this);
 			m_textView.Value.layoutManager().setDelegate(this);
-				
+			
 			Broadcaster.Invoke("opened document window", m_boss);
 			synchronizeWindowTitleWithDocumentName();		// bit of a hack, but we need something like this for IDocumentWindowTitle to work
 		}
@@ -841,6 +841,14 @@ namespace TextEditor
 					ChangeInLines = m_metrics.LineCount - oldNumLines,
 					StartLine = m_metrics.GetLine(range.location)};
 				Broadcaster.Invoke("text changed", edit);
+			}
+		}
+		
+		internal void ResetStyles()
+		{
+			if (m_language == null)
+			{
+				m_applier.ClearStyles();
 			}
 		}
 		
