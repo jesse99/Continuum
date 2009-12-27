@@ -115,7 +115,7 @@ namespace TextEditor
 				// Default key processing.
 				Unused.Value = SuperCall(NSTextView.Class, "keyDown:", evt);
 				
-				// Hack to allow the default style to be applies to brand-new documents.
+				// Hack to allow the default style to be applied to brand-new documents.
 				// (I tried to do this earlier in some sensible place but it didn't take effect).
 				if (m_firstEdit)
 				{

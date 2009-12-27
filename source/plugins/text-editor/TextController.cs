@@ -846,7 +846,7 @@ namespace TextEditor
 		
 		internal void ResetStyles()
 		{
-			if (m_language == null)
+			if (m_language == null && Path == null)
 			{
 				m_applier.ClearStyles();
 			}

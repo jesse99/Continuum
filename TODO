@@ -24,10 +24,6 @@ http://www.jetbrains.com/resharper/features/
 select declaring_root_name,return_type_name from Methods where name = 'get_BaseTypes';
 sudo fs_usage -f filesys
 
-* New documents don't seem to respect the default font pref.
-* Add ToString refactror should default to returning fields and auto-props
-* Do the same for implement IFormatable.
-* Build a new foreshadow.
 * Do an mcocoa release.
 * Shouldn't be able to open the same directory more than once.
 * Do a release.
@@ -48,6 +44,8 @@ sudo fs_usage -f filesys
    allowing user to pick which methods he wants to forward.
 * Allow auto-completion via "CamelHumps"?
 	- ie for "WriteLine" can type "WL"
+* Add a ToString refactror, should default to returning fields and auto-props
+* Do the same for implement IFormatable.
 * MonoDevelop has an interesting Dynamic Abbrev Command: http://monodevelop.com/Download/What%27s_new_in_MonoDevelop_2.2
 * Get refactors enabling and disabling.
 * Add refactors to context menu.
