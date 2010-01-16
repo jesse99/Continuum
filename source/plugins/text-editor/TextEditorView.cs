@@ -181,13 +181,13 @@ namespace TextEditor
 				NSString text = string_();
 				result = proposedSelRange;
 				
-				while (result.location > 0 && DoMatchesWord(text, result.location - 1, result.length + 1, controller.Language.Word))
+				while (DoMatchesWord(text, result.location - 1, result.length + 1, controller.Language.Word))
 				{
 					--result.location;
 					++result.length;
 				}
 				
-				while (result.location + result.length < text.length() && DoMatchesWord(text, result.location, result.length + 1, controller.Language.Word))
+				while (DoMatchesWord(text, result.location, result.length + 1, controller.Language.Word))
 				{
 					++result.length;
 				}
@@ -283,7 +283,7 @@ namespace TextEditor
 					}
 					
 					m_selection = null;
-					if (m_range.length > 0)
+					if (m_range.length > 0 && m_range.location + m_range.length <= string_().length())
 						string_().getCharacters_range(m_range, out m_selection);
 				}
 				
@@ -462,10 +462,17 @@ namespace TextEditor
 		#region Private Methods
 		private bool DoMatchesWord(NSString text, int location, int length, Regex word)
 		{
-			string str;
-			text.getCharacters_range(new NSRange(location, length), out str);
-			Match match = word.Match(str);
-			return match.Success && match.Length == str.Length;
+			bool matches = false;
+			
+			if (location >= 0 && location + length <= text.length())
+			{
+				string str;
+				text.getCharacters_range(new NSRange(location, length), out str);
+				Match match = word.Match(str);
+				matches = match.Success && match.Length == str.Length;
+			}
+			
+			return matches;
 		}
 		
 		private bool DoExtendSelectionLeft()

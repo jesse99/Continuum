@@ -116,7 +116,7 @@ namespace DirectoryEditor
 				m_process.BeginOutputReadLine();
 				m_process.BeginErrorReadLine();
 			}
-			catch (System.IO.IOException e)		// started getting "Error creating standard error pipe" with mono 2.6.1
+			catch (Exception e)		// started getting "Error creating standard error pipe" with mono 2.6.1 (which is usually wrapped within a TargetInvocationException)
 			{
 				m_process.Dispose();
 				AssemblyCache.ReleaseLock();
