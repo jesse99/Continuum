@@ -21,6 +21,7 @@
 
 using Gear;
 using Gear.Helpers;
+using MCocoa;
 using Shared;
 using System;
 using System.Collections.Generic;
@@ -255,14 +256,23 @@ namespace Subversion
 			var fs = boss.Get<IFileSystem>();
 			string file = fs.GetTempFile(Path.GetFileNameWithoutExtension(path), ".svn-blame");
 			
-			using (StreamWriter writer = new StreamWriter(file))
+			try
 			{
-				writer.WriteLine("{0}", result.First);
+				using (StreamWriter writer = new StreamWriter(file))
+				{
+					writer.WriteLine("{0}", result.First);
+				}
+				
+				boss = ObjectModel.Create("Application");
+				var launcher = boss.Get<ILaunch>();
+				launcher.Launch(file, -1, -1, 1);
 			}
-			
-			boss = ObjectModel.Create("Application");
-			var launcher = boss.Get<ILaunch>();
-			launcher.Launch(file, -1, -1, 1);
+			catch (IOException e)	// can sometimes land here if too many files are open (max is system wide and only 256)
+			{
+				NSString title = NSString.Create("Couldn't process '{0}'.", path);
+				NSString message = NSString.Create(e.Message);
+				Unused.Value = Functions.NSRunAlertPanel(title, message);
+			}
 		}
 		
 		private void DoCat(string path)
@@ -275,14 +285,23 @@ namespace Subversion
 			var fs = boss.Get<IFileSystem>();
 			string file = fs.GetTempFile(Path.GetFileNameWithoutExtension(path) + " (HEAD)", Path.GetExtension(path));
 			
-			using (StreamWriter writer = new StreamWriter(file))
+			try
 			{
-				writer.WriteLine("{0}", result.First);
+				using (StreamWriter writer = new StreamWriter(file))
+				{
+					writer.WriteLine("{0}", result.First);
+				}
+				
+				boss = ObjectModel.Create("Application");
+				var launcher = boss.Get<ILaunch>();
+				launcher.Launch(file, -1, -1, 1);
 			}
-			
-			boss = ObjectModel.Create("Application");
-			var launcher = boss.Get<ILaunch>();
-			launcher.Launch(file, -1, -1, 1);
+			catch (IOException e)	// can sometimes land here if too many files are open (max is system wide and only 256)
+			{
+				NSString title = NSString.Create("Couldn't process '{0}'.", path);
+				NSString message = NSString.Create(e.Message);
+				Unused.Value = Functions.NSRunAlertPanel(title, message);
+			}
 		}
 		
 		private void DoCommit(string path)
@@ -309,14 +328,23 @@ namespace Subversion
 			var fs = boss.Get<IFileSystem>();
 			string file = fs.GetTempFile(Path.GetFileNameWithoutExtension(path), ".diff");
 			
-			using (StreamWriter writer = new StreamWriter(file))
+			try
 			{
-				writer.WriteLine("{0}", result.First);
+				using (StreamWriter writer = new StreamWriter(file))
+				{
+					writer.WriteLine("{0}", result.First);
+				}
+				
+				boss = ObjectModel.Create("Application");
+				var launcher = boss.Get<ILaunch>();
+				launcher.Launch(file, -1, -1, 1);
 			}
-			
-			boss = ObjectModel.Create("Application");
-			var launcher = boss.Get<ILaunch>();
-			launcher.Launch(file, -1, -1, 1);
+			catch (IOException e)	// can sometimes land here if too many files are open (max is system wide and only 256)
+			{
+				NSString title = NSString.Create("Couldn't process '{0}'.", path);
+				NSString message = NSString.Create(e.Message);
+				Unused.Value = Functions.NSRunAlertPanel(title, message);
+			}
 		}
 		
 		private void DoEditIgnore(string path)
@@ -362,14 +390,23 @@ namespace Subversion
 			var fs = boss.Get<IFileSystem>();
 			string file = fs.GetTempFile(Path.GetFileNameWithoutExtension(path), ".svn-log");
 			
-			using (StreamWriter writer = new StreamWriter(file))
+			try
 			{
-				writer.WriteLine("{0}", result.First);
+				using (StreamWriter writer = new StreamWriter(file))
+				{
+					writer.WriteLine("{0}", result.First);
+				}
+				
+				boss = ObjectModel.Create("Application");
+				var launcher = boss.Get<ILaunch>();
+				launcher.Launch(file, -1, -1, 1);
 			}
-			
-			boss = ObjectModel.Create("Application");
-			var launcher = boss.Get<ILaunch>();
-			launcher.Launch(file, -1, -1, 1);
+			catch (IOException e)	// can sometimes land here if too many files are open (max is system wide and only 256)
+			{
+				NSString title = NSString.Create("Couldn't process '{0}'.", path);
+				NSString message = NSString.Create(e.Message);
+				Unused.Value = Functions.NSRunAlertPanel(title, message);
+			}
 		}
 		
 		private void DoRename(string path)

@@ -53,7 +53,7 @@ var but this only works when the expression is a new expression, an as cast, a
 function call like Get<T>(), or a linq query.
 
 * Cocoa doesn't handle aliases very well so work needs to be done to support it
-ourselves.
+ourselves. 
 
 * Editing very large files is slower than it should be.
 

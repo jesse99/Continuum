@@ -23,12 +23,90 @@ http://www.jetbrains.com/resharper/features/
 
 select declaring_root_name,return_type_name from Methods where name = 'get_BaseTypes';
 sudo fs_usage -f filesys
+EASTL -- Electronic Arts Standard Template Library
 
+* Crash trying to build:
+Unhandled Exception: System.Reflection.TargetInvocationException: Exception has been thrown by the (managed) target of an Objective-C method call. ---> System.Reflection.TargetInvocationException: Exception has been thrown by the (managed) target of an Objective-C method call. ---> System.IO.IOException: Error creating standard output pipe
+  at System.Diagnostics.Process.Start_noshell (System.Diagnostics.ProcessStartInfo startInfo, System.Diagnostics.Process process) [0x0019f] in /private/tmp/monobuild/build/BUILD/mono-2.6.1/mcs/class/System/System.Diagnostics/Process.cs:1050 
+  at System.Diagnostics.Process.Start_common (System.Diagnostics.ProcessStartInfo startInfo, System.Diagnostics.Process process) [0x00096] in /private/tmp/monobuild/build/BUILD/mono-2.6.1/mcs/class/System/System.Diagnostics/Process.cs:1194 
+  at System.Diagnostics.Process.Start () [0x0002c] in /private/tmp/monobuild/build/BUILD/mono-2.6.1/mcs/class/System/System.Diagnostics/Process.cs:1204 
+  at (wrapper remoting-invoke-with-check) System.Diagnostics.Process:Start ()
+  at DirectoryEditor.GenericBuilder.Build () [0x0011d] in /Users/jessejones/Source/Continuum/source/plugins/directory-editor/GenericBuilder.cs:112 
+  at DirectoryEditor.DirectoryController.DoBuild () [0x0000b] in /Users/jessejones/Source/Continuum/source/plugins/directory-editor/DirectoryController.cs:478 
+  at Shared.MenuHandler.Handle (Int32 tag) [0x00013] in /Users/jessejones/Source/Continuum/source/shared/MenuHandler.cs:48 
+  at DirectoryEditor.DirectoryController.dirHandler (MObjc.NSObject sender) [0x00023] in /Users/jessejones/Source/Continuum/source/plugins/directory-editor/DirectoryController.cs:275 
+  at (wrapper managed-to-native) System.Reflection.MonoMethod:InternalInvoke (object,object[],System.Exception&)
+  at System.Reflection.MonoMethod.Invoke (System.Object obj, BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x00000] in <filename unknown>:0 
+  --- End of inner exception stack trace ---
+  at MObjc.CocoaException.Raise (IntPtr instance) [0x00141] in /Users/jessejones/Source/mobjc/source/CocoaException.cs:116 
+  at MObjc.Ffi.Call (IntPtr cif, IntPtr imp, IntPtr result, MObjc.Helpers.PtrArray args) [0x00026] in /Users/jessejones/Source/mobjc/source/Ffi.cs:94 
+  at MObjc.Native.Invoke () [0x00020] in /Users/jessejones/Source/mobjc/source/Native.cs:106 
+  at MObjc.Native.Call (IntPtr instance, System.String name, System.Object[] args) [0x00090] in /Users/jessejones/Source/mobjc/source/Native.cs:135 
+  at MObjc.NSObject.Call (System.String name, System.Object[] args) [0x0003b] in /Users/jessejones/Source/mobjc/source/NSObject.cs:290 
+  at TextEditor.TextController.dirHandler (MObjc.NSObject sender) [0x0001e] in /Users/jessejones/Source/Continuum/source/plugins/text-editor/TextController.cs:654 
+  at (wrapper managed-to-native) System.Reflection.MonoMethod:InternalInvoke (object,object[],System.Exception&)
+  at System.Reflection.MonoMethod.Invoke (System.Object obj, BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x00000] in <filename unknown>:0 
+  --- End of inner exception stack trace ---
+  at MObjc.CocoaException.Raise (IntPtr instance) [0x00141] in /Users/jessejones/Source/mobjc/source/CocoaException.cs:116 
+  at MObjc.Ffi.Call (IntPtr cif, IntPtr imp, IntPtr result, MObjc.Helpers.PtrArray args) [0x00026] in /Users/jessejones/Source/mobjc/source/Ffi.cs:94 
+  at MObjc.Native.Invoke () [0x00020] in /Users/jessejones/Source/mobjc/source/Native.cs:106 
+  at MCocoa.NSApplication.run () [0x00000] in /Users/jessejones/Source/mcocoa/source/appkit/NSApplication.cs:122 
+  at App.Application.Run () [0x000f8] in /Users/jessejones/Source/Continuum/source/plugins/app/Application.cs:70 
+  at Continuum.Program.Main (System.String[] args) [0x0005f] in /Users/jessejones/Source/Continuum/source/continuum/Program.cs:50 
+Continuum: 
+* Crash trying to open NSArray:
+Managed exception: Void doubleClicked(MCocoa.NSOutlineView)
+System.Reflection.TargetInvocationException: Exception has been thrown by the target of an invocation. ---> System.IO.FileNotFoundException: Could not resolve: NObjective, Version=0.9.6.0, Culture=neutral, PublicKeyToken=b9214bcf5a4264bd
+  at Mono.Cecil.BaseAssemblyResolver.Resolve (Mono.Cecil.AssemblyNameReference name) [0x000a5] in /private/tmp/monobuild/build/BUILD/mono-2.6.1/mcs/class/Mono.Cecil/Mono.Cecil/BaseAssemblyResolver.cs:100 
+  at Mono.Cecil.DefaultAssemblyResolver.Resolve (Mono.Cecil.AssemblyNameReference name) [0x0001d] in /private/tmp/monobuild/build/BUILD/mono-2.6.1/mcs/class/Mono.Cecil/Mono.Cecil/DefaultAssemblyResolver.cs:46 
+  at Mono.Cecil.MetadataResolver.Resolve (Mono.Cecil.TypeReference type) [0x0002c] in /private/tmp/monobuild/build/BUILD/mono-2.6.1/mcs/class/Mono.Cecil/Mono.Cecil/MetadataResolver.cs:57 
+  at Mono.Cecil.TypeReference.Resolve () [0x0000f] in /private/tmp/monobuild/build/BUILD/mono-2.6.1/mcs/class/Mono.Cecil/Mono.Cecil/TypeReference.cs:147 
+  at Shared.CecilExtensions.ToText (Mono.Cecil.CustomAttribute attr, Boolean includeNamespace) [0x0005b] in /Users/jessejones/Source/Continuum/source/shared/CecilExtensions.cs:47 
+  at Disassembler.DisassembleExtensions.DoAppendCustomAttributes (System.Text.StringBuilder builder, Mono.Cecil.CustomAttributeCollection attrs) [0x00018] in /Users/jessejones/Source/Continuum/source/plugins/disassembler/DisassembleExtensions.cs:432 
+  at Disassembler.DisassembleExtensions.DoAppendTypeHeader (System.Text.StringBuilder builder, Mono.Cecil.TypeDefinition type) [0x0000b] in /Users/jessejones/Source/Continuum/source/plugins/disassembler/DisassembleExtensions.cs:89 
+  at Disassembler.DisassembleExtensions.Disassemble (Mono.Cecil.TypeDefinition type) [0x00006] in /Users/jessejones/Source/Continuum/source/plugins/disassembler/DisassembleExtensions.cs:40 
+  at Disassembler.TypeItem.GetText () [0x00000] in /Users/jessejones/Source/Continuum/source/plugins/disassembler/AssemblyItems.cs:213 
+  at Disassembler.AssemblyController.DoOpen (Disassembler.AssemblyItem item) [0x00000] in /Users/jessejones/Source/Continuum/source/plugins/disassembler/AssemblyController.cs:234 
+  at Disassembler.AssemblyController.doubleClicked (MCocoa.NSOutlineView sender) [0x0002a] in /Users/jessejones/Source/Continuum/source/plugins/disassembler/AssemblyController.cs:67 
+  at (wrapper managed-to-native) System.Reflection.MonoMethod:InternalInvoke (object,object[],System.Exception&)
+  at System.Reflection.MonoMethod.Invoke (System.Object obj, BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x00000] in <filename unknown>:0 
+  --- End of inner exception stack trace ---
+  at System.Reflection.MonoMethod.Invoke (System.Object obj, BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x00000] in <filename unknown>:0 
+  at System.Reflection.MethodBase.Invoke (System.Object obj, System.Object[] parameters) [0x00000] in <filename unknown>:0 
+  at MObjc.Managed.Call (IntPtr dummy, IntPtr resultBuffer, IntPtr argBuffers) [0x001bf] in /Users/jessejones/Source/mobjc/source/Managed.cs:97 
+
+Unhandled Exception: System.Reflection.TargetInvocationException: Exception has been thrown by the (managed) target of an Objective-C method call. ---> System.IO.FileNotFoundException: Could not resolve: NObjective, Version=0.9.6.0, Culture=neutral, PublicKeyToken=b9214bcf5a4264bd
+  at Mono.Cecil.BaseAssemblyResolver.Resolve (Mono.Cecil.AssemblyNameReference name) [0x000a5] in /private/tmp/monobuild/build/BUILD/mono-2.6.1/mcs/class/Mono.Cecil/Mono.Cecil/BaseAssemblyResolver.cs:100 
+  at Mono.Cecil.DefaultAssemblyResolver.Resolve (Mono.Cecil.AssemblyNameReference name) [0x0001d] in /private/tmp/monobuild/build/BUILD/mono-2.6.1/mcs/class/Mono.Cecil/Mono.Cecil/DefaultAssemblyResolver.cs:46 
+  at Mono.Cecil.MetadataResolver.Resolve (Mono.Cecil.TypeReference type) [0x0002c] in /private/tmp/monobuild/build/BUILD/mono-2.6.1/mcs/class/Mono.Cecil/Mono.Cecil/MetadataResolver.cs:57 
+  at Mono.Cecil.TypeReference.Resolve () [0x0000f] in /private/tmp/monobuild/build/BUILD/mono-2.6.1/mcs/class/Mono.Cecil/Mono.Cecil/TypeReference.cs:147 
+  at Shared.CecilExtensions.ToText (Mono.Cecil.CustomAttribute attr, Boolean includeNamespace) [0x0005b] in /Users/jessejones/Source/Continuum/source/shared/CecilExtensions.cs:47 
+  at Disassembler.DisassembleExtensions.DoAppendCustomAttributes (System.Text.StringBuilder builder, Mono.Cecil.CustomAttributeCollection attrs) [0x00018] in /Users/jessejones/Source/Continuum/source/plugins/disassembler/DisassembleExtensions.cs:432 
+  at Disassembler.DisassembleExtensions.DoAppendTypeHeader (System.Text.StringBuilder builder, Mono.Cecil.TypeDefinition type) [0x0000b] in /Users/jessejones/Source/Continuum/source/plugins/disassembler/DisassembleExtensions.cs:89 
+  at Disassembler.DisassembleExtensions.Disassemble (Mono.Cecil.TypeDefinition type) [0x00006] in /Users/jessejones/Source/Continuum/source/plugins/disassembler/DisassembleExtensions.cs:40 
+  at Disassembler.TypeItem.GetText () [0x00000] in /Users/jessejones/Source/Continuum/source/plugins/disassembler/AssemblyItems.cs:213 
+  at Disassembler.AssemblyController.DoOpen (Disassembler.AssemblyItem item) [0x00000] in /Users/jessejones/Source/Continuum/source/plugins/disassembler/AssemblyController.cs:234 
+  at Disassembler.AssemblyController.doubleClicked (MCocoa.NSOutlineView sender) [0x0002a] in /Users/jessejones/Source/Continuum/source/plugins/disassembler/AssemblyController.cs:67 
+  at (wrapper managed-to-native) System.Reflection.MonoMethod:InternalInvoke (object,object[],System.Exception&)
+  at System.Reflection.MonoMethod.Invoke (System.Object obj, BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x00000] in <filename unknown>:0 
+  --- End of inner exception stack trace ---
+  at MObjc.CocoaException.Raise (IntPtr instance) [0x00141] in /Users/jessejones/Source/mobjc/source/CocoaException.cs:116 
+  at MObjc.Ffi.Call (IntPtr cif, IntPtr imp, IntPtr result, MObjc.Helpers.PtrArray args) [0x00026] in /Users/jessejones/Source/mobjc/source/Ffi.cs:94 
+  at MObjc.Native.Invoke () [0x00020] in /Users/jessejones/Source/mobjc/source/Native.cs:106 
+  at MCocoa.NSApplication.run () [0x00000] in /Users/jessejones/Source/mcocoa/source/appkit/NSApplication.cs:122 
+  at App.Application.Run () [0x000f8] in /Users/jessejones/Source/Continuum/source/plugins/app/Application.cs:70 
+  at Continuum.Program.Main (System.String[] args) [0x0005f] in /Users/jessejones/Source/Continuum/source/continuum/Program.cs:50 
+* Couln't search all mobjc files using * as the glob.
+* Error right clicking way past the end of the text.
+* Styles should not be cleared if the text has styles.
 * Do an mcocoa release.
 * Shouldn't be able to open the same directory more than once.
 * Do a release.
 
 * Look at the soft debugger in mono 2.6
+* Need a directory for custom plugins:
+	- google code search might be a good example
+	- or maybe a simple diff tool
 * Look at the new error bubbles in snow leopard's XCode.	
 * Typing seems slower than it used to be, eg when typing in the middle of a comment.
 * Would be nice to support hyperlinks in rich text files
@@ -91,7 +169,6 @@ sudo fs_usage -f filesys
    the window jumps around a bit and double clicking the error window doesn't work.
    - what if the file system is case sensitive?
 * Might want to log memory and NSObject highwater marks.
-* Review thread safety
 * Look at other editors, eg TextMate, VS Expess.
 * Can use IronPython for scripting:
 	http://blogs.msdn.com/srivatsn/archive/2008/09/16/hosting-ironpython-made-easier.aspx
@@ -190,8 +267,6 @@ sudo fs_usage -f filesys
 * Need a preference for Type.GetFieldName
 * Get parse errors for show base class. Maybe use an rtf format instead of cs.
 * Add a ChangeLog language?
-* Need a directory for custom plugins:
-	- google code search might be a good example
 * Foreshadow/continuum scripts need work:
 	- should work if continuum is not running
 	- should be able to start/bring to front without an arg
@@ -200,10 +275,8 @@ sudo fs_usage -f filesys
 	- support line numbers via colons
 	- finder seems to sometimes get confused about which mono app to open
 * About box needs a bit more info.
-* Use the 2.2 cecil?
 * Probably want an uninstall script.
 * May want to bundle cecil with the app.
-* Confirmation if opening a big file.
 * Confirmation if the user really wants to open a bunch of files
 	- open files
 	- return in dir editor

@@ -152,14 +152,23 @@ namespace Disassembler
 			var fs = boss.Get<IFileSystem>();
 			string file = fs.GetTempFile(name.Replace(".", string.Empty), ".cil");
 			
-			using (StreamWriter writer = new StreamWriter(file))
+			try
 			{
-				writer.WriteLine("{0}", text);
+				using (StreamWriter writer = new StreamWriter(file))
+				{
+					writer.WriteLine("{0}", text);
+				}
+				
+				boss = ObjectModel.Create("Application");
+				var launcher = boss.Get<ILaunch>();
+				launcher.Launch(file, -1, -1, 1);
 			}
-			
-			boss = ObjectModel.Create("Application");
-			var launcher = boss.Get<ILaunch>();
-			launcher.Launch(file, -1, -1, 1);
+			catch (IOException e)	// can sometimes land here if too many files are open (max is system wide and only 256)
+			{
+				NSString title = NSString.Create("Couldn't process '{0}'.", file);
+				NSString message = NSString.Create(e.Message);
+				Unused.Value = Functions.NSRunAlertPanel(title, message);
+			}
 		}
 		
 		private void DoDisassembleType(CsType type)

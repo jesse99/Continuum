@@ -5,7 +5,7 @@
 	<Glob language = "cil">*.cil</Glob>
 	<Glob language = "css">*.css</Glob>
 	<Glob language = "c#">*.cs</Glob>
-	<Glob language = "c++">*.cpp *.hpp algorithm bitset cassert cctype cerrno cfloat ciso646 climits clocale cmath complex csetjmp csignal cstdarg cstddef cstdio cstdlib cstring ctime cwchar cwctype cxxabi.h deque exception fstream functional iomanip ios iosfwd iostream istream iterator limits list locale map memory new numeric ostream queue set sstream stack stdexcept streambuf string typeinfo utility valarray vector</Glob>
+	<Glob language = "c++">*.cpp *.hpp *.cxx *.hxx algorithm bitset cassert cctype cerrno cfloat ciso646 climits clocale cmath complex csetjmp csignal cstdarg cstddef cstdio cstdlib cstring ctime cwchar cwctype cxxabi.h deque exception fstream functional iomanip ios iosfwd iostream istream iterator limits list locale map memory new numeric ostream queue set sstream stack stdexcept streambuf string typeinfo utility valarray vector</Glob>
 	<Glob language = "html">*.html *.htm</Glob>
 	<Glob language = "info">*.info</Glob>
 	<Glob language = "ignore">*.ignore</Glob>		<!-- gendarme ignore file -->

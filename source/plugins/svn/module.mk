@@ -15,8 +15,8 @@ smoke-files += $(lib-path)
 $(xml-path): source/plugins/$(lib-name)/Bosses.xml
 	cp $^ $@
 		
-$(source-files): source/AssemblyVersion.cs source/plugins/$(lib-name)/*.cs 
+$(source-files): source/AssemblyVersion.cs source/plugins/$(lib-name)/*.cs
 	@echo "$^" > $@
 
-$(lib-path): $(source-files) $(non-ui-files)
-	$(CSC) -out:$@ $(CSC_FLAGS) -r:$(non-ui-resources) -target:library @$<
+$(lib-path): $(source-files) $(ui-files)
+	$(CSC) -out:$@ $(CSC_FLAGS) -r:$(ui-resources) -target:library @$<

@@ -176,19 +176,28 @@ namespace ObjectModel
 					string fullName = type.RootName;
 					string file = fs.GetTempFile(fullName + " Base Classes", ".cs");
 					
-					int i = 0;
-					using (StreamWriter writer = new StreamWriter(file))
+					try
 					{
-						foreach (TypeInfo b in bases)
+						int i = 0;
+						using (StreamWriter writer = new StreamWriter(file))
 						{
-							DoWriteType(writer, i++, b, objects);
+							foreach (TypeInfo b in bases)
+							{
+								DoWriteType(writer, i++, b, objects);
+							}
+							DoWriteType(writer, i, type, objects);
 						}
-						DoWriteType(writer, i, type, objects);
+						
+						boss = Gear.ObjectModel.Create("Application");
+						var launcher = boss.Get<ILaunch>();
+						launcher.Launch(file, -1, -1, 1);
 					}
-					
-					boss = Gear.ObjectModel.Create("Application");
-					var launcher = boss.Get<ILaunch>();
-					launcher.Launch(file, -1, -1, 1);
+					catch (IOException e)		// can sometimes land here if too many files are open (max is system wide and only 256)
+					{
+						NSString title = NSString.Create("Couldn't process '{0}'.", fullName);
+						NSString message = NSString.Create(e.Message);
+						Unused.Value = Functions.NSRunAlertPanel(title, message);
+					}
 				}
 			}
 		}
@@ -210,15 +219,24 @@ namespace ObjectModel
 					string fullName = type.RootName;
 					string file = fs.GetTempFile(fullName + " Derived Classes", ".cs");
 					
-					int count = 0;
-					using (StreamWriter writer = new StreamWriter(file))
+					try
 					{
-						DoWriteTypes(writer, type, derived, 0, ref count);
+						int count = 0;
+						using (StreamWriter writer = new StreamWriter(file))
+						{
+							DoWriteTypes(writer, type, derived, 0, ref count);
+						}
+						
+						boss = Gear.ObjectModel.Create("Application");
+						var launcher = boss.Get<ILaunch>();
+						launcher.Launch(file, -1, -1, 1);
 					}
-					
-					boss = Gear.ObjectModel.Create("Application");
-					var launcher = boss.Get<ILaunch>();
-					launcher.Launch(file, -1, -1, 1);
+					catch (IOException e)	// can sometimes land here if too many files are open (max is system wide and only 256)
+					{
+						NSString title = NSString.Create("Couldn't process '{0}'.", fullName);
+						NSString message = NSString.Create(e.Message);
+						Unused.Value = Functions.NSRunAlertPanel(title, message);
+					}
 				}
 			}
 		}
@@ -238,15 +256,24 @@ namespace ObjectModel
 					string fullName = type.RootName;
 					string file = fs.GetTempFile(fullName + " Implementors", ".cs");
 					
-					int count = 0;
-					using (StreamWriter writer = new StreamWriter(file))
+					try
 					{
-						DoWriteTypes(writer, type, derived, 0, ref count);
+						int count = 0;
+						using (StreamWriter writer = new StreamWriter(file))
+						{
+							DoWriteTypes(writer, type, derived, 0, ref count);
+						}
+						
+						boss = Gear.ObjectModel.Create("Application");
+						var launcher = boss.Get<ILaunch>();
+						launcher.Launch(file, -1, -1, 1);
 					}
-					
-					boss = Gear.ObjectModel.Create("Application");
-					var launcher = boss.Get<ILaunch>();
-					launcher.Launch(file, -1, -1, 1);
+					catch (IOException e)	// can sometimes land here if too many files are open (max is system wide and only 256)
+					{
+						NSString title = NSString.Create("Couldn't process '{0}'.", fullName);
+						NSString message = NSString.Create(e.Message);
+						Unused.Value = Functions.NSRunAlertPanel(title, message);
+					}
 				}
 			}
 		}

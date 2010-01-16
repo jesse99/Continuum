@@ -87,32 +87,49 @@ namespace DirectoryEditor
 			m_state = State.Building;
 			m_errors = new StringBuilder();
 			
-			if (m_process != null)		// this should not normally happen, but may if an exception is thrown (or Exited isn't called for some reason)
+			try
 			{
-				Log.WriteLine(TraceLevel.Warning, "Errors", "m_process was not null");
+				if (m_process != null)		// this should not normally happen, but may if an exception is thrown (or Exited isn't called for some reason)
+				{
+					Log.WriteLine(TraceLevel.Warning, "Errors", "m_process was not null");
+					
+					AssemblyCache.ReleaseLock();
+					m_process.Dispose();
+					m_process = null;
+				}
 				
-				AssemblyCache.ReleaseLock();
-				m_process.Dispose();
-				m_process = null;
+				m_process = m_builder.Build(m_target);
+				AssemblyCache.AcquireLock();
+				m_process.EnableRaisingEvents = true;
+				m_process.Exited += this.DoProcessExited;
+				m_process.StartInfo.RedirectStandardOutput = true;
+				m_process.StartInfo.RedirectStandardError = true;
+				m_process.OutputDataReceived += this.DoGotStdoutData;
+				m_process.ErrorDataReceived += this.DoGotStderrData;
+				
+				m_results.OnStarted();
+				m_results.WriteCommand(m_builder.Command);
+				
+				m_startTime = DateTime.Now;
+				m_process.Start();
+				
+				m_process.BeginOutputReadLine();
+				m_process.BeginErrorReadLine();
 			}
-			
-			m_process = m_builder.Build(m_target);
-			AssemblyCache.AcquireLock();
-			m_process.EnableRaisingEvents = true;
-			m_process.Exited += this.DoProcessExited;
-			m_process.StartInfo.RedirectStandardOutput = true;
-			m_process.StartInfo.RedirectStandardError = true;
-			m_process.OutputDataReceived += this.DoGotStdoutData;
-			m_process.ErrorDataReceived += this.DoGotStderrData;
-			
-			m_results.OnStarted();
-			m_results.WriteCommand(m_builder.Command);
-			
-			m_startTime = DateTime.Now;
-			m_process.Start();
-			
-			m_process.BeginOutputReadLine();
-			m_process.BeginErrorReadLine();
+			catch (System.IO.IOException e)		// started getting "Error creating standard error pipe" with mono 2.6.1
+			{
+				m_process.Dispose();
+				AssemblyCache.ReleaseLock();
+				m_process = null;
+				m_state = State.Canceled;
+				
+				Log.WriteLine(TraceLevel.Info, "Errors", "Failed to build:");
+				Log.WriteLine(TraceLevel.Info, "Errors", e.ToString());
+				
+				NSString title = NSString.Create("Couldn't build {0}.", m_target);
+				NSString message = NSString.Create(e.Message);
+				Unused.Value = Functions.NSRunAlertPanel(title, message);
+			}
 		}
 		
 		public void Cancel()
