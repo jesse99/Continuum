@@ -25,10 +25,7 @@ select declaring_root_name,return_type_name from Methods where name = 'get_BaseT
 sudo fs_usage -f filesys
 
 * Release checklist:
-	- update generated config file logging categories
-	- update the version number
-	- delete build_num
-	- make sure text objects go away (after forcing a GC)	socialism
+	- make sure text objects go away (after forcing a GC)	
 	- make sure text editor boss goes away
 	- make sure auto complete objects go away
 	- make sure directory objects go away
@@ -40,6 +37,7 @@ sudo fs_usage -f filesys
 	- run unit tests in debug
 	- run unit tests in release
 	- make sure untitled docs work OK
+	- build a new foreshadow
 	- review config file
 	- run from the finder
 	- review tar targets
@@ -474,7 +472,7 @@ sudo fs_usage -f filesys
 	  that were edited)
 	- would be cool if invariant support could be added via a script		
 * Release checklist:
-	- update generated config file logging categories
+	- update generated config file logging categories (search for "Log.WriteLine")
 	- update the version number
 	- delete build_num
 	- make sure text objects go away (after forcing a GC)
@@ -489,6 +487,7 @@ sudo fs_usage -f filesys
 	- run unit tests in debug
 	- run unit tests in release
 	- make sure untitled docs work OK
+	- build a new foreshadow
 	- review config file
 	- run from the finder
 	- review tar targets

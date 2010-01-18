@@ -89,7 +89,7 @@ namespace ObjectModel
 					if (interfaces.Any())
 					{
 						items.Add(new TextContextItem(
-							"Show Implementors",
+							"Show Derived Types",							// we use this language because interfaces may inherit from other interfaces
 							s => {DoShowImplementors(interfaces); return s;},
 							0.4f));
 					}

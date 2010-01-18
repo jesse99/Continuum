@@ -25,7 +25,7 @@ dummy := $(shell mkdir bin 2> /dev/null)
 dummy := $(shell mkdir bin/plugins 2> /dev/null)
 dummy := $(shell if [[ "$(CSC_FLAGS)" != `cat bin/csc_flags 2> /dev/null` ]]; then echo "$(CSC_FLAGS)" > bin/csc_flags; fi)
 
-base_version := 0.5.xxx.0										# major.minor.build.revision
+base_version := 0.6.xxx.0										# major.minor.build.revision
 version := $(shell mget_version.sh $(base_version) build_num)	# this will increment the build number stored in build_num
 version := $(strip $(version))
 
@@ -160,9 +160,12 @@ bin/continuum.exe.config:
 	@echo "		<categories>" >> bin/continuum.exe.config
 	@echo "			<add name = \"App\" level = \"Info\"/>" >> bin/continuum.exe.config
 	@echo "			<add name = \"AutoComplete\" level = \"Warning\"/>" >> bin/continuum.exe.config
+	@echo "			<add name = \"ContextMenu\" level = \"Warning\"/>" >> bin/continuum.exe.config
+	@echo "			<add name = \"CsParser\" level = \"Warning\"/>" >> bin/continuum.exe.config
 	@echo "			<add name = \"Database\" level = \"Warning\"/>" >> bin/continuum.exe.config
 	@echo "			<add name = \"Errors\" level = \"Info\"/>" >> bin/continuum.exe.config
 	@echo "			<add name = \"FindInDatabase\" level = \"Warning\"/>" >> bin/continuum.exe.config
+	@echo "			<add name = \"LocalsParser\" level = \"Warning\"/>" >> bin/continuum.exe.config
 	@echo "			<add name = \"ObjectModel\" level = \"Warning\"/>" >> bin/continuum.exe.config
 	@echo "			<add name = \"Open Selection\" level = \"Warning\"/>" >> bin/continuum.exe.config
 	@echo "			<add name = \"Parser\" level = \"Warning\"/>" >> bin/continuum.exe.config
