@@ -265,8 +265,8 @@ fi
 					{
 						Console.WriteLine("{0}", summary);
 					
-						string details = o.ToString("D", null);
-						Console.WriteLine("   {0}", details.Length < 480 ? details : details.Substring(0, 480));
+//						string details = o.ToString("D", null);
+//						Console.WriteLine("   {0}", details.Length < 480 ? details : details.Substring(0, 480));
 					}
 //					o.release();
 				}

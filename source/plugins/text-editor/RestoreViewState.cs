@@ -21,6 +21,7 @@
 
 using MCocoa;
 using MObjc;
+using Shared;
 using System;
 
 namespace TextEditor
@@ -35,6 +36,7 @@ namespace TextEditor
 		public RestoreViewState(TextController controller)
 		{
 			m_controller = controller;
+			ActiveObjects.Add(this);
 		}
 		
 		public void SetPath(string path)

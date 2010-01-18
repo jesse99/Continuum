@@ -48,7 +48,7 @@ namespace TextEditor
 		public NSWindow Window
 		{
 			get {Contract.Requires(m_window != null, "window isn't set"); return m_window;}
-			set {Contract.Requires(value != null, "value is null"); Contract.Requires(m_window == null, "window isn't null"); m_window = (NSWindow) value;}
+			set {Contract.Requires(value != null, "value is null"); Contract.Requires(m_window == null, "window isn't null"); m_window = value;}
 		}
 		
 		// ITextEditor

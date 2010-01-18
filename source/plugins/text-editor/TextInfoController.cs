@@ -73,6 +73,7 @@ namespace TextEditor
 			window().makeKeyAndOrderFront(this);
 			
 			ms_controllers.Add(this);
+			ActiveObjects.Add(this);
 		}
 		
 		public void windowWillClose(NSObject notification)

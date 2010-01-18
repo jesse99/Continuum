@@ -109,6 +109,13 @@ namespace ObjectModel
 				m_running = false;
 				Monitor.PulseAll(m_lock);
 			}
+			
+			foreach (DirectoryWatcher watcher in m_watchers)
+			{
+				watcher.Changed -= this.DoDirChanged;
+			}
+						
+			m_thread = null;
 		}
 		
 		#region Private Methods

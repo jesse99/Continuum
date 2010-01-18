@@ -377,15 +377,20 @@ namespace TextEditor
 			if (m_watcher != null)
 			{
 				m_watcher.Dispose();
+				m_watcher.Changed -= this.DoDirChanged;
 				m_watcher = null;
 			}
 			
 			Broadcaster.Unregister(this);
 			
 			if (m_applier != null)
+			{
 				m_applier.Stop();
+			}
 			((DeclarationsPopup) m_decPopup.Value).Stop();
 			
+			m_textView.Value.Call("onClosing:", this);
+
 			// If the windows are closed very very quickly then if we don't do this
 			// we get a crash when Cocoa tries to call our delegate.
 			m_textView.Value.layoutManager().setDelegate(null);
@@ -393,6 +398,7 @@ namespace TextEditor
 			window().autorelease();
 			NSApplication.sharedApplication().BeginInvoke(	// we only want to broadcast this once the window actually closed, but we don't get a notification for that...
 				() => Broadcaster.Invoke("closed document window", m_boss), TimeSpan.FromMilliseconds(250));
+//			m_boss.Free();
 		}
 		
 		public void getInfo(NSObject sender)

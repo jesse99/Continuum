@@ -47,6 +47,7 @@ namespace TextEditor
 		private AnnotateView(IntPtr obj) : base(obj)
 		{
 			m_color = NSColor.whiteColor().Retain();
+			ActiveObjects.Add(this);
 		}
 		
 		public NSAttributedString GetText()
@@ -320,6 +321,9 @@ namespace TextEditor
 		
 		public void Close()
 		{
+			if (m_range != null)
+				m_range.Changed -= this.DoRangeChanged;
+			
 			if (m_attrs != null)
 			{
 				if (m_parent != null)

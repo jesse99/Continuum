@@ -42,7 +42,7 @@ namespace DirectoryEditor
 			m_path = path;
 			m_dirStyler = new DirectoryItemStyler(path);
 			
-			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("directory-editor"), this);	
+			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("directory-editor"), this);
 			m_table = new IBOutlet<NSOutlineView>(this, "table").Value;
 			m_targets = new IBOutlet<NSPopUpButton>(this, "targets").Value;
 			m_prefs = new IBOutlet<DirPrefsController>(this, "prefsController");
@@ -122,7 +122,10 @@ namespace DirectoryEditor
 			Broadcaster.Unregister(this);
 			
 			if (m_watcher != null)
+			{
+				m_watcher.Changed -= this.DoDirChanged;
 				m_watcher.Dispose();
+			}
 				
 			if (m_root != null)
 			{
@@ -133,6 +136,10 @@ namespace DirectoryEditor
 				m_table.reloadData();
 				root.release();
 			}
+			
+			m_builder = null;
+//			m_boss.Free();
+			m_boss = null;
 			
 			window().autorelease();
 			autorelease();

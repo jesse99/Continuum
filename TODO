@@ -25,11 +25,7 @@ select declaring_root_name,return_type_name from Methods where name = 'get_BaseT
 sudo fs_usage -f filesys
 
 * Release checklist:
-	- make sure text objects go away (after forcing a GC)	
-	- make sure text editor boss goes away
 	- make sure auto complete objects go away
-	- make sure directory objects go away
-	- make sure directory editor boss goes away
 	- run continuum with no prefs
 	- run continuum with no databases (including the windows db)
 	- run continuum with no Continuum Files dir
@@ -475,11 +471,11 @@ sudo fs_usage -f filesys
 	- update generated config file logging categories (search for "Log.WriteLine")
 	- update the version number
 	- delete build_num
+	- make sure directory objects go away
+	- make sure directory editor boss goes away
 	- make sure text objects go away (after forcing a GC)
 	- make sure text editor boss goes away
 	- make sure auto complete objects go away
-	- make sure directory objects go away
-	- make sure directory editor boss goes away
 	- run continuum with no prefs
 	- run continuum with no databases (including the windows db)
 	- run continuum with no Continuum Files dir

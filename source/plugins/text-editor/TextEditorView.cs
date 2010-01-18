@@ -47,6 +47,12 @@ namespace TextEditor
 			setTypingAttributes(CurrentStyles.DefaultAttributes);
 		}
 		
+		public void onClosing(TextController controller)
+		{
+			m_autoComplete = null;		// note that these won't be GCed if we don't null them out
+			m_boss = null;
+		}
+		
 		private const int TabKey = 0x30;
 		private const int DeleteKey = 0x33;
 		private const int LeftArrowKey = 0x7B;
