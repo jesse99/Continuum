@@ -111,7 +111,7 @@ namespace ObjectModel
 								0.4f));
 					}
 					
-					var unsealed = from t in types where (t.Flags & TypeFlags.Sealed) == 0 select t;
+					var unsealed = from t in types where (t.Flags & (TypeFlags.Sealed | TypeFlags.Interface)) == 0 select t;
 					if (unsealed.Any())
 					{
 						items.Add(new TextContextItem(

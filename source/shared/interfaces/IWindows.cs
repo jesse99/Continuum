@@ -22,15 +22,15 @@
 using Gear;
 
 namespace Shared
-{	
+{
 	// This is used for plugins which are associated with a window.
 	public interface IWindows : IInterface
 	{
 		// Returns the boss associated with the main window or null if
 		// the main window isn't associated with the plugin.
 		Boss Main();
-	
+		
 		// Returns the plugin bosses asscociated with each visible window.
 		Boss[] All();
-	} 
+	}
 }

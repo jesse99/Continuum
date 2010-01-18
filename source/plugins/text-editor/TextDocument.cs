@@ -72,7 +72,7 @@ namespace TextEditor
 			
 			if (NSObject.IsNullOrNil(m_text))
 			{
-				m_controller.Text = string.Empty;		// will be null if we're opening a new doc
+				m_controller.Text = string.Empty;		// m_text will be null if we're opening a new doc
 			}
 			else
 			{

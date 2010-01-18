@@ -63,6 +63,18 @@ namespace DirectoryEditor
 		
 		public void Open(string path)
 		{
+			var windows = m_boss.Get<IWindows>();
+			foreach (Boss boss in windows.All())
+			{
+				var editor = boss.Get<IDirectoryEditor>();
+				if (editor.Path == path)
+				{
+					var window = boss.Get<IWindow>();
+					window.Window.makeKeyAndOrderFront(NSApplication.sharedApplication());
+					return;
+				}
+			}
+			
 			Gear.Helpers.Unused.Value = new DirectoryController(path);
 		}
 		

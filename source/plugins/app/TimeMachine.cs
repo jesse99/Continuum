@@ -123,6 +123,11 @@ namespace App
 							if (max < entries.Count)
 								items.Add(new TextContextItem(Constants.Ellipsis, sortOrder));
 						}
+						else
+						{
+							items.Add(new TextContextItem(0.9f));
+							items.Add(new TextContextItem("Finding old Files", null, 0.9f));
+						}
 					}
 				}
 			}

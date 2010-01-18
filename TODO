@@ -24,14 +24,11 @@ http://www.jetbrains.com/resharper/features/
 select declaring_root_name,return_type_name from Methods where name = 'get_BaseTypes';
 sudo fs_usage -f filesys
 
-* Styles should not be cleared if the text has styles.
-* Styling for untitled documents still seems goofy.
-* Shouldn't be able to open the same directory more than once.
 * Release checklist:
 	- update generated config file logging categories
 	- update the version number
 	- delete build_num
-	- make sure text objects go away (after forcing a GC)
+	- make sure text objects go away (after forcing a GC)	socialism
 	- make sure text editor boss goes away
 	- make sure auto complete objects go away
 	- make sure directory objects go away

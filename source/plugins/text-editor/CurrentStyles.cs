@@ -71,6 +71,11 @@ namespace TextEditor
 //			Log.WriteLine("XXX", "spaces: {0:D}", ms_attributes["text spaces color changed"]);
 		}
 		
+		public static NSDictionary DefaultAttributes
+		{
+			get {return ms_attributes["text default font changed"];}
+		}
+		
 		public CurrentStyles(TextController controller, NSTextStorage storage)
 		{
 			m_controller = controller;
@@ -186,7 +191,7 @@ namespace TextEditor
 		#region Private Methods
 		private static readonly TimeSpan ApplyDelay = TimeSpan.FromMilliseconds(100);
 		
-		public void DoApplyStyles(bool clearOld)
+		private void DoApplyStyles(bool clearOld)
 		{
 			const int MaxApplies = 100;
 			
@@ -240,7 +245,7 @@ namespace TextEditor
 			}
 		}
 		
-		public void DoClearOld()
+		private void DoClearOld()
 		{
 			int start = 0;
 			if (m_appliedRuns.Count > 0)
