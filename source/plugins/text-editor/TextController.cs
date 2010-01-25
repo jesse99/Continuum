@@ -104,7 +104,7 @@ namespace TextEditor
 		{
 			if (Path != null)
 			{
-				DoFindLanguage();
+				Language = DoFindLanguage();
 				
 				NSRect frame = WindowDatabase.GetFrame(Path);
 				if (frame != NSRect.Empty)
@@ -890,26 +890,22 @@ namespace TextEditor
 		}
 		
 		#region Private Methods
-		private void DoFindLanguage()
+		private ILanguage DoFindLanguage()
 		{
 			string fileName = System.IO.Path.GetFileName(Path);
 			if (document().Call("isBinary").To<bool>())
 				fileName = "foo.bin";
 			
-			m_language = null;
-				
 			ILanguage language = null;
 			Boss boss = ObjectModel.Create("Stylers");
 			foreach (IFindLanguage find in boss.GetRepeated<IFindLanguage>())
 			{
 				language = find.FindByExtension(fileName);
 				if (language != null)
-					break;
+					return language;
 			}
 			
-			m_language = language;
-			((DeclarationsPopup) m_decPopup.Value).Init(this);
-			m_applier.ResetTabs();
+			return null;
 		}
 		
 		// This is retarded, but showFindIndicatorForRange only works if the window is

@@ -1,5 +1,5 @@
 <Language name = "c#">
-	<comment>// .* $</comment>
+	<comment>// [^\r\n]* [\r\n]</comment>		<!-- note that $ won't work quite right with windows line endings -->
 	<comment>/\* (?: . | \r | \n)*? \*/</comment>		<!-- note that comments do not nest -->
 	<keyword>\b(?: abstract | event | new | struct | as | explicit | null | switch | base | extern | object | this | bool | false | operator | throw | break | finally | out | true | byte | fixed | override | try | case | float | params | typeof | catch | for | private | uint | char | foreach | protected | ulong | checked | goto | public | unchecked | class | if | readonly | unsafe | const | implicit | ref | ushort | continue | in | return | using | decimal | int | sbyte | virtual | default | interface | sealed | volatile | delegate | internal | short | void | do | is | sizeof | while | double | lock | stackalloc | else | long | static | enum | namespace | string)\b</keyword>
 	<keyword>\b(?: by | on | ascending | descending | from | get | group | into | join | let | orderby | partial | partial | select | set | var | where | where | yield )\b</keyword>	<!-- context sensitive keywords -->
@@ -9,11 +9,11 @@
 	<number>(?&lt;= \W) \d+ [FfDdMm] (?= \W)</number>
 	<number>(?&lt;= \W) \d+ (?= \W)</number>
 	<other1>(?&lt;= ^ \s* \[ (?: \w+ \s* :)? \s*) [\w\.]+ \s* (?= \]|\()</other1>	<!-- attribute -->
-	<other2>\x23region .* $</other2>							<!-- #region -->
+	<other2>\x23region [^\r\n]* [\r\n]</other2>							<!-- #region -->
 	<other2>\x23endregion</other2>
 	<preprocessor>(?: \x23if | \x23else | \x23elif | \x23endif | \x23define | \x23undef | \x23warning | \x23error | \x23line | (?: \x23pragma \s warning) | (?: \x23pragma \s checksum) | \x23pragma) .* $</preprocessor>
 	<string>&quot; (?: [^&quot;\r\n\\] | \\.)* &quot;</string>
 	<string>@&quot; (?: [^&quot;\\] | \\. | (?: &quot; &quot;))* &quot;</string>
 	<string>&apos; (?: [^&apos;\r\n\\] | \\.)* &apos;</string>
-	<word>[\w\p{Lm}\p{Nl}\p{Mn}_~] [\w\p{Lm}\p{Nl}\p{Mn}_]*</word> 
+	<word>[\w\p{Lm}\p{Nl}\p{Mn}_~] [\w\p{Lm}\p{Nl}\p{Mn}_]*</word>
 </Language>

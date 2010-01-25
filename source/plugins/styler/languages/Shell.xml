@@ -1,6 +1,6 @@
 <!-- Based on bash syntax. -->
 <Language name = "shell">
-	<comment>\# .* $</comment>
+	<comment>\# [^\r\n]* [\r\n]</comment>	<!-- note that $ won't work quite right with windows line endings -->
 	<keyword>\b(?:  bind | break | builtin | caller | case | command | continue | declare | dirs | do | done | elif | else | enable | esac | eval | exec | exit | export | fi | for | getopts | hash | if | in | let | local | popd | pushd | read | readonly | return | select | set | shift | shopt | then | times | trap | type | typeset | unalias | unmask | until | while)\b</keyword>
 	<keyword>\b(?: from | get | group | into | join | let | orderby | partial | partial | select | set | value | var | where | where | yield)\b</keyword>
 	<number>(?&lt;= \W) (?: 0[xX])? \d+ (?= \W)</number>

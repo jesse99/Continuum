@@ -24,6 +24,8 @@ http://www.jetbrains.com/resharper/features/
 select declaring_root_name,return_type_name from Methods where name = 'get_BaseTypes';
 sudo fs_usage -f filesys
 
+* Make sure setting the language to c++ works.
+* Exception opening cocoa-pack
 * Release checklist:
 	- make sure auto complete objects go away
 	- run continuum with no prefs
@@ -34,6 +36,9 @@ sudo fs_usage -f filesys
 	- run unit tests in release
 	- make sure untitled docs work OK
 	- build a new foreshadow
+	- review BUILDING doc
+	- review README
+	- use it for a bit
 	- review config file
 	- run from the finder
 	- review tar targets
@@ -54,6 +59,8 @@ sudo fs_usage -f filesys
 * Typing seems slower than it used to be, eg when typing in the middle of a comment.
 * Would be nice to support hyperlinks in rich text files
 	http://developer.apple.com/qa/qa2006/qa1487.html
+* NSWorkspace has enw methods to duplicate and trash files.
+* NSError has a helpAnchor method.
 * Stagger windows, especially find results and assembly browser.
 * Need to do a better job with Refactor Language.rtf (prose and the grammar)
 * Might be neat if could figure out languages for files with no extension using
@@ -484,6 +491,8 @@ sudo fs_usage -f filesys
 	- run unit tests in release
 	- make sure untitled docs work OK
 	- build a new foreshadow
+	- review BUILDING doc
+	- review README
 	- review config file
 	- run from the finder
 	- review tar targets
