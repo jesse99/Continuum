@@ -31,6 +31,10 @@ namespace Shared
 		// is not on disk.
 		string Path {get;}
 		
+		// Returns a unique identifier for the document. If the document is on disk
+		// it will be Path, otherwise it will be a string like "untitled2".
+		string Key {get;}
+		
 		// If the line number is too large the last line will be shown.
 		// Insertion point will be col or the start of the line if col is -1.
 		// tabWidth is used for tools like gmcs which think tabs are 8 characters.

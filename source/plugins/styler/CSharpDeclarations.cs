@@ -71,7 +71,7 @@ namespace Styler
 				
 				decs.Sort((lhs, rhs) => lhs.Extent.location.CompareTo(rhs.Extent.location));
 				
-				var data = new Declarations(parse.Path, parse.Edit, decs.ToArray());
+				var data = new Declarations(parse.Key, parse.Edit, decs.ToArray());
 				Broadcaster.Invoke("computed declarations", data);
 			}
 		}

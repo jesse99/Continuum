@@ -57,7 +57,7 @@ namespace Disassembler
 						var parses = b.Get<IParses>();
 						var text = boss.Get<IText>();
 						
-						Parse parse = parses.Parse(editor.Path, text.EditCount, text.Text);
+						Parse parse = parses.Parse(editor.Key, text.EditCount, text.Text);
 						if (parse.Globals != null)
 						{
 							CsType type = DoFindType(parse.Globals, text.Selection);

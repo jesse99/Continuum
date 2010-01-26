@@ -24,7 +24,6 @@ http://www.jetbrains.com/resharper/features/
 select declaring_root_name,return_type_name from Methods where name = 'get_BaseTypes';
 sudo fs_usage -f filesys
 
-* Make sure setting the language to c++ works.
 * Exception opening cocoa-pack
 * Release checklist:
 	- make sure auto complete objects go away

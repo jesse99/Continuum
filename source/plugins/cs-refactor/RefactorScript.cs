@@ -47,7 +47,7 @@ namespace CsRefactor
 			
 			Boss boss = ObjectModel.Create("CsParser");
 			var parses = boss.Get<IParses>();
-			Parse parse = parses.Parse(editor.Path, cSource.EditCount, cSource.Text);
+			Parse parse = parses.Parse(editor.Key, cSource.EditCount, cSource.Text);
 			if (parse.ErrorLength == 0 && parse.Globals != null)
 			{
 				CsGlobalNamespace globals = parse.Globals;

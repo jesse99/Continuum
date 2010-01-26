@@ -37,6 +37,7 @@ namespace TextEditor
 		public void Instantiated(Boss boss)
 		{
 			m_boss = boss;
+			m_key = ms_nextKey++;
 		}
 		
 		public Boss Boss
@@ -61,6 +62,14 @@ namespace TextEditor
 				
 				TextController controller = (TextController) m_window.windowController();
 				return controller.Path;
+			}
+		}
+		
+		public string Key
+		{
+			get
+			{
+				return Path ?? ("untitled" + m_key);
 			}
 		}
 		
@@ -357,6 +366,8 @@ namespace TextEditor
 		#region Fields
 		private Boss m_boss;
 		private NSWindow m_window;
+		private long m_key;
+		private static long ms_nextKey = 1;
 		#endregion
 	}
 }

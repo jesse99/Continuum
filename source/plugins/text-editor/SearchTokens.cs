@@ -106,7 +106,7 @@ namespace TextEditor
 			var editor = m_boss.Get<ITextEditor>();
 			var text = m_boss.Get<IText>();
 			
-			Parse parse = parses.Parse(editor.Path, text.EditCount, text.Text);
+			Parse parse = parses.Parse(editor.Key, text.EditCount, text.Text);
 			if (parse.Edit == text.EditCount)
 			{
 				var strings = new List<Token>();

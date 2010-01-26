@@ -258,7 +258,7 @@ namespace AutoComplete
 		{
 			bool handled = false;
 			
-			Parse parse = m_parses.TryParse(editor.Path);
+			Parse parse = m_parses.TryParse(editor.Key);
 			CsGlobalNamespace globals = parse != null ? parse.Globals : null;
 			if (globals != null)
 			{
@@ -314,7 +314,7 @@ namespace AutoComplete
 		{
 			bool handled = false;
 			
-			Parse parse = m_parses.TryParse(editor.Path);
+			Parse parse = m_parses.TryParse(editor.Key);
 			CsGlobalNamespace globals = parse != null ? parse.Globals : null;
 			if (globals != null)
 			{

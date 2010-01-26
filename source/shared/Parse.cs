@@ -29,16 +29,16 @@ namespace Shared
 	[ThreadModel(ThreadModel.Concurrent)]
 	public sealed class Parse
 	{
-		public Parse(string path, int edit, int index, int length, CsGlobalNamespace globals, Token[] comments, Token[] tokens)
+		public Parse(int edit, string key, int index, int length, CsGlobalNamespace globals, Token[] comments, Token[] tokens)
 		{
-			Contract.Requires(!string.IsNullOrEmpty(path), "path is null or empty");
+			Contract.Requires(!string.IsNullOrEmpty(key), "key is null or empty");
 			Contract.Requires(index >= 0, "index is negative");
 			Contract.Requires(length >= 0, "length is negative");
 			Contract.Requires(comments != null, "comments is null");
 			Contract.Requires(tokens != null, "tokens is null");
 			Contract.Requires(globals != null || length >= 0, "null globals but error length is not set");
 			
-			Path = path;
+			Key = key;
 			Edit = edit;
 			ErrorIndex = index;
 			ErrorLength = length;
@@ -47,8 +47,9 @@ namespace Shared
 			Tokens = tokens;
 		}
 		
-		// Edit count for the text this parse is associated with.
-		public string Path {get; private set;}
+		// Path for the document this parse is associated with (for untitled documents
+		// it will be a unique name).
+		public string Key {get; private set;}
 		
 		// Edit count for the text this parse is associated with.
 		public int Edit {get; private set;}

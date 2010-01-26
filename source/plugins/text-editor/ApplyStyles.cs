@@ -152,7 +152,8 @@ namespace TextEditor
 		#region Private Methods		
 		private void DoApplyStyles(StyleRuns runs)
 		{
-			if (m_controller.Path != null && Paths.AreEqual(runs.Path, m_controller.Path))
+			var editor = m_controller.Boss.Get<ITextEditor>();
+			if (Paths.AreEqual(runs.Path, editor.Key))
 			{
 				m_current.Reset(runs.Edit, runs.Runs);
 				m_current.ApplyStyles();

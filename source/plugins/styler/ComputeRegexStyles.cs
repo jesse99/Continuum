@@ -73,15 +73,16 @@ namespace Styler
 		private void DoQueueJob(TextEdit edit)
 		{
 			var editor = edit.Boss.Get<ITextEditor>();
-			string path = editor.Path;
+			string key = editor.Key;
+			Contract.Assert(!string.IsNullOrEmpty(key), "key is null or empty");
 			
-			if (path != null && edit.Language != null)
+			if (edit.Language != null)
 			{
 				var text = edit.Boss.Get<IText>();
 				lock (m_mutex)
 				{
-					Log.WriteLine(TraceLevel.Verbose, "Styler", "queuing {0} for edit {1}", System.IO.Path.GetFileName(path), text.EditCount);
-					m_jobs[path] = new Job(text.EditCount, text.Text, edit.Language);
+					Log.WriteLine(TraceLevel.Verbose, "Styler", "queuing {0} for edit {1}", System.IO.Path.GetFileName(key), text.EditCount);
+					m_jobs[key] = new Job(text.EditCount, text.Text, edit.Language);
 					Monitor.Pulse(m_mutex);
 				}
 			}
@@ -92,7 +93,7 @@ namespace Styler
 		{
 			while (true)
 			{
-				string path = null;
+				string key = null;
 				Job job = null;
 				
 				lock (m_mutex)
@@ -102,24 +103,24 @@ namespace Styler
 						Unused.Value = Monitor.Wait(m_mutex);
 					}
 					
-					path = m_jobs.Keys.First();
-					job = m_jobs[path];
-					m_jobs.Remove(path);
+					key = m_jobs.Keys.First();
+					job = m_jobs[key];
+					m_jobs.Remove(key);
 				}
 				
-				DoComputeRuns(path, job.Edit, job.Text, job.Language);
+				DoComputeRuns(key, job.Edit, job.Text, job.Language);
 			}
 		}
 		
 		[ThreadModel(ThreadModel.Concurrent)]
-		private void DoComputeRuns(string path, int edit, string text, ILanguage language)
+		private void DoComputeRuns(string key, int edit, string text, ILanguage language)
 		{
 			var runs = new List<StyleRun>();
 			var sw = language.SafeBoss().Get<IStyleWith>();
 			DoRegexMatch(text, sw.Language, runs);
-			Log.WriteLine(TraceLevel.Verbose, "Styler", "computed {0} runs for {1} edit {2}", runs.Count, System.IO.Path.GetFileName(path), edit);
+			Log.WriteLine(TraceLevel.Verbose, "Styler", "computed {0} runs for {1} edit {2}", runs.Count, System.IO.Path.GetFileName(key), edit);
 			
-			var data = new StyleRuns(language.SafeBoss(), path, edit, runs.ToArray());
+			var data = new StyleRuns(language.SafeBoss(), key, edit, runs.ToArray());
 			
 			if (language.SafeBoss().Has<IStyler>())
 			{

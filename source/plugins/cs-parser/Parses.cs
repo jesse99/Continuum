@@ -72,70 +72,68 @@ namespace CsParser
 		private void DoQueueJob(TextEdit edit)
 		{
 			var editor = edit.Boss.Get<ITextEditor>();
-			string path = editor.Path;
-		
-			if (path != null)
+			string key = editor.Key;
+			Contract.Assert(!string.IsNullOrEmpty(key), "key is null or empty");
+			
+			if (edit.Language != null && "CsLanguage" == edit.Language.Name)
 			{
-				if (edit.Language != null && "CsLanguage" == edit.Language.Name)
+				var text = edit.Boss.Get<IText>();
+				lock (m_mutex)
 				{
-					var text = edit.Boss.Get<IText>();
-					lock (m_mutex)
-					{
-						Log.WriteLine(TraceLevel.Verbose, "Parser", "queuing {0} for edit {1}", System.IO.Path.GetFileName(path), text.EditCount);
-						m_jobs[path] = new Job(text.EditCount, text.Text);
-						Monitor.Pulse(m_mutex);
-					}
+					Log.WriteLine(TraceLevel.Verbose, "Parser", "queuing {0} for edit {1}", System.IO.Path.GetFileName(key), text.EditCount);
+					m_jobs[key] = new Job(text.EditCount, text.Text);
+					Monitor.Pulse(m_mutex);
 				}
 			}
 		}
 		
-		public Parse TryParse(string path)
+		public Parse TryParse(string key)
 		{
-			Contract.Requires(!string.IsNullOrEmpty(path), "path is null or empty");
+			Contract.Requires(!string.IsNullOrEmpty(key), "key is null or empty");
 			Profile.Start("Parses::TryParse");
 			
 			Parse parse;
 			lock (m_mutex)
 			{
-				Unused.Value = m_parses.TryGetValue(path, out parse);
+				Unused.Value = m_parses.TryGetValue(key, out parse);
 			}
 			
 			Profile.Stop("Parses::TryParse");
 			return parse;
 		}
 		
-		public Parse Parse(string path, int edit, string text)
+		public Parse Parse(string key, int edit, string text)
 		{
-			Contract.Requires(!string.IsNullOrEmpty(path), "path is null or empty");
+			Contract.Requires(!string.IsNullOrEmpty(key), "key is null or empty");
 			Contract.Requires(text != null, "text is null");
 			
 			Parse parse = null;
 			
 			lock (m_mutex)
 			{
-				while (!m_parses.ContainsKey(path) || m_parses[path].Edit != edit)
+				while (!m_parses.ContainsKey(key) || m_parses[key].Edit != edit)
 				{
-					m_jobs[path] = new Job(edit, text);
+					m_jobs[key] = new Job(edit, text);
 					Monitor.Pulse(m_mutex);
 					
 					bool pulsed = Monitor.Wait(m_mutex, TimeSpan.FromSeconds(10));
 					if (!pulsed)
-						throw new Exception("Timed out trying to parse " + path);
+						throw new Exception("Timed out trying to parse " + key);
 				}
 				
-				parse = m_parses[path];
+				parse = m_parses[key];
 			}
 			
 			return parse;
 		}
 		
 #if TEST
-		public void AddParse(string path, CsGlobalNamespace globals)
+		public void AddParse(string key, CsGlobalNamespace globals)
 		{
 			var parse = new Parse("test.cs", 0, 0, 0, globals, new Token[0], new Token[0]);
 			lock (m_mutex)
 			{
-				m_parses[path] = parse;
+				m_parses[key] = parse;
 			}
 		}
 #endif
@@ -277,7 +275,7 @@ namespace CsParser
 			
 			while (true)
 			{
-				string path = null;
+				string key = null;
 				Job job = null;
 				
 				lock (m_mutex)
@@ -287,18 +285,18 @@ namespace CsParser
 						Unused.Value = Monitor.Wait(m_mutex);
 					}
 					
-					path = m_jobs.Keys.First();
-					job = m_jobs[path];
-					m_jobs.Remove(path);
+					key = m_jobs.Keys.First();
+					job = m_jobs[key];
+					m_jobs.Remove(key);
 				}
 				
-				Parse parse = DoParse(path, parser, job);
+				Parse parse = DoParse(key, parser, job);
 				lock (m_mutex)
 				{
-					m_parses[path] = parse;
+					m_parses[key] = parse;
 					DoCheckHighwater();
 					
-					Log.WriteLine(TraceLevel.Verbose, "Parser", "computed parse for {0} and edit {1}", System.IO.Path.GetFileName(path), parse.Edit);
+					Log.WriteLine(TraceLevel.Verbose, "Parser", "computed parse for {0} and edit {1}", System.IO.Path.GetFileName(key), parse.Edit);
 					NSApplication.sharedApplication().BeginInvoke(
 						() => Broadcaster.Invoke("parsed file", parse));
 					
@@ -308,14 +306,14 @@ namespace CsParser
 		}
 		
 		[ThreadModel(ThreadModel.Concurrent)]
-		private Parse DoParse(string path, Parser parser, Job job)		// threaded
+		private Parse DoParse(string key, Parser parser, Job job)
 		{
 			int index, length;
 			CsGlobalNamespace globals;
 			Token[] tokens, comments;
 			parser.TryParse(job.Text, out index, out length, out globals, out tokens, out comments);
 			
-			return new Parse(path, job.Edit, index, length, globals, comments, tokens);
+			return new Parse(job.Edit, key, index, length, globals, comments, tokens);
 		}
 		
 		// We want to hang onto parses until the assembly they are within is
@@ -334,25 +332,25 @@ namespace CsParser
 			lock (m_mutex)
 			{
 				var deathRow = new List<string>();
-				foreach (string path in m_parses.Keys)
+				foreach (string key in m_parses.Keys)
 				{
-					if (!DoIsOpen(windows, path))
-						deathRow.Add(path);
+					if (!DoIsOpen(windows, key))
+						deathRow.Add(key);
 				}
 				
-				foreach (string path in deathRow)
+				foreach (string key in deathRow)
 				{
-					m_parses.Remove(path);
+					m_parses.Remove(key);
 				}
 			}
 		}
 		
-		private bool DoIsOpen(IWindows windows, string path)
+		private bool DoIsOpen(IWindows windows, string key)
 		{
 			foreach (Boss boss in windows.All())
 			{
 				var editor = boss.Get<ITextEditor>();
-				if (path == editor.Path)
+				if (key == editor.Key)
 					return true;
 			}
 			
@@ -363,7 +361,7 @@ namespace CsParser
 		// log when they start stacking up.
 		[Conditional("DEBUG")]
 		[ThreadModel(ThreadModel.Concurrent)]
-		private void DoCheckHighwater()		// threaded
+		private void DoCheckHighwater()
 		{
 			if (m_parses.Count > m_highwater)
 			{

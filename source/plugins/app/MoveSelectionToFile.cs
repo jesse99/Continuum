@@ -103,7 +103,7 @@ namespace App
 				// flag now though so we can use this if the editCount is current.
 				Boss b = ObjectModel.Create("CsParser");
 				var parses = b.Get<IParses>();
-				Parse parse = parses.Parse(editor.Path, text.EditCount, text.Text);
+				Parse parse = parses.Parse(editor.Key, text.EditCount, text.Text);
 				if (parse.ErrorLength == 0 && parse.Globals != null)
 				{
 					CsGlobalNamespace globals = parse.Globals;

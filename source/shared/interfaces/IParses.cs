@@ -29,14 +29,14 @@ namespace Shared
 	// build for files with no open window. This is on the CsParser boss.
 	public interface IParses : IInterface
 	{
-		// Attempts to return the current parse information for the specified file.
-		// May return null if the file has not been parsed yet or the parse info
-		// has been purged.
-		Parse TryParse(string path);
+		// Attempts to return the current parse information for the specified key
+		// (which is normally a path). May return null if the file has not been parsed 
+		// yet or the parse info has been purged.
+		Parse TryParse(string key);
 		
 		// Blocks until the file is parsed and returns the result. This will normally
 		// not throw, but may return a parse with errors.
-		Parse Parse(string path, int edit, string text);
+		Parse Parse(string key, int edit, string text);
 		
 		// Searches globals in each parse and returns a matching type or null.
 		CsType FindType(string fullName);

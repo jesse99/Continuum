@@ -86,7 +86,7 @@ namespace Styler
 		{
 			lock (m_mutex)
 			{
-				Log.WriteLine(TraceLevel.Verbose, "Styler", "queuing parse {0} for edit {1}", System.IO.Path.GetFileName(parse.Path), parse.Edit);
+				Log.WriteLine(TraceLevel.Verbose, "Styler", "queuing parse {0} for edit {1}", System.IO.Path.GetFileName(parse.Key), parse.Edit);
 				m_parses.Add(parse);
 				Monitor.Pulse(m_mutex);
 			}
@@ -119,19 +119,19 @@ namespace Styler
 		{
 			var runs = new List<StyleRun>();
 			DoParseMatch(parse, runs);
-			Log.WriteLine(TraceLevel.Verbose, "Styler", "computed runs for parse {0} edit {1}", System.IO.Path.GetFileName(parse.Path), parse.Edit);
+			Log.WriteLine(TraceLevel.Verbose, "Styler", "computed runs for parse {0} edit {1}", System.IO.Path.GetFileName(parse.Key), parse.Edit);
 			
 			lock (m_mutex)
 			{
 				Styles styles;
-				if (!m_styles.TryGetValue(parse.Path, out styles))
+				if (!m_styles.TryGetValue(parse.Key, out styles))
 				{
 					styles = new Styles();
-					m_styles.Add(parse.Path, styles);
+					m_styles.Add(parse.Key, styles);
 				}
-				styles.ParsedStyles = new StyleRuns(m_boss, parse.Path, parse.Edit, runs.ToArray());
+				styles.ParsedStyles = new StyleRuns(m_boss, parse.Key, parse.Edit, runs.ToArray());
 				
-				DoTryBroadcast(parse.Path);
+				DoTryBroadcast(parse.Key);
 			}
 		}
 		
