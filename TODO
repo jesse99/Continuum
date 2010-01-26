@@ -24,6 +24,7 @@ http://www.jetbrains.com/resharper/features/
 select declaring_root_name,return_type_name from Methods where name = 'get_BaseTypes';
 sudo fs_usage -f filesys
 
+* Make sure docs mention option-tab and other non-obvious niceties like right click.
 * Release checklist:
 	- make sure auto complete objects go away
 	- run continuum with no prefs

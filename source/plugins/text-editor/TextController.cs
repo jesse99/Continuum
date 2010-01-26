@@ -908,11 +908,14 @@ namespace TextEditor
 			// the file name itself, eg "Makefile").
 			ILanguage language = null;
 			Boss boss = ObjectModel.Create("Stylers");
-			foreach (IFindLanguage find in boss.GetRepeated<IFindLanguage>())
+			if (fileName != null)
 			{
-				language = find.FindByExtension(fileName);
-				if (language != null)
-					return language;
+				foreach (IFindLanguage find in boss.GetRepeated<IFindLanguage>())
+				{
+					language = find.FindByExtension(fileName);
+					if (language != null)
+						return language;
+				}
 			}
 			
 			// Finally see if the file has a shebang.

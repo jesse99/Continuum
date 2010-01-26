@@ -22,6 +22,7 @@
 using Gear;
 using MCocoa;
 using MObjc;
+using MObjc.Helpers;
 using Shared;
 using System;
 using System.Collections.Generic;
@@ -36,6 +37,8 @@ namespace Styler
 	{
 		public static Language FindByExtension(string fileName)
 		{
+			Contract.Requires(!string.IsNullOrEmpty(fileName), "fileName is null or empty");
+			
 			if (!ms_inited)
 				DoInit();
 				
@@ -54,6 +57,8 @@ namespace Styler
 		
 		public static Language FindByFriendlyName(string name)
 		{
+			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
+			
 			if (!ms_inited)
 				DoInit();
 				
@@ -66,6 +71,8 @@ namespace Styler
 		
 		public static Language FindByShebang(string bang)
 		{
+			Contract.Requires(!string.IsNullOrEmpty(bang), "bang is null or empty");
+			
 			if (!ms_inited)
 				DoInit();
 				
