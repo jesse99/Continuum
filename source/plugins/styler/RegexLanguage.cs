@@ -44,6 +44,11 @@ namespace Styler
 			get {return "RegexLanguage";}
 		}
 		
+		public string[] Shebangs
+		{
+			get {return m_language.Shebangs;}
+		}
+		
 		public string FriendlyName
 		{
 			get {return m_language.FriendlyName;}
@@ -61,7 +66,7 @@ namespace Styler
 		
 		public Regex Word
 		{
-			get {return m_language.Word;} 
+			get {return m_language.Word;}
 		}
 		
 		[ThreadModel(ThreadModel.Concurrent)]

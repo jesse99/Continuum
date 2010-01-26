@@ -33,6 +33,9 @@ namespace Shared
 		// Normally "CsLanguage" or "RegexLanguage".
 		string Name {get;}
 		
+		// Shebangs associated with the language, e.g. "sh", "bash".
+		string[] Shebangs {get;}
+		
 		// "c#", "python", etc.
 		string FriendlyName {get;}
 		

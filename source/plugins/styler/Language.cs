@@ -37,6 +37,12 @@ namespace Styler
 			m_name = node.Attributes["name"].Value;
 			m_expr = DoBuildExpr(node);
 			
+			XmlAttribute attr = node.Attributes["shebang"];
+			if (attr != null)
+				m_shebangs = attr.Value.Split(new char[]{' '}, StringSplitOptions.RemoveEmptyEntries);
+			else
+				m_shebangs = new string[0];
+			
 			string[] stops = node.Attributes["tab_stops"].Value.Split(new char[]{' '}, StringSplitOptions.RemoveEmptyEntries);
 			m_tabStops = (from s in stops select int.Parse(s)).ToArray();
 			
@@ -46,6 +52,11 @@ namespace Styler
 		public string FriendlyName
 		{
 			get {return m_name;}
+		}
+		
+		public string[] Shebangs
+		{
+			get {return m_shebangs;}
 		}
 		
 		public int[] TabStops
@@ -213,6 +224,7 @@ namespace Styler
 		
 		private string m_expr;
 		private string m_name;
+		private string[] m_shebangs;
 		private int[] m_tabStops;
 		private Regex m_regex;
 		private Regex m_word;

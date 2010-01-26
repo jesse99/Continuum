@@ -49,6 +49,11 @@ namespace Styler
 			get {return "c#";}
 		}
 		
+		public string[] Shebangs
+		{
+			get {return new string[0];}
+		}
+		
 		public int[] TabStops
 		{
 			get {return m_language.TabStops;}

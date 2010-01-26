@@ -64,6 +64,22 @@ namespace Styler
 			return result;
 		}
 		
+		public static Language FindByShebang(string bang)
+		{
+			if (!ms_inited)
+				DoInit();
+				
+			foreach (Language language in ms_languages.Values)
+			{
+				if (Array.IndexOf(language.Shebangs, bang) >= 0)
+				{
+					return language;
+				}
+			}
+			
+			return null;
+		}
+		
 		public static IEnumerable<string> GetFriendlyNames()
 		{
 			if (!ms_inited)

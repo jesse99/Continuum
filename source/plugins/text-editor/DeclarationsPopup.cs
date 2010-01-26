@@ -62,7 +62,8 @@ namespace TextEditor
 			switch (name)
 			{
 				case "computed declarations":
-					DoUpdate((Declarations) value);
+					if (m_controller != null)
+						DoUpdate((Declarations) value);
 					break;
 					
 				default:
@@ -85,18 +86,25 @@ namespace TextEditor
 		
 		public void textSelectionChanged()
 		{
-			NSRange selection = m_controller.TextView.selectedRange();
-			int offset = selection.location;
-		
-			// Find the last declaration the selection start intersects.
-			int index = -1;
-			for (int i = 0; i < m_declarations.Decs.Length; ++i)
+			if (m_controller != null)
 			{
-				if (m_declarations.Decs[i].Extent.Intersects(offset))
-					index = i;
-			}
+				NSRange selection = m_controller.TextView.selectedRange();
+				int offset = selection.location;
 			
-			selectItemAtIndex(index);
+				// Find the last declaration the selection start intersects.
+				int index = -1;
+				for (int i = 0; i < m_declarations.Decs.Length; ++i)
+				{
+					if (m_declarations.Decs[i].Extent.Intersects(offset))
+						index = i;
+				}
+				
+				selectItemAtIndex(index);
+			}
+			else
+			{
+				DoReset();
+			}
 		}
 		
 		public void selectedItemChanged(NSObject sender)

@@ -34,6 +34,8 @@ namespace Shared
 		
 		ILanguage FindByFriendlyName(string name);
 		
+		ILanguage FindByShebang(string bang);
+		
 		IEnumerable<string> GetFriendlyNames();
 	}
 }

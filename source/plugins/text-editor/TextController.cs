@@ -162,6 +162,9 @@ namespace TextEditor
 					var text = NSAttributedString.Create(value);
 					m_textView.Value.textStorage().setAttributedString(text);
 					m_textView.Value.setSelectedRange(new NSRange(0, 0));
+					
+					if (Language == null)
+						Language = DoFindLanguage();
 					m_applier.Reset();
 					
 					DoUpdateLineLabel(Text);			// use Text so metrics are up to date
@@ -190,6 +193,9 @@ namespace TextEditor
 					
 					m_textView.Value.textStorage().setAttributedString(value);
 					m_textView.Value.setSelectedRange(new NSRange(0, 0));
+					
+					if (Language == null)
+						Language = DoFindLanguage();
 					m_applier.Reset();
 					
 					DoUpdateLineLabel(Text);			// use Text so metrics are up to date
@@ -892,10 +898,14 @@ namespace TextEditor
 		#region Private Methods
 		private ILanguage DoFindLanguage()
 		{
+			// First check to see if the document was opened as binary.
 			string fileName = System.IO.Path.GetFileName(Path);
 			if (document().Call("isBinary").To<bool>())
 				fileName = "foo.bin";
 			
+			// Then see if a language can be inferred from the file name
+			// (usually this will be based on the extension but sometimes it is
+			// the file name itself, eg "Makefile").
 			ILanguage language = null;
 			Boss boss = ObjectModel.Create("Stylers");
 			foreach (IFindLanguage find in boss.GetRepeated<IFindLanguage>())
@@ -905,11 +915,32 @@ namespace TextEditor
 					return language;
 			}
 			
+			// Finally see if the file has a shebang.
+			NSString str = m_textView.Value.string_();
+			if (str.length() > 4)
+			{
+				if (str.characterAtIndex(0) == '#' && str.characterAtIndex(1) == '!' && str.characterAtIndex(2) == '/')
+				{
+					int i = Text.IndexOfAny(new char[]{' ', '\t', '\r', '\n'});
+					if (i > 0)
+					{
+						string path = Text.Substring(2, i - 2);
+						string bang = System.IO.Path.GetFileName(path);
+						foreach (IFindLanguage find in boss.GetRepeated<IFindLanguage>())
+						{
+							language = find.FindByShebang(bang);
+							if (language != null)
+								return language;
+						}
+					}
+				}
+			}
+			
 			return null;
 		}
 		
 		// This is retarded, but showFindIndicatorForRange only works if the window is
-		//  already visible and the indicator doesn't always show up if we simply use 
+		// already visible and the indicator doesn't always show up if we simply use 
 		// BeginInvoke.
 		[ThreadModel(ThreadModel.Concurrent)]
 		private void DoDeferredFindIndicator(NSRange range)

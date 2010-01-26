@@ -24,7 +24,6 @@ http://www.jetbrains.com/resharper/features/
 select declaring_root_name,return_type_name from Methods where name = 'get_BaseTypes';
 sudo fs_usage -f filesys
 
-* Exception opening cocoa-pack
 * Release checklist:
 	- make sure auto complete objects go away
 	- run continuum with no prefs
@@ -62,8 +61,6 @@ sudo fs_usage -f filesys
 * NSError has a helpAnchor method.
 * Stagger windows, especially find results and assembly browser.
 * Need to do a better job with Refactor Language.rtf (prose and the grammar)
-* Might be neat if could figure out languages for files with no extension using
-   the shebang (if present).
 * Read up on MEF
 	http://www.codeplex.com/MEF
 * Refactor to generate forwarding methods? Maybe can select methods and then it generates

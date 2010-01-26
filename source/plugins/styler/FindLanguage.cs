@@ -77,6 +77,25 @@ namespace Styler
 			return result != null ? result.Get<ILanguage>() : null;
 		}
 		
+		public ILanguage FindByShebang(string bang)
+		{
+			Language language =  Languages.FindByShebang(bang);
+			
+			Boss result = null;
+			if (language != null)
+			{
+				if (language.FriendlyName == "c#")
+					result = ObjectModel.Create("CsLanguage");
+				else
+					result = ObjectModel.Create("RegexLanguage");
+					
+				var with = result.Get<IStyleWith>();
+				with.Language = language;
+			}
+			
+			return result != null ? result.Get<ILanguage>() : null;
+		}
+		
 		public IEnumerable<string> GetFriendlyNames()
 		{
 			return Languages.GetFriendlyNames();

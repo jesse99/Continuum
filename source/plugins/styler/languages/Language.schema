@@ -29,6 +29,7 @@
 		</xsd:sequence>
 		
 		<xsd:attribute name="name" type="xsd:string" use="required"/>
+		<xsd:attribute name="shebang" type="xsd:string"/>		<!-- space separated list of shebangs associated with the language, eg "sh csh bash" -->
 		<xsd:attribute name="tab_stops" type="xsd:string" default="0"/>
 		<xsd:attribute name="ignore_whitespace" type="xsd:boolean" default="false"/>
 	</xsd:complexType>
