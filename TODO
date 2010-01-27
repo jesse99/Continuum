@@ -24,25 +24,7 @@ http://www.jetbrains.com/resharper/features/
 select declaring_root_name,return_type_name from Methods where name = 'get_BaseTypes';
 sudo fs_usage -f filesys
 
-* Make sure docs mention option-tab and other non-obvious niceties like right click.
 * Release checklist:
-	- make sure auto complete objects go away
-	- run continuum with no prefs
-	- run continuum with no databases (including the windows db)
-	- run continuum with no Continuum Files dir
-	- look at memory usage
-	- run unit tests in debug
-	- run unit tests in release
-	- make sure untitled docs work OK
-	- build a new foreshadow
-	- review BUILDING doc
-	- review README
-	- use it for a bit
-	- review config file
-	- run from the finder
-	- review tar targets
-	- use svn log -r 1:HEAD > CHANGE_LOG
-	- update CHANGES file
 	- make sure gear is checked in
 	- upload the new binary
 	- build a new foreshadow
@@ -125,7 +107,10 @@ sudo fs_usage -f filesys
 	- style these
 	- maybe use an html view, could have links to/from summary form and remarks
 * Auto-complete table should have comments too.
-* Add a general svn command. Something like:
+** Double tab should also complete english words:
+	- use completionsForPartialWordRange:inString:language:inSpellDocumentWithTag:
+	- probably want to add some sort of double tab framework
+ Add a general svn command. Something like:
 	- floating window
 	- left side has a directory view showing directory items and revision numbers
 	- need to watch the root

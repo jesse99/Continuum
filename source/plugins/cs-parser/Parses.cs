@@ -130,7 +130,7 @@ namespace CsParser
 #if TEST
 		public void AddParse(string key, CsGlobalNamespace globals)
 		{
-			var parse = new Parse("test.cs", 0, 0, 0, globals, new Token[0], new Token[0]);
+			var parse = new Parse(0, "test.cs", 0, 0, globals, new Token[0], new Token[0]);
 			lock (m_mutex)
 			{
 				m_parses[key] = parse;

@@ -3,12 +3,12 @@ Mono and C# development. However it can be used to build non-Mono projects and
 will work with languages other than C# (although usually not quite as well).
 
 Unlike most IDEs Continuum does not have anything like a solution or project file.
-Instead you open directories in Continuum and it looks for Makefile or (eventually)
-Nant files which it uses to build. If it is able to find one of these files the directory
-window will have a pull-down menu listing the available targets and a build button.
-When a directory is first opened all of the assemblies within it (and those they reference)
+Instead you open directories in Continuum and it looks for Makefile or Nant files 
+which it uses to build. If it is able to find one of these files the directory window will 
+have a pull-down menu listing the available targets and a build button. When a 
+directory is first opened all of the assemblies within it (and those they reference)
 will be processed in a thread and the types defined in them will become available
-to auto-complete.
+to auto-complete and contextual menus.
 
 For the most part the interface should be obvious. One exception is that context
 menus are available for items in directory and text windows. The directory context
@@ -25,6 +25,9 @@ context menu which allows you to filter out items using criteria such as whether
 it is an extension method or belongs to a class or interface. Note that the argument
 completion window which pops up after auto-completion also has a context menu
 which allows you to close the window or select a different overload.
+
+Option-tab allows you to select the identifier after the insertion point. Shift-option-
+tab allows you to select the identifier before the insertion point.
 
 Also you can define new scripts to operate on selections within text windows using
 shell, or python, or ruby or whatever. There's a script README with more info that
@@ -60,13 +63,5 @@ ourselves.
 * There is support for saving files using different encodings, but no support for
 specifying the encoding when loading (although utf8 and the various forms of utf16
 should work fine).
-
-* More work needs to be done to properly support files with non-native line endings.
-
-* The file type (e.g. C#, Shell, Plain Text, etc) is controlled solely by the globs in the
-preferences panel which is a bit too inflexible.
-
-* Syntax hilighting requires that the document have a path so creating a new file and
-using the info window to set the language won't work until it is saved.
 
 jesjones@mindspring.com

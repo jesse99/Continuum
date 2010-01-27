@@ -1,3 +1,74 @@
+Version 0.6 (r261)
+
+* Documents (including new untitled documents) are now auto-saved every 10 seconds.
+* Added some new refactors: 
+	Add Null Check - inserts a Contract.Requires check for the current selection.
+	Add Null or Empty Check - inserts a Contract.Requires check for a null or empty string.
+	Create Attribute - creates a skeleton for a custom Attribute class.
+	ResolveNamespace - inserts a using namespace declaration for the type in the current selection.
+* (Shift)-option-tab now selects the previous or next identifier for all languages instead 
+of just C#.
+* gcc errors are now parsed so that the file with the error is opened and the offending
+line selected.
+* Added a regex for c++ syntax hilighting.
+* Added *.resx to the xml glob list.
+* The XML language files now support an optional list of shebang tool names. If a file
+is opened that does not have an extension associated with a language the shebang will
+be used to associate a language with the file.
+* Added shebangs for the python and shell languages.
+
+* Updated the Search in Apple URL so that it works with Apple's new organization.
+* Names that start with CA, CG, QC, and SB (and are followed by an upper-case letter)
+are now looked up on apple's site instead of msdn.
+* Transcript window again supports the find dialog.
+* When creating a new text window the default typing style is now set according to
+the user's default text preferences.
+* Setting the language using the Get Info window now works with unsaved windows.
+* Saving an untitled document will now re-style the text based on the file extension.
+* Fixed the Create Exception refactor so that the generated inner exception ctor 
+calls the correct base ctor.
+* Implement IDisposable refactor no longer adds throw new ObjectDisposedException 
+to private methods.
+* Fixed option-shift arrow so that it works when the selection starts or ends with whitespace.
+* If the directory is already open and an attempt is made to open it again the current
+directory window will be brought to the foreground instead of opening the directory twice.
+* Made underscore the command key for italic (I is used for get info).
+* C, C++, and ObjectiveC syntax highlighting regexen now recognize preprocessor 
+directives which have whitespace after the hash symbol.
+* Updated the regexen for a bunch of languages to work better with windows
+ line endings (mostly for comments which extend to the end of a line).
+* *.log glob defaults to plain text.
+* Right-clicking past the bottom of the text no longer pops up an error alert.
+
+* After opening a file from Time Machine that window's context menu will now have a
+disabled "Finding old Files" item until the worker thread finishes finding older versions of 
+the file.
+* Language XML files now have an optional entry for words which is used for things like
+double clicking. This prevents periods from counting as word characters on Snow Leopard
+and makes usage a bit nicer on languages with wacky identifiers.
+* Language regexen are stored in '~/Library/Application Support/Continuum' instead of the
+app bundle to make it easier to add custom languages.
+* Added a button to the language globs panel to open the languages directory.
+* typeof(xxx) now auto-completes when used in chained method calls.
+* Type of z in `var z = typeof(xxx)` is now inferred for auto-complete.
+* The Script type in the refactor language now has a Selection property which can
+be used to retrieve the current selection in the text being refactored.
+* Reworked the default find in files extensions list so there is an entry for C#/C/C++, an
+entry for script files, an entry for make/scons files, and an entry for xml files.
+* Renamed the "Show Implementors" context menu item "Show Derived Types"
+because interfaces can inherit from interfaces.
+* Allow words to start with a tilde in the C and C++ styler regexen.
+* Allow words to contain a colon in the Objective-C styler regex.
+* Shift-option-arrow now scrolls the selection into view.
+* Added -f to the rm commands in the clean targets so we don't get messages when
+trying to remove items which aren't there. Also deletes csc_flags.
+* Handle IOExceptions when building (mono 2.6 sometimes throws "Error creating 
+standard error pipe" when starting the System.Diagnostics.Process).
+* Handle IOExceptions when creating StreamWriters (this is for too many open file
+errors which can happen fairly easily with things like bittorrent apps because macs
+by default have a 256 global limit on the number of open files).
+
+
 Version 0.5 (r226)
 
 * Added support for building via nant.

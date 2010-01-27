@@ -3291,3 +3291,477 @@ Index: Makefile
 * Updated tar-src target.
 
 ------------------------------------------------------------------------
+r227 | jesjones@mindspring.com | 2009-06-22 16:07:45 -0700 (Mon, 22 Jun 2009) | 3 lines
+
+Updated TODO and CHANGES files.
+
+
+------------------------------------------------------------------------
+r228 | jesjones@mindspring.com | 2009-06-26 10:10:30 -0700 (Fri, 26 Jun 2009) | 12 lines
+
+Index: source/plugins/cs-refactor/script/types/ScriptType.cs
+* Added Selection property.
+
+Index: source/plugins/app/refactors/Refactor Language.rtf
+* Made HasSelection blue since it doesn't modify the document.
+
+Index: source/plugins/cs-refactor/script/Context.cs
+Index: source/plugins/cs-refactor/script/types/StringType.cs
+Index: source/plugins/cs-refactor/script/Script.cs
+* Whitespace.
+
+
+------------------------------------------------------------------------
+r229 | jesjones@mindspring.com | 2009-07-22 18:45:49 -0700 (Wed, 22 Jul 2009) | 3 lines
+
+Added dist-clean make target.
+
+
+------------------------------------------------------------------------
+r230 | jesjones@mindspring.com | 2009-08-10 09:49:31 -0700 (Mon, 10 Aug 2009) | 11 lines
+
+Index: source/plugins/app/MainMenu.nib/keyedobjects.nib
+Index: source/plugins/app/MainMenu.nib/designable.nib
+* Made underscore the command key for italic (I is used for get info).
+
+Index: source/plugins/styler/languages/Globs.xml
+* *.log glob defaults to plain text.
+
+Index: source/plugins/text-editor/TextEditorView.cs
+* (Shift)-option-tab now works with all languages instead of just C#.
+
+
+------------------------------------------------------------------------
+r231 | jesjones@mindspring.com | 2009-08-21 09:00:13 -0700 (Fri, 21 Aug 2009) | 17 lines
+
+Index: source/plugins/styler/languages/Globs.xml
+Index: source/plugins/styler/languages/C++.xml
+Index: source/plugins/directory-editor/DirectoryItemStyler.cs
+* Added a styler file for c++.
+* Added *.resx to the xml glob list.
+
+Index: source/plugins/app/refactors/Create Exception.ref
+* Fixed the generated inner exception ctor so it calls the correct base ctor.
+
+Index: source/plugins/app/GlobsTableView.cs
+* Added some code to help track down a bug with globs and languages getting out of sync.
+
+Index: source/plugins/text-editor/TextController.cs
+* The code that hilites lines when the selection changes now works if a second edit
+   happens before the selection change notification.
+   
+
+------------------------------------------------------------------------
+r232 | jesjones@mindspring.com | 2009-09-10 09:23:09 -0700 (Thu, 10 Sep 2009) | 3 lines
+
+First cut at adding support for opening files corresponding to gcc errors.
+
+
+------------------------------------------------------------------------
+r233 | jesjones@mindspring.com | 2009-09-10 09:28:38 -0700 (Thu, 10 Sep 2009) | 3 lines
+
+Implement IDisposable no longer adds throw new ObjectDisposedException to private methods.
+
+
+------------------------------------------------------------------------
+r234 | jesjones@mindspring.com | 2009-09-10 11:25:29 -0700 (Thu, 10 Sep 2009) | 7 lines
+
+Index: source/plugins/auto-complete/ResolveExpr.cs
+* typeof(xxx) now auto-completes when used in chained method calls.
+
+Index: source/plugins/auto-complete/ResolveName.cs
+* Type of z in `var z = typeof(xxx)` is now inferred.
+
+
+------------------------------------------------------------------------
+r235 | jesjones@mindspring.com | 2009-09-10 11:41:15 -0700 (Thu, 10 Sep 2009) | 3 lines
+
+Added Create Attribute refactor.
+
+
+------------------------------------------------------------------------
+r236 | jesjones@mindspring.com | 2009-09-25 22:04:26 -0700 (Fri, 25 Sep 2009) | 6 lines
+
+Index: source/plugins/text-editor/ApplyStyles.cs
+* Updated for the new mcocoa which has somewhat better typing.
+
+Index: source/plugins/auto-complete/AutoComplete.cs
+* Log errors now include the stack trace.
+
+------------------------------------------------------------------------
+r237 | jesjones@mindspring.com | 2009-09-25 22:55:01 -0700 (Fri, 25 Sep 2009) | 13 lines
+
+Index: source/plugins/app/FindOnSites.cs
+* Names that start with CA, CG, QC, and SB (and are followed by an upper-case letter)
+are now looked up on apple's site instead of msdn.
+
+Index: source/plugins/styler/languages/C.xml
+Index: source/plugins/styler/languages/C++.xml
+Index: source/plugins/styler/languages/ObjectiveC.xml
+* Recognize preprocessor directives which have whitespace after the hash symbol.
+
+Index: source/plugins/find/Plugin.cs
+* Whitespace.
+
+
+------------------------------------------------------------------------
+r238 | jesjones@mindspring.com | 2009-09-30 21:41:52 -0700 (Wed, 30 Sep 2009) | 14 lines
+
+Index: source/plugins/app/refactors/Add Null Check.ref
+Index: source/plugins/app/refactors/Add Null or Empty Check.ref
+* Added.
+
+Index: source/plugins/styler/languages/Globs.xml
+* Added c++ globs for the standard headers (since they don't have an extension).
+
+Index: source/plugins/styler/languages/C++.xml
+* Added some C++0x keywords.
+
+Index: source/shared/interfaces/IRefactorScript.cs
+* Fixed a typo in a comment.
+
+
+------------------------------------------------------------------------
+r239 | jesjones@mindspring.com | 2009-10-05 22:12:39 -0700 (Mon, 05 Oct 2009) | 14 lines
+
+Index: source/plugins/app/ResolveNamespace.cs
+Index: source/plugins/app/Bosses.xml
+* Added ResolveNamespace refactor.
+
+Index: source/shared/interfaces/IDatabase.cs
+Index: source/plugins/object-model/Bosses.xml
+Index: source/plugins/object-model/Objects.cs
+* Added an IDatabase interface to allow access to the database associated with a directory.
+
+Index: source/shared/interfaces/IRefactors.cs
+Index: source/plugins/cs-refactor/Bosses.xml
+Index: source/plugins/cs-refactor/StandardRefactors.cs
+* Added IRefactors to allow C# refactors access to the standard refactors.
+
+------------------------------------------------------------------------
+r240 | jesjones@mindspring.com | 2009-10-29 22:14:44 -0700 (Thu, 29 Oct 2009) | 13 lines
+
+Index: source/plugins/app/DocumentController.cs
+Index: source/plugins/text-editor/TextDocument.cs
+Index: source/plugins/text-editor/TextController.cs
+* Enabled auto-save using a ten second interval.
+
+Index: source/plugins/find/FindInFilesController.cs
+* Reworked the default find in files extensions list so there is an entry for C#/C/C++, an
+entry for script files, an entry for make/scons files, and an entry for xml files.
+
+Index: source/plugins/auto-complete/ResolveName.cs
+* Fixed the `var result = xxx.Get<Type>()` regex.
+
+
+------------------------------------------------------------------------
+r241 | jesjones@mindspring.com | 2009-11-22 21:00:15 -0800 (Sun, 22 Nov 2009) | 3 lines
+
+Fixed the auto-save/reloading changed files interaction.
+
+
+------------------------------------------------------------------------
+r242 | jesjones@mindspring.com | 2009-12-18 11:11:58 -0800 (Fri, 18 Dec 2009) | 7 lines
+
+Index: source/plugins/app/Launcher.cs
+* Added some logs to the catch blocks.
+
+Index: Makefile
+* Added -f to the rm commands in the clean targets so we don't get messages when
+trying to remove items which aren't there. Also deletes csc_flags.
+
+------------------------------------------------------------------------
+r243 | jesjones@mindspring.com | 2009-12-20 17:21:49 -0800 (Sun, 20 Dec 2009) | 24 lines
+
+Index: source/plugins/styler/Language.cs
+Index: source/plugins/styler/RegexLanguage.cs
+Index: source/plugins/styler/CSharpLanguage.cs
+Index: source/plugins/styler/languages/Language.schema
+Index: source/shared/interfaces/ILanguage.cs
+* Language XML files now have an optional entry for words which is used for things like
+double clicking. This prevents periods from counting as word characters on Snow Leopard
+and makes usage a bit nicer on languages with wacky identifiers.
+
+Index: source/plugins/text-editor/TextEditorView.cs
+* Option-shift-arrow, double click, and option tab (used for selecting the next identifier)
+use the new word regex in the language files.
+
+Index: source/plugins/styler/languages/C#.xml
+Index: source/plugins/styler/languages/C++.xml
+* Allow words to start with a tilde.
+
+Index: source/plugins/styler/languages/ObjectiveC.xml
+* Allow words to contain a colon.
+
+Index: source/plugins/app/Launcher.cs
+* Added some logging to catch handlers.
+
+
+------------------------------------------------------------------------
+r244 | jesjones@mindspring.com | 2009-12-20 17:55:55 -0800 (Sun, 20 Dec 2009) | 7 lines
+
+Index: source/plugins/text-editor/TextEditorView.cs
+* Fixed option-shift arrow so that it works when the selection starts or ends with whitespace.
+
+Index: source/plugins/styler/Language.cs
+* Cleaned up the word re a bit.
+
+
+------------------------------------------------------------------------
+r245 | jesjones@mindspring.com | 2009-12-20 18:09:10 -0800 (Sun, 20 Dec 2009) | 11 lines
+
+Index: Makefile
+* Disabled warnaserror since Apple has deprecated a lot of methods that we use in
+Snow Leopard and mcocoa doesn't support blocks yet.
+
+Index: source/plugins/text-editor/DeclarationsPopup.cs
+* Use e.modifierFlags_i instead of e.modifierFlags (Snow Leopard change).
+
+Index: source/plugins/text-editor/TextEditorView.cs
+* Use Enums.NSShiftKeyMask instead of a magic number.
+
+
+------------------------------------------------------------------------
+r246 | jesjones@mindspring.com | 2009-12-23 20:38:39 -0800 (Wed, 23 Dec 2009) | 31 lines
+
+Index: source/plugins/app/FindOnSites.cs
+* Updated the Search in Apple URL so that it works with Apple's new organization.
+
+Index: source/plugins/text-editor/TextEditorView.cs
+* Shift-option-arrow now scrolls the selection into view.
+
+Index: source/plugins/text-editor/TextDocument.cs
+Index: source/plugins/app/AppDelegate.cs
+Index: source/plugins/app/MoveSelectionToFile.cs
+Index: source/plugins/app/PreferencesController.cs
+Index: source/plugins/app/Spelling.cs
+Index: source/plugins/find/FindInFilesController.cs
+Index: source/plugins/find/FindInFilesOptionsController.cs
+Index: source/plugins/directory-editor/OpenDir.cs
+* Used #pragma warning to disable the warning for deprecated code so that we can
+continue to run on Leopard.
+
+Index: Makefile
+* Re-enabled warnaserror.
+
+Index: source/plugins/cs-parser/Parser.cs
+* Changed an Errors log from Info to Verbose.
+
+Index: source/plugins/text-editor/Editor.cs
+Index: source/plugins/text-editor/DeclarationsPopup.cs
+* Removed a no longer needed _i from a method.
+
+Index: install-tool.c
+* Fixed some warnings that gcc now reports.
+
+
+------------------------------------------------------------------------
+r247 | jesjones@mindspring.com | 2009-12-24 18:22:22 -0800 (Thu, 24 Dec 2009) | 9 lines
+
+Index: source/plugins/app/Preferences.nib/keyedobjects.nib
+Index: source/plugins/app/Preferences.nib/designable.nib
+* Added a static text label explaining how to rebuild the locate database after changing the
+mono root location.
+
+Index: BUILDING
+* On mono 2.6 you can use the Mono.Cecil.dll in the gac.
+
+
+------------------------------------------------------------------------
+r248 | jesjones@mindspring.com | 2009-12-24 18:51:08 -0800 (Thu, 24 Dec 2009) | 3 lines
+
+Use ` instead of ' when quoting terminal commands.
+
+
+------------------------------------------------------------------------
+r249 | jesjones@mindspring.com | 2009-12-24 22:53:54 -0800 (Thu, 24 Dec 2009) | 10 lines
+
+Index: README
+* Added a note about the locate command.
+* Removed a couple of issues that have been fixed.
+
+Index: source/plugins/app/refactors/README
+* Fixed a misspelled word.
+
+Index: Makefile
+* Renamed test target check.
+
+------------------------------------------------------------------------
+r250 | jesjones@mindspring.com | 2009-12-25 17:49:13 -0800 (Fri, 25 Dec 2009) | 19 lines
+
+Index: source/plugins/styler/Languages.cs
+Index: source/plugins/styler/languages/README
+Index: source/plugins/styler/FactoryPrefs.cs
+* Languages are stored in '~/Library/Application Support/Continuum' instead of the
+app bundle to make it easier to add custom languages.
+
+Index: source/plugins/app/Preferences.nib/keyedobjects.nib
+Index: source/plugins/app/Preferences.nib/designable.nib
+Index: source/plugins/app/PreferencesController.cs
+* Added a button to the language globs panel to open the languages directory.
+
+Index: source/plugins/styler/languages/Todo.xml
+Index: source/plugins/styler/languages/Globs.xml
+* Removed.
+
+Index: source/plugins/styler/languages/Globs.schema
+* Allow no languages.
+
+
+------------------------------------------------------------------------
+r251 | jesjones@mindspring.com | 2009-12-26 17:56:25 -0800 (Sat, 26 Dec 2009) | 13 lines
+
+Index: source/plugins/transcript/Bosses.xml
+Index: source/plugins/transcript/Transcript.cs
+* Transcript now implements the IWindow interface which allows the find window to
+find stuff in it again.
+
+Index: source/plugins/text-editor/TextController.cs
+Index: source/plugins/text-editor/TextEditorView.cs
+* Added a bit of a hack to apply the default font style to new untitled documents.
+
+Index: source/plugins/find/Find.cs
+* Added some logging.
+
+
+------------------------------------------------------------------------
+r252 | jesjones@mindspring.com | 2009-12-26 18:28:26 -0800 (Sat, 26 Dec 2009) | 6 lines
+
+Index: source/plugins/text-editor/TextController.cs
+* Only reset styles on the first keystroke if there is no path.
+
+Index: source/plugins/text-editor/TextEditorView.cs
+* Spelling.
+
+------------------------------------------------------------------------
+r253 | jesjones@mindspring.com | 2010-01-15 20:54:45 -0800 (Fri, 15 Jan 2010) | 17 lines
+
+Index: source/plugins/directory-editor/GenericBuilder.cs
+* Handle IOExceptions when building (mono 2.6 sometimes throws "Error creating 
+standard error pipe" when starting the System.Diagnostics.Process).
+
+Index: source/plugins/object-model/FindInDatabase.cs
+Index: source/plugins/svn/Svn.cs
+Index: source/plugins/svn/module.mk
+Index: source/plugins/disassembler/AssemblyController.cs
+Index: source/plugins/disassembler/ContextMenu.cs
+* Handle IOExceptions when creating StreamWriters (this is for too many open file
+errors which can happen fairly easily with things like bittorrent apps because macs
+by default have a 256 global limit on the number of open files).
+
+Index: source/plugins/styler/languages/Globs.xml
+* Added *.hxx and *.cxx to the c++ language.
+
+
+------------------------------------------------------------------------
+r254 | jesjones@mindspring.com | 2010-01-15 21:16:15 -0800 (Fri, 15 Jan 2010) | 10 lines
+
+Index: source/plugins/text-editor/TextEditorView.cs
+* Right-clicking past the bottom of the text no longer pops up an error alert.
+
+Index: source/plugins/directory-editor/GenericBuilder.cs
+* Catch Exception instead of IOException (these errors are usually wrapped in a TargetInvocationException).
+ 
+Index: source/plugins/disassembler/AssemblyController.cs
+* Catch Exception instead of IOException (can get Cecil errors when assemblies can no longer be found).
+
+
+------------------------------------------------------------------------
+r255 | jesjones@mindspring.com | 2010-01-17 17:10:41 -0800 (Sun, 17 Jan 2010) | 23 lines
+
+Index: source/plugins/text-editor/TextEditorView.cs
+Index: source/plugins/text-editor/CurrentStyles.cs
+* When creating a new text window the default typing style is now set according to
+the user's default text preferences (this mainly affects new untitled windows).
+* Removed the lame hack that reset styles after the user typed a key.
+
+Index: source/plugins/app/TimeMachine.cs
+* After opening a file from Time Machine that window's context menu will now have a
+disabled "Finding old Files" item until the worker thread finishes finding older versions of 
+the file.
+
+Index: source/plugins/directory-editor/OpenDir.cs
+* If the directory is already open the associated window will now be brought to the 
+front instead of opened twice.
+
+Index: source/plugins/object-model/FindInDatabase.cs
+* Don't show the "Find Derived Types" item when right clicking on an interface (but
+continue to show "Find Implementations").
+
+Index: source/plugins/text-editor/TextDocument.cs
+* Tweaked a comment.
+
+
+------------------------------------------------------------------------
+r256 | jesjones@mindspring.com | 2010-01-17 18:55:46 -0800 (Sun, 17 Jan 2010) | 8 lines
+
+Index: source/plugins/object-model/FindInDatabase.cs
+* Renamed the "Show Implementors" context menu item "Show Derived Types"
+because interfaces can inherit from interfaces.
+
+Index: Makefile
+* Bumped the version number.
+* Added some more log topics to the generated config file.
+
+------------------------------------------------------------------------
+r257 | jesjones@mindspring.com | 2010-01-17 22:34:47 -0800 (Sun, 17 Jan 2010) | 10 lines
+
+Index: source/plugins/directory-editor/DirectoryController.cs
+Index: source/plugins/object-model/Populate.cs
+Index: source/plugins/text-editor/TextController.cs
+Index: source/plugins/text-editor/Annotation.cs
+* Remove ourself from the Changed event.
+
+Index: source/plugins/text-editor/TextEditorView.cs
+* Set some variables to null when closing (if we don't they aren't GCed).
+
+
+------------------------------------------------------------------------
+r258 | jesjones@mindspring.com | 2010-01-24 22:11:08 -0800 (Sun, 24 Jan 2010) | 4 lines
+
+* Saving an untitled document will now re-style the text based on the file extension.
+* Updated the regexen for a bunch of languages to work better with windows
+ line endings (mostly one line comments).
+
+------------------------------------------------------------------------
+r259 | jesjones@mindspring.com | 2010-01-25 20:37:12 -0800 (Mon, 25 Jan 2010) | 5 lines
+
+Parser and styler classes store a document key instead of a 
+document path so that they work if the user sets the language
+of unsaved documents using the get info window.
+
+
+------------------------------------------------------------------------
+r260 | jesjones@mindspring.com | 2010-01-25 21:33:22 -0800 (Mon, 25 Jan 2010) | 24 lines
+
+Index: source/shared/interfaces/IFindLanguage.cs
+Index: source/shared/interfaces/ILanguage.cs
+Index: source/plugins/styler/Languages.cs
+Index: source/plugins/styler/languages/Language.schema
+Index: source/plugins/styler/RegexLanguage.cs
+Index: source/plugins/styler/Language.cs
+Index: source/plugins/styler/FindLanguage.cs
+Index: source/plugins/styler/CSharpLanguage.cs
+* XML language files now can now include a list of shebang names.
+
+Index: source/plugins/text-editor/TextController.cs
+* If the file has a shebang then that will be used to try to find a language if the file
+name is not associated with a language.
+
+Index: source/plugins/styler/languages/Python.xml
+* Added a "python" shebang.
+
+Index: source/plugins/styler/languages/Shell.xml
+* Added "sh ksh csh bash dash zsh" shebangs.
+
+Index: source/plugins/text-editor/DeclarationsPopup.cs
+* Added some checks for null m_controller.
+
+
+------------------------------------------------------------------------
+r261 | jesjones@mindspring.com | 2010-01-26 07:40:28 -0800 (Tue, 26 Jan 2010) | 3 lines
+
+Fixed a null deref when opening new windows due to the last commit.
+
+
+------------------------------------------------------------------------
