@@ -11,13 +11,13 @@ GOALS
   animation, composition, and advanced typography. The interface should be clean,
   uncluttered, and relatively sparing in the options it presents to the user.
 * There should be very strong support for browsing both source code and assemblies.
-  It should not be neccesary to compile in order to browse and all assemblies in 
+  It should not be necessary to compile in order to browse and all assemblies in 
   the current working directory or referenced from it should be browseable. Note
   that this also includes things like opening files in a summary view and panels
   to show information about the code under the mouse cursor or selection.
 * The workflow for common activities should be streamlined as much as possible.
   For example, on foreground compiler errors the offending window should be
-  automatically brought to the front, the error hilited, and an unobstrusive
+  automatically brought to the front, the error hilited, and an unobtrusive
   popup window should appear below the error with the error message. Other examples
   include support for refactoring, code snippets, and background compiles.
 * Continuum should be very extensible. It should be easy to add basic support for

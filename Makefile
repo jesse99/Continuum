@@ -102,27 +102,6 @@ update-libraries:
 	cp `pkg-config --variable=Libraries mcocoa` bin
 	cp `pkg-config --variable=Libraries gear` bin
 
-# This is enough to ensure that everything is rebuilt, and even more important, that
-# the config file will be portable. (We can't do a full clean because the plugin directory
-# structure is built as a side effect of evaluating the make file).
-mini-clean:
-	-rm bin/*-sources
-	-rm -rf bin/*.config
-	-rm -rf bin/*.nib
-	-rm -rf bin/install-tool*
-	
-tar-bin: mini-clean app
-	@cp -R bin/Continuum.app Continuum.app
-	tar --create --compress --file=Continuum-$(version).tar.gz \
-		CHANGES README Continuum.app
-	@rm -rf Continuum.app
-
-tar-src:
-	tar --create --compress --exclude \*/.svn --exclude \*/.svn/\* --file=Continuum-src-$(version).tar.gz \
-		BUILDING CHANGES CHANGE_LOG Dictionary.txt GOALS MIT.X11 Makefile README Tables.rtf gendarme.ignore install-tool.c make-foreshadow source
-
-# Note that it's important to delete the config files so that we run with the same environment
-# as users.
 clean:
 	-rm -f bin/csc_flags
 	-rm -f $(clean-files)
@@ -138,6 +117,19 @@ clean:
 	-rm -rf bin/install-tool*
 	-rm  -f bin/csc_flags
 	
+# This is enough to ensure that everything is rebuilt, and even more important, that
+# the config file will be portable. (We can't do a full clean because the plugin directory
+# structure is built as a side effect of evaluating the make file).
+mini-clean:
+	-rm bin/*-sources
+	-rm -rf bin/*.config
+	-rm -rf bin/*.nib
+	-rm -rf bin/install-tool*
+	
+dist: mini-clean app
+	tar --create --compress --exclude \*/.svn --exclude \*/.svn/\* --file=Continuum-$(version).tar.gz \
+		BUILDING CHANGES CHANGE_LOG Dictionary.txt MIT.X11 Makefile README Tables.rtf gendarme.ignore install-tool.c make-foreshadow source bin/Continuum.app
+
 dist-clean:
 	-rm -rf bin
 	-rm -f build_num
@@ -202,11 +194,6 @@ smokey_flags += -exclude-check:P1004	# AvoidUnboxing
 smokey_flags += -exclude-check:P1005	# StringConcat
 smokey_flags += -exclude-check:P1022	# PropertyReturnsCollection
 
-smoke: app
-	@-list='$(smoke-files)'; for f in $$list; do	\
-		$(SMOKE) $(smokey_flags) $$f;				\
-	done
-	
 gendarme_flags := --severity all --confidence all --ignore gendarme.ignore --quiet
 gendarme: app
 	@-$(GENDARME) $(gendarme_flags) $(smoke-files)
@@ -218,7 +205,6 @@ help:
 	@echo "plugins          - build the plugins"
 	@echo "app              - build the app"
 	@echo "run-app          - run the app"
-	@echo "smoke            - run smokey on the app and plugins"
 	@echo "gendarme         - run gendarme on the app and plugins"
 	@echo "update-libraries - copy the external lib dependencies into bin"
 	@echo " "

@@ -25,12 +25,8 @@ select declaring_root_name,return_type_name from Methods where name = 'get_BaseT
 sudo fs_usage -f filesys
 
 * Release checklist:
-	- make sure gear is checked in
-	- upload the new binary
-	- build a new foreshadow
-	- review the screen shots
-	- update the download link in the upload file
 	- email
+* Do a checkin.
 
 * Look at the soft debugger in mono 2.6
 * Need a directory for custom plugins:
@@ -483,8 +479,8 @@ sudo fs_usage -f filesys
 	- make sure gear is checked in
 	- upload the new binary
 	- build a new foreshadow
+	- review the front page of the web site
 	- review the screen shots
-	- update the download link in the upload file
 	- email
 
  /Users/jessejones/Documents/Developer/UnixNotes.sh
