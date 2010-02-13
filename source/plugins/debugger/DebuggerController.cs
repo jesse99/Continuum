@@ -105,7 +105,11 @@ namespace Debugger
 			
 			if (System.IO.File.Exists(location.SourceFile))
 			{
-				text.Replace(System.IO.File.ReadAllText(location.SourceFile));
+				if (m_currentFile != location.SourceFile)
+				{
+					text.Replace(System.IO.File.ReadAllText(location.SourceFile));
+					m_currentFile = location.SourceFile;
+				}
 				
 				var editor = m_codeBoss.Get<ITextEditor>();
 				editor.ShowLine(location.LineNumber, -1, 8);
@@ -118,6 +122,14 @@ namespace Debugger
 		
 		private void DoOpenCodeWindow()
 		{
+#if true
+			Boss boss = ObjectModel.Create("TextEditorPlugin");
+			var create = boss.Get<ICreate>();
+			m_codeBoss = create.Create("CodeViewer");
+			
+			var viewer = m_codeBoss.Get<ICodeViewer>();
+			viewer.Init(m_doc.Debugger);
+#else
 			// Create a temporary text file named after the executable (we do this so
 			// we can take advantage of the normal window location persistence code).
 			string file = "[" + System.IO.Path.GetFileName(m_doc.Executable) + "]";
@@ -154,6 +166,7 @@ namespace Debugger
 				}
 			}
 			Contract.Assert(m_codeBoss != null, "couldn't find the code window");
+#endif
 		}
 		
 		private bool DoIsPaused()
@@ -166,6 +179,7 @@ namespace Debugger
 		private DebuggerDocument m_doc;
 		private NSTextField m_label;
 		private Boss m_codeBoss;
+		private string m_currentFile;
 		#endregion
 	}
 }

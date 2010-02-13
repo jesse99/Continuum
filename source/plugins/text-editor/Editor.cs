@@ -304,6 +304,7 @@ namespace TextEditor
 			NSTextView view = controller.TextView;
 			
 			view.setString(NSString.Create(replacement));
+			controller.OnPathChanged();			// bit of a hack to allow the debugger to switch languages
 		}
 		
 		public void Replace(string replacement, int index, int length, string undoText)

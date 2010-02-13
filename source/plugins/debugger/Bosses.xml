@@ -1,2 +1,6 @@
 <Bosses namespaces = "Gear Shared Debugger">
+	<Boss name = "CodeViewer">
+		<Compose name = "TextEditor"/>
+		<Implementation interfaces = "ICodeViewer IDocumentWindowTitle IDocumentExtension" name = "CodeViewer"/>
+	</Boss>
 </Bosses>

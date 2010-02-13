@@ -6,6 +6,7 @@
 	</Extend>
 	
 	<Extend name = "TextEditorPlugin">
+		<Implementation interfaces = "ICreate" name = "CreateEditor"/>
 		<Implementation interfaces = "IWindows" name = "Windows"/>
 		<Implementation interfaces = "ITextEncoding" name = "TextEncoding"/>
 		<Implementation interfaces = "IOpenSelection" name = "OpenSelection"/>

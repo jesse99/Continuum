@@ -80,6 +80,7 @@ namespace Debugger
 					if (m_vm != null)
 					{
 						Log.WriteLine(TraceLevel.Verbose, "Debugger", "Dispose");
+						m_vm.Exit(0);
 						m_vm.Dispose();
 					}
 				}
@@ -207,20 +208,24 @@ namespace Debugger
 			{
 				KeyValuePair<Breakpoint, BreakpointEventRequest> bp = m_breakpoints.Single(candidate => e.Request == candidate.Value);	// hitting a breakpoint is a fairly rare event so we can get by with a linear search
 				Location location = e.Method.LocationAtILOffset((int) bp.Key.Offset);
-				BreakpointEvent(location);
+				if (location != null)
+					BreakpointEvent(location);
 			}
 		}
 		
 		private void DoStepEvent(StepEvent e)
 		{
 			Location location = e.Method.LocationAtILOffset((int) e.Location);
-			Log.WriteLine(TraceLevel.Info, "Debugger", "Stepped to {0}:{1} in {2}:{3}", e.Method.FullName, e.Location, location.SourceFile, location.LineNumber);
+			if (location != null)
+				Log.WriteLine(TraceLevel.Info, "Debugger", "Stepped to {0}:{1} in {2}:{3}", e.Method.FullName, e.Location, location.SourceFile, location.LineNumber);
+			else
+				Log.WriteLine(TraceLevel.Info, "Debugger", "Stepped to {0}:{1}", e.Method.FullName, e.Location);
 			DoTransition(State.Paused);
 			
 			m_currentThread = e.Thread;
 			m_stepRequest.Disable();
 			
-			if (SteppedEvent != null)
+			if (SteppedEvent != null && location != null)
 			{
 				SteppedEvent(location);
 			}

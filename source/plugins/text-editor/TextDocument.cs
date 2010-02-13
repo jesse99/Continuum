@@ -63,7 +63,12 @@ namespace TextEditor
 		
 		public new void makeWindowControllers()
 		{
-			m_controller = new TextController();
+			MakeWindowControllers("TextEditor");
+		}
+		
+		public void MakeWindowControllers(string bossName)
+		{
+			m_controller = new TextController(bossName);
 			addWindowController(m_controller);
 			m_controller.autorelease();
 			

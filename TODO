@@ -28,7 +28,8 @@ need a debugger window so we dont leave tons of open windows behind?
 red B could be a breakpoint
 green > the current IP
 
-		
+/Users/jessejones/Downloads/monodevelop-2.2/src/addins/MonoDevelop.Debugger.Soft/MonoDevelop.Debugger.Soft/SoftDebuggerSession.cs
+
 public abstract class Mono.Debugger.Event
 	public class Mono.Debugger.AppDomainCreateEvent
 	public class Mono.Debugger.AppDomainUnloadEvent
@@ -52,14 +53,7 @@ public abstract class Mono.Debugger.EventRequest
 	public sealed class Mono.Debugger.MethodExitEventRequest
 	public sealed class Mono.Debugger.StepEventRequest
 
-setLastComponentOfFileName
-* Use a new interface to create a text window with a custom boss:
-	- might want to set the title according to the source being displayed
-	- use an interface to get the language of the file (or maybe the extension)
-	- might want to open a new document instead of using tmp (but need to hook into the
-	   window database somehow).
 * Show the source file and line of the code we're stepping through:
-	- need an out of band way to set the language (or extension)
 	- text should be read-only
 	- should not be marked as dirty when replacing text
 	- need to disable menus when we are read-only

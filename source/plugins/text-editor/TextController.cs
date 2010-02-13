@@ -35,7 +35,7 @@ namespace TextEditor
 	[ExportClass("TextController", "NSWindowController", Outlets = "textView lineLabel decsPopup scrollView")]
 	internal sealed class TextController : NSWindowController, IObserver
 	{
-		public TextController() : base(NSObject.AllocAndInitInstance("TextController"))
+		public TextController(string bossName) : base(NSObject.AllocAndInitInstance("TextController"))
 		{
 			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("text-editor"), this);
 			
@@ -45,7 +45,7 @@ namespace TextEditor
 			m_scrollView = new IBOutlet<NSScrollView>(this, "scrollView");
 			m_restorer = new RestoreViewState(this);
 			
-			m_boss = ObjectModel.Create("TextEditor");
+			m_boss = ObjectModel.Create(bossName);
 			var wind = m_boss.Get<IWindow>();
 			wind.Window = window();
 			
@@ -102,10 +102,11 @@ namespace TextEditor
 		
 		public void OnPathChanged()
 		{
+			if (Path != null || m_boss.Get<IDocumentExtension>() != null)
+				Language = DoFindLanguage();
+			
 			if (Path != null)
 			{
-				Language = DoFindLanguage();
-				
 				NSRect frame = WindowDatabase.GetFrame(Path);
 				if (frame != NSRect.Empty)
 					window().setFrame_display(frame, true);		// note that Cocoa will ensure that windows with title bars are not moved off screen
@@ -898,8 +899,21 @@ namespace TextEditor
 		#region Private Methods
 		private ILanguage DoFindLanguage()
 		{
+			// If there is a IDocumentExtension use that in place of the real file name.
+			string fileName = null;
+			
+			var ext = m_boss.Get<IDocumentExtension>();
+			if (ext != null)
+			{
+				string extension = ext.GetExtension();
+				if (extension != null)
+					fileName = "foo" + extension;
+			}
+			
+			if (fileName == null)
+				fileName = System.IO.Path.GetFileName(Path);
+			
 			// First check to see if the document was opened as binary.
-			string fileName = System.IO.Path.GetFileName(Path);
 			if (document().Call("isBinary").To<bool>())
 				fileName = "foo.bin";
 			
