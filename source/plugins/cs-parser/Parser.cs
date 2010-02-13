@@ -953,6 +953,12 @@ namespace CsParser
 				Token last = m_scanner.Token;
 				string type = DoParseType();
 				string name = DoParseIdentifier(ref last);
+		
+				if (m_scanner.Token.IsPunct("="))
+				{
+					m_scanner.Advance();
+					Unused.Value = DoParseExpression(ref last, ")");
+				}
 				
 				if (m_scanner.Token.IsPunct(","))
 					m_scanner.Advance();

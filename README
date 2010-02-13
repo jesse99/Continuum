@@ -27,7 +27,8 @@ completion window which pops up after auto-completion also has a context menu
 which allows you to close the window or select a different overload.
 
 Option-tab allows you to select the identifier after the insertion point. Shift-option-
-tab allows you to select the identifier before the insertion point.
+tab allows you to select the identifier before the insertion point. Command-~ allows
+you to cycle between open windows.
 
 Also you can define new scripts to operate on selections within text windows using
 shell, or python, or ruby or whatever. There's a script README with more info that

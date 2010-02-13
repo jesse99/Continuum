@@ -69,7 +69,10 @@ app: bin/install-tool $(program-targets) bin/continuum.exe.config
 # Note that running this way (instead of via open or the Finder) allows us to see 
 # console output in the terminal instead of the system log.
 run-app: app
-	$(macos-path)/launcher
+	$(macos-path)/launcher /Users/jessejones/Source/peg-sharp/bin/peg-sharp.exe.mdb
+#	continuum /Users/jessejones/Source/peg-sharp/bin/peg-sharp.exe.mdb
+#	cd $(resources-path)
+#	$(macos-path)/launcher /Users/jessejones/Source/peg-sharp/bin/peg-sharp.exe.mdb
 	
 check: bin/tests.dll
 	cd bin && "$(NUNIT)" -nologo tests.dll

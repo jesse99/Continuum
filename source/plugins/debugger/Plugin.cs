@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Jesse Jones
+// Copyright (C) 2009 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -20,11 +20,30 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using System;
+using System.IO;
+using System.Reflection;
 
-namespace Shared
+namespace Debugger
 {
-	public interface IApplication : IInterface
+	[Plugin]
+	public static class Plugin
 	{
-		void Run(string[] args);
+		public static void OnLoaded()
+		{
+			DoInitObjectModel();
+		}
+		
+		private static void DoInitObjectModel()
+		{
+			string loc = Assembly.GetExecutingAssembly().Location;
+			string root = Path.GetDirectoryName(loc);
+			string path = Path.Combine(root, "Bosses.xml");
+			
+			using (StreamReader reader = new StreamReader(path))
+			{
+				XmlModel.Read(reader.BaseStream);
+			}
+		}
 	}
 }

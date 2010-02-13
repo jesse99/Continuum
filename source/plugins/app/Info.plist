@@ -67,6 +67,25 @@
 		</dict>
 		
 		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>mdb</string>
+			</array>
+			
+			<key>CFBundleTypeName</key>
+			<string>Debugger</string>
+			
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			
+			<key>NSDocumentClass</key>
+			<string>DebuggerDocument</string>
+		</dict>
+		
+		<dict>
 			<key>CFBundleTypeName</key>
 			<string>Plain Text, UTF16 Encoded</string>
 			

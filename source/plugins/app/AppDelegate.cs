@@ -175,7 +175,7 @@ if [ ""$1"" = ""-?"" ] || [ ""$1"" = ""-h"" ] || [ ""$1"" = ""--help"" ] ; then
 fi
 
 if [ -d ""$app"" ] ; then
-    open -a ""$app"" $@
+    open -a ""$app"" ""$@""
 else
     echo ""Couldn't find $app: try re-installing the tool.""
 fi

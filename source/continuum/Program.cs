@@ -47,7 +47,7 @@ namespace Continuum
 			Boss appBoss = ObjectModel.Create("Application");
 			IApplication app = appBoss.Get<IApplication>();
 			Log.WriteLine(TraceLevel.Verbose, "Startup", "running app");
-			app.Run();
+			app.Run(args);
 			
 			// note that we don't actually land here when quitting...
 		}

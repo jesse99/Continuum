@@ -24,11 +24,62 @@ http://www.jetbrains.com/resharper/features/
 select declaring_root_name,return_type_name from Methods where name = 'get_BaseTypes';
 sudo fs_usage -f filesys
 
-* Release checklist:
-	- email
-* Do a checkin.
+need a debugger window so we dont leave tons of open windows behind?
+red B could be a breakpoint
+green > the current IP
 
-* Look at the soft debugger in mono 2.6
+		
+public abstract class Mono.Debugger.Event
+	public class Mono.Debugger.AppDomainCreateEvent
+	public class Mono.Debugger.AppDomainUnloadEvent
+	public class Mono.Debugger.AssemblyLoadEvent	
+	public class Mono.Debugger.BreakpointEvent
+	public class Mono.Debugger.ExceptionEvent
+	public class Mono.Debugger.MethodEntryEvent
+	public class Mono.Debugger.MethodExitEvent
+	public class Mono.Debugger.StepEvent
+	public class Mono.Debugger.ThreadDeathEvent
+	public class Mono.Debugger.ThreadStartEvent
+	public class Mono.Debugger.TypeLoadEvent
+	public class Mono.Debugger.VMDeathEvent
+	public class Mono.Debugger.VMDisconnectEvent
+	public class Mono.Debugger.VMStartEvent
+
+public abstract class Mono.Debugger.EventRequest
+	public sealed class Mono.Debugger.ExceptionEventRequest
+	public sealed class Mono.Debugger.BreakpointEventRequest
+	public sealed class Mono.Debugger.MethodEntryEventRequest
+	public sealed class Mono.Debugger.MethodExitEventRequest
+	public sealed class Mono.Debugger.StepEventRequest
+
+* Look at the soft debugger in mono 2.6	:
+	- use the debugger to single step thru the app
+	  print file and line number
+	  print locals
+	- do a checkin
+	- work on a gui, create a text document to reuse (might want to extend the text boss)
+	- use the version in the gac
+	- single stepping
+	- might want to allow ToString specifiers to be used (could even deduce them)
+	- breakpoints
+	- output window, or use the transcript?
+	- examining variables
+	- break on exceptions
+	- stack window
+	- threads window
+	- assembly view
+	- watchpoints (probably dont need this, variable windows should not go away)
+	- conditional breakpoints
+	- custom formatting
+	- custom viewer dlls
+	- make sure it works ok if the exe is missing
+	- make sure it works ok if the exe and mdb are out of sync
+	- probably need to somehow prevent debugging two apps at once (or fix the menu handler
+	  goo so that that would work)
+* Rewrite the readme using rtf:
+	- add some sort of tips and tricks section
+	- mention how powerful command-D is
+	- also using Time Machine as a sccs
 * Need a directory for custom plugins:
 	- google code search might be a good example
 	- or maybe a simple diff tool

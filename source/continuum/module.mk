@@ -6,6 +6,7 @@ app-name := Continuum
 app-path := bin/$(app-name).app
 contents-path := $(app-path)/Contents
 macos-path := $(contents-path)/MacOS
+resources-path := $(contents-path)/Resources
 exe-path := bin/$(exe-name).exe
 
 program-targets += $(app-path)

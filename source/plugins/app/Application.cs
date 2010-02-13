@@ -22,6 +22,7 @@
 using Gear;
 using MCocoa;
 using MObjc;
+using MObjc.Helpers;
 using Shared;
 using System;
 using System.Diagnostics;
@@ -41,7 +42,7 @@ namespace App
 			get {return m_boss;}
 		}
 		
-		public void Run()
+		public void Run(string[] args)
 		{
 			NSApplication app = NSApplication.Create("App", "MainMenu.nib", this.DoExtendDebugMenu);
 			Log.WriteLine(TraceLevel.Verbose, "Startup", "created NSApplication");
@@ -54,7 +55,7 @@ namespace App
 				factory.OnInitFactoryPref(dict);
 			}
 			NSUserDefaultsController.sharedUserDefaultsController().setInitialValues(dict);
-			NSUserDefaults.standardUserDefaults().registerDefaults(dict);	
+			NSUserDefaults.standardUserDefaults().registerDefaults(dict);
 			Log.WriteLine(TraceLevel.Verbose, "Startup", "initialized default prefs");
 			
 			// TODO: starting with mono 2.2 the path to the exe is part of the unmanaged command
@@ -63,10 +64,15 @@ namespace App
 			// processing... 
 			NSUserDefaults.standardUserDefaults().setObject_forKey(NSString.Create("NO"), NSString.Create("NSTreatUnknownArgumentsAsOpen"));
 			
+			foreach (string path in args)
+			{
+				app.BeginInvoke(() => DoOpen(path), TimeSpan.FromSeconds(0.250));
+			}
+			
 			Log.WriteLine(TraceLevel.Verbose, "Startup", "starting event loop");
 			Broadcaster.Invoke("starting event loop", null);
 			pool.release();
-
+			
 			app.run();
 		}
 		
@@ -77,11 +83,32 @@ namespace App
 			string[] candidates = fs.LocatePath("/mono-uninstalled.pc.in");
 			if (candidates.Length > 0)
 			{
-				string root = Path.GetDirectoryName(candidates[0]);				
+				string root = Path.GetDirectoryName(candidates[0]);
 				dict.setObject_forKey(NSString.Create(root), NSString.Create("mono_root"));
 			}
 			else
 				dict.setObject_forKey(NSString.Create("/some/thing/mono-2.2"), NSString.Create("mono_root"));
+		}
+		
+		#region Private Methods
+		private static void DoOpen(string path)
+		{
+			try
+			{
+				NSURL url = NSURL.fileURLWithPath(NSString.Create(path));
+				NSError err;
+				NSDocumentController.sharedDocumentController().openDocumentWithContentsOfURL_display_error(
+					url, true, out err);
+					
+				if (!NSObject.IsNullOrNil(err))
+					err.Raise();
+			}
+			catch (Exception e)
+			{
+				NSString title = NSString.Create("Couldn't open the file.");
+				NSString message = NSString.Create(e.Message);
+				Unused.Value = Functions.NSRunAlertPanel(title, message);
+			}
 		}
 		
 		private void DoExtendDebugMenu(NSMenu menu)
@@ -94,6 +121,7 @@ namespace App
 			menu.addItem(NSMenuItem.Create("Dump Active Objects", "dumpActiveObjects:", app.delegate_()));
 #endif
 		}
+		#endregion
 		
 		#region Fields 
 		private Boss m_boss;
