@@ -211,7 +211,8 @@ namespace Debugger
 		
 		private void DoStepEvent(StepEvent e)
 		{
-			Log.WriteLine(TraceLevel.Info, "Debugger", "Stepped to {0}:{1}", e.Method.FullName, e.Location);
+			Location location = e.Method.LocationAtILOffset((int) e.Location);
+			Log.WriteLine(TraceLevel.Info, "Debugger", "Stepped to {0}:{1} in {2}:{3}", e.Method.FullName, e.Location, location.SourceFile, location.LineNumber);
 			DoTransition(State.Paused);
 			
 			m_currentThread = e.Thread;

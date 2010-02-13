@@ -53,6 +53,7 @@ public abstract class Mono.Debugger.EventRequest
 	public sealed class Mono.Debugger.StepEventRequest
 
 * Look at the soft debugger in mono 2.6	:
+	- convert the method mirror and offset to file path and line number
 	- use the debugger to single step thru the app
 	  print file and line number
 	  print locals
