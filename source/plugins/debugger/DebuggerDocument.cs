@@ -87,6 +87,7 @@ namespace Debugger
 			get {return m_debugger;}
 		}
 		
+		// Path to the executable.
 		public string Executable
 		{
 			get {return m_executable;}

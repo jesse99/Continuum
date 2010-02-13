@@ -298,6 +298,14 @@ namespace TextEditor
 			}
 		}
 		
+		public void Replace(string replacement)
+		{
+			TextController controller = (TextController) m_window.windowController();
+			NSTextView view = controller.TextView;
+			
+			view.setString(NSString.Create(replacement));
+		}
+		
 		public void Replace(string replacement, int index, int length, string undoText)
 		{
 			TextController controller = (TextController) m_window.windowController();

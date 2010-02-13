@@ -53,8 +53,12 @@ namespace Debugger
 			handler.Register(this, 63, () => m_doc.Debugger.StepIn(), this.DoIsPaused);
 			handler.Register(this, 64, () => m_doc.Debugger.StepOut(), this.DoIsPaused);
 			
+			DoOpenCodeWindow();
+			
 			m_doc.Debugger.StateEvent += this.OnStateChanged;
 			m_doc.Debugger.AssemblyLoadedEvent += this.OnAssemblyLoaded;
+			m_doc.Debugger.BreakpointEvent += this.OnPaused;
+			m_doc.Debugger.SteppedEvent += this.OnPaused;
 			
 			ActiveObjects.Add(this);
 			autorelease();							// get rid of the retain done by AllocAndInitInstance
@@ -66,6 +70,8 @@ namespace Debugger
 			var handler = boss.Get<IMenuHandler>();
 			handler.Deregister(this);
 			
+			// TODO: get rid of the code window too
+			
 			m_doc.Debugger.Dispose();
 			window().autorelease();
 		}
@@ -74,6 +80,12 @@ namespace Debugger
 		private void OnStateChanged(State state)
 		{
 			m_label.setStringValue(NSString.Create(state.ToString()));
+			
+			if (state != State.Paused)
+			{
+				var text = m_codeBoss.Get<IText>();
+				text.Replace(state.ToString());
+			}
 			
 			if (state == State.Connected)
 				m_doc.Debugger.Run();
@@ -87,6 +99,63 @@ namespace Debugger
 			}
 		}
 		
+		private void OnPaused(Location location)
+		{
+			var text = m_codeBoss.Get<IText>();
+			
+			if (System.IO.File.Exists(location.SourceFile))
+			{
+				text.Replace(System.IO.File.ReadAllText(location.SourceFile));
+				
+				var editor = m_codeBoss.Get<ITextEditor>();
+				editor.ShowLine(location.LineNumber, -1, 8);
+			}
+			else
+			{
+				text.Replace(string.Format("Couldn't find '{0}'.", location.SourceFile));
+			}
+		}
+		
+		private void DoOpenCodeWindow()
+		{
+			// Create a temporary text file named after the executable (we do this so
+			// we can take advantage of the normal window location persistence code).
+			string file = "[" + System.IO.Path.GetFileName(m_doc.Executable) + "]";
+			string path = System.IO.Path.Combine("/tmp", file);
+			if (!System.IO.File.Exists(path))
+				System.IO.File.Create(path);
+			
+			NSURL url = NSURL.fileURLWithPath(NSString.Create(path));
+			
+			// Open a text window using that file. Note that UTF8 is TextDocument's
+			// default encoding which means that it will attempt to deduce the actual
+			// file encoding.
+			NSError err;
+			NSString typeName = NSString.Create("Plain Text, UTF8 Encoded");
+			NSDocument doc = NSDocumentController.sharedDocumentController().makeDocumentWithContentsOfURL_ofType_error(
+				url, typeName, out err);
+			if (!NSObject.IsNullOrNil(err))
+				err.Raise();
+			
+			NSDocumentController.sharedDocumentController().addDocument(doc);
+			doc.makeWindowControllers();
+			
+			// Find the boss associated with the code window.
+			Boss boss = ObjectModel.Create("TextEditorPlugin");
+			
+			var windows = boss.Get<IWindows>();
+			foreach (Boss b in windows.All())
+			{
+				var editor = b.Get<ITextEditor>();
+				if (path == editor.Path)
+				{
+					m_codeBoss = b;
+					break;
+				}
+			}
+			Contract.Assert(m_codeBoss != null, "couldn't find the code window");
+		}
+		
 		private bool DoIsPaused()
 		{
 			return m_doc.Debugger.State == State.Paused;
@@ -96,6 +165,7 @@ namespace Debugger
 		#region Fields
 		private DebuggerDocument m_doc;
 		private NSTextField m_label;
+		private Boss m_codeBoss;
 		#endregion
 	}
 }

@@ -167,6 +167,14 @@ namespace Transcript
 			get {return m_editCount;}
 		}
 		
+		public void Replace(string replacement)
+		{
+			NSTextView view = m_controller.TextView;
+			view.setString(NSString.Create(replacement));
+			
+			m_editCount = unchecked(m_editCount + 1);
+		}
+		
 		public void Replace(string replacement, int index, int length, string undoText)
 		{
 			NSTextView view = m_controller.TextView;

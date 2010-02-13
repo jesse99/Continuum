@@ -32,6 +32,9 @@ namespace Shared
 		
 		int EditCount {get;}
 		
+		// Non-undoable.
+		void Replace(string replacement);
+		
 		void Replace(string replacement, int index, int length, string undoText);
 		
 		NSRange Selection {get; set;}

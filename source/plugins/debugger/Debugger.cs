@@ -99,7 +99,8 @@ namespace Debugger
 		
 		public event Action<State> StateEvent;
 		public event Action<AssemblyMirror> AssemblyLoadedEvent;
-		public event Action<MethodMirror, long> BreakpointEvent;			// second argument is the IL offset within the method
+		public event Action<Location> BreakpointEvent;
+		public event Action<Location> SteppedEvent;
 		
 		// Either start running after connecting or after pausing (e.g. via a breakpoint).
 		public void Run()
@@ -205,7 +206,8 @@ namespace Debugger
 			if (BreakpointEvent != null)
 			{
 				KeyValuePair<Breakpoint, BreakpointEventRequest> bp = m_breakpoints.Single(candidate => e.Request == candidate.Value);	// hitting a breakpoint is a fairly rare event so we can get by with a linear search
-				BreakpointEvent(e.Method, bp.Key.Offset);
+				Location location = e.Method.LocationAtILOffset((int) bp.Key.Offset);
+				BreakpointEvent(location);
 			}
 		}
 		
@@ -217,6 +219,11 @@ namespace Debugger
 			
 			m_currentThread = e.Thread;
 			m_stepRequest.Disable();
+			
+			if (SteppedEvent != null)
+			{
+				SteppedEvent(location);
+			}
 		}
 		
 		private void DoVMDeathEvent(VMDeathEvent e)
