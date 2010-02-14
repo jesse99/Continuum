@@ -55,8 +55,10 @@ public abstract class Mono.Debugger.EventRequest
 	
 	
 * Show the source file and line of the code we're stepping through:
-	- why don't the cecil context menu commands show up?
-	- what if the file has changed since it was compiled into the assembly?
+	- if the source file cannot be found use IL
+	- should be able to step into mono files
+	- what if the file has changed since it was compiled into the assembly? can we use something
+	   better than mod times?
 	- should not be marked as dirty when replacing text
 	- need to disable menus when we are read-only
 	- need to disable context menus when we are read-only
@@ -64,7 +66,6 @@ public abstract class Mono.Debugger.EventRequest
 	  maybe change the background color?
 	- use a green > to mark the current insruction pointer
 	- re-open the window on stepping if the user closed it
-	- if the source file cannot be found use IL
 * Look at the soft debugger in mono 2.6	:
 	- work on a gui, create a text document to reuse (might want to extend the text boss)
 	- might want to allow ToString specifiers to be used (could even deduce them)

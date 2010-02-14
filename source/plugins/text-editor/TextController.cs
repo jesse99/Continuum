@@ -102,7 +102,7 @@ namespace TextEditor
 		
 		public void OnPathChanged()
 		{
-			if (Path != null || m_boss.Get<IDocumentExtension>() != null)
+			if (Path != null || m_boss.Has<IDocumentExtension>())
 				Language = DoFindLanguage();
 			
 			if (Path != null)
@@ -246,21 +246,18 @@ namespace TextEditor
 					m_applier.ClearStyles();
 					
 					// force runs to be rebuilt
-					if (m_language != null)
-					{
-						m_editCount = unchecked(m_editCount + 1);
-						m_applier.EditedRange(NSRange.Empty);
-						
-						var edit = new TextEdit{
-							Boss = m_boss,
-							Language = m_language,
-							UserEdit = true,
-							EditedRange = NSRange.Empty,
-							ChangeInLength = 0,
-							ChangeInLines = 0,
-							StartLine = 1};
-						Broadcaster.Invoke("text changed", edit);
-					}
+					m_editCount = unchecked(m_editCount + 1);
+					m_applier.EditedRange(NSRange.Empty);
+					
+					var edit = new TextEdit{
+						Boss = m_boss,
+						Language = m_language,
+						UserEdit = true,
+						EditedRange = NSRange.Empty,
+						ChangeInLength = 0,
+						ChangeInLines = 0,
+						StartLine = 1};
+					Broadcaster.Invoke("text changed", edit);
 				}
 			}
 		}

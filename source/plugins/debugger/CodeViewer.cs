@@ -77,16 +77,42 @@ namespace Debugger
 		#region Private Methods
 		private void OnStateChanged(State state)
 		{
-			if (state != State.Paused)
+			if (state != State.Paused && state != State.Running)
 			{
 				DoSetTitle("debug");
+				
+				var text = Boss.Get<IText>();
+				text.Replace(state.ToString());
 			}
 		}
 		
 		private void OnPaused(Location location)
 		{
-			string file = System.IO.Path.GetFileName(location.SourceFile);
-			DoSetTitle(file);
+			var text = Boss.Get<IText>();
+			if (System.IO.File.Exists(location.SourceFile))
+			{
+				string file = System.IO.Path.GetFileName(location.SourceFile);
+				DoSetTitle(file);
+				
+				if (m_currentFile != location.SourceFile)
+				{
+					text.Replace(System.IO.File.ReadAllText(location.SourceFile));
+					m_currentFile = location.SourceFile;
+				}
+				
+				var editor = Boss.Get<ITextEditor>();
+				editor.ShowLine(location.LineNumber, -1, 8);
+			}
+			else
+			{
+				string file = System.IO.Path.GetFileNameWithoutExtension(location.SourceFile);
+				DoSetTitle(file);
+				m_currentFile = null;
+				
+				text.Replace(string.Format("Couldn't find '{0}'.", location.SourceFile));
+			}
+//			string file = System.IO.Path.GetFileName(location.SourceFile);
+//			DoSetTitle(file);
 		}
 		
 		private void DoSetTitle(string title)
@@ -105,6 +131,7 @@ namespace Debugger
 		private Boss m_boss;
 		private Debugger m_debugger;
 		private string m_title = "[debug]";
+		private string m_currentFile;
 		#endregion
 	}
 }

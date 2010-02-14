@@ -296,6 +296,7 @@ namespace Debugger
 			m_stepRequest.Size = StepSize.Line;
 			m_stepRequest.Enabled = true;
 			
+			DoTransition(State.Running);
 			m_vm.Resume();
 		}
 		

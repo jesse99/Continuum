@@ -81,11 +81,11 @@ namespace Debugger
 		{
 			m_label.setStringValue(NSString.Create(state.ToString()));
 			
-			if (state != State.Paused)
-			{
-				var text = m_codeBoss.Get<IText>();
-				text.Replace(state.ToString());
-			}
+//			if (state != State.Paused && state != State.Running)
+//			{
+//				var text = m_codeBoss.Get<IText>();
+//				text.Replace(state.ToString());
+//			}
 			
 			if (state == State.Connected)
 				m_doc.Debugger.Run();
@@ -101,6 +101,7 @@ namespace Debugger
 		
 		private void OnPaused(Location location)
 		{
+#if false
 			var text = m_codeBoss.Get<IText>();
 			
 			if (System.IO.File.Exists(location.SourceFile))
@@ -118,6 +119,7 @@ namespace Debugger
 			{
 				text.Replace(string.Format("Couldn't find '{0}'.", location.SourceFile));
 			}
+#endif
 		}
 		
 		private void DoOpenCodeWindow()
@@ -143,7 +145,7 @@ namespace Debugger
 		private DebuggerDocument m_doc;
 		private NSTextField m_label;
 		private Boss m_codeBoss;
-		private string m_currentFile;
+//		private string m_currentFile;
 		#endregion
 	}
 }
