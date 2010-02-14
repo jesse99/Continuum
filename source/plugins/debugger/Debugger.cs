@@ -80,7 +80,8 @@ namespace Debugger
 					if (m_vm != null)
 					{
 						Log.WriteLine(TraceLevel.Verbose, "Debugger", "Dispose");
-						m_vm.Exit(0);
+						if (m_state != State.Paused)
+							m_vm.Exit(0);
 						m_vm.Dispose();
 					}
 				}

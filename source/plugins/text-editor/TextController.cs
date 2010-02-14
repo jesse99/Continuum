@@ -702,7 +702,7 @@ namespace TextEditor
 			if (sel.Name == "shiftLeft:" || sel.Name == "shiftRight:")
 			{
 				NSRange range = m_textView.Value.selectedRange();
-				valid = range.length > 0;
+				valid = range.length > 0 && m_textView.Value.isEditable();
 			}
 			else if (sel.Name == "lookUpInDict:")
 			{
@@ -902,9 +902,9 @@ namespace TextEditor
 			// If there is a IDocumentExtension use that in place of the real file name.
 			string fileName = null;
 			
-			var ext = m_boss.Get<IDocumentExtension>();
-			if (ext != null)
+			if (m_boss.Has<IDocumentExtension>())
 			{
+				var ext = m_boss.Get<IDocumentExtension>();
 				string extension = ext.GetExtension();
 				if (extension != null)
 					fileName = "foo" + extension;

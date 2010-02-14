@@ -48,7 +48,7 @@ namespace App
 			get {return m_boss;}
 		}
 		
-		public void Get(Boss boss, string selection, List<TextContextItem> items)
+		public void Get(Boss boss, string selection, bool editable, List<TextContextItem> items)
 		{
 			if (selection != null && selection.Length < 100 && !selection.Any(c => char.IsWhiteSpace(c)))
 			{

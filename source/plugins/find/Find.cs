@@ -255,7 +255,7 @@ namespace Find
 			return m_find != null && CanFind() && FindText.Length > 0;
 		}
 		
-		public bool CanUseSelection()
+		public bool CanUseSelectionForFind()
 		{
 			bool can = false;
 			
@@ -266,9 +266,56 @@ namespace Find
 			return can;
 		}
 		
+		public bool CanUseSelectionForReplace()
+		{
+			bool can = false;
+			
+			IText text = DoFindTextWindow();
+			if (text != null && text.Text.Length > 0)
+			{
+				if (text.Selection.length > 0)
+				{
+					if (text.Boss.Has<ITextEditor>())
+					{
+						var editor = text.Boss.Get<ITextEditor>();
+						can = editor.Editable;
+					}
+					else
+					{
+						can = true;
+					}
+				}
+			}
+			
+			return can;
+		}
+		
 		public bool CanReplace()
 		{
-			return m_find != null && CanFind() && FindText.Length > 0;
+			IText text = DoFindTextWindow();
+			
+			bool can = false;
+			
+			// Window needs some text.
+			if (text != null && text.Text.Length > 0)
+			{
+				// Need text to find (but not to replace since we can replace with nothing).
+				if (m_find != null && FindText.Length > 0)
+				{
+					// Window needs to be editable.
+					if (text.Boss.Has<ITextEditor>())
+					{
+						var editor = text.Boss.Get<ITextEditor>();
+						can = editor.Editable;
+					}
+					else
+					{
+						can = true;
+					}
+				}
+			}
+			
+			return can;
 		}
 		
 		public void UseSelectionForFind()

@@ -98,7 +98,7 @@ namespace App
 				}
 			}
 		}
-				
+		
 		protected override bool IsEnabled()
 		{
 			bool enabled = false;
@@ -106,11 +106,12 @@ namespace App
 			Boss boss = ObjectModel.Create("TextEditorPlugin");
 			var windows = boss.Get<IWindows>();
 			boss = windows.Main();
-
+			
 			if (boss != null)
 			{
 				var text = boss.Get<IText>();
-				enabled = text.Selection.length > 0;
+				var editor = boss.Get<ITextEditor>();
+				enabled = text.Selection.length > 0 && editor.Editable;
 			}
 			
 			return enabled;
@@ -125,7 +126,7 @@ namespace App
 			try
 			{
 				SaveFile(path);
-
+				
 				// TODO: Need to handle aliaii here and possibly in open panel dialogs.
 				// See http://developer.apple.com/documentation/Cocoa/Conceptual/LowLevelFileMgmt/Tasks/ResolvingAliases.html
 				using (Process process = new Process())

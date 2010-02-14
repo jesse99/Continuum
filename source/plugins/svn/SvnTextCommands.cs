@@ -41,9 +41,9 @@ namespace Subversion
 			get {return m_boss;}
 		}
 		
-		public void Get(Boss boss, string selection, List<TextContextItem> items)
+		public void Get(Boss boss, string selection, bool editable, List<TextContextItem> items)
 		{
-			if (selection == null)
+			if (selection == null && editable)
 			{
 				string path = DoGetPath();
 				if (path != null)

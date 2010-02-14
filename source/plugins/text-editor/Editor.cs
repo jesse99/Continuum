@@ -73,6 +73,20 @@ namespace TextEditor
 			}
 		}
 		
+		public bool Editable
+		{
+			get
+			{
+				TextController controller = (TextController) m_window.windowController();
+				return controller.TextView.isEditable();
+			}
+			set
+			{
+				TextController controller = (TextController) m_window.windowController();
+				controller.TextView.setEditable(value);
+			}
+		}
+		
 		public void Save()
 		{
 			NSDocument doc = m_window.windowController().document();
@@ -304,7 +318,9 @@ namespace TextEditor
 			NSTextView view = controller.TextView;
 			
 			view.setString(NSString.Create(replacement));
-			controller.OnPathChanged();			// bit of a hack to allow the debugger to switch languages
+			
+			if (!NSObject.IsNullOrNil(controller.document()))
+				controller.OnPathChanged();			// bit of a hack to allow the debugger to switch languages
 		}
 		
 		public void Replace(string replacement, int index, int length, string undoText)

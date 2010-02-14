@@ -122,51 +122,15 @@ namespace Debugger
 		
 		private void DoOpenCodeWindow()
 		{
-#if true
 			Boss boss = ObjectModel.Create("TextEditorPlugin");
 			var create = boss.Get<ICreate>();
 			m_codeBoss = create.Create("CodeViewer");
 			
 			var viewer = m_codeBoss.Get<ICodeViewer>();
 			viewer.Init(m_doc.Debugger);
-#else
-			// Create a temporary text file named after the executable (we do this so
-			// we can take advantage of the normal window location persistence code).
-			string file = "[" + System.IO.Path.GetFileName(m_doc.Executable) + "]";
-			string path = System.IO.Path.Combine("/tmp", file);
-			if (!System.IO.File.Exists(path))
-				System.IO.File.Create(path);
 			
-			NSURL url = NSURL.fileURLWithPath(NSString.Create(path));
-			
-			// Open a text window using that file. Note that UTF8 is TextDocument's
-			// default encoding which means that it will attempt to deduce the actual
-			// file encoding.
-			NSError err;
-			NSString typeName = NSString.Create("Plain Text, UTF8 Encoded");
-			NSDocument doc = NSDocumentController.sharedDocumentController().makeDocumentWithContentsOfURL_ofType_error(
-				url, typeName, out err);
-			if (!NSObject.IsNullOrNil(err))
-				err.Raise();
-			
-			NSDocumentController.sharedDocumentController().addDocument(doc);
-			doc.makeWindowControllers();
-			
-			// Find the boss associated with the code window.
-			Boss boss = ObjectModel.Create("TextEditorPlugin");
-			
-			var windows = boss.Get<IWindows>();
-			foreach (Boss b in windows.All())
-			{
-				var editor = b.Get<ITextEditor>();
-				if (path == editor.Path)
-				{
-					m_codeBoss = b;
-					break;
-				}
-			}
-			Contract.Assert(m_codeBoss != null, "couldn't find the code window");
-#endif
+			var editor = m_codeBoss.Get<ITextEditor>();
+			editor.Editable = false;
 		}
 		
 		private bool DoIsPaused()

@@ -220,7 +220,7 @@ namespace Find
 		
 		protected virtual bool OnReplaceEnabled()
 		{
-			return OnFindEnabled();	
+			return OnFindEnabled() && Finder != null && Finder.CanReplace();	
 		}
 		
 		protected virtual void OnEnableButtons()

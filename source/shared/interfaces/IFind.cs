@@ -36,13 +36,14 @@ namespace Shared
 		void Replace();
 		void ReplaceAndFind();
 		void ReplaceAll();
-
+		
 		void FindInFiles();
-
+		
 		bool CanFind();
 		bool CanFindNext();
 		bool CanFindPrevious();
-		bool CanUseSelection();
+		bool CanUseSelectionForFind();
+		bool CanUseSelectionForReplace();
 		bool CanReplace();
-	} 
+	}
 }

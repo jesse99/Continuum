@@ -428,10 +428,15 @@ fi
 				var find = m_boss.Get<IFind>();
 				enabled = find.CanFind();
 			}
-			else if (sel.Name == "useSelectionForFind:" || sel.Name == "useSelectionForReplace:")
+			else if (sel.Name == "useSelectionForFind:")
 			{
 				var find = m_boss.Get<IFind>();
-				enabled = find.CanUseSelection();
+				enabled = find.CanUseSelectionForFind();
+			}
+			else if (sel.Name == "useSelectionForReplace:")
+			{
+				var find = m_boss.Get<IFind>();
+				enabled = find.CanUseSelectionForReplace();
 			}
 			else if (sel.Name == "findAgain:")
 			{

@@ -656,10 +656,11 @@ namespace TextEditor
 			Boss dirBoss = ((TextController) window().windowController()).GetDirEditorBoss();
 			
 			Boss boss = ObjectModel.Create("TextEditorPlugin");
+			bool editable = isEditable();
 			foreach (ITextContextCommands i in boss.GetRepeated<ITextContextCommands>())
 			{
 				var items = new List<TextContextItem>();
-				i.Get(dirBoss, selection, items);
+				i.Get(dirBoss, selection, editable, items);
 				
 				if (items.Count > 0)
 				{

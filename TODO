@@ -52,15 +52,16 @@ public abstract class Mono.Debugger.EventRequest
 	public sealed class Mono.Debugger.MethodEntryEventRequest
 	public sealed class Mono.Debugger.MethodExitEventRequest
 	public sealed class Mono.Debugger.StepEventRequest
-
+	
+	
 * Show the source file and line of the code we're stepping through:
-	- text should be read-only
+	- why don't the cecil context menu commands show up?
+	- what if the file has changed since it was compiled into the assembly?
 	- should not be marked as dirty when replacing text
 	- need to disable menus when we are read-only
 	- need to disable context menus when we are read-only
 	- should we do something to make it clear that the window is a debugger window?
 	  maybe change the background color?
-	- what if the file has changed since it was compiled into the assembly?
 	- use a green > to mark the current insruction pointer
 	- re-open the window on stepping if the user closed it
 	- if the source file cannot be found use IL
