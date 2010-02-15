@@ -53,19 +53,22 @@ public abstract class Mono.Debugger.EventRequest
 	public sealed class Mono.Debugger.MethodExitEventRequest
 	public sealed class Mono.Debugger.StepEventRequest
 	
-	
+
+* Work on showing IL:
+	- add a context menu to toggle between source and IL
+	- do a checkin
 * Show the source file and line of the code we're stepping through:
-	- if the source file cannot be found use IL
-	- should be able to step into mono files
+	- fix up paths so can step into mono files
 	- what if the file has changed since it was compiled into the assembly? can we use something
 	   better than mod times?
 	- should not be marked as dirty when replacing text
-	- need to disable menus when we are read-only
-	- need to disable context menus when we are read-only
-	- should we do something to make it clear that the window is a debugger window?
-	  maybe change the background color?
 	- use a green > to mark the current insruction pointer
 	- re-open the window on stepping if the user closed it
+	- support breakpoints
+* Mention can right click on completion window.
+* Mention useful to download mono source (and set the associated pref):
+	- dont need to compile
+	- allows source level debugging, context menus allow you to go to definitions for mono methods
 * Look at the soft debugger in mono 2.6	:
 	- work on a gui, create a text document to reuse (might want to extend the text boss)
 	- might want to allow ToString specifiers to be used (could even deduce them)

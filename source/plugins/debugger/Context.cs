@@ -19,24 +19,31 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-using Gear;
+using Mono.Debugger;
 using System;
 
 namespace Debugger
 {
-	// Internal interface used to initialize the code viewer
-	internal interface ICodeViewer : IInterface
+	// Data associated with the code executing when the VM was suspended.
+	internal sealed class Context
 	{
-		void Init(Debugger debugger);
+		public Context(ThreadMirror thread, MethodMirror method, long offset)
+		{
+			Thread = thread;
+			Method = method;
+			Offset = offset;
+		}
 		
-		bool IsShowingSource();
+		public ThreadMirror Thread {get; private set;}
 		
-		bool CanDisplaySource();
+		public MethodMirror Method {get; private set;}
 		
-		bool CanDisplayIL();
+		public long Offset {get; private set;}
 		
-		void ShowSource();
-		
-		void ShowIL();
+		// May return null.
+		public Location Location()
+		{
+			return Method.LocationAtILOffset((int) Offset);
+		}
 	}
 }

@@ -20,23 +20,36 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using Mono.Cecil;
+using Shared;
 using System;
 
-namespace Debugger
+namespace Disassembler
 {
-	// Internal interface used to initialize the code viewer
-	internal interface ICodeViewer : IInterface
+	internal sealed class Disassembler : IDisassembler
 	{
-		void Init(Debugger debugger);
+		public void Instantiated(Boss boss)
+		{
+			m_boss = boss;
+		}
 		
-		bool IsShowingSource();
+		public Boss Boss
+		{
+			get {return m_boss;}
+		}
 		
-		bool CanDisplaySource();
+		public string Disassemble(TypeDefinition type)
+		{
+			return type.Disassemble();
+		}
 		
-		bool CanDisplayIL();
+		public string Disassemble(MethodDefinition method)
+		{
+			return method.Disassemble();
+		}
 		
-		void ShowSource();
-		
-		void ShowIL();
+		#region Fields 
+		private Boss m_boss;
+		#endregion
 	}
 }

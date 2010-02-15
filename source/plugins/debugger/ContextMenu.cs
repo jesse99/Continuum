@@ -20,23 +20,56 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using Shared;
 using System;
+using System.Collections.Generic;
 
 namespace Debugger
 {
-	// Internal interface used to initialize the code viewer
-	internal interface ICodeViewer : IInterface
+	internal sealed class ContextMenu : ITextContextCommands
 	{
-		void Init(Debugger debugger);
+		public void Instantiated(Boss boss)
+		{
+			m_boss = boss;
+		}
 		
-		bool IsShowingSource();
+		public Boss Boss
+		{
+			get {return m_boss;}
+		}
 		
-		bool CanDisplaySource();
+		public void Get(Boss boss, string selection, bool editable, List<TextContextItem> items)
+		{
+			boss = DoGetWindowBoss();
+			if (boss != null)
+			{
+				var viewer = boss.Get<ICodeViewer>();
+				if (viewer.CanDisplaySource() && viewer.CanDisplayIL())
+				{
+					if (viewer.IsShowingSource())
+						items.Add(new TextContextItem("Show IL", s => {viewer.ShowIL(); return s;}, 0.01f));
+					else
+						items.Add(new TextContextItem("Show Source", s => {viewer.ShowSource(); return s;}, 0.01f));
+				}
+			}
+		}
 		
-		bool CanDisplayIL();
+		#region Private Methods
+		private Boss DoGetWindowBoss()
+		{
+			Boss boss = ObjectModel.Create("TextEditorPlugin");
+			var windows = boss.Get<IWindows>();
+			boss = windows.Main();
+			
+			if (boss != null && !boss.Has<ICodeViewer>())
+				boss = null;
+			
+			return boss;
+		}
+		#endregion
 		
-		void ShowSource();
-		
-		void ShowIL();
+		#region Fields 
+		private Boss m_boss;
+		#endregion
 	}
 }

@@ -53,6 +53,7 @@ namespace Debugger
 		{
 			Contract.Requires(info != null, "info is null");
 			
+			StepBy = StepSize.Line;
 			Unused.Value = VirtualMachineManager.BeginLaunch(info, this.OnLaunched);
 			
 			m_handlers.Add(typeof(AppDomainCreateEvent), (Event e) => DoAppDomainCreateEvent((AppDomainCreateEvent) e));
@@ -101,8 +102,8 @@ namespace Debugger
 		
 		public event Action<State> StateEvent;
 		public event Action<AssemblyMirror> AssemblyLoadedEvent;
-		public event Action<Location> BreakpointEvent;
-		public event Action<Location> SteppedEvent;
+		public event Action<Context> BreakpointEvent;
+		public event Action<Context> SteppedEvent;
 		
 		// Either start running after connecting or after pausing (e.g. via a breakpoint).
 		public void Run()
@@ -122,6 +123,11 @@ namespace Debugger
 				m_thread.IsBackground = true;		// allow the app to quit even if the thread is still running
 				m_thread.Start();
 			}
+		}
+		
+		public StepSize StepBy
+		{
+			get; set;
 		}
 		
 		public void StepOver()
@@ -208,9 +214,7 @@ namespace Debugger
 			if (BreakpointEvent != null)
 			{
 				KeyValuePair<Breakpoint, BreakpointEventRequest> bp = m_breakpoints.Single(candidate => e.Request == candidate.Value);	// hitting a breakpoint is a fairly rare event so we can get by with a linear search
-				Location location = e.Method.LocationAtILOffset((int) bp.Key.Offset);
-				if (location != null)
-					BreakpointEvent(location);
+				BreakpointEvent(new Context(e.Thread, e.Method, bp.Key.Offset));
 			}
 		}
 		
@@ -226,9 +230,9 @@ namespace Debugger
 			m_currentThread = e.Thread;
 			m_stepRequest.Disable();
 			
-			if (SteppedEvent != null && location != null)
+			if (SteppedEvent != null)
 			{
-				SteppedEvent(location);
+				SteppedEvent(new Context(e.Thread, e.Method, e.Location));
 			}
 		}
 		
@@ -293,7 +297,7 @@ namespace Debugger
 			Log.WriteLine(TraceLevel.Verbose, "Debugger", "Stepping {0}", depth);
 			m_stepRequest = m_vm.CreateStepRequest(m_currentThread);
 			m_stepRequest.Depth = depth;
-			m_stepRequest.Size = StepSize.Line;
+			m_stepRequest.Size = StepBy;
 			m_stepRequest.Enabled = true;
 			
 			DoTransition(State.Running);

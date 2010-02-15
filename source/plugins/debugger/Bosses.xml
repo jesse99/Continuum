@@ -3,4 +3,8 @@
 		<Compose name = "TextEditor"/>
 		<Implementation interfaces = "ICodeViewer IDocumentWindowTitle IDocumentExtension" name = "CodeViewer"/>
 	</Boss>
+	
+	<Extend name = "TextEditorPlugin">
+		<Implementation interfaces = "IInterface +ITextContextCommands" name = "ContextMenu"/>
+	</Extend>
 </Bosses>

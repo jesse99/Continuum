@@ -20,23 +20,15 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
-using System;
+using Mono.Cecil;
 
-namespace Debugger
+namespace Shared
 {
-	// Internal interface used to initialize the code viewer
-	internal interface ICodeViewer : IInterface
+	// Primary interface on the Disassembler boss.
+	public interface IDisassembler : IInterface
 	{
-		void Init(Debugger debugger);
+		string Disassemble(TypeDefinition type);
 		
-		bool IsShowingSource();
-		
-		bool CanDisplaySource();
-		
-		bool CanDisplayIL();
-		
-		void ShowSource();
-		
-		void ShowIL();
+		string Disassemble(MethodDefinition method);
 	}
 }

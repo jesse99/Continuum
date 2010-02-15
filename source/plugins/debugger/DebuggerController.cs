@@ -57,8 +57,6 @@ namespace Debugger
 			
 			m_doc.Debugger.StateEvent += this.OnStateChanged;
 			m_doc.Debugger.AssemblyLoadedEvent += this.OnAssemblyLoaded;
-			m_doc.Debugger.BreakpointEvent += this.OnPaused;
-			m_doc.Debugger.SteppedEvent += this.OnPaused;
 			
 			ActiveObjects.Add(this);
 			autorelease();							// get rid of the retain done by AllocAndInitInstance
@@ -81,12 +79,6 @@ namespace Debugger
 		{
 			m_label.setStringValue(NSString.Create(state.ToString()));
 			
-//			if (state != State.Paused && state != State.Running)
-//			{
-//				var text = m_codeBoss.Get<IText>();
-//				text.Replace(state.ToString());
-//			}
-			
 			if (state == State.Connected)
 				m_doc.Debugger.Run();
 		}
@@ -97,29 +89,6 @@ namespace Debugger
 			{
 				m_doc.Debugger.AddBreakpoint(assembly.EntryPoint, 0);
 			}
-		}
-		
-		private void OnPaused(Location location)
-		{
-#if false
-			var text = m_codeBoss.Get<IText>();
-			
-			if (System.IO.File.Exists(location.SourceFile))
-			{
-				if (m_currentFile != location.SourceFile)
-				{
-					text.Replace(System.IO.File.ReadAllText(location.SourceFile));
-					m_currentFile = location.SourceFile;
-				}
-				
-				var editor = m_codeBoss.Get<ITextEditor>();
-				editor.ShowLine(location.LineNumber, -1, 8);
-			}
-			else
-			{
-				text.Replace(string.Format("Couldn't find '{0}'.", location.SourceFile));
-			}
-#endif
 		}
 		
 		private void DoOpenCodeWindow()
@@ -145,7 +114,6 @@ namespace Debugger
 		private DebuggerDocument m_doc;
 		private NSTextField m_label;
 		private Boss m_codeBoss;
-//		private string m_currentFile;
 		#endregion
 	}
 }

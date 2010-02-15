@@ -32,7 +32,7 @@ using System;
 //using System.Diagnostics;
 //using System.Linq;
 //using System.Threading;
-//using System.Collections.Generic;
+using System.Collections.Generic;
 //using System.IO;
 
 namespace Debugger
@@ -61,6 +61,52 @@ namespace Debugger
 			m_debugger.SteppedEvent += this.OnPaused;
 		}
 		
+		public bool IsShowingSource()
+		{
+			return m_lines.Count == 0;
+		}
+		
+		public bool CanDisplaySource()
+		{
+			bool can = false;
+			
+			if (m_context != null)
+			{
+				Location location = m_context.Location();
+				can = location != null && System.IO.File.Exists(location.SourceFile);
+			}
+			
+			return can;
+		}
+		
+		public bool CanDisplayIL()
+		{
+			bool can = false;
+			
+			if (m_context != null)
+			{
+				AssemblyMirror assembly = m_context.Method.DeclaringType.Assembly;
+				can = assembly.Metadata != null || System.IO.File.Exists(assembly.Location);
+			}
+			
+			return can;
+		}
+		
+		
+		public void ShowSource()
+		{
+			m_showIL = false;
+			Location location = m_context.Location();
+			DoShowSource(location);
+		}
+		
+		public void ShowIL()
+		{
+			m_showIL = true;
+			DoCacheAssembly();
+			DoShowIL(m_context);
+		}
+		
 		public string GetTitle(string displayName)
 		{
 			return "[" + m_title + "]";
@@ -68,7 +114,9 @@ namespace Debugger
 		
 		public string GetExtension()
 		{
-			if (m_title.Contains("."))
+			if (m_lines.Count > 0)
+				return ".cil";
+			else if (m_title.Contains("."))
 				return System.IO.Path.GetExtension(m_title);
 			else
 				return ".something-silly";
@@ -77,7 +125,11 @@ namespace Debugger
 		#region Private Methods
 		private void OnStateChanged(State state)
 		{
-			if (state != State.Paused && state != State.Running)
+			if (state == State.Running)
+			{
+				m_context = null;
+			}
+			else if (state != State.Paused)
 			{
 				DoSetTitle("debug");
 				
@@ -86,33 +138,135 @@ namespace Debugger
 			}
 		}
 		
-		private void OnPaused(Location location)
+		private void OnPaused(Context context)
 		{
-			var text = Boss.Get<IText>();
-			if (System.IO.File.Exists(location.SourceFile))
+			m_context = context;
+			
+			Location location = context.Location();
+			if (location != null && System.IO.File.Exists(location.SourceFile) && (!CanDisplayIL() || !m_showIL))
 			{
-				string file = System.IO.Path.GetFileName(location.SourceFile);
-				DoSetTitle(file);
-				
-				if (m_currentFile != location.SourceFile)
-				{
-					text.Replace(System.IO.File.ReadAllText(location.SourceFile));
-					m_currentFile = location.SourceFile;
-				}
-				
-				var editor = Boss.Get<ITextEditor>();
-				editor.ShowLine(location.LineNumber, -1, 8);
+				DoShowSource(location);
 			}
 			else
 			{
-				string file = System.IO.Path.GetFileNameWithoutExtension(location.SourceFile);
-				DoSetTitle(file);
-				m_currentFile = null;
+				DoCacheAssembly();
 				
-				text.Replace(string.Format("Couldn't find '{0}'.", location.SourceFile));
+				AssemblyMirror assembly = m_context.Method.DeclaringType.Assembly;
+				if (assembly.Metadata != null && context.Method.Metadata != null)
+					DoShowIL(context);
+				else
+					DoShowNothing(context);
 			}
-//			string file = System.IO.Path.GetFileName(location.SourceFile);
-//			DoSetTitle(file);
+		}
+		
+		private void DoShowSource(Location location)
+		{
+			string file = System.IO.Path.GetFileName(location.SourceFile);
+			DoSetTitle(file);
+			
+			if (m_currentView != location.SourceFile)
+			{
+				var text = m_boss.Get<IText>();
+				text.Replace(System.IO.File.ReadAllText(location.SourceFile));
+				m_currentView = location.SourceFile;
+				m_lines.Clear();
+				m_debugger.StepBy = StepSize.Line;
+			}
+			
+			var editor = m_boss.Get<ITextEditor>();
+			editor.ShowLine(location.LineNumber, -1, 8);
+		}
+		
+		private void DoShowIL(Context context)
+		{
+			string name = context.Method.FullName;
+			DoSetTitle(name);
+			
+			if (m_currentView != name)
+			{
+				Boss boss = ObjectModel.Create("Disassembler");
+				var disassembler = boss.Get<IDisassembler>();
+				
+				var text = m_boss.Get<IText>();
+				m_currentView = name;
+				string source = disassembler.Disassemble(context.Method.Metadata);
+				DoBuildLineTable(source);
+				
+				text.Replace(source);
+				m_debugger.StepBy = StepSize.Min;
+			}
+			
+			int line;
+			if (m_lines.TryGetValue(context.Offset, out line))
+			{
+				var editor = m_boss.Get<ITextEditor>();
+				editor.ShowLine(line, -1, 8);
+			}
+		}
+		private void DoShowNothing(Context context)
+		{
+			string name = context.Method.FullName;
+			DoSetTitle(name);
+			
+			if (m_currentView != name)
+			{
+				m_currentView = name;
+				m_lines.Clear();
+				
+				var text = m_boss.Get<IText>();
+				text.Replace("...");
+			}
+		}
+		
+		private void DoCacheAssembly()
+		{
+			AssemblyMirror assembly = m_context.Method.DeclaringType.Assembly;
+			if (assembly.Metadata == null)
+			{
+				AssemblyCache.AcquireLock();
+				try
+				{
+					assembly.Metadata = AssemblyCache.Load(assembly.Location, true);
+				}
+				finally
+				{
+					AssemblyCache.ReleaseLock();
+				}
+			}
+		}
+		
+		// The disassembly may include stuff like attributes in the header as well
+		// as comments in the code so we'll search for the offset instead of relying
+		// on something like MethodMirror.ILOffsets.
+		private void DoBuildLineTable(string source)
+		{
+			m_lines.Clear();
+			
+			int i = 0;
+			int line = 1;
+			while (i < source.Length)
+			{
+				long offset = DoMatchOffset(source, i);
+				if (offset >= 0)
+				{
+					m_lines[offset] = line;		// note that we can get duplicate offsets for things like try blocks
+				}
+				
+				i = source.IndexOf('\n', i) + 1;
+				++line;
+			}
+		}
+		
+		private long DoMatchOffset(string source, int i)
+		{
+			if (i + 5 < source.Length && source[i + 4] == ' ')
+			{
+				long offset;
+				if (long.TryParse(source.Substring(i, 4), System.Globalization.NumberStyles.HexNumber, null, out offset))
+					return offset;
+			}
+			
+			return -1;
 		}
 		
 		private void DoSetTitle(string title)
@@ -129,9 +283,12 @@ namespace Debugger
 		
 		#region Fields 
 		private Boss m_boss;
+		private bool m_showIL;
 		private Debugger m_debugger;
 		private string m_title = "[debug]";
-		private string m_currentFile;
+		private string m_currentView;
+		private Context m_context;
+		private Dictionary<long, int> m_lines = new Dictionary<long, int>();	// il offset => line number
 		#endregion
 	}
 }
