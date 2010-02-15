@@ -54,11 +54,7 @@ public abstract class Mono.Debugger.EventRequest
 	public sealed class Mono.Debugger.StepEventRequest
 	
 
-* Work on showing IL:
-	- add a context menu to toggle between source and IL
-	- do a checkin
 * Show the source file and line of the code we're stepping through:
-	- fix up paths so can step into mono files
 	- what if the file has changed since it was compiled into the assembly? can we use something
 	   better than mod times?
 	- should not be marked as dirty when replacing text

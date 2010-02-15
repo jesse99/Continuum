@@ -72,8 +72,7 @@ namespace Debugger
 			
 			if (m_context != null)
 			{
-				Location location = m_context.Location();
-				can = location != null && System.IO.File.Exists(location.SourceFile);
+				can = System.IO.File.Exists(m_context.SourceFile);
 			}
 			
 			return can;
@@ -92,12 +91,10 @@ namespace Debugger
 			return can;
 		}
 		
-		
 		public void ShowSource()
 		{
 			m_showIL = false;
-			Location location = m_context.Location();
-			DoShowSource(location);
+			DoShowSource();
 		}
 		
 		public void ShowIL()
@@ -142,10 +139,9 @@ namespace Debugger
 		{
 			m_context = context;
 			
-			Location location = context.Location();
-			if (location != null && System.IO.File.Exists(location.SourceFile) && (!CanDisplayIL() || !m_showIL))
+			if (context.SourceFile != null && System.IO.File.Exists(context.SourceFile) && (!CanDisplayIL() || !m_showIL))
 			{
-				DoShowSource(location);
+				DoShowSource();
 			}
 			else
 			{
@@ -159,22 +155,22 @@ namespace Debugger
 			}
 		}
 		
-		private void DoShowSource(Location location)
+		private void DoShowSource()
 		{
-			string file = System.IO.Path.GetFileName(location.SourceFile);
+			string file = System.IO.Path.GetFileName(m_context.SourceFile);
 			DoSetTitle(file);
 			
-			if (m_currentView != location.SourceFile)
+			if (m_currentView != m_context.SourceFile)
 			{
 				var text = m_boss.Get<IText>();
-				text.Replace(System.IO.File.ReadAllText(location.SourceFile));
-				m_currentView = location.SourceFile;
+				text.Replace(System.IO.File.ReadAllText(m_context.SourceFile));
+				m_currentView = m_context.SourceFile;
 				m_lines.Clear();
 				m_debugger.StepBy = StepSize.Line;
 			}
 			
 			var editor = m_boss.Get<ITextEditor>();
-			editor.ShowLine(location.LineNumber, -1, 8);
+			editor.ShowLine(m_context.Location.LineNumber, -1, 8);
 		}
 		
 		private void DoShowIL(Context context)

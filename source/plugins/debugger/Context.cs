@@ -19,7 +19,9 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear;
 using Mono.Debugger;
+using Shared;
 using System;
 
 namespace Debugger
@@ -41,9 +43,45 @@ namespace Debugger
 		public long Offset {get; private set;}
 		
 		// May return null.
-		public Location Location()
+		public Location Location
 		{
-			return Method.LocationAtILOffset((int) Offset);
+			get
+			{
+				if (!m_fetchedLocation)
+				{
+					m_location = Method.LocationAtILOffset((int) Offset);
+					m_fetchedLocation = true;
+				}
+				
+				return m_location;
+			}
 		}
+		
+		// May return null.
+		public string SourceFile
+		{
+			get
+			{
+				if (!m_fetchedSource)
+				{
+					if (Location != null && Location.SourceFile != null)
+					{
+						Boss boss = ObjectModel.Create("Application");
+						var mono = boss.Get<IMono>();
+						m_sourceFile = mono.GetPath(Location.SourceFile);
+					}
+					m_fetchedSource = true;
+				}
+				
+				return m_sourceFile;
+			}
+		}
+		
+		#region Fields
+		private bool m_fetchedLocation;
+		private Location m_location;
+		private bool m_fetchedSource;
+		private string m_sourceFile;
+		#endregion
 	}
 }

@@ -34,7 +34,7 @@ using System.Text;
 
 namespace ObjectModel
 {
-	internal sealed class Objects : IDatabase, IObjectModel, IOpened, IObserver
+	internal sealed class Objects : IDatabase, IObjectModel, IOpened
 	{
 		public void Instantiated(Boss boss)
 		{
@@ -55,22 +55,6 @@ namespace ObjectModel
 		{
 			string path = Populate.GetDatabasePath(m_boss);
 			m_database = new Database(path, "ObjectModel-" + Path.GetFileNameWithoutExtension(path));
-			
-			Broadcaster.Register("mono_root changed", this);
-		}
-		
-		public void OnBroadcast(string name, object value)
-		{
-			switch (name)
-			{
-				case "mono_root changed":
-					DoMonoRootChanged(name, value);
-					break;
-					
-				default:
-					Contract.Assert(false, "bad name: " + name);
-					break;
-			}
 		}
 		
 		public TypeInfo[] FindTypes(string name, int max)
@@ -338,49 +322,17 @@ namespace ObjectModel
 			return result;
 		}
 		
-		private void DoMonoRootChanged(string name, object value)
-		{
-			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
-			m_monoRoot = defaults.objectForKey(NSString.Create("mono_root")).To<NSString>().description();
-			
-			if (!Directory.Exists(Path.Combine(m_monoRoot, "mcs")))
-			{
-				NSString title = NSString.Create("Mono root appears invalid.");
-				NSString message = NSString.Create("It does not contain an 'mcs' directory.");
-				Unused.Value = Functions.NSRunAlertPanel(title, message);
-			}
-		}
-		
-		// If users have the mono source, but are using the mono from the installer then
-		// the paths in the gac's mdb files will be wrong. So, we fix them up here.
 		private string DoGetPath(string path)
 		{
-			// Pre-built mono files will look like "/private/tmp/monobuild/build/BUILD/mono-2.2/mcs/class/corlib/System.IO/File.cs"
-			// Mono_root will usually look like "/foo/mono-2.2".
-			if (!File.Exists(path))
-			{
-				if (m_monoRoot == null)
-					DoMonoRootChanged("mono_root changed", null);
-				
-				if (m_monoRoot != null)
-				{
-					int i = path.IndexOf("/mcs/");
-					if (i >= 0)
-					{
-						string temp = path.Substring(i + 1);
-						path = Path.Combine(m_monoRoot, temp);
-					}
-				}
-			}
-			
-			return path;
+			Boss boss = Gear.ObjectModel.Create("Application");
+			var mono = boss.Get<IMono>();
+			return mono.GetPath(path);
 		}
 		#endregion
 
 		#region Fields 
 		private Boss m_boss;
 		private Database m_database;
-		private string m_monoRoot;
 		#endregion
 	}
 }	

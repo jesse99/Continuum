@@ -1,4 +1,8 @@
 <Bosses namespaces = "Gear Shared ObjectModel">
+	<Extend name = "Application">
+		<Implementation interfaces = "IMono" name = "Mono"/>
+	</Extend>
+	
 	<Extend name = "DirectoryEditor">
 		<Implementation interfaces = "IDatabase IObjectModel +IOpened" name = "Objects"/>
 		<Implementation interfaces = "IInterface +IOpened +IShutdown" name = "Populate"/>
