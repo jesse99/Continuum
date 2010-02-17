@@ -32,11 +32,12 @@ namespace Disassembler
 	[ExportClass("NamespaceItem", "AssemblyItem")]
 	internal sealed class NamespaceItem : AssemblyItem
 	{
-		public NamespaceItem(string ns) : base(NSObject.AllocAndInitInstance("NamespaceItem"))
+		public NamespaceItem(string ns, string assemblyPath) : base(NSObject.AllocAndInitInstance("NamespaceItem"))
 		{
 			Contract.Requires(ns != null, "ns is null");
 			
 			m_namespace = ns;
+			m_assemblyPath = assemblyPath;
 		}
 		
 		public string Namespace
@@ -48,7 +49,7 @@ namespace Disassembler
 		{
 			Contract.Requires(type != null, "type is null");
 			
-			var item = new TypeItem(type);
+			var item = new TypeItem(type, m_assemblyPath);
 			m_types.Add(item);
 		}
 		
@@ -106,27 +107,29 @@ namespace Disassembler
 		#region Fields
 		private string m_namespace;
 		private List<TypeItem> m_types = new List<TypeItem>();
+		private string m_assemblyPath;
 		#endregion
 	}
 	
 	[ExportClass("TypeItem", "AssemblyItem")]
 	internal sealed class TypeItem : AssemblyItem
 	{
-		public TypeItem(TypeDefinition type) : base(NSObject.AllocAndInitInstance("TypeItem"))
+		public TypeItem(TypeDefinition type, string assemblyPath) : base(NSObject.AllocAndInitInstance("TypeItem"))
 		{
 			Contract.Requires(type != null, "type is null");
 			
 			m_type = type;
+			m_assemblyPath = assemblyPath;
 			
 			foreach (MethodDefinition method in type.Constructors)
 			{
-				var item = new MethodItem(method);
+				var item = new MethodItem(method, m_assemblyPath);
 				m_methods.Add(item);
 			}
 			
 			foreach (MethodDefinition method in type.Methods)
 			{
-				var item = new MethodItem(method);
+				var item = new MethodItem(method, m_assemblyPath);
 				m_methods.Add(item);
 			}
 		}
@@ -210,7 +213,7 @@ namespace Disassembler
 		
 		public override string GetText()
 		{
-			return m_type.Disassemble();
+			return m_type.Disassemble(m_assemblyPath);
 		}
 		
 		public override AssemblyItem GetChild(int index)
@@ -221,17 +224,19 @@ namespace Disassembler
 		#region Fields
 		private TypeDefinition m_type;
 		private List<MethodItem> m_methods = new List<MethodItem>();
+		private string m_assemblyPath;
 		#endregion
 	}
 	
 	[ExportClass("MethodItem", "AssemblyItem")]
 	internal sealed class MethodItem : AssemblyItem
 	{
-		public MethodItem(MethodDefinition method) : base(NSObject.AllocAndInitInstance("MethodItem"))
+		public MethodItem(MethodDefinition method, string assemblyPath) : base(NSObject.AllocAndInitInstance("MethodItem"))
 		{
 			Contract.Requires(method != null, "method is null");
 			
 			m_method = method;
+			m_assemblyPath = assemblyPath;
 			m_label = method.Name;
 		}
 		
@@ -300,7 +305,7 @@ namespace Disassembler
 		
 		public override string GetText()
 		{
-			return m_method.Disassemble();
+			return m_method.Disassemble(m_assemblyPath);
 		}
 		
 		public override AssemblyItem GetChild(int index)
@@ -364,6 +369,7 @@ namespace Disassembler
 		#region Fields
 		private MethodDefinition m_method;
 		private string m_label;
+		private string m_assemblyPath;
 		#endregion
 	}
 	

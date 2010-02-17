@@ -114,7 +114,7 @@ namespace Disassembler
 			return null;
 		}
 		
-		private IEnumerable<AssemblyDefinition> DoGetLocalAssemblies()
+		private IEnumerable<KeyValuePair<string, AssemblyDefinition>> DoGetLocalAssemblies()
 		{
 			var paths = new List<string>();
 			
@@ -142,7 +142,7 @@ namespace Disassembler
 			{
 				AssemblyDefinition assembly = DoLoadAssembly(path);
 				if (assembly != null)
-					yield return assembly;
+					yield return new KeyValuePair<string, AssemblyDefinition>(path, assembly);
 			}
 		}
 		
@@ -173,16 +173,16 @@ namespace Disassembler
 		
 		private void DoDisassembleType(CsType type)
 		{
-			foreach (AssemblyDefinition assembly in DoGetLocalAssemblies())
+			foreach (KeyValuePair<string, AssemblyDefinition> entry in DoGetLocalAssemblies())
 			{
 				string name = type.FullName;
 				if (type.GenericArguments != null)
 					name += "`" + (name.Count(c => c == ',') + 1);
 				
-				TypeDefinition td = assembly.MainModule.Types[name];
+				TypeDefinition td = entry.Value.MainModule.Types[name];
 				if (td != null)
 				{
-					string text = td.Disassemble();
+					string text = td.Disassemble(entry.Key);
 					DoOpen(td.Name, text);
 					return;
 				}
@@ -195,9 +195,9 @@ namespace Disassembler
 		// and constructors too.
 		private void DoDisassembleMethod(CsMethod method)
 		{
-			foreach (AssemblyDefinition assembly in DoGetLocalAssemblies())
+			foreach (KeyValuePair<string, AssemblyDefinition> entry in DoGetLocalAssemblies())
 			{
-				TypeDefinition td = assembly.MainModule.Types[method.DeclaringType.FullName];
+				TypeDefinition td = entry.Value.MainModule.Types[method.DeclaringType.FullName];
 				if (td != null)
 				{
 					bool found = false;
@@ -206,7 +206,7 @@ namespace Disassembler
 					{
 						if (candidate.Parameters.Count == method.Parameters.Length)
 						{
-							string text = candidate.Disassemble();
+							string text = candidate.Disassemble(entry.Key);
 							DoOpen(method.Name, text);
 							found = true;
 						}

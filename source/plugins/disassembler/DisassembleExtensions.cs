@@ -33,16 +33,17 @@ namespace Disassembler
 {
 	internal static class DisassembleExtensions
 	{
-		public static string Disassemble(this TypeDefinition type)
+		public static string Disassemble(this TypeDefinition type, string assemblyPath)
 		{
 			var builder = new StringBuilder();
 			
 			DoAppendTypeHeader(builder, type);
 			builder.AppendLine();
 			
+			DateTime atime = assemblyPath != null && System.IO.File.Exists(assemblyPath) ? System.IO.File.GetLastWriteTime(assemblyPath) : DateTime.MaxValue;
 			for (int i = 0; i < type.Constructors.Count; ++i)
 			{
-				DoAppendMethod(builder, type.Constructors[i]);
+				DoAppendMethod(builder, type.Constructors[i], atime);
 				
 				if (i + 1 < type.Constructors.Count || type.Methods.Count > 0 || type.Fields.Count > 0)
 				{
@@ -53,7 +54,7 @@ namespace Disassembler
 			
 			for (int i = 0; i < type.Methods.Count; ++i)
 			{
-				DoAppendMethod(builder, type.Methods[i]);
+				DoAppendMethod(builder, type.Methods[i], atime);
 				
 				if (i + 1 < type.Methods.Count || type.Fields.Count > 0)
 				{
@@ -73,11 +74,12 @@ namespace Disassembler
 			return builder.ToString();
 		}
 		
-		public static string Disassemble(this MethodDefinition method)
+		public static string Disassemble(this MethodDefinition method, string assemblyPath)
 		{
 			var builder = new StringBuilder();
 			
-			DoAppendMethod(builder, method);
+			DateTime atime = assemblyPath != null && System.IO.File.Exists(assemblyPath) ? System.IO.File.GetLastWriteTime(assemblyPath) : DateTime.MaxValue;
+			DoAppendMethod(builder, method, atime);
 				
 			return builder.ToString();
 		}
@@ -184,16 +186,16 @@ namespace Disassembler
 				DoAppendGenericParams(builder, type.GenericParameters);
 		}
 		
-		public static void DoAppendMethod(StringBuilder builder,  MethodDefinition method)
+		private static void DoAppendMethod(StringBuilder builder,  MethodDefinition method, DateTime atime)
 		{
 			DoAppendMethodHeader(builder, method);
 			if (method.HasBody)
-				DoAppendBody(builder, method);
+				DoAppendBody(builder, method, atime);
 		}
 		
 		private const int PdbHiddenLine = 0xFEEFEE;
 		
-		private static string[] DoGetSource(MethodDefinition method)
+		private static string[] DoGetSource(MethodDefinition method, DateTime atime)
 		{
 			string[] source = null;
 			
@@ -204,12 +206,14 @@ namespace Disassembler
 			
 			// Load the source. TODO: Document has a Hash property that we could use
 			// to check to see if the source file matches the file used to compile the assembly
-			// but it does not appear to be set with gmcs 2.4.
+			// but it does not appear to be set with gmcs 2.6.
 			if (ins != null && ins.SequencePoint.Document != null && ins.SequencePoint.Document.Url != null)
 			{
 				try
 				{
-					source = System.IO.File.ReadAllLines(ins.SequencePoint.Document.Url);
+					DateTime stime = System.IO.File.GetLastWriteTime(ins.SequencePoint.Document.Url);
+					if (stime <= atime)
+						source = System.IO.File.ReadAllLines(ins.SequencePoint.Document.Url);
 				}
 				catch
 				{
@@ -219,9 +223,9 @@ namespace Disassembler
 			return source;
 		}
 		
-		private static void DoAppendBody(StringBuilder builder, MethodDefinition method)
+		private static void DoAppendBody(StringBuilder builder, MethodDefinition method, DateTime atime)
 		{
-			string[] source = DoGetSource(method);
+			string[] source = DoGetSource(method, atime);
 			
 			// The tab stops in the disassembly are unusual so the source code looks better
 			// if we get rid of tabs.

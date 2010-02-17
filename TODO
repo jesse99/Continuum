@@ -54,17 +54,17 @@ public abstract class Mono.Debugger.EventRequest
 	public sealed class Mono.Debugger.StepEventRequest
 	
 
+
 * Show the source file and line of the code we're stepping through:
-	- what if the file has changed since it was compiled into the assembly? can we use something
-	   better than mod times?
 	- should not be marked as dirty when replacing text
-	- use a green > to mark the current insruction pointer
+	- use a green > to mark the current instruction pointer
 	- re-open the window on stepping if the user closed it
 	- support breakpoints
 * Mention can right click on completion window.
 * Mention useful to download mono source (and set the associated pref):
 	- dont need to compile
 	- allows source level debugging, context menus allow you to go to definitions for mono methods
+* May want to mention short form too.
 * Look at the soft debugger in mono 2.6	:
 	- work on a gui, create a text document to reuse (might want to extend the text boss)
 	- might want to allow ToString specifiers to be used (could even deduce them)

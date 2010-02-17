@@ -63,9 +63,9 @@ namespace Disassembler
 			{
 				// Note that we have to use the path instead of data so that Cecil knows
 				// where to look for the mdb file.
-				string path = fileURL().path().description();
+				m_assemblyPath = fileURL().path().description();
 				
-				m_assembly = AssemblyFactory.GetAssembly(path);
+				m_assembly = AssemblyFactory.GetAssembly(m_assemblyPath);
 				DoLoadSymbols(m_assembly);
 				DoGetNamespaces(m_assembly);
 				
@@ -146,7 +146,7 @@ namespace Disassembler
 					NamespaceItem item = m_namespaces.Find(n => n.Namespace == ns);
 					if (item == null)
 					{
-						item = new NamespaceItem(ns);
+						item = new NamespaceItem(ns, m_assemblyPath);
 						m_namespaces.Add(item);
 					}
 					
@@ -161,6 +161,7 @@ namespace Disassembler
 		
 		#region Fields
 		private AssemblyDefinition m_assembly;
+		private string m_assemblyPath;
 		private ResourcesItem m_resources = new ResourcesItem().Retain();
 		private List<NamespaceItem> m_namespaces = new List<NamespaceItem>();
 		#endregion

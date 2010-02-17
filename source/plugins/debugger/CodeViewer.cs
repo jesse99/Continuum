@@ -162,6 +162,17 @@ namespace Debugger
 			
 			if (m_currentView != m_context.SourceFile)
 			{
+				var overlay = m_boss.Get<ITextOverlay>();
+				if (DoSourceIsOutOfDate())
+				{
+					overlay.Text = "Source is newer than the assembly.";
+					overlay.Color = NSColor.colorWithDeviceRed_green_blue_alpha(1.0f, 0.0f, 0.0f, 0.4f);
+				}
+				else
+				{
+					overlay.Text = null;
+				}
+				
 				var text = m_boss.Get<IText>();
 				text.Replace(System.IO.File.ReadAllText(m_context.SourceFile));
 				m_currentView = m_context.SourceFile;
@@ -180,12 +191,15 @@ namespace Debugger
 			
 			if (m_currentView != name)
 			{
+				var overlay = m_boss.Get<ITextOverlay>();
+				overlay.Text = null;
+				
 				Boss boss = ObjectModel.Create("Disassembler");
 				var disassembler = boss.Get<IDisassembler>();
 				
 				var text = m_boss.Get<IText>();
 				m_currentView = name;
-				string source = disassembler.Disassemble(context.Method.Metadata);
+				string source = disassembler.Disassemble(context.Method.Metadata, m_context.Method.DeclaringType.Assembly.Location);
 				DoBuildLineTable(source);
 				
 				text.Replace(source);
@@ -206,12 +220,22 @@ namespace Debugger
 			
 			if (m_currentView != name)
 			{
+				var overlay = m_boss.Get<ITextOverlay>();
+				overlay.Text = null;
+				
 				m_currentView = name;
 				m_lines.Clear();
 				
 				var text = m_boss.Get<IText>();
 				text.Replace("...");
 			}
+		}
+		
+		private bool DoSourceIsOutOfDate()
+		{
+			DateTime stime = System.IO.File.GetLastWriteTime(m_context.SourceFile);
+			DateTime atime = System.IO.File.GetLastWriteTime(m_context.Method.DeclaringType.Assembly.Location);
+			return stime > atime;
 		}
 		
 		private void DoCacheAssembly()

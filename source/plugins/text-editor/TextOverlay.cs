@@ -20,16 +20,40 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
-using Mono.Cecil;
+using MCocoa;
+using Shared;
+using System;
 
-namespace Shared
+namespace TextEditor
 {
-	// Primary interface on the Disassembler boss.
-	public interface IDisassembler : IInterface
+	internal sealed class TextOverlay : ITextOverlay
 	{
-		// assemblyPath is used to determine if source code should be included.
-		string Disassemble(TypeDefinition type, string assemblyPath);
+		public void Instantiated(Boss boss)
+		{
+			m_boss = boss;
+		}
 		
-		string Disassemble(MethodDefinition method, string assemblyPath);
+		public Boss Boss
+		{
+			get {return m_boss;}
+		}
+		
+		public string Text
+		{
+			get {return m_text;}
+			set {m_text = value;}
+		}
+		
+		public NSColor Color
+		{
+			get {return m_color;}
+			set {m_color = value.Retain();}
+		}
+		
+		#region Fields
+		private Boss m_boss;
+		private string m_text;
+		private NSColor m_color = NSColor.blackColor().Retain();
+		#endregion
 	}
 }

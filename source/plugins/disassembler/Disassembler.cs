@@ -38,14 +38,14 @@ namespace Disassembler
 			get {return m_boss;}
 		}
 		
-		public string Disassemble(TypeDefinition type)
+		public string Disassemble(TypeDefinition type, string assemblyPath)
 		{
-			return type.Disassemble();
+			return type.Disassemble(assemblyPath);
 		}
 		
-		public string Disassemble(MethodDefinition method)
+		public string Disassemble(MethodDefinition method, string assemblyPath)
 		{
-			return method.Disassemble();
+			return method.Disassemble(assemblyPath);
 		}
 		
 		#region Fields 

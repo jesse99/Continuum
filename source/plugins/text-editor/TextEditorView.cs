@@ -1,4 +1,4 @@
-// Copyright (C) 2008-2009 Jesse Jones
+// Copyright (C) 2008-2010 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -51,6 +51,28 @@ namespace TextEditor
 		{
 			m_autoComplete = null;		// note that these won't be GCed if we don't null them out
 			m_boss = null;
+		}
+		
+		public new void drawRect(NSRect dirtyRect)
+		{
+			SuperCall(NSTextView.Class, "drawRect:", dirtyRect);
+			
+			if (m_boss != null)
+			{
+				var overlay = m_boss.Get<ITextOverlay>();
+				if (overlay.Text != null)
+				{
+					NSRect rect = visibleRect();
+					DoCacheOverlay(overlay, rect);
+					
+					if (m_overlay != null)
+					{
+						NSPoint center = rect.Center;
+						NSRect temp = new NSRect(center.x - m_overlaySize.width/2, center.y - m_overlaySize.height/2, m_overlaySize.width, m_overlaySize.height);
+						m_overlay.drawInRect(temp);
+					}
+				}
+			}
 		}
 		
 		private const int TabKey = 0x30;
@@ -699,6 +721,54 @@ namespace TextEditor
 			NSPoint viewLoc = convertPointFromBase(baseLoc);
 			return (int) characterIndexForInsertionAtPoint(viewLoc);
 		}
+		
+		private void DoCacheOverlay(ITextOverlay overlay, NSRect rect)
+		{
+			if (overlay.Text != m_overlayText || rect.size != m_overlayRect.size)
+			{
+				if (m_overlay != null)
+				{
+					m_overlay.release();
+					m_overlay = null;
+				}
+				
+				DoFindLargestFont(overlay, rect);
+				m_overlayText = overlay.Text;
+				m_overlayRect = rect;
+			}
+		}
+		
+		private void DoFindLargestFont(ITextOverlay overlay, NSRect rect)
+		{
+			float[] candidates = new float[]{12.0f, 14.0f, 18.0f, 24.0f, 36.0f, 48.0f, 64.0f, 72.0f, 06.0f, 144.0f, 288.0f, 0.0f};
+			
+			int i = 0;
+			while (candidates[i + 1] != 0.0f)
+			{
+				var attrs = NSMutableDictionary.Create();
+				NSFont font = NSFont.fontWithName_size(NSString.Create("Verdana"), candidates[i + 1]);
+				attrs.setObject_forKey(font, Externs.NSFontAttributeName);
+				
+				attrs.setObject_forKey(overlay.Color, Externs.NSForegroundColorAttributeName);
+				
+				NSMutableParagraphStyle style = NSMutableParagraphStyle.Create();
+				style.setAlignment(Enums.NSCenterTextAlignment);
+				attrs.setObject_forKey(style, Externs.NSParagraphStyleAttributeName);
+				
+				var candidate = NSAttributedString.Create(overlay.Text, attrs);
+				NSSize size = candidate.size();
+				if (size.width <= rect.size.width && size.height <= rect.size.height)
+				{
+					m_overlay = candidate.Retain();
+					m_overlaySize = size;
+					++i;
+				}
+				else
+				{
+					break;
+				}
+			}
+		}
 		#endregion
 		
 		#region Fields
@@ -707,6 +777,11 @@ namespace TextEditor
 		private string m_selection;
 		private List<Entry> m_entries = new List<Entry>();
 		private IAutoComplete m_autoComplete;
+		
+		private string m_overlayText;
+		private NSRect m_overlayRect;
+		private NSSize m_overlaySize;
+		private NSAttributedString m_overlay;
 		#endregion
 	}
 }
