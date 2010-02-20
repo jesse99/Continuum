@@ -125,6 +125,7 @@ namespace Debugger
 			if (state == State.Running)
 			{
 				m_context = null;
+				DoSetInstructionPointer(-1);
 			}
 			else if (state != State.Paused)
 			{
@@ -182,6 +183,8 @@ namespace Debugger
 			
 			var editor = m_boss.Get<ITextEditor>();
 			editor.ShowLine(m_context.Location.LineNumber, -1, 8);
+			
+			DoSetInstructionPointer(m_context.Location.LineNumber);
 		}
 		
 		private void DoShowIL(Context context)
@@ -211,6 +214,12 @@ namespace Debugger
 			{
 				var editor = m_boss.Get<ITextEditor>();
 				editor.ShowLine(line, -1, 8);
+			
+				DoSetInstructionPointer(line);
+			}
+			else
+			{
+				DoSetInstructionPointer(-1);
 			}
 		}
 		private void DoShowNothing(Context context)
@@ -228,6 +237,7 @@ namespace Debugger
 				
 				var text = m_boss.Get<IText>();
 				text.Replace("...");
+				DoSetInstructionPointer(-1);
 			}
 		}
 		
@@ -299,6 +309,29 @@ namespace Debugger
 				window.Window.windowController().synchronizeWindowTitleWithDocumentName();
 			}
 		}
+		
+		private void DoSetInstructionPointer(int line)
+		{
+			if (m_ipAnnotation != null)
+			{
+				m_ipAnnotation.Close();
+				m_ipAnnotation = null;
+			}
+			
+			if (line > 1)
+			{
+				var metrics = m_boss.Get<ITextMetrics>();
+				var range = new NSRange(metrics.GetLineOffset(line - 1), 1);
+				
+				var editor = m_boss.Get<ITextEditor>();
+				m_ipAnnotation = editor.GetAnnotation(range);
+				
+				m_ipAnnotation.BackColor = NSColor.greenColor();
+				m_ipAnnotation.Text = ">";
+				m_ipAnnotation.Draggable = false;
+				m_ipAnnotation.Visible = true;
+			}
+		}
 		#endregion
 		
 		#region Fields 
@@ -309,6 +342,8 @@ namespace Debugger
 		private string m_currentView;
 		private Context m_context;
 		private Dictionary<long, int> m_lines = new Dictionary<long, int>();	// il offset => line number
+		
+		private ITextAnnotation m_ipAnnotation;
 		#endregion
 	}
 }

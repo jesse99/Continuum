@@ -893,6 +893,11 @@ namespace TextEditor
 			m_decPopup.Value.Call("textSelectionChanged");
 		}
 		
+		public TextMetrics Metrics
+		{
+			get {return m_metrics;}
+		}
+		
 		#region Private Methods
 		private ILanguage DoFindLanguage()
 		{

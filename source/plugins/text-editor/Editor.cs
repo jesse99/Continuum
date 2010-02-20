@@ -32,7 +32,7 @@ using System.Runtime.InteropServices;
 
 namespace TextEditor
 {
-	internal sealed class Editor : IWindow, ITextEditor, IText, IReload
+	internal sealed class Editor : IWindow, ITextEditor, IText, IReload, ITextMetrics
 	{
 		public void Instantiated(Boss boss)
 		{
@@ -321,6 +321,8 @@ namespace TextEditor
 			
 			if (!NSObject.IsNullOrNil(controller.document()))
 				controller.OnPathChanged();			// bit of a hack to allow the debugger to switch languages
+				
+			controller.document().updateChangeCount(Enums.NSChangeCleared);
 		}
 		
 		public void Replace(string replacement, int index, int length, string undoText)
@@ -343,6 +345,28 @@ namespace TextEditor
 		{
 			TextController controller = (TextController) m_window.windowController();
 			controller.ShowSelection();
+		}
+		
+		// ITextMetrics
+		public int LineCount
+		{
+			get
+			{
+				TextController controller = (TextController) m_window.windowController();
+				return controller.Metrics.LineCount;
+			}
+		}
+		
+		public int GetLine(int offset)
+		{
+			TextController controller = (TextController) m_window.windowController();
+			return controller.Metrics.GetLine(offset);
+		}
+		
+		public int GetLineOffset(int line)
+		{
+			TextController controller = (TextController) m_window.windowController();
+			return controller.Metrics.GetLineOffset(line);
 		}
 		
 		#region Private Methods

@@ -64,6 +64,8 @@ namespace Shared
 		// The text the annotation is attached to.
 		NSRange Anchor {get;}
 		
+		bool Draggable {get; set;}
+		
 		// The color of the rounded rectangle.
 		NSColor BackColor {get; set;}
 		

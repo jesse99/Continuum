@@ -52,13 +52,9 @@ public abstract class Mono.Debugger.EventRequest
 	public sealed class Mono.Debugger.MethodEntryEventRequest
 	public sealed class Mono.Debugger.MethodExitEventRequest
 	public sealed class Mono.Debugger.StepEventRequest
-	
 
 
-* Show the source file and line of the code we're stepping through:
-	- should not be marked as dirty when replacing text
-	- use a green > to mark the current instruction pointer
-	- re-open the window on stepping if the user closed it
+* Show the source file and line of the code we're stepping through:	
 	- support breakpoints
 * Mention can right click on completion window.
 * Mention useful to download mono source (and set the associated pref):
@@ -84,6 +80,7 @@ public abstract class Mono.Debugger.EventRequest
 	- make sure it works ok if the exe and mdb are out of sync
 	- probably need to somehow prevent debugging two apps at once (or fix the menu handler
 	  goo so that that would work)
+* Option-arrow is skipping over periods.
 * Rewrite the readme using rtf:
 	- add some sort of tips and tricks section
 	- mention how powerful command-D is

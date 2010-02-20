@@ -178,7 +178,10 @@ namespace TextEditor
 		// This is lame but the normal cursor handling goo doesn't work with child windows...
 		public new void mouseMoved(NSEvent theEvent)
 		{
-			NSCursor.openHandCursor().set();
+			if (Draggable)
+				NSCursor.openHandCursor().set();
+			else
+				NSCursor.arrowCursor().set();
 		}
 		
 		public NSMenu getContextMenu()
@@ -262,6 +265,12 @@ namespace TextEditor
 				Contract.Requires(IsValid, "anchor is invalid");
 				return new NSRange(m_range.Index, m_range.Length);
 			}
+		}
+		
+		public bool Draggable
+		{
+			get {return isMovableByWindowBackground();}
+			set {setMovableByWindowBackground(value);}
 		}
 		
 		public NSColor BackColor
@@ -362,27 +371,35 @@ namespace TextEditor
 		
 		public new void mouseDown(NSEvent theEvent)
 		{
-			m_text.showFindIndicatorForRange(Anchor);
+			if (Draggable)
+				m_text.showFindIndicatorForRange(Anchor);
 			SuperCall(NSWindow.Class, "mouseDown:", theEvent);
 		}
 		
 		public new void mouseUp(NSEvent theEvent)
 		{
-			NSRect currentFrame = frame();
-			NSRect content = m_parent.contentRectForFrameRect(m_parent.frame());
-			if (content.Intersects(currentFrame))
+			if (Draggable)
 			{
-				NSRect baseFrame = DoGetFrame(currentFrame.size);
-				m_offset = currentFrame.origin - baseFrame.origin;
-			
-				SuperCall(NSWindow.Class, "mouseUp:", theEvent);
+				NSRect currentFrame = frame();
+				NSRect content = m_parent.contentRectForFrameRect(m_parent.frame());
+				if (content.Intersects(currentFrame))
+				{
+					NSRect baseFrame = DoGetFrame(currentFrame.size);
+					m_offset = currentFrame.origin - baseFrame.origin;
+				
+					SuperCall(NSWindow.Class, "mouseUp:", theEvent);
+				}
+				else
+				{
+					Close();
+					
+					NSPoint centerPt = currentFrame.Center;
+					Functions.NSShowAnimationEffect(Enums.NSAnimationEffectPoof, centerPt);
+				}
 			}
 			else
 			{
-				Close();
-				
-				NSPoint centerPt = currentFrame.Center;
-				Functions.NSShowAnimationEffect(Enums.NSAnimationEffectPoof, centerPt);
+				SuperCall(NSWindow.Class, "mouseUp:", theEvent);
 			}
 		}
 		

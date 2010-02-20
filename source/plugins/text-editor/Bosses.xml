@@ -15,7 +15,7 @@
 	</Extend>
 	
 	<Extend name = "TextEditor">
-		<Implementation interfaces = "IWindow ITextEditor IText IReload" name = "Editor"/>
+		<Implementation interfaces = "IWindow ITextEditor IText IReload ITextMetrics" name = "Editor"/>
 		<Implementation interfaces = "ISearchTokens" name = "SearchTokens"/>
 		<Implementation interfaces = "ITextOverlay" name = "TextOverlay"/>
 	</Extend>
