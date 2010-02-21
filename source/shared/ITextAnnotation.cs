@@ -19,6 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear;
 using MCocoa;
 using System;
 using System.Collections.Generic;
@@ -52,13 +53,18 @@ namespace Shared
 	
 	// A window which looks like a rounded rectangle with a label attached to
 	// a live index in a text window.
-	public interface ITextAnnotation
+	public interface ITextAnnotation	// note that this is not a Gear interface
 	{
+		// Text editor boss.
+		Boss Parent {get;}
+		
 		// Shows/hides the window.
 		bool Visible {get; set;}
 		
 		void Close();
 		
+		// Returns true if the annotation/text window was closed or the anchor
+		// text was deleted.
 		bool IsValid {get;}
 		
 		// The text the annotation is attached to.

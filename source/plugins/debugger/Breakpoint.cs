@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Jesse Jones
+// Copyright (C) 2010 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -19,26 +19,28 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-using Gear;
+using Gear.Helpers;
 using System;
 
-namespace Shared
-{	
-	// Used to attach menu handlers to objects in the responder chain. Currently these
-	// can be attached to the app via appHandle, the directory editor via dirHandler,
-	// or text editors via textHandler.
-	public interface IMenuHandler : IInterface
+namespace Debugger
+{
+	// A breakpoint added by the user. Note that this does not become an active
+	// breakpoint until the debugger loads a type with a method defined on the
+	// specified file and line.
+	internal sealed class Breakpoint
 	{
-		void Handle(int tag);
+		public Breakpoint(string file, int line)
+		{
+			Contract.Requires(!string.IsNullOrEmpty(file), "file is null or empty");
+			Contract.Requires(line > 0, "line is not positive");
+			
+			File = file;
+			Line = line;
+		}
 		
-		bool IsEnabled(int tag);
+		// Full path to the file.
+		public string File {get; private set;}
 		
-		// Handler is always enabled.
-		void Register(object owner, int tag, Action handler);
-		
-		void Register(object owner, int tag, Action handler, Func<bool> enabler);
-		
-		// Removes every handler owner registered.
-		void Deregister(object owner);
+		public int Line {get; private set;}
 	}
 }

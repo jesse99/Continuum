@@ -1295,6 +1295,26 @@
 									<reference key="NSMixedImage" ref="851651225"/>
 									<int key="NSTag">64</int>
 								</object>
+								<object class="NSMenuItem" id="679224130">
+									<reference key="NSMenu" ref="475939574"/>
+									<bool key="NSIsDisabled">YES</bool>
+									<bool key="NSIsSeparator">YES</bool>
+									<string key="NSTitle"/>
+									<string key="NSKeyEquiv"/>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="357837154"/>
+									<reference key="NSMixedImage" ref="851651225"/>
+								</object>
+								<object class="NSMenuItem" id="183031365">
+									<reference key="NSMenu" ref="475939574"/>
+									<string key="NSTitle">Toggle Breakpoint</string>
+									<string key="NSKeyEquiv">t</string>
+									<int key="NSKeyEquivModMask">1572864</int>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="357837154"/>
+									<reference key="NSMixedImage" ref="851651225"/>
+									<int key="NSTag">65</int>
+								</object>
 							</object>
 						</object>
 					</object>
@@ -2261,6 +2281,14 @@
 						<reference key="destination" ref="241905290"/>
 					</object>
 					<int key="connectionID">693</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">textHandler:</string>
+						<reference key="source" ref="1014"/>
+						<reference key="destination" ref="183031365"/>
+					</object>
+					<int key="connectionID">698</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -3326,6 +3354,8 @@
 							<reference ref="857686872"/>
 							<reference ref="419157431"/>
 							<reference ref="241905290"/>
+							<reference ref="679224130"/>
+							<reference ref="183031365"/>
 						</object>
 						<reference key="parent" ref="395242801"/>
 					</object>
@@ -3347,6 +3377,16 @@
 					<object class="IBObjectRecord">
 						<int key="objectID">684</int>
 						<reference key="object" ref="241905290"/>
+						<reference key="parent" ref="475939574"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">694</int>
+						<reference key="object" ref="679224130"/>
+						<reference key="parent" ref="475939574"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">695</int>
+						<reference key="object" ref="183031365"/>
 						<reference key="parent" ref="475939574"/>
 					</object>
 				</object>
@@ -3580,6 +3620,8 @@
 					<string>682.IBPluginDependency</string>
 					<string>683.IBPluginDependency</string>
 					<string>684.IBPluginDependency</string>
+					<string>694.IBPluginDependency</string>
+					<string>695.IBPluginDependency</string>
 					<string>72.IBPluginDependency</string>
 					<string>72.ImportedFromIB2</string>
 					<string>73.IBPluginDependency</string>
@@ -3856,7 +3898,9 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{971, 839}, {162, 83}}</string>
+					<string>{{971, 809}, {225, 113}}</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -3906,7 +3950,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">693</int>
+			<int key="maxID">698</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -4024,10 +4068,12 @@
 							<string>stepInside:</string>
 							<string>stepOut:</string>
 							<string>stepOver:</string>
+							<string>textHandler:</string>
 							<string>toggleWordWrap:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>

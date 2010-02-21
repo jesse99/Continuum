@@ -104,6 +104,11 @@ namespace Debugger
 			DoShowIL(m_context);
 		}
 		
+		public string Path
+		{
+			get {return m_path;}
+		}
+		
 		public string GetTitle(string displayName)
 		{
 			return "[" + m_title + "]";
@@ -158,8 +163,8 @@ namespace Debugger
 		
 		private void DoShowSource()
 		{
-			string file = System.IO.Path.GetFileName(m_context.SourceFile);
-			DoSetTitle(file);
+			m_path = System.IO.Path.GetFileName(m_context.SourceFile);
+			DoSetTitle(m_path);
 			
 			if (m_currentView != m_context.SourceFile)
 			{
@@ -191,6 +196,7 @@ namespace Debugger
 		{
 			string name = context.Method.FullName;
 			DoSetTitle(name);
+			m_path = null;
 			
 			if (m_currentView != name)
 			{
@@ -226,6 +232,7 @@ namespace Debugger
 		{
 			string name = context.Method.FullName;
 			DoSetTitle(name);
+			m_path = null;
 			
 			if (m_currentView != name)
 			{
@@ -341,6 +348,7 @@ namespace Debugger
 		private string m_title = "[debug]";
 		private string m_currentView;
 		private Context m_context;
+		private string m_path;
 		private Dictionary<long, int> m_lines = new Dictionary<long, int>();	// il offset => line number
 		
 		private ITextAnnotation m_ipAnnotation;

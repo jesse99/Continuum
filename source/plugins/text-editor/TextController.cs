@@ -691,12 +691,27 @@ namespace TextEditor
 			get {return m_wordWrap;}
 		}
 		
+		public void textHandler(NSObject sender)
+		{
+			int tag = (int) sender.Call("tag");
+			
+			var handler = m_boss.Get<IMenuHandler>();
+			handler.Handle(tag);
+		}
+		
 		public bool validateUserInterfaceItem(NSObject item)
 		{
 			Selector sel = (Selector) item.Call("action");
 			
 			bool valid = false;
-			if (sel.Name == "shiftLeft:" || sel.Name == "shiftRight:")
+			if (sel.Name == "textHandler:")
+			{
+				int tag = (int) item.Call("tag");
+				
+				var handler = m_boss.Get<IMenuHandler>();
+				valid = handler.IsEnabled(tag);
+			}
+			else if (sel.Name == "shiftLeft:" || sel.Name == "shiftRight:")
 			{
 				NSRange range = m_textView.Value.selectedRange();
 				valid = range.length > 0 && m_textView.Value.isEditable();

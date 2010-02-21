@@ -52,10 +52,23 @@ public abstract class Mono.Debugger.EventRequest
 	public sealed class Mono.Debugger.MethodEntryEventRequest
 	public sealed class Mono.Debugger.MethodExitEventRequest
 	public sealed class Mono.Debugger.StepEventRequest
+	
+	array:forKey
+	setObject:forKey
 
-
-* Show the source file and line of the code we're stepping through:	
-	- support breakpoints
+* Show the source file and line of the code we're stepping through:
+	- Breakpoints should be on the app
+	- save the breakpoints in a pref
+	- anotation position often isn't quite right when the window is opened (altho it fixes itself on
+	  edits and maybe scrolling)
+	- might want to add less vertical space to annotations if none of the characters have descenders
+	- make sure prefs are saved even if the window is closed
+	- when a new text window is opened will need to create annotations
+	- build a list of resolved breakpoints as types are loaded
+	- make sure breakpoints can be set in the codeviewer window
+	- should be able to add breakpoints to IL
+* Change the tool so that it uses osascript which we can use to pass arguments into Continuum
+   for use when launching the debugee.
 * Mention can right click on completion window.
 * Mention useful to download mono source (and set the associated pref):
 	- dont need to compile

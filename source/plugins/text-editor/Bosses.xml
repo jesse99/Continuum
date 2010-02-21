@@ -18,5 +18,6 @@
 		<Implementation interfaces = "IWindow ITextEditor IText IReload ITextMetrics" name = "Editor"/>
 		<Implementation interfaces = "ISearchTokens" name = "SearchTokens"/>
 		<Implementation interfaces = "ITextOverlay" name = "TextOverlay"/>
+		<Implementation interfaces = "IMenuHandler" name = "MenuHandler"/>
 	</Extend>
 </Bosses>

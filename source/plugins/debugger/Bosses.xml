@@ -7,4 +7,8 @@
 	<Extend name = "TextEditorPlugin">
 		<Implementation interfaces = "IInterface +ITextContextCommands" name = "ContextMenu"/>
 	</Extend>
+	
+	<Extend name = "TextEditor">
+		<Implementation interfaces = "IInterface" name = "Breakpoints"/>
+	</Extend>
 </Bosses>

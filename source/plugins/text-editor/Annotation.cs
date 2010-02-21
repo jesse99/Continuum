@@ -19,6 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear;
 using Gear.Helpers;
 using MCocoa;
 using MObjc;
@@ -173,6 +174,11 @@ namespace TextEditor
 				this, "parentBoundsChanged:", Externs.NSViewBoundsDidChangeNotification, m_text.superview());
 			
 			m_range.Changed += this.DoRangeChanged;
+		}
+		
+		public Boss Parent
+		{
+			get {return m_editor.Boss;}
 		}
 		
 		// This is lame but the normal cursor handling goo doesn't work with child windows...
@@ -428,7 +434,7 @@ namespace TextEditor
 			// returns 0.0 so we can't use that to try to fix it up...
 			NSSize size = value.size();
 			size.width += 2*AnnotateView.LeftMargin;
-			if (value.length() > 0)
+			if (value.length() > 1)
 				size.width += 0.3f*size.width/value.length();		// size isn't always quite large enough to display all of the text without this, e.g. for String.IndexOf(char)
 			size.height = 2*AnnotateView.LeftMargin + m_fontHeight;
 			

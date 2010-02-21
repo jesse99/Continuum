@@ -38,5 +38,9 @@ namespace Debugger
 		void ShowSource();
 		
 		void ShowIL();
+		
+		// Full path to the file currently being viewed.
+		// May be null.
+		string Path {get;}
 	}
 }
