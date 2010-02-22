@@ -20,20 +20,12 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
-//using Gear.Helpers;
 using MCocoa;
-//using MObjc;
 using MObjc.Helpers;
-//using Mono.Cecil;
-//using Mono.Cecil.Binary;
 using Mono.Debugger;
 using Shared;
 using System;
-//using System.Diagnostics;
-//using System.Linq;
-//using System.Threading;
 using System.Collections.Generic;
-//using System.IO;
 
 namespace Debugger
 {
@@ -172,7 +164,7 @@ namespace Debugger
 				if (DoSourceIsOutOfDate())
 				{
 					overlay.Text = "Source is newer than the assembly.";
-					overlay.Color = NSColor.colorWithDeviceRed_green_blue_alpha(1.0f, 0.0f, 0.0f, 0.4f);
+					overlay.Color = NSColor.colorWithDeviceRed_green_blue_alpha(1.0f, 0.0f, 0.0f, 0.2f);
 				}
 				else
 				{

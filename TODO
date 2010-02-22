@@ -53,18 +53,9 @@ public abstract class Mono.Debugger.EventRequest
 	public sealed class Mono.Debugger.MethodExitEventRequest
 	public sealed class Mono.Debugger.StepEventRequest
 	
-	array:forKey
-	setObject:forKey
-
 * Show the source file and line of the code we're stepping through:
-	- Breakpoints should be on the app
-	- save the breakpoints in a pref
-	- anotation position often isn't quite right when the window is opened (altho it fixes itself on
-	  edits and maybe scrolling)
-	- might want to add less vertical space to annotations if none of the characters have descenders
-	- make sure prefs are saved even if the window is closed
-	- when a new text window is opened will need to create annotations
 	- build a list of resolved breakpoints as types are loaded
+	- make sure breakpoints work when inserting text above the breakpoint
 	- make sure breakpoints can be set in the codeviewer window
 	- should be able to add breakpoints to IL
 * Change the tool so that it uses osascript which we can use to pass arguments into Continuum
@@ -73,6 +64,23 @@ public abstract class Mono.Debugger.EventRequest
 * Mention useful to download mono source (and set the associated pref):
 	- dont need to compile
 	- allows source level debugging, context menus allow you to go to definitions for mono methods
+* Got a crash switching between different underline options for members:
+  at (wrapper managed-to-native) MObjc.Ffi.FfiCall (intptr,intptr,intptr,intptr,intptr&) <0x00004>
+  at (wrapper managed-to-native) MObjc.Ffi.FfiCall (intptr,intptr,intptr,intptr,intptr&) <0x00004>
+  at MObjc.Ffi.Call (intptr,intptr,intptr,MObjc.Helpers.PtrArray) [0x00006] in /Users/jessejones/Source/mobjc/source/Ffi.cs:91
+  at MObjc.Native.Invoke () [0x00020] in /Users/jessejones/Source/mobjc/source/Native.cs:106
+  at MObjc.Native.Call (intptr,string,object[]) [0x00090] in /Users/jessejones/Source/mobjc/source/Native.cs:135
+  at MObjc.NSObject.Call (string,object[]) [0x0003b] in /Users/jessejones/Source/mobjc/source/NSObject.cs:290
+  at App.PreferencesController.changeAttributes (MObjc.NSObject) [0x00000] in /Users/jessejones/Source/Continuum/source/plugins/app/PreferencesController.cs:233
+  at (wrapper runtime-invoke) <Module>.runtime_invoke_void__this___object (object,intptr,intptr,intptr) <IL 0x0001e, 0x00046>
+
+  at (wrapper managed-to-native) MObjc.DirectCalls.Calli (intptr,intptr,intptr&) <0x00004>
+  at (wrapper managed-to-native) MObjc.DirectCalls.Calli (intptr,intptr,intptr&) <0x00004>
+  at MObjc.NSObject.retainCount () [0x00032] in /Users/jessejones/Source/mobjc/source/NSObjectMethods.cs:240
+  at MObjc.NSObject.release () [0x00015] in /Users/jessejones/Source/mobjc/source/NSObjectMethods.cs:186
+  at App.PreferencesController.DoEditFont (string,string) [0x000bf] in /Users/jessejones/Source/Continuum/source/plugins/app/PreferencesController.cs:418
+  at App.PreferencesController.setPreprocessFont (MObjc.NSObject) [0x00000] in /Users/jessejones/Source/Continuum/source/plugins/app/PreferencesController.cs:190
+* Does setting the text color still work in prefs?
 * May want to mention short form too.
 * Look at the soft debugger in mono 2.6	:
 	- work on a gui, create a text document to reuse (might want to extend the text boss)

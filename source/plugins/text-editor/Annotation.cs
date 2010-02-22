@@ -118,7 +118,7 @@ namespace TextEditor
 	}
 	
 	[ExportClass("Annotation", "NSWindow", Outlets = "view")]
-	internal sealed class Annotation : NSWindow, ITextAnnotation
+	internal sealed class Annotation : NSWindow, ITextAnnotation, IObserver
 	{		
 		private Annotation(IntPtr obj) : base(obj)
 		{
@@ -138,6 +138,7 @@ namespace TextEditor
 			m_fontHeight = font.ascender() + font.descender();
 			
 			m_attrs = dict.Retain();
+			Broadcaster.Register("layout completed", this);
 		}
 		
 		// We can't make a borderless window in IB so we need to use a subclass
@@ -176,6 +177,24 @@ namespace TextEditor
 			m_range.Changed += this.DoRangeChanged;
 		}
 		
+		public void OnBroadcast(string name, object value)
+		{
+			switch (name)
+			{
+				case "layout completed":
+					if (m_parent != null)
+					{
+						NSSize size = frame().size;
+						DoAdjustFrame(size);
+					}
+					break;
+					
+				default:
+					Contract.Assert(false, "bad name: " + name);
+					break;
+			}
+		}
+	
 		public Boss Parent
 		{
 			get {return m_editor.Boss;}
@@ -414,15 +433,8 @@ namespace TextEditor
 		{
 			if (m_parent != null)
 			{
-				if (m_range.IsValid)
-				{
-					NSSize size = frame().size;
-					DoAdjustFrame(size);
-				}
-				else
-				{
+				if (!m_range.IsValid)
 					Close();
-				}
 			}
 		}
 		

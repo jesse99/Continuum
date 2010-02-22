@@ -82,19 +82,7 @@ namespace TextEditor
 			if (index != m_index)
 			{
 				m_index = index;
-				m_dirty = true;
-			}
-		}
-		
-		// LiveRanges are normally associated with a UI, but the UI
-		// cannot be updated until the characters have been laid out 
-		// again.
-		internal void LayoutCompleted()
-		{
-			if (m_dirty)
-			{
 				Fire();
-				m_dirty = false;
 			}
 		}
 		
@@ -102,7 +90,6 @@ namespace TextEditor
 		private Boss m_boss;
 		private int m_index;
 		private int m_length;
-		private bool m_dirty;
 		#endregion
 	}
 }

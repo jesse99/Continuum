@@ -292,7 +292,11 @@ namespace TextEditor
 					if (m_restorer.OnCompletedLayout(layout, atEnd))
 						m_restorer = null;
 				
-				DoFireRanges();
+				if (atEnd)
+				{
+					Broadcaster.Invoke("layout completed", m_boss);
+					DoPruneRanges();
+				}
 			}
 		}
 		
@@ -1102,14 +1106,12 @@ namespace TextEditor
 			}
 		}
 		
-		private void DoFireRanges()
+		private void DoPruneRanges()
 		{
 			for (int i = m_ranges.Count - 1; i >= 0; --i)
 			{
 				ConcreteLiveRange range = m_ranges[i].Target as ConcreteLiveRange;
-				if (range != null)
-					range.LayoutCompleted();
-				else
+				if (range == null)
 					m_ranges.RemoveAt(i);
 			}
 		}

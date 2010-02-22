@@ -1,4 +1,8 @@
 <Bosses namespaces = "Gear Shared Debugger">
+	<Extend name = "Application">
+		<Implementation interfaces = "IInterface +IStartup +IShutdown" name = "Breakpoints"/>
+	</Extend>
+	
 	<Boss name = "CodeViewer">
 		<Compose name = "TextEditor"/>
 		<Implementation interfaces = "ICodeViewer IDocumentWindowTitle IDocumentExtension" name = "CodeViewer"/>
@@ -6,9 +10,5 @@
 	
 	<Extend name = "TextEditorPlugin">
 		<Implementation interfaces = "IInterface +ITextContextCommands" name = "ContextMenu"/>
-	</Extend>
-	
-	<Extend name = "TextEditor">
-		<Implementation interfaces = "IInterface" name = "Breakpoints"/>
 	</Extend>
 </Bosses>
