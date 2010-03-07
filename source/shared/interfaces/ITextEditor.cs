@@ -50,7 +50,7 @@ namespace Shared
 		
 		// Returns a new (and hidden) annotation window anchored to the specified
 		// character range.
-		ITextAnnotation GetAnnotation(NSRange range);
+		ITextAnnotation GetAnnotation(NSRange range, AnnotationAlignment alignment);
 		
 		// Returns a rectangle in window coordinates that encloses the characters
 		// in the range.

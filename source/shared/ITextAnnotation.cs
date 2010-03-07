@@ -51,6 +51,13 @@ namespace Shared
 		}
 	}
 	
+	public enum AnnotationAlignment
+	{
+		Center,		// the annotation is centered on the line the range starts on
+		Top,			// the annotation appears just above the line the range starts on
+		Bottom,	// the annotation appears just above the line the range starts on
+	}
+	
 	// A window which looks like a rounded rectangle with a label attached to
 	// a live index in a text window.
 	public interface ITextAnnotation	// note that this is not a Gear interface

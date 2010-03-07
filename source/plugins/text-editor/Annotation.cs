@@ -158,12 +158,13 @@ namespace TextEditor
 			return result;
 		}
 		
-		public void Init(ITextEditor editor, NSTextView text, LiveRange range)
+		public void Init(ITextEditor editor, NSTextView text, LiveRange range, AnnotationAlignment alignment)
 		{
 			m_editor = editor;
 			m_text = text;
 			m_range = range;
 			m_view = this["view"].To<AnnotateView>();
+			m_alignment = alignment;
 			
 			m_parent = m_text.window();
 			
@@ -479,11 +480,12 @@ namespace TextEditor
 			NSRect bbox = m_editor.GetBoundingBox(new NSRange(m_range.Index, m_range.Length));
 			NSPoint origin = m_parent.convertBaseToScreen(bbox.origin);
 			
-			// The origin is the bottom-left coordinate of the anchor character
-			// which should be the top-left of our window.
-			origin.y -= size.height;
+			if (m_alignment == AnnotationAlignment.Bottom)
+				origin.y -= size.height;
+			else if (m_alignment == AnnotationAlignment.Top)
+				origin.y += size.height;
+				
 			NSRect frame = new NSRect(origin, size);
-			
 			return frame;
 		}
 		#endregion
@@ -491,6 +493,7 @@ namespace TextEditor
 		#region Fields
 		private ITextEditor m_editor;
 		private LiveRange m_range;
+		private AnnotationAlignment m_alignment;
 		private NSWindow m_parent;
 		private NSTextView m_text;
 		private AnnotateView m_view;

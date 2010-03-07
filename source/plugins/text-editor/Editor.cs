@@ -173,7 +173,7 @@ namespace TextEditor
 			return clr;
 		}
 		
-		public ITextAnnotation GetAnnotation(NSRange range)
+		public ITextAnnotation GetAnnotation(NSRange range, AnnotationAlignment alignment)
 		{
 			TextController controller = (TextController) m_window.windowController();
 			NSTextView view = controller.TextView;
@@ -194,11 +194,11 @@ namespace TextEditor
 			Annotation window = null;
 			for (int i = 0; i < objects.count() && window == null; ++i)
 			{
-				window = objects.objectAtIndex((uint) i) as Annotation;	// the window is sometimes at index 0 and soemtimes at index 1...
+				window = objects.objectAtIndex((uint) i) as Annotation;	// the window is sometimes at index 0 and sometimes at index 1...
 			}
 			
 			if (window != null)
-				window.Init(this, view, GetRange(range));
+				window.Init(this, view, GetRange(range), alignment);
 			else
 				throw new Exception("Couldn't get the Annotation window from the nib.");
 			

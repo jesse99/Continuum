@@ -23,13 +23,10 @@ using Gear;
 using Gear.Helpers;
 using MCocoa;
 using MObjc;
-//using Mono.Cecil;
-//using Mono.Cecil.Binary;
 using Mono.Debugger;
 using Shared;
 using System;
 using System.Collections.Generic;
-//using System.IO;
 
 namespace Debugger
 {

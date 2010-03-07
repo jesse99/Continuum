@@ -22,15 +22,11 @@
 using Gear.Helpers;
 using MCocoa;
 using MObjc;
-//using Mono.Cecil;
-//using Mono.Cecil.Binary;
 using Mono.Debugger;
 using Shared;
 using System;
-//using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-//using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace Debugger
@@ -57,7 +53,7 @@ namespace Debugger
 					throw new FileNotFoundException(m_executable + " was not found.");
 				
 				ProcessStartInfo info = new ProcessStartInfo();
-				info.Arguments = string.Format("{0} --verbose /Users/jessejones/Source/peg-sharp/example/Parser.peg", m_executable);
+				info.Arguments = string.Format("--debug {0}", m_executable);
 //				info.EnvironmentVariables.Add("key", "value");		// TODO
 				info.FileName = "mono";
 				info.RedirectStandardError = false;

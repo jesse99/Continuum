@@ -44,11 +44,14 @@ namespace Debugger
 			DoLoadPrefs();
 			
 			Broadcaster.Register("opening document window", this);
+			Broadcaster.Register("swapping code view", this);
+			Broadcaster.Register("swapped code view", this);
 			Broadcaster.Register("closing document window", this);
 		}
 		
 		public void OnShutdown()
 		{
+			DoMoveBreakpointsFromWindowToSaved();		// saved windows won't be closed
 			DoSavePrefs();
 		}
 		
@@ -57,30 +60,39 @@ namespace Debugger
 			get {return m_boss;}
 		}
 		
-		internal static IEnumerator<Breakpoint> GetBreakpoints(string file)
+		// Note that this may return the same breakpoint more than once.
+		internal static IEnumerable<Breakpoint> GetBreakpoints(string file)
 		{
 			Contract.Requires(!string.IsNullOrEmpty(file), "file is empty or null");
 			
-			foreach (Entry entry in ms_entries)
+			// First get the breakpoints for open windows.
+			bool found = false;
+			foreach (WindowedBreakpoint wbp in ms_windowedBreakpoints)
 			{
-				if (entry.Breakpoint.File == file)
+				if (wbp.File == file)
 				{
-					if (entry.Annotation == null)
+					found = true;
+					yield return new Breakpoint(wbp.File, wbp.GetLine());
+				}
+			}
+			
+			if (!found)
+			{
+				// If we did not find a window associated with the file then try to
+				// get breakpoints for closed windows or from a previous run of 
+				// Continuum.
+				foreach (Breakpoint bp in ms_savedBreakpoints)
+				{
+					if (bp.File == file)
 					{
-						yield return entry.Breakpoint;
-					}
-					else if (entry.Annotation.IsValid)
-					{
-						var metrics = entry.Annotation.Parent.Get<ITextMetrics>();
-						int line = metrics.GetLine(entry.Annotation.Anchor.location);
-						if (line == entry.Breakpoint.Line)
-							yield return entry.Breakpoint;
-						else
-							yield return new Breakpoint(entry.Breakpoint.File, line);
+						yield return bp;
 					}
 				}
 			}
 		}
+		
+		internal static event Action<Breakpoint> AddedBreakpoint;
+		internal static event Action<Breakpoint> RemovingBreakpoint;
 		
 		public void OnBroadcast(string name, object value)
 		{
@@ -92,19 +104,27 @@ namespace Debugger
 					if (boss.Has<ITextEditor>())
 					{
 						var handler = boss.Get<IMenuHandler>();
-						handler.Register(this, 65, () => DoToggle(boss), () => DoIsEnabled(boss));
+						handler.Register(this, 65, () => DoToggle(boss), () => DoCanToggleBreakpoint(boss));
 						
-						DoRestoreAnnotations(boss);
+						DoCopyBreakpointsToWindow(boss);
 					}
 					break;
-					
+				
+				case "swapping code view":
+					DoMoveBreakpointsFromWindowToSaved(boss);
+					break;
+				
+				case "swapped code view":
+					DoCopyBreakpointsToWindow(boss);
+					break;
+				
 				case "closing document window":
 					if (boss.Has<ITextEditor>())
 					{
 						var handler = boss.Get<IMenuHandler>();
 						handler.Deregister(this);
 						
-						DoResetAnnotations(boss);
+						DoMoveBreakpointsFromWindowToSaved(boss);
 					}
 					break;
 					
@@ -115,36 +135,68 @@ namespace Debugger
 		}
 		
 		#region Private Methods
-		private bool DoIsEnabled(Boss boss)
+		private bool DoCanToggleBreakpoint(Boss boss)
 		{
-			return DoGetFile(boss) != null && DoGetLine(boss) > 1;
+			return DoGetFile(boss) != null && DoGetLineAtSelection(boss) > 1;
 		}
 		
 		private void DoToggle(Boss boss)
 		{
 			string file = DoGetFile(boss);
-			int line = DoGetLine(boss);
+			int line = DoGetLineAtSelection(boss);
 			
-			int i = ms_entries.FindIndex(b => b.Breakpoint.File == file && b.Breakpoint.Line == line);
-			if (i >= 0)
+			if (file != null)
+				if (!DoRemoveBreakpoints(file, line))
+					DoAddBreakpoints(file, line);
+		}
+		
+		private bool DoRemoveBreakpoints(string file, int line)
+		{
+			int count = ms_windowedBreakpoints.RemoveAll(bp =>
 			{
-				ms_entries[i].Annotation.Close();
-				ms_entries.RemoveAt(i);
-			}
-			else if (line > 1 && file != null)		// can't put a breakpoint on the very first line because we have to backup a line to position the annotation window correctly
+				bool removing = false;
+				
+				if (bp.File == file && bp.GetLine() == line)
+				{
+					if (RemovingBreakpoint != null)
+						RemovingBreakpoint(new Breakpoint(file, line));
+					
+					bp.Annotation.Close();
+					removing = true;
+				}
+				
+				return removing;
+			});
+			
+			return count > 0;
+		}
+		
+		// There may be multiple windows viewing the same file so we need to
+		// iterate over all document windows.
+		private void DoAddBreakpoints(string file, int line)
+		{
+			Boss boss = ObjectModel.Create("TextEditorPlugin");
+			Boss[] bosses = boss.Get<IWindows>().All();
+			foreach (Boss b in bosses)
 			{
-				ITextAnnotation annotation = DoCreateBreakpoint(boss, file, line);
-				ms_entries.Add(new Entry(annotation, file, line));
+				if (DoGetFile(b) == file)
+				{
+					var bp = new WindowedBreakpoint(DoCreateBreakpoint(b, file, line), file);
+					ms_windowedBreakpoints.Add(bp);
+					
+					if (AddedBreakpoint != null)
+						AddedBreakpoint(new Breakpoint(file, line));
+				}
 			}
 		}
 		
 		private ITextAnnotation DoCreateBreakpoint(Boss boss, string file, int line)
 		{
 			var metrics = boss.Get<ITextMetrics>();
-			var range = new NSRange(metrics.GetLineOffset(line - 1), 1);
+			var range = new NSRange(metrics.GetLineOffset(line), 1);
 			
 			var editor = boss.Get<ITextEditor>();
-			ITextAnnotation annotation = editor.GetAnnotation(range);
+			ITextAnnotation annotation = editor.GetAnnotation(range, AnnotationAlignment.Center);
 			annotation.BackColor = NSColor.redColor();
 			annotation.Text = "B";
 			annotation.Draggable = false;
@@ -170,7 +222,7 @@ namespace Debugger
 			return file;
 		}
 		
-		private int DoGetLine(Boss boss)
+		private int DoGetLineAtSelection(Boss boss)
 		{
 			var text = boss.Get<IText>();
 			int offset = text.Selection.location;
@@ -181,46 +233,105 @@ namespace Debugger
 			return line;
 		}
 		
-		private void DoRestoreAnnotations(Boss boss)
+		// This is called as windows open so we only need to process the opening window.
+		private void DoCopyBreakpointsToWindow(Boss boss)
 		{
 			string file = DoGetFile(boss);
-			foreach (Entry entry in ms_entries)
+			if (file != null)
 			{
-				if (entry.Breakpoint.File == file)
+				// Another document window may be open for the same file so we need to
+				// check those first.
+				var bps = new List<WindowedBreakpoint>();
+				foreach (WindowedBreakpoint wbp in ms_windowedBreakpoints)
 				{
-					Contract.Assert(entry.Annotation == null, "entry.Annotation is not null");
-					
-					ITextAnnotation annotation = DoCreateBreakpoint(boss, entry.Breakpoint.File, entry.Breakpoint.Line);
-					entry.Annotation = annotation;
+					if (wbp.File == file && wbp.Annotation.Parent != boss && wbp.Annotation.IsValid)
+					{
+						bps.Add(wbp);
+					}
+				}
+				
+				if (bps.Count > 0)
+				{
+					foreach (WindowedBreakpoint wbp in bps)
+					{
+						var b = new WindowedBreakpoint(DoCreateBreakpoint(boss, file, wbp.GetLine()), file);
+						ms_windowedBreakpoints.Add(b);
+					}
+				}
+				else
+				{
+					foreach (Breakpoint bp in ms_savedBreakpoints)
+					{
+						if (bp.File == file)
+						{
+							var b = new WindowedBreakpoint(DoCreateBreakpoint(boss, file, bp.Line), file);
+							ms_windowedBreakpoints.Add(b);
+						}
+					}
 				}
 			}
 		}
 		
-		private void DoResetAnnotations(Boss boss)
+		private void DoMoveBreakpointsFromWindowToSaved()
+		{
+			Console.WriteLine("DoMoveBreakpointsFromWindowToSaved");
+			Boss boss = ObjectModel.Create("TextEditorPlugin");
+			Boss[] bosses = boss.Get<IWindows>().All();
+			foreach (Boss b in bosses)
+			{
+				DoMoveBreakpointsFromWindowToSaved(b);
+			}
+		}
+		
+		private void DoMoveBreakpointsFromWindowToSaved(Boss boss)
 		{
 			string file = DoGetFile(boss);
 			
-			for (int i = 0; i < ms_entries.Count; ++i)
+			if (file != null)
 			{
-				Entry entry = ms_entries[i];
-				if (entry.Breakpoint.File == file)
+			foreach (WindowedBreakpoint ww in ms_windowedBreakpoints)
+			{
+				if (ww.File == file)
 				{
-					Contract.Assert(entry.Annotation != null, "annotation is null");
-					
-					if (entry.Annotation.IsValid)
+					Console.WriteLine("    {0} == {1}", ww.File, file);
+					if (ww.Annotation.Parent == boss)
 					{
-						// If the anchor text was not deleted then we need to reset
-						// the annotation reference and potentially update the line.
-						var metrics = boss.Get<ITextMetrics>();
-						int line = metrics.GetLine(entry.Annotation.Anchor.location);
-						
-						ms_entries[i] = new Entry(file, line);
+						Console.WriteLine("    {0} == {1}", ww.Annotation.Parent, boss);
+						if (ww.Annotation.IsValid)
+							Console.WriteLine("    {0} == {1}", ww.Annotation.IsValid, true);
+						else
+							Console.WriteLine("    {0} != {1}", ww.Annotation.IsValid, true);
 					}
+					else
+					{
+						Console.WriteLine("    {0} != {1}", ww.Annotation.Parent, boss);
+					}
+				}
+				else
+				{
+					Console.WriteLine("    {0} != {1}", ww.File, file);
+				}
+			}
+				// Get a list of breakpoints within that window.
+				IEnumerable<int> lines =
+					from b in ms_windowedBreakpoints
+						where b.File == file && b.Annotation.Parent == boss && b.Annotation.IsValid
+					select b.GetLine();
+				
+				// Clear all breakpoints for that file.
+				ms_savedBreakpoints.RemoveAll(b => b.File == file);
+				
+				// Add the breakpoints that were within the file.
+				foreach (int line in lines)
+				{
+				Console.WriteLine("    moved {0}:{1}", System.IO.Path.GetFileName(file), line);
+					ms_savedBreakpoints.Add(new Breakpoint(file, line));
 				}
 			}
 			
-			// If the anchor text was deleted then we need to remove the breakpoint.
-			ms_entries.RemoveAll(e => e.Breakpoint.File == file && e.Annotation != null && !e.Annotation.IsValid);
+			// FInish clearing breakpoints (we have to do this one down here because lines
+			// is computed lazily.
+			ms_windowedBreakpoints.RemoveAll(b => b.File == file && b.Annotation.Parent == boss);
 		}
 		
 		private void DoLoadPrefs()
@@ -237,7 +348,7 @@ namespace Debugger
 					int line;
 					if (parts.Length == 2 && int.TryParse(parts[1], out line))
 					{
-						ms_entries.Add(new Entry(parts[0], line));
+						ms_savedBreakpoints.Add(new Breakpoint(parts[0], line));
 					}
 					else
 					{
@@ -249,41 +360,47 @@ namespace Debugger
 		
 		private void DoSavePrefs()
 		{
+			Contract.Assert(ms_windowedBreakpoints.Count == 0, "all windowed breakpoints must be moved into saved");
+			
 			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
 			
 			var names =
-				(from e in ms_entries
-					where e.Annotation == null || e.Annotation.IsValid
-				select e.Breakpoint.File + ':' + e.Breakpoint.Line).ToArray();
+				(from e in ms_savedBreakpoints
+				select e.File + ':' + e.Line).ToArray();
 			defaults.setObject_forKey(NSArray.Create(names), NSString.Create("breakpoints"));
 		}
 		#endregion
 		
 		#region Private Types 
-		private sealed class Entry
+		private sealed class WindowedBreakpoint
 		{
-			public Entry(string file, int line)
-			{
-				Breakpoint = new Breakpoint(file, line);
-			}
-			
-			public Entry(ITextAnnotation annotation, string file, int line)
+			public WindowedBreakpoint(ITextAnnotation annotation, string file)
 			{
 				Contract.Requires(annotation != null, "annotation is null");
+				Contract.Requires(!string.IsNullOrEmpty(file), "file is null or empty");
 				
 				Annotation = annotation;
-				Breakpoint = new Breakpoint(file, line);
+				File = file;
 			}
 			
 			public ITextAnnotation Annotation {get; set;}
 			
-			public Breakpoint Breakpoint {get; private set;}
+			// Full path to the file.
+			public string File {get; private set;}
+			
+			public int GetLine()
+			{
+				var metrics = Annotation.Parent.Get<ITextMetrics>();
+				int line = metrics.GetLine(Annotation.Anchor.location);
+				return line;
+			}
 		}
 		#endregion
 		
 		#region Fields 
 		private Boss m_boss;
-		private static List<Entry> ms_entries = new List<Entry>();
+		private static List<Breakpoint> ms_savedBreakpoints = new List<Breakpoint>();
+		private static List<WindowedBreakpoint> ms_windowedBreakpoints = new List<WindowedBreakpoint>();
 		#endregion
 	}
 }

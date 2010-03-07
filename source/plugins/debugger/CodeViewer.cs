@@ -155,11 +155,14 @@ namespace Debugger
 		
 		private void DoShowSource()
 		{
-			m_path = System.IO.Path.GetFileName(m_context.SourceFile);
-			DoSetTitle(m_path);
-			
 			if (m_currentView != m_context.SourceFile)
 			{
+				Broadcaster.Invoke("swapping code view", m_boss);
+				m_path = m_context.SourceFile;
+				
+				string name = System.IO.Path.GetFileName(m_context.SourceFile);
+				DoSetTitle(name);
+				
 				var overlay = m_boss.Get<ITextOverlay>();
 				if (DoSourceIsOutOfDate())
 				{
@@ -176,6 +179,8 @@ namespace Debugger
 				m_currentView = m_context.SourceFile;
 				m_lines.Clear();
 				m_debugger.StepBy = StepSize.Line;
+				
+				Broadcaster.Invoke("swapped code view", m_boss);
 			}
 			
 			var editor = m_boss.Get<ITextEditor>();
@@ -187,11 +192,13 @@ namespace Debugger
 		private void DoShowIL(Context context)
 		{
 			string name = context.Method.FullName;
-			DoSetTitle(name);
-			m_path = null;
-			
 			if (m_currentView != name)
 			{
+				Broadcaster.Invoke("swapping code view", m_boss);
+				
+				DoSetTitle(name);
+				m_path = null;
+				
 				var overlay = m_boss.Get<ITextOverlay>();
 				overlay.Text = null;
 				
@@ -205,6 +212,8 @@ namespace Debugger
 				
 				text.Replace(source);
 				m_debugger.StepBy = StepSize.Min;
+				
+				Broadcaster.Invoke("swapped code view", m_boss);
 			}
 			
 			int line;
@@ -220,14 +229,17 @@ namespace Debugger
 				DoSetInstructionPointer(-1);
 			}
 		}
+		
 		private void DoShowNothing(Context context)
 		{
 			string name = context.Method.FullName;
-			DoSetTitle(name);
-			m_path = null;
-			
 			if (m_currentView != name)
 			{
+				Broadcaster.Invoke("swapping code view", m_boss);
+				
+				DoSetTitle(name);
+				m_path = null;
+				
 				var overlay = m_boss.Get<ITextOverlay>();
 				overlay.Text = null;
 				
@@ -237,6 +249,8 @@ namespace Debugger
 				var text = m_boss.Get<IText>();
 				text.Replace("...");
 				DoSetInstructionPointer(-1);
+				
+				Broadcaster.Invoke("swapped code view", m_boss);
 			}
 		}
 		
@@ -320,10 +334,10 @@ namespace Debugger
 			if (line > 1)
 			{
 				var metrics = m_boss.Get<ITextMetrics>();
-				var range = new NSRange(metrics.GetLineOffset(line - 1), 1);
+				var range = new NSRange(metrics.GetLineOffset(line), 1);
 				
 				var editor = m_boss.Get<ITextEditor>();
-				m_ipAnnotation = editor.GetAnnotation(range);
+				m_ipAnnotation = editor.GetAnnotation(range, AnnotationAlignment.Center);
 				
 				m_ipAnnotation.BackColor = NSColor.greenColor();
 				m_ipAnnotation.Text = ">";

@@ -374,7 +374,7 @@ namespace AutoComplete
 				if (!onlyTypedText && annotate)
 				{
 					NSRange range = new NSRange(firstIndex, text.Length);
-					ITextAnnotation annotation = m_editor.GetAnnotation(range);
+					ITextAnnotation annotation = m_editor.GetAnnotation(range, AnnotationAlignment.Bottom);
 					
 					IArgsAnnotation args = m_editor.Boss.Get<IArgsAnnotation>();
 					string name = method.Name;

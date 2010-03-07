@@ -30,6 +30,9 @@ green > the current IP
 
 /Users/jessejones/Downloads/monodevelop-2.2/src/addins/MonoDevelop.Debugger.Soft/MonoDevelop.Debugger.Soft/SoftDebuggerSession.cs
 
+The Algorithm Design Manual
+The Unix Programming Environment
+
 public abstract class Mono.Debugger.Event
 	public class Mono.Debugger.AppDomainCreateEvent
 	public class Mono.Debugger.AppDomainUnloadEvent
@@ -53,13 +56,22 @@ public abstract class Mono.Debugger.EventRequest
 	public sealed class Mono.Debugger.MethodExitEventRequest
 	public sealed class Mono.Debugger.StepEventRequest
 	
-* Show the source file and line of the code we're stepping through:
-	- build a list of resolved breakpoints as types are loaded
-	- make sure breakpoints work when inserting text above the breakpoint
-	- make sure breakpoints can be set in the codeviewer window
-	- should be able to add breakpoints to IL
+http://www.ffconsultancy.com/ocaml/hlvm/
+					
+* Resolve pending breakpoints:
+	- trying to step over a breakpoint should ignore the breakpoint
+	- error to step to and then into a breakpoint
+	- make sure GetBreakpoints callers work OK when duplicates are returned
+	- resolved breakpoints should be marked
+	- should be able to add breakpoints to IL?
+* Off by one error when adding a breakpoint after a blank line?
+* Do a checkin.
 * Change the tool so that it uses osascript which we can use to pass arguments into Continuum
    for use when launching the debugee.
+* Do we still want to allow sym files to be opened?
+* Do we want to allow concurrent debug sessions? If not what happens when the code viewer
+   window is closed? Should we stop debugging (and close the debugger controller window)?
+* Dot should complete auto-complete text.
 * Mention can right click on completion window.
 * Mention useful to download mono source (and set the associated pref):
 	- dont need to compile
@@ -131,6 +143,8 @@ public abstract class Mono.Debugger.EventRequest
 * Add refactors to context menu.
 * Might be able to do some new refactors now like rename and extract method.
 * Do something different with /// styling?
+* Think about ways to allow easier customization and looser coupling. Maybe can use tuple spaces
+   to communicate (and even to do UI).
 * Make Add WriteLine a standard refactor?
 * Add Find Type command:
 	- uses a regex
