@@ -58,14 +58,6 @@ public abstract class Mono.Debugger.EventRequest
 	
 http://www.ffconsultancy.com/ocaml/hlvm/
 					
-* Resolve pending breakpoints:
-	- trying to step over a breakpoint should ignore the breakpoint
-	- error to step to and then into a breakpoint
-	- make sure GetBreakpoints callers work OK when duplicates are returned
-	- resolved breakpoints should be marked
-	- should be able to add breakpoints to IL?
-* Off by one error when adding a breakpoint after a blank line?
-* Do a checkin.
 * Change the tool so that it uses osascript which we can use to pass arguments into Continuum
    for use when launching the debugee.
 * Do we still want to allow sym files to be opened?
@@ -107,9 +99,11 @@ http://www.ffconsultancy.com/ocaml/hlvm/
 	- need a way to kill the executable and stop debugging
 	- watchpoints (probably dont need this, variable windows should not go away)
 	- conditional breakpoints
+	- context breakpoint menu should have close do a broadcast so the breakpoint can be toggled
 	- custom formatting
 	- custom viewer dlls
 	- make sure it works ok if the exe is missing
+	- would be nice if could add breakpoints to IL views
 	- make sure it works ok if the exe and mdb are out of sync
 	- probably need to somehow prevent debugging two apps at once (or fix the menu handler
 	  goo so that that would work)
@@ -144,7 +138,8 @@ http://www.ffconsultancy.com/ocaml/hlvm/
 * Might be able to do some new refactors now like rename and extract method.
 * Do something different with /// styling?
 * Think about ways to allow easier customization and looser coupling. Maybe can use tuple spaces
-   to communicate (and even to do UI).
+   to communicate (and even to do UI). How would we handle notifications? Or maybe a Plan 9
+   style virtual file system using unix sockets (concurrency may be an issue)
 * Make Add WriteLine a standard refactor?
 * Add Find Type command:
 	- uses a regex

@@ -84,7 +84,7 @@ namespace Debugger
 		{
 			if (assembly.EntryPoint != null)				// TODO: need a pref or setting for this
 			{
-				m_doc.Debugger.AddBreakpoint(assembly.EntryPoint, 0);
+				m_doc.Debugger.AddBreakpoint(new Breakpoint("entry point", 1), assembly.EntryPoint, 0);
 			}
 		}
 		

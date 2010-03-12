@@ -27,7 +27,7 @@ namespace Debugger
 	// A breakpoint added by the user. Note that this does not become an active
 	// breakpoint until the debugger loads a type with a method defined on the
 	// specified file and line.
-	internal sealed class Breakpoint
+	internal sealed class Breakpoint : IEquatable<Breakpoint>
 	{
 		public Breakpoint(string file, int line)
 		{
@@ -42,5 +42,56 @@ namespace Debugger
 		public string File {get; private set;}
 		
 		public int Line {get; private set;}
+		
+		#region Equality
+		public override bool Equals(object obj)
+		{
+			if (obj == null)
+				return false;
+			
+			Breakpoint rhs = obj as Breakpoint;
+			return this == rhs;
+		}
+		
+		public bool Equals(Breakpoint rhs)
+		{
+			return this == rhs;
+		}
+		
+		public static bool operator==(Breakpoint lhs, Breakpoint rhs)
+		{
+			if (object.ReferenceEquals(lhs, rhs))
+				return true;
+			
+			if ((object) lhs == null || (object) rhs == null)
+				return false;
+			
+			if (lhs.File != rhs.File)
+				return false;
+			
+			if (lhs.Line != rhs.Line)
+				return false;
+			
+			return true;
+		}
+		
+		public static bool operator!=(Breakpoint lhs, Breakpoint rhs)
+		{
+			return !(lhs == rhs);
+		}
+		
+		public override int GetHashCode()
+		{
+			int hash = 0;
+			
+			unchecked
+			{
+				hash += File.GetHashCode();
+				hash += Line.GetHashCode();
+			}
+			
+			return hash;
+		}
+		#endregion
 	}
 }

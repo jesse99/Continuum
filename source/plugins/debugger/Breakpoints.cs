@@ -43,10 +43,19 @@ namespace Debugger
 		{
 			DoLoadPrefs();
 			
+			if (ms_resolvedColor == null)
+			{
+				ms_resolvedColor = NSColor.colorWithDeviceRed_green_blue_alpha(0.86f, 0.08f, 0.24f, 1.0f).Retain();		// crimson
+				ms_unresolvedColor = NSColor.colorWithDeviceRed_green_blue_alpha(1.0f, 0.63f, 0.48f, 1.0f).Retain();	// light salmon
+			}
+			
 			Broadcaster.Register("opening document window", this);
 			Broadcaster.Register("swapping code view", this);
 			Broadcaster.Register("swapped code view", this);
 			Broadcaster.Register("closing document window", this);
+			
+			Broadcaster.Register("resolved breakpoint", this);
+			Broadcaster.Register("unresolved breakpoint", this);
 		}
 		
 		public void OnShutdown()
@@ -91,9 +100,6 @@ namespace Debugger
 			}
 		}
 		
-		internal static event Action<Breakpoint> AddedBreakpoint;
-		internal static event Action<Breakpoint> RemovingBreakpoint;
-		
 		public void OnBroadcast(string name, object value)
 		{
 			Boss boss = value as Boss;
@@ -128,6 +134,14 @@ namespace Debugger
 					}
 					break;
 					
+				case "resolved breakpoint":
+					DoResolvedBreakpoint((Breakpoint) value);
+					break;
+				
+				case "unresolved breakpoint":
+					DoUnresolvedBreakpoint((Breakpoint) value);
+					break;
+				
 				default:
 					Contract.Assert(false, "bad name: " + name);
 					break;
@@ -150,6 +164,32 @@ namespace Debugger
 					DoAddBreakpoints(file, line);
 		}
 		
+		private void DoResolvedBreakpoint(Breakpoint bp)
+		{
+			foreach (WindowedBreakpoint wbp in ms_windowedBreakpoints)
+			{
+				if (wbp.File == bp.File && wbp.GetLine() == bp.Line)
+				{
+					wbp.Annotation.BackColor = ms_resolvedColor;
+				}
+			}
+			
+			m_resolved.Add(bp);
+		}
+		
+		private void DoUnresolvedBreakpoint(Breakpoint bp)
+		{
+			foreach (WindowedBreakpoint wbp in ms_windowedBreakpoints)
+			{
+				if (wbp.File == bp.File && wbp.GetLine() == bp.Line)
+				{
+					wbp.Annotation.BackColor = ms_unresolvedColor;
+				}
+			}
+			
+			m_resolved.Remove(bp);
+		}
+		
 		private bool DoRemoveBreakpoints(string file, int line)
 		{
 			int count = ms_windowedBreakpoints.RemoveAll(bp =>
@@ -158,8 +198,7 @@ namespace Debugger
 				
 				if (bp.File == file && bp.GetLine() == line)
 				{
-					if (RemovingBreakpoint != null)
-						RemovingBreakpoint(new Breakpoint(file, line));
+					Broadcaster.Invoke("removing breakpoint", new Breakpoint(file, line));
 					
 					bp.Annotation.Close();
 					removing = true;
@@ -184,8 +223,7 @@ namespace Debugger
 					var bp = new WindowedBreakpoint(DoCreateBreakpoint(b, file, line), file);
 					ms_windowedBreakpoints.Add(bp);
 					
-					if (AddedBreakpoint != null)
-						AddedBreakpoint(new Breakpoint(file, line));
+					Broadcaster.Invoke("added breakpoint", new Breakpoint(file, line));
 				}
 			}
 		}
@@ -195,9 +233,11 @@ namespace Debugger
 			var metrics = boss.Get<ITextMetrics>();
 			var range = new NSRange(metrics.GetLineOffset(line), 1);
 			
+			var bp = new Breakpoint(file, line);
+			
 			var editor = boss.Get<ITextEditor>();
 			ITextAnnotation annotation = editor.GetAnnotation(range, AnnotationAlignment.Center);
-			annotation.BackColor = NSColor.redColor();
+			annotation.BackColor = m_resolved.Contains(bp) ? ms_resolvedColor : ms_unresolvedColor;
 			annotation.Text = "B";
 			annotation.Draggable = false;
 			annotation.Visible = true;
@@ -274,7 +314,6 @@ namespace Debugger
 		
 		private void DoMoveBreakpointsFromWindowToSaved()
 		{
-			Console.WriteLine("DoMoveBreakpointsFromWindowToSaved");
 			Boss boss = ObjectModel.Create("TextEditorPlugin");
 			Boss[] bosses = boss.Get<IWindows>().All();
 			foreach (Boss b in bosses)
@@ -289,29 +328,6 @@ namespace Debugger
 			
 			if (file != null)
 			{
-			foreach (WindowedBreakpoint ww in ms_windowedBreakpoints)
-			{
-				if (ww.File == file)
-				{
-					Console.WriteLine("    {0} == {1}", ww.File, file);
-					if (ww.Annotation.Parent == boss)
-					{
-						Console.WriteLine("    {0} == {1}", ww.Annotation.Parent, boss);
-						if (ww.Annotation.IsValid)
-							Console.WriteLine("    {0} == {1}", ww.Annotation.IsValid, true);
-						else
-							Console.WriteLine("    {0} != {1}", ww.Annotation.IsValid, true);
-					}
-					else
-					{
-						Console.WriteLine("    {0} != {1}", ww.Annotation.Parent, boss);
-					}
-				}
-				else
-				{
-					Console.WriteLine("    {0} != {1}", ww.File, file);
-				}
-			}
 				// Get a list of breakpoints within that window.
 				IEnumerable<int> lines =
 					from b in ms_windowedBreakpoints
@@ -324,12 +340,11 @@ namespace Debugger
 				// Add the breakpoints that were within the file.
 				foreach (int line in lines)
 				{
-				Console.WriteLine("    moved {0}:{1}", System.IO.Path.GetFileName(file), line);
 					ms_savedBreakpoints.Add(new Breakpoint(file, line));
 				}
 			}
 			
-			// FInish clearing breakpoints (we have to do this one down here because lines
+			// Finish clearing breakpoints (we have to do this one down here because lines
 			// is computed lazily.
 			ms_windowedBreakpoints.RemoveAll(b => b.File == file && b.Annotation.Parent == boss);
 		}
@@ -399,8 +414,11 @@ namespace Debugger
 		
 		#region Fields 
 		private Boss m_boss;
+		private HashSet<Breakpoint> m_resolved = new HashSet<Breakpoint>();
 		private static List<Breakpoint> ms_savedBreakpoints = new List<Breakpoint>();
 		private static List<WindowedBreakpoint> ms_windowedBreakpoints = new List<WindowedBreakpoint>();
+		private static NSColor ms_resolvedColor;
+		private static NSColor ms_unresolvedColor;
 		#endregion
 	}
 }

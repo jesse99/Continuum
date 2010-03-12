@@ -19,13 +19,8 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-//using Gear;
-//using Gear.Helpers;
 using MCocoa;
-//using MObjc;
 using MObjc.Helpers;
-//using Mono.Cecil;
-//using Mono.Cecil.Binary;
 using Mono.Debugger;
 using Shared;
 using System;
@@ -33,7 +28,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Collections.Generic;
-//using System.IO;
 
 namespace Debugger
 {
@@ -47,7 +41,7 @@ namespace Debugger
 	}
 	
 	// This is the class that handles all interaction with the soft debugger.
-	internal sealed class Debugger : IDisposable
+	internal sealed class Debugger : IDisposable, IObserver
 	{
 		public Debugger(ProcessStartInfo info)
 		{
@@ -65,13 +59,31 @@ namespace Debugger
 			m_handlers.Add(typeof(VMDeathEvent), (Event e) => DoVMDeathEvent((VMDeathEvent) e));
 			m_handlers.Add(typeof(VMDisconnectEvent), (Event e) => DoVMDisconnectEvent((VMDisconnectEvent) e));
 			
-			Breakpoints.AddedBreakpoint += this.OnAddedBreakpoint;
-			Breakpoints.RemovingBreakpoint += this.OnRemovingBreakpoint;
+			Broadcaster.Register("added breakpoint", this);
+			Broadcaster.Register("removing breakpoint", this);
 		}
 		
 		public State State
 		{
 			get {return m_state;}
+		}
+		
+		public void OnBroadcast(string name, object value)
+		{
+			switch (name)
+			{
+				case "added breakpoint":
+					OnAddedBreakpoint((Breakpoint) value);
+					break;
+				
+				case "removing breakpoint":
+					OnRemovingBreakpoint((Breakpoint) value);
+					break;
+				
+				default:
+					Contract.Assert(false, "bad name: " + name);
+					break;
+			}
 		}
 		
 		public void Dispose()
@@ -155,73 +167,83 @@ namespace Debugger
 			DoStep(StepDepth.Out);
 		}
 		
-		public void AddBreakpoint(MethodMirror method, long ilOffset)
+		public void AddBreakpoint(Breakpoint bp, MethodMirror method, long ilOffset)
 		{
 			if (m_disposed)
 				throw new ObjectDisposedException(GetType().Name);
 			Contract.Requires(m_state == State.Connected || m_state == State.Paused || m_state == State.Running, "state is " + m_state);
 			Contract.Requires(method != null, "method is null");
 			
-			var breakpoint = new ResolvedBreakpoint(method, ilOffset);
-			if (!m_breakpoints.ContainsKey(breakpoint))
+			var resolved = new ResolvedBreakpoint(bp, method, ilOffset);
+			if (!m_breakpoints.ContainsKey(resolved))
 			{
 				Log.WriteLine(TraceLevel.Info, "Debugger", "Adding breakpoint to {0}:{1:X4}", method.FullName, ilOffset);
 				
 				BreakpointEventRequest request = m_vm.CreateBreakpointRequest(method, ilOffset);
 				request.Enable();
-				m_breakpoints.Add(breakpoint, request);
+				m_breakpoints.Add(resolved, request);
 			}
+			
+			Broadcaster.Invoke("resolved breakpoint", bp);
 		}
 		
-		public void RemoveBreakpoint(MethodMirror method, long ilOffset)
+		public void RemoveBreakpoint(Breakpoint bp, MethodMirror method, long ilOffset)
 		{
 			if (m_disposed)
 				throw new ObjectDisposedException(GetType().Name);
 			Contract.Requires(m_state == State.Connected || m_state == State.Paused || m_state == State.Running, "state is " + m_state);
 			Contract.Requires(method != null, "method is null");
 			
-			var breakpoint = new ResolvedBreakpoint(method, ilOffset);
+			var resolved = new ResolvedBreakpoint(bp, method, ilOffset);
 			
 			BreakpointEventRequest request;
-			if (m_breakpoints.TryGetValue(breakpoint, out request))
+			if (m_breakpoints.TryGetValue(resolved, out request))
 			{
 				Log.WriteLine(TraceLevel.Info, "Debugger", "Removing breakpoint from {0}:{1:X4}", method.FullName, ilOffset);
 				
 				request.Disable();
-				m_breakpoints.Remove(breakpoint);
+				m_breakpoints.Remove(resolved);
 			}
+			
+			Broadcaster.Invoke("unresolved breakpoint", bp);
 		}
 		
 		#region Event Handlers
-		private bool DoAppDomainCreateEvent(AppDomainCreateEvent e)
+		private HandlerAction DoAppDomainCreateEvent(AppDomainCreateEvent e)
 		{
 			Log.WriteLine(TraceLevel.Info, "Debugger", "Created app domain {0}", e.Domain.FriendlyName);
 			
-			return true;
+			return HandlerAction.Resume;
 		}
 		
-		private bool DoAppDomainUnloadEvent(AppDomainUnloadEvent e)
+		private HandlerAction DoAppDomainUnloadEvent(AppDomainUnloadEvent e)
 		{
 			Log.WriteLine(TraceLevel.Info, "Debugger", "Unloaded app domain {0}", e.Domain.FriendlyName);
 			
-			return true;
+			return HandlerAction.Resume;
 		}
 		
-		private bool DoAssemblyLoadEvent(AssemblyLoadEvent e)
+		private HandlerAction DoAssemblyLoadEvent(AssemblyLoadEvent e)
 		{
 			Log.WriteLine(TraceLevel.Info, "Debugger", "Loaded assembly {0}", e.Assembly.GetName());
 			
 			if (AssemblyLoadedEvent != null)
 				AssemblyLoadedEvent(e.Assembly);
 			
-			return true;
+			return HandlerAction.Resume;
 		}
 		
-		private bool DoBreakpointEvent(BreakpointEvent e)
+		private HandlerAction DoBreakpointEvent(BreakpointEvent e)
 		{
 			DoTransition(State.Paused);
 			
 			m_currentThread = e.Thread;
+			
+			if (m_stepRequest != null)
+			{
+				m_stepRequest.Disable();
+				m_stepRequest = null;
+			}
 			
 			if (BreakpointEvent != null)
 			{
@@ -230,10 +252,10 @@ namespace Debugger
 				BreakpointEvent(new Context(e.Thread, e.Method, bp.Key.Offset));
 			}
 			
-			return false;
+			return HandlerAction.Suspend;
 		}
 		
-		private bool DoStepEvent(StepEvent e)
+		private HandlerAction DoStepEvent(StepEvent e)
 		{
 			Location location = e.Method.LocationAtILOffset((int) e.Location);
 			if (location != null)
@@ -244,16 +266,17 @@ namespace Debugger
 			
 			m_currentThread = e.Thread;
 			m_stepRequest.Disable();
+			m_stepRequest = null;
 			
 			if (SteppedEvent != null)
 			{
 				SteppedEvent(new Context(e.Thread, e.Method, e.Location));
 			}
 			
-			return false;
+			return HandlerAction.Suspend;
 		}
 		
-		private bool DoTypeLoadEvent(TypeLoadEvent e)
+		private HandlerAction DoTypeLoadEvent(TypeLoadEvent e)
 		{
 			foreach (MethodMirror method in e.Type.GetMethods())
 			{
@@ -279,43 +302,54 @@ namespace Debugger
 								Contract.Assert(loc.Method == method, "methods don't match");
 								Contract.Assert(loc.SourceFile == path, "paths don't match");
 								
-								AddBreakpoint(method, loc.ILOffset);
+								AddBreakpoint(bp, method, loc.ILOffset);
 							}
 						}
 					}
 				}
 			}
 			
-			return true;
+			return HandlerAction.Resume;
 		}
 		
-		private bool DoVMDeathEvent(VMDeathEvent e)
+		private HandlerAction DoVMDeathEvent(VMDeathEvent e)
 		{
 			Log.WriteLine(TraceLevel.Info, "Debugger", "VMDeathEvent");
 			DoTransition(State.Disconnected);
-			m_types.Clear();
+			DoReset();
 			
-			return false;
+			return HandlerAction.Suspend;
 		}
 		
-		private bool DoVMDisconnectEvent(VMDisconnectEvent e)
+		private HandlerAction DoVMDisconnectEvent(VMDisconnectEvent e)
 		{
 			Log.WriteLine(TraceLevel.Info, "Debugger", "VMDisconnectEvent");
 			DoTransition(State.Disconnected);
-			m_types.Clear();
+			DoReset();
 			
-			return false;
+			return HandlerAction.Suspend;
 		}
 		
-		private bool DoUnknownEvent(Event e)
+		private HandlerAction DoUnknownEvent(Event e)
 		{
 			Log.WriteLine(TraceLevel.Info, "Debugger", "Unknown: {0}", e);
 			
-			return true;
+			return HandlerAction.Resume;
 		}
 		#endregion
 		
 		#region Private Methods
+		private void DoReset()
+		{
+			m_types.Clear();
+			
+			foreach (ResolvedBreakpoint resolved in m_breakpoints.Keys)
+			{
+				Broadcaster.Invoke("unresolved breakpoint", resolved.BreakPoint);
+			}
+			m_breakpoints.Clear();
+		}
+		
 		[ThreadModel(ThreadModel.SingleThread)]
 		private void OnLaunched(IAsyncResult result)
 		{
@@ -359,7 +393,7 @@ namespace Debugger
 			int offset;
 			if (DoTryGetMethod(bp, out method, out offset))
 			{
-				AddBreakpoint(method, offset);
+				AddBreakpoint(bp, method, offset);
 			}
 		}
 		
@@ -369,7 +403,7 @@ namespace Debugger
 			int offset;
 			if (DoTryGetMethod(bp, out method, out offset))
 			{
-				RemoveBreakpoint(method, offset);
+				RemoveBreakpoint(bp, method, offset);
 			}
 		}
 		
@@ -380,7 +414,7 @@ namespace Debugger
 		{
 			List<TypeMirror> types;
 			IEnumerable<Breakpoint> breakpoints = Breakpoints.GetBreakpoints(bp.File);
-			if (m_types.TryGetValue(bp.File, out types) && breakpoints.Any())	// TODO: need to use a removing event instead of removed
+			if (m_types.TryGetValue(bp.File, out types) && breakpoints.Any())
 			{
 				foreach (TypeMirror type in types)
 				{
@@ -412,6 +446,7 @@ namespace Debugger
 		private void DoStep(StepDepth depth)
 		{
 			Contract.Requires(m_state == State.Paused, "state is " + m_state);
+			Contract.Requires(m_stepRequest == null, "m_stepRequest is not null");
 			
 			Log.WriteLine(TraceLevel.Verbose, "Debugger", "Stepping {0}", depth);
 			m_stepRequest = m_vm.CreateStepRequest(m_currentThread);
@@ -437,17 +472,17 @@ namespace Debugger
 			}
 		}
 		
-		private bool DoProcessEvent(Event e)
+		private HandlerAction DoProcessEvent(Event e)
 		{
-			bool resume = true;
+			HandlerAction action = HandlerAction.Resume;
 			
 			try
 			{
-				Func<Event, bool> handler;
+				Func<Event, HandlerAction> handler;
 				if (m_handlers.TryGetValue(e.GetType(), out handler))
-					resume = handler(e);
+					action = handler(e);
 				else
-					resume = DoUnknownEvent(e);
+					action = DoUnknownEvent(e);
 			}
 			catch (VMDisconnectedException)
 			{
@@ -463,7 +498,7 @@ namespace Debugger
 				Unused.Value = Functions.NSRunAlertPanel(title, message);
 			}
 			
-			return resume;
+			return action;
 		}
 		
 		// We might want to BeginInvoke ourselves so we don't lock up the main thread
@@ -485,7 +520,7 @@ namespace Debugger
 				
 				if (m_state != State.Disconnected)
 				{
-					if (!DoProcessEvent(e))
+					if (DoProcessEvent(e) == HandlerAction.Suspend)
 						resume = false;
 				}
 				else
@@ -547,17 +582,26 @@ namespace Debugger
 		#endregion
 		
 		#region Private Types
+		private enum HandlerAction
+		{
+			Resume,		// resume execution of the VM
+			Suspend,		// keep the VM suspended
+		}
+		
 		private struct ResolvedBreakpoint : IEquatable<ResolvedBreakpoint>
 		{
-			public ResolvedBreakpoint(MethodMirror method, long offset)
+			public ResolvedBreakpoint(Breakpoint bp, MethodMirror method, long offset)
 			{
+				Contract.Requires(bp != null, "bp is null");
 				Contract.Requires(method != null, "method is null");
 				Contract.Requires(offset >= 0, "offset is negative");
 				
+				BreakPoint = bp;
 				Method = method;
 				Offset = offset;
 			}
 			
+			public readonly Breakpoint BreakPoint;
 			public readonly MethodMirror Method;
 			public readonly long Offset;
 			
@@ -615,7 +659,7 @@ namespace Debugger
 		private State m_state;
 		private ThreadMirror m_currentThread;
 //		private AssemblyMirror m_currentAssembly;
-		private Dictionary<Type, Func<Event, bool>> m_handlers = new Dictionary<Type, Func<Event, bool>>();
+		private Dictionary<Type, Func<Event, HandlerAction>> m_handlers = new Dictionary<Type, Func<Event, HandlerAction>>();
 		
 		private StepEventRequest m_stepRequest;
 		private Dictionary<ResolvedBreakpoint, BreakpointEventRequest> m_breakpoints = new Dictionary<ResolvedBreakpoint, BreakpointEventRequest>();
