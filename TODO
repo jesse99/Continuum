@@ -58,12 +58,31 @@ public abstract class Mono.Debugger.EventRequest
 	
 http://www.ffconsultancy.com/ocaml/hlvm/
 					
-* When opening sym files break at the first line. Maybe the debug command should optionally
-   do this as well.
+* Look at the soft debugger in mono 2.6	:
+	- examining variables
+	- might want to allow ToString specifiers to be used (could even deduce them)
+	- break on exceptions
+	- stack window
+	- threads window
+	- assembly view
+	- need a way to kill the executable and stop debugging
+	- watchpoints (probably dont need this, variable windows should not go away)
+	- conditional breakpoints
+	- context breakpoint menu should have close do a broadcast so the breakpoint can be toggled
+	- custom formatting
+	- custom viewer dlls
+	- make sure it works ok if the exe is missing
+	- probably want to optionally write stuff like assembly loads
+	- would be nice if could add breakpoints to IL views
+	- make sure it works ok if the exe and mdb are out of sync
+	- probably need to somehow prevent debugging two apps at once (or fix the menu handler
+	  goo so that that would work)
+	- mention the osascript debugging command 
 * Do we want to allow concurrent debug sessions? If not what happens when the code viewer
    window is closed? Should we stop debugging (and close the debugger controller window)?
 * Dot should complete auto-complete text.
 * Mention can right click on completion window.
+* Doesn't the create thread refactor need to use a field for the thread object?
 * Mention useful to download mono source (and set the associated pref):
 	- dont need to compile
 	- allows source level debugging, context menus allow you to go to definitions for mono methods
@@ -85,28 +104,6 @@ http://www.ffconsultancy.com/ocaml/hlvm/
   at App.PreferencesController.setPreprocessFont (MObjc.NSObject) [0x00000] in /Users/jessejones/Source/Continuum/source/plugins/app/PreferencesController.cs:190
 * Does setting the text color still work in prefs?
 * May want to mention short form too.
-* Look at the soft debugger in mono 2.6	:
-	- work on a gui, create a text document to reuse (might want to extend the text boss)
-	- might want to allow ToString specifiers to be used (could even deduce them)
-	- breakpoints
-	- output window, or use the transcript?
-	- examining variables
-	- break on exceptions
-	- stack window
-	- threads window
-	- assembly view
-	- need a way to kill the executable and stop debugging
-	- watchpoints (probably dont need this, variable windows should not go away)
-	- conditional breakpoints
-	- context breakpoint menu should have close do a broadcast so the breakpoint can be toggled
-	- custom formatting
-	- custom viewer dlls
-	- make sure it works ok if the exe is missing
-	- would be nice if could add breakpoints to IL views
-	- make sure it works ok if the exe and mdb are out of sync
-	- probably need to somehow prevent debugging two apps at once (or fix the menu handler
-	  goo so that that would work)
-	- mention the osascript debugging command 
 * Option-arrow is skipping over periods.
 * Rewrite the readme using rtf:
 	- add some sort of tips and tricks section

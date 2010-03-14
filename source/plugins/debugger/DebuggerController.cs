@@ -82,7 +82,7 @@ namespace Debugger
 		
 		private void OnAssemblyLoaded(AssemblyMirror assembly)
 		{
-			if (assembly.EntryPoint != null)				// TODO: need a pref or setting for this
+			if (m_doc.BreakInMain && assembly.EntryPoint != null)
 			{
 				m_doc.Debugger.AddBreakpoint(new Breakpoint("entry point", 1), assembly.EntryPoint, 0);
 			}

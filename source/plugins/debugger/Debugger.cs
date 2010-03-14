@@ -19,6 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear;
 using MCocoa;
 using MObjc.Helpers;
 using Mono.Debugger;
@@ -46,6 +47,9 @@ namespace Debugger
 		public Debugger(ProcessStartInfo info)
 		{
 			Contract.Requires(info != null, "info is null");
+			
+			Boss boss = ObjectModel.Create("Application");
+			m_transcript = boss.Get<ITranscript>();
 			
 			StepBy = StepSize.Line;
 			Unused.Value = VirtualMachineManager.BeginLaunch(info, this.OnLaunched);
@@ -132,12 +136,12 @@ namespace Debugger
 			DoTransition(State.Running);
 			m_vm.Resume();
 			
-			if (m_thread == null)
+			if (m_eventThread == null)
 			{
-				m_thread = new Thread(this.DoDispatchEvents);
-				m_thread.Name = "Debugger.DoDispatchEvents";
-				m_thread.IsBackground = true;		// allow the app to quit even if the thread is still running
-				m_thread.Start();
+				m_eventThread = new Thread(this.DoDispatchEvents);
+				m_eventThread.Name = "Debugger.DoDispatchEvents";
+				m_eventThread.IsBackground = true;		// allow the app to quit even if the thread is still running
+				m_eventThread.Start();
 			}
 		}
 		
@@ -357,6 +361,16 @@ namespace Debugger
 			{
 				m_vm = VirtualMachineManager.EndLaunch(result);
 				
+				m_stdoutThread = new Thread(() => DoOutputThread(m_vm.StandardOutput, Output.Normal));
+				m_stdoutThread.Name = "Debugger.StdOutThread";
+				m_stdoutThread.IsBackground = true;		// allow the app to quit even if the thread is still running
+				m_stdoutThread.Start();
+				
+				m_stderrThread = new Thread(() => DoOutputThread(m_vm.StandardError, Output.Error));
+				m_stderrThread.Name = "Debugger.StdErrThread";
+				m_stderrThread.IsBackground = true;		// allow the app to quit even if the thread is still running
+				m_stderrThread.Start();
+				
 				// Note that we need to be a bit careful about which of these we enable
 				// because we keep the VM suspended until we can process the event in
 				// the main thread.
@@ -384,6 +398,23 @@ namespace Debugger
 				Unused.Value = Functions.NSRunAlertPanel(title, message);
 				
 				NSApplication.sharedApplication().BeginInvoke(() => DoTransition(State.Disconnected));
+			}
+		}
+		
+		[ThreadModel(ThreadModel.Concurrent)]
+		private void DoOutputThread(System.IO.StreamReader stream, Output kind)
+		{
+			try
+			{
+				while (!stream.EndOfStream)
+				{
+					string line = stream.ReadLine();
+					NSApplication.sharedApplication().BeginInvoke(() => m_transcript.WriteLine(kind, line));
+				}
+			}
+			catch (Exception e)
+			{
+				Log.WriteLine(TraceLevel.Error, "Debugger", "{0}", e);
 			}
 		}
 		
@@ -654,6 +685,7 @@ namespace Debugger
 		#endregion
 		
 		#region Fields
+		private ITranscript m_transcript;
 		private VirtualMachine m_vm;
 		private bool m_disposed;
 		private State m_state;
@@ -665,7 +697,9 @@ namespace Debugger
 		private Dictionary<ResolvedBreakpoint, BreakpointEventRequest> m_breakpoints = new Dictionary<ResolvedBreakpoint, BreakpointEventRequest>();
 		private Dictionary<string, List<TypeMirror>> m_types = new Dictionary<string, List<TypeMirror>>();
 		
-		private Thread m_thread;
+		private Thread m_eventThread;
+		private Thread m_stdoutThread;
+		private Thread m_stderrThread;
 		private object m_mutex = new object();
 			private Queue<Event> m_events = new Queue<Event>();
 		#endregion

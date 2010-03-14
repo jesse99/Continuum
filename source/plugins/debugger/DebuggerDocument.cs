@@ -39,10 +39,12 @@ namespace Debugger
 			ActiveObjects.Add(this);
 		}
 		
+		// Used when opening mdb files.
 		public new void makeWindowControllers()
 		{
 			try
 			{
+				m_breakInMain = true;
 				makeWindowControllersNoUI(NSString.Empty);
 			}
 			catch (Exception e)
@@ -55,10 +57,12 @@ namespace Debugger
 			}
 		}
 		
+		// Used when opening mdb files or exe files (via AppleScript).
 		public void makeWindowControllersNoUI(NSString args)
 		{
 			string path = fileURL().path().ToString();
 			string dir = Path.GetDirectoryName(path);
+			
 			if (path.EndsWith(".mdb"))
 				m_executable = Path.Combine(dir, Path.GetFileNameWithoutExtension(path));
 			else
@@ -77,8 +81,8 @@ namespace Debugger
 //			info.EnvironmentVariables.Add("key", "value");		// TODO: might want to support this
 			info.FileName = "mono";
 			info.RedirectStandardError = false;
-			info.RedirectStandardInput = false;
-			info.RedirectStandardOutput = false;
+			info.RedirectStandardInput = true;
+			info.RedirectStandardOutput = true;
 			info.UseShellExecute = false;
 			info.WorkingDirectory = dir;
 			
@@ -94,10 +98,15 @@ namespace Debugger
 			get {return m_debugger;}
 		}
 		
-		// Path to the executable.
+		// Full path to the executable.
 		public string Executable
 		{
 			get {return m_executable;}
+		}
+		
+		public bool BreakInMain
+		{
+			get {return m_breakInMain;}
 		}
 		
 		public bool readFromData_ofType_error(NSData data, NSString typeName, IntPtr outError)
@@ -150,6 +159,7 @@ namespace Debugger
 		private string m_executable;
 		private DebuggerController m_controller;
 		private Debugger m_debugger;
+		private bool m_breakInMain;
 		#endregion
 	}
 }

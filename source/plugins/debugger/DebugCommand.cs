@@ -37,7 +37,7 @@ namespace Debugger
 		public new NSObject performDefaultImplementation()
 		{
 			NSString path = directParameter().To<NSString>();
-			NSObject args = evaluatedArguments().objectForKey(NSString.Create("args"));
+			NSObject args = evaluatedArguments().objectForKey(NSString.Create("Args"));
 			
 			try
 			{
