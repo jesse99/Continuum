@@ -255,7 +255,8 @@ namespace Debugger
 				Log.WriteLine(TraceLevel.Info, "Debugger", "Hit breakpoint at {0}:{1:X4}", e.Method.FullName, bp.Key.Offset);
 				BreakpointEvent(new Context(e.Thread, e.Method, bp.Key.Offset));
 			}
-			
+			Broadcaster.Invoke("processed breakpoint event", e);
+		
 			return HandlerAction.Suspend;
 		}
 		
@@ -276,6 +277,7 @@ namespace Debugger
 			{
 				SteppedEvent(new Context(e.Thread, e.Method, e.Location));
 			}
+			Broadcaster.Invoke("processed step event", e);
 			
 			return HandlerAction.Suspend;
 		}

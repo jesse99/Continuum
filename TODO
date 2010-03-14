@@ -56,16 +56,35 @@ public abstract class Mono.Debugger.EventRequest
 	public sealed class Mono.Debugger.MethodExitEventRequest
 	public sealed class Mono.Debugger.StepEventRequest
 	
+public abstract class Mono.Debugger.Value
+	public class Mono.Debugger.PrimitiveValue
+	public class Mono.Debugger.StructMirror
+		public class Mono.Debugger.EnumMirror
+	public class Mono.Debugger.ObjectMirror
+		public class Mono.Debugger.StringMirror
+		public class Mono.Debugger.ArrayMirror
+		public class Mono.Debugger.ThreadMirror
+	
 http://www.ffconsultancy.com/ocaml/hlvm/
-					
-* Look at the soft debugger in mono 2.6	:
-	- examining variables
-	- might want to allow ToString specifiers to be used (could even deduce them)
+
+* Work on variables window:
+	- use ToString to get values for struct and object
+	- make sure variable items go away
+	- changes should be rendered in red
+	- allow values to be changed
+	- sort (using headers?), view as hex
+	- allow users to invoke methods on objects
+* CodeView frame is not auto-saved
+* Work on a debugger:	
+	- might want to allow ToString specifiers to be used (could even deduce them), ObjectMirror
+	  has an invoke method
+	- might want to allow users to execute arbitrary methods on objects (using ObjectMirror.BeginInvoke)
 	- break on exceptions
 	- stack window
 	- threads window
 	- assembly view
 	- need a way to kill the executable and stop debugging
+	- setting values
 	- watchpoints (probably dont need this, variable windows should not go away)
 	- conditional breakpoints
 	- context breakpoint menu should have close do a broadcast so the breakpoint can be toggled
