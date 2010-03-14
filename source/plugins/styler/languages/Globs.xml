@@ -17,5 +17,5 @@
 	<Glob language = "refactor">*.ref</Glob>
 	<Glob language = "python">*.py SConstruct</Glob>
 	<Glob language = "shell">*.sh</Glob>
-	<Glob language = "xml">*.xml *.xsd *.xsdl *.xsl *.schema *.config *.plist *.dtd *.build *.resx</Glob>
+	<Glob language = "xml">*.xml *.xsd *.xsdl *.xsl *.schema *.config *.plist *.sdef *.dtd *.build *.resx</Glob>
 </Globs>

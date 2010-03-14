@@ -58,9 +58,8 @@ public abstract class Mono.Debugger.EventRequest
 	
 http://www.ffconsultancy.com/ocaml/hlvm/
 					
-* Change the tool so that it uses osascript which we can use to pass arguments into Continuum
-   for use when launching the debugee.
-* Do we still want to allow sym files to be opened?
+* When opening sym files break at the first line. Maybe the debug command should optionally
+   do this as well.
 * Do we want to allow concurrent debug sessions? If not what happens when the code viewer
    window is closed? Should we stop debugging (and close the debugger controller window)?
 * Dot should complete auto-complete text.
@@ -107,6 +106,7 @@ http://www.ffconsultancy.com/ocaml/hlvm/
 	- make sure it works ok if the exe and mdb are out of sync
 	- probably need to somehow prevent debugging two apps at once (or fix the menu handler
 	  goo so that that would work)
+	- mention the osascript debugging command 
 * Option-arrow is skipping over periods.
 * Rewrite the readme using rtf:
 	- add some sort of tips and tricks section
@@ -115,6 +115,13 @@ http://www.ffconsultancy.com/ocaml/hlvm/
 * Need a directory for custom plugins:
 	- google code search might be a good example
 	- or maybe a simple diff tool
+	
+* Add better support for apple script (and concurrently use it to write functional tests).
+	http://developer.apple.com/cocoa/applescriptforapps.html
+	http://developer.apple.com/mac/library/documentation/Cocoa/Conceptual/ScriptableCocoaApplications/SApps_about_apps/SAppsAboutApps.html
+	http://developer.apple.com/mac/library/technotes/tn2002/tn2106.html
+	man 5 sdef
+	tell application "Continuum" to save document 1 in "/tmp/foo.html" as "HTML"
 * Look at the new error bubbles in snow leopard's XCode.	
 * Typing seems slower than it used to be, eg when typing in the middle of a comment.
 * Would be nice to support hyperlinks in rich text files

@@ -223,13 +223,16 @@
 	<string>${VERSION}</string>
 	
 	<key>CFBundleSignature</key>
-	<string>????</string>
+	<string>Cont</string>
 	
 	<key>CFBundleVersion</key>
 	<string>${BUILDNUM}</string>
 	
 	<key>NSAppleScriptEnabled</key>
 	<string>YES</string>
+	
+	<key>OSAScriptingDefinition</key>
+	<string>${APPNAME}.sdef</string>
 	
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>

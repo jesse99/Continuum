@@ -41,32 +41,9 @@ namespace Debugger
 		
 		public new void makeWindowControllers()
 		{
-			string path = fileURL().path().ToString();
-			string dir = Path.GetDirectoryName(path);
-			m_executable = Path.Combine(dir, Path.GetFileNameWithoutExtension(path));
-			
 			try
 			{
-				// The Soft debugger returns a VM in EndInvoke even when you pass
-				// it a completely bogus path so we need to do this check. 
-				if (!File.Exists(m_executable))
-					throw new FileNotFoundException(m_executable + " was not found.");
-				
-				ProcessStartInfo info = new ProcessStartInfo();
-				info.Arguments = string.Format("--debug {0}", m_executable);
-//				info.EnvironmentVariables.Add("key", "value");		// TODO
-				info.FileName = "mono";
-				info.RedirectStandardError = false;
-				info.RedirectStandardInput = false;
-				info.RedirectStandardOutput = false;
-				info.UseShellExecute = false;
-				info.WorkingDirectory = dir;
-				
-				m_debugger = new Debugger(info);
-				m_debugger.StateEvent += this.OnStateChanged;
-				
-				m_controller = new DebuggerController(this);
-				addWindowController(m_controller);
+				makeWindowControllersNoUI(NSString.Empty);
 			}
 			catch (Exception e)
 			{
@@ -76,6 +53,40 @@ namespace Debugger
 				
 				close();									// note that exceptions leaving here are ignored by cocoa
 			}
+		}
+		
+		public void makeWindowControllersNoUI(NSString args)
+		{
+			string path = fileURL().path().ToString();
+			string dir = Path.GetDirectoryName(path);
+			if (path.EndsWith(".mdb"))
+				m_executable = Path.Combine(dir, Path.GetFileNameWithoutExtension(path));
+			else
+				m_executable = Path.Combine(dir, path);
+			
+			// The Soft debugger returns a VM in EndInvoke even when you pass
+			// it a completely bogus path so we need to do this check. 
+			if (!File.Exists(m_executable))
+				throw new FileNotFoundException(m_executable + " was not found.");
+			
+			ProcessStartInfo info = new ProcessStartInfo();
+			if (!NSObject.IsNullOrNil(args))
+				info.Arguments = string.Format("--debug {0} {1:D}", m_executable, args);
+			else
+				info.Arguments = string.Format("--debug {0}", m_executable);
+//			info.EnvironmentVariables.Add("key", "value");		// TODO: might want to support this
+			info.FileName = "mono";
+			info.RedirectStandardError = false;
+			info.RedirectStandardInput = false;
+			info.RedirectStandardOutput = false;
+			info.UseShellExecute = false;
+			info.WorkingDirectory = dir;
+			
+			m_debugger = new Debugger(info);
+			m_debugger.StateEvent += this.OnStateChanged;
+			
+			m_controller = new DebuggerController(this);
+			addWindowController(m_controller);
 		}
 		
 		public Debugger Debugger

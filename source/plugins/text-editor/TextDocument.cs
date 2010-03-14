@@ -347,6 +347,8 @@ namespace TextEditor
 				
 				DoRestoreEndian(str);
 				
+				// TODO: should support utf16, ascii and maybe utf32, including the different endians
+				// (and if this is done update the sdef)
 				switch (typeName.description())
 				{
 					case "Plain Text, UTF8 Encoded":
