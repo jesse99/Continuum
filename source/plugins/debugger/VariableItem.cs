@@ -49,15 +49,14 @@ namespace Debugger
 		public abstract NSAttributedString GetTypeName();
 		
 		#region Protected Methods
-		protected VariableItem CreateVariable(string name, string type, TypeMirror v)
+		protected VariableItem CreateVariable(string name, string type, TypeMirror v, ThreadMirror thread)
 		{
-			VariableItem variable = new TypeValueItem(name, type, v);
-			variable.retain();
+			VariableItem variable = new TypeValueItem(name, type, v, thread);
 			
 			return variable;
 		}
 		
-		protected VariableItem CreateVariable(string name, string type, Value v)
+		protected VariableItem CreateVariable(string name, string type, Value v, ThreadMirror thread)
 		{
 			VariableItem variable = null;
 			
@@ -66,7 +65,7 @@ namespace Debugger
 				var array = v as ArrayMirror;
 				if (array != null)
 				{
-					variable = new ArrayValueItem(name, type, array);
+					variable = new ArrayValueItem(name, type, array, thread);
 					break;
 				}
 				
@@ -95,23 +94,20 @@ namespace Debugger
 				var obj = v as ObjectMirror;
 				if (obj != null)
 				{
-					variable = new ObjectValueItem(name, type, obj);
+					variable = new ObjectValueItem(name, type, obj, thread);
 					break;
 				}
 				
 				var strct = v as StructMirror;
 				if (strct != null)
 				{
-					variable = new StructValueItem(name, type, strct);
+					variable = new StructValueItem(name, type, strct, thread);
 					break;
 				}
 				
 				Console.Error.WriteLine("bad type: {0}", v.GetType());
 			}
 			while (false);
-			
-			if (variable != null)
-				variable.retain();
 			
 			return variable;
 		}

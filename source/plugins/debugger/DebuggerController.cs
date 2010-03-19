@@ -61,14 +61,15 @@ namespace Debugger
 		
 		public void windowWillClose(NSObject notification)
 		{
-			Boss boss = ObjectModel.Create("Application");
-			var handler = boss.Get<IMenuHandler>();
-			handler.Deregister(this);
+//			Boss boss = ObjectModel.Create("Application");
+//			var handler = boss.Get<IMenuHandler>();
+//			handler.Deregister(this);
 			
-			// TODO: get rid of the code window too
+			Console.WriteLine("closing controls window");
+//			m_doc.Debugger.Dispose();
+//			window().autorelease();
 			
-			m_doc.Debugger.Dispose();
-			window().autorelease();
+//			autorelease();
 		}
 		
 		#region Private Methods
@@ -95,7 +96,7 @@ namespace Debugger
 			m_codeBoss = create.Create("CodeViewer");
 			
 			var viewer = m_codeBoss.Get<ICodeViewer>();
-			viewer.Init(m_doc.Debugger);
+			viewer.Init(m_doc);
 			
 			var editor = m_codeBoss.Get<ITextEditor>();
 			editor.Editable = false;

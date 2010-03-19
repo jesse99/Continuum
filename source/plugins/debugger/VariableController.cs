@@ -26,10 +26,6 @@ using MObjc;
 using Mono.Debugger;
 using Shared;
 using System;
-//using System.Collections.Generic;
-//using System.Diagnostics;
-//using System.IO;
-//using System.Linq;
 
 namespace Debugger
 {
@@ -63,6 +59,20 @@ namespace Debugger
 				default:
 					Contract.Assert(false, "bad name: " + name);
 					break;
+			}
+		}
+		
+		public void windowWillClose(NSObject notification)
+		{
+			if (m_method != null)
+			{
+				var method = m_method;
+				m_method = null;
+				
+				m_table.setDelegate(null);
+				m_table.reloadData();
+				
+				method.release();
 			}
 		}
 		
@@ -115,10 +125,12 @@ namespace Debugger
 		private void DoReset(StackFrame frame)
 		{
 			if (m_method != null)
+			{
 				m_method.release();
-				
+				m_method = null;
+			}
+			
 			m_method = new MethodValueItem(frame);
-			m_method.retain();	
 			
 			m_table.reloadData();
 		}

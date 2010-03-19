@@ -80,9 +80,9 @@ namespace Debugger
 				info.Arguments = string.Format("--debug {0}", m_executable);
 //			info.EnvironmentVariables.Add("key", "value");		// TODO: might want to support this
 			info.FileName = "mono";
-			info.RedirectStandardError = false;
-			info.RedirectStandardInput = true;
+			info.RedirectStandardInput = false;
 			info.RedirectStandardOutput = true;
+			info.RedirectStandardError = true;
 			info.UseShellExecute = false;
 			info.WorkingDirectory = dir;
 			
@@ -91,6 +91,15 @@ namespace Debugger
 			
 			m_controller = new DebuggerController(this);
 			addWindowController(m_controller);
+		}
+		
+		public new void close()
+		{
+			Console.WriteLine("closing document");
+			m_debugger.Dispose();
+			m_debugger = null;
+			
+			SuperCall(NSDocument.Class, "close");
 		}
 		
 		public Debugger Debugger

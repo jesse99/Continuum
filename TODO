@@ -63,22 +63,26 @@ public abstract class Mono.Debugger.Value
 	public class Mono.Debugger.ObjectMirror
 		public class Mono.Debugger.StringMirror
 		public class Mono.Debugger.ArrayMirror
-		public class Mono.Debugger.ThreadMirror
 	
-http://www.ffconsultancy.com/ocaml/hlvm/
 
+* Work on debugger classes:
+	- rename DebuggerController ControlsController	
+	- document should add a single controller for the code viewer
+	- document should load the nib once and only once
+	- closing the code viewer window should close the document
+	- closing the code viewer window should hide the other debugger windows
+	- make sure we can do sequential debugging sessions (and that we dont have multiple windows)
+	- make sure we cannot do concurrent debugging sessions
+	- code viewer should show up in the normal Windows menu
+	- debugger windows should not show up in the normal Windows menu
+	- need a windows menu in the Debug menu
 * Work on variables window:
-	- use ToString to get values for struct and object
-	- make sure variable items go away
 	- changes should be rendered in red
 	- allow values to be changed
-	- sort (using headers?), view as hex
+	- view as hex
 	- allow users to invoke methods on objects
 * CodeView frame is not auto-saved
 * Work on a debugger:	
-	- might want to allow ToString specifiers to be used (could even deduce them), ObjectMirror
-	  has an invoke method
-	- might want to allow users to execute arbitrary methods on objects (using ObjectMirror.BeginInvoke)
 	- break on exceptions
 	- stack window
 	- threads window
@@ -88,12 +92,14 @@ http://www.ffconsultancy.com/ocaml/hlvm/
 	- watchpoints (probably dont need this, variable windows should not go away)
 	- conditional breakpoints
 	- context breakpoint menu should have close do a broadcast so the breakpoint can be toggled
+	- might want to allow users to execute arbitrary methods on objects
 	- custom formatting
 	- custom viewer dlls
 	- make sure it works ok if the exe is missing
 	- probably want to optionally write stuff like assembly loads
 	- would be nice if could add breakpoints to IL views
 	- make sure it works ok if the exe and mdb are out of sync
+	- might want to allow ToString specifiers to be used
 	- probably need to somehow prevent debugging two apps at once (or fix the menu handler
 	  goo so that that would work)
 	- mention the osascript debugging command 

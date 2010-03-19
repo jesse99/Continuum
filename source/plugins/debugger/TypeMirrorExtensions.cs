@@ -19,28 +19,23 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-using Gear;
+using Mono.Debugger;
 using System;
+using System.Linq;
 
 namespace Debugger
 {
-	// Internal interface used to initialize the code viewer
-	internal interface ICodeViewer : IInterface
+	internal static class TypeMirrorExtensions
 	{
-		void Init(DebuggerDocument doc);
-		
-		bool IsShowingSource();
-		
-		bool CanDisplaySource();
-		
-		bool CanDisplayIL();
-		
-		void ShowSource();
-		
-		void ShowIL();
-		
-		// Full path to the file currently being viewed.
-		// May be null.
-		string Path {get;}
+		public static MethodMirror FindMethod(this TypeMirror type, string name, int numArgs)
+		{
+			MethodMirror method = type.GetMethods().FirstOrDefault(
+				m => m.Name == name && m.GetParameters().Length == numArgs);
+				
+			if (method == null && type.BaseType != null)
+				method = FindMethod(type.BaseType, name, numArgs);
+				
+			return method;
+		}
 	}
 }

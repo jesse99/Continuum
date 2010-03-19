@@ -33,7 +33,7 @@ namespace Debugger
 	[ExportClass("ArrayElementItem", "VariableItem")]
 	internal sealed class ArrayElementItem : VariableItem
 	{
-		public ArrayElementItem(string name, string type, Value value) : base("ArrayElementItem")
+		public ArrayElementItem(string name, string type, Value value, ThreadMirror thread) : base("ArrayElementItem")
 		{
 			m_name = CreateString(name);
 			m_type = CreateString(type);
@@ -44,7 +44,7 @@ namespace Debugger
 			}
 			else
 			{
-				m_value = CreateVariable(name, type, value);
+				m_value = CreateVariable(name, type, value, thread);
 			}
 		}
 		
@@ -110,7 +110,7 @@ namespace Debugger
 	[ExportClass("ArrayValueItem", "VariableItem")]
 	internal sealed class ArrayValueItem : VariableItem
 	{
-		public ArrayValueItem(string name, string type, ArrayMirror value) : base("ArrayValueItem")
+		public ArrayValueItem(string name, string type, ArrayMirror value, ThreadMirror thread) : base("ArrayValueItem")
 		{
 			if (value == null)
 			{
@@ -132,6 +132,7 @@ namespace Debugger
 			}
 			
 			m_object = value;
+			m_thread = thread;
 		}
 		
 		public override bool IsExpandable
@@ -178,9 +179,13 @@ namespace Debugger
 				m_value.release();
 				m_value = null;
 				
-				foreach (VariableItem item in m_items)
+				if (m_items != null)
 				{
-					item.release();
+					foreach (VariableItem item in m_items)
+					{
+						item.release();
+					}
+					Array.Clear(m_items, 0, m_items.Length);
 				}
 			}
 			
@@ -199,8 +204,7 @@ namespace Debugger
 					for (int i = 0; i < m_object.Length; ++i)
 					{
 						string name = DoGetName(i);
-						m_items[i] = new ArrayElementItem(name, m_object.Type.GetElementType().FullName, m_object[i]);
-						m_items[i].retain();
+						m_items[i] = new ArrayElementItem(name, m_object.Type.GetElementType().FullName, m_object[i], m_thread);
 					}
 				}
 				else
@@ -255,6 +259,7 @@ namespace Debugger
 		private NSAttributedString m_value;
 		private ArrayMirror m_object;
 		private VariableItem[] m_items;
+		private ThreadMirror m_thread;
 		#endregion
 	}
 	
@@ -339,14 +344,14 @@ namespace Debugger
 				if (string.IsNullOrEmpty(name))
 					name = "$" + locals[i].Index;		// temporary variable
 				
-				m_items.Add(CreateVariable(name, locals[i].Type.FullName, values[i]));
+				m_items.Add(CreateVariable(name, locals[i].Type.FullName, values[i], frame.Thread));
 			}
 			
 			if (!frame.Method.IsStatic)
-				m_items.Add(CreateVariable("this", frame.Method.DeclaringType.FullName, frame.GetThis()));
+				m_items.Add(CreateVariable("this", frame.Method.DeclaringType.FullName, frame.GetThis(), frame.Thread));
 				
 			else if (frame.Method.DeclaringType.GetFields().Any(f => f.IsStatic))
-				m_items.Add(CreateVariable("statics", frame.Method.DeclaringType.FullName, frame.Method.DeclaringType));
+				m_items.Add(CreateVariable("statics", frame.Method.DeclaringType.FullName, frame.Method.DeclaringType, frame.Thread));
 			
 			m_items.Sort((lhs, rhs) => lhs.GetName().ToString().ToLower().CompareTo(rhs.GetName().ToString().ToLower()));
 		}
@@ -388,6 +393,7 @@ namespace Debugger
 			{
 				item.release();
 			}
+			m_items.Clear();
 			
 			base.OnDealloc();
 		}
@@ -401,7 +407,7 @@ namespace Debugger
 	[ExportClass("ObjectValueItem", "VariableItem")]
 	internal sealed class ObjectValueItem : VariableItem
 	{
-		public ObjectValueItem(string name, string type, ObjectMirror value) : base("ObjectValueItem")
+		public ObjectValueItem(string name, string type, ObjectMirror value, ThreadMirror thread) : base("ObjectValueItem")
 		{
 			if (value == null)
 			{
@@ -419,10 +425,22 @@ namespace Debugger
 			{
 				m_name = CreateString(name);
 				m_type = CreateString(type);
-				m_value = CreateString(string.Empty);
+				
+				MethodMirror method = value.Type.FindMethod("ToString", 0);
+				if (method.DeclaringType.FullName != "System.Object")
+				{
+					Value v = value.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+					StringMirror s = (StringMirror) v;
+					m_value = CreateString(s.Value);
+				}
+				else
+				{
+					m_value = CreateString(string.Empty);
+				}
 			}
 			
 			m_object = value;
+			m_thread = thread;
 		}
 		
 		public override bool IsExpandable
@@ -469,9 +487,13 @@ namespace Debugger
 				m_value.release();
 				m_value = null;
 				
-				foreach (VariableItem item in m_items)
+				if (m_items != null)
 				{
-					item.release();
+					foreach (VariableItem item in m_items)
+					{
+						item.release();
+					}
+					Array.Clear(m_items, 0, m_items.Length);
 				}
 			}
 			
@@ -494,7 +516,7 @@ namespace Debugger
 					
 					for (int i = 0; i < values.Length; ++i)
 					{
-						m_items[i] = CreateVariable(fields[i].Name, fields[i].FieldType.FullName, values[i]);
+						m_items[i] = CreateVariable(fields[i].Name, fields[i].FieldType.FullName, values[i], m_thread);
 					}
 					Array.Sort(m_items, (lhs, rhs) => lhs.GetName().ToString().ToLower().CompareTo(rhs.GetName().ToString().ToLower()));
 				}
@@ -512,6 +534,7 @@ namespace Debugger
 		private NSAttributedString m_value;
 		private ObjectMirror m_object;
 		private VariableItem[] m_items;
+		private ThreadMirror m_thread;
 		#endregion
 	}
 	
@@ -669,12 +692,24 @@ namespace Debugger
 	[ExportClass("StructValueItem", "VariableItem")]
 	internal sealed class StructValueItem : VariableItem
 	{
-		public StructValueItem(string name, string type, StructMirror value) : base("StructValueItem")
+		public StructValueItem(string name, string type, StructMirror value, ThreadMirror thread) : base("StructValueItem")
 		{
 			m_name = CreateString(name);
 			m_type = CreateString(type);
+			m_object = value;
 			
-			m_value = value;
+			MethodMirror method = value.Type.FindMethod("ToString", 0);
+			if (method.DeclaringType.FullName != "System.ValueType")
+			{
+				Value v = value.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+				StringMirror s = (StringMirror) v;
+				m_value = CreateString(s.Value);
+			}
+			else
+			{
+				m_value = CreateString(string.Empty);
+			}
+			m_thread = thread;
 		}
 		
 		public override bool IsExpandable
@@ -684,7 +719,7 @@ namespace Debugger
 		
 		public override int Count
 		{
-			get {return m_value.Fields.Length;}
+			get {return m_object.Fields.Length;}
 		}
 		
 		public override VariableItem this[int index]
@@ -699,7 +734,7 @@ namespace Debugger
 		
 		public override NSAttributedString GetValue()
 		{
-			return NSAttributedString.Create("");
+			return m_value;
 		}
 		
 		public override NSAttributedString GetTypeName()
@@ -715,13 +750,20 @@ namespace Debugger
 				m_name.release();
 				m_name = null;
 				
-				foreach (VariableItem item in m_items)
-				{
-					item.release();
-				}
-				
 				m_type.release();
 				m_type = null;
+				
+				m_value.release();
+				m_value = null;
+				
+				if (m_items != null)
+				{
+					foreach (VariableItem item in m_items)
+					{
+						item.release();
+					}
+					Array.Clear(m_items, 0, m_items.Length);
+				}
 			}
 			
 			base.OnDealloc();
@@ -733,14 +775,14 @@ namespace Debugger
 		{
 			if (m_items == null)
 			{
-				m_items = new VariableItem[m_value.Fields.Length];
+				m_items = new VariableItem[m_object.Fields.Length];
 				
-				FieldInfoMirror[] fields = m_value.Type.GetFields();
-				Contract.Assert(m_value.Fields.Length == fields.Length);
+				FieldInfoMirror[] fields = m_object.Type.GetFields();
+				Contract.Assert(m_object.Fields.Length == fields.Length);
 				
-				for (int i = 0; i < m_value.Fields.Length; ++i)
+				for (int i = 0; i < m_object.Fields.Length; ++i)
 				{
-					m_items[i] = CreateVariable(fields[i].Name, fields[i].FieldType.FullName, m_value.Fields[i]);
+					m_items[i] = CreateVariable(fields[i].Name, fields[i].FieldType.FullName, m_object.Fields[i], m_thread);
 				}
 				Array.Sort(m_items, (lhs, rhs) => lhs.GetName().ToString().ToLower().CompareTo(rhs.GetName().ToString().ToLower()));
 			}
@@ -749,22 +791,25 @@ namespace Debugger
 		
 		#region Fields
 		private NSAttributedString m_name;
-		private StructMirror m_value;
+		private StructMirror m_object;
 		private NSAttributedString m_type;
+		private NSAttributedString m_value;
 		private VariableItem[] m_items;
+		private ThreadMirror m_thread;
 		#endregion
 	}
 	
 	[ExportClass("TypeValueItem", "VariableItem")]
 	internal sealed class TypeValueItem : VariableItem
 	{
-		public TypeValueItem(string name, string type, TypeMirror value) : base("TypeValueItem")
+		public TypeValueItem(string name, string type, TypeMirror value, ThreadMirror thread) : base("TypeValueItem")
 		{
 			m_name = CreateString(name);
 			m_type = CreateString(type);
 			
 			m_fields = (from f in value.GetFields() where f.IsStatic select f).ToArray();
 			m_object = value;
+			m_thread = thread;
 		}
 		
 		public override bool IsExpandable
@@ -805,9 +850,13 @@ namespace Debugger
 				m_name.release();
 				m_name = null;
 				
-				foreach (VariableItem item in m_items)
+				if (m_items != null)
 				{
-					item.release();
+					foreach (VariableItem item in m_items)
+					{
+						item.release();
+					}
+					Array.Clear(m_items, 0, m_items.Length);
 				}
 				
 				m_type.release();
@@ -827,7 +876,7 @@ namespace Debugger
 				
 				for (int i = 0; i < m_fields.Length; ++i)
 				{
-					m_items[i] = CreateVariable(m_fields[i].Name, m_fields[i].FieldType.FullName, m_object.GetValue(m_fields[i]));
+					m_items[i] = CreateVariable(m_fields[i].Name, m_fields[i].FieldType.FullName, m_object.GetValue(m_fields[i]), m_thread);
 				}
 				Array.Sort(m_items, (lhs, rhs) => lhs.GetName().ToString().ToLower().CompareTo(rhs.GetName().ToString().ToLower()));
 			}
@@ -840,6 +889,7 @@ namespace Debugger
 		private NSAttributedString m_type;
 		private FieldInfoMirror[] m_fields;
 		private VariableItem[] m_items;
+		private ThreadMirror m_thread;
 		#endregion
 	}
 }

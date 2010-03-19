@@ -30,11 +30,12 @@ using System.Collections.Generic;
 namespace Debugger
 {
 	// Customizes the normal text editor boss behavior.
-	internal sealed class CodeViewer : ICodeViewer, IDocumentWindowTitle, IDocumentExtension
+	internal sealed class CodeViewer : ICodeViewer, IDocumentWindowTitle, IDocumentExtension, IObserver
 	{
 		public void Instantiated(Boss boss)
 		{
 			m_boss = boss;
+			Broadcaster.Register("closing document window", this);
 		}
 		
 		public Boss Boss
@@ -42,15 +43,32 @@ namespace Debugger
 			get {return m_boss;}
 		}
 		
-		public void Init(Debugger debugger)
+		public void Init(DebuggerDocument doc)
 		{
-			Contract.Requires(debugger != null, "debugger is null");
+			Contract.Requires(doc != null, "doc is null");
 			
-			m_debugger = debugger;
+			m_document = doc;
 			
-			m_debugger.StateEvent += this.OnStateChanged;
-			m_debugger.BreakpointEvent += this.OnPaused;
-			m_debugger.SteppedEvent += this.OnPaused;
+			m_document.Debugger.StateEvent += this.OnStateChanged;
+			m_document.Debugger.BreakpointEvent += this.OnPaused;
+			m_document.Debugger.SteppedEvent += this.OnPaused;
+		}
+		
+		public void OnBroadcast(string name, object value)
+		{
+			switch (name)
+			{
+				case "closing document window":
+					if (m_boss == value)
+					{
+						m_document.close();
+					}
+					break;
+				
+				default:
+					Contract.Assert(false, "bad name: " + name);
+					break;
+			}
 		}
 		
 		public bool IsShowingSource()
@@ -178,7 +196,7 @@ namespace Debugger
 				text.Replace(System.IO.File.ReadAllText(m_context.SourceFile));
 				m_currentView = m_context.SourceFile;
 				m_lines.Clear();
-				m_debugger.StepBy = StepSize.Line;
+				m_document.Debugger.StepBy = StepSize.Line;
 				
 				Broadcaster.Invoke("swapped code view", m_boss);
 			}
@@ -211,7 +229,7 @@ namespace Debugger
 				DoBuildLineTable(source);
 				
 				text.Replace(source);
-				m_debugger.StepBy = StepSize.Min;
+				m_document.Debugger.StepBy = StepSize.Min;
 				
 				Broadcaster.Invoke("swapped code view", m_boss);
 			}
@@ -350,7 +368,7 @@ namespace Debugger
 		#region Fields 
 		private Boss m_boss;
 		private bool m_showIL;
-		private Debugger m_debugger;
+		private DebuggerDocument m_document;
 		private string m_title = "[debug]";
 		private string m_currentView;
 		private Context m_context;
