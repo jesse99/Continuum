@@ -35,10 +35,10 @@ namespace Debugger
 		public VariableController(IntPtr instance) : base(instance)
 		{
 			m_table = new IBOutlet<NSOutlineView>(this, "table").Value;
-			Console.WriteLine("table: {0}", m_table);
 			
 			Broadcaster.Register("debugger processed breakpoint event", this);
 			Broadcaster.Register("debugger processed step event", this);
+			Broadcaster.Register("debugger stopped", this);
 		}
 		
 		public void OnBroadcast(string name, object value)
@@ -47,32 +47,23 @@ namespace Debugger
 			{
 				case "debugger processed breakpoint event":	
 					var context = (Context) value;
-			Console.WriteLine("bp context: {0}", context);
 					StackFrame[] frames = context.Thread.GetFrames();
 					DoReset(frames[0]);
 					break;
 				
 				case "debugger processed step event":
-			Console.WriteLine("step context: {0}", context);
 					var context2 = (Context) value;
 					StackFrame[] frames2 = context2.Thread.GetFrames();
 					DoReset(frames2[0]);
 					break;
 				
+				case "debugger stopped":
+					DoReset(null);
+					break;
+				
 				default:
 					Contract.Assert(false, "bad name: " + name);
 					break;
-			}
-		}
-		
-		public void windowWillClose(NSObject notification)
-		{
-			if (m_method != null)
-			{
-				m_method.release();
-				m_method = null;
-				
-				m_table.reloadData();
 			}
 		}
 		
@@ -130,7 +121,8 @@ namespace Debugger
 				m_method = null;
 			}
 			
-			m_method = new MethodValueItem(frame);
+			if (frame != null)
+				m_method = new MethodValueItem(frame);
 			
 			m_table.reloadData();
 		}

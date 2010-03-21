@@ -20,4 +20,8 @@
 		<Implementation interfaces = "ITextOverlay" name = "TextOverlay"/>
 		<Implementation interfaces = "IMenuHandler" name = "MenuHandler"/>
 	</Extend>
+	
+	<Boss name = "TextWindow" singleton = "true">
+		<Implementation interfaces = "ICreate" name = "CreateWindow"/>
+	</Boss>
 </Bosses>

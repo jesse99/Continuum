@@ -101,6 +101,8 @@ namespace Debugger
 				{
 					if (m_vm != null)
 					{
+						Broadcaster.Invoke("debugger stopped", this);
+						
 						Log.WriteLine(TraceLevel.Info, "Debugger", "Dispose");
 						if (m_state != State.Paused)
 							m_vm.Exit(0);
@@ -698,7 +700,6 @@ namespace Debugger
 		private bool m_disposed;
 		private State m_state;
 		private ThreadMirror m_currentThread;
-//		private AssemblyMirror m_currentAssembly;
 		private Dictionary<Type, Func<Event, HandlerAction>> m_handlers = new Dictionary<Type, Func<Event, HandlerAction>>();
 		
 		private StepEventRequest m_stepRequest;

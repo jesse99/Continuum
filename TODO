@@ -76,12 +76,9 @@ public abstract class Mono.Debugger.Value
 		}
 		
 * Work on debugger classes:
-	- why does text-editor.nib have a TextDocument?
-	- on stopped need to close the doc
-	- closing the code viewer window should close the document
-	- closing the code viewer window should hide the other debugger windows
-	- make sure we can do sequential debugging sessions (and that we dont have multiple windows)
 	- make sure we cannot do concurrent debugging sessions
+		` command
+		` mdb open
 	- code viewer should show up in the normal Windows menu
 	- debugger windows should not show up in the normal Windows menu, setExcludedFromWindowsMenu:
 	- need a windows menu in the Debug menu
@@ -114,6 +111,7 @@ public abstract class Mono.Debugger.Value
 	- probably need to somehow prevent debugging two apps at once (or fix the menu handler
 	  goo so that that would work)
 	- mention the osascript debugging command 
+	- CodeViewer is being deallocated but not GCed (there is some list with a reference to the boss)
 * Do we want to allow concurrent debug sessions? If not what happens when the code viewer
    window is closed? Should we stop debugging (and close the debugger controller window)?
 * Dot should complete auto-complete text.
@@ -587,6 +585,8 @@ public abstract class Mono.Debugger.Value
 	- make sure text objects go away (after forcing a GC)
 	- make sure text editor boss goes away
 	- make sure auto complete objects go away
+	- make sure debugger bosses go away
+	- make sure debugger objects go away
 	- run continuum with no prefs
 	- run continuum with no databases (including the windows db)
 	- run continuum with no Continuum Files dir

@@ -68,7 +68,9 @@ namespace Debugger
 						var window = m_boss.Get<IWindow>();
 						window.Window.saveFrameUsingName(NSString.Create("debugger code viewer"));
 						
-						m_document.close();
+						m_document = null;
+						Broadcaster.Unregister(this);
+//						NSApplication.sharedApplication().BeginInvoke(() => m_boss.Free());
 					}
 					break;
 				

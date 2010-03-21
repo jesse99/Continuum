@@ -166,7 +166,7 @@ namespace Debugger
 		#region Private Methods
 		private NSWindow DoCreateCodeWindow()
 		{
-			Boss pluginBoss = ObjectModel.Create("TextEditorPlugin");
+			Boss pluginBoss = ObjectModel.Create("TextWindow");
 			var create = pluginBoss.Get<ICreate>();
 			Boss boss = create.Create("CodeViewer");
 			
