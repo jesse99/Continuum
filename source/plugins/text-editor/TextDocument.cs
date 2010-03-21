@@ -207,6 +207,11 @@ namespace TextEditor
 			return m_binary;
 		}
 		
+		public void getInfo()
+		{
+			Unused.Value = new TextInfoController(this);
+		}
+		
 		public bool HasChangedOnDisk()
 		{
 			Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");

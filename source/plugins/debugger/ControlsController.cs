@@ -38,7 +38,6 @@ namespace Debugger
 			m_label = new IBOutlet<NSTextField>(this, "label").Value;
 			m_label.setStringValue(NSString.Create("Connecting."));
 			
-			Console.WriteLine("creating ControlsController");
 			Boss boss = ObjectModel.Create("Application");
 			var handler = boss.Get<IMenuHandler>();
 			handler.Register(this, 61, () => m_debugger.Run(), this.DoIsPaused);

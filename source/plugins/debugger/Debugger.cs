@@ -213,12 +213,16 @@ namespace Debugger
 		{
 			Log.WriteLine(TraceLevel.Info, "Debugger", "Created app domain {0}", e.Domain.FriendlyName);
 			
+			Broadcaster.Invoke("debugger loaded app domain", e.Domain);
+			
 			return HandlerAction.Resume;
 		}
 		
 		private HandlerAction DoAppDomainUnloadEvent(AppDomainUnloadEvent e)
 		{
 			Log.WriteLine(TraceLevel.Info, "Debugger", "Unloaded app domain {0}", e.Domain.FriendlyName);
+			
+			Broadcaster.Invoke("debugger unloaded app domain", e.Domain);
 			
 			return HandlerAction.Resume;
 		}
@@ -376,6 +380,8 @@ namespace Debugger
 				// because we keep the VM suspended until we can process the event in
 				// the main thread.
 				m_vm.EnableEvents(
+					EventType.AppDomainCreate,
+					EventType.AppDomainUnload,
 					EventType.AssemblyLoad,
 					EventType.AssemblyUnload,
 //					EventType.Exception,

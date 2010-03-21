@@ -37,6 +37,7 @@ namespace TextEditor
 	{
 		public TextController(string bossName) : base(NSObject.AllocAndInitInstance("TextController"))
 		{
+			m_boss = ObjectModel.Create(bossName);
 			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("text-editor"), this);
 			
 			m_textView = new IBOutlet<NSTextView>(this, "textView");
@@ -45,7 +46,6 @@ namespace TextEditor
 			m_scrollView = new IBOutlet<NSScrollView>(this, "scrollView");
 			m_restorer = new RestoreViewState(this);
 			
-			m_boss = ObjectModel.Create(bossName);
 			var wind = m_boss.Get<IWindow>();
 			wind.Window = window();
 			
@@ -411,8 +411,7 @@ namespace TextEditor
 		
 		public void getInfo(NSObject sender)
 		{
-			TextDocument doc = (TextDocument) document();
-			Unused.Value = new TextInfoController(doc);
+			document().Call("getInfo");
 		}
 		
 		public void openSelection(NSObject sender)

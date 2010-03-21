@@ -76,10 +76,8 @@ public abstract class Mono.Debugger.Value
 		}
 		
 * Work on debugger classes:
-	- on breakpoint make the code viewer window the key window
-	- what does get info do for the code viewer?
-	- on stopped need to close the doc
 	- why does text-editor.nib have a TextDocument?
+	- on stopped need to close the doc
 	- closing the code viewer window should close the document
 	- closing the code viewer window should hide the other debugger windows
 	- make sure we can do sequential debugging sessions (and that we dont have multiple windows)
@@ -93,7 +91,8 @@ public abstract class Mono.Debugger.Value
 	- allow values to be changed
 	- view as hex
 	- allow users to invoke methods on objects
-* CodeView frame is not auto-saved
+* Make sure can step through IL.
+* Might want a popup in variables window allowing a different thread to be selected.
 * Work on a debugger:	
 	- break on exceptions
 	- stack window

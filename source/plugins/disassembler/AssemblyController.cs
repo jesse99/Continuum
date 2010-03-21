@@ -140,7 +140,7 @@ namespace Disassembler
 			AssemblyDefinition assembly = m_doc.Assembly;
 			
 			DoAppendList(builder, "Attributes:", assembly.CustomAttributes, i => assembly.CustomAttributes[i].ToText(true));
-			builder.AppendLine("Culture:" + (assembly.Name.Culture.Length > 0 ? " " + assembly.Name.Culture: string.Empty));
+			builder.AppendLine("Culture: " + (assembly.Name.Culture.Length > 0 ? assembly.Name.Culture: "neutral"));
 			builder.AppendLine("Entry Point: " + (assembly.EntryPoint != null ? assembly.EntryPoint.ToString() : "none"));
 			builder.AppendLine("Flags: " + assembly.Name.Flags);
 			builder.AppendLine("Hash: " + (assembly.Name.Hash != null && assembly.Name.Hash.Length > 0 ? BitConverter.ToString(assembly.Name.Hash) : "none"));

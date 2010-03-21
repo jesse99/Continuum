@@ -53,6 +53,9 @@ namespace Debugger
 			Contract.Requires(doc != null, "doc is null");
 			
 			m_document = doc;
+			
+			var window = m_boss.Get<IWindow>();
+			window.Window.setFrameAutosaveName(NSString.Create("debugger code viewer"));
 		}
 		
 		public void OnBroadcast(string name, object value)
@@ -62,6 +65,9 @@ namespace Debugger
 				case "closing document window":
 					if (m_boss == value)
 					{
+						var window = m_boss.Get<IWindow>();
+						window.Window.saveFrameUsingName(NSString.Create("debugger code viewer"));
+						
 						m_document.close();
 					}
 					break;
@@ -72,9 +78,13 @@ namespace Debugger
 					break;
 				
 				case "debugger processed breakpoint event":
-				case "debugger processed step event":
 					var context = (Context) value;
-					DoPaused(context);
+					DoBreakpoint(context);
+					break;
+				
+				case "debugger processed step event":
+					var context2 = (Context) value;
+					DoPaused(context2);
 					break;
 				
 				case "debugger state changed":
@@ -127,7 +137,7 @@ namespace Debugger
 		public void ShowIL()
 		{
 			m_showIL = true;
-			DoCacheAssembly();
+			CacheAssembly(m_context.Method.DeclaringType.Assembly);
 			DoShowIL(m_context);
 		}
 		
@@ -151,6 +161,22 @@ namespace Debugger
 				return ".something-silly";
 		}
 		
+		public static void CacheAssembly(AssemblyMirror assembly)
+		{
+			if (assembly.Metadata == null)
+			{
+				AssemblyCache.AcquireLock();
+				try
+				{
+					assembly.Metadata = AssemblyCache.Load(assembly.Location, true);
+				}
+				finally
+				{
+					AssemblyCache.ReleaseLock();
+				}
+			}
+		}
+		
 		#region Private Methods
 		private void DoStateChanged(State state)
 		{
@@ -168,6 +194,14 @@ namespace Debugger
 			}
 		}
 		
+		private void DoBreakpoint(Context context)
+		{
+			var window = m_boss.Get<IWindow>();
+			window.Window.makeKeyAndOrderFront(window.Window);
+			
+			DoPaused(context);
+		}
+		
 		private void DoPaused(Context context)
 		{
 			m_context = context;
@@ -178,7 +212,7 @@ namespace Debugger
 			}
 			else
 			{
-				DoCacheAssembly();
+				CacheAssembly(m_context.Method.DeclaringType.Assembly);
 				
 				AssemblyMirror assembly = m_context.Method.DeclaringType.Assembly;
 				if (assembly.Metadata != null && context.Method.Metadata != null)
@@ -294,23 +328,6 @@ namespace Debugger
 			DateTime stime = System.IO.File.GetLastWriteTime(m_context.SourceFile);
 			DateTime atime = System.IO.File.GetLastWriteTime(m_context.Method.DeclaringType.Assembly.Location);
 			return stime > atime;
-		}
-		
-		private void DoCacheAssembly()
-		{
-			AssemblyMirror assembly = m_context.Method.DeclaringType.Assembly;
-			if (assembly.Metadata == null)
-			{
-				AssemblyCache.AcquireLock();
-				try
-				{
-					assembly.Metadata = AssemblyCache.Load(assembly.Location, true);
-				}
-				finally
-				{
-					AssemblyCache.ReleaseLock();
-				}
-			}
 		}
 		
 		// The disassembly may include stuff like attributes in the header as well
