@@ -19,6 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear;
 using Gear.Helpers;
 using MCocoa;
 using MObjc;
@@ -37,6 +38,9 @@ namespace Debugger
 		private DebuggerDocument(IntPtr instance) : base(instance)
 		{
 			ActiveObjects.Add(this);
+			
+			if (ms_windows == null)
+				ms_windows = new DebuggerWindows();
 		}
 		
 		// Used when opening mdb files.
@@ -87,17 +91,18 @@ namespace Debugger
 			info.WorkingDirectory = dir;
 			
 			m_debugger = new Debugger(info);
-			m_debugger.StateEvent += this.OnStateChanged;
 			
-			m_controller = new DebuggerController(this);
-			addWindowController(m_controller);
+			NSWindow window = DoCreateCodeWindow();
+			addWindowController(window.windowController());
 		}
 		
 		public new void close()
 		{
-			Console.WriteLine("closing document");
-			m_debugger.Dispose();
-			m_debugger = null;
+			if (m_debugger != null)
+			{
+				m_debugger.Dispose();
+				m_debugger = null;
+			}
 			
 			SuperCall(NSDocument.Class, "close");
 		}
@@ -120,55 +125,33 @@ namespace Debugger
 		
 		public bool readFromData_ofType_error(NSData data, NSString typeName, IntPtr outError)
 		{
-			bool read = true;
-		
-			try
-			{
-				// Note that we have to use the path instead of data so that Cecil knows
-				// where to look for the mdb file.
-//				string path = fileURL().path().description();
-				
-//				m_assembly = AssemblyFactory.GetAssembly(path);
-//				DoLoadSymbols(m_assembly);
-//				DoGetNamespaces(m_assembly);
-				
-//				Marshal.WriteIntPtr(outError, IntPtr.Zero);
-			}
-			catch (Exception e)
-			{
-				NSMutableDictionary userInfo = NSMutableDictionary.Create();
-				userInfo.setObject_forKey(NSString.Create("Couldn't read the mdb file."), Externs.NSLocalizedDescriptionKey);
-				userInfo.setObject_forKey(NSString.Create(e.Message), Externs.NSLocalizedFailureReasonErrorKey);
-				
-				NSObject error = NSError.errorWithDomain_code_userInfo(Externs.Cocoa3Domain, 1, userInfo);
-				Marshal.WriteIntPtr(outError, error);
-				
-				Log.WriteLine(TraceLevel.Error, "App", "Couldn't read the mdb file:");
-				Log.WriteLine(TraceLevel.Error, "App", "{0}", e);
-				
-				read = false;
-			}
-			
-			return read;
+			return true;	// don't think fileURL is available here so its hard to do anything useful...
 		}
 		
 		#region Private Methods
-		private void OnStateChanged(State state)
+		private NSWindow DoCreateCodeWindow()
 		{
-			Contract.Assert(state == State.Connected || state == State.Disconnected);
+			Boss pluginBoss = ObjectModel.Create("TextEditorPlugin");
+			var create = pluginBoss.Get<ICreate>();
+			Boss boss = create.Create("CodeViewer");
 			
-			if (state == State.Disconnected)
-				close();
-				
-			m_debugger.StateEvent -= this.OnStateChanged;
+			var viewer = boss.Get<ICodeViewer>();
+			viewer.Init(this);
+			
+			var editor = boss.Get<ITextEditor>();
+			editor.Editable = false;
+			
+			var window = boss.Get<IWindow>();
+			return window.Window;
 		}
 		#endregion
 		
 		#region Fields
 		private string m_executable;
-		private DebuggerController m_controller;
 		private Debugger m_debugger;
 		private bool m_breakInMain;
+		
+		private static DebuggerWindows ms_windows;
 		#endregion
 	}
 }

@@ -29,30 +29,33 @@ using System;
 
 namespace Debugger
 {
-	[ExportClass("VariableController", "NSController", Outlets = "table")]
-	internal sealed class VariableController : NSController, IObserver
+	[ExportClass("VariableController", "NSWindowController", Outlets = "table")]
+	internal sealed class VariableController : NSWindowController, IObserver	// Variable instead of Variables because there is already an Objective-C class named VariablesController
 	{
 		public VariableController(IntPtr instance) : base(instance)
 		{
 			m_table = new IBOutlet<NSOutlineView>(this, "table").Value;
+			Console.WriteLine("table: {0}", m_table);
 			
-			Broadcaster.Register("processed breakpoint event", this);
-			Broadcaster.Register("processed step event", this);
+			Broadcaster.Register("debugger processed breakpoint event", this);
+			Broadcaster.Register("debugger processed step event", this);
 		}
 		
 		public void OnBroadcast(string name, object value)
 		{
 			switch (name)
 			{
-				case "processed breakpoint event":	
-					var be = (BreakpointEvent) value;
-					StackFrame[] frames = be.Thread.GetFrames();
+				case "debugger processed breakpoint event":	
+					var context = (Context) value;
+			Console.WriteLine("bp context: {0}", context);
+					StackFrame[] frames = context.Thread.GetFrames();
 					DoReset(frames[0]);
 					break;
 				
-				case "processed step event":
-					var se = (StepEvent) value;
-					StackFrame[] frames2 = se.Thread.GetFrames();
+				case "debugger processed step event":
+			Console.WriteLine("step context: {0}", context);
+					var context2 = (Context) value;
+					StackFrame[] frames2 = context2.Thread.GetFrames();
 					DoReset(frames2[0]);
 					break;
 				
@@ -66,13 +69,10 @@ namespace Debugger
 		{
 			if (m_method != null)
 			{
-				var method = m_method;
+				m_method.release();
 				m_method = null;
 				
-				m_table.setDelegate(null);
 				m_table.reloadData();
-				
-				method.release();
 			}
 		}
 		

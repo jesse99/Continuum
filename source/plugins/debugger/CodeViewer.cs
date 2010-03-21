@@ -35,7 +35,12 @@ namespace Debugger
 		public void Instantiated(Boss boss)
 		{
 			m_boss = boss;
+			
 			Broadcaster.Register("closing document window", this);
+			Broadcaster.Register("debugger loaded assembly", this);
+			Broadcaster.Register("debugger processed breakpoint event", this);
+			Broadcaster.Register("debugger processed step event", this);
+			Broadcaster.Register("debugger state changed", this);
 		}
 		
 		public Boss Boss
@@ -48,10 +53,6 @@ namespace Debugger
 			Contract.Requires(doc != null, "doc is null");
 			
 			m_document = doc;
-			
-			m_document.Debugger.StateEvent += this.OnStateChanged;
-			m_document.Debugger.BreakpointEvent += this.OnPaused;
-			m_document.Debugger.SteppedEvent += this.OnPaused;
 		}
 		
 		public void OnBroadcast(string name, object value)
@@ -63,6 +64,22 @@ namespace Debugger
 					{
 						m_document.close();
 					}
+					break;
+				
+				case "debugger loaded assembly":
+					var assembly = (AssemblyMirror) value;
+					DoAssemblyLoaded(assembly);
+					break;
+				
+				case "debugger processed breakpoint event":
+				case "debugger processed step event":
+					var context = (Context) value;
+					DoPaused(context);
+					break;
+				
+				case "debugger state changed":
+					var state = (State) value;
+					DoStateChanged(state);
 					break;
 				
 				default:
@@ -135,7 +152,7 @@ namespace Debugger
 		}
 		
 		#region Private Methods
-		private void OnStateChanged(State state)
+		private void DoStateChanged(State state)
 		{
 			if (state == State.Running)
 			{
@@ -151,7 +168,7 @@ namespace Debugger
 			}
 		}
 		
-		private void OnPaused(Context context)
+		private void DoPaused(Context context)
 		{
 			m_context = context;
 			
@@ -361,6 +378,14 @@ namespace Debugger
 				m_ipAnnotation.Text = ">";
 				m_ipAnnotation.Draggable = false;
 				m_ipAnnotation.Visible = true;
+			}
+		}
+		
+		private void DoAssemblyLoaded(AssemblyMirror assembly)
+		{
+			if (m_document.BreakInMain && assembly.EntryPoint != null)
+			{
+				m_document.Debugger.AddBreakpoint(new Breakpoint("entry point", 1), assembly.EntryPoint, 0);
 			}
 		}
 		#endregion

@@ -935,7 +935,7 @@ namespace TextEditor
 				fileName = System.IO.Path.GetFileName(Path);
 			
 			// First check to see if the document was opened as binary.
-			if (document().Call("isBinary").To<bool>())
+			if (document().respondsToSelector("isBinary") && document().Call("isBinary").To<bool>())
 				fileName = "foo.bin";
 			
 			// Then see if a language can be inferred from the file name

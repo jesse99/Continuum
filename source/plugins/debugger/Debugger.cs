@@ -62,6 +62,7 @@ namespace Debugger
 			m_handlers.Add(typeof(TypeLoadEvent), (Event e) => DoTypeLoadEvent((TypeLoadEvent) e));
 			m_handlers.Add(typeof(VMDeathEvent), (Event e) => DoVMDeathEvent((VMDeathEvent) e));
 			m_handlers.Add(typeof(VMDisconnectEvent), (Event e) => DoVMDisconnectEvent((VMDisconnectEvent) e));
+			m_handlers.Add(typeof(VMStartEvent), (Event e) => DoVMStartEvent((VMStartEvent) e));
 			
 			Broadcaster.Register("added breakpoint", this);
 			Broadcaster.Register("removing breakpoint", this);
@@ -119,11 +120,6 @@ namespace Debugger
 				DoTransition(State.Disconnected);
 			}
 		}
-		
-		public event Action<State> StateEvent;
-		public event Action<AssemblyMirror> AssemblyLoadedEvent;
-		public event Action<Context> BreakpointEvent;
-		public event Action<Context> SteppedEvent;
 		
 		// Either start running after connecting or after pausing (e.g. via a breakpoint).
 		public void Run()
@@ -188,7 +184,7 @@ namespace Debugger
 				m_breakpoints.Add(resolved, request);
 			}
 			
-			Broadcaster.Invoke("resolved breakpoint", bp);
+			Broadcaster.Invoke("debugger resolved breakpoint", bp);
 		}
 		
 		public void RemoveBreakpoint(Breakpoint bp, MethodMirror method, long ilOffset)
@@ -209,7 +205,7 @@ namespace Debugger
 				m_breakpoints.Remove(resolved);
 			}
 			
-			Broadcaster.Invoke("unresolved breakpoint", bp);
+			Broadcaster.Invoke("debugger unresolved breakpoint", bp);
 		}
 		
 		#region Event Handlers
@@ -231,8 +227,7 @@ namespace Debugger
 		{
 			Log.WriteLine(TraceLevel.Info, "Debugger", "Loaded assembly {0}", e.Assembly.GetName());
 			
-			if (AssemblyLoadedEvent != null)
-				AssemblyLoadedEvent(e.Assembly);
+			Broadcaster.Invoke("debugger loaded assembly", e.Assembly);
 			
 			return HandlerAction.Resume;
 		}
@@ -249,13 +244,10 @@ namespace Debugger
 				m_stepRequest = null;
 			}
 			
-			if (BreakpointEvent != null)
-			{
-				KeyValuePair<ResolvedBreakpoint, BreakpointEventRequest> bp = m_breakpoints.Single(candidate => e.Request == candidate.Value);	// hitting a breakpoint is a fairly rare event so we can get by with a linear search
-				Log.WriteLine(TraceLevel.Info, "Debugger", "Hit breakpoint at {0}:{1:X4}", e.Method.FullName, bp.Key.Offset);
-				BreakpointEvent(new Context(e.Thread, e.Method, bp.Key.Offset));
-			}
-			Broadcaster.Invoke("processed breakpoint event", e);
+			KeyValuePair<ResolvedBreakpoint, BreakpointEventRequest> bp = m_breakpoints.Single(candidate => e.Request == candidate.Value);	// hitting a breakpoint is a fairly rare event so we can get by with a linear search
+			Log.WriteLine(TraceLevel.Info, "Debugger", "Hit breakpoint at {0}:{1:X4}", e.Method.FullName, bp.Key.Offset);
+			var context = new Context(e.Thread, e.Method, bp.Key.Offset);
+			Broadcaster.Invoke("debugger processed breakpoint event", context);
 		
 			return HandlerAction.Suspend;
 		}
@@ -273,11 +265,8 @@ namespace Debugger
 			m_stepRequest.Disable();
 			m_stepRequest = null;
 			
-			if (SteppedEvent != null)
-			{
-				SteppedEvent(new Context(e.Thread, e.Method, e.Location));
-			}
-			Broadcaster.Invoke("processed step event", e);
+			var context = new Context(e.Thread, e.Method, e.Location);
+			Broadcaster.Invoke("debugger processed step event", context);
 			
 			return HandlerAction.Suspend;
 		}
@@ -323,6 +312,7 @@ namespace Debugger
 			Log.WriteLine(TraceLevel.Info, "Debugger", "VMDeathEvent");
 			DoTransition(State.Disconnected);
 			DoReset();
+			Broadcaster.Invoke("debugger stopped", this);
 			
 			return HandlerAction.Suspend;
 		}
@@ -332,8 +322,17 @@ namespace Debugger
 			Log.WriteLine(TraceLevel.Info, "Debugger", "VMDisconnectEvent");
 			DoTransition(State.Disconnected);
 			DoReset();
+			Broadcaster.Invoke("debugger stopped", this);
 			
 			return HandlerAction.Suspend;
+		}
+		
+		private HandlerAction DoVMStartEvent(VMStartEvent e)
+		{
+			Log.WriteLine(TraceLevel.Info, "Debugger", "VMStartEvent");
+			Broadcaster.Invoke("debugger started", this);
+			
+			return HandlerAction.Resume;
 		}
 		
 		private HandlerAction DoUnknownEvent(Event e)
@@ -351,7 +350,7 @@ namespace Debugger
 			
 			foreach (ResolvedBreakpoint resolved in m_breakpoints.Keys)
 			{
-				Broadcaster.Invoke("unresolved breakpoint", resolved.BreakPoint);
+				Broadcaster.Invoke("debugger unresolved breakpoint", resolved.BreakPoint);
 			}
 			m_breakpoints.Clear();
 		}
@@ -390,6 +389,7 @@ namespace Debugger
 				
 				Log.WriteLine(TraceLevel.Info, "Debugger", "Launched debugger");
 				NSApplication.sharedApplication().BeginInvoke(() => DoTransition(State.Connected));
+				NSApplication.sharedApplication().BeginInvoke(() => Broadcaster.Invoke("debugger connected", this));
 			}
 			catch (Exception e)
 			{
@@ -498,9 +498,9 @@ namespace Debugger
 				Log.WriteLine(TraceLevel.Verbose, "Debugger", "Transitioning from {0} to {1}", m_state, newState);
 				m_state = newState;
 				
-				if (StateEvent != null && !m_disposed)
+				if (!m_disposed)
 				{
-					StateEvent(m_state);
+					Broadcaster.Invoke("debugger state changed", newState);
 				}
 			}
 		}

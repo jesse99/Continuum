@@ -64,18 +64,30 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.StringMirror
 		public class Mono.Debugger.ArrayMirror
 	
-
+		
+		private void OnStateChanged(State state)
+		{
+			Contract.Assert(state == State.Connected || state == State.Disconnected);
+			
+			if (state == State.Disconnected)
+				close();
+				
+			m_debugger.StateEvent -= this.OnStateChanged;
+		}
+		
 * Work on debugger classes:
-	- rename DebuggerController ControlsController	
-	- document should add a single controller for the code viewer
-	- document should load the nib once and only once
+	- on breakpoint make the code viewer window the key window
+	- what does get info do for the code viewer?
+	- on stopped need to close the doc
+	- why does text-editor.nib have a TextDocument?
 	- closing the code viewer window should close the document
 	- closing the code viewer window should hide the other debugger windows
 	- make sure we can do sequential debugging sessions (and that we dont have multiple windows)
 	- make sure we cannot do concurrent debugging sessions
 	- code viewer should show up in the normal Windows menu
-	- debugger windows should not show up in the normal Windows menu
+	- debugger windows should not show up in the normal Windows menu, setExcludedFromWindowsMenu:
 	- need a windows menu in the Debug menu
+	- need to store visible debugger windows in a pref
 * Work on variables window:
 	- changes should be rendered in red
 	- allow values to be changed
