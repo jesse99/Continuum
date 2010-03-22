@@ -75,14 +75,6 @@ public abstract class Mono.Debugger.Value
 			m_debugger.StateEvent -= this.OnStateChanged;
 		}
 		
-* Work on debugger classes:
-	- make sure we cannot do concurrent debugging sessions
-		` command
-		` mdb open
-	- code viewer should show up in the normal Windows menu
-	- debugger windows should not show up in the normal Windows menu, setExcludedFromWindowsMenu:
-	- need a windows menu in the Debug menu
-	- need to store visible debugger windows in a pref
 * Work on variables window:
 	- changes should be rendered in red
 	- allow values to be changed

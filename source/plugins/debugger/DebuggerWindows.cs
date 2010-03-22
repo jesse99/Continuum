@@ -19,11 +19,13 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear;
 using MCocoa;
 using MObjc;
 using MObjc.Helpers;
 using Shared;
 using System;
+using System.Collections.Generic;
 
 namespace Debugger
 {
@@ -34,17 +36,20 @@ namespace Debugger
 		{
 			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("debugger"), this);
 			
-			m_controlsWindow = new IBOutlet<NSWindow>(this, "controlsWindow").Value;
-			m_variablesWindow = new IBOutlet<NSWindow>(this, "variablesWindow").Value;
+			Boss boss = ObjectModel.Create("Application");
+			var handler = boss.Get<IMenuHandler>();
 			
-			// Not sure why but we need to do this but if we don't the controllers are not
-			// constructed.
-			Unused.Value = new IBOutlet<NSWindowController>(this, "controlsController").Value;
-			Unused.Value = new IBOutlet<NSWindowController>(this, "variablesController").Value;
-			
-			// We don't actually close these windows so we need to manage auto-saving ourself.
-			m_controlsWindow.setFrameAutosaveName(NSString.Create("debugger controls window"));
-			m_variablesWindow.setFrameAutosaveName(NSString.Create("debugger variables window"));
+			foreach (WindowInfo info in m_windows)
+			{
+				info.Window = new IBOutlet<NSWindow>(this, info.Name + "Window").Value;
+				info.Window.setFrameAutosaveName(NSString.Create("debugger {0} window", info.Name));	// We don't actually close these windows so we need to manage auto-saving ourself.
+				info.Window.setExcludedFromWindowsMenu(true);
+				
+				Unused.Value = new IBOutlet<NSWindowController>(this, info.Name + "Controller").Value;	// Not sure why but we need to do this but if we don't the controllers are not constructed.
+				
+				WindowInfo temp = info;
+				handler.Register(this, info.MenuId, () => temp.Window.makeKeyAndOrderFront(this), () => Debugger.IsRunning);
+			}
 			
 			Broadcaster.Register("debugger started", this);
 			Broadcaster.Register("debugger stopped", this);
@@ -55,16 +60,24 @@ namespace Debugger
 			switch (name)
 			{
 				case "debugger started":
-					m_controlsWindow.makeKeyAndOrderFront(this);
-					m_variablesWindow.makeKeyAndOrderFront(this);
+					DoLoadPrefs();
+					
+					foreach (WindowInfo info in m_windows)
+					{
+						if (!info.HiddenOnStart)
+							info.Window.makeKeyAndOrderFront(this);
+					}
 					break;
 				
 				case "debugger stopped":
-					m_controlsWindow.saveFrameUsingName(NSString.Create("debugger controls window"));
-					m_variablesWindow.saveFrameUsingName(NSString.Create("debugger variables window"));
+					DoSavePrefs();
 					
-					m_controlsWindow.orderOut(this);
-					m_variablesWindow.orderOut(this);
+					foreach (WindowInfo info in m_windows)
+					{
+						info.Window.saveFrameUsingName(NSString.Create("debugger {0} window", info.Name));
+						info.Window.orderOut(this);
+					}
+					
 					break;
 				
 				default:
@@ -74,11 +87,54 @@ namespace Debugger
 		}
 		
 		#region Private Methods
+		private void DoLoadPrefs()
+		{
+			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
+			
+			foreach (WindowInfo info in m_windows)
+			{
+				// We use HiddenOnStart instead of the more natural VisibleOnStart
+				// because boolForKey returns false if the key does not exist.
+				info.HiddenOnStart = defaults.boolForKey(NSString.Create("{0} window hidden", info.Name));
+			}
+		}
+		
+		private void DoSavePrefs()
+		{
+			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
+			
+			foreach (WindowInfo info in m_windows)
+			{
+				defaults.setBool_forKey(!info.Window.isVisible(), NSString.Create("{0} window hidden", info.Name));
+			}
+		}
+		#endregion
+		
+		#region Private Types
+		private sealed class WindowInfo
+		{
+			public WindowInfo(string name, int menuId)
+			{
+				Name = name;
+				MenuId = menuId;
+			}
+			
+			public string Name {get; private set;}
+			
+			public int MenuId {get; private set;}
+			
+			public bool HiddenOnStart {get; set;}
+			
+			public NSWindow Window {get; set;}
+		}
 		#endregion
 		
 		#region Fields
-		private NSWindow m_controlsWindow;
-		private NSWindow m_variablesWindow;
+		private HashSet<WindowInfo> m_windows = new HashSet<WindowInfo>
+		{
+			new WindowInfo("controls", 661),
+			new WindowInfo("variables", 662),
+		};
 		#endregion
 	}
 }

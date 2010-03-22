@@ -78,6 +78,9 @@ namespace Debugger
 		{
 			try
 			{
+				if (Debugger.IsRunning)
+					throw new Exception("The debugger is already running.");
+				
 				m_breakInMain = true;
 				makeWindowControllersNoUI(NSString.Empty);
 			}
@@ -160,7 +163,24 @@ namespace Debugger
 		
 		public bool readFromData_ofType_error(NSData data, NSString typeName, IntPtr outError)
 		{
-			return true;	// don't think fileURL is available here so its hard to do anything useful...
+			bool read = false;
+			
+			try
+			{
+				// Don't think fileURL is available here so its hard to do anything too useful.
+				read = true;
+			}
+			catch (Exception e)
+			{
+				NSMutableDictionary userInfo = NSMutableDictionary.Create();
+				userInfo.setObject_forKey(NSString.Create("Couldn't start up the debugger."), Externs.NSLocalizedDescriptionKey);
+				userInfo.setObject_forKey(NSString.Create(e.Message), Externs.NSLocalizedFailureReasonErrorKey);
+				
+				NSObject error = NSError.errorWithDomain_code_userInfo(Externs.Cocoa3Domain, 1, userInfo);
+				Marshal.WriteIntPtr(outError, error);
+			}
+			
+			return read;
 		}
 		
 		#region Private Methods

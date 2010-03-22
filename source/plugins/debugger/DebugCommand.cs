@@ -41,6 +41,9 @@ namespace Debugger
 			
 			try
 			{
+				if (Debugger.IsRunning)
+					throw new Exception("The debugger is already running.");
+					
 				NSURL url = NSURL.fileURLWithPath(path);
 				NSDocumentController controller = NSDocumentController.sharedDocumentController();
 				

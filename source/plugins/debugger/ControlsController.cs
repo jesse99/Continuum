@@ -66,6 +66,7 @@ namespace Debugger
 				
 				case "debugger stopped":
 					m_debugger = null;
+					m_label.setStringValue(NSString.Create("Disconnected"));
 					break;
 				
 				default:

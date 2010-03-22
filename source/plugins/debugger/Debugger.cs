@@ -66,6 +66,8 @@ namespace Debugger
 			
 			Broadcaster.Register("added breakpoint", this);
 			Broadcaster.Register("removing breakpoint", this);
+			
+			ms_running = true;
 		}
 		
 		public State State
@@ -119,8 +121,14 @@ namespace Debugger
 				
 				m_disposed = true;
 				m_vm = null;
+				ms_running = false;
 				DoTransition(State.Disconnected);
 			}
+		}
+		
+		public static bool IsRunning
+		{
+			get {return ms_running;}
 		}
 		
 		// Either start running after connecting or after pausing (e.g. via a breakpoint).
@@ -587,32 +595,26 @@ namespace Debugger
 		{
 			try
 			{
-				while (true)
+				Event e = null;
+				do
 				{
 					// GetNextEvent can take an arbitrary amount of time to execute (e.g.
 					// when single stepping over a method which takes a long time) so we
 					// need to get events from a thread.
-					Event e = m_vm.GetNextEvent();
+					e = m_vm.GetNextEvent();
 					
-					// Bail if the VM is died or we've been disconnected.
-					if (e is VMDeathEvent || e is VMDisconnectEvent)
+					// Queue the event (and anything else the debugger agent has buffered) 
+					// for the main thread to handle. Once the main thread has processed all 
+					// the events it will resume the VM.
+					lock (m_mutex)
 					{
-						break;
-					}
-					else
-					{
-						// Otherwise we'll queue it (and anything else the debugger agent has
-						// buffered) for the main thread to handle. Once the main thread has
-						// processed all the events it will resume the VM.
-						lock (m_mutex)
-						{
-							m_events.Enqueue(e);
-							
-							if (m_events.Count == 1)
-								NSApplication.sharedApplication().BeginInvoke(this.DoProcessEvents);
-						}
+						m_events.Enqueue(e);
+						
+						if (m_events.Count == 1)
+							NSApplication.sharedApplication().BeginInvoke(this.DoProcessEvents);
 					}
 				}
+				while (!(e is VMDeathEvent || e is VMDisconnectEvent));
 			}
 			catch (Exception e)
 			{
@@ -711,6 +713,8 @@ namespace Debugger
 		private Thread m_stderrThread;
 		private object m_mutex = new object();
 			private Queue<Event> m_events = new Queue<Event>();
+			
+		private static bool ms_running;
 		#endregion
 	}
 }
