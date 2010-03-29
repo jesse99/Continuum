@@ -64,50 +64,40 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.StringMirror
 		public class Mono.Debugger.ArrayMirror
 	
-		
-		private void OnStateChanged(State state)
-		{
-			Contract.Assert(state == State.Connected || state == State.Disconnected);
-			
-			if (state == State.Disconnected)
-				close();
-				
-			m_debugger.StateEvent -= this.OnStateChanged;
-		}
-		
 * Work on variables window:
 	- changes should be rendered in red
+	- make sure statics show up in instance methods
 	- allow values to be changed
 	- view as hex
 	- allow users to invoke methods on objects
 * Make sure can step through IL.
-* Might want a popup in variables window allowing a different thread to be selected.
 * Work on a debugger:	
 	- break on exceptions
 	- stack window
 	- threads window
-	- assembly view
 	- need a way to kill the executable and stop debugging
-	- setting values
-	- watchpoints (probably dont need this, variable windows should not go away)
+	- watchpoints (or maybe multiple variables windows)
 	- conditional breakpoints
+	- moving the instruction pointer
 	- context breakpoint menu should have close do a broadcast so the breakpoint can be toggled
-	- might want to allow users to execute arbitrary methods on objects
-	- custom formatting
 	- custom viewer dlls
+	- what happens if ToString throws?
 	- make sure it works ok if the exe is missing
 	- probably want to optionally write stuff like assembly loads
 	- would be nice if could add breakpoints to IL views
 	- make sure it works ok if the exe and mdb are out of sync
 	- might want to allow ToString specifiers to be used
-	- probably need to somehow prevent debugging two apps at once (or fix the menu handler
-	  goo so that that would work)
 	- mention the osascript debugging command 
 	- CodeViewer is being deallocated but not GCed (there is some list with a reference to the boss)
 * Do we want to allow concurrent debug sessions? If not what happens when the code viewer
    window is closed? Should we stop debugging (and close the debugger controller window)?
 * Dot should complete auto-complete text.
 * Mention can right click on completion window.
+* Attributes and base classes need to handle global::
+* global should be a c# keyword?
+* *.csproj should be xml.
+* *.sln should be text.
+* Getting errors right clicking at the bottom of short text documents.
 * Doesn't the create thread refactor need to use a field for the thread object?
 * Mention useful to download mono source (and set the associated pref):
 	- dont need to compile

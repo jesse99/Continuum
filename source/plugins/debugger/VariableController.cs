@@ -105,26 +105,34 @@ namespace Debugger
 				return NSString.Empty;
 			
 			if (col.identifier().ToString() == "0")
-				return item == null ? m_method.GetName() : item.GetName();
+				return item == null ? m_method.Name : item.Name;
 			else if (col.identifier().ToString() == "1")
-				return item == null ? m_method.GetValue() : item.GetValue();
+				return item == null ? m_method.Value : item.Value;
 			else
-				return item == null ? m_method.GetTypeName() : item.GetTypeName();
+				return item == null ? m_method.TypeName : item.TypeName;
 		}
 		
 		#region Private Methods
 		private void DoReset(StackFrame frame)
 		{
-			if (m_method != null)
+			if (m_method != null && m_method.Frame.Matches(frame))
 			{
-				m_method.release();
-				m_method = null;
+				m_method.Refresh(frame);
+			}
+			else
+			{
+				if (m_method != null)
+				{
+					m_method.release();
+					m_method = null;
+				}
+				
+				if (frame != null)
+					m_method = new MethodValueItem(frame);
 			}
 			
-			if (frame != null)
-				m_method = new MethodValueItem(frame);
-			
-			m_table.reloadData();
+//			m_table.reloadData();
+			m_table.reloadItem_reloadChildren(null, true);
 		}
 		#endregion
 		

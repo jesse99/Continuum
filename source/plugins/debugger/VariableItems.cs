@@ -33,67 +33,57 @@ namespace Debugger
 	[ExportClass("ArrayElementItem", "VariableItem")]
 	internal sealed class ArrayElementItem : VariableItem
 	{
-		public ArrayElementItem(string name, string type, Value value, ThreadMirror thread) : base("ArrayElementItem")
+		public ArrayElementItem(string name, string type, Value value, ThreadMirror thread) : base(thread, name, value, type, "ArrayElementItem")
 		{
-			m_name = CreateString(name);
-			m_type = CreateString(type);
-			
 			if (value == null)
 			{
-				m_value = null;
+				m_item = null;
 			}
 			else
 			{
-				m_value = CreateVariable(name, type, value, thread);
+				m_item = CreateVariable(name, type, value, thread);
 			}
 		}
 		
 		public override bool IsExpandable
 		{
-			get {return m_value != null && m_value.IsExpandable;}
+			get {return m_item != null && m_item.IsExpandable;}
 		}
 		
 		public override int Count
 		{
-			get {return m_value != null ? m_value.Count : 0;}
+			get {return m_item != null ? m_item.Count : 0;}
 		}
 		
 		public override VariableItem this[int index]
 		{
-			get {return m_value != null ? m_value[index] : null;}
+			get {return m_item != null ? m_item[index] : null;}
 		}
 		
-		public override NSAttributedString GetName()
+		public override void RefreshValue(ThreadMirror thread, Value value)
 		{
-			return m_name;
-		}
-		
-		public override NSAttributedString GetValue()
-		{
-			return m_value != null ? m_value.GetValue() : NSAttributedString.Create("null");
-		}
-		
-		public override NSAttributedString GetTypeName()
-		{
-			return m_type;
+			if (m_item != null)
+				m_item.release();
+				
+			if (value == null)
+			{
+				m_item = null;
+			}
+			else
+			{
+				m_item = CreateVariable(Name.ToString(), TypeName.ToString(), value, thread);
+			}
+			
+			base.RefreshValue(thread, value);
 		}
 		
 		#region Protected Methods
 		protected override void OnDealloc()
 		{
-			if (m_name != null)
+			if (m_item != null)
 			{
-				m_name.release();
-				m_name = null;
-				
-				m_type.release();
-				m_type = null;
-				
-				if (m_value != null)
-				{
-					m_value.release();
-					m_value = null;
-				}
+				m_item.release();
+				m_item = null;
 			}
 			
 			base.OnDealloc();
@@ -101,36 +91,15 @@ namespace Debugger
 		#endregion
 		
 		#region Fields
-		private NSAttributedString m_name;
-		private NSAttributedString m_type;
-		private VariableItem m_value;
+		private VariableItem m_item;
 		#endregion
 	}
 	
 	[ExportClass("ArrayValueItem", "VariableItem")]
 	internal sealed class ArrayValueItem : VariableItem
 	{
-		public ArrayValueItem(string name, string type, ArrayMirror value, ThreadMirror thread) : base("ArrayValueItem")
+		public ArrayValueItem(string name, string type, ArrayMirror value, ThreadMirror thread) : base(thread, name, value, type, "ArrayValueItem")
 		{
-			if (value == null)
-			{
-				m_name = CreateString(name);
-				m_type = CreateString(type);
-				m_value = CreateString("null");
-			}
-			else if (value.IsCollected)
-			{
-				m_name = CreateString(NSColor.disabledControlTextColor(), name);
-				m_type = CreateString(NSColor.disabledControlTextColor(), type);
-				m_value = CreateString(NSColor.disabledControlTextColor(), "garbage collected");
-			}
-			else
-			{
-				m_name = CreateString(name);
-				m_type = CreateString(type);
-				m_value = CreateString(string.Empty);
-			}
-			
 			m_object = value;
 			m_thread = thread;
 		}
@@ -150,50 +119,52 @@ namespace Debugger
 			get {DoConstructItems(); return m_items[index];}
 		}
 		
-		public override NSAttributedString GetName()
+		public override void RefreshValue(ThreadMirror thread, Value value)
 		{
-			return m_name;
-		}
-		
-		public override NSAttributedString GetValue()
-		{
-			return m_value;
-		}
-		
-		public override NSAttributedString GetTypeName()
-		{
-			return m_type;
+			m_object = (ArrayMirror) value;
+			
+			if (m_object != null && !m_object.IsCollected)
+			{
+				if (m_items != null)
+				{
+					Contract.Assert(m_items.Length == m_object.Length);
+					for (int i = 0; i < m_object.Length; ++i)
+					{
+						m_items[i].RefreshValue(thread, m_object[i]);
+					}
+				}
+			}
+			else
+			{
+				DoReset();
+			}
+			
+			base.RefreshValue(thread, value);
 		}
 		
 		#region Protected Methods
 		protected override void OnDealloc()
 		{
-			if (m_name != null)
-			{
-				m_name.release();
-				m_name = null;
-				
-				m_type.release();
-				m_type = null;
-				
-				m_value.release();
-				m_value = null;
-				
-				if (m_items != null)
-				{
-					foreach (VariableItem item in m_items)
-					{
-						item.release();
-					}
-					Array.Clear(m_items, 0, m_items.Length);
-				}
-			}
-			
+			DoReset();
 			base.OnDealloc();
 		}
 		#endregion
 		
 		#region Private Methods
+		private void DoReset()
+		{
+			if (m_items != null)
+			{
+				foreach (VariableItem item in m_items)
+				{
+					item.release();
+				}
+				Array.Clear(m_items, 0, m_items.Length);
+				
+				m_items = null;
+			}
+		}
+		
 		private void DoConstructItems()
 		{
 			if (m_items == null)
@@ -254,9 +225,6 @@ namespace Debugger
 		#endregion
 		
 		#region Fields
-		private NSAttributedString m_name;
-		private NSAttributedString m_type;
-		private NSAttributedString m_value;
 		private ArrayMirror m_object;
 		private VariableItem[] m_items;
 		private ThreadMirror m_thread;
@@ -266,11 +234,8 @@ namespace Debugger
 	[ExportClass("EnumValueItem", "VariableItem")]
 	internal sealed class EnumValueItem : VariableItem
 	{
-		public EnumValueItem(string name, string type, EnumMirror value) : base("EnumValueItem")
+		public EnumValueItem(ThreadMirror thread, string name, string type, EnumMirror value) : base(thread, name, value, type, "EnumValueItem")
 		{
-			m_name = CreateString(name);
-			m_type = CreateString(type);
-			m_value = CreateString(value.StringValue);
 		}
 		
 		public override bool IsExpandable
@@ -287,46 +252,6 @@ namespace Debugger
 		{
 			get {return null;}
 		}
-		
-		public override NSAttributedString GetName()
-		{
-			return m_name;
-		}
-		
-		public override NSAttributedString GetValue()
-		{
-			return m_value;
-		}
-		
-		public override NSAttributedString GetTypeName()
-		{
-			return m_type;
-		}
-		
-		#region Protected Methods
-		protected override void OnDealloc()
-		{
-			if (m_name != null)
-			{
-				m_name.release();
-				m_name = null;
-				
-				m_value.release();
-				m_value = null;
-				
-				m_type.release();
-				m_type = null;
-			}
-			
-			base.OnDealloc();
-		}
-		#endregion
-		
-		#region Fields
-		private NSAttributedString m_name;
-		private NSAttributedString m_value;
-		private NSAttributedString m_type;
-		#endregion
 	}
 	
 	[ExportClass("MethodValueItem", "VariableItem")]
@@ -334,6 +259,8 @@ namespace Debugger
 	{
 		public MethodValueItem(StackFrame frame) : base("MethodValueItem")
 		{
+			m_frame = frame;
+			
 			LocalVariable[] locals = frame.Method.GetLocals();
 			Value[] values = frame.GetValues(locals);
 			Contract.Assert(locals.Length == values.Length);
@@ -347,13 +274,38 @@ namespace Debugger
 				m_items.Add(CreateVariable(name, locals[i].Type.FullName, values[i], frame.Thread));
 			}
 			
-			if (!frame.Method.IsStatic)
+			if (!frame.Method.IsStatic)		// note that this includes static fields
 				m_items.Add(CreateVariable("this", frame.Method.DeclaringType.FullName, frame.GetThis(), frame.Thread));
 				
 			else if (frame.Method.DeclaringType.GetFields().Any(f => f.IsStatic))
 				m_items.Add(CreateVariable("statics", frame.Method.DeclaringType.FullName, frame.Method.DeclaringType, frame.Thread));
+		}
+		
+		public StackFrame Frame
+		{
+			get {return m_frame;}
+		}
+		
+		public void Refresh(StackFrame frame)
+		{
+		Console.WriteLine("Refreshing");
+			m_frame = frame;
 			
-			m_items.Sort((lhs, rhs) => lhs.GetName().ToString().ToLower().CompareTo(rhs.GetName().ToString().ToLower()));
+			LocalVariable[] locals = frame.Method.GetLocals();
+			Value[] values = frame.GetValues(locals);
+			Contract.Assert(locals.Length == values.Length);
+			Contract.Assert(locals.Length <= m_items.Count);
+			
+			for (int i = 0; i < locals.Length; ++i)
+			{
+				m_items[i].RefreshValue(frame.Thread, values[i]);
+			}
+			
+			if (!frame.Method.IsStatic)		// note that this includes static fields
+				m_items[locals.Length].RefreshValue(frame.Thread, frame.GetThis());
+				
+			else if (frame.Method.DeclaringType.GetFields().Any(f => f.IsStatic))
+				m_items[locals.Length].RefreshValue(frame.Thread, null);
 		}
 		
 		public override bool IsExpandable
@@ -371,21 +323,6 @@ namespace Debugger
 			get {return m_items[index];}
 		}
 		
-		public override NSAttributedString GetName()
-		{
-			return NSAttributedString.Create(string.Empty);
-		}
-		
-		public override NSAttributedString GetValue()
-		{
-			return NSAttributedString.Create(string.Empty);
-		}
-		
-		public override NSAttributedString GetTypeName()
-		{
-			return NSAttributedString.Create(string.Empty);
-		}
-		
 		#region Protected Methods
 		protected override void OnDealloc()
 		{
@@ -401,44 +338,15 @@ namespace Debugger
 		
 		#region Fields
 		private List<VariableItem> m_items = new List<VariableItem>();
+		private StackFrame m_frame;
 		#endregion
 	}
 	
 	[ExportClass("ObjectValueItem", "VariableItem")]
 	internal sealed class ObjectValueItem : VariableItem
 	{
-		public ObjectValueItem(string name, string type, ObjectMirror value, ThreadMirror thread) : base("ObjectValueItem")
+		public ObjectValueItem(string name, string type, ObjectMirror value, ThreadMirror thread) : base(thread, name, value, type, "ObjectValueItem")
 		{
-			if (value == null)
-			{
-				m_name = CreateString(name);
-				m_type = CreateString(type);
-				m_value = CreateString("null");
-			}
-			else if (value.IsCollected)
-			{
-				m_name = CreateString(NSColor.disabledControlTextColor(), name);
-				m_type = CreateString(NSColor.disabledControlTextColor(), type);
-				m_value = CreateString(NSColor.disabledControlTextColor(), "garbage collected");
-			}
-			else
-			{
-				m_name = CreateString(name);
-				m_type = CreateString(type);
-				
-				MethodMirror method = value.Type.FindMethod("ToString", 0);
-				if (method.DeclaringType.FullName != "System.Object")
-				{
-					Value v = value.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
-					StringMirror s = (StringMirror) v;
-					m_value = CreateString(s.Value);
-				}
-				else
-				{
-					m_value = CreateString(string.Empty);
-				}
-			}
-			
 			m_object = value;
 			m_thread = thread;
 		}
@@ -458,50 +366,59 @@ namespace Debugger
 			get {DoConstructItems(); return m_items[index];}
 		}
 		
-		public override NSAttributedString GetName()
+		public override void RefreshValue(ThreadMirror thread, Value value)
 		{
-			return m_name;
-		}
-		
-		public override NSAttributedString GetValue()
-		{
-			return m_value;
-		}
-		
-		public override NSAttributedString GetTypeName()
-		{
-			return m_type;
+			m_object = (ObjectMirror) value;
+			
+			if (m_object != null && !m_object.IsCollected)
+			{
+		Console.WriteLine("reset object");
+				if (m_items != null)
+				{
+					FieldInfoMirror[] fields = m_object.Type.GetFields();
+					Contract.Assert(m_items.Length == fields.Length);
+					
+					Value[] values = m_object.GetValues(fields);
+					Contract.Assert(values.Length == fields.Length);
+					
+					for (int i = 0; i < values.Length; ++i)
+					{
+						m_items[i] = CreateVariable(fields[i].Name, fields[i].FieldType.FullName, values[i], m_thread);
+						m_items[i].RefreshValue(thread, values[i]);
+					}
+				}
+			}
+			else
+			{
+				DoReset();
+			}
+			
+			base.RefreshValue(thread, value);
 		}
 		
 		#region Protected Methods
 		protected override void OnDealloc()
 		{
-			if (m_name != null)
-			{
-				m_name.release();
-				m_name = null;
-				
-				m_type.release();
-				m_type = null;
-				
-				m_value.release();
-				m_value = null;
-				
-				if (m_items != null)
-				{
-					foreach (VariableItem item in m_items)
-					{
-						item.release();
-					}
-					Array.Clear(m_items, 0, m_items.Length);
-				}
-			}
-			
+			DoReset();
 			base.OnDealloc();
 		}
 		#endregion
 		
 		#region Private Methods
+		private void DoReset()
+		{
+			if (m_items != null)
+			{
+				foreach (VariableItem item in m_items)
+				{
+					item.release();
+				}
+				Array.Clear(m_items, 0, m_items.Length);
+				
+				m_items = null;
+			}
+		}
+		
 		private void DoConstructItems()
 		{
 			if (m_items == null)
@@ -518,7 +435,6 @@ namespace Debugger
 					{
 						m_items[i] = CreateVariable(fields[i].Name, fields[i].FieldType.FullName, values[i], m_thread);
 					}
-					Array.Sort(m_items, (lhs, rhs) => lhs.GetName().ToString().ToLower().CompareTo(rhs.GetName().ToString().ToLower()));
 				}
 				else
 				{
@@ -529,9 +445,6 @@ namespace Debugger
 		#endregion
 		
 		#region Fields
-		private NSAttributedString m_name;
-		private NSAttributedString m_type;
-		private NSAttributedString m_value;
 		private ObjectMirror m_object;
 		private VariableItem[] m_items;
 		private ThreadMirror m_thread;
@@ -541,15 +454,8 @@ namespace Debugger
 	[ExportClass("PrimitiveValueItem", "VariableItem")]
 	internal sealed class PrimitiveValueItem : VariableItem
 	{
-		public PrimitiveValueItem(string name, string type, PrimitiveValue value) : base("PrimitiveValueItem")
+		public PrimitiveValueItem(ThreadMirror thread, string name, string type, PrimitiveValue value) : base(thread, name, value, type, "PrimitiveValueItem")
 		{
-			m_name = CreateString(name);
-			m_type = CreateString(type);
-			
-			if (value.Value == null)
-				m_value = CreateString("null");
-			else
-				m_value = CreateString(value.Value.ToString());
 		}
 		
 		public override bool IsExpandable
@@ -566,71 +472,13 @@ namespace Debugger
 		{
 			get {return null;}
 		}
-		
-		public override NSAttributedString GetName()
-		{
-			return m_name;
-		}
-		
-		public override NSAttributedString GetValue()
-		{
-			return m_value;
-		}
-		
-		public override NSAttributedString GetTypeName()
-		{
-			return m_type;
-		}
-		
-		#region Protected Methods
-		protected override void OnDealloc()
-		{
-			if (m_name != null)
-			{
-				m_name.release();
-				m_name = null;
-				
-				m_value.release();
-				m_value = null;
-				
-				m_type.release();
-				m_type = null;
-			}
-			
-			base.OnDealloc();
-		}
-		#endregion
-		
-		#region Fields
-		private NSAttributedString m_name;
-		private NSAttributedString m_value;
-		private NSAttributedString m_type;
-		#endregion
 	}
 	
 	[ExportClass("StringValueItem", "VariableItem")]
 	internal sealed class StringValueItem : VariableItem
 	{
-		public StringValueItem(string name, string type, StringMirror value) : base("StringValueItem")
+		public StringValueItem(ThreadMirror thread, string name, string type, StringMirror value) : base(thread, name, value, type, "StringValueItem")
 		{
-			if (value.Value == null)
-			{
-				m_name = CreateString(name);
-				m_type = CreateString(type);
-				m_value = CreateString("null");
-			}
-			else if (value.IsCollected)
-			{
-				m_name = CreateString(NSColor.disabledControlTextColor(), name);
-				m_type = CreateString(NSColor.disabledControlTextColor(), type);
-				m_value = CreateString(NSColor.disabledControlTextColor(), "garbage collected");
-			}
-			else
-			{
-				m_name = CreateString(name);
-				m_type = CreateString(type);
-				m_value = CreateString("\"" + value.Value + "\"");
-			}
 		}
 		
 		public override bool IsExpandable
@@ -647,68 +495,14 @@ namespace Debugger
 		{
 			get {return null;}
 		}
-		
-		public override NSAttributedString GetName()
-		{
-			return m_name;
-		}
-		
-		public override NSAttributedString GetValue()
-		{
-			return m_value;
-		}
-		
-		public override NSAttributedString GetTypeName()
-		{
-			return m_type;
-		}
-		
-		#region Protected Methods
-		protected override void OnDealloc()
-		{
-			if (m_name != null)
-			{
-				m_name.release();
-				m_name = null;
-				
-				m_value.release();
-				m_value = null;
-				
-				m_type.release();
-				m_type = null;
-			}
-			
-			base.OnDealloc();
-		}
-		#endregion
-		
-		#region Fields
-		private NSAttributedString m_name;
-		private NSAttributedString m_value;
-		private NSAttributedString m_type;
-		#endregion
 	}
 	
 	[ExportClass("StructValueItem", "VariableItem")]
 	internal sealed class StructValueItem : VariableItem
 	{
-		public StructValueItem(string name, string type, StructMirror value, ThreadMirror thread) : base("StructValueItem")
+		public StructValueItem(string name, string type, StructMirror value, ThreadMirror thread) : base(thread, name, value, type, "StructValueItem")
 		{
-			m_name = CreateString(name);
-			m_type = CreateString(type);
 			m_object = value;
-			
-			MethodMirror method = value.Type.FindMethod("ToString", 0);
-			if (method.DeclaringType.FullName != "System.ValueType")
-			{
-				Value v = value.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
-				StringMirror s = (StringMirror) v;
-				m_value = CreateString(s.Value);
-			}
-			else
-			{
-				m_value = CreateString(string.Empty);
-			}
 			m_thread = thread;
 		}
 		
@@ -727,43 +521,38 @@ namespace Debugger
 			get {DoConstructItems(); return m_items[index];}
 		}
 		
-		public override NSAttributedString GetName()
+		public override void RefreshValue(ThreadMirror thread, Value value)
 		{
-			return m_name;
-		}
-		
-		public override NSAttributedString GetValue()
-		{
-			return m_value;
-		}
-		
-		public override NSAttributedString GetTypeName()
-		{
-			return m_type;
+			m_object = (StructMirror) value;
+			
+			if (m_items != null)
+			{
+				Contract.Assert(m_items.Length == m_object.Fields.Length);
+				
+				FieldInfoMirror[] fields = m_object.Type.GetFields();
+				Contract.Assert(m_object.Fields.Length == fields.Length);
+				
+				for (int i = 0; i < m_object.Fields.Length; ++i)
+				{
+					m_items[i].RefreshValue(thread, m_object.Fields[i]);
+				}
+			}
+			
+			base.RefreshValue(thread, value);
 		}
 		
 		#region Protected Methods
 		protected override void OnDealloc()
 		{
-			if (m_name != null)
+			if (m_items != null)
 			{
-				m_name.release();
-				m_name = null;
-				
-				m_type.release();
-				m_type = null;
-				
-				m_value.release();
-				m_value = null;
-				
-				if (m_items != null)
+				foreach (VariableItem item in m_items)
 				{
-					foreach (VariableItem item in m_items)
-					{
-						item.release();
-					}
-					Array.Clear(m_items, 0, m_items.Length);
+					item.release();
 				}
+				Array.Clear(m_items, 0, m_items.Length);
+				
+				m_items = null;
 			}
 			
 			base.OnDealloc();
@@ -784,16 +573,12 @@ namespace Debugger
 				{
 					m_items[i] = CreateVariable(fields[i].Name, fields[i].FieldType.FullName, m_object.Fields[i], m_thread);
 				}
-				Array.Sort(m_items, (lhs, rhs) => lhs.GetName().ToString().ToLower().CompareTo(rhs.GetName().ToString().ToLower()));
 			}
 		}
 		#endregion
 		
 		#region Fields
-		private NSAttributedString m_name;
 		private StructMirror m_object;
-		private NSAttributedString m_type;
-		private NSAttributedString m_value;
 		private VariableItem[] m_items;
 		private ThreadMirror m_thread;
 		#endregion
@@ -802,11 +587,8 @@ namespace Debugger
 	[ExportClass("TypeValueItem", "VariableItem")]
 	internal sealed class TypeValueItem : VariableItem
 	{
-		public TypeValueItem(string name, string type, TypeMirror value, ThreadMirror thread) : base("TypeValueItem")
+		public TypeValueItem(string name, string type, TypeMirror value, ThreadMirror thread) : base(name, type, "TypeValueItem")
 		{
-			m_name = CreateString(name);
-			m_type = CreateString(type);
-			
 			m_fields = (from f in value.GetFields() where f.IsStatic select f).ToArray();
 			m_object = value;
 			m_thread = thread;
@@ -827,47 +609,53 @@ namespace Debugger
 			get {DoConstructItems(); return m_items[index];}
 		}
 		
-		public override NSAttributedString GetName()
+		public override void RefreshValue(ThreadMirror thread, Value value)
 		{
-			return m_name;
-		}
-		
-		public override NSAttributedString GetValue()
-		{
-			return NSAttributedString.Create("");
-		}
-		
-		public override NSAttributedString GetTypeName()
-		{
-			return m_type;
+			if (m_object != null)
+			{
+				if (m_items != null)
+				{
+					Contract.Assert(m_items.Length == m_fields.Length);
+					
+					for (int i = 0; i < m_fields.Length; ++i)
+					{
+						m_items[i] = CreateVariable(m_fields[i].Name, m_fields[i].FieldType.FullName, m_object.GetValue(m_fields[i]), m_thread);
+						m_items[i].RefreshValue(thread, m_object.GetValue(m_fields[i]));
+					}
+				}
+			}
+			else
+			{
+				DoReset();
+			}
+			
+			// Don't call the base method (there's no need to and we cheat a little bit and
+			// pass null in for value when MethodValueItem does its refresh).
 		}
 		
 		#region Protected Methods
 		protected override void OnDealloc()
 		{
-			if (m_name != null)
-			{
-				m_name.release();
-				m_name = null;
-				
-				if (m_items != null)
-				{
-					foreach (VariableItem item in m_items)
-					{
-						item.release();
-					}
-					Array.Clear(m_items, 0, m_items.Length);
-				}
-				
-				m_type.release();
-				m_type = null;
-			}
-			
+			DoReset();
 			base.OnDealloc();
 		}
 		#endregion
 		
 		#region Private Methods
+		private void DoReset()
+		{
+			if (m_items != null)
+			{
+				foreach (VariableItem item in m_items)
+				{
+					item.release();
+				}
+				Array.Clear(m_items, 0, m_items.Length);
+				
+				m_items = null;
+			}
+		}
+		
 		private void DoConstructItems()
 		{
 			if (m_items == null)
@@ -878,15 +666,12 @@ namespace Debugger
 				{
 					m_items[i] = CreateVariable(m_fields[i].Name, m_fields[i].FieldType.FullName, m_object.GetValue(m_fields[i]), m_thread);
 				}
-				Array.Sort(m_items, (lhs, rhs) => lhs.GetName().ToString().ToLower().CompareTo(rhs.GetName().ToString().ToLower()));
 			}
 		}
 		#endregion
 		
 		#region Fields
-		private NSAttributedString m_name;
 		private TypeMirror m_object;
-		private NSAttributedString m_type;
 		private FieldInfoMirror[] m_fields;
 		private VariableItem[] m_items;
 		private ThreadMirror m_thread;
