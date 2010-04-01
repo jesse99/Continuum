@@ -19,6 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear;
 using MCocoa;
 using MObjc;
 using MObjc.Helpers;
@@ -26,6 +27,7 @@ using Mono.Debugger;
 using Shared;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace Debugger
@@ -33,16 +35,10 @@ namespace Debugger
 	[ExportClass("ArrayElementItem", "VariableItem")]
 	internal sealed class ArrayElementItem : VariableItem
 	{
-		public ArrayElementItem(string name, string type, Value value, ThreadMirror thread) : base(thread, name, value, type, "ArrayElementItem")
+		public ArrayElementItem(string name, string type, Value value, ThreadMirror thread, Action<Value> setter) : base(thread, name, value, type, "ArrayElementItem")
 		{
-			if (value == null)
-			{
-				m_item = null;
-			}
-			else
-			{
-				m_item = CreateVariable(name, type, value, thread);
-			}
+			m_setter = setter;
+			m_item = CreateVariable(name, type, value, thread, setter);
 		}
 		
 		public override bool IsExpandable
@@ -62,17 +58,7 @@ namespace Debugger
 		
 		public override void RefreshValue(ThreadMirror thread, Value value)
 		{
-			if (m_item != null)
-				m_item.release();
-				
-			if (value == null)
-			{
-				m_item = null;
-			}
-			else
-			{
-				m_item = CreateVariable(Name.ToString(), TypeName.ToString(), value, thread);
-			}
+			m_item = m_item.RefreshVariable(thread, value, m_setter);
 			
 			base.RefreshValue(thread, value);
 		}
@@ -91,6 +77,7 @@ namespace Debugger
 		#endregion
 		
 		#region Fields
+		private Action<Value> m_setter;
 		private VariableItem m_item;
 		#endregion
 	}
@@ -130,7 +117,9 @@ namespace Debugger
 					Contract.Assert(m_items.Length == m_object.Length);
 					for (int i = 0; i < m_object.Length; ++i)
 					{
-						m_items[i].RefreshValue(thread, m_object[i]);
+						int tmp = i;
+						Action<Value> setter = (Value v) => m_object[tmp] = v;	// TODO: won't work for multiple dimensions, throw?
+						m_items[i] = m_items[i].RefreshVariable(thread, m_object[i], setter);
 					}
 				}
 			}
@@ -175,7 +164,9 @@ namespace Debugger
 					for (int i = 0; i < m_object.Length; ++i)
 					{
 						string name = DoGetName(i);
-						m_items[i] = new ArrayElementItem(name, m_object.Type.GetElementType().FullName, m_object[i], m_thread);
+						int tmp = i;
+						Action<Value> setter = (Value v) => m_object[tmp] = v;	// TODO: won't work for multiple dimensions, throw?
+						m_items[i] = new ArrayElementItem(name, m_object.Type.GetElementType().FullName, m_object[i], m_thread, setter);
 					}
 				}
 				else
@@ -237,21 +228,6 @@ namespace Debugger
 		public EnumValueItem(ThreadMirror thread, string name, string type, EnumMirror value) : base(thread, name, value, type, "EnumValueItem")
 		{
 		}
-		
-		public override bool IsExpandable
-		{
-			get {return false;}
-		}
-		
-		public override int Count
-		{
-			get {return 0;}
-		}
-		
-		public override VariableItem this[int index]
-		{
-			get {return null;}
-		}
 	}
 	
 	[ExportClass("MethodValueItem", "VariableItem")]
@@ -271,11 +247,13 @@ namespace Debugger
 				if (string.IsNullOrEmpty(name))
 					name = "$" + locals[i].Index;		// temporary variable
 				
-				m_items.Add(CreateVariable(name, locals[i].Type.FullName, values[i], frame.Thread));
+				LocalVariable tmp = locals[i];
+				Action<Value> setter = (Value v) => m_frame.SetValue(tmp, v);
+				m_items.Add(CreateVariable(name, locals[i].Type.FullName, values[i], frame.Thread, setter));
 			}
 			
 			if (!frame.Method.IsStatic)		// note that this includes static fields
-				m_items.Add(CreateVariable("this", frame.Method.DeclaringType.FullName, frame.GetThis(), frame.Thread));
+				m_items.Add(CreateVariable("this", frame.Method.DeclaringType.FullName, frame.GetThis(), frame.Thread, null));
 				
 			else if (frame.Method.DeclaringType.GetFields().Any(f => f.IsStatic))
 				m_items.Add(CreateVariable("statics", frame.Method.DeclaringType.FullName, frame.Method.DeclaringType, frame.Thread));
@@ -288,7 +266,6 @@ namespace Debugger
 		
 		public void Refresh(StackFrame frame)
 		{
-		Console.WriteLine("Refreshing");
 			m_frame = frame;
 			
 			LocalVariable[] locals = frame.Method.GetLocals();
@@ -298,7 +275,9 @@ namespace Debugger
 			
 			for (int i = 0; i < locals.Length; ++i)
 			{
-				m_items[i].RefreshValue(frame.Thread, values[i]);
+				LocalVariable tmp = locals[i];
+				Action<Value> setter = (Value v) => m_frame.SetValue(tmp, v);
+				m_items[i] = m_items[i].RefreshVariable(frame.Thread, values[i], setter);
 			}
 			
 			if (!frame.Method.IsStatic)		// note that this includes static fields
@@ -306,11 +285,6 @@ namespace Debugger
 				
 			else if (frame.Method.DeclaringType.GetFields().Any(f => f.IsStatic))
 				m_items[locals.Length].RefreshValue(frame.Thread, null);
-		}
-		
-		public override bool IsExpandable
-		{
-			get {return false;}
 		}
 		
 		public override int Count
@@ -340,6 +314,14 @@ namespace Debugger
 		private List<VariableItem> m_items = new List<VariableItem>();
 		private StackFrame m_frame;
 		#endregion
+	}
+	
+	[ExportClass("NullValueItem", "VariableItem")]
+	internal sealed class NullValueItem : VariableItem
+	{
+		public NullValueItem(ThreadMirror thread, string name, string type) : base(thread, name, null, type, "NullValueItem")
+		{
+		}
 	}
 	
 	[ExportClass("ObjectValueItem", "VariableItem")]
@@ -372,7 +354,6 @@ namespace Debugger
 			
 			if (m_object != null && !m_object.IsCollected)
 			{
-		Console.WriteLine("reset object");
 				if (m_items != null)
 				{
 					FieldInfoMirror[] fields = m_object.Type.GetFields();
@@ -383,8 +364,9 @@ namespace Debugger
 					
 					for (int i = 0; i < values.Length; ++i)
 					{
-						m_items[i] = CreateVariable(fields[i].Name, fields[i].FieldType.FullName, values[i], m_thread);
-						m_items[i].RefreshValue(thread, values[i]);
+						FieldInfoMirror tmp = fields[i];
+						Action<Value> setter = (Value v) => m_object.SetValue(tmp, v);
+						m_items[i] = m_items[i].RefreshVariable(thread, values[i], setter);
 					}
 				}
 			}
@@ -433,7 +415,9 @@ namespace Debugger
 					
 					for (int i = 0; i < values.Length; ++i)
 					{
-						m_items[i] = CreateVariable(fields[i].Name, fields[i].FieldType.FullName, values[i], m_thread);
+						FieldInfoMirror tmp = fields[i];
+						Action<Value> setter = (Value v) => m_object.SetValue(tmp, v);
+						m_items[i] = CreateVariable(fields[i].Name, fields[i].FieldType.FullName, values[i], m_thread, setter);
 					}
 				}
 				else
@@ -454,24 +438,163 @@ namespace Debugger
 	[ExportClass("PrimitiveValueItem", "VariableItem")]
 	internal sealed class PrimitiveValueItem : VariableItem
 	{
-		public PrimitiveValueItem(ThreadMirror thread, string name, string type, PrimitiveValue value) : base(thread, name, value, type, "PrimitiveValueItem")
+		public PrimitiveValueItem(ThreadMirror thread, string name, string type, PrimitiveValue value, Action<Value> setter) : base(thread, name, value, type, "PrimitiveValueItem")
 		{
+			Contract.Requires(value.Value != null, "use NullValueItem instead");
+			Contract.Requires(setter != null, "setter is null");
+			
+			m_vm = thread.VirtualMachine;
+			m_setter = setter;
 		}
 		
-		public override bool IsExpandable
+		public override void SetValue(string text)
 		{
-			get {return false;}
+			try
+			{
+				object value = DoParse(text);
+				m_setter(m_vm.CreateValue(value));
+				m_value = CreateString(OnPrimitiveToString(value));
+			}
+			catch (Exception e)
+			{
+				Boss boss = ObjectModel.Create("Application");
+				var transcript = boss.Get<ITranscript>();
+				transcript.Show();
+				transcript.WriteLine(Output.Error, "{0}", e.Message);
+			}
 		}
 		
-		public override int Count
+		#region Private Methods		
+		private object DoParse(string text)
 		{
-			get {return 0;}
+			object value = null;
+			switch (TypeName.ToString())
+			{
+				case "System.Boolean":
+					if (text == "0")
+						value = false;
+					else if (text == "1")
+						value = true;
+					else
+						value = Boolean.Parse(text);
+					break;
+					
+				case "System.Char":
+					if (text.Length == 1)
+						value = text[0];
+					else if (text.Length == 3 && text[0] == '\'' && text[2] == '\'')
+						value = text[1];
+					else if (text == "'\\n'")
+						value = '\n';
+					else if (text == "'\\r'")
+						value = '\r';
+					else if (text == "'\\t'")
+						value = '\t';
+					else if (text == "'\\f'")
+						value = '\f';
+					else if (text == "'\\''")
+						value = '\'';
+					else if (text.Length > 4 && text.StartsWith("'\\x") && text.EndsWith("'"))
+						value = unchecked((char) int.Parse(text.Substring(3, text.Length - 4), NumberStyles.AllowHexSpecifier));
+					else
+						throw new Exception("Character format is 'x', '\\n', '\\r', '\\t', '\\f', '\\'', or '\\x9ABC'.");
+					break;
+					
+				case "System.SByte":
+					if (text.Length > 2 && text.StartsWith("0x"))
+						value = SByte.Parse(text.Substring(2), NumberStyles.AllowHexSpecifier);
+					else
+						value = SByte.Parse(text, NumberStyles.Integer | NumberStyles.AllowThousands);
+					break;
+					
+				case "System.Int16":
+					if (text.Length > 2 && text.StartsWith("0x"))
+						value = Int16.Parse(text.Substring(2), NumberStyles.AllowHexSpecifier);
+					else
+						value = Int16.Parse(text, NumberStyles.Integer | NumberStyles.AllowThousands);
+					break;
+					
+				case "System.Int32":
+					if (text.Length > 2 && text.StartsWith("0x"))
+						value = Int32.Parse(text.Substring(2), NumberStyles.AllowHexSpecifier);
+					else
+						value = Int32.Parse(text, NumberStyles.Integer | NumberStyles.AllowThousands);
+					break;
+					
+				case "System.Int64":
+					if (text.Length > 2 && text.StartsWith("0x"))
+						value = Int64.Parse(text.Substring(2), NumberStyles.AllowHexSpecifier);
+					else
+						value = Int64.Parse(text, NumberStyles.Integer | NumberStyles.AllowThousands);
+					break;
+					
+				case "System.Byte":
+					if (text.Length > 2 && text.StartsWith("0x"))
+						value = Byte.Parse(text.Substring(2), NumberStyles.AllowHexSpecifier);
+					else
+						value = Byte.Parse(text, NumberStyles.Integer | NumberStyles.AllowThousands);
+					break;
+					
+				case "System.UInt16":
+					if (text.Length > 2 && text.StartsWith("0x"))
+						value = UInt16.Parse(text.Substring(2), NumberStyles.AllowHexSpecifier);
+					else
+						value = UInt16.Parse(text, NumberStyles.Integer | NumberStyles.AllowThousands);
+					break;
+					
+				case "System.UInt32":
+					if (text.Length > 2 && text.StartsWith("0x"))
+						value = UInt32.Parse(text.Substring(2), NumberStyles.AllowHexSpecifier);
+					else
+						value = UInt32.Parse(text, NumberStyles.Integer | NumberStyles.AllowThousands);
+					break;
+					
+				case "System.UInt64":
+					if (text.Length > 2 && text.StartsWith("0x"))
+						value = UInt64.Parse(text.Substring(2), NumberStyles.AllowHexSpecifier);
+					else
+						value = UInt64.Parse(text);
+					break;
+					
+				case "System.Single":
+					value = Single.Parse(text, NumberStyles.Float | NumberStyles.AllowThousands);
+					break;
+					
+				case "System.Double":
+					value = Double.Parse(text, NumberStyles.Float | NumberStyles.AllowThousands);
+					break;
+					
+				case "System.Decimal":
+					value = Decimal.Parse(text);
+					break;
+					
+				case "System.IntPtr":
+					if (text.Length > 2 && text.StartsWith("0x"))
+						value = new IntPtr(unchecked((long) UInt64.Parse(text.Substring(2), NumberStyles.AllowHexSpecifier)));
+					else
+						value = new IntPtr(unchecked((long) UInt64.Parse(text)));
+					break;
+					
+				case "System.UIntPtr":
+					if (text.Length > 2 && text.StartsWith("0x"))
+						value = new UIntPtr(UInt64.Parse(text.Substring(2), NumberStyles.AllowHexSpecifier));
+					else
+						value = new UIntPtr(UInt64.Parse(text));
+					break;
+					
+				default:
+					Contract.Assert(false, "bad type: " + TypeName.ToString());
+					break;
+			}
+			
+			return value;
 		}
+		#endregion
 		
-		public override VariableItem this[int index]
-		{
-			get {return null;}
-		}
+		#region Fields
+		private VirtualMachine m_vm;
+		private Action<Value> m_setter;
+		#endregion
 	}
 	
 	[ExportClass("StringValueItem", "VariableItem")]
@@ -479,21 +602,6 @@ namespace Debugger
 	{
 		public StringValueItem(ThreadMirror thread, string name, string type, StringMirror value) : base(thread, name, value, type, "StringValueItem")
 		{
-		}
-		
-		public override bool IsExpandable
-		{
-			get {return false;}
-		}
-		
-		public override int Count
-		{
-			get {return 0;}
-		}
-		
-		public override VariableItem this[int index]
-		{
-			get {return null;}
 		}
 	}
 	
@@ -534,7 +642,9 @@ namespace Debugger
 				
 				for (int i = 0; i < m_object.Fields.Length; ++i)
 				{
-					m_items[i].RefreshValue(thread, m_object.Fields[i]);
+					int tmp = i;
+					Action<Value> setter = (Value v) => m_object.Fields[tmp] = v;
+					m_items[i] = m_items[i].RefreshVariable(thread, m_object.Fields[i], setter);
 				}
 			}
 			
@@ -571,7 +681,9 @@ namespace Debugger
 				
 				for (int i = 0; i < m_object.Fields.Length; ++i)
 				{
-					m_items[i] = CreateVariable(fields[i].Name, fields[i].FieldType.FullName, m_object.Fields[i], m_thread);
+					int tmp = i;
+					Action<Value> setter = (Value v) => m_object.Fields[tmp] = v;
+					m_items[i] = CreateVariable(fields[i].Name, fields[i].FieldType.FullName, m_object.Fields[i], m_thread, setter);
 				}
 			}
 		}
@@ -619,8 +731,9 @@ namespace Debugger
 					
 					for (int i = 0; i < m_fields.Length; ++i)
 					{
-						m_items[i] = CreateVariable(m_fields[i].Name, m_fields[i].FieldType.FullName, m_object.GetValue(m_fields[i]), m_thread);
-						m_items[i].RefreshValue(thread, m_object.GetValue(m_fields[i]));
+						FieldInfoMirror tmp = m_fields[i];
+						Action<Value> setter = (Value v) => m_object.SetValue(tmp, v);
+						m_items[i] = m_items[i].RefreshVariable(thread, m_object.GetValue(m_fields[i]), setter);
 					}
 				}
 			}
@@ -664,7 +777,9 @@ namespace Debugger
 				
 				for (int i = 0; i < m_fields.Length; ++i)
 				{
-					m_items[i] = CreateVariable(m_fields[i].Name, m_fields[i].FieldType.FullName, m_object.GetValue(m_fields[i]), m_thread);
+					FieldInfoMirror tmp = m_fields[i];
+					Action<Value> setter = (Value v) => m_object.SetValue(tmp, v);
+					m_items[i] = CreateVariable(m_fields[i].Name, m_fields[i].FieldType.FullName, m_object.GetValue(m_fields[i]), m_thread, setter);
 				}
 			}
 		}

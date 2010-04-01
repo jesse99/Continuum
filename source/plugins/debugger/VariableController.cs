@@ -67,11 +67,11 @@ namespace Debugger
 			}
 		}
 		
-//		public void outlineView_setObjectValue_forTableColumn_byItem(NSTableView table, NSObject value, NSTableColumn col, TableItem item)
-//		{
-//			string newName = value.description();
-//			DoRename(item, newName);
-//		}
+		public void outlineView_setObjectValue_forTableColumn_byItem(NSTableView table, NSObject value, NSTableColumn col, VariableItem item)
+		{
+			string text = value.description();
+			item.SetValue(text);
+		}
 		
 //		public void doubleClicked(NSOutlineView sender)
 //		{
@@ -131,8 +131,7 @@ namespace Debugger
 					m_method = new MethodValueItem(frame);
 			}
 			
-//			m_table.reloadData();
-			m_table.reloadItem_reloadChildren(null, true);
+			m_table.reloadData();
 		}
 		#endregion
 		

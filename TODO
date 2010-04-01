@@ -63,12 +63,19 @@ public abstract class Mono.Debugger.Value
 	public class Mono.Debugger.ObjectMirror
 		public class Mono.Debugger.StringMirror
 		public class Mono.Debugger.ArrayMirror
-	
+
+* Work on editing primitives:
+	- use/allow commas? pref?
+	- handle all the primitive types
+	- does setting a field in a struct work?
+	- hex numbers
+* Allow values to be changed:
+	- enums
+	- objects to null
+	- strings?
 * Work on variables window:
-	- changes should be rendered in red
-	- make sure statics show up in instance methods
-	- allow values to be changed
 	- view as hex
+	- allow ToString specifier to be set (if the overload exists)
 	- allow users to invoke methods on objects
 * Make sure can step through IL.
 * Work on a debugger:	

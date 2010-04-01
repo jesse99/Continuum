@@ -21,6 +21,7 @@
 
 using MCocoa;
 using MObjc;
+using MObjc.Helpers;
 using Mono.Debugger;
 using Shared;
 using System;
@@ -62,11 +63,20 @@ namespace Debugger
 		
 		// Note that this should be used instead of Count because it will not force
 		// all children to be loaded.
-		public abstract bool IsExpandable {get;}
+		public virtual bool IsExpandable
+		{
+			get {return false;}
+		}
 		
-		public abstract int Count {get;}
+		public virtual int Count
+		{
+			get {return 0;}
+		}
 		
-		public abstract VariableItem this[int index] {get;}
+		public virtual VariableItem this[int index]
+		{
+			get {Contract.Assert(false); return null;}
+		}
 		
 		public NSAttributedString Name
 		{
@@ -81,6 +91,11 @@ namespace Debugger
 		public NSAttributedString TypeName
 		{
 			get {return m_type;}
+		}
+		
+		public virtual void SetValue(string text)
+		{
+			Functions.NSBeep();
 		}
 		
 		public virtual void RefreshValue(ThreadMirror thread, Value value)
@@ -104,7 +119,95 @@ namespace Debugger
 				m_value = CreateString(newText);
 		}
 		
+		public VariableItem RefreshVariable(ThreadMirror thread, Value v, Action<Value> setter)
+		{
+			VariableItem newItem;
+			
+			var primitive = v as PrimitiveValue;
+			if (v == null || (primitive != null && primitive.Value == null))
+			{
+				if (this is NullValueItem)
+				{
+					newItem = this;
+					newItem.m_value = CreateString("null");
+				}
+				else
+				{
+					// non-null to null
+					newItem = new NullValueItem(thread, Name.ToString(), TypeName.ToString());
+					newItem.m_value = CreateString(NSColor.redColor(), "null");
+					this.release();
+				}
+			}
+			else
+			{
+				if (this is NullValueItem)
+				{
+					// null to non-null
+					newItem = CreateVariable(Name.ToString(), TypeName.ToString(), v, thread, setter);
+					string newText = DoGetValueText(thread, v);
+					newItem.m_value = CreateString(NSColor.redColor(), newText);
+					this.release();
+				}
+				else
+				{
+					newItem = this;
+					newItem.RefreshValue(thread, v);
+				}
+			}
+			
+			return newItem;
+		}
+		
 		#region Protected Methods
+		protected string OnPrimitiveToString(object value)
+		{
+			if (value == null)
+				return "null";
+				
+			else if (value.Equals(true))
+				return "true";
+				
+			else if (value.Equals(false))
+				return "false";
+				
+			else if (value is char)
+				return CharHelpers.ToText((char) value);
+				
+			else if (value is SByte)
+				return ((SByte) value).ToString("N0");
+				
+			else if (value is Byte)
+				return ((Byte) value).ToString("N0");
+				
+			else if (value is Int16)
+				return ((Int16) value).ToString("N0");
+				
+			else if (value is Int32)
+				return ((Int32) value).ToString("N0");
+				
+			else if (value is Int64)
+				return ((Int64) value).ToString("N0");
+				
+			else if (value is UInt32)
+				return ((UInt32) value).ToString("N0");
+				
+			else if (value is UInt64)
+				return ((UInt64) value).ToString("N0");
+				
+			else if (value is UInt16)
+				return ((UInt16) value).ToString("N0");
+				
+			else if (value is Single)
+				return ((Single) value).ToString("N");
+				
+			else if (value is Double)
+				return ((Double) value).ToString("N");
+				
+			else
+				return value.ToString();
+		}
+		
 		protected VariableItem CreateVariable(string name, string type, TypeMirror v, ThreadMirror thread)
 		{
 			VariableItem variable = new TypeValueItem(name, type, v, thread);
@@ -112,12 +215,18 @@ namespace Debugger
 			return variable;
 		}
 		
-		protected VariableItem CreateVariable(string name, string type, Value v, ThreadMirror thread)
+		protected VariableItem CreateVariable(string name, string type, Value v, ThreadMirror thread, Action<Value> setter)
 		{
 			VariableItem variable = null;
 			
 			do
 			{
+				if (v == null)		// don't think we normally hit this case
+				{
+					variable = new NullValueItem(thread, name, type);
+					break;
+				}
+				
 				var array = v as ArrayMirror;
 				if (array != null)
 				{
@@ -135,7 +244,10 @@ namespace Debugger
 				var primitive = v as PrimitiveValue;
 				if (primitive != null)
 				{
-					variable = new PrimitiveValueItem(thread, name, type, primitive);
+					if (primitive.Value == null)
+						variable = new NullValueItem(thread, name, type);
+					else
+						variable = new PrimitiveValueItem(thread, name, type, primitive, setter);
 					break;
 				}
 				
@@ -263,10 +375,7 @@ namespace Debugger
 				var primitive = value as PrimitiveValue;
 				if (primitive != null)
 				{
-					if (primitive.Value != null)
-						text = primitive.Value.ToString();
-					else
-						text = "null";
+					text = OnPrimitiveToString(primitive.Value);
 					break;
 				}
 				

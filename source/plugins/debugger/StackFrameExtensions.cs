@@ -38,7 +38,7 @@ namespace Debugger
 			}
 			else if (lhs != null && rhs != null)
 			{
-				if (lhs.Thread.Address == rhs.Thread.Address)	// use Id instead?
+				if (lhs.Thread.Id == rhs.Thread.Id)			// note that Address can change after a GC
 					if (lhs.Method.MetadataToken == rhs.Method.MetadataToken)
 						if (lhs.Method.FullName == rhs.Method.FullName)	// this is kind of expensive, but we can't rely on just the metadata token (we need the assembly as well which we can't always get)
 							matches = true;
