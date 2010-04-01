@@ -65,14 +65,14 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.ArrayMirror
 
 * Work on editing primitives:
-	- use/allow commas? pref?
-	- handle all the primitive types
+	- store show settings in a pref 
 	- does setting a field in a struct work?
-	- hex numbers
 * Allow values to be changed:
 	- enums
 	- objects to null
 	- strings?
+	- handle escapes when parsing strings
+	- handle escapes (and show unicode setting) when displaying strings
 * Work on variables window:
 	- view as hex
 	- allow ToString specifier to be set (if the overload exists)

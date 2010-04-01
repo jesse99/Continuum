@@ -172,37 +172,82 @@ namespace Debugger
 				return "false";
 				
 			else if (value is char)
-				return CharHelpers.ToText((char) value);
+				if ((char) value > 0x7F && VariableController.ShowUnicode)
+					return "'" + new string((char) value, 1) + "'";
+				else
+					return CharHelpers.ToText((char) value);
 				
 			else if (value is SByte)
-				return ((SByte) value).ToString("N0");
+				if (VariableController.ShowHex)
+					return "0x" + ((SByte) value).ToString("X1");
+				else
+					return ((SByte) value).ToString("N0");
 				
 			else if (value is Byte)
-				return ((Byte) value).ToString("N0");
+				if (VariableController.ShowHex)
+					return "0x" + ((Byte) value).ToString("X1");
+				else
+					return ((Byte) value).ToString("N0");
 				
 			else if (value is Int16)
-				return ((Int16) value).ToString("N0");
+				if (VariableController.ShowHex)
+					return "0x" + ((Int16) value).ToString("X2");
+				else if (VariableController.ShowThousands)
+					return ((Int16) value).ToString("N0");
+				else
+					return ((Int16) value).ToString("G");
 				
 			else if (value is Int32)
-				return ((Int32) value).ToString("N0");
+				if (VariableController.ShowHex)
+					return "0x" + ((Int32) value).ToString("X4");
+				else if (VariableController.ShowThousands)
+					return ((Int32) value).ToString("N0");
+				else
+					return ((Int32) value).ToString("G");
 				
 			else if (value is Int64)
-				return ((Int64) value).ToString("N0");
-				
-			else if (value is UInt32)
-				return ((UInt32) value).ToString("N0");
-				
-			else if (value is UInt64)
-				return ((UInt64) value).ToString("N0");
+				if (VariableController.ShowHex)
+					return "0x" + ((Int64) value).ToString("X8");
+				else if (VariableController.ShowThousands)
+					return ((Int64) value).ToString("N0");
+				else
+					return ((Int64) value).ToString("G");
 				
 			else if (value is UInt16)
-				return ((UInt16) value).ToString("N0");
+				if (VariableController.ShowHex)
+					return "0x" + ((UInt16) value).ToString("X2");
+				else if (VariableController.ShowThousands)
+					return ((UInt16) value).ToString("N0");
+				else
+					return ((UInt16) value).ToString("G");
+				
+			else if (value is UInt32)
+				if (VariableController.ShowHex)
+					return "0x" + ((UInt32) value).ToString("X4");
+				else if (VariableController.ShowThousands)
+					return ((UInt32) value).ToString("N0");
+				else
+					return ((UInt32) value).ToString("G");
+				
+			else if (value is UInt64)
+				if (VariableController.ShowHex)
+					return "0x" + ((UInt64) value).ToString("X8");
+				else if (VariableController.ShowThousands)
+					return ((UInt64) value).ToString("N0");
+				else
+					return ((UInt64) value).ToString("G");
 				
 			else if (value is Single)
-				return ((Single) value).ToString("N");
+				if (VariableController.ShowThousands)
+					return ((Single) value).ToString("N");
+				else
+					return ((Single) value).ToString("G");
 				
 			else if (value is Double)
-				return ((Double) value).ToString("N");
+				if (VariableController.ShowThousands)
+					return ((Double) value).ToString("N");
+				else
+					return ((Double) value).ToString("G");
 				
 			else
 				return value.ToString();

@@ -67,16 +67,76 @@ namespace Debugger
 			}
 		}
 		
+		public static bool ShowHex
+		{
+			get {return ms_showHex;}
+		}
+		
+		public static bool ShowThousands
+		{
+			get {return ms_showThousands;}
+		}
+		
+		public static bool ShowUnicode
+		{
+			get {return ms_showUnicode;}
+		}
+		
+		public void toggleHex(NSObject sender)
+		{
+			ms_showHex = !ms_showHex;
+			m_method.Refresh(null);
+			m_table.reloadData();
+		}
+		
+		public void toggleThousands(NSObject sender)
+		{
+			ms_showThousands = !ms_showThousands;
+			m_method.Refresh(null);
+			m_table.reloadData();
+		}
+		
+		public void toggleUnicode(NSObject sender)
+		{
+			ms_showUnicode = !ms_showUnicode;
+			m_method.Refresh(null);
+			m_table.reloadData();
+		}
+		
+		public bool validateUserInterfaceItem(NSObject sender)
+		{
+			bool enabled = true;
+			
+			Selector sel = (Selector) sender.Call("action");
+			
+			if (sel.Name == "toggleHex:")
+			{
+				Unused.Value = sender.Call("setTitle:", NSString.Create("Show {0}", ms_showHex ? "Decimal" : "Hex"));
+			}
+			else if (sel.Name == "toggleThousands:")
+			{
+				Unused.Value = sender.Call("setTitle:", NSString.Create("{0} Thousands", ms_showThousands ? "Hide" : "Show"));
+			}
+			else if (sel.Name == "toggleUnicode:")
+			{
+				Unused.Value = sender.Call("setTitle:", NSString.Create("Show {0}", ms_showUnicode ? "Code Point" : "Unicode"));
+			}
+			else if (respondsToSelector(sel))
+			{
+			}
+			else if (SuperCall(NSWindowController.Class, "respondsToSelector:", new Selector("validateUserInterfaceItem:")).To<bool>())
+			{
+				enabled = SuperCall(NSWindowController.Class, "validateUserInterfaceItem:", sender).To<bool>();
+			}
+			
+			return enabled;
+		}
+		
 		public void outlineView_setObjectValue_forTableColumn_byItem(NSTableView table, NSObject value, NSTableColumn col, VariableItem item)
 		{
 			string text = value.description();
 			item.SetValue(text);
 		}
-		
-//		public void doubleClicked(NSOutlineView sender)
-//		{
-//			DoOpenSelection();
-//		}
 		
 		public int outlineView_numberOfChildrenOfItem(NSOutlineView table, VariableItem item)
 		{
@@ -138,6 +198,10 @@ namespace Debugger
 		#region Fields
 		private NSOutlineView m_table;
 		private MethodValueItem m_method;
+		
+		private static bool ms_showHex;
+		private static bool ms_showThousands = true;
+		private static bool ms_showUnicode;
 		#endregion
 	}
 }

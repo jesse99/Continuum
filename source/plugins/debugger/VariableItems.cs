@@ -266,10 +266,11 @@ namespace Debugger
 		
 		public void Refresh(StackFrame frame)
 		{
-			m_frame = frame;
+			if (frame != null)			// will be null if view options changed
+				m_frame = frame;
 			
-			LocalVariable[] locals = frame.Method.GetLocals();
-			Value[] values = frame.GetValues(locals);
+			LocalVariable[] locals = m_frame.Method.GetLocals();
+			Value[] values = m_frame.GetValues(locals);
 			Contract.Assert(locals.Length == values.Length);
 			Contract.Assert(locals.Length <= m_items.Count);
 			
@@ -277,14 +278,14 @@ namespace Debugger
 			{
 				LocalVariable tmp = locals[i];
 				Action<Value> setter = (Value v) => m_frame.SetValue(tmp, v);
-				m_items[i] = m_items[i].RefreshVariable(frame.Thread, values[i], setter);
+				m_items[i] = m_items[i].RefreshVariable(m_frame.Thread, values[i], setter);
 			}
 			
-			if (!frame.Method.IsStatic)		// note that this includes static fields
-				m_items[locals.Length].RefreshValue(frame.Thread, frame.GetThis());
+			if (!m_frame.Method.IsStatic)		// note that this includes static fields
+				m_items[locals.Length].RefreshValue(m_frame.Thread, m_frame.GetThis());
 				
-			else if (frame.Method.DeclaringType.GetFields().Any(f => f.IsStatic))
-				m_items[locals.Length].RefreshValue(frame.Thread, null);
+			else if (m_frame.Method.DeclaringType.GetFields().Any(f => f.IsStatic))
+				m_items[locals.Length].RefreshValue(m_frame.Thread, null);
 		}
 		
 		public override int Count
