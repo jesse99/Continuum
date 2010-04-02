@@ -103,6 +103,7 @@ namespace App
 		
 		public void applicationWillTerminate(NSObject notification)
 		{
+			Broadcaster.Invoke("exiting event loop", null);
 			foreach (IShutdown downer in m_boss.GetRepeated<IShutdown>())
 			{
 				downer.OnShutdown();

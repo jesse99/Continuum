@@ -609,10 +609,11 @@ namespace Debugger
 	[ExportClass("StructValueItem", "VariableItem")]
 	internal sealed class StructValueItem : VariableItem
 	{
-		public StructValueItem(string name, string type, StructMirror value, ThreadMirror thread) : base(thread, name, value, type, "StructValueItem")
+		public StructValueItem(string name, string type, StructMirror value, ThreadMirror thread, Action<Value> setter) : base(thread, name, value, type, "StructValueItem")
 		{
 			m_object = value;
 			m_thread = thread;
+			m_setter = setter;
 		}
 		
 		public override bool IsExpandable
@@ -644,7 +645,7 @@ namespace Debugger
 				for (int i = 0; i < m_object.Fields.Length; ++i)
 				{
 					int tmp = i;
-					Action<Value> setter = (Value v) => m_object.Fields[tmp] = v;
+					Action<Value> setter = (Value v) => DoSetValue(tmp, v);
 					m_items[i] = m_items[i].RefreshVariable(thread, m_object.Fields[i], setter);
 				}
 			}
@@ -683,10 +684,16 @@ namespace Debugger
 				for (int i = 0; i < m_object.Fields.Length; ++i)
 				{
 					int tmp = i;
-					Action<Value> setter = (Value v) => m_object.Fields[tmp] = v;
+					Action<Value> setter = (Value v) => DoSetValue(tmp, v);
 					m_items[i] = CreateVariable(fields[i].Name, fields[i].FieldType.FullName, m_object.Fields[i], m_thread, setter);
 				}
 			}
+		}
+		
+		private void DoSetValue(int index, Value value)
+		{
+			m_object.Fields[index] = value;
+			m_setter(m_object);
 		}
 		#endregion
 		
@@ -694,6 +701,7 @@ namespace Debugger
 		private StructMirror m_object;
 		private VariableItem[] m_items;
 		private ThreadMirror m_thread;
+		private Action<Value> m_setter;
 		#endregion
 	}
 	

@@ -314,7 +314,7 @@ namespace Debugger
 				var strct = v as StructMirror;
 				if (strct != null)
 				{
-					variable = new StructValueItem(name, type, strct, thread);
+					variable = new StructValueItem(name, type, strct, thread, setter);
 					break;
 				}
 				

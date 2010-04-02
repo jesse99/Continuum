@@ -39,6 +39,9 @@ namespace Debugger
 			Broadcaster.Register("debugger processed breakpoint event", this);
 			Broadcaster.Register("debugger processed step event", this);
 			Broadcaster.Register("debugger stopped", this);
+			Broadcaster.Register("exiting event loop", this);
+			
+			DoLoadPrefs();
 		}
 		
 		public void OnBroadcast(string name, object value)
@@ -61,6 +64,10 @@ namespace Debugger
 					DoReset(null);
 					break;
 				
+				case "exiting event loop":
+					DoSavePrefs();
+					break;
+				
 				default:
 					Contract.Assert(false, "bad name: " + name);
 					break;
@@ -74,12 +81,12 @@ namespace Debugger
 		
 		public static bool ShowThousands
 		{
-			get {return ms_showThousands;}
+			get {return !ms_hideThousands;}
 		}
 		
 		public static bool ShowUnicode
 		{
-			get {return ms_showUnicode;}
+			get {return !ms_hideUnicode;}
 		}
 		
 		public void toggleHex(NSObject sender)
@@ -91,14 +98,14 @@ namespace Debugger
 		
 		public void toggleThousands(NSObject sender)
 		{
-			ms_showThousands = !ms_showThousands;
+			ms_hideThousands = !ms_hideThousands;
 			m_method.Refresh(null);
 			m_table.reloadData();
 		}
 		
 		public void toggleUnicode(NSObject sender)
 		{
-			ms_showUnicode = !ms_showUnicode;
+			ms_hideUnicode = !ms_hideUnicode;
 			m_method.Refresh(null);
 			m_table.reloadData();
 		}
@@ -115,11 +122,11 @@ namespace Debugger
 			}
 			else if (sel.Name == "toggleThousands:")
 			{
-				Unused.Value = sender.Call("setTitle:", NSString.Create("{0} Thousands", ms_showThousands ? "Hide" : "Show"));
+				Unused.Value = sender.Call("setTitle:", NSString.Create("{0} Thousands", ms_hideThousands ? "Show" : "Hide"));
 			}
 			else if (sel.Name == "toggleUnicode:")
 			{
-				Unused.Value = sender.Call("setTitle:", NSString.Create("Show {0}", ms_showUnicode ? "Code Point" : "Unicode"));
+				Unused.Value = sender.Call("setTitle:", NSString.Create("Show {0}", ms_hideUnicode ? "Unicode" : "Code Points"));
 			}
 			else if (respondsToSelector(sel))
 			{
@@ -193,6 +200,25 @@ namespace Debugger
 			
 			m_table.reloadData();
 		}
+		
+		private void DoLoadPrefs()
+		{
+			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
+			
+			// Note that boolForKey returns false if the key does not exist.
+			ms_showHex = defaults.boolForKey(NSString.Create("ShowHex Variables"));
+			ms_hideThousands = defaults.boolForKey(NSString.Create("HideThousands Variables"));
+			ms_hideUnicode = defaults.boolForKey(NSString.Create("HideUnicode Variables"));
+		}
+		
+		private void DoSavePrefs()
+		{
+			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
+			
+			defaults.setBool_forKey(ms_showHex, NSString.Create("ShowHex Variables"));
+			defaults.setBool_forKey(ms_hideThousands, NSString.Create("HideThousands Variables"));
+			defaults.setBool_forKey(ms_hideUnicode, NSString.Create("HideUnicode Variables"));
+		}
 		#endregion
 		
 		#region Fields
@@ -200,8 +226,8 @@ namespace Debugger
 		private MethodValueItem m_method;
 		
 		private static bool ms_showHex;
-		private static bool ms_showThousands = true;
-		private static bool ms_showUnicode;
+		private static bool ms_hideThousands;
+		private static bool ms_hideUnicode;
 		#endregion
 	}
 }

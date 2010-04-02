@@ -64,9 +64,6 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.StringMirror
 		public class Mono.Debugger.ArrayMirror
 
-* Work on editing primitives:
-	- store show settings in a pref 
-	- does setting a field in a struct work?
 * Allow values to be changed:
 	- enums
 	- objects to null
@@ -77,9 +74,16 @@ public abstract class Mono.Debugger.Value
 	- view as hex
 	- allow ToString specifier to be set (if the overload exists)
 	- allow users to invoke methods on objects
+* Upgrade mono:
+	- install the new version
+	- fix the mono path to point to the new source
+	- make sure the apps work
+	- carefully review the soft debugger changes
+		` AssemblyUnloadEvent is new
+* Mono 2.6.3 has a new soft debugger.
 * Make sure can step through IL.
 * Work on a debugger:	
-	- break on exceptions
+	- break on exceptions, see CreateExceptionRequest
 	- stack window
 	- threads window
 	- need a way to kill the executable and stop debugging
@@ -587,6 +591,7 @@ public abstract class Mono.Debugger.Value
 	- review BUILDING doc
 	- review README
 	- review config file
+	- mention that thr debugger requires mono 2.6.3 or later
 	- run from the finder
 	- review tar targets
 	- use svn log -r 1:HEAD > CHANGE_LOG
