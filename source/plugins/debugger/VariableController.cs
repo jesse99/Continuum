@@ -142,7 +142,11 @@ namespace Debugger
 		public void outlineView_setObjectValue_forTableColumn_byItem(NSTableView table, NSObject value, NSTableColumn col, VariableItem item)
 		{
 			string text = value.description();
-			item.SetValue(text);
+			VariableItem newItem = item.SetValue(text);
+			if (!ReferenceEquals(newItem, item))
+			{
+				m_method.Refresh(null);
+			}
 		}
 		
 		public int outlineView_numberOfChildrenOfItem(NSOutlineView table, VariableItem item)

@@ -85,10 +85,13 @@ namespace Debugger
 	[ExportClass("ArrayValueItem", "VariableItem")]
 	internal sealed class ArrayValueItem : VariableItem
 	{
-		public ArrayValueItem(string name, string type, ArrayMirror value, ThreadMirror thread) : base(thread, name, value, type, "ArrayValueItem")
+		public ArrayValueItem(string name, string type, ArrayMirror value, ThreadMirror thread, Action<Value> setter) : base(thread, name, value, type, "ArrayValueItem")
 		{
+			Contract.Requires(setter != null, "setter is null");
+			
 			m_object = value;
 			m_thread = thread;
+			m_setter = setter;
 		}
 		
 		public override bool IsExpandable
@@ -129,6 +132,34 @@ namespace Debugger
 			}
 			
 			base.RefreshValue(thread, value);
+		}
+		
+		public override VariableItem SetValue(string text)
+		{
+			VariableItem result = this;
+			
+			try
+			{
+				if (text.TrimAll() == "null")
+				{
+					var value = new PrimitiveValue(m_thread.VirtualMachine, null);
+					m_setter(value);
+					result = new NullValueItem(m_thread, Name.ToString(), TypeName.ToString());
+				}
+				else
+				{
+					throw new Exception("Object types can currently only be set to null.");
+				}
+			}
+			catch (Exception e)
+			{
+				Boss boss = ObjectModel.Create("Application");
+				var transcript = boss.Get<ITranscript>();
+				transcript.Show();
+				transcript.WriteLine(Output.Error, "{0}", e.Message);
+			}
+			
+			return result;
 		}
 		
 		#region Protected Methods
@@ -219,6 +250,7 @@ namespace Debugger
 		private ArrayMirror m_object;
 		private VariableItem[] m_items;
 		private ThreadMirror m_thread;
+		private Action<Value> m_setter;
 		#endregion
 	}
 	
@@ -233,7 +265,7 @@ namespace Debugger
 			m_setter = setter;
 		}
 		
-		public override void SetValue(string text)
+		public override VariableItem SetValue(string text)
 		{
 			try
 			{
@@ -248,6 +280,8 @@ namespace Debugger
 				transcript.Show();
 				transcript.WriteLine(Output.Error, "{0}", e.Message);
 			}
+			
+			return this;
 		}
 		
 		#region Private Methods
@@ -399,7 +433,7 @@ namespace Debugger
 			{
 				LocalVariable tmp = locals[i];
 				Action<Value> setter = (Value v) => m_frame.SetValue(tmp, v);
-				m_items[i] = m_items[i].RefreshVariable(m_frame.Thread, values[i], setter);
+				m_items[i] = m_items[i].RefreshVariable(m_frame.Thread, values[i], setter);		// TODO: don't think the ref counts will be right here
 			}
 			
 			if (!m_frame.Method.IsStatic)		// note that this includes static fields
@@ -449,10 +483,13 @@ namespace Debugger
 	[ExportClass("ObjectValueItem", "VariableItem")]
 	internal sealed class ObjectValueItem : VariableItem
 	{
-		public ObjectValueItem(string name, string type, ObjectMirror value, ThreadMirror thread) : base(thread, name, value, type, "ObjectValueItem")
+		public ObjectValueItem(string name, string type, ObjectMirror value, ThreadMirror thread, Action<Value> setter) : base(thread, name, value, type, "ObjectValueItem")
 		{
+			Contract.Requires(setter != null, "setter is null");
+			
 			m_object = value;
 			m_thread = thread;
+			m_setter = setter;
 		}
 		
 		public override bool IsExpandable
@@ -498,6 +535,34 @@ namespace Debugger
 			}
 			
 			base.RefreshValue(thread, value);
+		}
+		
+		public override VariableItem SetValue(string text)
+		{
+			VariableItem result = this;
+			
+			try
+			{
+				if (text.TrimAll() == "null")
+				{
+					var value = new PrimitiveValue(m_thread.VirtualMachine, null);
+					m_setter(value);
+					result = new NullValueItem(m_thread, Name.ToString(), TypeName.ToString());
+				}
+				else
+				{
+					throw new Exception("Object types can currently only be set to null.");
+				}
+			}
+			catch (Exception e)
+			{
+				Boss boss = ObjectModel.Create("Application");
+				var transcript = boss.Get<ITranscript>();
+				transcript.Show();
+				transcript.WriteLine(Output.Error, "{0}", e.Message);
+			}
+			
+			return result;
 		}
 		
 		#region Protected Methods
@@ -554,6 +619,7 @@ namespace Debugger
 		private ObjectMirror m_object;
 		private VariableItem[] m_items;
 		private ThreadMirror m_thread;
+		private Action<Value> m_setter;
 		#endregion
 	}
 	
@@ -569,7 +635,7 @@ namespace Debugger
 			m_setter = setter;
 		}
 		
-		public override void SetValue(string text)
+		public override VariableItem SetValue(string text)
 		{
 			try
 			{
@@ -584,6 +650,8 @@ namespace Debugger
 				transcript.Show();
 				transcript.WriteLine(Output.Error, "{0}", e.Message);
 			}
+			
+			return this;
 		}
 		
 		public static object Parse(string text, string type)
@@ -720,9 +788,46 @@ namespace Debugger
 	[ExportClass("StringValueItem", "VariableItem")]
 	internal sealed class StringValueItem : VariableItem
 	{
-		public StringValueItem(ThreadMirror thread, string name, string type, StringMirror value) : base(thread, name, value, type, "StringValueItem")
+		public StringValueItem(ThreadMirror thread, string name, string type, StringMirror value, Action<Value> setter) : base(thread, name, value, type, "StringValueItem")
 		{
+			Contract.Requires(setter != null, "setter is null");
+			
+			m_thread = thread;
+			m_setter = setter;
 		}
+		
+		public override VariableItem SetValue(string text)
+		{
+			VariableItem result = this;
+			
+			try
+			{
+				if (text.TrimAll() == "null")
+				{
+					var value = new PrimitiveValue(m_thread.VirtualMachine, null);
+					m_setter(value);
+					result = new NullValueItem(m_thread, Name.ToString(), TypeName.ToString());
+				}
+				else
+				{
+					throw new Exception("Object types can currently only be set to null.");
+				}
+			}
+			catch (Exception e)
+			{
+				Boss boss = ObjectModel.Create("Application");
+				var transcript = boss.Get<ITranscript>();
+				transcript.Show();
+				transcript.WriteLine(Output.Error, "{0}", e.Message);
+			}
+			
+			return result;
+		}
+		
+		#region Fields
+		private ThreadMirror m_thread;
+		private Action<Value> m_setter;
+		#endregion
 	}
 	
 	[ExportClass("StructValueItem", "VariableItem")]

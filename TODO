@@ -66,10 +66,12 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.ArrayMirror
 
 * Allow values to be changed:
-	- objects to null
-	- strings?
+	- strings
 	- handle escapes when parsing strings
-	- handle escapes (and show unicode setting) when displaying strings
+	- handle escapes (and show unicode setting) when displaying strings		
+	- allow object types to be set to null (this is a bit tricky because we'll need to change the
+	  item to a NullValueItem)
+	- allow variables to be copied, eg set one to x.z.w
 * Might want to use TypeMirror.GetSourceFiles
 * Work on variables window:
 	- allow ToString specifier to be set (if the overload exists)

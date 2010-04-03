@@ -93,9 +93,11 @@ namespace Debugger
 			get {return m_type;}
 		}
 		
-		public virtual void SetValue(string text)
+		public virtual VariableItem SetValue(string text)
 		{
 			Functions.NSBeep();
+			
+			return this;
 		}
 		
 		public virtual void RefreshValue(ThreadMirror thread, Value value)
@@ -275,7 +277,7 @@ namespace Debugger
 				var array = v as ArrayMirror;
 				if (array != null)
 				{
-					variable = new ArrayValueItem(name, type, array, thread);
+					variable = new ArrayValueItem(name, type, array, thread, setter);
 					break;
 				}
 				
@@ -300,7 +302,7 @@ namespace Debugger
 				var str = v as StringMirror;
 				if (str != null)
 				{
-					variable = new StringValueItem(thread, name, type, str);
+					variable = new StringValueItem(thread, name, type, str, setter);
 					break;
 				}
 				
@@ -308,7 +310,7 @@ namespace Debugger
 				var obj = v as ObjectMirror;
 				if (obj != null)
 				{
-					variable = new ObjectValueItem(name, type, obj, thread);
+					variable = new ObjectValueItem(name, type, obj, thread, setter);
 					break;
 				}
 				
