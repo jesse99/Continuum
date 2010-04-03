@@ -41,7 +41,7 @@ namespace Shared
 				TypeReference ptype = attr.Constructor.Parameters[i].ParameterType;
 				object pvalue = attr.ConstructorParameters[i];
 				
-				args.Add(ArgToString(ptype, pvalue, includeNamespace));
+				args.Add(ArgToString(ptype, pvalue, includeNamespace, true));
 			}
 			
 			TypeDefinition type = attr.Constructor.DeclaringType.Resolve();
@@ -55,7 +55,7 @@ namespace Shared
 						TypeReference ptype = props[0].PropertyType;
 						object pvalue = d.Value;
 						
-						args.Add(string.Format("{0} = {1}", d.Key, ArgToString(ptype, pvalue, includeNamespace)));
+						args.Add(string.Format("{0} = {1}", d.Key, ArgToString(ptype, pvalue, includeNamespace, true)));
 					}
 					else
 						args.Add(string.Format("{0} = {1}", d.Key, ArgToString(d.Value)));
@@ -68,7 +68,7 @@ namespace Shared
 					TypeReference ptype = field.FieldType;
 					object pvalue = d.Value;
 					
-					args.Add(string.Format("{0} = {1}", d.Key, ArgToString(ptype, pvalue, includeNamespace)));
+					args.Add(string.Format("{0} = {1}", d.Key, ArgToString(ptype, pvalue, includeNamespace, true)));
 				}
 			}
 			else
@@ -259,7 +259,7 @@ namespace Shared
 			return builder.ToString();
 		}
 		
-		public static string ArgToString(TypeReference type, object value, bool includeNamespace)
+		public static string ArgToString(TypeReference type, object value, bool includeNamespace, bool includeTypeName)
 		{
 			string result = null;
 			
@@ -271,9 +271,15 @@ namespace Shared
 				{
 					if (field.Constant != null && field.Constant.Equals(value))
 						if (includeNamespace && !string.IsNullOrEmpty(td.Namespace))
-							return td.Namespace + '.' + td.Name + '.' + field.Name;
+							if (includeTypeName)
+								return td.Namespace + '.' + td.Name + '.' + field.Name;
+							else
+								return td.Namespace + '.' + field.Name;
 						else
-							return td.Name + '.' + field.Name;
+							if (includeTypeName)
+								return td.Name + '.' + field.Name;
+							else
+								return field.Name;
 				}
 				
 				// Then try to find a combination of values which match the enum (note that
@@ -292,16 +298,22 @@ namespace Shared
 							if ((union & operand) == operand)
 							{
 								if (includeNamespace && !string.IsNullOrEmpty(td.Namespace))
-									names.Add(td.Namespace + '.' + td.Name + '.' + field.Name);
+									if (includeTypeName)
+										names.Add(td.Namespace + '.' + td.Name + '.' + field.Name);
+									else
+										names.Add(td.Namespace + '.' + field.Name);
 								else
-									names.Add(td.Name + '.' + field.Name);
+									if (includeTypeName)
+										names.Add(td.Name + '.' + field.Name);
+									else
+										names.Add(field.Name);
 								
 								union &= ~operand;
 							}
 						}
 					}
 					
-					if (union == 0)
+					if (union == 0 && names.Count > 0)
 						return string.Join(" | ", names.ToArray());
 				}
 				catch

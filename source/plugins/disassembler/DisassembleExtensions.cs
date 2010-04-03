@@ -155,7 +155,7 @@ namespace Disassembler
 			if (field.Constant != null)
 			{
 				builder.Append(" = ");												// this works for ints but not for strings
-				builder.Append(CecilExtensions.ArgToString(field.FieldType, field.Constant, true));	
+				builder.Append(CecilExtensions.ArgToString(field.FieldType, field.Constant, true, true));	
 			}
 			else if (field.InitialValue != null)
 			{

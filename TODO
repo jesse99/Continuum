@@ -32,6 +32,7 @@ green > the current IP
 
 The Algorithm Design Manual
 The Unix Programming Environment
+TCO protocols
 
 public abstract class Mono.Debugger.Event
 	public class Mono.Debugger.AppDomainCreateEvent
@@ -65,21 +66,19 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.ArrayMirror
 
 * Allow values to be changed:
-	- enums
 	- objects to null
 	- strings?
 	- handle escapes when parsing strings
 	- handle escapes (and show unicode setting) when displaying strings
+* Might want to use TypeMirror.GetSourceFiles
 * Work on variables window:
-	- view as hex
 	- allow ToString specifier to be set (if the overload exists)
 	- allow users to invoke methods on objects
 * Upgrade mono:
 	- install the new version
 	- fix the mono path to point to the new source
 	- make sure the apps work
-	- carefully review the soft debugger changes
-		` AssemblyUnloadEvent is new
+	- review the ChangeLog
 * Mono 2.6.3 has a new soft debugger.
 * Make sure can step through IL.
 * Work on a debugger:	

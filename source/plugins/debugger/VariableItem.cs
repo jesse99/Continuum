@@ -282,7 +282,8 @@ namespace Debugger
 				var enm = v as EnumMirror;
 				if (enm != null)
 				{
-					variable = new EnumValueItem(thread, name, type, enm);
+					CodeViewer.CacheAssembly(enm.Type.Assembly);
+					variable = new EnumValueItem(thread, name, type, enm, setter);
 					break;
 				}
 				
@@ -413,7 +414,7 @@ namespace Debugger
 				var enm = value as EnumMirror;
 				if (enm != null)
 				{
-					text = enm.StringValue;
+					text = CecilExtensions.ArgToString(enm.Type.Metadata, enm.Value, false, false);
 					break;
 				}
 				

@@ -225,9 +225,130 @@ namespace Debugger
 	[ExportClass("EnumValueItem", "VariableItem")]
 	internal sealed class EnumValueItem : VariableItem
 	{
-		public EnumValueItem(ThreadMirror thread, string name, string type, EnumMirror value) : base(thread, name, value, type, "EnumValueItem")
+		public EnumValueItem(ThreadMirror thread, string name, string type, EnumMirror value, Action<Value> setter) : base(thread, name, value, type, "EnumValueItem")
 		{
+			Contract.Requires(setter != null, "setter is null");
+			
+			m_object = value;
+			m_setter = setter;
 		}
+		
+		public override void SetValue(string text)
+		{
+			try
+			{
+				m_object.Value = DoParse(text);
+				m_setter(m_object);
+				m_value = CreateString(CecilExtensions.ArgToString(m_object.Type.Metadata, m_object.Value, false, false));
+			}
+			catch (Exception e)
+			{
+				Boss boss = ObjectModel.Create("Application");
+				var transcript = boss.Get<ITranscript>();
+				transcript.Show();
+				transcript.WriteLine(Output.Error, "{0}", e.Message);
+			}
+		}
+		
+		#region Private Methods
+		private object DoParse(string text)
+		{
+			object result = null;
+			
+			string[] words = text.Split('|');
+			foreach (string word in words)
+			{
+				result = DoCombine(result, DoParseValue(word));
+			}
+			
+			if (result == null)
+				throw new Exception("No text");
+				
+			return result;
+		}
+		
+		private object DoParseValue(string text)
+		{
+			if (text.Length > 0 && (char.IsWhiteSpace(text[0]) || char.IsWhiteSpace(text[text.Length - 1])))
+				text = text.TrimAll();
+			
+			if (text.Length > 0 && char.IsDigit(text[0]))
+			{
+				return PrimitiveValueItem.Parse(text, m_object.Value.GetType().FullName);
+			}
+			else
+			{
+				foreach (FieldInfoMirror field in m_object.Type.GetFields())
+				{
+					if (field.IsStatic && field.Name == text)
+						return (m_object.Type.GetValue(field) as EnumMirror).Value;
+				}
+				
+				throw new Exception(string.Format("{0} is not the name of a {1} value.", text, m_object.Type.FullName));
+			}
+		}
+		
+		private object DoCombine(object lhs, object rhs)
+		{
+			object result;
+			
+			if (lhs != null)
+			{
+				switch (m_object.Value.GetType().FullName)
+				{
+					case "System.SByte":
+						int s1 = (System.SByte) lhs;	// need the temporaries to work around compiler warning
+						int s2 = (System.SByte) rhs;
+						result = (System.SByte) (s1 | s2);
+						break;
+						
+					case "System.Int16":
+						result = (System.Int16) ((System.Int16) lhs | (System.Int16) rhs);	// need the extra cast because the | expression gets promoted to a larger type
+						break;
+						
+					case "System.Int32":
+						result = (System.Int32) lhs | (System.Int32) rhs;
+						break;
+						
+					case "System.Int64":
+						result = (System.Int64) lhs | (System.Int64) rhs;
+						break;
+						
+					case "System.Byte":
+						result = (System.Byte) (((System.Byte) lhs) | ((System.Byte) rhs));
+						break;
+						
+					case "System.UInt16":
+						result = (System.UInt16) ((System.UInt16) lhs | (System.UInt16) rhs);
+						break;
+						
+					case "System.UInt32":
+						result = (System.UInt32) lhs | (System.UInt32) rhs;
+						break;
+						
+					case "System.UInt64":
+						result = (System.UInt64) lhs | (System.UInt64) rhs;
+						break;
+						
+					default:
+						Contract.Assert(false, "bad type: " + m_object.Value.GetType().FullName);
+						result = null;
+						break;
+				}
+			}
+			else
+			{
+				result = rhs;
+			}
+			
+			return result;
+		}
+		#endregion
+		
+		#region Fields
+		private Action<Value> m_setter;
+		private EnumMirror m_object;
+		#endregion
 	}
 	
 	[ExportClass("MethodValueItem", "VariableItem")]
@@ -452,7 +573,7 @@ namespace Debugger
 		{
 			try
 			{
-				object value = DoParse(text);
+				object value = Parse(text, TypeName.ToString());
 				m_setter(m_vm.CreateValue(value));
 				m_value = CreateString(OnPrimitiveToString(value));
 			}
@@ -465,11 +586,10 @@ namespace Debugger
 			}
 		}
 		
-		#region Private Methods		
-		private object DoParse(string text)
+		public static object Parse(string text, string type)
 		{
 			object value = null;
-			switch (TypeName.ToString())
+			switch (type)
 			{
 				case "System.Boolean":
 					if (text == "0")
@@ -584,13 +704,12 @@ namespace Debugger
 					break;
 					
 				default:
-					Contract.Assert(false, "bad type: " + TypeName.ToString());
+					Contract.Assert(false, "bad type: " + type);
 					break;
 			}
 			
 			return value;
 		}
-		#endregion
 		
 		#region Fields
 		private VirtualMachine m_vm;
