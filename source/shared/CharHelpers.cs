@@ -57,32 +57,35 @@ namespace Shared
 			return false;
 		}
 		
-		// Returns a character as "'x'", "'\x2020'", or "'\t'".
+		// Returns a character as "x", "\x2020", or "\t".
 		public static string ToText(char c)
 		{
 			if ((int) c == 10)
-				return "'\\n'";
+				return "\\n";
 			
 			else if ((int) c == 13)
-				return "'\\r'";
+				return "\\r";
 			
 			else if ((int) c == 9)
-				return "'\\t'";
+				return "\\t";
 			
 			else if ((int) c == 12)
-				return "'\\f'";
+				return "\\f";
 			
 			else if (c == '\'')
-				return "'\\''";
+				return "\\";
+			
+			else if (c == '\\')
+				return "\\\\";
 			
 			else if ((int) c < 0x20)
-				return string.Format("'\\x{0:X2}'", (int) c);
+				return string.Format("\\x{0:X2}", (int) c);
 			
 			else if ((int) c >= 0x7f)
-				return string.Format("'\\x{0:X4}'", (int) c);
+				return string.Format("\\x{0:X4}", (int) c);
 			
 			else
-				return string.Format("'{0}'", c);
+				return string.Format("{0}", c);
 		}
 	}
 }

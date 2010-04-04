@@ -148,7 +148,7 @@ namespace Debugger
 				}
 				else
 				{
-					throw new Exception("Object types can currently only be set to null.");
+					throw new Exception("Array types can currently only be set to null.");
 				}
 			}
 			catch (Exception e)
@@ -792,6 +792,7 @@ namespace Debugger
 		{
 			Contract.Requires(setter != null, "setter is null");
 			
+			m_object = value;
 			m_thread = thread;
 			m_setter = setter;
 		}
@@ -808,9 +809,23 @@ namespace Debugger
 					m_setter(value);
 					result = new NullValueItem(m_thread, Name.ToString(), TypeName.ToString());
 				}
+				else if (text.StartsWith("@\"") && text.EndsWith("\""))
+				{
+					var mirror = m_object.Domain.CreateString(DoParseVerbatim(text.Substring(2, text.Length - 3)));
+					m_setter(mirror);
+					result = new StringValueItem(m_thread, Name.ToString(), TypeName.ToString(), mirror, m_setter);
+				}
+				else if (text.StartsWith("\"") && text.EndsWith("\""))
+				{
+					var mirror = m_object.Domain.CreateString(DoParse(text.Substring(1, text.Length - 2)));
+					m_setter(mirror);
+					result = new StringValueItem(m_thread, Name.ToString(), TypeName.ToString(), mirror, m_setter);
+				}
 				else
 				{
-					throw new Exception("Object types can currently only be set to null.");
+					var mirror = m_object.Domain.CreateString(DoParse(text));
+					m_setter(mirror);
+					result = new StringValueItem(m_thread, Name.ToString(), TypeName.ToString(), mirror, m_setter);
 				}
 			}
 			catch (Exception e)
@@ -824,7 +839,117 @@ namespace Debugger
 			return result;
 		}
 		
+		#region Private Methods
+		private string DoParseVerbatim(string text)
+		{
+			var builder = new System.Text.StringBuilder(text.Length);
+			
+			int i = 0;
+			while (i < text.Length)
+			{
+				char ch = text[i++];
+				
+				if (ch == '"' && i + 1 < text.Length && text[i + 1] == '"')
+				{
+					builder.Append('"');
+					++i;
+				}
+				else
+				{
+					builder.Append(ch);
+				}
+			}
+			
+			return builder.ToString();
+		}
+		
+		private string DoParse(string text)
+		{
+			var builder = new System.Text.StringBuilder(text.Length);
+			
+			int i = 0;
+			while (i < text.Length)
+			{
+				char ch = text[i++];
+				
+				if (ch == '\\' && i + 1 < text.Length)
+				{
+					if (text[i] == 'n')
+					{
+						builder.Append('\n');
+						++i;
+					}
+					else if (text[i] == 'r')
+					{
+						builder.Append('\r');
+						++i;
+					}
+					else if (text[i] == 't')
+					{
+						builder.Append('\t');
+						++i;
+					}
+					else if (text[i] == 'f')
+					{
+						builder.Append('\f');
+						++i;
+					}
+					else if (text[i] == '"')
+					{
+						builder.Append('"');
+						++i;
+					}
+					else if (text[i] == '\\')
+					{
+						builder.Append('\\');
+						++i;
+					}
+					else if (text[i] == 'x' || text[i] == 'u')
+					{
+						++i;
+						uint codePoint = 0;
+						int count = 0;
+						while (i < text.Length && DoIsHexDigit(text[i]) && count < 4)
+						{
+							codePoint = 16*codePoint + DoGetHexValue(text[i++]);
+							++count;
+						}
+						builder.Append((char) codePoint);
+					}
+					else
+					{
+						builder.Append(ch);
+					}
+				}
+				else
+				{
+					builder.Append(ch);
+				}
+			}
+			
+			return builder.ToString();
+		}
+		
+		private bool DoIsHexDigit(char ch)
+		{
+			return (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'a' && ch <= 'f');
+		}
+		
+		private uint DoGetHexValue(char ch)
+		{
+			if (ch >= '0' && ch <= '9')
+				return (uint) (ch - '0');
+				
+			else if (ch >= 'a' && ch <= 'f')
+				return (uint) (ch - 'a');
+			
+			else
+				return (uint) (ch - 'A');
+		}
+		#endregion
+		
 		#region Fields
+		private StringMirror m_object;
 		private ThreadMirror m_thread;
 		private Action<Value> m_setter;
 		#endregion

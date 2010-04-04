@@ -177,7 +177,7 @@ namespace Debugger
 				if ((char) value > 0x7F && VariableController.ShowUnicode)
 					return "'" + new string((char) value, 1) + "'";
 				else
-					return CharHelpers.ToText((char) value);
+					return "'" + CharHelpers.ToText((char) value) + "'";
 				
 			else if (value is SByte)
 				if (VariableController.ShowHex)
@@ -430,13 +430,40 @@ namespace Debugger
 				var str = value as StringMirror;
 				if (str != null)
 				{
-					text = "\"" + str.Value + "\"";
+					text = DoStringToText(str.Value);
 					break;
 				}
 			}
 			while (false);
 			
 			return text;
+		}
+		
+		private string DoStringToText(string str)
+		{
+			var builder = new System.Text.StringBuilder(str.Length + 2);
+			
+			builder.Append('"');
+			foreach (char ch in str)
+			{
+				if (ch > 0x7F && VariableController.ShowUnicode)
+					builder.Append(ch);
+				else if (ch == '\'')
+					builder.Append(ch);
+				else if (ch == '"')
+					builder.Append("\\\"");
+				else
+					builder.Append(CharHelpers.ToText(ch));
+					
+				if (builder.Length > 256)
+				{
+					builder.Append(Constants.Ellipsis);
+					break;
+				}
+			}
+			builder.Append('"');
+			
+			return builder.ToString();
 		}
 		
 		private bool DoIsGCed(Value value)

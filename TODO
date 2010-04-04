@@ -65,13 +65,6 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.StringMirror
 		public class Mono.Debugger.ArrayMirror
 
-* Allow values to be changed:
-	- strings
-	- handle escapes when parsing strings
-	- handle escapes (and show unicode setting) when displaying strings		
-	- allow object types to be set to null (this is a bit tricky because we'll need to change the
-	  item to a NullValueItem)
-	- allow variables to be copied, eg set one to x.z.w
 * Might want to use TypeMirror.GetSourceFiles
 * Work on variables window:
 	- allow ToString specifier to be set (if the overload exists)
@@ -81,7 +74,6 @@ public abstract class Mono.Debugger.Value
 	- fix the mono path to point to the new source
 	- make sure the apps work
 	- review the ChangeLog
-* Mono 2.6.3 has a new soft debugger.
 * Make sure can step through IL.
 * Work on a debugger:	
 	- break on exceptions, see CreateExceptionRequest
@@ -101,6 +93,9 @@ public abstract class Mono.Debugger.Value
 	- might want to allow ToString specifiers to be used
 	- mention the osascript debugging command 
 	- CodeViewer is being deallocated but not GCed (there is some list with a reference to the boss)
+	- allow variables to be copied, eg should be able to navigate from the current stack frame
+	  temp.Name.Length (to do this right would need to evaluate properties)
+	- might want a context menu to show really large strings, should this be editable? live?
 * Do we want to allow concurrent debug sessions? If not what happens when the code viewer
    window is closed? Should we stop debugging (and close the debugger controller window)?
 * Dot should complete auto-complete text.

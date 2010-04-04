@@ -126,7 +126,7 @@ namespace Debugger
 			}
 			else if (sel.Name == "toggleUnicode:")
 			{
-				Unused.Value = sender.Call("setTitle:", NSString.Create("Show {0}", ms_hideUnicode ? "Unicode" : "Code Points"));
+				Unused.Value = sender.Call("setTitle:", NSString.Create("Show Unicode {0}", ms_hideUnicode ? "Characters" : "Code Points"));
 			}
 			else if (respondsToSelector(sel))
 			{
