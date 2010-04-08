@@ -31,8 +31,6 @@ green > the current IP
 /Users/jessejones/Downloads/monodevelop-2.2/src/addins/MonoDevelop.Debugger.Soft/MonoDevelop.Debugger.Soft/SoftDebuggerSession.cs
 
 The Algorithm Design Manual
-The Unix Programming Environment
-TCO protocols
 
 public abstract class Mono.Debugger.Event
 	public class Mono.Debugger.AppDomainCreateEvent
@@ -64,19 +62,15 @@ public abstract class Mono.Debugger.Value
 	public class Mono.Debugger.ObjectMirror
 		public class Mono.Debugger.StringMirror
 		public class Mono.Debugger.ArrayMirror
-
-* Might want to use TypeMirror.GetSourceFiles
-* Work on variables window:
-	- allow ToString specifier to be set (if the overload exists)
-	- allow users to invoke methods on objects
-* Upgrade mono:
-	- install the new version
-	- fix the mono path to point to the new source
-	- make sure the apps work
-	- review the ChangeLog
-* Make sure can step through IL.
+		
+* When a breakpoint is hit we need to scroll the annotation into view.
+* Work on breaking on exceptions:
+	- break on all exceptions via CreateExceptionRequest, think null can be passed in
+	- supposed to be support for caught/uncaught flags
+	- add a menu to control it
+	- save it in a pref
+* Delete the old mono sources.
 * Work on a debugger:	
-	- break on exceptions, see CreateExceptionRequest
 	- stack window
 	- threads window
 	- need a way to kill the executable and stop debugging
@@ -93,12 +87,16 @@ public abstract class Mono.Debugger.Value
 	- might want to allow ToString specifiers to be used
 	- mention the osascript debugging command 
 	- CodeViewer is being deallocated but not GCed (there is some list with a reference to the boss)
+	- setting a string static variable in a class kills the debugging session
+* Do some more work on the debugger:
+	- allow users to specify which exceptions they want to break on, either a list or a regex
+	- allow users to set the ToString format specifier?
+	- allow users to invoke arbitrary methods on variables, maybe some sort of CodePad
 	- allow variables to be copied, eg should be able to navigate from the current stack frame
 	  temp.Name.Length (to do this right would need to evaluate properties)
 	- might want a context menu to show really large strings, should this be editable? live?
-* Do we want to allow concurrent debug sessions? If not what happens when the code viewer
-   window is closed? Should we stop debugging (and close the debugger controller window)?
 * Dot should complete auto-complete text.
+* COuldn't open (via drag and drop) /Users/jessejones/Source/Third_Party/mono-2.6.3/mono/mini/ChangeLog
 * Mention can right click on completion window.
 * Attributes and base classes need to handle global::
 * global should be a c# keyword?

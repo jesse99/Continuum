@@ -26,4 +26,4 @@ $(source-files): source/AssemblyVersion.cs source/plugins/$(lib-name)/*.cs
 	@echo "$^" > $@
 
 $(lib-path): $(source-files) $(ui-files)
-	$(CSC) -out:$@ $(CSC_FLAGS) -unsafe -r:$(ui-resources),bin/Mono.Cecil.dll,bin/Mono.Cecil.Mdb.dll,Mono.Debugger.Soft.dll -target:library @$<
+	$(CSC) -out:$@ $(CSC_FLAGS) -unsafe -r:$(ui-resources),bin/Mono.Cecil.dll,bin/Mono.Cecil.Mdb.dll,bin/Mono.Debugger.Soft.dll -target:library @$<

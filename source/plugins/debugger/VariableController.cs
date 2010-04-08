@@ -23,7 +23,7 @@ using Gear;
 using Gear.Helpers;
 using MCocoa;
 using MObjc;
-using Mono.Debugger;
+using Mono.Debugger.Soft;
 using Shared;
 using System;
 
@@ -141,11 +141,21 @@ namespace Debugger
 		
 		public void outlineView_setObjectValue_forTableColumn_byItem(NSTableView table, NSObject value, NSTableColumn col, VariableItem item)
 		{
-			string text = value.description();
-			VariableItem newItem = item.SetValue(text);
-			if (!ReferenceEquals(newItem, item))
+			try
 			{
-				m_method.Refresh(null);
+				string text = value.description();
+				VariableItem newItem = item.SetValue(text);
+				if (!ReferenceEquals(newItem, item))
+				{
+					m_method.Refresh(null);
+				}
+			}
+			catch (Exception e)
+			{
+				Boss boss = ObjectModel.Create("Application");
+				var transcript = boss.Get<ITranscript>();
+				transcript.Show();
+				transcript.WriteLine(Output.Error, "{0}", e.Message);
 			}
 		}
 		

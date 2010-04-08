@@ -22,7 +22,7 @@
 using MCocoa;
 using MObjc;
 using MObjc.Helpers;
-using Mono.Debugger;
+using Mono.Debugger.Soft;
 using Shared;
 using System;
 

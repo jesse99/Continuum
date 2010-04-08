@@ -22,7 +22,7 @@
 using Gear;
 using MCocoa;
 using MObjc.Helpers;
-using Mono.Debugger;
+using Mono.Debugger.Soft;
 using Shared;
 using System;
 using System.Collections.Generic;

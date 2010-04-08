@@ -22,7 +22,7 @@
 using Gear;
 using MCocoa;
 using MObjc.Helpers;
-using Mono.Debugger;
+using Mono.Debugger.Soft;
 using Shared;
 using System;
 using System.Diagnostics;
@@ -292,7 +292,7 @@ namespace Debugger
 				string path = method.SourceFile;
 				if (!string.IsNullOrEmpty(path))
 				{
-					IEnumerable<Breakpoint> bps = Breakpoints.GetBreakpoints(path);
+					IEnumerable<Breakpoint> bps = Breakpoints.GetBreakpoints(path);		// TODO: could probably make this a bit more efficient by using TypeMirror.GetSourceFiles
 					if (bps.Any())
 					{
 						List<TypeMirror> types;
@@ -345,6 +345,9 @@ namespace Debugger
 		{
 			Log.WriteLine(TraceLevel.Info, "Debugger", "VMStartEvent");
 			Broadcaster.Invoke("debugger started", this);
+			
+			m_exceptionRequest = m_vm.CreateExceptionRequest(null);
+			m_exceptionRequest.Enable();
 			
 			return HandlerAction.Resume;
 		}
@@ -704,6 +707,7 @@ namespace Debugger
 		private ThreadMirror m_currentThread;
 		private Dictionary<Type, Func<Event, HandlerAction>> m_handlers = new Dictionary<Type, Func<Event, HandlerAction>>();
 		
+		private ExceptionEventRequest m_exceptionRequest;
 		private StepEventRequest m_stepRequest;
 		private Dictionary<ResolvedBreakpoint, BreakpointEventRequest> m_breakpoints = new Dictionary<ResolvedBreakpoint, BreakpointEventRequest>();
 		private Dictionary<string, List<TypeMirror>> m_types = new Dictionary<string, List<TypeMirror>>();

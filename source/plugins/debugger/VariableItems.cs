@@ -23,7 +23,7 @@ using Gear;
 using MCocoa;
 using MObjc;
 using MObjc.Helpers;
-using Mono.Debugger;
+using Mono.Debugger.Soft;
 using Shared;
 using System;
 using System.Collections.Generic;
@@ -37,6 +37,8 @@ namespace Debugger
 	{
 		public ArrayElementItem(string name, string type, Value value, ThreadMirror thread, Action<Value> setter) : base(thread, name, value, type, "ArrayElementItem")
 		{
+			Contract.Requires(setter != null, "setter is null");
+			
 			m_setter = setter;
 			m_item = CreateVariable(name, type, value, thread, setter);
 		}
@@ -138,25 +140,15 @@ namespace Debugger
 		{
 			VariableItem result = this;
 			
-			try
+			if (text.TrimAll() == "null")
 			{
-				if (text.TrimAll() == "null")
-				{
-					var value = new PrimitiveValue(m_thread.VirtualMachine, null);
-					m_setter(value);
-					result = new NullValueItem(m_thread, Name.ToString(), TypeName.ToString());
-				}
-				else
-				{
-					throw new Exception("Array types can currently only be set to null.");
-				}
+				var value = new PrimitiveValue(m_thread.VirtualMachine, null);
+				m_setter(value);
+				result = new NullValueItem(m_thread, Name.ToString(), TypeName.ToString());
 			}
-			catch (Exception e)
+			else
 			{
-				Boss boss = ObjectModel.Create("Application");
-				var transcript = boss.Get<ITranscript>();
-				transcript.Show();
-				transcript.WriteLine(Output.Error, "{0}", e.Message);
+				throw new Exception("Array types can currently only be set to null.");
 			}
 			
 			return result;
@@ -267,19 +259,9 @@ namespace Debugger
 		
 		public override VariableItem SetValue(string text)
 		{
-			try
-			{
-				m_object.Value = DoParse(text);
-				m_setter(m_object);
-				m_value = CreateString(CecilExtensions.ArgToString(m_object.Type.Metadata, m_object.Value, false, false));
-			}
-			catch (Exception e)
-			{
-				Boss boss = ObjectModel.Create("Application");
-				var transcript = boss.Get<ITranscript>();
-				transcript.Show();
-				transcript.WriteLine(Output.Error, "{0}", e.Message);
-			}
+			m_object.Value = DoParse(text);
+			m_setter(m_object);
+			m_value = CreateString(CecilExtensions.ArgToString(m_object.Type.Metadata, m_object.Value, false, false));
 			
 			return this;
 		}
@@ -408,10 +390,14 @@ namespace Debugger
 			}
 			
 			if (!frame.Method.IsStatic)		// note that this includes static fields
-				m_items.Add(CreateVariable("this", frame.Method.DeclaringType.FullName, frame.GetThis(), frame.Thread, null));
-				
+			{
+				Action<Value> setter = (Value) => {throw new Exception("Can't set 'this'.");};
+				m_items.Add(CreateVariable("this", frame.Method.DeclaringType.FullName, frame.GetThis(), frame.Thread, setter));
+			}
 			else if (frame.Method.DeclaringType.GetFields().Any(f => f.IsStatic))
+			{
 				m_items.Add(CreateVariable("statics", frame.Method.DeclaringType.FullName, frame.Method.DeclaringType, frame.Thread));
+			}
 		}
 		
 		public StackFrame Frame
@@ -518,13 +504,13 @@ namespace Debugger
 					FieldInfoMirror[] fields = m_object.Type.GetFields();
 					Contract.Assert(m_items.Length == fields.Length);
 					
-					Value[] values = m_object.GetValues(fields);
+					Value[] values = DoGetValues(fields);
 					Contract.Assert(values.Length == fields.Length);
 					
 					for (int i = 0; i < values.Length; ++i)
 					{
 						FieldInfoMirror tmp = fields[i];
-						Action<Value> setter = (Value v) => m_object.SetValue(tmp, v);
+						Action<Value> setter = (Value v) => DoSetValue(tmp, v);
 						m_items[i] = m_items[i].RefreshVariable(thread, values[i], setter);
 					}
 				}
@@ -541,25 +527,15 @@ namespace Debugger
 		{
 			VariableItem result = this;
 			
-			try
+			if (text.TrimAll() == "null")
 			{
-				if (text.TrimAll() == "null")
-				{
-					var value = new PrimitiveValue(m_thread.VirtualMachine, null);
-					m_setter(value);
-					result = new NullValueItem(m_thread, Name.ToString(), TypeName.ToString());
-				}
-				else
-				{
-					throw new Exception("Object types can currently only be set to null.");
-				}
+				var value = new PrimitiveValue(m_thread.VirtualMachine, null);
+				m_setter(value);
+				result = new NullValueItem(m_thread, Name.ToString(), TypeName.ToString());
 			}
-			catch (Exception e)
+			else
 			{
-				Boss boss = ObjectModel.Create("Application");
-				var transcript = boss.Get<ITranscript>();
-				transcript.Show();
-				transcript.WriteLine(Output.Error, "{0}", e.Message);
+				throw new Exception("Object types can currently only be set to null.");
 			}
 			
 			return result;
@@ -597,13 +573,13 @@ namespace Debugger
 					FieldInfoMirror[] fields = m_object.Type.GetFields();
 					m_items = new VariableItem[fields.Length];
 					
-					Value[] values = m_object.GetValues(fields);
+					Value[] values = DoGetValues(fields);
 					Contract.Assert(values.Length == fields.Length);
 					
 					for (int i = 0; i < values.Length; ++i)
 					{
 						FieldInfoMirror tmp = fields[i];
-						Action<Value> setter = (Value v) => m_object.SetValue(tmp, v);
+						Action<Value> setter = (Value v) => DoSetValue(tmp, v);
 						m_items[i] = CreateVariable(fields[i].Name, fields[i].FieldType.FullName, values[i], m_thread, setter);
 					}
 				}
@@ -612,6 +588,29 @@ namespace Debugger
 					m_items = new VariableItem[0];
 				}
 			}
+		}
+		
+		private Value[] DoGetValues(FieldInfoMirror[] fields)
+		{
+			Value[] values = new Value[fields.Length];
+		
+			for (int i = 0; i < fields.Length; ++i)
+			{
+				if (fields[i].IsStatic)
+					values[i] = m_object.Type.GetValue(fields[i]);
+				else
+					values[i] = m_object.GetValue(fields[i]);
+			}
+			
+			return values;
+		}
+		
+		private void DoSetValue(FieldInfoMirror field, Value value)
+		{
+			if (field.IsStatic)
+				m_object.Type.SetValue(field, value);
+			else
+				m_object.SetValue(field, value);
 		}
 		#endregion
 		
@@ -637,19 +636,9 @@ namespace Debugger
 		
 		public override VariableItem SetValue(string text)
 		{
-			try
-			{
-				object value = Parse(text, TypeName.ToString());
-				m_setter(m_vm.CreateValue(value));
-				m_value = CreateString(OnPrimitiveToString(value));
-			}
-			catch (Exception e)
-			{
-				Boss boss = ObjectModel.Create("Application");
-				var transcript = boss.Get<ITranscript>();
-				transcript.Show();
-				transcript.WriteLine(Output.Error, "{0}", e.Message);
-			}
+			object value = Parse(text, TypeName.ToString());
+			m_setter(m_vm.CreateValue(value));
+			m_value = CreateString(OnPrimitiveToString(value));
 			
 			return this;
 		}
@@ -792,7 +781,6 @@ namespace Debugger
 		{
 			Contract.Requires(setter != null, "setter is null");
 			
-			m_object = value;
 			m_thread = thread;
 			m_setter = setter;
 		}
@@ -801,39 +789,29 @@ namespace Debugger
 		{
 			VariableItem result = this;
 			
-			try
+			if (text.TrimAll() == "null")
 			{
-				if (text.TrimAll() == "null")
-				{
-					var value = new PrimitiveValue(m_thread.VirtualMachine, null);
-					m_setter(value);
-					result = new NullValueItem(m_thread, Name.ToString(), TypeName.ToString());
-				}
-				else if (text.StartsWith("@\"") && text.EndsWith("\""))
-				{
-					var mirror = m_object.Domain.CreateString(DoParseVerbatim(text.Substring(2, text.Length - 3)));
-					m_setter(mirror);
-					result = new StringValueItem(m_thread, Name.ToString(), TypeName.ToString(), mirror, m_setter);
-				}
-				else if (text.StartsWith("\"") && text.EndsWith("\""))
-				{
-					var mirror = m_object.Domain.CreateString(DoParse(text.Substring(1, text.Length - 2)));
-					m_setter(mirror);
-					result = new StringValueItem(m_thread, Name.ToString(), TypeName.ToString(), mirror, m_setter);
-				}
-				else
-				{
-					var mirror = m_object.Domain.CreateString(DoParse(text));
-					m_setter(mirror);
-					result = new StringValueItem(m_thread, Name.ToString(), TypeName.ToString(), mirror, m_setter);
-				}
+				var value = new PrimitiveValue(m_thread.VirtualMachine, null);
+				m_setter(value);
+				result = new NullValueItem(m_thread, Name.ToString(), TypeName.ToString());
 			}
-			catch (Exception e)
+			else if (text.StartsWith("@\"") && text.EndsWith("\""))
 			{
-				Boss boss = ObjectModel.Create("Application");
-				var transcript = boss.Get<ITranscript>();
-				transcript.Show();
-				transcript.WriteLine(Output.Error, "{0}", e.Message);
+				var mirror = m_thread.Domain.CreateString(DoParseVerbatim(text.Substring(2, text.Length - 3)));
+				m_setter(mirror);
+				result = new StringValueItem(m_thread, Name.ToString(), TypeName.ToString(), mirror, m_setter);
+			}
+			else if (text.StartsWith("\"") && text.EndsWith("\""))
+			{
+				var mirror = m_thread.Domain.CreateString(DoParse(text.Substring(1, text.Length - 2)));
+				m_setter(mirror);
+				result = new StringValueItem(m_thread, Name.ToString(), TypeName.ToString(), mirror, m_setter);
+			}
+			else
+			{
+				var mirror = m_thread.Domain.CreateString(DoParse(text));
+				m_setter(mirror);
+				result = new StringValueItem(m_thread, Name.ToString(), TypeName.ToString(), mirror, m_setter);
 			}
 			
 			return result;
@@ -949,7 +927,6 @@ namespace Debugger
 		#endregion
 		
 		#region Fields
-		private StringMirror m_object;
 		private ThreadMirror m_thread;
 		private Action<Value> m_setter;
 		#endregion
@@ -960,9 +937,19 @@ namespace Debugger
 	{
 		public StructValueItem(string name, string type, StructMirror value, ThreadMirror thread, Action<Value> setter) : base(thread, name, value, type, "StructValueItem")
 		{
+			Contract.Requires(setter != null, "setter is null");
+			
 			m_object = value;
 			m_thread = thread;
 			m_setter = setter;
+			
+			// Unlike ObjectMirror StructMirror does not include statics in the Fields property
+			// which complicates things...
+			var fields = new List<FieldInfoMirror>();
+			var fim = m_object.Type.GetFields();
+			fields.AddRange((from f in fim where !f.IsStatic select f).ToArray());
+			fields.AddRange((from f in fim where f.IsStatic select f).ToArray());
+			m_fields = fields.ToArray();
 		}
 		
 		public override bool IsExpandable
@@ -972,7 +959,7 @@ namespace Debugger
 		
 		public override int Count
 		{
-			get {return m_object.Fields.Length;}
+			get {return m_fields.Length;}
 		}
 		
 		public override VariableItem this[int index]
@@ -982,20 +969,20 @@ namespace Debugger
 		
 		public override void RefreshValue(ThreadMirror thread, Value value)
 		{
+			Contract.Requires(value is StructMirror, "value is a " + value.GetType());
+			Contract.Requires(((StructMirror) value).Type == m_object.Type, string.Format("value is a {0} not a {1}", ((StructMirror) value).Type, m_object.Type));
+			
 			m_object = (StructMirror) value;
 			
 			if (m_items != null)
 			{
-				Contract.Assert(m_items.Length == m_object.Fields.Length);
+				Value[] values = DoGetValues();
 				
-				FieldInfoMirror[] fields = m_object.Type.GetFields();
-				Contract.Assert(m_object.Fields.Length == fields.Length);
-				
-				for (int i = 0; i < m_object.Fields.Length; ++i)
+				for (int i = 0; i < values.Length; ++i)
 				{
 					int tmp = i;
 					Action<Value> setter = (Value v) => DoSetValue(tmp, v);
-					m_items[i] = m_items[i].RefreshVariable(thread, m_object.Fields[i], setter);
+					m_items[i] = m_items[i].RefreshVariable(thread, values[i], setter);
 				}
 			}
 			
@@ -1025,29 +1012,50 @@ namespace Debugger
 		{
 			if (m_items == null)
 			{
-				m_items = new VariableItem[m_object.Fields.Length];
+				m_items = new VariableItem[m_fields.Length];
+				Value[] values = DoGetValues();
 				
-				FieldInfoMirror[] fields = m_object.Type.GetFields();
-				Contract.Assert(m_object.Fields.Length == fields.Length);
-				
-				for (int i = 0; i < m_object.Fields.Length; ++i)
+				for (int i = 0; i < m_fields.Length; ++i)
 				{
 					int tmp = i;
 					Action<Value> setter = (Value v) => DoSetValue(tmp, v);
-					m_items[i] = CreateVariable(fields[i].Name, fields[i].FieldType.FullName, m_object.Fields[i], m_thread, setter);
+					m_items[i] = CreateVariable(m_fields[i].Name, m_fields[i].FieldType.FullName, values[i], m_thread, setter);
 				}
 			}
 		}
 		
+		private Value[] DoGetValues()
+		{
+			Value[] values = new Value[m_fields.Length];
+		
+			for (int i = 0; i < m_fields.Length; ++i)
+			{
+				if (m_fields[i].IsStatic)
+					values[i] = m_object.Type.GetValue(m_fields[i]);
+				else
+					values[i] = m_object.Fields[i];
+			}
+			
+			return values;
+		}
+		
 		private void DoSetValue(int index, Value value)
 		{
-			m_object.Fields[index] = value;
-			m_setter(m_object);
+			if (m_fields[index].IsStatic)
+			{
+				m_object.Type.SetValue(m_fields[index], value);
+			}
+			else
+			{
+				m_object.Fields[index] = value;
+				m_setter(m_object);
+			}
 		}
 		#endregion
 		
 		#region Fields
 		private StructMirror m_object;
+		private FieldInfoMirror[] m_fields;		// instance fields followed by static fields
 		private VariableItem[] m_items;
 		private ThreadMirror m_thread;
 		private Action<Value> m_setter;

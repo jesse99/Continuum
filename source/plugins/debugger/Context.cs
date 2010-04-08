@@ -20,7 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
-using Mono.Debugger;
+using Mono.Debugger.Soft;
 using Shared;
 using System;
 
