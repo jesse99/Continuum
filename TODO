@@ -33,25 +33,26 @@ green > the current IP
 The Algorithm Design Manual
 
 public abstract class Mono.Debugger.Event
-	public class Mono.Debugger.AppDomainCreateEvent
-	public class Mono.Debugger.AppDomainUnloadEvent
-	public class Mono.Debugger.AssemblyLoadEvent	
-	public class Mono.Debugger.BreakpointEvent
-	public class Mono.Debugger.ExceptionEvent
-	public class Mono.Debugger.MethodEntryEvent
-	public class Mono.Debugger.MethodExitEvent
-	public class Mono.Debugger.StepEvent
-	public class Mono.Debugger.ThreadDeathEvent
-	public class Mono.Debugger.ThreadStartEvent
-	public class Mono.Debugger.TypeLoadEvent
-	public class Mono.Debugger.VMDeathEvent
-	public class Mono.Debugger.VMDisconnectEvent
-	public class Mono.Debugger.VMStartEvent
+	public class Mono.Debugger.Soft.AppDomainCreateEvent
+	public class Mono.Debugger.Soft.AppDomainUnloadEvent
+	public class Mono.Debugger.Soft.AssemblyLoadEvent
+	public class Mono.Debugger.Soft.AssemblyUnloadEvent
+	public class Mono.Debugger.Soft.BreakpointEvent
+	public class Mono.Debugger.Soft.ExceptionEvent
+	public class Mono.Debugger.Soft.MethodEntryEvent
+	public class Mono.Debugger.Soft.MethodExitEvent
+	public class Mono.Debugger.Soft.StepEvent
+	public class Mono.Debugger.Soft.ThreadDeathEvent
+	public class Mono.Debugger.Soft.ThreadStartEvent
+	public class Mono.Debugger.Soft.TypeLoadEvent
+	public class Mono.Debugger.Soft.VMDeathEvent
+	public class Mono.Debugger.Soft.VMDisconnectEvent
+	public class Mono.Debugger.Soft.VMStartEvent
 
 public abstract class Mono.Debugger.EventRequest
 	public sealed class Mono.Debugger.ExceptionEventRequest
 	public sealed class Mono.Debugger.BreakpointEventRequest
-	public sealed class Mono.Debugger.MethodEntryEventRequest
+	public sealed class Mono.Debugger.MethodEntryEventRequest	
 	public sealed class Mono.Debugger.MethodExitEventRequest
 	public sealed class Mono.Debugger.StepEventRequest
 	
@@ -63,30 +64,30 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.StringMirror
 		public class Mono.Debugger.ArrayMirror
 		
-* Delete the old mono sources.
-* Work on a debugger:	
-	- stack window
+Check
+PostCheck		
+
+* Work on a debugger:
 	- threads window
-	- need a way to kill the executable and stop debugging
-	- watchpoints (or maybe multiple variables windows)
-	- conditional breakpoints
-	- moving the instruction pointer
-	- context breakpoint menu should have close do a broadcast so the breakpoint can be toggled
-	- custom viewer dlls
-	- what happens if ToString throws?
-	- make sure it works ok if the exe is missing
 	- probably want to optionally write stuff like assembly loads
 	- would be nice if could add breakpoints to IL views
+	- make sure it works ok if the exe is missing
 	- make sure it works ok if the exe and mdb are out of sync
-	- might want to allow ToString specifiers to be used
+	- conditional breakpoints
+	- improve the controls window
+	- context breakpoint menu should have close do a broadcast so the breakpoint can be toggled
 	- mention the osascript debugging command 
-	- CodeViewer is being deallocated but not GCed (there is some list with a reference to the boss)
+	- CodeViewer is being deallocated but not GCed (there is some object with a reference to the boss)
 * Do some more work on the debugger:
 	- allow users to specify which exceptions they want to break on, either a list or a regex
 	- allow users to set the ToString format specifier?
 	- allow users to invoke arbitrary methods on variables, maybe some sort of CodePad
-	- allow variables to be copied, eg should be able to navigate from the current stack frame
-	  temp.Name.Length (to do this right would need to evaluate properties)
+	- allow more complex epressions (and properties) to be used with conditional breakpoints
+	- watchpoint windows
+		` drag and drop to add new variables
+		` draw in gray if the current context does not have the variable in any stack frame
+	- moving the instruction pointer
+	- custom viewer dlls
 	- might want a context menu to show really large strings, should this be editable? live?
 * Dot should complete auto-complete text.
 * COuldn't open (via drag and drop) /Users/jessejones/Source/Third_Party/mono-2.6.3/mono/mini/ChangeLog

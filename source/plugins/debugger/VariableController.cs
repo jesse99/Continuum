@@ -40,6 +40,7 @@ namespace Debugger
 			Broadcaster.Register("debugger thrown exception", this);
 			Broadcaster.Register("debugger processed step event", this);
 			Broadcaster.Register("debugger stopped", this);
+			Broadcaster.Register("changed stack frame", this);
 			Broadcaster.Register("exiting event loop", this);
 			
 			DoLoadPrefs();
@@ -51,15 +52,15 @@ namespace Debugger
 			{
 				case "debugger processed breakpoint event":	
 				case "debugger thrown exception":	
+				case "debugger processed step event":
 					var context = (Context) value;
 					StackFrame[] frames = context.Thread.GetFrames();
 					DoReset(frames[0]);
 					break;
 				
-				case "debugger processed step event":
-					var context2 = (Context) value;
-					StackFrame[] frames2 = context2.Thread.GetFrames();
-					DoReset(frames2[0]);
+				case "changed stack frame":
+					var frame = (StackFrame) value;
+					DoReset(frame);
 					break;
 				
 				case "debugger stopped":

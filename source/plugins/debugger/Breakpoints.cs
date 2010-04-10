@@ -200,7 +200,8 @@ namespace Debugger
 				{
 					Broadcaster.Invoke("removing breakpoint", new Breakpoint(file, line));
 					
-					bp.Annotation.Close();
+					if (bp.Annotation.IsValid)
+						bp.Annotation.Close();
 					removing = true;
 				}
 				
@@ -405,9 +406,16 @@ namespace Debugger
 			
 			public int GetLine()
 			{
-				var metrics = Annotation.Parent.Get<ITextMetrics>();
-				int line = metrics.GetLine(Annotation.Anchor.location);
-				return line;
+				if (Annotation.IsValid)
+				{
+					var metrics = Annotation.Parent.Get<ITextMetrics>();
+					int line = metrics.GetLine(Annotation.Anchor.location);
+					return line;
+				}
+				else
+				{
+					return int.MaxValue;
+				}
 			}
 		}
 		#endregion

@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Mono.Debugger.Soft;
+using MObjc.Helpers;
 using System;
 using System.Linq;
 
@@ -42,6 +43,22 @@ namespace Debugger
 					if (lhs.Method.MetadataToken == rhs.Method.MetadataToken)
 						if (lhs.Method.FullName == rhs.Method.FullName)	// this is kind of expensive, but we can't rely on just the metadata token (we need the assembly as well which we can't always get)
 							matches = true;
+			}
+			
+			return matches;
+		}
+		
+		public static bool Matches(StackFrame[] lhs, StackFrame[] rhs)
+		{
+			bool matches = false;
+			
+			if (ReferenceEquals(lhs, rhs))
+			{
+				matches = true;
+			}
+			else if (lhs != null && rhs != null && lhs.Length == rhs.Length)
+			{
+				matches = Contract.ForAll(0, lhs.Length, i => lhs[i].Matches(rhs[i]));
 			}
 			
 			return matches;
