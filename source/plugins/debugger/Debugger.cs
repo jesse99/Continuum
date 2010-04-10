@@ -58,6 +58,7 @@ namespace Debugger
 			m_handlers.Add(typeof(AppDomainUnloadEvent), (Event e) => DoAppDomainUnloadEvent((AppDomainUnloadEvent) e));
 			m_handlers.Add(typeof(AssemblyLoadEvent), (Event e) => DoAssemblyLoadEvent((AssemblyLoadEvent) e));
 			m_handlers.Add(typeof(BreakpointEvent), (Event e) => DoBreakpointEvent((BreakpointEvent) e));
+			m_handlers.Add(typeof(ExceptionEvent), (Event e) => DoExceptionEvent((ExceptionEvent) e));
 			m_handlers.Add(typeof(StepEvent), (Event e) => DoStepEvent((StepEvent) e));
 			m_handlers.Add(typeof(TypeLoadEvent), (Event e) => DoTypeLoadEvent((TypeLoadEvent) e));
 			m_handlers.Add(typeof(VMDeathEvent), (Event e) => DoVMDeathEvent((VMDeathEvent) e));
@@ -66,6 +67,7 @@ namespace Debugger
 			
 			Broadcaster.Register("added breakpoint", this);
 			Broadcaster.Register("removing breakpoint", this);
+			Broadcaster.Register("toggled exceptions", this);
 			
 			ms_running = true;
 		}
@@ -85,6 +87,13 @@ namespace Debugger
 				
 				case "removing breakpoint":
 					OnRemovingBreakpoint((Breakpoint) value);
+					break;
+				
+				case "toggled exceptions":
+					if ((bool) value)
+						m_exceptionRequest.Enable();
+					else
+						m_exceptionRequest.Disable();
 					break;
 				
 				default:
@@ -266,6 +275,27 @@ namespace Debugger
 			return HandlerAction.Suspend;
 		}
 		
+		private HandlerAction DoExceptionEvent(ExceptionEvent e)
+		{
+			DoTransition(State.Paused);
+			
+			m_currentThread = e.Thread;
+			
+			if (m_stepRequest != null)
+			{
+				m_stepRequest.Disable();
+				m_stepRequest = null;
+			}
+			
+			Mono.Debugger.Soft.StackFrame[] frames = e.Thread.GetFrames();
+			Mono.Debugger.Soft.StackFrame frame = frames[0];
+			Log.WriteLine(TraceLevel.Info, "Debugger", "{0} exception was thrown at {1}:{2:X4}", e.Exception.Type.FullName, frame.Method.FullName, frame.ILOffset);
+			var context = new Context(e.Thread, frame.Method, frame.ILOffset);
+			Broadcaster.Invoke("debugger thrown exception", context);
+		
+			return HandlerAction.Suspend;
+		}
+		
 		private HandlerAction DoStepEvent(StepEvent e)
 		{
 			Location location = e.Method.LocationAtILOffset((int) e.Location);
@@ -347,7 +377,8 @@ namespace Debugger
 			Broadcaster.Invoke("debugger started", this);
 			
 			m_exceptionRequest = m_vm.CreateExceptionRequest(null);
-			m_exceptionRequest.Enable();
+			if (DebuggerWindows.BreakOnExceptions)
+				m_exceptionRequest.Enable();
 			
 			return HandlerAction.Resume;
 		}

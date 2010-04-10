@@ -37,6 +37,7 @@ namespace Debugger
 			m_table = new IBOutlet<NSOutlineView>(this, "table").Value;
 			
 			Broadcaster.Register("debugger processed breakpoint event", this);
+			Broadcaster.Register("debugger thrown exception", this);
 			Broadcaster.Register("debugger processed step event", this);
 			Broadcaster.Register("debugger stopped", this);
 			Broadcaster.Register("exiting event loop", this);
@@ -49,6 +50,7 @@ namespace Debugger
 			switch (name)
 			{
 				case "debugger processed breakpoint event":	
+				case "debugger thrown exception":	
 					var context = (Context) value;
 					StackFrame[] frames = context.Thread.GetFrames();
 					DoReset(frames[0]);

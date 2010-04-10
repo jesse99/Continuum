@@ -293,7 +293,10 @@ namespace DirectoryEditor
 				int tag = (int) sender.Call("tag");
 				
 				var handler = m_boss.Get<IMenuHandler>();
-				enabled = handler.IsEnabled(tag);
+				MenuState state = handler.GetState(tag);
+				enabled = (state & MenuState.Enabled) == MenuState.Enabled;
+				if (sender.respondsToSelector("setState:"))
+					sender.Call("setState:", (state & MenuState.Checked) == MenuState.Checked ? 1 : 0);
 				
 				if (enabled && tag == 50 && sender.isMemberOfClass(NSMenuItem.Class))
 				{

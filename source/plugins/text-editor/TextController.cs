@@ -712,7 +712,9 @@ namespace TextEditor
 				int tag = (int) item.Call("tag");
 				
 				var handler = m_boss.Get<IMenuHandler>();
-				valid = handler.IsEnabled(tag);
+				MenuState state = handler.GetState(tag);
+				valid = (state & MenuState.Enabled) == MenuState.Enabled;
+				item.Call("setState:", (state & MenuState.Checked) == MenuState.Checked ? 1 : 0);
 			}
 			else if (sel.Name == "shiftLeft:" || sel.Name == "shiftRight:")
 			{

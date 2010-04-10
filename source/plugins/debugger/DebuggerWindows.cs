@@ -38,6 +38,7 @@ namespace Debugger
 			
 			Boss boss = ObjectModel.Create("Application");
 			var handler = boss.Get<IMenuHandler>();
+			handler.Register2(this, 66, this.DoToggleExceptions, this.DoEnableExceptions);
 			
 			foreach (WindowInfo info in m_windows)
 			{
@@ -53,6 +54,7 @@ namespace Debugger
 			
 			Broadcaster.Register("debugger started", this);
 			Broadcaster.Register("debugger stopped", this);
+			Broadcaster.Register("exiting event loop", this);
 		}
 		
 		public void OnBroadcast(string name, object value)
@@ -80,16 +82,40 @@ namespace Debugger
 					
 					break;
 				
+				case "exiting event loop":
+					DoSavePrefs();
+					break;
+					
 				default:
 					Contract.Assert(false, "bad name: " + name);
 					break;
 			}
 		}
 		
+		public static bool BreakOnExceptions
+		{
+			get {return !ms_ignoreExceptions;}
+		}
+		
 		#region Private Methods
+		private void DoToggleExceptions()
+		{
+			ms_ignoreExceptions = !ms_ignoreExceptions;
+			Broadcaster.Invoke("toggled exceptions", !ms_ignoreExceptions);
+		}
+		
+		private MenuState DoEnableExceptions()
+		{
+			if (ms_ignoreExceptions)
+				return MenuState.Enabled;
+			else
+				return MenuState.Enabled | MenuState.Checked;
+		}
+		
 		private void DoLoadPrefs()
 		{
 			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
+			ms_ignoreExceptions = defaults.boolForKey(NSString.Create("ignore exceptions"));
 			
 			foreach (WindowInfo info in m_windows)
 			{
@@ -102,6 +128,7 @@ namespace Debugger
 		private void DoSavePrefs()
 		{
 			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
+			defaults.setBool_forKey(ms_ignoreExceptions, NSString.Create("ignore exceptions"));
 			
 			foreach (WindowInfo info in m_windows)
 			{
@@ -135,6 +162,7 @@ namespace Debugger
 			new WindowInfo("controls", 661),
 			new WindowInfo("variables", 662),
 		};
+		private static bool ms_ignoreExceptions;
 		#endregion
 	}
 }

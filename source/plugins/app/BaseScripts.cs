@@ -183,7 +183,7 @@ namespace App
 			{
 				foreach (string src in resourceScripts)
 				{
-					string name = Path.GetFileName(src);										
+					string name = Path.GetFileName(src);
 					if (name[0] != '.')
 					{
 						if (!scripts.Exists(s => Path.GetFileName(s) == name))

@@ -23,7 +23,15 @@ using Gear;
 using System;
 
 namespace Shared
-{	
+{
+	[Flags]
+	public enum MenuState
+	{
+		Disabled = 0,
+		Enabled = 1,
+		Checked = 2,
+	}
+	
 	// Used to attach menu handlers to objects in the responder chain. Currently these
 	// can be attached to the app via appHandle, the directory editor via dirHandler,
 	// or text editors via textHandler.
@@ -31,12 +39,14 @@ namespace Shared
 	{
 		void Handle(int tag);
 		
-		bool IsEnabled(int tag);
+		MenuState GetState(int tag);
 		
 		// Handler is always enabled.
 		void Register(object owner, int tag, Action handler);
 		
 		void Register(object owner, int tag, Action handler, Func<bool> enabler);
+		
+		void Register2(object owner, int tag, Action handler, Func<MenuState> state);
 		
 		// Removes every handler owner registered.
 		void Deregister(object owner);

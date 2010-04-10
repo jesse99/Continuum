@@ -422,7 +422,9 @@ fi
 				int tag = (int) sender.Call("tag");
 				
 				var handler = m_boss.Get<IMenuHandler>();
-				enabled = handler.IsEnabled(tag);
+				MenuState state = handler.GetState(tag);
+				enabled = (state & MenuState.Enabled) == MenuState.Enabled;
+				sender.Call("setState:", (state & MenuState.Checked) == MenuState.Checked ? 1 : 0);
 			}
 			else if (sel.Name == "find:")
 			{
