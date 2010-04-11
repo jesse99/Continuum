@@ -43,6 +43,7 @@ namespace Debugger
 			Broadcaster.Register("debugger processed step event", this);
 			Broadcaster.Register("debugger state changed", this);
 			Broadcaster.Register("changed stack frame", this);
+			Broadcaster.Register("changed thread", this);
 		}
 		
 		public Boss Boss
@@ -96,6 +97,12 @@ namespace Debugger
 					var frame = (StackFrame) value;
 					var context3 = new Context(frame.Thread, frame.Method, frame.ILOffset);
 					DoPaused(context3);
+					break;
+				
+				case "changed thread":
+					var stack = (StackFrame[]) value;
+					var context4 = new Context(stack[0].Thread, stack[0].Method, stack[0].ILOffset);
+					DoPaused(context4);
 					break;
 				
 				case "debugger state changed":

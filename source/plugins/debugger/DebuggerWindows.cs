@@ -29,7 +29,7 @@ using System.Collections.Generic;
 
 namespace Debugger
 {
-	[ExportClass("DebuggerWindows", "NSObject", Outlets = "stackWindow stackController controlsWindow variablesWindow controlsController variablesController")]
+	[ExportClass("DebuggerWindows", "NSObject", Outlets = "threadsWindow threadsController stackWindow stackController controlsWindow variablesWindow controlsController variablesController")]
 	internal sealed class DebuggerWindows : NSObject, IObserver
 	{
 		public DebuggerWindows() : base(NSObject.AllocAndInitInstance("DebuggerWindows"))
@@ -162,6 +162,7 @@ namespace Debugger
 			new WindowInfo("controls", 661),
 			new WindowInfo("variables", 662),
 			new WindowInfo("stack", 663),
+			new WindowInfo("threads", 664),
 		};
 		private static bool ms_ignoreExceptions;
 		#endregion

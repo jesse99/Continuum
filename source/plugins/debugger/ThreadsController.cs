@@ -26,51 +26,44 @@ using MObjc;
 using Mono.Debugger.Soft;
 using Shared;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Debugger
 {
-	[ExportClass("StackController", "NSWindowController", Outlets = "table")]
-	internal sealed class StackController : NSWindowController, IObserver
+	[ExportClass("ThreadsController", "NSWindowController", Outlets = "table")]
+	internal sealed class ThreadsController : NSWindowController, IObserver
 	{
-		public StackController(IntPtr instance) : base(instance)
+		public ThreadsController(IntPtr instance) : base(instance)
 		{
 			m_table = new IBOutlet<NSTableView>(this, "table").Value;
 			m_table.setDoubleAction("doubleClicked:");
 			
+			Broadcaster.Register("debugger started", this);
 			Broadcaster.Register("debugger processed breakpoint event", this);
 			Broadcaster.Register("debugger thrown exception", this);
 			Broadcaster.Register("debugger processed step event", this);
 			Broadcaster.Register("debugger state changed", this);
-			Broadcaster.Register("changed thread", this);
 		}
 		
 		public void OnBroadcast(string name, object value)
 		{
 			switch (name)
 			{
+				case "debugger started":	
+					m_debugger = (Debugger) value;
+					m_threads = m_debugger.VM.GetThreads();
+					m_selected = -1;
+					m_table.reloadData();
+					break;
+					
 				case "debugger processed breakpoint event":	
 				case "debugger thrown exception":	
 				case "debugger processed step event":
 					var context = (Context) value;
-					StackFrame[] stack = context.Thread.GetFrames();
-					if (!StackFrameExtensions.Matches(stack, m_stack))
-					{
-						m_stack = stack;
-						m_selected = 0;
-						m_table.reloadData();
-						m_table.scrollRowToVisible(m_stack.Length - 1);
-					}
-					break;
-				
-				case "changed thread":
-					var stack2 = (StackFrame[]) value;
-					if (!StackFrameExtensions.Matches(stack2, m_stack))
-					{
-						m_stack = stack2;
-						m_selected = 0;
-						m_table.reloadData();
-						m_table.scrollRowToVisible(m_stack.Length - 1);
-					}
+					m_threads = m_debugger.VM.GetThreads();						// need to refresh this each time because threads may have been created or destroyed
+					m_selected = m_threads.IndexOf(context.Thread);
+					m_table.reloadData();
 					break;
 				
 				case "debugger state changed":
@@ -78,9 +71,9 @@ namespace Debugger
 					if (state != m_state)
 					{
 						m_state = state;
-						if (state != State.Paused && state != State.Running && m_stack != null)
+						if (state != State.Paused && state != State.Running && m_threads != null)
 						{
-							m_stack = null;
+							m_threads = null;
 							m_table.reloadData();
 						}
 					}
@@ -95,45 +88,48 @@ namespace Debugger
 		public void doubleClicked(NSObject sender)
 		{
 			int row = m_table.selectedRow();
-			row = m_stack.Length - row - 1;		// frames are drawn top down
-			
-			StackFrame[] stack = m_stack[0].Thread.GetFrames();		// we need to get a fresh copy of the stack frame or the debugger whines that the "the specified stack frame is no longer valid"
-			if (stack[row].Matches(m_stack[row]))
+			if (!m_threads[row].IsCollected)
 			{
-				m_selected = row;
-				m_table.reloadData();
-				Broadcaster.Invoke("changed stack frame", stack[row]);
-			}
-			else
-			{
-				Boss boss = ObjectModel.Create("Application");
-				var transcript = boss.Get<ITranscript>();
-				transcript.Show();
-				transcript.WriteLine(Output.Error, "Current stack doesn't match cached stack.");
+				StackFrame[] stack = m_threads[row].GetFrames();
+				if (stack.Length > 0)
+				{
+					m_selected = row;
+					m_table.reloadData();
+					
+					Broadcaster.Invoke("changed thread", stack);
+				}
+				else
+				{
+					Boss boss = ObjectModel.Create("Application");
+					var transcript = boss.Get<ITranscript>();
+					transcript.Show();
+					transcript.WriteLine(Output.Error, "{0}", "The thread has no stack frames.");
+				}
 			}
 		}
 		
 		public int numberOfRowsInTableView(NSTableView table)
 		{
-			return m_stack != null ? m_stack.Length : 0;
+			return m_threads != null ? m_threads.Count : 0;
 		}
 		
 		public NSObject tableView_objectValueForTableColumn_row(NSTableView table, NSTableColumn col, int row)
 		{
-			if (m_stack == null)
+			if (m_threads == null || m_debugger.State == State.Disconnected)
 				return NSString.Empty;
 			
-			row = m_stack.Length - row - 1;		// draw the frames top down
-			StackFrame frame = m_stack[row];
+			ThreadMirror thread = m_threads[row];
+			string name = thread.Id == 1 ? "main" : thread.Name;
+			
 			if (col.identifier().ToString() == "0")
-				return DoCreateString(System.IO.Path.GetFileName(frame.FileName), row);
-			else if (col.identifier().ToString() == "1")
-				if (frame.LineNumber >= 0)
-					return DoCreateString(frame.LineNumber.ToString(), row);
+				if (!string.IsNullOrEmpty(name))
+					return DoCreateString(string.Format("{0} ({1})", name, thread.Id), row);
 				else
-					return DoCreateString(string.Empty, row);
+					return DoCreateString(thread.Id.ToString(), row);
+			else if (col.identifier().ToString() == "1")
+				return DoCreateString(thread.ThreadState.ToString(), row);
 			else
-				return DoCreateString(frame.Method.FullName, row);
+				return DoCreateString(thread.Domain.FriendlyName, row);
 		}
 		
 		#region Private Methods
@@ -149,6 +145,9 @@ namespace Debugger
 			{
 				color = NSColor.disabledControlTextColor();
 			}
+			
+			if (m_threads[row].IsCollected)
+				color = NSColor.disabledControlTextColor();
 			
 			NSObject str;
 			if (color != null)
@@ -168,7 +167,8 @@ namespace Debugger
 		
 		#region Fields
 		private NSTableView m_table;
-		private StackFrame[] m_stack;
+		private Debugger m_debugger;
+		private IList<ThreadMirror> m_threads;
 		private State m_state;
 		private int m_selected;
 		#endregion

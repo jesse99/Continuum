@@ -72,6 +72,11 @@ namespace Debugger
 			ms_running = true;
 		}
 		
+		public VirtualMachine VM
+		{
+			get {return m_vm;}
+		}
+		
 		public State State
 		{
 			get {return m_state;}

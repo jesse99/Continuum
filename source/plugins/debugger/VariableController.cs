@@ -42,6 +42,7 @@ namespace Debugger
 			Broadcaster.Register("debugger stopped", this);
 			Broadcaster.Register("changed stack frame", this);
 			Broadcaster.Register("exiting event loop", this);
+			Broadcaster.Register("changed thread", this);
 			
 			DoLoadPrefs();
 		}
@@ -56,6 +57,11 @@ namespace Debugger
 					var context = (Context) value;
 					StackFrame[] frames = context.Thread.GetFrames();
 					DoReset(frames[0]);
+					break;
+				
+				case "changed thread":
+					var stack = (StackFrame[]) value;
+					DoReset(stack[0]);
 					break;
 				
 				case "changed stack frame":

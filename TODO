@@ -68,13 +68,12 @@ Check
 PostCheck		
 
 * Work on a debugger:
-	- threads window
 	- probably want to optionally write stuff like assembly loads
 	- would be nice if could add breakpoints to IL views
 	- make sure it works ok if the exe is missing
 	- make sure it works ok if the exe and mdb are out of sync
 	- conditional breakpoints
-	- improve the controls window
+	- improve the controls window, or do we even want this?
 	- context breakpoint menu should have close do a broadcast so the breakpoint can be toggled
 	- mention the osascript debugging command 
 	- CodeViewer is being deallocated but not GCed (there is some object with a reference to the boss)
