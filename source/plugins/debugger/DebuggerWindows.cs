@@ -39,6 +39,7 @@ namespace Debugger
 			Boss boss = ObjectModel.Create("Application");
 			var handler = boss.Get<IMenuHandler>();
 			handler.Register2(this, 66, this.DoToggleExceptions, this.DoEnableExceptions);
+			handler.Register2(this, 67, this.DoToggleWriteEvents, this.DoEnableWriteEvents);
 			
 			foreach (WindowInfo info in m_windows)
 			{
@@ -97,11 +98,22 @@ namespace Debugger
 			get {return !ms_ignoreExceptions;}
 		}
 		
+		public static bool WriteEvents
+		{
+			get {return ms_writeEvents;}
+		}
+		
 		#region Private Methods
 		private void DoToggleExceptions()
 		{
 			ms_ignoreExceptions = !ms_ignoreExceptions;
 			Broadcaster.Invoke("toggled exceptions", !ms_ignoreExceptions);
+		}
+		
+		private void DoToggleWriteEvents()
+		{
+			ms_writeEvents = !ms_writeEvents;
+			Broadcaster.Invoke("toggled write debugger events", ms_writeEvents);
 		}
 		
 		private MenuState DoEnableExceptions()
@@ -112,10 +124,19 @@ namespace Debugger
 				return MenuState.Enabled | MenuState.Checked;
 		}
 		
+		private MenuState DoEnableWriteEvents()
+		{
+			if (ms_writeEvents)
+				return MenuState.Enabled | MenuState.Checked;
+			else
+				return MenuState.Enabled;
+		}
+		
 		private void DoLoadPrefs()
 		{
 			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
 			ms_ignoreExceptions = defaults.boolForKey(NSString.Create("ignore exceptions"));
+			ms_writeEvents = defaults.boolForKey(NSString.Create("write debugger events"));
 			
 			foreach (WindowInfo info in m_windows)
 			{
@@ -129,6 +150,7 @@ namespace Debugger
 		{
 			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
 			defaults.setBool_forKey(ms_ignoreExceptions, NSString.Create("ignore exceptions"));
+			defaults.setBool_forKey(ms_writeEvents, NSString.Create("write debugger events"));
 			
 			foreach (WindowInfo info in m_windows)
 			{
@@ -165,6 +187,7 @@ namespace Debugger
 			new WindowInfo("threads", 664),
 		};
 		private static bool ms_ignoreExceptions;
+		private static bool ms_writeEvents;
 		#endregion
 	}
 }

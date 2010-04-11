@@ -44,6 +44,8 @@ namespace Debugger
 			Broadcaster.Register("debugger thrown exception", this);
 			Broadcaster.Register("debugger processed step event", this);
 			Broadcaster.Register("debugger state changed", this);
+			Broadcaster.Register("debugger thread died", this);
+			Broadcaster.Register("debugger thread started", this);
 		}
 		
 		public void OnBroadcast(string name, object value)
@@ -61,7 +63,7 @@ namespace Debugger
 				case "debugger thrown exception":	
 				case "debugger processed step event":
 					var context = (Context) value;
-					m_threads = m_debugger.VM.GetThreads();						// need to refresh this each time because threads may have been created or destroyed
+					m_threads = m_debugger.VM.GetThreads();						// need to refresh this each time because thread states may have changed
 					m_selected = m_threads.IndexOf(context.Thread);
 					m_table.reloadData();
 					break;
@@ -77,6 +79,13 @@ namespace Debugger
 							m_table.reloadData();
 						}
 					}
+					break;
+				
+				case "debugger thread started":
+				case "debugger thread died":
+					m_threads = m_debugger.VM.GetThreads();
+					m_selected = -1;
+					m_table.reloadData();
 					break;
 				
 				default:
@@ -119,17 +128,24 @@ namespace Debugger
 				return NSString.Empty;
 			
 			ThreadMirror thread = m_threads[row];
-			string name = thread.Id == 1 ? "main" : thread.Name;
-			
 			if (col.identifier().ToString() == "0")
-				if (!string.IsNullOrEmpty(name))
-					return DoCreateString(string.Format("{0} ({1})", name, thread.Id), row);
-				else
-					return DoCreateString(thread.Id.ToString(), row);
+				return DoCreateString(GetThreadName(thread), row);
 			else if (col.identifier().ToString() == "1")
 				return DoCreateString(thread.ThreadState.ToString(), row);
 			else
 				return DoCreateString(thread.Domain.FriendlyName, row);
+		}
+		
+		public static string GetThreadName(ThreadMirror thread)
+		{
+			string name = thread.Id == 1 ? "main" : thread.Name;
+			
+			if (!string.IsNullOrEmpty(name))
+				name = string.Format("{0} ({1})", name, thread.Id);
+			else
+				name = thread.Id.ToString();
+				
+			return name;
 		}
 		
 		#region Private Methods

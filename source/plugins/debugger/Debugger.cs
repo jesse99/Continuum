@@ -57,6 +57,7 @@ namespace Debugger
 			m_handlers.Add(typeof(AppDomainCreateEvent), (Event e) => DoAppDomainCreateEvent((AppDomainCreateEvent) e));
 			m_handlers.Add(typeof(AppDomainUnloadEvent), (Event e) => DoAppDomainUnloadEvent((AppDomainUnloadEvent) e));
 			m_handlers.Add(typeof(AssemblyLoadEvent), (Event e) => DoAssemblyLoadEvent((AssemblyLoadEvent) e));
+			m_handlers.Add(typeof(AssemblyUnloadEvent), (Event e) => DoAssemblyUnloadEvent((AssemblyUnloadEvent) e));
 			m_handlers.Add(typeof(BreakpointEvent), (Event e) => DoBreakpointEvent((BreakpointEvent) e));
 			m_handlers.Add(typeof(ExceptionEvent), (Event e) => DoExceptionEvent((ExceptionEvent) e));
 			m_handlers.Add(typeof(StepEvent), (Event e) => DoStepEvent((StepEvent) e));
@@ -235,7 +236,8 @@ namespace Debugger
 		#region Event Handlers
 		private HandlerAction DoAppDomainCreateEvent(AppDomainCreateEvent e)
 		{
-			Log.WriteLine(TraceLevel.Info, "Debugger", "Created app domain {0}", e.Domain.FriendlyName);
+			if (DebuggerWindows.WriteEvents)
+				m_transcript.WriteLine(Output.Normal, "Created app domain '{0}'", e.Domain.FriendlyName);
 			
 			Broadcaster.Invoke("debugger loaded app domain", e.Domain);
 			
@@ -244,7 +246,8 @@ namespace Debugger
 		
 		private HandlerAction DoAppDomainUnloadEvent(AppDomainUnloadEvent e)
 		{
-			Log.WriteLine(TraceLevel.Info, "Debugger", "Unloaded app domain {0}", e.Domain.FriendlyName);
+			if (DebuggerWindows.WriteEvents)
+				m_transcript.WriteLine(Output.Normal, "Unloaded app domain '{0}'", e.Domain.FriendlyName);
 			
 			Broadcaster.Invoke("debugger unloaded app domain", e.Domain);
 			
@@ -253,9 +256,20 @@ namespace Debugger
 		
 		private HandlerAction DoAssemblyLoadEvent(AssemblyLoadEvent e)
 		{
-			Log.WriteLine(TraceLevel.Info, "Debugger", "Loaded assembly {0}", e.Assembly.GetName());
+			if (DebuggerWindows.WriteEvents)
+				m_transcript.WriteLine(Output.Normal, "Loaded assembly '{0}'", e.Assembly.GetName().Name);
 			
 			Broadcaster.Invoke("debugger loaded assembly", e.Assembly);
+			
+			return HandlerAction.Resume;
+		}
+		
+		private HandlerAction DoAssemblyUnloadEvent(AssemblyUnloadEvent e)
+		{
+			if (DebuggerWindows.WriteEvents)
+				m_transcript.WriteLine(Output.Normal, "Unloaded assembly '{0}'", e.Assembly.GetName().Name);
+			
+			Broadcaster.Invoke("debugger unloaded assembly", e.Assembly);
 			
 			return HandlerAction.Resume;
 		}
@@ -294,7 +308,8 @@ namespace Debugger
 			
 			Mono.Debugger.Soft.StackFrame[] frames = e.Thread.GetFrames();
 			Mono.Debugger.Soft.StackFrame frame = frames[0];
-			Log.WriteLine(TraceLevel.Info, "Debugger", "{0} exception was thrown at {1}:{2:X4}", e.Exception.Type.FullName, frame.Method.FullName, frame.ILOffset);
+			if (DebuggerWindows.WriteEvents)
+				m_transcript.WriteLine(Output.Normal, "{0} exception was thrown at {1}:{2:X4}", e.Exception.Type.FullName, frame.Method.FullName, frame.ILOffset);
 			var context = new Context(e.Thread, frame.Method, frame.ILOffset);
 			Broadcaster.Invoke("debugger thrown exception", context);
 		
@@ -318,6 +333,22 @@ namespace Debugger
 			Broadcaster.Invoke("debugger processed step event", context);
 			
 			return HandlerAction.Suspend;
+		}
+		
+		private void DoThreadDeathEvent(ThreadDeathEvent e)
+		{
+			if (DebuggerWindows.WriteEvents)
+				m_transcript.WriteLine(Output.Normal, "Thread '{0}' died", ThreadsController.GetThreadName(e.Thread));
+			
+			Broadcaster.Invoke("debugger thread died", e.Thread);
+		}
+		
+		private void DoThreadStartEvent(ThreadStartEvent e)
+		{
+			if (DebuggerWindows.WriteEvents)
+				m_transcript.WriteLine(Output.Normal, "Thread '{0}' started", ThreadsController.GetThreadName(e.Thread));
+			
+			Broadcaster.Invoke("debugger thread started", e.Thread);
 		}
 		
 		private HandlerAction DoTypeLoadEvent(TypeLoadEvent e)
@@ -391,6 +422,7 @@ namespace Debugger
 		private HandlerAction DoUnknownEvent(Event e)
 		{
 			Log.WriteLine(TraceLevel.Info, "Debugger", "Unknown: {0}", e);
+			Console.WriteLine("Debugger", "Unknown: {0}", e); Console.Out.Flush();
 			
 			return HandlerAction.Resume;
 		}
@@ -427,7 +459,8 @@ namespace Debugger
 				
 				// Note that we need to be a bit careful about which of these we enable
 				// because we keep the VM suspended until we can process the event in
-				// the main thread.
+				// the main thread (if we are not careful we can block the debuggee too
+				// much).
 				m_vm.EnableEvents(
 					EventType.AppDomainCreate,
 					EventType.AppDomainUnload,
@@ -437,9 +470,9 @@ namespace Debugger
 //					EventType.MethodEntry,
 //					EventType.MethodExit,
 //					EventType.Step,
-					EventType.TypeLoad
-//					EventType.ThreadStart,
-//					EventType.ThreadDeath
+					EventType.TypeLoad,
+					EventType.ThreadStart,
+					EventType.ThreadDeath
 				);
 				
 				Log.WriteLine(TraceLevel.Info, "Debugger", "Launched debugger");
@@ -642,15 +675,32 @@ namespace Debugger
 					// need to get events from a thread.
 					e = m_vm.GetNextEvent();
 					
-					// Queue the event (and anything else the debugger agent has buffered) 
-					// for the main thread to handle. Once the main thread has processed all 
-					// the events it will resume the VM.
-					lock (m_mutex)
+					// Some events need to be resumed immediately or the debugger locks
+					// up...
+					if (e is ThreadStartEvent)
 					{
-						m_events.Enqueue(e);
-						
-						if (m_events.Count == 1)
-							NSApplication.sharedApplication().BeginInvoke(this.DoProcessEvents);
+						var e1 = (ThreadStartEvent) e;
+						NSApplication.sharedApplication().BeginInvoke(() => DoThreadStartEvent(e1));
+						m_vm.Resume();
+					}
+					else if (e is ThreadDeathEvent)
+					{
+						var e2 = (ThreadDeathEvent) e;
+						NSApplication.sharedApplication().BeginInvoke(() => DoThreadDeathEvent(e2));
+						m_vm.Resume();
+					}
+					else
+					{
+						// Queue the event (and anything else the debugger agent has buffered) 
+						// for the main thread to handle. Once the main thread has processed all 
+						// the events it will resume the VM.
+						lock (m_mutex)
+						{
+							m_events.Enqueue(e);
+							
+							if (m_events.Count == 1)
+								NSApplication.sharedApplication().BeginInvoke(this.DoProcessEvents);
+						}
 					}
 				}
 				while (!(e is VMDeathEvent || e is VMDisconnectEvent));
