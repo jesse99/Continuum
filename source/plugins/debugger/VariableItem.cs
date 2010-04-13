@@ -57,7 +57,7 @@ namespace Debugger
 			{
 				m_name = CreateString(name);
 				m_type = CreateString(type);
-				m_value = CreateString(DoGetValueText(thread, value));
+				m_value = CreateString(GetValueText(thread, value));
 			}
 		}
 		
@@ -103,7 +103,7 @@ namespace Debugger
 		public virtual void RefreshValue(ThreadMirror thread, Value value)
 		{
 			string oldText = m_value.ToString();
-			string newText = DoGetValueText(thread, value);
+			string newText = GetValueText(thread, value);
 			
 			// Note that we always reset the text (so that we can go from red back to black).
 			m_value.release();
@@ -147,7 +147,7 @@ namespace Debugger
 				{
 					// null to non-null
 					newItem = CreateVariable(Name.ToString(), TypeName.ToString(), v, thread, setter);
-					string newText = DoGetValueText(thread, v);
+					string newText = GetValueText(thread, v);
 					newItem.m_value = CreateString(NSColor.redColor(), newText);
 					this.release();
 				}
@@ -162,7 +162,7 @@ namespace Debugger
 		}
 		
 		#region Protected Methods
-		protected string OnPrimitiveToString(object value)
+		protected static string OnPrimitiveToString(object value)
 		{
 			if (value == null)
 				return "null";
@@ -340,32 +340,7 @@ namespace Debugger
 			return NSAttributedString.Create(text, attrs).Retain();
 		}
 		
-		protected override void OnDealloc()
-		{
-			if (m_name != null)
-			{
-				m_name.release();
-				m_name = null;
-			}
-			
-			if (m_value != null)
-			{
-				m_value.release();
-				m_value = null;
-			}
-			
-			if (m_type != null)
-			{
-				m_type.release();
-				m_type = null;
-			}
-			
-			base.OnDealloc();
-		}
-		#endregion
-		
-		#region Private Methods
-		private string DoGetValueText(ThreadMirror thread, Value value)
+		public static string GetValueText(ThreadMirror thread, Value value)
 		{
 			string text = string.Empty;
 			
@@ -439,7 +414,32 @@ namespace Debugger
 			return text;
 		}
 		
-		private string DoStringToText(string str)
+		protected override void OnDealloc()
+		{
+			if (m_name != null)
+			{
+				m_name.release();
+				m_name = null;
+			}
+			
+			if (m_value != null)
+			{
+				m_value.release();
+				m_value = null;
+			}
+			
+			if (m_type != null)
+			{
+				m_type.release();
+				m_type = null;
+			}
+			
+			base.OnDealloc();
+		}
+		#endregion
+		
+		#region Private Methods
+		private static string DoStringToText(string str)
 		{
 			var builder = new System.Text.StringBuilder(str.Length + 2);
 			

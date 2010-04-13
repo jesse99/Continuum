@@ -422,7 +422,6 @@ namespace Debugger
 		private HandlerAction DoUnknownEvent(Event e)
 		{
 			Log.WriteLine(TraceLevel.Info, "Debugger", "Unknown: {0}", e);
-			Console.WriteLine("Debugger", "Unknown: {0}", e); Console.Out.Flush();
 			
 			return HandlerAction.Resume;
 		}

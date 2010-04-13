@@ -64,21 +64,16 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.StringMirror
 		public class Mono.Debugger.ArrayMirror
 		
-Check
-PostCheck		
 
-Gurf Morlix
-Statistical Computing: An Introduction to Data Analysis using S-Plus (has written books with R too)
-
-* Review logs in Debugger.cs
-* Try the new monodevelop.
 * Work on a debugger:
 	- make sure it works ok if the exe is missing
 	- make sure it works ok if the exe and mdb are out of sync
+	- breakpoints window
 	- conditional breakpoints
 	- special case floating point equality
 	- make sure we can handle exceptions thrown by the debbuger
 	- improve the controls window, or do we even want this?
+	- add an imediate window?
 	- context breakpoint menu should have close do a broadcast so the breakpoint can be toggled
 	- mention the osascript debugging command 
 	- CodeViewer is being deallocated but not GCed (there is some object with a reference to the boss)

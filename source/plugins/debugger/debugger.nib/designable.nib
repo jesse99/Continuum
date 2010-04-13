@@ -12,8 +12,8 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="90"/>
 			<integer value="3"/>
+			<integer value="90"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -695,7 +695,7 @@
 												</object>
 												<object class="NSTableColumn" id="809510932">
 													<string key="NSIdentifier">1</string>
-													<double key="NSWidth">140</double>
+													<double key="NSWidth">180</double>
 													<double key="NSMinWidth">40</double>
 													<double key="NSMaxWidth">1000</double>
 													<object class="NSTableHeaderCell" key="NSHeaderCell">
@@ -721,7 +721,7 @@
 												</object>
 												<object class="NSTableColumn" id="331158280">
 													<string key="NSIdentifier">2</string>
-													<double key="NSWidth">140</double>
+													<double key="NSWidth">100</double>
 													<double key="NSMinWidth">10</double>
 													<double key="NSMaxWidth">3.4028234663852886e+38</double>
 													<object class="NSTableHeaderCell" key="NSHeaderCell">
@@ -787,7 +787,7 @@
 									<int key="NSsFlags">1</int>
 									<reference key="NSTarget" ref="1009761564"/>
 									<string key="NSAction">_doScroller:</string>
-									<double key="NSPercent">0.88657844990548207</double>
+									<double key="NSPercent">0.92141453831041253</double>
 								</object>
 								<object class="NSClipView" id="1056479261">
 									<reference key="NSNextResponder" ref="1009761564"/>
