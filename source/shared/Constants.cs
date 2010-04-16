@@ -41,10 +41,16 @@ namespace Shared
 		
 		// Control characters.
 		public static readonly string Escape = "\x001B";
-		public static readonly string Delete = "\x007F";
+		public static readonly string Delete = "\x007F";	
 		
 		// Key codes.
+		public static readonly int DeleteKey = 0x33;
+		public static readonly int DownArrowKey = 0x7D;
 		public static readonly int EnterKey = 0x4C;
 		public static readonly int EscapeKey = 0x35;
+		public static readonly int LeftArrowKey = 0x7B;
+		public static readonly int RightArrowKey = 0x7C;
+		public static readonly int TabKey = 0x30;
+		public static readonly int UpArrowKey = 0x7E;
 	}
 }

@@ -75,13 +75,6 @@ namespace TextEditor
 			}
 		}
 		
-		private const int TabKey = 0x30;
-		private const int DeleteKey = 0x33;
-		private const int LeftArrowKey = 0x7B;
-		private const int RightArrowKey = 0x7C;
-		private const int DownArrowKey = 0x7D;
-		private const int UpArrowKey = 0x7E;
-		
 		public new void keyDown(NSEvent evt)
 		{
 			do
@@ -95,7 +88,7 @@ namespace TextEditor
 				}
 				
 				// Option-tab selects the next identifier.
-				if (evt.keyCode() == TabKey && (evt.modifierFlags() & Enums.NSAlternateKeyMask) != 0)
+				if (evt.keyCode() == Constants.TabKey && (evt.modifierFlags() & Enums.NSAlternateKeyMask) != 0)
 				{
 					if ((evt.modifierFlags() & Enums.NSShiftKeyMask) == 0)
 					{
@@ -112,12 +105,12 @@ namespace TextEditor
 				// Special case option-shift-arrow because Apple is too lame to call selectionRangeForProposedRange_granularity
 				// for us.
 				int shiftOption = Enums.NSShiftKeyMask | Enums.NSAlternateKeyMask;
-				if (evt.keyCode() == LeftArrowKey && (evt.modifierFlags() & shiftOption) == shiftOption)
+				if (evt.keyCode() == Constants.LeftArrowKey && (evt.modifierFlags() & shiftOption) == shiftOption)
 				{
 					if (DoExtendSelectionLeft())
 						break;
 				}
-				else if (evt.keyCode() == RightArrowKey && (evt.modifierFlags() & shiftOption) == shiftOption)
+				else if (evt.keyCode() == Constants.RightArrowKey && (evt.modifierFlags() & shiftOption) == shiftOption)
 				{
 					if (DoExtendSelectionRight())
 						break;
@@ -129,7 +122,7 @@ namespace TextEditor
 				NSRange range = selectedRange();
 				if (range.location > 0 && range.length == 0)
 				{
-					if (evt.keyCode() == DeleteKey && string_().characterAtIndex((uint) range.location - 1) == '\n')
+					if (evt.keyCode() == Constants.DeleteKey && string_().characterAtIndex((uint) range.location - 1) == '\n')
 					{
 						int count = DoGetBlankCount(string_(), range.location);
 						if (count > 0)
@@ -150,7 +143,7 @@ namespace TextEditor
 				range = selectedRange();
 				if (range.length == 0)
 				{
-					if (evt.keyCode() == UpArrowKey || evt.keyCode() == DownArrowKey)
+					if (evt.keyCode() == Constants.UpArrowKey || evt.keyCode() == Constants.DownArrowKey)
 					{
 						NSString text = string_();
 						int start = DoGetLineStart(text, range.location);

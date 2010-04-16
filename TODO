@@ -28,7 +28,7 @@ need a debugger window so we dont leave tons of open windows behind?
 red B could be a breakpoint
 green > the current IP
 
-/Users/jessejones/Downloads/monodevelop-2.2/src/addins/MonoDevelop.Debugger.Soft/MonoDevelop.Debugger.Soft/SoftDebuggerSession.cs
+/Users/jessejones/Source/Third_Party/monodevelop/main/src/addins/MonoDevelop.Debugger.Soft/Mono.Debugging.Soft/SoftDebuggerSession.cs
 
 The Algorithm Design Manual
 
@@ -64,22 +64,28 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.StringMirror
 		public class Mono.Debugger.ArrayMirror
 		
-
+		
+* Work on breakpoints window:
+	- double click should open the file and goto that line
+	- condition should default to true
+	- un-resolved breakpoint should be a bit more obvious
+	- support simple conditional expressions
+	- special case floating point equality? optionally?
+* Can we sort the variables? Maybe add some sort of key field?
+* Special case IEnumerable somehow.
 * Work on a debugger:
-	- make sure it works ok if the exe is missing
-	- make sure it works ok if the exe and mdb are out of sync
-	- breakpoints window
-	- conditional breakpoints
-	- special case floating point equality
-	- make sure we can handle exceptions thrown by the debbuger
+	- make sure we don't fall down if the debugger throws
 	- improve the controls window, or do we even want this?
-	- add an imediate window?
 	- context breakpoint menu should have close do a broadcast so the breakpoint can be toggled
 	- mention the osascript debugging command 
 	- CodeViewer is being deallocated but not GCed (there is some object with a reference to the boss)
 * Do some more work on the debugger:
 	- would be nice if could add breakpoints to IL views
+	- add an imediate window
+	- allow richer expressions in conditional breakpoints
+	- might be cool to keep a fixed window of variable histories
 	- allow users to specify which exceptions they want to break on, either a list or a regex
+	  or maybe it would be better to have a black list of exceptions to ignore
 	- allow users to set the ToString format specifier?
 	- allow users to invoke arbitrary methods on variables, maybe some sort of CodePad
 	- allow more complex epressions (and properties) to be used with conditional breakpoints

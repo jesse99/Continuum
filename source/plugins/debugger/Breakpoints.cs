@@ -32,7 +32,7 @@ using System.Collections.Generic;
 namespace Debugger
 {
 	// Manages breakpoints added by the user.
-	internal sealed class Breakpoints : IStartup, IShutdown, IObserver
+	internal sealed class Breakpoints : IBreakpoints, IStartup, IShutdown, IObserver
 	{
 		public void Instantiated(Boss boss)
 		{
@@ -146,6 +146,11 @@ namespace Debugger
 					Contract.Assert(false, "bad name: " + name);
 					break;
 			}
+		}
+		
+		public void Remove(string file, int line)
+		{
+			Unused.Value = DoRemoveBreakpoints(file, line);
 		}
 		
 		#region Private Methods

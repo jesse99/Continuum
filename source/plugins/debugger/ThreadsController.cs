@@ -54,8 +54,7 @@ namespace Debugger
 			{
 				case "debugger started":	
 					m_debugger = (Debugger) value;
-					m_threads = m_debugger.VM.GetThreads();
-					m_selected = -1;
+					DoRefreshThreads();
 					m_table.reloadData();
 					break;
 					
@@ -63,7 +62,7 @@ namespace Debugger
 				case "debugger thrown exception":	
 				case "debugger processed step event":
 					var context = (Context) value;
-					m_threads = m_debugger.VM.GetThreads();						// need to refresh this each time because thread states may have changed
+					DoRefreshThreads();						// need to refresh this each time because thread states may have changed
 					m_selected = m_threads.IndexOf(context.Thread);
 					m_table.reloadData();
 					break;
@@ -73,9 +72,9 @@ namespace Debugger
 					if (state != m_state)
 					{
 						m_state = state;
-						if (state != State.Paused && state != State.Running && m_threads != null)
+						if (state != State.Paused && state != State.Running && m_threads.Count > 0)
 						{
-							m_threads = null;
+							m_threads.Clear();
 							m_table.reloadData();
 						}
 					}
@@ -83,8 +82,7 @@ namespace Debugger
 				
 				case "debugger thread started":
 				case "debugger thread died":
-					m_threads = m_debugger.VM.GetThreads();
-					m_selected = -1;
+					DoRefreshThreads();
 					m_table.reloadData();
 					break;
 				
@@ -119,12 +117,12 @@ namespace Debugger
 		
 		public int numberOfRowsInTableView(NSTableView table)
 		{
-			return m_threads != null ? m_threads.Count : 0;
+			return m_threads.Count;
 		}
 		
 		public NSObject tableView_objectValueForTableColumn_row(NSTableView table, NSTableColumn col, int row)
 		{
-			if (m_threads == null || m_debugger.State == State.Disconnected)
+			if (m_threads.Count == 0 || m_debugger.State == State.Disconnected)
 				return NSString.Empty;
 			
 			ThreadMirror thread = m_threads[row];
@@ -149,6 +147,15 @@ namespace Debugger
 		}
 		
 		#region Private Methods
+		private void DoRefreshThreads()
+		{
+			m_threads.Clear();
+			m_threads.AddRange(m_debugger.VM.GetThreads());
+			m_threads.Sort((lhs, rhs) => GetThreadName(lhs).CompareTo(GetThreadName(rhs)));
+			
+			m_selected = -1;
+		}
+		
 		private NSObject DoCreateString(string text, int row)
 		{
 			NSColor color = null;
@@ -184,7 +191,7 @@ namespace Debugger
 		#region Fields
 		private NSTableView m_table;
 		private Debugger m_debugger;
-		private IList<ThreadMirror> m_threads;
+		private List<ThreadMirror> m_threads = new List<ThreadMirror>();
 		private State m_state;
 		private int m_selected;
 		#endregion

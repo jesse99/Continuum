@@ -29,7 +29,7 @@ using System.Collections.Generic;
 
 namespace Debugger
 {
-	[ExportClass("DebuggerWindows", "NSObject", Outlets = "threadsWindow threadsController stackWindow stackController controlsWindow variablesWindow controlsController variablesController")]
+	[ExportClass("DebuggerWindows", "NSObject", Outlets = "breakpointsWindow breakpointsController threadsWindow threadsController stackWindow stackController controlsWindow variablesWindow controlsController variablesController")]
 	internal sealed class DebuggerWindows : NSObject, IObserver
 	{
 		public DebuggerWindows() : base(NSObject.AllocAndInitInstance("DebuggerWindows"))
@@ -181,6 +181,7 @@ namespace Debugger
 		#region Fields
 		private HashSet<WindowInfo> m_windows = new HashSet<WindowInfo>
 		{
+			new WindowInfo("breakpoints", 665),
 			new WindowInfo("controls", 661),
 			new WindowInfo("variables", 662),
 			new WindowInfo("stack", 663),
