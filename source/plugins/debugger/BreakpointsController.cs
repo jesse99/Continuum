@@ -107,27 +107,14 @@ namespace Debugger
 		
 		public void doubleClicked(NSObject sender)
 		{
-#if false
-			int row = m_table.selectedRow();
-			if (!m_threads[row].IsCollected)
+			Boss boss = ObjectModel.Create("Application");
+			var launcher = boss.Get<ILaunch>();
+			
+			var bps = (from row in m_table.selectedRowIndexes() select m_breakpoints[(int) row]).ToArray();	// ToArray so that the expression is not lazy
+			foreach (ConditionalBreakpoint bp in bps)
 			{
-				StackFrame[] stack = m_threads[row].GetFrames();
-				if (stack.Length > 0)
-				{
-					m_selected = row;
-					m_table.reloadData();
-					
-					Broadcaster.Invoke("changed thread", stack);
-				}
-				else
-				{
-					Boss boss = ObjectModel.Create("Application");
-					var transcript = boss.Get<ITranscript>();
-					transcript.Show();
-					transcript.WriteLine(Output.Error, "{0}", "The thread has no stack frames.");
-				}
+				launcher.Launch(bp.File, bp.Line, -1, 1);
 			}
-#endif
 		}
 		
 		public int numberOfRowsInTableView(NSTableView table)

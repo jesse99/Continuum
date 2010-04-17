@@ -66,13 +66,12 @@ public abstract class Mono.Debugger.Value
 		
 		
 * Work on breakpoints window:
-	- double click should open the file and goto that line
-	- condition should default to true
-	- un-resolved breakpoint should be a bit more obvious
 	- support simple conditional expressions
 	- special case floating point equality? optionally?
 * Can we sort the variables? Maybe add some sort of key field?
+* Optionally(?) show properties.
 * Special case IEnumerable somehow.
+* Make sure infinite enumerables work
 * Work on a debugger:
 	- make sure we don't fall down if the debugger throws
 	- improve the controls window, or do we even want this?

@@ -46,7 +46,8 @@ namespace Debugger
 			if (ms_resolvedColor == null)
 			{
 				ms_resolvedColor = NSColor.colorWithDeviceRed_green_blue_alpha(0.86f, 0.08f, 0.24f, 1.0f).Retain();		// crimson
-				ms_unresolvedColor = NSColor.colorWithDeviceRed_green_blue_alpha(1.0f, 0.63f, 0.48f, 1.0f).Retain();	// light salmon
+				ms_unresolvedColor = NSColor.colorWithDeviceRed_green_blue_alpha(1.0f, 0.84f, 0.0f, 1.0f).Retain();		// gold
+//				ms_unresolvedColor = NSColor.colorWithDeviceRed_green_blue_alpha(1.0f, 0.63f, 0.48f, 1.0f).Retain();	// light salmon
 			}
 			
 			Broadcaster.Register("opening document window", this);
@@ -54,8 +55,9 @@ namespace Debugger
 			Broadcaster.Register("swapped code view", this);
 			Broadcaster.Register("closing document window", this);
 			
-			Broadcaster.Register("resolved breakpoint", this);
-			Broadcaster.Register("unresolved breakpoint", this);
+			Broadcaster.Register("debugger stopped", this);
+			Broadcaster.Register("debugger resolved breakpoint", this);
+			Broadcaster.Register("debugger unresolved breakpoint", this);
 		}
 		
 		public void OnShutdown()
@@ -134,11 +136,18 @@ namespace Debugger
 					}
 					break;
 					
-				case "resolved breakpoint":
+				case "debugger stopped":
+					foreach (Breakpoint bp in m_resolved.ToArray())		// ToArray so we can operate on the collection while we iterate over it
+					{
+						DoUnresolvedBreakpoint(bp);
+					}
+					break;
+				
+				case "debugger resolved breakpoint":
 					DoResolvedBreakpoint((Breakpoint) value);
 					break;
 				
-				case "unresolved breakpoint":
+				case "debugger unresolved breakpoint":
 					DoUnresolvedBreakpoint((Breakpoint) value);
 					break;
 				
