@@ -209,7 +209,7 @@ namespace Debugger
 				m_breakpoints.Add(resolved, request);
 			}
 			
-			Broadcaster.Invoke("debugger resolved breakpoint", bp);
+			Broadcaster.Invoke("debugger resolved breakpoint", resolved);
 		}
 		
 		public void RemoveBreakpoint(Breakpoint bp, MethodMirror method, long ilOffset)
@@ -717,70 +717,6 @@ namespace Debugger
 		{
 			Resume,		// resume execution of the VM
 			Suspend,		// keep the VM suspended
-		}
-		
-		private struct ResolvedBreakpoint : IEquatable<ResolvedBreakpoint>
-		{
-			public ResolvedBreakpoint(Breakpoint bp, MethodMirror method, long offset)
-			{
-				Contract.Requires(bp != null, "bp is null");
-				Contract.Requires(method != null, "method is null");
-				Contract.Requires(offset >= 0, "offset is negative");
-				
-				BreakPoint = bp;
-				Method = method;
-				Offset = offset;
-			}
-			
-			public readonly Breakpoint BreakPoint;
-			public readonly MethodMirror Method;
-			public readonly long Offset;
-			
-			public override bool Equals(object obj)
-			{
-				if (obj == null)
-					return false;
-				
-				if (GetType() != obj.GetType())
-					return false;
-				
-				ResolvedBreakpoint rhs = (ResolvedBreakpoint) obj;
-				return this == rhs;
-			}
-			
-			public bool Equals(ResolvedBreakpoint rhs)
-			{
-				return this == rhs;
-			}
-			
-			public static bool operator==(ResolvedBreakpoint lhs, ResolvedBreakpoint rhs)
-			{
-				if (lhs.Method != rhs.Method)
-					return false;
-				
-				if (lhs.Offset != rhs.Offset)
-					return false;
-				
-				return true;
-			}
-			
-			public static bool operator!=(ResolvedBreakpoint lhs, ResolvedBreakpoint rhs)
-			{
-				return !(lhs == rhs);
-			}
-			
-			public override int GetHashCode()
-			{
-				int hash = 0;
-				
-				unchecked
-				{
-					hash += Method.GetHashCode();
-					hash += Offset.GetHashCode();
-				}
-				
-				return hash;
-			}
 		}
 		#endregion
 		

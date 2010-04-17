@@ -144,7 +144,7 @@ namespace Debugger
 					break;
 				
 				case "debugger resolved breakpoint":
-					DoResolvedBreakpoint((Breakpoint) value);
+					DoResolvedBreakpoint(((ResolvedBreakpoint) value).BreakPoint);
 					break;
 				
 				case "debugger unresolved breakpoint":

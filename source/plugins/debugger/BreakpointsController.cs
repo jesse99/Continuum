@@ -50,23 +50,23 @@ namespace Debugger
 			switch (name)
 			{
 				case "debugger resolved breakpoint":
-					Breakpoint bp = (Breakpoint) value;
-					DoAdd(bp.File, bp.Line);
+					var rbp = (ResolvedBreakpoint) value;
+					DoAdd(rbp.BreakPoint.File, rbp.BreakPoint.Line, rbp.Method.GetFullerName());
 					break;
 				
 				case "debugger unresolved breakpoint":
-					Breakpoint bp2 = (Breakpoint) value;
-					DoRemove(bp2.File, bp2.Line);
+					var bp = (Breakpoint) value;
+					DoRemove(bp.File, bp.Line);
 					break;
 				
 				case "debugger processed breakpoint event":
-					Context context = (Context) value;
+					var context = (Context) value;
 					m_selected = new ConditionalBreakpoint(context.Location.SourceFile, context.Location.LineNumber);
 					m_table.reloadData();
 					break;
 				
 				case "debugger state changed":
-					State state = (State) value;
+					var state = (State) value;
 					if (state == State.Running)
 					{
 						m_selected = null;
@@ -125,18 +125,24 @@ namespace Debugger
 		public NSObject tableView_objectValueForTableColumn_row(NSTableView table, NSTableColumn col, int row)
 		{
 			ConditionalBreakpoint bp = m_breakpoints[row];
+			
 			if (col.identifier().ToString() == "0")
 				return DoCreateString(bp.FileName, row);
+			
 			else if (col.identifier().ToString() == "1")
 				return DoCreateString(bp.Line.ToString(), row);
-			else
+			
+			else if (col.identifier().ToString() == "2")
 				return DoCreateString(bp.Condition, row);
+			
+			else
+				return DoCreateString(bp.Method, row);
 		}
 		
 		#region Private Methods
-		private void DoAdd(string file, int line)
+		private void DoAdd(string file, int line, string method)
 		{
-			var bp = new ConditionalBreakpoint(file, line);
+			var bp = new ConditionalBreakpoint(file, line, method);
 			if (!m_breakpoints.Contains(bp))
 			{
 				m_breakpoints.Add(bp);
@@ -185,11 +191,16 @@ namespace Debugger
 		#region Private Types
 		private sealed class ConditionalBreakpoint : IEquatable<ConditionalBreakpoint>
 		{
-			public ConditionalBreakpoint(string file, int line)
+			public ConditionalBreakpoint(string file, int line) : this(file, line, null)
+			{
+			}
+			
+			public ConditionalBreakpoint(string file, int line, string method)
 			{
 				File = file;
 				Line = line;
 				Condition = "true";
+				Method = method;
 			}
 			
 			public string File {get; private set;}
@@ -202,6 +213,8 @@ namespace Debugger
 			public int Line {get; private set;}
 			
 			public string Condition {get; set;}
+			
+			public string Method {get; private set;}
 			
 			#region Overrides
 			public override bool Equals(object obj)
@@ -231,6 +244,9 @@ namespace Debugger
 				
 				if (lhs.Line != rhs.Line)
 					return false;
+					
+				// Note that we don't watch to use method because it isn't always set
+				// when we compare breakpoints.
 				
 				return true;
 			}

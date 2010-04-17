@@ -64,9 +64,22 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.StringMirror
 		public class Mono.Debugger.ArrayMirror
 		
-		
+
+* Work on conditional breakpoints:
+	- get boolean expressions working
+	- get boolean variables working
+	- get boolean properties working
+	- get boolean expressions working (||, &&, !)
+	- get the other literals working
+	- get chained variables working
+	- get chained property calls working
+	- get type expressions working (eg long.MaxValue)
+	- get indexors working
+	- maybe should allow index expressions with enumerables
+* Might want a window to show performance counters:
+	- see http://www.mono-project.com/Mono_Performance_Counters
+	- maybe treeview
 * Work on breakpoints window:
-	- support simple conditional expressions
 	- special case floating point equality? optionally?
 * Can we sort the variables? Maybe add some sort of key field?
 * Optionally(?) show properties.

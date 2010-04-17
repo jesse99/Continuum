@@ -12,8 +12,8 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
+			<integer value="114"/>
 			<integer value="3"/>
-			<integer value="110"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -929,7 +929,7 @@
 												</object>
 												<object class="NSTableColumn" id="830107602">
 													<string key="NSIdentifier">2</string>
-													<double key="NSWidth">291</double>
+													<double key="NSWidth">130</double>
 													<double key="NSMinWidth">10</double>
 													<double key="NSMaxWidth">3.4028234663852886e+38</double>
 													<object class="NSTableHeaderCell" key="NSHeaderCell">
@@ -952,6 +952,32 @@
 													<int key="NSResizingMask">3</int>
 													<bool key="NSIsResizeable">YES</bool>
 													<bool key="NSIsEditable">YES</bool>
+													<reference key="NSTableView" ref="320116125"/>
+												</object>
+												<object class="NSTableColumn" id="660382513">
+													<string key="NSIdentifier">3</string>
+													<double key="NSWidth">158</double>
+													<double key="NSMinWidth">10</double>
+													<double key="NSMaxWidth">3.4028234663852886e+38</double>
+													<object class="NSTableHeaderCell" key="NSHeaderCell">
+														<int key="NSCellFlags">75628096</int>
+														<int key="NSCellFlags2">2048</int>
+														<string key="NSContents">Method</string>
+														<reference key="NSSupport" ref="26"/>
+														<reference key="NSBackgroundColor" ref="466007632"/>
+														<reference key="NSTextColor" ref="881056616"/>
+													</object>
+													<object class="NSTextFieldCell" key="NSDataCell" id="801198590">
+														<int key="NSCellFlags">337772096</int>
+														<int key="NSCellFlags2">2048</int>
+														<string key="NSContents">Text Cell</string>
+														<reference key="NSSupport" ref="752404184"/>
+														<reference key="NSControlView" ref="320116125"/>
+														<reference key="NSBackgroundColor" ref="196585235"/>
+														<reference key="NSTextColor" ref="948744439"/>
+													</object>
+													<int key="NSResizingMask">3</int>
+													<bool key="NSIsResizeable">YES</bool>
 													<reference key="NSTableView" ref="320116125"/>
 												</object>
 											</object>
@@ -994,7 +1020,7 @@
 									<int key="NSsFlags">1</int>
 									<reference key="NSTarget" ref="936119974"/>
 									<string key="NSAction">_doScroller:</string>
-									<double key="NSPercent">0.76190476190476186</double>
+									<double key="NSPercent">0.87751371115173671</double>
 								</object>
 								<object class="NSClipView" id="73826939">
 									<reference key="NSNextResponder" ref="936119974"/>
@@ -1803,6 +1829,7 @@
 							<reference ref="1068454941"/>
 							<reference ref="375707527"/>
 							<reference ref="830107602"/>
+							<reference ref="660382513"/>
 						</object>
 						<reference key="parent" ref="936119974"/>
 					</object>
@@ -1860,6 +1887,21 @@
 						<int key="objectID">124</int>
 						<reference key="object" ref="279521229"/>
 						<reference key="parent" ref="0"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">131</int>
+						<reference key="object" ref="660382513"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="801198590"/>
+						</object>
+						<reference key="parent" ref="320116125"/>
+						<string key="objectName">Method</string>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">132</int>
+						<reference key="object" ref="801198590"/>
+						<reference key="parent" ref="660382513"/>
 					</object>
 				</object>
 			</object>
@@ -2056,7 +2098,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">130</int>
+			<int key="maxID">132</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">

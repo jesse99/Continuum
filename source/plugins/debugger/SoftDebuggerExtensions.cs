@@ -19,13 +19,59 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-using Mono.Debugger.Soft;
 using MObjc.Helpers;
+using Mono.Debugger.Soft;
+using Shared;
 using System;
 using System.Linq;
 
 namespace Debugger
 {
+	internal static class MethodMirrorExtensions
+	{
+		// MethodMirror.FullName doesn't include parameters (with Mono 2.6) so
+		// we'll roll our own. MonoDevelop also includes values for the arguments,
+		// but that seems a little too busy to me (note that if we change our minds
+		//  on this we'll need to pass in a fresh copy of the stack).
+		public static string GetFullerName(this MethodMirror method)
+		{
+			var builder = new System.Text.StringBuilder();
+			
+			builder.Append(DoGetTypeName(method.ReturnType));
+			builder.Append(' ');
+			
+			builder.Append(method.DeclaringType.Name);
+			builder.Append('.');
+			builder.Append(method.Name);
+			
+			builder.Append('(');
+			ParameterInfoMirror[] args = method.GetParameters();
+			for (int i = 0; i < args.Length; ++i)
+			{
+				builder.Append(DoGetTypeName(args[i].ParameterType));
+				builder.Append(' ');
+				builder.Append(args[i].Name);
+				
+				if (i + 1 < args.Length)
+					builder.Append(", ");
+			}
+			builder.Append(')');
+			
+			return builder.ToString();
+		}
+		
+		#region Private Methods
+		private static string DoGetTypeName(TypeMirror type)
+		{
+			string result = CsHelpers.GetAliasedName(type.FullName);
+			if (result == type.FullName)
+				result = type.Name;
+				
+			return result;
+		}
+		#endregion
+	}
+	
 	internal static class StackFrameExtensions
 	{
 		// Returns true if the two stack frames are the same.
@@ -62,6 +108,20 @@ namespace Debugger
 			}
 			
 			return matches;
+		}
+	}
+	
+	internal static class TypeMirrorExtensions
+	{
+		public static MethodMirror FindMethod(this TypeMirror type, string name, int numArgs)
+		{
+			MethodMirror method = type.GetMethods().FirstOrDefault(
+				m => m.Name == name && m.GetParameters().Length == numArgs);
+				
+			if (method == null && type.BaseType != null)
+				method = FindMethod(type.BaseType, name, numArgs);
+				
+			return method;
 		}
 	}
 }

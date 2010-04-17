@@ -134,50 +134,10 @@ namespace Debugger
 				else
 					return DoCreateString(string.Empty, row);
 			else
-				return DoCreateString(DoGetFullName(frame), row);
+				return DoCreateString(frame.Method.GetFullerName(), row);
 		}
 		
 		#region Private Methods
-		// MethodMirror.FullName doesn't include parameters (with Mono 2.6) so
-		// we'll roll our own. MonoDevelop also includes values for the arguments,
-		// but that seems a little too busy to me (note that if we change our minds
-		//  on this we'll need to get a fresh copy of the stack.
-		private string DoGetFullName(Mono.Debugger.Soft.StackFrame frame)
-		{
-			var builder = new System.Text.StringBuilder();
-			
-			builder.Append(DoGetTypeName(frame.Method.ReturnType));
-			builder.Append(' ');
-			
-			builder.Append(frame.Method.DeclaringType.Name);
-			builder.Append('.');
-			builder.Append(frame.Method.Name);
-			
-			builder.Append('(');
-			ParameterInfoMirror[] args = frame.Method.GetParameters();
-			for (int i = 0; i < args.Length; ++i)
-			{
-				builder.Append(DoGetTypeName(args[i].ParameterType));
-				builder.Append(' ');
-				builder.Append(args[i].Name);
-				
-				if (i + 1 < args.Length)
-					builder.Append(", ");
-			}
-			builder.Append(')');
-			
-			return builder.ToString();
-		}
-		
-		private string DoGetTypeName(TypeMirror type)
-		{
-			string result = CsHelpers.GetAliasedName(type.FullName);
-			if (result == type.FullName)
-				result = type.Name;
-				
-			return result;
-		}
-		
 		private NSObject DoCreateString(string text, int row)
 		{
 			NSColor color = null;
