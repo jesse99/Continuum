@@ -119,6 +119,7 @@ namespace Debugger
 					if (m_vm != null)
 					{
 						Broadcaster.Invoke("debugger stopped", this);
+						Broadcaster.Unregister(this);
 						
 						Log.WriteLine(TraceLevel.Info, "Debugger", "Dispose");
 						if (m_state != State.Paused)
@@ -274,6 +275,8 @@ namespace Debugger
 			return HandlerAction.Resume;
 		}
 		
+		internal Func<Mono.Debugger.Soft.StackFrame, Breakpoint, HandlerAction> BreakpointCondition {get; set;}
+		
 		private HandlerAction DoBreakpointEvent(BreakpointEvent e)
 		{
 			DoTransition(State.Paused);
@@ -287,11 +290,22 @@ namespace Debugger
 			}
 			
 			KeyValuePair<ResolvedBreakpoint, BreakpointEventRequest> bp = m_breakpoints.Single(candidate => e.Request == candidate.Value);	// hitting a breakpoint is a fairly rare event so we can get by with a linear search
-			Log.WriteLine(TraceLevel.Info, "Debugger", "Hit breakpoint at {0}:{1:X4}", e.Method.FullName, bp.Key.Offset);
-			var context = new Context(e.Thread, e.Method, bp.Key.Offset);
-			Broadcaster.Invoke("debugger processed breakpoint event", context);
-		
-			return HandlerAction.Suspend;
+			Mono.Debugger.Soft.StackFrame[] frames = m_currentThread.GetFrames();
+			
+			Contract.Assert(BreakpointCondition != null, "BreakpointCondition is null");
+			HandlerAction action = BreakpointCondition(frames[0], bp.Key.BreakPoint);
+			if (action == HandlerAction.Suspend)
+			{
+				Log.WriteLine(TraceLevel.Info, "Debugger", "Hit breakpoint at {0}:{1:X4}", e.Method.FullName, bp.Key.Offset);
+				var context = new Context(e.Thread, e.Method, bp.Key.Offset);
+				Broadcaster.Invoke("debugger processed breakpoint event", context);
+			}
+			else
+			{
+				Log.WriteLine(TraceLevel.Info, "Debugger", "ignoring breakpoint at {0}:{1:X4} (condition evaluated to false)", e.Method.FullName, bp.Key.Offset);
+			}
+			
+			return action;
 		}
 		
 		private HandlerAction DoExceptionEvent(ExceptionEvent e)
@@ -712,8 +726,8 @@ namespace Debugger
 		}
 		#endregion
 		
-		#region Private Types
-		private enum HandlerAction
+		#region Internal Types
+		internal enum HandlerAction
 		{
 			Resume,		// resume execution of the VM
 			Suspend,		// keep the VM suspended

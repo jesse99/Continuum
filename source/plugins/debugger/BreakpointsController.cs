@@ -43,12 +43,24 @@ namespace Debugger
 			Broadcaster.Register("debugger unresolved breakpoint", this);
 			Broadcaster.Register("debugger processed breakpoint event", this);
 			Broadcaster.Register("debugger state changed", this);
+			Broadcaster.Register("debugger started", this);
+			Broadcaster.Register("debugger stopped", this);
 		}
 		
 		public void OnBroadcast(string name, object value)
 		{
 			switch (name)
 			{
+				case "debugger started":
+					var d1 = (Debugger) value;
+					d1.BreakpointCondition = this.DoEvaluateCondition;
+					break;
+				
+				case "debugger stopped":
+					var d2 = (Debugger) value;
+					d2.BreakpointCondition = null;
+					break;
+				
 				case "debugger resolved breakpoint":
 					var rbp = (ResolvedBreakpoint) value;
 					DoAdd(rbp.BreakPoint.File, rbp.BreakPoint.Line, rbp.Method.GetFullerName());
@@ -117,6 +129,25 @@ namespace Debugger
 			}
 		}
 		
+		public void tableView_setObjectValue_forTableColumn_row(NSTableView table, NSObject value, NSTableColumn col, int row)
+		{
+			try
+			{
+				string text = value.description();
+				var parser = new ExpressionParser();
+				Expression expr = parser.Parse(text);
+				
+				m_breakpoints[row].Condition = expr;
+			}
+			catch (Exception e)
+			{
+				Boss boss = ObjectModel.Create("Application");
+				var transcript = boss.Get<ITranscript>();
+				transcript.Show();
+				transcript.WriteLine(Output.Error, "{0}", e.Message);
+			}
+		}
+		
 		public int numberOfRowsInTableView(NSTableView table)
 		{
 			return m_breakpoints.Count;
@@ -133,13 +164,49 @@ namespace Debugger
 				return DoCreateString(bp.Line.ToString(), row);
 			
 			else if (col.identifier().ToString() == "2")
-				return DoCreateString(bp.Condition, row);
+				return DoCreateString(bp.Condition.ToString(), row);
 			
 			else
 				return DoCreateString(bp.Method, row);
 		}
 		
 		#region Private Methods
+		private Debugger.HandlerAction DoEvaluateCondition(StackFrame frame, Breakpoint bp)
+		{
+			Debugger.HandlerAction result = Debugger.HandlerAction.Suspend;
+			
+			try
+			{
+				var key = new ConditionalBreakpoint(bp.File, bp.Line);
+				ConditionalBreakpoint cbp = m_breakpoints.First(b => b == key);
+			Console.WriteLine("evaluating {0} on line {1}", cbp.Condition, cbp.Line);
+				
+				object value = cbp.Condition.Evaluate(frame);
+			Console.WriteLine("value: {0}", value);
+				if (value is bool)
+				{
+					if (false == (bool) value)
+						result = Debugger.HandlerAction.Resume;
+				}
+				else
+				{
+					if (value == null)
+						throw new Exception("expected a boolean expression, not a null expression.");
+					else
+						throw new Exception("expected a boolean expression, not a " + value.GetType() + " expression.");
+				}
+			}
+			catch (Exception e)
+			{
+				Boss boss = ObjectModel.Create("Application");
+				var transcript = boss.Get<ITranscript>();
+				transcript.Show();
+				transcript.WriteLine(Output.Error, "Couldn't evaluate the breakpoint condition: {0}", e.Message);
+			}
+			
+			return result;
+		}
+		
 		private void DoAdd(string file, int line, string method)
 		{
 			var bp = new ConditionalBreakpoint(file, line, method);
@@ -199,7 +266,7 @@ namespace Debugger
 			{
 				File = file;
 				Line = line;
-				Condition = "true";
+				Condition = new Literal<bool>(true);
 				Method = method;
 			}
 			
@@ -212,7 +279,7 @@ namespace Debugger
 			
 			public int Line {get; private set;}
 			
-			public string Condition {get; set;}
+			public Expression Condition {get; set;}
 			
 			public string Method {get; private set;}
 			

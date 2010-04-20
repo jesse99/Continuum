@@ -65,12 +65,12 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.ArrayMirror
 		
 
+* Removing a breakpoint doesn't seem to always remove it from the saved breakpoints.
 * Work on conditional breakpoints:
-	- get boolean expressions working
-	- get boolean variables working
 	- get boolean properties working
 	- get boolean expressions working (||, &&, !)
 	- get the other literals working
+	- make sure get a decent error if the expression evaluates to a non-bool	
 	- get chained variables working
 	- get chained property calls working
 	- get type expressions working (eg long.MaxValue)
@@ -83,8 +83,17 @@ public abstract class Mono.Debugger.Value
 	- special case floating point equality? optionally?
 * Can we sort the variables? Maybe add some sort of key field?
 * Optionally(?) show properties.
+* Special case collections:
+	- don't evaluate IEnumerable properties (they are not pure)
+	- special case types that implement something like IList
 * Special case IEnumerable somehow.
 * Make sure infinite enumerables work
+* Can we use the soft debugger to trace GC roots?
+	- would have to check the stack for all threads and static fields of all types
+	- maybe package this as a command line app
+	- also need to check for loops
+	- might be neat to show the references to a specified type
+	- when would we take a snapshot? send a signal? specify file and line? 
 * Work on a debugger:
 	- make sure we don't fall down if the debugger throws
 	- improve the controls window, or do we even want this?
