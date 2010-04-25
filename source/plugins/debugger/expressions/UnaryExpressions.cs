@@ -20,27 +20,34 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Mono.Debugger.Soft;
+using MObjc.Helpers;
 using System;
 
 namespace Debugger
 {
-	internal abstract class Expression
+	internal sealed class NotExpression : Expression
 	{
-		// Returns a primitive type or throws an error.
-		public abstract object Evaluate(StackFrame frame);
-		
-		#region Protected Methods
-		protected T DoEval<T>(StackFrame frame, Expression expr)
+		public NotExpression(Expression expr)
 		{
-			object value = expr.Evaluate(frame);
+			Contract.Requires(expr != null);
 			
-			if (value == null)
-				throw new Exception(string.Format("Expected a {0} for {1} but got null", typeof(T), expr));
-			if (!(value is T))
-				throw new Exception(string.Format("Expected a {0} for {1} but got a {2}", typeof(T), expr, value.GetType()));
-				
-			return (T) value;
+			m_expr = expr;
 		}
+		
+		public override object Evaluate(StackFrame frame)
+		{
+			bool value = DoEval<bool>(frame, m_expr);
+			
+			return !value;
+		}
+		
+		public override string ToString()
+		{
+			return string.Format("!{0}", m_expr);
+		}
+		
+		#region Fields
+		private Expression m_expr;
 		#endregion
 	}
 }

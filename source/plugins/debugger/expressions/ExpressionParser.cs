@@ -46,7 +46,6 @@ namespace Debugger
 			m_nonterminals.Add("ConditionalAndExpression", new ParseMethod[]{this.DoParseConditionalAndExpressionRule});
 			m_nonterminals.Add("ConditionalOrExpression", new ParseMethod[]{this.DoParseConditionalOrExpressionRule});
 			m_nonterminals.Add("Digit", new ParseMethod[]{this.DoParseDigitRule});
-			m_nonterminals.Add("EqualityExpression", new ParseMethod[]{this.DoParseEqualityExpression1Rule, this.DoParseEqualityExpression2Rule, this.DoParseEqualityExpression3Rule});
 			m_nonterminals.Add("ExclusiveOrExpression", new ParseMethod[]{this.DoParseExclusiveOrExpressionRule});
 			m_nonterminals.Add("Identifier", new ParseMethod[]{this.DoParseIdentifierRule});
 			m_nonterminals.Add("IdentifierPart", new ParseMethod[]{this.DoParseIdentifierPartRule});
@@ -59,6 +58,7 @@ namespace Debugger
 			m_nonterminals.Add("RelationalOp", new ParseMethod[]{this.DoParseRelationalOpRule});
 			m_nonterminals.Add("S", new ParseMethod[]{this.DoParseSRule});
 			m_nonterminals.Add("Space", new ParseMethod[]{this.DoParseSpaceRule});
+			m_nonterminals.Add("UnaryExpression", new ParseMethod[]{this.DoParseUnaryExpression1Rule, this.DoParseUnaryExpression2Rule});
 			OnCtorEpilog();
 		}
 		
@@ -207,80 +207,19 @@ namespace Debugger
 			return _state;
 		}
 		
-		// EqualityExpression := RelationalExpression '==' S RelationalExpression
-		private State DoParseEqualityExpression1Rule(State _state, List<Result> _outResults)
-		{
-			State _start = _state;
-			List<Result> results = new List<Result>();
-			
-			_state = DoSequence(_state, results,
-			delegate (State s, List<Result> r) {return DoParse(s, r, "RelationalExpression");},
-			delegate (State s, List<Result> r) {return DoParseLiteral(s, r, "==");},
-			delegate (State s, List<Result> r) {return DoParse(s, r, "S");},
-			delegate (State s, List<Result> r) {return DoParse(s, r, "RelationalExpression");});
-			
-			if (_state.Parsed)
-			{
-				Expression value = results.Count > 0 ? results[0].Value : default(Expression);
-				value = new EqualityExpression(results[0].Value, results[2].Value);
-				_outResults.Add(new Result(this, _start.Index, _state.Index - _start.Index, m_input, value));
-			}
-			
-			return _state;
-		}
-		
-		// EqualityExpression := RelationalExpression '!=' S RelationalExpression
-		private State DoParseEqualityExpression2Rule(State _state, List<Result> _outResults)
-		{
-			State _start = _state;
-			List<Result> results = new List<Result>();
-			
-			_state = DoSequence(_state, results,
-			delegate (State s, List<Result> r) {return DoParse(s, r, "RelationalExpression");},
-			delegate (State s, List<Result> r) {return DoParseLiteral(s, r, "!=");},
-			delegate (State s, List<Result> r) {return DoParse(s, r, "S");},
-			delegate (State s, List<Result> r) {return DoParse(s, r, "RelationalExpression");});
-			
-			if (_state.Parsed)
-			{
-				Expression value = results.Count > 0 ? results[0].Value : default(Expression);
-				value = new InequalityExpression(results[0].Value, results[2].Value);
-				_outResults.Add(new Result(this, _start.Index, _state.Index - _start.Index, m_input, value));
-			}
-			
-			return _state;
-		}
-		
-		// EqualityExpression := RelationalExpression
-		private State DoParseEqualityExpression3Rule(State _state, List<Result> _outResults)
-		{
-			State _start = _state;
-			List<Result> results = new List<Result>();
-			
-			_state = DoParse(_state, results, "RelationalExpression");
-			
-			if (_state.Parsed)
-			{
-				Expression value = results.Count > 0 ? results[0].Value : default(Expression);
-				_outResults.Add(new Result(this, _start.Index, _state.Index - _start.Index, m_input, value));
-			}
-			
-			return _state;
-		}
-		
-		// ExclusiveOrExpression := EqualityExpression ('^' S EqualityExpression)*
+		// ExclusiveOrExpression := RelationalExpression ('^' S RelationalExpression)*
 		private State DoParseExclusiveOrExpressionRule(State _state, List<Result> _outResults)
 		{
 			State _start = _state;
 			List<Result> results = new List<Result>();
 			
 			_state = DoSequence(_state, results,
-			delegate (State s, List<Result> r) {return DoParse(s, r, "EqualityExpression");},
+			delegate (State s, List<Result> r) {return DoParse(s, r, "RelationalExpression");},
 			delegate (State s, List<Result> r) {return DoRepetition(s, r, 0, 2147483647,
 				delegate (State s2, List<Result> r2) {return DoSequence(s2, r2,
 					delegate (State s3, List<Result> r3) {return DoParseLiteral(s3, r3, "^");},
 					delegate (State s3, List<Result> r3) {return DoParse(s3, r3, "S");},
-					delegate (State s3, List<Result> r3) {return DoParse(s3, r3, "EqualityExpression");});});});
+					delegate (State s3, List<Result> r3) {return DoParse(s3, r3, "RelationalExpression");});});});
 			
 			if (_state.Parsed)
 			{
@@ -556,16 +495,16 @@ namespace Debugger
 			return _state;
 		}
 		
-		// RelationalExpression := PrimaryExpression RelationalOp PrimaryExpression
+		// RelationalExpression := UnaryExpression RelationalOp UnaryExpression
 		private State DoParseRelationalExpression1Rule(State _state, List<Result> _outResults)
 		{
 			State _start = _state;
 			List<Result> results = new List<Result>();
 			
 			_state = DoSequence(_state, results,
-			delegate (State s, List<Result> r) {return DoParse(s, r, "PrimaryExpression");},
+			delegate (State s, List<Result> r) {return DoParse(s, r, "UnaryExpression");},
 			delegate (State s, List<Result> r) {return DoParse(s, r, "RelationalOp");},
-			delegate (State s, List<Result> r) {return DoParse(s, r, "PrimaryExpression");});
+			delegate (State s, List<Result> r) {return DoParse(s, r, "UnaryExpression");});
 			
 			if (_state.Parsed)
 			{
@@ -577,13 +516,13 @@ namespace Debugger
 			return _state;
 		}
 		
-		// RelationalExpression := PrimaryExpression
+		// RelationalExpression := UnaryExpression
 		private State DoParseRelationalExpression2Rule(State _state, List<Result> _outResults)
 		{
 			State _start = _state;
 			List<Result> results = new List<Result>();
 			
-			_state = DoParse(_state, results, "PrimaryExpression");
+			_state = DoParse(_state, results, "UnaryExpression");
 			
 			if (_state.Parsed)
 			{
@@ -594,7 +533,7 @@ namespace Debugger
 			return _state;
 		}
 		
-		// RelationalOp := ('<=' / '<' / '>=' / '>') S
+		// RelationalOp := ('<=' / '<' / '>=' / '>' / '==' / '!=') S
 		private State DoParseRelationalOpRule(State _state, List<Result> _outResults)
 		{
 			State _start = _state;
@@ -605,7 +544,9 @@ namespace Debugger
 				delegate (State s2, List<Result> r2) {return DoParseLiteral(s2, r2, "<=");},
 				delegate (State s2, List<Result> r2) {return DoParseLiteral(s2, r2, "<");},
 				delegate (State s2, List<Result> r2) {return DoParseLiteral(s2, r2, ">=");},
-				delegate (State s2, List<Result> r2) {return DoParseLiteral(s2, r2, ">");});},
+				delegate (State s2, List<Result> r2) {return DoParseLiteral(s2, r2, ">");},
+				delegate (State s2, List<Result> r2) {return DoParseLiteral(s2, r2, "==");},
+				delegate (State s2, List<Result> r2) {return DoParseLiteral(s2, r2, "!=");});},
 			delegate (State s, List<Result> r) {return DoParse(s, r, "S");});
 			
 			if (_state.Parsed)
@@ -657,6 +598,44 @@ namespace Debugger
 				expected = "whitespace";
 				if (expected != null)
 					_state = new State(_start.Index, false, ErrorSet.Combine(_start.Errors, new ErrorSet(_state.Errors.Index, expected)));
+			}
+			
+			return _state;
+		}
+		
+		// UnaryExpression := '!' S PrimaryExpression
+		private State DoParseUnaryExpression1Rule(State _state, List<Result> _outResults)
+		{
+			State _start = _state;
+			List<Result> results = new List<Result>();
+			
+			_state = DoSequence(_state, results,
+			delegate (State s, List<Result> r) {return DoParseLiteral(s, r, "!");},
+			delegate (State s, List<Result> r) {return DoParse(s, r, "S");},
+			delegate (State s, List<Result> r) {return DoParse(s, r, "PrimaryExpression");});
+			
+			if (_state.Parsed)
+			{
+				Expression value = results.Count > 0 ? results[0].Value : default(Expression);
+				value = new NotExpression(results[1].Value);
+				_outResults.Add(new Result(this, _start.Index, _state.Index - _start.Index, m_input, value));
+			}
+			
+			return _state;
+		}
+		
+		// UnaryExpression := PrimaryExpression
+		private State DoParseUnaryExpression2Rule(State _state, List<Result> _outResults)
+		{
+			State _start = _state;
+			List<Result> results = new List<Result>();
+			
+			_state = DoParse(_state, results, "PrimaryExpression");
+			
+			if (_state.Parsed)
+			{
+				Expression value = results.Count > 0 ? results[0].Value : default(Expression);
+				_outResults.Add(new Result(this, _start.Index, _state.Index - _start.Index, m_input, value));
 			}
 			
 			return _state;

@@ -37,38 +37,6 @@ namespace Debugger
 		}
 	}
 	
-	internal class EqualityExpression : BooleanExpression
-	{
-		public EqualityExpression(Expression lhs, Expression rhs) : base(lhs, rhs, "==")
-		{
-		}
-		
-		protected EqualityExpression(Expression lhs, Expression rhs, string op) : base(lhs, rhs, op)
-		{
-		}
-		
-		public override object Evaluate(StackFrame frame)
-		{
-			object lhs = m_lhs.Evaluate(frame);
-			object rhs = m_rhs.Evaluate(frame);
-		
-			if (object.ReferenceEquals(lhs, rhs))
-				return true;
-			
-			if ((object) lhs == null || (object) rhs == null)
-				return false;
-			
-			bool result = lhs.Equals(rhs);
-			return result;
-		}
-		
-		protected override bool DoEvaluate(bool lhs, bool rhs)
-		{
-			Contract.Assert(false, "shouldn't be called");
-			return false;
-		}
-	}
-	
 	internal sealed class ExclusiveOrExpression : BooleanExpression
 	{
 		public ExclusiveOrExpression(Expression lhs, Expression rhs) : base(lhs, rhs, "^")
@@ -78,19 +46,6 @@ namespace Debugger
 		protected override bool DoEvaluate(bool lhs, bool rhs)
 		{
 			return lhs ^ rhs;
-		}
-	}
-	
-	internal class InequalityExpression : EqualityExpression
-	{
-		public InequalityExpression(Expression lhs, Expression rhs) : base(lhs, rhs, "!=")
-		{
-		}
-		
-		public override object Evaluate(StackFrame frame)
-		{
-			bool result = (bool) base.Evaluate(frame);
-			return !result;
 		}
 	}
 	
@@ -114,27 +69,98 @@ namespace Debugger
 		
 		public override object Evaluate(StackFrame frame)
 		{
-			IComparable lhs = DoGetValue(frame, m_lhs);
-			IComparable rhs = DoGetValue(frame, m_rhs);
+			object left = m_lhs.Evaluate(frame);
+			object right = m_rhs.Evaluate(frame);
 			
-			int x = lhs.CompareTo(rhs);
-			switch (m_op)
+			if (left == null && right == null)
 			{
-				case "<":
-					return x < 0;
+				switch (m_op)
+				{
+					case "<=":
+					case ">=":
+					case "==":
+						return true;
+					
+					case "<":
+					case ">":
+					case "!=":
+						return false;
+					
+					default:
+						Contract.Assert(false, "bad op: " + m_op);
+						break;
+				}
+			}
+			else if (left == null)
+			{
+				switch (m_op)
+				{
+					case "<":
+					case "<=":
+					case "!=":
+						return true;
+					
+					case ">":
+					case ">=":
+					case "==":
+						return false;
+					
+					default:
+						Contract.Assert(false, "bad op: " + m_op);
+						break;
+				}
+			}
+			else if (right == null)
+			{
+				switch (m_op)
+				{
+					case ">=":
+					case ">":
+					case "!=":
+						return true;
+					
+					case "<":
+					case "<=":
+					case "==":
+						return false;
+					
+					default:
+						Contract.Assert(false, "bad op: " + m_op);
+						break;
+				}
+			}
+			else
+			{
+				Type type = DoFindCommonType(left, right);
 				
-				case "<=":
-					return x <= 0;
+				IComparable lhs = (IComparable) Convert.ChangeType(left, type);
+				IComparable rhs = (IComparable) Convert.ChangeType(right, type);
 				
-				case ">=":
-					return x >= 0;
-				
-				case ">":
-					return x > 0;
-				
-				default:
-					Contract.Assert(false, "bad op: " + m_op);
-					break;
+				int x = lhs.CompareTo(rhs);
+				switch (m_op)
+				{
+					case "<":
+						return x < 0;
+					
+					case "<=":
+						return x <= 0;
+					
+					case ">=":
+						return x >= 0;
+					
+					case ">":
+						return x > 0;
+					
+					case "==":
+						return x == 0;
+					
+					case "!=":
+						return x != 0;
+					
+					default:
+						Contract.Assert(false, "bad op: " + m_op);
+						break;
+				}
 			}
 			
 			return null;
@@ -146,17 +172,59 @@ namespace Debugger
 			return false;
 		}
 		
-		private IComparable DoGetValue(StackFrame frame, Expression expr)
+		private Type DoFindCommonType(object lhs, object rhs)
 		{
-			object value = expr.Evaluate(frame);
-			if (value is IComparable)
-				return (IComparable) value;
+			if (lhs is decimal || rhs is decimal)
+				return typeof(decimal);
+			
+			else if (DoIsFloat(lhs) || DoIsFloat(rhs))
+				return typeof(double);
+			
+			else if (DoIsNegativeInt(lhs) || DoIsNegativeInt(rhs))
+				return typeof(long);
+			
+			else if (DoIsNonNegativeInt(lhs) || DoIsNonNegativeInt(rhs))
+				return typeof(ulong);
 				
-			else if (value == null)
-				throw new Exception(string.Format("Expected an IComparable but {0} is null", expr));
+			else if (lhs.GetType() == rhs.GetType())
+				if (lhs is IComparable)
+					return lhs.GetType();
+				else
+					throw new Exception(string.Format("{0} is not an IComparable.", lhs.GetType()));
 				
+			throw new Exception(string.Format("Can't compare {0} and {1}.", lhs.GetType(), rhs.GetType()));
+		}
+		
+		private bool DoIsFloat(object value)
+		{
+			Type type = value.GetType();
+			return type == typeof(float) || type == typeof(double);
+		}
+		
+		private bool DoIsNegativeInt(object value)
+		{
+			Type type = value.GetType();
+			if (type == typeof(SByte) || type == typeof(Int16) || type == typeof(Int32) || type == typeof(Int64))
+			{
+				long temp = (long) Convert.ChangeType(value, typeof(long));
+				return temp < 0;
+			}
+			
+			return false;
+		}
+		
+		private bool DoIsNonNegativeInt(object value)
+		{
+			Type type = value.GetType();
+			if (type == typeof(SByte) || type == typeof(Int16) || type == typeof(Int32) || type == typeof(Int64))
+			{
+				long temp = (long) Convert.ChangeType(value, typeof(long));
+				return temp >= 0;
+			}
 			else
-				throw new Exception(string.Format("Expected an IComparable but {0} is a {1}", expr, value.GetType()));
+			{
+				return type == typeof(char) || type == typeof(Byte) || type == typeof(UInt16) || type == typeof(UInt32) || type == typeof(UInt64);
+			}
 		}
 	}
 }

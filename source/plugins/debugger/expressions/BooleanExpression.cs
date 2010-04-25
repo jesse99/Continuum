@@ -40,8 +40,8 @@ namespace Debugger
 		
 		public override object Evaluate(StackFrame frame)
 		{
-			bool lhs = DoEval(frame, m_lhs);
-			bool rhs = DoEval(frame, m_rhs);
+			bool lhs = DoEval<bool>(frame, m_lhs);
+			bool rhs = DoEval<bool>(frame, m_rhs);
 			bool result = DoEvaluate(lhs, rhs);
 			return result;
 		}
@@ -52,20 +52,6 @@ namespace Debugger
 		}
 		
 		protected abstract bool DoEvaluate(bool lhs, bool rhs);
-		
-		#region Private Methods
-		private bool DoEval(StackFrame frame, Expression expr)
-		{
-			object value = expr.Evaluate(frame);
-			
-			if (value == null)
-				throw new Exception(string.Format("Expected a bool for {0} but got null", expr));
-			if (!(value is bool))
-				throw new Exception(string.Format("Expected a bool for {0} but got a {1}", expr, value.GetType()));
-				
-			return (bool) value;
-		}
-		#endregion
 		
 		#region Fields
 		protected Expression m_lhs;
