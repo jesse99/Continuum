@@ -69,6 +69,7 @@ namespace Debugger
 				case "debugger unresolved breakpoint":
 					var bp = (Breakpoint) value;
 					DoRemove(bp.File, bp.Line);
+					m_table.reloadData();
 					break;
 				
 				case "debugger processed breakpoint event":
@@ -136,7 +137,8 @@ namespace Debugger
 				string text = value.description();
 				var parser = new ExpressionParser();
 				Expression expr = parser.Parse(text);
-				
+		Console.WriteLine("setting expr to {0}", expr);
+		
 				m_breakpoints[row].Condition = expr;
 			}
 			catch (Exception e)
@@ -179,10 +181,9 @@ namespace Debugger
 			{
 				var key = new ConditionalBreakpoint(bp.File, bp.Line);
 				ConditionalBreakpoint cbp = m_breakpoints.First(b => b == key);
-			Console.WriteLine("evaluating {0} on line {1}", cbp.Condition, cbp.Line);
 				
 				object value = cbp.Condition.Evaluate(frame);
-			Console.WriteLine("value: {0}", value);
+		Console.WriteLine("{0}: {1}", cbp.Condition, value);
 				if (value is bool)
 				{
 					if (false == (bool) value)

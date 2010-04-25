@@ -42,13 +42,21 @@ namespace Debugger
 		public ExpressionParser()
 		{
 			m_nonterminals.Add("BooleanLiteral", new ParseMethod[]{this.DoParseBooleanLiteral1Rule, this.DoParseBooleanLiteral2Rule});
+			m_nonterminals.Add("CharacterLiteral", new ParseMethod[]{this.DoParseCharacterLiteralRule});
+			m_nonterminals.Add("ConditionalAndExpression", new ParseMethod[]{this.DoParseConditionalAndExpressionRule});
+			m_nonterminals.Add("ConditionalOrExpression", new ParseMethod[]{this.DoParseConditionalOrExpressionRule});
+			m_nonterminals.Add("Digit", new ParseMethod[]{this.DoParseDigitRule});
+			m_nonterminals.Add("EqualityExpression", new ParseMethod[]{this.DoParseEqualityExpression1Rule, this.DoParseEqualityExpression2Rule, this.DoParseEqualityExpression3Rule});
+			m_nonterminals.Add("ExclusiveOrExpression", new ParseMethod[]{this.DoParseExclusiveOrExpressionRule});
 			m_nonterminals.Add("Identifier", new ParseMethod[]{this.DoParseIdentifierRule});
 			m_nonterminals.Add("IdentifierPart", new ParseMethod[]{this.DoParseIdentifierPartRule});
 			m_nonterminals.Add("IdentifierStart", new ParseMethod[]{this.DoParseIdentifierStart1Rule, this.DoParseIdentifierStart2Rule, this.DoParseIdentifierStart3Rule, this.DoParseIdentifierStart4Rule, this.DoParseIdentifierStart5Rule});
+			m_nonterminals.Add("IntegerLiteral", new ParseMethod[]{this.DoParseIntegerLiteral1Rule, this.DoParseIntegerLiteral2Rule, this.DoParseIntegerLiteral3Rule});
 			m_nonterminals.Add("Letter", new ParseMethod[]{this.DoParseLetterRule});
 			m_nonterminals.Add("Literal", new ParseMethod[]{this.DoParseLiteralRule});
 			m_nonterminals.Add("PrimaryExpression", new ParseMethod[]{this.DoParsePrimaryExpressionRule});
-			m_nonterminals.Add("RelationalExpression", new ParseMethod[]{this.DoParseRelationalExpressionRule});
+			m_nonterminals.Add("RelationalExpression", new ParseMethod[]{this.DoParseRelationalExpression1Rule, this.DoParseRelationalExpression2Rule});
+			m_nonterminals.Add("RelationalOp", new ParseMethod[]{this.DoParseRelationalOpRule});
 			m_nonterminals.Add("S", new ParseMethod[]{this.DoParseSRule});
 			m_nonterminals.Add("Space", new ParseMethod[]{this.DoParseSpaceRule});
 			OnCtorEpilog();
@@ -104,6 +112,180 @@ namespace Debugger
 			{
 				Expression value = results.Count > 0 ? results[0].Value : default(Expression);
 				value = new Literal<bool>(false);
+				_outResults.Add(new Result(this, _start.Index, _state.Index - _start.Index, m_input, value));
+			}
+			
+			return _state;
+		}
+		
+		// CharacterLiteral := '\'' . '\'' S
+		private State DoParseCharacterLiteralRule(State _state, List<Result> _outResults)
+		{
+			State _start = _state;
+			List<Result> results = new List<Result>();
+			
+			_state = DoSequence(_state, results,
+			delegate (State s, List<Result> r) {return DoParseLiteral(s, r, "\'");},
+			delegate (State s, List<Result> r) {return DoParseRange(s, r, false, string.Empty, "\x0001\xFFFF", null, ".");},
+			delegate (State s, List<Result> r) {return DoParseLiteral(s, r, "\'");},
+			delegate (State s, List<Result> r) {return DoParse(s, r, "S");});
+			
+			if (_state.Parsed)
+			{
+				Expression value = results.Count > 0 ? results[0].Value : default(Expression);
+				string text = m_input.Substring(_start.Index, _state.Index - _start.Index);
+				string s = text; value = new Literal<char>(s[1]);
+				if (text != null)
+					_outResults.Add(new Result(this, _start.Index, _state.Index - _start.Index, m_input, value));
+			}
+			
+			return _state;
+		}
+		
+		// ConditionalAndExpression := ExclusiveOrExpression ('&&' S ExclusiveOrExpression)*
+		private State DoParseConditionalAndExpressionRule(State _state, List<Result> _outResults)
+		{
+			State _start = _state;
+			List<Result> results = new List<Result>();
+			
+			_state = DoSequence(_state, results,
+			delegate (State s, List<Result> r) {return DoParse(s, r, "ExclusiveOrExpression");},
+			delegate (State s, List<Result> r) {return DoRepetition(s, r, 0, 2147483647,
+				delegate (State s2, List<Result> r2) {return DoSequence(s2, r2,
+					delegate (State s3, List<Result> r3) {return DoParseLiteral(s3, r3, "&&");},
+					delegate (State s3, List<Result> r3) {return DoParse(s3, r3, "S");},
+					delegate (State s3, List<Result> r3) {return DoParse(s3, r3, "ExclusiveOrExpression");});});});
+			
+			if (_state.Parsed)
+			{
+				Expression value = results.Count > 0 ? results[0].Value : default(Expression);
+				value = DoEvalAndExpr(results);
+				_outResults.Add(new Result(this, _start.Index, _state.Index - _start.Index, m_input, value));
+			}
+			
+			return _state;
+		}
+		
+		// ConditionalOrExpression := ConditionalAndExpression ('||' S ConditionalAndExpression)*
+		private State DoParseConditionalOrExpressionRule(State _state, List<Result> _outResults)
+		{
+			State _start = _state;
+			List<Result> results = new List<Result>();
+			
+			_state = DoSequence(_state, results,
+			delegate (State s, List<Result> r) {return DoParse(s, r, "ConditionalAndExpression");},
+			delegate (State s, List<Result> r) {return DoRepetition(s, r, 0, 2147483647,
+				delegate (State s2, List<Result> r2) {return DoSequence(s2, r2,
+					delegate (State s3, List<Result> r3) {return DoParseLiteral(s3, r3, "||");},
+					delegate (State s3, List<Result> r3) {return DoParse(s3, r3, "S");},
+					delegate (State s3, List<Result> r3) {return DoParse(s3, r3, "ConditionalAndExpression");});});});
+			
+			if (_state.Parsed)
+			{
+				Expression value = results.Count > 0 ? results[0].Value : default(Expression);
+				value = DoEvalOrExpr(results);
+				_outResults.Add(new Result(this, _start.Index, _state.Index - _start.Index, m_input, value));
+			}
+			
+			return _state;
+		}
+		
+		// Digit := [0-9]
+		private State DoParseDigitRule(State _state, List<Result> _outResults)
+		{
+			State _start = _state;
+			List<Result> results = new List<Result>();
+			
+			_state = DoParseRange(_state, results, false, string.Empty, "09", null, "[0-9]");
+			
+			if (_state.Parsed)
+			{
+				Expression value = results.Count > 0 ? results[0].Value : default(Expression);
+				_outResults.Add(new Result(this, _start.Index, _state.Index - _start.Index, m_input, value));
+			}
+			
+			return _state;
+		}
+		
+		// EqualityExpression := RelationalExpression '==' S RelationalExpression
+		private State DoParseEqualityExpression1Rule(State _state, List<Result> _outResults)
+		{
+			State _start = _state;
+			List<Result> results = new List<Result>();
+			
+			_state = DoSequence(_state, results,
+			delegate (State s, List<Result> r) {return DoParse(s, r, "RelationalExpression");},
+			delegate (State s, List<Result> r) {return DoParseLiteral(s, r, "==");},
+			delegate (State s, List<Result> r) {return DoParse(s, r, "S");},
+			delegate (State s, List<Result> r) {return DoParse(s, r, "RelationalExpression");});
+			
+			if (_state.Parsed)
+			{
+				Expression value = results.Count > 0 ? results[0].Value : default(Expression);
+				value = new EqualityExpression(results[0].Value, results[2].Value);
+				_outResults.Add(new Result(this, _start.Index, _state.Index - _start.Index, m_input, value));
+			}
+			
+			return _state;
+		}
+		
+		// EqualityExpression := RelationalExpression '!=' S RelationalExpression
+		private State DoParseEqualityExpression2Rule(State _state, List<Result> _outResults)
+		{
+			State _start = _state;
+			List<Result> results = new List<Result>();
+			
+			_state = DoSequence(_state, results,
+			delegate (State s, List<Result> r) {return DoParse(s, r, "RelationalExpression");},
+			delegate (State s, List<Result> r) {return DoParseLiteral(s, r, "!=");},
+			delegate (State s, List<Result> r) {return DoParse(s, r, "S");},
+			delegate (State s, List<Result> r) {return DoParse(s, r, "RelationalExpression");});
+			
+			if (_state.Parsed)
+			{
+				Expression value = results.Count > 0 ? results[0].Value : default(Expression);
+				value = new InequalityExpression(results[0].Value, results[2].Value);
+				_outResults.Add(new Result(this, _start.Index, _state.Index - _start.Index, m_input, value));
+			}
+			
+			return _state;
+		}
+		
+		// EqualityExpression := RelationalExpression
+		private State DoParseEqualityExpression3Rule(State _state, List<Result> _outResults)
+		{
+			State _start = _state;
+			List<Result> results = new List<Result>();
+			
+			_state = DoParse(_state, results, "RelationalExpression");
+			
+			if (_state.Parsed)
+			{
+				Expression value = results.Count > 0 ? results[0].Value : default(Expression);
+				_outResults.Add(new Result(this, _start.Index, _state.Index - _start.Index, m_input, value));
+			}
+			
+			return _state;
+		}
+		
+		// ExclusiveOrExpression := EqualityExpression ('^' S EqualityExpression)*
+		private State DoParseExclusiveOrExpressionRule(State _state, List<Result> _outResults)
+		{
+			State _start = _state;
+			List<Result> results = new List<Result>();
+			
+			_state = DoSequence(_state, results,
+			delegate (State s, List<Result> r) {return DoParse(s, r, "EqualityExpression");},
+			delegate (State s, List<Result> r) {return DoRepetition(s, r, 0, 2147483647,
+				delegate (State s2, List<Result> r2) {return DoSequence(s2, r2,
+					delegate (State s3, List<Result> r3) {return DoParseLiteral(s3, r3, "^");},
+					delegate (State s3, List<Result> r3) {return DoParse(s3, r3, "S");},
+					delegate (State s3, List<Result> r3) {return DoParse(s3, r3, "EqualityExpression");});});});
+			
+			if (_state.Parsed)
+			{
+				Expression value = results.Count > 0 ? results[0].Value : default(Expression);
+				value = DoEvalExclusiveOrExpr(results);
 				_outResults.Add(new Result(this, _start.Index, _state.Index - _start.Index, m_input, value));
 			}
 			
@@ -177,13 +359,13 @@ namespace Debugger
 			return _state;
 		}
 		
-		// IdentifierStart := [0-9]
+		// IdentifierStart := Digit
 		private State DoParseIdentifierStart2Rule(State _state, List<Result> _outResults)
 		{
 			State _start = _state;
 			List<Result> results = new List<Result>();
 			
-			_state = DoParseRange(_state, results, false, string.Empty, "09", null, "[0-9]");
+			_state = DoParse(_state, results, "Digit");
 			
 			if (_state.Parsed)
 			{
@@ -245,6 +427,79 @@ namespace Debugger
 			return _state;
 		}
 		
+		// IntegerLiteral := '+' S Digit+ S
+		private State DoParseIntegerLiteral1Rule(State _state, List<Result> _outResults)
+		{
+			State _start = _state;
+			List<Result> results = new List<Result>();
+			
+			_state = DoSequence(_state, results,
+			delegate (State s, List<Result> r) {return DoParseLiteral(s, r, "+");},
+			delegate (State s, List<Result> r) {return DoParse(s, r, "S");},
+			delegate (State s, List<Result> r) {return DoRepetition(s, r, 1, 2147483647,
+				delegate (State s2, List<Result> r2) {return DoParse(s2, r2, "Digit");});},
+			delegate (State s, List<Result> r) {return DoParse(s, r, "S");});
+			
+			if (_state.Parsed)
+			{
+				Expression value = results.Count > 0 ? results[0].Value : default(Expression);
+				string text = m_input.Substring(_start.Index, _state.Index - _start.Index);
+				value = new Literal<int>(int.Parse(text));
+				if (text != null)
+					_outResults.Add(new Result(this, _start.Index, _state.Index - _start.Index, m_input, value));
+			}
+			
+			return _state;
+		}
+		
+		// IntegerLiteral := '-' S Digit+ S
+		private State DoParseIntegerLiteral2Rule(State _state, List<Result> _outResults)
+		{
+			State _start = _state;
+			List<Result> results = new List<Result>();
+			
+			_state = DoSequence(_state, results,
+			delegate (State s, List<Result> r) {return DoParseLiteral(s, r, "-");},
+			delegate (State s, List<Result> r) {return DoParse(s, r, "S");},
+			delegate (State s, List<Result> r) {return DoRepetition(s, r, 1, 2147483647,
+				delegate (State s2, List<Result> r2) {return DoParse(s2, r2, "Digit");});},
+			delegate (State s, List<Result> r) {return DoParse(s, r, "S");});
+			
+			if (_state.Parsed)
+			{
+				Expression value = results.Count > 0 ? results[0].Value : default(Expression);
+				string text = m_input.Substring(_start.Index, _state.Index - _start.Index);
+				value = new Literal<int>(int.Parse(text));
+				if (text != null)
+					_outResults.Add(new Result(this, _start.Index, _state.Index - _start.Index, m_input, value));
+			}
+			
+			return _state;
+		}
+		
+		// IntegerLiteral := Digit+ S
+		private State DoParseIntegerLiteral3Rule(State _state, List<Result> _outResults)
+		{
+			State _start = _state;
+			List<Result> results = new List<Result>();
+			
+			_state = DoSequence(_state, results,
+			delegate (State s, List<Result> r) {return DoRepetition(s, r, 1, 2147483647,
+				delegate (State s2, List<Result> r2) {return DoParse(s2, r2, "Digit");});},
+			delegate (State s, List<Result> r) {return DoParse(s, r, "S");});
+			
+			if (_state.Parsed)
+			{
+				Expression value = results.Count > 0 ? results[0].Value : default(Expression);
+				string text = m_input.Substring(_start.Index, _state.Index - _start.Index);
+				value = new Literal<int>(int.Parse(text));
+				if (text != null)
+					_outResults.Add(new Result(this, _start.Index, _state.Index - _start.Index, m_input, value));
+			}
+			
+			return _state;
+		}
+		
 		// Letter := [\\cLu\\cLl\\cLt\\cLm\\cLo\\cNl]
 		private State DoParseLetterRule(State _state, List<Result> _outResults)
 		{
@@ -262,13 +517,16 @@ namespace Debugger
 			return _state;
 		}
 		
-		// Literal := BooleanLiteral
+		// Literal := BooleanLiteral / IntegerLiteral / CharacterLiteral
 		private State DoParseLiteralRule(State _state, List<Result> _outResults)
 		{
 			State _start = _state;
 			List<Result> results = new List<Result>();
 			
-			_state = DoParse(_state, results, "BooleanLiteral");
+			_state = DoChoice(_state, results,
+			delegate (State s, List<Result> r) {return DoParse(s, r, "BooleanLiteral");},
+			delegate (State s, List<Result> r) {return DoParse(s, r, "IntegerLiteral");},
+			delegate (State s, List<Result> r) {return DoParse(s, r, "CharacterLiteral");});
 			
 			if (_state.Parsed)
 			{
@@ -298,13 +556,57 @@ namespace Debugger
 			return _state;
 		}
 		
+		// RelationalExpression := PrimaryExpression RelationalOp PrimaryExpression
+		private State DoParseRelationalExpression1Rule(State _state, List<Result> _outResults)
+		{
+			State _start = _state;
+			List<Result> results = new List<Result>();
+			
+			_state = DoSequence(_state, results,
+			delegate (State s, List<Result> r) {return DoParse(s, r, "PrimaryExpression");},
+			delegate (State s, List<Result> r) {return DoParse(s, r, "RelationalOp");},
+			delegate (State s, List<Result> r) {return DoParse(s, r, "PrimaryExpression");});
+			
+			if (_state.Parsed)
+			{
+				Expression value = results.Count > 0 ? results[0].Value : default(Expression);
+				value = new RelationalExpression(results[0].Value, results[2].Value, results[1].Text);
+				_outResults.Add(new Result(this, _start.Index, _state.Index - _start.Index, m_input, value));
+			}
+			
+			return _state;
+		}
+		
 		// RelationalExpression := PrimaryExpression
-		private State DoParseRelationalExpressionRule(State _state, List<Result> _outResults)
+		private State DoParseRelationalExpression2Rule(State _state, List<Result> _outResults)
 		{
 			State _start = _state;
 			List<Result> results = new List<Result>();
 			
 			_state = DoParse(_state, results, "PrimaryExpression");
+			
+			if (_state.Parsed)
+			{
+				Expression value = results.Count > 0 ? results[0].Value : default(Expression);
+				_outResults.Add(new Result(this, _start.Index, _state.Index - _start.Index, m_input, value));
+			}
+			
+			return _state;
+		}
+		
+		// RelationalOp := ('<=' / '<' / '>=' / '>') S
+		private State DoParseRelationalOpRule(State _state, List<Result> _outResults)
+		{
+			State _start = _state;
+			List<Result> results = new List<Result>();
+			
+			_state = DoSequence(_state, results,
+			delegate (State s, List<Result> r) {return DoChoice(s, r,
+				delegate (State s2, List<Result> r2) {return DoParseLiteral(s2, r2, "<=");},
+				delegate (State s2, List<Result> r2) {return DoParseLiteral(s2, r2, "<");},
+				delegate (State s2, List<Result> r2) {return DoParseLiteral(s2, r2, ">=");},
+				delegate (State s2, List<Result> r2) {return DoParseLiteral(s2, r2, ">");});},
+			delegate (State s, List<Result> r) {return DoParse(s, r, "S");});
 			
 			if (_state.Parsed)
 			{
@@ -377,7 +679,7 @@ namespace Debugger
 			List<Result> results = new List<Result>();
 			
 			OnParseProlog();
-			state = DoParse(state, results, "RelationalExpression");
+			state = DoParse(state, results, "ConditionalOrExpression");
 			
 			int i = state.Index;
 			if (!state.Parsed)

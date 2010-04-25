@@ -19,58 +19,47 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-using Mono.Debugger.Soft;
-using MObjc.Helpers;
 using System;
+using System.Collections.Generic;
 
 namespace Debugger
 {
-	internal abstract class BooleanExpression : Expression
+	internal sealed partial class ExpressionParser
 	{
-		protected BooleanExpression(Expression lhs, Expression rhs, string op)
+		private Expression DoEvalAndExpr(List<Result> results)
 		{
-			Contract.Requires(lhs != null);
-			Contract.Requires(rhs != null);
-			Contract.Requires(!string.IsNullOrEmpty(op));
+			Expression result = results[0].Value;
 			
-			m_lhs = lhs;
-			m_rhs = rhs;
-			m_op = op;
-		}
-		
-		public override object Evaluate(StackFrame frame)
-		{
-			bool lhs = DoEval(frame, m_lhs);
-			bool rhs = DoEval(frame, m_rhs);
-			bool result = DoEvaluate(lhs, rhs);
+			for (int i = 2; i < results.Count; i += 2)
+			{
+				result = new AndExpression(result, results[i].Value);
+			}
+			
 			return result;
 		}
 		
-		public override string ToString()
+		private Expression DoEvalOrExpr(List<Result> results)
 		{
-			return string.Format("{0} {1} {2}", m_lhs, m_op, m_rhs);
-		}
-		
-		protected abstract bool DoEvaluate(bool lhs, bool rhs);
-		
-		#region Private Methods
-		private bool DoEval(StackFrame frame, Expression expr)
-		{
-			object value = expr.Evaluate(frame);
+			Expression result = results[0].Value;
 			
-			if (value == null)
-				throw new Exception(string.Format("Expected a bool for {0} but got null", expr));
-			if (!(value is bool))
-				throw new Exception(string.Format("Expected a bool for {0} but got a {1}", expr, value.GetType()));
-				
-			return (bool) value;
+			for (int i = 2; i < results.Count; i += 2)
+			{
+				result = new OrExpression(result, results[i].Value);
+			}
+			
+			return result;
 		}
-		#endregion
 		
-		#region Fields
-		protected Expression m_lhs;
-		protected Expression m_rhs;
-		protected string m_op;
-		#endregion
+		private Expression DoEvalExclusiveOrExpr(List<Result> results)
+		{
+			Expression result = results[0].Value;
+			
+			for (int i = 2; i < results.Count; i += 2)
+			{
+				result = new ExclusiveOrExpression(result, results[i].Value);
+			}
+			
+			return result;
+		}
 	}
 }

@@ -86,7 +86,7 @@ namespace Debugger
 				result = frame.GetValue(parm);
 			}
 			
-			// And finally fields.
+			// Then fields.
 			Value thisPtr = frame.GetThis();
 			if (thisPtr is ObjectMirror)
 				result = DoGetField((ObjectMirror) thisPtr);
@@ -94,9 +94,50 @@ namespace Debugger
 			else if (thisPtr is StructMirror)
 				result = DoGetField((StructMirror) thisPtr);
 				
+			// And finally properties.
+			if (thisPtr is ObjectMirror)
+				result = DoEvaluateProperty(frame.Thread, (ObjectMirror) thisPtr);
+				
+			else if (thisPtr is StructMirror)
+				result = DoEvaluateProperty(frame.Thread, (StructMirror) thisPtr);
+				
 			if (result == null)
 				throw new Exception("Couldn't find a local, argument, or field matching " + m_name);
 				
+			return result;
+		}
+		
+		private Value DoEvaluateProperty(ThreadMirror thread, ObjectMirror obj)
+		{
+			Value result = null;
+			
+			PropertyInfoMirror prop = obj.Type.GetProperty(m_name);
+			if (prop != null)
+			{
+				MethodMirror method = prop.GetGetMethod(true);
+				if (method != null)
+				{
+					result = obj.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+				}
+			}
+			
+			return result;
+		}
+		
+		private Value DoEvaluateProperty(ThreadMirror thread, StructMirror obj)
+		{
+			Value result = null;
+			
+			PropertyInfoMirror prop = obj.Type.GetProperty(m_name);
+			if (prop != null)
+			{
+				MethodMirror method = prop.GetGetMethod(true);
+				if (method != null)
+				{
+					result = obj.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+				}
+			}
+			
 			return result;
 		}
 		

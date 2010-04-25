@@ -64,18 +64,20 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.StringMirror
 		public class Mono.Debugger.ArrayMirror
 		
-
-* Removing a breakpoint doesn't seem to always remove it from the saved breakpoints.
+* Need to support !
+* Equality and relational should do type promotion.
+* ^ should handle ints? Or maybe remove it altogether?
 * Work on conditional breakpoints:
-	- get boolean properties working
-	- get boolean expressions working (||, &&, !)
-	- get the other literals working
-	- make sure get a decent error if the expression evaluates to a non-bool	
+	- get hex and escapes parsing
+	- get the other literals working 
 	- get chained variables working
 	- get chained property calls working
 	- get type expressions working (eg long.MaxValue)
 	- get indexors working
 	- maybe should allow index expressions with enumerables
+* Allow threads to be (re)named in the debugger.
+* Show the instruction pointer for other threads:
+	- would be nice if there was a context menu or tooltip showin the thread id/name
 * Might want a window to show performance counters:
 	- see http://www.mono-project.com/Mono_Performance_Counters
 	- maybe treeview
@@ -83,6 +85,7 @@ public abstract class Mono.Debugger.Value
 	- special case floating point equality? optionally?
 * Can we sort the variables? Maybe add some sort of key field?
 * Optionally(?) show properties.
+* Need a break all command.
 * Special case collections:
 	- don't evaluate IEnumerable properties (they are not pure)
 	- special case types that implement something like IList
@@ -117,6 +120,8 @@ public abstract class Mono.Debugger.Value
 	- custom viewer dlls
 	- might want a context menu to show really large strings, should this be editable? live?
 * Dot should complete auto-complete text.
+* Would be nice not to highlight the linq query keywords (from, which, etc) if System.Linq is not
+   being used.
 * COuldn't open (via drag and drop) /Users/jessejones/Source/Third_Party/mono-2.6.3/mono/mini/ChangeLog
 * Mention can right click on completion window.
 * Attributes and base classes need to handle global::
