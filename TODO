@@ -63,13 +63,10 @@ public abstract class Mono.Debugger.Value
 	public class Mono.Debugger.ObjectMirror
 		public class Mono.Debugger.StringMirror
 		public class Mono.Debugger.ArrayMirror
-		
-* Need to support !
-* Equality and relational should do type promotion.
-* ^ should handle ints? Or maybe remove it altogether?
+
+* Work on literals:
+	- get null literal parsing
 * Work on conditional breakpoints:
-	- get hex and escapes parsing
-	- get the other literals working 
 	- get chained variables working
 	- get chained property calls working
 	- get type expressions working (eg long.MaxValue)
@@ -85,18 +82,13 @@ public abstract class Mono.Debugger.Value
 	- special case floating point equality? optionally?
 * Can we sort the variables? Maybe add some sort of key field?
 * Optionally(?) show properties.
-* Need a break all command.
+* Upgrade to mono 2.6.4
+* Need a break all command (Suspend looks like it may work).
 * Special case collections:
 	- don't evaluate IEnumerable properties (they are not pure)
 	- special case types that implement something like IList
 * Special case IEnumerable somehow.
 * Make sure infinite enumerables work
-* Can we use the soft debugger to trace GC roots?
-	- would have to check the stack for all threads and static fields of all types
-	- maybe package this as a command line app
-	- also need to check for loops
-	- might be neat to show the references to a specified type
-	- when would we take a snapshot? send a signal? specify file and line? 
 * Work on a debugger:
 	- make sure we don't fall down if the debugger throws
 	- improve the controls window, or do we even want this?
@@ -112,6 +104,7 @@ public abstract class Mono.Debugger.Value
 	  or maybe it would be better to have a black list of exceptions to ignore
 	- allow users to set the ToString format specifier?
 	- allow users to invoke arbitrary methods on variables, maybe some sort of CodePad
+	- breakpoint conditions should be persisted
 	- allow more complex epressions (and properties) to be used with conditional breakpoints
 	- watchpoint windows
 		` drag and drop to add new variables
@@ -119,6 +112,12 @@ public abstract class Mono.Debugger.Value
 	- moving the instruction pointer
 	- custom viewer dlls
 	- might want a context menu to show really large strings, should this be editable? live?
+* Can we use the soft debugger to trace GC roots?
+	- would have to check the stack for all threads and static fields of all types
+	- maybe package this as a command line app
+	- also need to check for loops
+	- might be neat to show the references to a specified type
+	- when would we take a snapshot? send a signal? specify file and line? 
 * Dot should complete auto-complete text.
 * Would be nice not to highlight the linq query keywords (from, which, etc) if System.Linq is not
    being used.

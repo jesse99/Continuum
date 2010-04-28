@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Mono.Debugger.Soft;
+using Shared;
 
 namespace Debugger
 {
@@ -39,6 +40,10 @@ namespace Debugger
 		{
 			if (m_value == null)
 				return "null";
+			else if (m_value is char)
+				return string.Format("'{0}'", CharHelpers.ToText((char) (object) m_value));
+			else if (m_value is string)
+				return string.Format("\"{0}\"", ((string) (object) m_value).EscapeAll());
 			else
 				return m_value.ToString();
 		}

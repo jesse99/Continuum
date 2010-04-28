@@ -66,6 +66,9 @@ namespace Shared
 				else if (ch == '\t')
 					builder.Append("\\t");
 				
+				else if (ch == '"')
+					builder.Append("\\\"");
+				
 				else if (ch < ' ')
 					builder.AppendFormat("\\x{0:X2}", (int) ch);
 				

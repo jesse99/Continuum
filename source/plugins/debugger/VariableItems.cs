@@ -797,19 +797,19 @@ namespace Debugger
 			}
 			else if (text.StartsWith("@\"") && text.EndsWith("\""))
 			{
-				var mirror = m_thread.Domain.CreateString(DoParseVerbatim(text.Substring(2, text.Length - 3)));
+				var mirror = m_thread.Domain.CreateString(ParseVerbatim(text.Substring(2, text.Length - 3)));
 				m_setter(mirror);
 				result = new StringValueItem(m_thread, Name.ToString(), TypeName.ToString(), mirror, m_setter);
 			}
 			else if (text.StartsWith("\"") && text.EndsWith("\""))
 			{
-				var mirror = m_thread.Domain.CreateString(DoParse(text.Substring(1, text.Length - 2)));
+				var mirror = m_thread.Domain.CreateString(Parse(text.Substring(1, text.Length - 2)));
 				m_setter(mirror);
 				result = new StringValueItem(m_thread, Name.ToString(), TypeName.ToString(), mirror, m_setter);
 			}
 			else
 			{
-				var mirror = m_thread.Domain.CreateString(DoParse(text));
+				var mirror = m_thread.Domain.CreateString(Parse(text));
 				m_setter(mirror);
 				result = new StringValueItem(m_thread, Name.ToString(), TypeName.ToString(), mirror, m_setter);
 			}
@@ -817,8 +817,7 @@ namespace Debugger
 			return result;
 		}
 		
-		#region Private Methods
-		private string DoParseVerbatim(string text)
+		public static string ParseVerbatim(string text)
 		{
 			var builder = new System.Text.StringBuilder(text.Length);
 			
@@ -827,7 +826,7 @@ namespace Debugger
 			{
 				char ch = text[i++];
 				
-				if (ch == '"' && i + 1 < text.Length && text[i + 1] == '"')
+				if (ch == '"' && i < text.Length && text[i] == '"')
 				{
 					builder.Append('"');
 					++i;
@@ -841,7 +840,7 @@ namespace Debugger
 			return builder.ToString();
 		}
 		
-		private string DoParse(string text)
+		public static string Parse(string text)
 		{
 			var builder = new System.Text.StringBuilder(text.Length);
 			
@@ -908,21 +907,22 @@ namespace Debugger
 			return builder.ToString();
 		}
 		
-		private bool DoIsHexDigit(char ch)
+		#region Private Methods
+		private static bool DoIsHexDigit(char ch)
 		{
-			return (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'a' && ch <= 'f');
+			return (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F');
 		}
 		
-		private uint DoGetHexValue(char ch)
+		private static uint DoGetHexValue(char ch)
 		{
 			if (ch >= '0' && ch <= '9')
 				return (uint) (ch - '0');
 				
 			else if (ch >= 'a' && ch <= 'f')
-				return (uint) (ch - 'a');
+				return (uint) (ch - 'a') + 10;
 			
 			else
-				return (uint) (ch - 'A');
+				return (uint) (ch - 'A') + 10;
 		}
 		#endregion
 		

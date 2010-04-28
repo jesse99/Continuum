@@ -264,7 +264,7 @@ single-regular-string-literal-character:
      Any character except " (U+0022), \ (U+005C), and new-line-character
 
 verbatim-string-literal:
-    @"   verbatim -string-literal-characters?   "
+    @"   verbatim-string-literal-characters?   "
 
 verbatim-string-literal-characters:
     verbatim-string-literal-character

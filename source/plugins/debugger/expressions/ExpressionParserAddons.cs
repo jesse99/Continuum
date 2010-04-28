@@ -19,8 +19,11 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using MObjc.Helpers;
+using Shared;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace Debugger
 {
@@ -60,6 +63,85 @@ namespace Debugger
 			}
 			
 			return result;
+		}
+		
+		private Expression DoParseEscapeChar(char ch)
+		{
+			switch (ch)
+			{
+				case '\'':
+					return new Literal<char>('\'');
+				
+				case '"':
+					return new Literal<char>('"');
+				
+				case '\\':
+					return new Literal<char>('\\');
+				
+				case '0':
+					return new Literal<char>('\0');
+				
+				case 'a':
+					return new Literal<char>('\a');
+				
+				case 'b':
+					return new Literal<char>('\b');
+				
+				case 'f':
+					return new Literal<char>('\f');
+				
+				case 'n':
+					return new Literal<char>('\n');
+				
+				case 'r':
+					return new Literal<char>('\r');
+				
+				case 't':
+					return new Literal<char>('\t');
+				
+				case 'v':
+					return new Literal<char>('\v');
+				
+				default:
+					Contract.Assert(false);
+					return null;
+			}
+		}
+		
+		// Text will be "'\xABCD'".
+		private Expression DoParseHexEscapeChar(string text)
+		{
+			int codePoint = int.Parse(text.Substring(3, text.Length - 4), NumberStyles.AllowHexSpecifier);
+			return new Literal<char>((char) codePoint);
+		}
+		
+		private Expression DoParseReal(string text)
+		{
+			if (text.EndsWith("f") || text.EndsWith("F"))
+				return new Literal<float>(float.Parse(text.Substring(0, text.Length - 1)));
+			
+			else if (text.EndsWith("d") || text.EndsWith("D"))
+				return new Literal<double>(double.Parse(text.Substring(0, text.Length - 1)));
+			
+			else if (text.EndsWith("m") || text.EndsWith("M"))
+				return new Literal<decimal>(decimal.Parse(text.Substring(0, text.Length - 1)));
+			
+			else
+				return new Literal<double>(double.Parse(text));
+		}
+		
+		// Text will be "\"blah\"'.
+		private Expression DoParseString(string text)
+		{
+			string value = StringValueItem.Parse(text.Substring(1, text.Length - 2));
+			return new Literal<string>(value);
+		}
+		
+		// Text will be @"\"blah\"'.
+		private Expression DoParseVerbatimString(string text)
+		{
+			string value = StringValueItem.ParseVerbatim(text.Substring(2, text.Length - 3));
+			return new Literal<string>(value);
 		}
 	}
 }
