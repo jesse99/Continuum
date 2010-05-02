@@ -67,62 +67,62 @@ namespace Debugger
 		{
 		}
 		
-		public override object Evaluate(StackFrame frame)
+		public override ExtendedValue Evaluate(StackFrame frame)
 		{
-			object left = m_lhs.Evaluate(frame);
-			object right = m_rhs.Evaluate(frame);
+			ExtendedValue left = m_lhs.Evaluate(frame);
+			ExtendedValue right = m_rhs.Evaluate(frame);
 			
-			if (left == null && right == null)
+			if (left.IsNull && right.IsNull)
 			{
 				switch (m_op)
 				{
 					case "<=":
 					case ">=":
 					case "==":
-						return true;
+						return new ExtendedValue(frame.VirtualMachine.CreateValue(true));
 					
 					case "<":
 					case ">":
 					case "!=":
-						return false;
+						return new ExtendedValue(frame.VirtualMachine.CreateValue(false));
 					
 					default:
 						Contract.Assert(false, "bad op: " + m_op);
 						break;
 				}
 			}
-			else if (left == null)
+			else if (left.IsNull)
 			{
 				switch (m_op)
 				{
 					case "<":
 					case "<=":
 					case "!=":
-						return true;
+						return new ExtendedValue(frame.VirtualMachine.CreateValue(true));
 					
 					case ">":
 					case ">=":
 					case "==":
-						return false;
+						return new ExtendedValue(frame.VirtualMachine.CreateValue(false));
 					
 					default:
 						Contract.Assert(false, "bad op: " + m_op);
 						break;
 				}
 			}
-			else if (right == null)
+			else if (right.IsNull)
 			{
 				switch (m_op)
 				{
 					case ">=":
 					case ">":
 					case "!=":
-						return true;
+						return new ExtendedValue(frame.VirtualMachine.CreateValue(true));
 					
 					case "<":
 					case "<=":
 					case "==":
-						return false;
+						return new ExtendedValue(frame.VirtualMachine.CreateValue(false));
 					
 					default:
 						Contract.Assert(false, "bad op: " + m_op);
@@ -131,31 +131,33 @@ namespace Debugger
 			}
 			else
 			{
-				Type type = DoFindCommonType(left, right);
+				object leftValue = DoGetPrimitive(left);
+				object rightValue = DoGetPrimitive(left);
+				Type type = DoFindCommonType(leftValue, rightValue);
 				
-				IComparable lhs = (IComparable) Convert.ChangeType(left, type);
-				IComparable rhs = (IComparable) Convert.ChangeType(right, type);
+				IComparable lhs = (IComparable) Convert.ChangeType(leftValue, type);
+				IComparable rhs = (IComparable) Convert.ChangeType(rightValue, type);
 				
 				int x = lhs.CompareTo(rhs);
 				switch (m_op)
 				{
 					case "<":
-						return x < 0;
+						return new ExtendedValue(frame.VirtualMachine.CreateValue(x < 0));
 					
 					case "<=":
-						return x <= 0;
+						return new ExtendedValue(frame.VirtualMachine.CreateValue(x <= 0));
 					
 					case ">=":
-						return x >= 0;
+						return new ExtendedValue(frame.VirtualMachine.CreateValue(x >= 0));
 					
 					case ">":
-						return x > 0;
+						return new ExtendedValue(frame.VirtualMachine.CreateValue(x > 0));
 					
 					case "==":
-						return x == 0;
+						return new ExtendedValue(frame.VirtualMachine.CreateValue(x == 0));
 					
 					case "!=":
-						return x != 0;
+						return new ExtendedValue(frame.VirtualMachine.CreateValue(x != 0));
 					
 					default:
 						Contract.Assert(false, "bad op: " + m_op);
@@ -170,6 +172,24 @@ namespace Debugger
 		{
 			Contract.Assert(false, "shouldn't be called");
 			return false;
+		}
+		
+		private object DoGetPrimitive(ExtendedValue value)
+		{
+			if (value.Value is PrimitiveValue)
+			{
+				var pv = (PrimitiveValue) value.Value;
+				return pv.Value;
+			}
+			else if (value.Value is StringMirror)
+			{
+				var sv = (StringMirror) value.Value;
+				return sv.Value;
+			}
+			else
+			{
+				throw new Exception("Expected a PrimitiveValue or StringMirror not " + value.Value.GetType());
+			}
 		}
 		
 		private Type DoFindCommonType(object lhs, object rhs)

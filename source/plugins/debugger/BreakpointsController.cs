@@ -182,20 +182,11 @@ namespace Debugger
 				var key = new ConditionalBreakpoint(bp.File, bp.Line);
 				ConditionalBreakpoint cbp = m_breakpoints.First(b => b == key);
 				
-				object value = cbp.Condition.Evaluate(frame);
+				ExtendedValue value = cbp.Condition.Evaluate(frame);
 		Console.WriteLine("{0}: {1}", cbp.Condition, value);
-				if (value is bool)
-				{
-					if (false == (bool) value)
-						result = Debugger.HandlerAction.Resume;
-				}
-				else
-				{
-					if (value == null)
-						throw new Exception("expected a boolean expression, not a null expression.");
-					else
-						throw new Exception("expected a boolean expression, not a " + value.GetType() + " expression.");
-				}
+				bool stop = value.Get<bool>();
+				if (!stop)
+					result = Debugger.HandlerAction.Resume;
 			}
 			catch (Exception e)
 			{

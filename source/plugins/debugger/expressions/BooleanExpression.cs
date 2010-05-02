@@ -38,12 +38,12 @@ namespace Debugger
 			m_op = op;
 		}
 		
-		public override object Evaluate(StackFrame frame)
+		public override ExtendedValue Evaluate(StackFrame frame)
 		{
-			bool lhs = DoEval<bool>(frame, m_lhs);
-			bool rhs = DoEval<bool>(frame, m_rhs);
+			bool lhs = m_lhs.Evaluate(frame).Get<bool>();
+			bool rhs = m_rhs.Evaluate(frame).Get<bool>();
 			bool result = DoEvaluate(lhs, rhs);
-			return result;
+			return new ExtendedValue(frame.VirtualMachine.CreateValue(result));
 		}
 		
 		public override string ToString()

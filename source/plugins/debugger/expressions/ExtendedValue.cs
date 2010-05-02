@@ -25,29 +25,49 @@ using System;
 
 namespace Debugger
 {
-	internal sealed class NotExpression : Expression
+	internal sealed class ExtendedValue
 	{
-		public NotExpression(Expression expr)
+		public ExtendedValue(Value v)
 		{
-			Contract.Requires(expr != null);
+			Contract.Requires(v != null);
 			
-			m_expr = expr;
+			Value = v;
 		}
 		
-		public override ExtendedValue Evaluate(StackFrame frame)
+		public Value Value {get; private set;}
+		
+		public bool IsNull
 		{
-			bool value = m_expr.Evaluate(frame).Get<bool>();
+			get
+			{
+				if (Value is PrimitiveValue)
+				{
+					var pv = (PrimitiveValue) Value;
+					return pv.Value == null;
+				}
+				return false;
+			}
+		}
+		
+		public T Get<T>()
+		{
+			if (Value is T)
+				return (T) (object) Value;
+				
+			if (Value is PrimitiveValue)
+			{
+				var pv = (PrimitiveValue) Value;
+				if (pv.Value is T)
+					return (T) pv.Value;
+			}
+			else if (Value is StringMirror)
+			{
+				var pv = (StringMirror) Value;
+				if (pv.Value is T)
+					return (T) (object) pv.Value;
+			}
 			
-			return new ExtendedValue(frame.VirtualMachine.CreateValue(!value));
+			throw new Exception(string.Format("Expecting a {0} but have a {1}.", typeof(T), Value.GetType()));
 		}
-		
-		public override string ToString()
-		{
-			return string.Format("!{0}", m_expr);
-		}
-		
-		#region Fields
-		private Expression m_expr;
-		#endregion
 	}
 }

@@ -21,33 +21,29 @@
 
 using Mono.Debugger.Soft;
 using MObjc.Helpers;
-using System;
+using Shared;
 
 namespace Debugger
 {
-	internal sealed class NotExpression : Expression
+	internal sealed class StringLiteral : Expression
 	{
-		public NotExpression(Expression expr)
+		public StringLiteral(string value)
 		{
-			Contract.Requires(expr != null);
+			Contract.Requires(value != null);
 			
-			m_expr = expr;
+			m_value = value;
 		}
 		
 		public override ExtendedValue Evaluate(StackFrame frame)
 		{
-			bool value = m_expr.Evaluate(frame).Get<bool>();
-			
-			return new ExtendedValue(frame.VirtualMachine.CreateValue(!value));
+			return new ExtendedValue(frame.Thread.Domain.CreateString(m_value));
 		}
 		
 		public override string ToString()
 		{
-			return string.Format("!{0}", m_expr);
+			return string.Format("\"{0}\"", m_value).EscapeAll();
 		}
 		
-		#region Fields
-		private Expression m_expr;
-		#endregion
+		private string m_value;
 	}
 }

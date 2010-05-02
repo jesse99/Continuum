@@ -41,18 +41,6 @@ namespace Debugger
 			return result;
 		}
 		
-		private Expression DoEvalOrExpr(List<Result> results)
-		{
-			Expression result = results[0].Value;
-			
-			for (int i = 2; i < results.Count; i += 2)
-			{
-				result = new OrExpression(result, results[i].Value);
-			}
-			
-			return result;
-		}
-		
 		private Expression DoEvalExclusiveOrExpr(List<Result> results)
 		{
 			Expression result = results[0].Value;
@@ -60,6 +48,30 @@ namespace Debugger
 			for (int i = 2; i < results.Count; i += 2)
 			{
 				result = new ExclusiveOrExpression(result, results[i].Value);
+			}
+			
+			return result;
+		}
+		
+		private Expression DoEvalMemberAccessExpr(List<Result> results)
+		{
+			Expression result = results[0].Value;
+			
+			for (int i = 2; i < results.Count; i += 2)
+			{
+				result = new MemberAccessExpression(result, results[i].Value);
+			}
+			
+			return result;
+		}
+		
+		private Expression DoEvalOrExpr(List<Result> results)
+		{
+			Expression result = results[0].Value;
+			
+			for (int i = 2; i < results.Count; i += 2)
+			{
+				result = new OrExpression(result, results[i].Value);
 			}
 			
 			return result;
@@ -134,14 +146,14 @@ namespace Debugger
 		private Expression DoParseString(string text)
 		{
 			string value = StringValueItem.Parse(text.Substring(1, text.Length - 2));
-			return new Literal<string>(value);
+			return new StringLiteral(value);
 		}
 		
 		// Text will be @"\"blah\"'.
 		private Expression DoParseVerbatimString(string text)
 		{
 			string value = StringValueItem.ParseVerbatim(text.Substring(2, text.Length - 3));
-			return new Literal<string>(value);
+			return new StringLiteral(value);
 		}
 	}
 }

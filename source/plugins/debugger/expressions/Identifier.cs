@@ -35,11 +35,10 @@ namespace Debugger
 			m_name = name;
 		}
 		
-		public override object Evaluate(StackFrame frame)
+		public override ExtendedValue Evaluate(StackFrame frame)
 		{
 			Value value = DoGetValue(frame);
-			object result = DoGetObject(value);
-			return result;
+			return new ExtendedValue(value);
 		}
 		
 		public override string ToString()
@@ -48,25 +47,6 @@ namespace Debugger
 		}
 		
 		#region Private Methods
-		private object DoGetObject(Value value)
-		{
-			var pv = value as PrimitiveValue;
-			if (pv != null)
-			{
-				return pv.Value;
-			}
-			
-			var sv = value as StringMirror;
-			if (sv != null)
-			{
-				if (sv.IsCollected)
-					throw new Exception(m_name + " has been garbage collected");
-				return sv.Value;
-			}
-			
-			throw new Exception("Conditional expressions may only use primitive and string types and " + m_name + " is an " + value.GetType());
-		}
-		
 		private Value DoGetValue(StackFrame frame)
 		{
 			Value result = null;
@@ -86,94 +66,16 @@ namespace Debugger
 				result = frame.GetValue(parm);
 			}
 			
-			// Then fields.
-			Value thisPtr = frame.GetThis();
-			if (thisPtr is ObjectMirror)
-				result = DoGetField((ObjectMirror) thisPtr);
-				
-			else if (thisPtr is StructMirror)
-				result = DoGetField((StructMirror) thisPtr);
-				
-			// And finally properties.
-			if (thisPtr is ObjectMirror)
-				result = DoEvaluateProperty(frame.Thread, (ObjectMirror) thisPtr);
-				
-			else if (thisPtr is StructMirror)
-				result = DoEvaluateProperty(frame.Thread, (StructMirror) thisPtr);
-				
+			// And finally fields and properties.
 			if (result == null)
-				throw new Exception("Couldn't find a local, argument, or field matching " + m_name);
+			{
+				Value thisPtr = frame.GetThis();
+				result = EvalMember.Evaluate(frame, thisPtr, m_name);
+			}
+			
+			if (result == null)
+				throw new Exception("Couldn't find a local, argument, field, or property named " + m_name);
 				
-			return result;
-		}
-		
-		private Value DoEvaluateProperty(ThreadMirror thread, ObjectMirror obj)
-		{
-			Value result = null;
-			
-			PropertyInfoMirror prop = obj.Type.GetProperty(m_name);
-			if (prop != null)
-			{
-				MethodMirror method = prop.GetGetMethod(true);
-				if (method != null)
-				{
-					result = obj.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
-				}
-			}
-			
-			return result;
-		}
-		
-		private Value DoEvaluateProperty(ThreadMirror thread, StructMirror obj)
-		{
-			Value result = null;
-			
-			PropertyInfoMirror prop = obj.Type.GetProperty(m_name);
-			if (prop != null)
-			{
-				MethodMirror method = prop.GetGetMethod(true);
-				if (method != null)
-				{
-					result = obj.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
-				}
-			}
-			
-			return result;
-		}
-		
-		private Value DoGetField(ObjectMirror mirror)
-		{
-			Value result = null;
-			
-			FieldInfoMirror field = mirror.Type.GetFields().FirstOrDefault(f => f.Name == m_name);
-			if (field != null)
-			{
-				if (field.IsStatic)
-					result = mirror.Type.GetValue(field);
-				else
-					result = mirror.GetValue(field);
-			}
-			
-			return result;
-		}
-		
-		private Value DoGetField(StructMirror mirror)
-		{
-			Value result = null;
-			
-			FieldInfoMirror[] fields = mirror.Type.GetFields();
-			for (int i = 0; i < fields.Length && result == null; ++i)
-			{
-				FieldInfoMirror field = fields[i];
-				if (field.Name == m_name)
-				{
-					if (field.IsStatic)
-						result = mirror.Type.GetValue(field);
-					else
-						result = mirror.Fields[i];
-				}
-			}
-			
 			return result;
 		}
 		#endregion

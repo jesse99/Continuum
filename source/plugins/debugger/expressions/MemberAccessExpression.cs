@@ -22,32 +22,53 @@
 using Mono.Debugger.Soft;
 using MObjc.Helpers;
 using System;
+using System.Linq;
 
 namespace Debugger
 {
-	internal sealed class NotExpression : Expression
+	internal sealed class MemberAccessExpression : Expression
 	{
-		public NotExpression(Expression expr)
+		public MemberAccessExpression(Expression lhs, Expression rhs)
 		{
-			Contract.Requires(expr != null);
+			Contract.Requires(lhs != null);
+			Contract.Requires(rhs != null);
 			
-			m_expr = expr;
+			m_lhs = lhs;
+			m_rhs = rhs;
 		}
 		
 		public override ExtendedValue Evaluate(StackFrame frame)
 		{
-			bool value = m_expr.Evaluate(frame).Get<bool>();
+			Value target = m_lhs.Evaluate(frame).Value;
+			string name = m_rhs.ToString();
 			
-			return new ExtendedValue(frame.VirtualMachine.CreateValue(!value));
+			ExtendedValue result;
+			if (target is ObjectMirror || target is StructMirror)
+			{
+				Value value = EvalMember.Evaluate(frame, target, name);
+				if (value != null)
+					result = new ExtendedValue(value);
+				else if (target is ObjectMirror)
+					throw new Exception(string.Format("Couldn't find a field or property for {0}.{1}", ((ObjectMirror) target).Type.FullName, name));
+				else
+					throw new Exception(string.Format("Couldn't find a field or property for {0}.{1}", ((StructMirror) target).Type.FullName, name));
+			}
+			else
+			{
+				throw new Exception("Member access target should be an object, struct, or type name, not a " + target.GetType());
+			}
+			
+			return result;
 		}
 		
 		public override string ToString()
 		{
-			return string.Format("!{0}", m_expr);
+			return string.Format("{0}.{1}", m_lhs, m_rhs);
 		}
 		
 		#region Fields
-		private Expression m_expr;
+		private Expression m_lhs;
+		private Expression m_rhs;
 		#endregion
 	}
 }

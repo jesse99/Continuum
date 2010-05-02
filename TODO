@@ -64,11 +64,7 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.StringMirror
 		public class Mono.Debugger.ArrayMirror
 
-* Work on literals:
-	- get null literal parsing
 * Work on conditional breakpoints:
-	- get chained variables working
-	- get chained property calls working
 	- get type expressions working (eg long.MaxValue)
 	- get indexors working
 	- maybe should allow index expressions with enumerables
@@ -119,6 +115,7 @@ public abstract class Mono.Debugger.Value
 	- might be neat to show the references to a specified type
 	- when would we take a snapshot? send a signal? specify file and line? 
 * Dot should complete auto-complete text.
+* Should deduce type of typeof(xxx).
 * Would be nice not to highlight the linq query keywords (from, which, etc) if System.Linq is not
    being used.
 * COuldn't open (via drag and drop) /Users/jessejones/Source/Third_Party/mono-2.6.3/mono/mini/ChangeLog

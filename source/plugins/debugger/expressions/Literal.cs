@@ -31,9 +31,9 @@ namespace Debugger
 			m_value = value;
 		}
 		
-		public override object Evaluate(StackFrame frame)
+		public override ExtendedValue Evaluate(StackFrame frame)
 		{
-			return m_value;
+			return new ExtendedValue(frame.VirtualMachine.CreateValue(m_value));
 		}
 		
 		public override string ToString()
@@ -42,12 +42,10 @@ namespace Debugger
 				return "null";
 			else if (m_value is char)
 				return string.Format("'{0}'", CharHelpers.ToText((char) (object) m_value));
-			else if (m_value is string)
-				return string.Format("\"{0}\"", ((string) (object) m_value).EscapeAll());
 			else
 				return m_value.ToString();
 		}
 		
-		private T m_value;
+		private object m_value;
 	}
 }

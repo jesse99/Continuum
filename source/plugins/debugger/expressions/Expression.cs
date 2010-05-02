@@ -27,20 +27,6 @@ namespace Debugger
 	internal abstract class Expression
 	{
 		// Returns a primitive type or throws an error.
-		public abstract object Evaluate(StackFrame frame);
-		
-		#region Protected Methods
-		protected T DoEval<T>(StackFrame frame, Expression expr)
-		{
-			object value = expr.Evaluate(frame);
-			
-			if (value == null)
-				throw new Exception(string.Format("Expected a {0} for {1} but got null", typeof(T), expr));
-			if (!(value is T))
-				throw new Exception(string.Format("Expected a {0} for {1} but got a {2}", typeof(T), expr, value.GetType()));
-				
-			return (T) value;
-		}
-		#endregion
+		public abstract ExtendedValue Evaluate(StackFrame frame);
 	}
 }
