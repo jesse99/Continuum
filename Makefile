@@ -87,7 +87,7 @@ bin/test-files: $(test-files)
 	@echo "$^" > $@
 
 bin/tests.dll: bin/test-files $(gear-dll) bin/csc_flags
-	$(CSC) -out:$@ $(CSC_FLAGS) -unsafe -d:TEST -pkg:mono-nunit -r:$(cocoa-dlls),$(gear-dll),ICSharpCode.SharpZipLib.dll,Mono.Posix.dll,bin/Mono.Cecil.dll,bin/Mono.Cecil.Mdb.dll,System.Configuration.dll -target:library @bin/test-files
+	$(CSC) -out:$@ $(CSC_FLAGS) -unsafe -d:TEST -pkg:mono-nunit -r:$(cocoa-dlls),$(gear-dll),ICSharpCode.SharpZipLib.dll,Mono.Posix.dll,bin/Mono.Cecil.dll,bin/Mono.Cecil.Mdb.dll,System.Configuration.dll,bin/Mono.Debugger.Soft.dll -target:library @bin/test-files
 
 bin/install-tool: bin/install-tool.i386 bin/install-tool.ppc
 	lipo -create -output bin/install-tool -arch i386 bin/install-tool.i386 -arch ppc bin/install-tool.ppc

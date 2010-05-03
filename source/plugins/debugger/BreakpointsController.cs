@@ -137,7 +137,6 @@ namespace Debugger
 				string text = value.description();
 				var parser = new ExpressionParser();
 				Expression expr = parser.Parse(text);
-		Console.WriteLine("setting expr to {0}", expr);
 		
 				m_breakpoints[row].Condition = expr;
 			}

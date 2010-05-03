@@ -9,6 +9,7 @@ nib-path := bin/$(lib-name).nib
 dummy := $(shell mkdir $(plugins-path)/$(lib-name) 2> /dev/null)
 source-files := bin/$(lib-name)-sources
 test-files += $(filter-out source/plugins/$(lib-name)/AssemblyInfo.cs,$(wildcard source/plugins/$(lib-name)/*.cs))
+test-files += $(wildcard source/plugins/$(lib-name)/expressions/*.cs)
 
 plugin-targets += $(lib-path) $(xml-path)
 nib-files += $(nib-path)

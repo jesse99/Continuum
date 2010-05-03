@@ -22,6 +22,7 @@
 using Mono.Debugger.Soft;
 using MObjc.Helpers;
 using System.Linq;
+using System;
 
 namespace Debugger
 {
@@ -122,7 +123,10 @@ namespace Debugger
 				MethodMirror method = prop.GetGetMethod(true);
 				if (method != null)
 				{
-					result = obj.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+					if (method.IsStatic)
+						result = obj.Type.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+					else
+						result = obj.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
 				}
 			}
 			

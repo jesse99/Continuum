@@ -67,7 +67,6 @@ public abstract class Mono.Debugger.Value
 * Work on conditional breakpoints:
 	- get type expressions working (eg long.MaxValue)
 	- get indexors working
-	- maybe should allow index expressions with enumerables
 * Allow threads to be (re)named in the debugger.
 * Show the instruction pointer for other threads:
 	- would be nice if there was a context menu or tooltip showin the thread id/name
