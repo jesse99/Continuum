@@ -26,36 +26,22 @@ using System.Linq;
 
 namespace Debugger
 {
-	internal sealed class MemberAccessExpression : Expression
+	internal sealed class PostfixExpression : Expression
 	{
-		public MemberAccessExpression(Expression lhs, Expression rhs)
+		public PostfixExpression(Identifier identifier, PostfixOperator[] suffixes)
 		{
-			Contract.Requires(lhs != null);
-			Contract.Requires(rhs != null);
-			
-			m_lhs = lhs;
-			m_rhs = rhs;
+			m_identifier = identifier;
+			m_suffixes = suffixes;
 		}
 		
 		public override ExtendedValue Evaluate(StackFrame frame)
 		{
-			Value target = m_lhs.Evaluate(frame).Value;
-			string name = m_rhs.ToString();
+			ExtendedValue result = m_identifier.Evaluate(frame);
 			
-			ExtendedValue result;
-			if (target is ObjectMirror || target is StructMirror)
+			foreach (PostfixOperator op in m_suffixes)
 			{
-				Value value = EvalMember.Evaluate(frame, target, name);
-				if (value != null)
-					result = new ExtendedValue(value);
-				else if (target is ObjectMirror)
-					throw new Exception(string.Format("Couldn't find a field or property for {0}.{1}", ((ObjectMirror) target).Type.FullName, name));
-				else
-					throw new Exception(string.Format("Couldn't find a field or property for {0}.{1}", ((StructMirror) target).Type.FullName, name));
-			}
-			else
-			{
-				throw new Exception("Member access target should be an object, struct, or type name, not a " + target.GetType());
+				op.Target = result;
+				result = op.Evaluate(frame);
 			}
 			
 			return result;
@@ -63,12 +49,21 @@ namespace Debugger
 		
 		public override string ToString()
 		{
-			return string.Format("{0}.{1}", m_lhs, m_rhs);
+			var builder = new System.Text.StringBuilder();
+			
+			builder.Append(m_identifier.ToString());
+			
+			foreach (PostfixOperator op in m_suffixes)
+			{
+				builder.Append(op.ToString());
+			}
+			
+			return builder.ToString();
 		}
 		
 		#region Fields
-		private Expression m_lhs;
-		private Expression m_rhs;
+		private Identifier m_identifier;
+		private PostfixOperator[] m_suffixes;
 		#endregion
 	}
 }

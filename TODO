@@ -62,11 +62,8 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.EnumMirror
 	public class Mono.Debugger.ObjectMirror
 		public class Mono.Debugger.StringMirror
-		public class Mono.Debugger.ArrayMirror
+		public class Mono.Debugger.ArrayMirror	
 
-* Work on conditional breakpoints:
-	- get type expressions working (eg long.MaxValue)
-	- get indexors working
 * Allow threads to be (re)named in the debugger.
 * Show the instruction pointer for other threads:
 	- would be nice if there was a context menu or tooltip showin the thread id/name
@@ -100,6 +97,7 @@ public abstract class Mono.Debugger.Value
 	- allow users to set the ToString format specifier?
 	- allow users to invoke arbitrary methods on variables, maybe some sort of CodePad
 	- breakpoint conditions should be persisted
+	- would be nice if conditional expressions worked with types, eg int.MaxValue
 	- allow more complex epressions (and properties) to be used with conditional breakpoints
 	- watchpoint windows
 		` drag and drop to add new variables

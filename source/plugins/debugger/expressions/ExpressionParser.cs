@@ -28,8 +28,9 @@ namespace Debugger
 			m_nonterminals.Add("IntSuffix", new ParseMethod[]{this.DoParseIntSuffixRule});
 			m_nonterminals.Add("Letter", new ParseMethod[]{this.DoParseLetterRule});
 			m_nonterminals.Add("Literal", new ParseMethod[]{this.DoParseLiteralRule});
-			m_nonterminals.Add("MemberAccess", new ParseMethod[]{this.DoParseMemberAccessRule});
 			m_nonterminals.Add("NullLiteral", new ParseMethod[]{this.DoParseNullLiteralRule});
+			m_nonterminals.Add("PostfixExpression", new ParseMethod[]{this.DoParsePostfixExpressionRule});
+			m_nonterminals.Add("PostfixOperator", new ParseMethod[]{this.DoParsePostfixOperator1Rule, this.DoParsePostfixOperator2Rule});
 			m_nonterminals.Add("PrimaryExpression", new ParseMethod[]{this.DoParsePrimaryExpressionRule});
 			m_nonterminals.Add("RealLiteral", new ParseMethod[]{this.DoParseRealLiteral1Rule, this.DoParseRealLiteral2Rule, this.DoParseRealLiteral3Rule, this.DoParseRealLiteral4Rule});
 			m_nonterminals.Add("RealSuffix", new ParseMethod[]{this.DoParseRealSuffixRule});
@@ -613,30 +614,6 @@ namespace Debugger
 			return _state;
 		}
 		
-		// MemberAccess := Identifier ('.' S Identifier)+
-		private State DoParseMemberAccessRule(State _state, List<Result> _outResults)
-		{
-			State _start = _state;
-			List<Result> results = new List<Result>();
-			
-			_state = DoSequence(_state, results,
-			delegate (State s, List<Result> r) {return DoParse(s, r, "Identifier");},
-			delegate (State s, List<Result> r) {return DoRepetition(s, r, 1, 2147483647,
-				delegate (State s2, List<Result> r2) {return DoSequence(s2, r2,
-					delegate (State s3, List<Result> r3) {return DoParseLiteral(s3, r3, ".");},
-					delegate (State s3, List<Result> r3) {return DoParse(s3, r3, "S");},
-					delegate (State s3, List<Result> r3) {return DoParse(s3, r3, "Identifier");});});});
-			
-			if (_state.Parsed)
-			{
-				Expression value = results.Count > 0 ? results[0].Value : default(Expression);
-				value = DoEvalMemberAccessExpr(results);
-				_outResults.Add(new Result(this, _start.Index, _state.Index - _start.Index, m_input, value));
-			}
-			
-			return _state;
-		}
-		
 		// NullLiteral := 'null' S
 		private State DoParseNullLiteralRule(State _state, List<Result> _outResults)
 		{
@@ -657,7 +634,72 @@ namespace Debugger
 			return _state;
 		}
 		
-		// PrimaryExpression := Literal / MemberAccess / Identifier
+		// PostfixExpression := Identifier PostfixOperator+
+		private State DoParsePostfixExpressionRule(State _state, List<Result> _outResults)
+		{
+			State _start = _state;
+			List<Result> results = new List<Result>();
+			
+			_state = DoSequence(_state, results,
+			delegate (State s, List<Result> r) {return DoParse(s, r, "Identifier");},
+			delegate (State s, List<Result> r) {return DoRepetition(s, r, 1, 2147483647,
+				delegate (State s2, List<Result> r2) {return DoParse(s2, r2, "PostfixOperator");});});
+			
+			if (_state.Parsed)
+			{
+				Expression value = results.Count > 0 ? results[0].Value : default(Expression);
+				value = DoEvalPostfixExpr(results);
+				_outResults.Add(new Result(this, _start.Index, _state.Index - _start.Index, m_input, value));
+			}
+			
+			return _state;
+		}
+		
+		// PostfixOperator := '.' S Identifier
+		private State DoParsePostfixOperator1Rule(State _state, List<Result> _outResults)
+		{
+			State _start = _state;
+			List<Result> results = new List<Result>();
+			
+			_state = DoSequence(_state, results,
+			delegate (State s, List<Result> r) {return DoParseLiteral(s, r, ".");},
+			delegate (State s, List<Result> r) {return DoParse(s, r, "S");},
+			delegate (State s, List<Result> r) {return DoParse(s, r, "Identifier");});
+			
+			if (_state.Parsed)
+			{
+				Expression value = results.Count > 0 ? results[0].Value : default(Expression);
+				value = new MemberAccessExpression(results[1].Text.Trim());
+				_outResults.Add(new Result(this, _start.Index, _state.Index - _start.Index, m_input, value));
+			}
+			
+			return _state;
+		}
+		
+		// PostfixOperator := '[' S IntegerLiteral ']' S
+		private State DoParsePostfixOperator2Rule(State _state, List<Result> _outResults)
+		{
+			State _start = _state;
+			List<Result> results = new List<Result>();
+			
+			_state = DoSequence(_state, results,
+			delegate (State s, List<Result> r) {return DoParseLiteral(s, r, "[");},
+			delegate (State s, List<Result> r) {return DoParse(s, r, "S");},
+			delegate (State s, List<Result> r) {return DoParse(s, r, "IntegerLiteral");},
+			delegate (State s, List<Result> r) {return DoParseLiteral(s, r, "]");},
+			delegate (State s, List<Result> r) {return DoParse(s, r, "S");});
+			
+			if (_state.Parsed)
+			{
+				Expression value = results.Count > 0 ? results[0].Value : default(Expression);
+				value = new SubscriptExpression(int.Parse(results[1].Text.Trim()));
+				_outResults.Add(new Result(this, _start.Index, _state.Index - _start.Index, m_input, value));
+			}
+			
+			return _state;
+		}
+		
+		// PrimaryExpression := Literal / PostfixExpression / Identifier
 		private State DoParsePrimaryExpressionRule(State _state, List<Result> _outResults)
 		{
 			State _start = _state;
@@ -665,7 +707,7 @@ namespace Debugger
 			
 			_state = DoChoice(_state, results,
 			delegate (State s, List<Result> r) {return DoParse(s, r, "Literal");},
-			delegate (State s, List<Result> r) {return DoParse(s, r, "MemberAccess");},
+			delegate (State s, List<Result> r) {return DoParse(s, r, "PostfixExpression");},
 			delegate (State s, List<Result> r) {return DoParse(s, r, "Identifier");});
 			
 			if (_state.Parsed)

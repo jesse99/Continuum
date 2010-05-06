@@ -132,7 +132,7 @@ namespace Debugger
 			else
 			{
 				object leftValue = DoGetPrimitive(left);
-				object rightValue = DoGetPrimitive(left);
+				object rightValue = DoGetPrimitive(right);
 				Type type = DoFindCommonType(leftValue, rightValue);
 				
 				IComparable lhs = (IComparable) Convert.ChangeType(leftValue, type);

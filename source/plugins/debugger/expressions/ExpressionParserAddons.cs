@@ -24,6 +24,7 @@ using Shared;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
 namespace Debugger
 {
@@ -53,18 +54,6 @@ namespace Debugger
 			return result;
 		}
 		
-		private Expression DoEvalMemberAccessExpr(List<Result> results)
-		{
-			Expression result = results[0].Value;
-			
-			for (int i = 2; i < results.Count; i += 2)
-			{
-				result = new MemberAccessExpression(result, results[i].Value);
-			}
-			
-			return result;
-		}
-		
 		private Expression DoEvalOrExpr(List<Result> results)
 		{
 			Expression result = results[0].Value;
@@ -75,6 +64,19 @@ namespace Debugger
 			}
 			
 			return result;
+		}
+		
+		private Expression DoEvalPostfixExpr(List<Result> results)
+		{
+			var suffixes = new List<PostfixOperator>();
+		
+			for (int i = 1; i < results.Count; ++i)
+			{
+				suffixes.Add((PostfixOperator) results[i].Value);
+			}
+			
+			var identifier = new Identifier(results[0].Text);
+			return new PostfixExpression(identifier, suffixes.ToArray());
 		}
 		
 		private Expression DoParseEscapeChar(char ch)
