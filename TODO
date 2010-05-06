@@ -64,9 +64,8 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.StringMirror
 		public class Mono.Debugger.ArrayMirror	
 
-* Allow threads to be (re)named in the debugger.
 * Show the instruction pointer for other threads:
-	- would be nice if there was a context menu or tooltip showin the thread id/name
+	- would be nice if there was a context menu or tooltip showing the thread id/name
 * Might want a window to show performance counters:
 	- see http://www.mono-project.com/Mono_Performance_Counters
 	- maybe treeview
@@ -75,6 +74,7 @@ public abstract class Mono.Debugger.Value
 * Can we sort the variables? Maybe add some sort of key field?
 * Optionally(?) show properties.
 * Upgrade to mono 2.6.4
+* Why doesn't stuff like var thread = (ThreadMirror) value auto-complete?
 * Need a break all command (Suspend looks like it may work).
 * Special case collections:
 	- don't evaluate IEnumerable properties (they are not pure)

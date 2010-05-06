@@ -81,7 +81,13 @@ namespace Debugger
 					break;
 				
 				case "debugger thread started":
+					DoRefreshThreads();
+					m_table.reloadData();
+					break;
+				
 				case "debugger thread died":
+					var thread = (ThreadMirror) value;
+					m_names.Remove(thread.Id);
 					DoRefreshThreads();
 					m_table.reloadData();
 					break;
@@ -120,6 +126,14 @@ namespace Debugger
 			return m_threads.Count;
 		}
 		
+		// Developers aren't always nice enough to name threads so we'll let people
+		// do it in the debugger.
+		public void tableView_setObjectValue_forTableColumn_row(NSTableView table, NSObject value, NSTableColumn col, int row)
+		{
+			ThreadMirror thread = m_threads[row];
+			m_names[thread.Id] = value.description();
+		}
+		
 		public NSObject tableView_objectValueForTableColumn_row(NSTableView table, NSTableColumn col, int row)
 		{
 			if (m_threads.Count == 0 || m_debugger.State == State.Disconnected)
@@ -127,16 +141,32 @@ namespace Debugger
 			
 			ThreadMirror thread = m_threads[row];
 			if (col.identifier().ToString() == "0")
-				return DoCreateString(GetThreadName(thread), row);
+			{
+				string name;
+				if (m_names.TryGetValue(thread.Id, out name))
+					name = string.Format("{0} ({1})", name, thread.Id);
+				else
+					name = GetThreadName(thread);
+				return DoCreateString(name, row);
+			}
 			else if (col.identifier().ToString() == "1")
+			{
 				return DoCreateString(thread.ThreadState.ToString(), row);
+			}
 			else
+			{
 				return DoCreateString(thread.Domain.FriendlyName, row);
+			}
 		}
 		
 		public static string GetThreadName(ThreadMirror thread)
 		{
-			string name = thread.Id == 1 ? "main" : thread.Name;
+			string name = thread.Name;
+			
+			if (thread.Id == 1)
+				name =  "main";
+			else if (thread.Id == 2)
+				name =  "finalizer";
 			
 			if (!string.IsNullOrEmpty(name))
 				name = string.Format("{0} ({1})", name, thread.Id);
@@ -192,6 +222,7 @@ namespace Debugger
 		private NSTableView m_table;
 		private Debugger m_debugger;
 		private List<ThreadMirror> m_threads = new List<ThreadMirror>();
+		private Dictionary<long, string> m_names = new Dictionary<long, string>();
 		private State m_state;
 		private int m_selected;
 		#endregion
