@@ -200,9 +200,17 @@ namespace Debugger
 		
 		public static FieldInfoMirror ResolveField(this TypeMirror type, string fieldName)
 		{
-			FieldInfoMirror field = type.GetField(fieldName);
+			FieldInfoMirror field = null;
 			
-			if (field == null && type.BaseType != null)
+			string autoName = "<" + fieldName + ">";	// auto-props look like "<Command>k_BackingField"
+			IEnumerable<FieldInfoMirror> fields =
+				from f in type.GetFields()
+					where f.Name == fieldName || f.Name.StartsWith(autoName)
+				select f;
+			
+			if (fields.Any())
+				field = fields.First();
+			else if (type.BaseType != null)
 				field = ResolveField(type.BaseType, fieldName);
 			
 			return field;

@@ -64,18 +64,6 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.StringMirror
 		public class Mono.Debugger.ArrayMirror	
 		
-		look at a delegate in the debugger
-		don't recurse into boxed primitives	
-		
-		System.Delegate
-		IntPtr
-
-* Get methods resolving upwards:
-	- are we bottlenecking calls to ToString?
-	- do we really need this?
-	- make sure instance and static both work
-	- make sure structs work
-* Special case auto-props?
 * Special case delegate types? Events? IntPtr? Other system types?
 * In the variable display special case objects which are delegates:
 	- this should all fall out if we handle fields correctly

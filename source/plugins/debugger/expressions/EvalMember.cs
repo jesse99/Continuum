@@ -67,7 +67,7 @@ namespace Debugger
 			FieldInfoMirror field = mirror.Type.ResolveField(name);
 			if (field != null)
 			{
-			if (field.IsStatic)
+				if (field.IsStatic)
 					result = field.DeclaringType.GetValue(field);
 				else
 					result = mirror.GetValue(field);

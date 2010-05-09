@@ -40,6 +40,8 @@ namespace Debugger
 		
 		protected VariableItem(string name, string type, string typeName) : base(NSObject.AllocAndInitInstance(typeName))
 		{
+			name = DoGetFriendlyName(name);
+			
 			m_name = CreateString(name);
 			m_type = CreateString(type);
 			m_value = CreateString(string.Empty);
@@ -47,6 +49,8 @@ namespace Debugger
 		
 		protected VariableItem(ThreadMirror thread, string name, Value value, string type, string typeName) : base(NSObject.AllocAndInitInstance(typeName))
 		{
+			name = DoGetFriendlyName(name);
+			
 			if (DoIsGCed(value))
 			{
 				m_name = CreateString(NSColor.disabledControlTextColor(), name);
@@ -272,6 +276,18 @@ namespace Debugger
 		#endregion
 		
 		#region Private Methods
+		private string DoGetFriendlyName(string name)
+		{
+			string result = name;
+			
+			int i = name.IndexOf('<');
+			int j = name.IndexOf('>');
+			if (i == 0 && i < j)
+				result = name.Substring(i + 1, j - i - 1);		// auto-props look like "<Command>k_BackingField"
+			
+			return result;
+		}
+		
 		private bool DoIsGCed(Value value)
 		{
 			var obj = value as ObjectMirror;
