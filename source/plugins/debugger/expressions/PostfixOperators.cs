@@ -39,7 +39,7 @@ namespace Debugger
 			ExtendedValue result;
 			if (Target.Value is ObjectMirror || Target.Value is StructMirror)
 			{
-				Value value = EvalMember.Evaluate(frame, Target.Value, m_memberName);
+				Value value = EvalMember.Evaluate(frame.Thread, Target.Value, m_memberName);
 				if (value != null)
 					result = new ExtendedValue(value);
 				else if (Target.Value is ObjectMirror)

@@ -182,7 +182,6 @@ namespace Debugger
 				ConditionalBreakpoint cbp = m_breakpoints.First(b => b == key);
 				
 				ExtendedValue value = cbp.Condition.Evaluate(frame);
-		Console.WriteLine("{0}: {1}", cbp.Condition, value);
 				bool stop = value.Get<bool>();
 				if (!stop)
 					result = Debugger.HandlerAction.Resume;

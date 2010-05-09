@@ -21,8 +21,8 @@
 
 using Mono.Debugger.Soft;
 using MObjc.Helpers;
-using System.Linq;
 using System;
+using System.Linq;
 
 namespace Debugger
 {
@@ -31,9 +31,9 @@ namespace Debugger
 		// Target should be a ObjectMirror or a StructMirror. Name should be the name of a
 		// property (e.g. Count) or field (eg Empty). Returns null if a suitable member cannot 
 		// be found.
-		public static Value Evaluate(StackFrame frame, Value target, string name)
+		public static Value Evaluate(ThreadMirror thread, Value target, string name)
 		{
-			Contract.Requires(frame != null, "frame is null");
+			Contract.Requires(thread != null, "thread is null");
 			Contract.Requires(target != null, "target is null");
 			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
 			
@@ -50,10 +50,10 @@ namespace Debugger
 			if (result == null)
 			{
 				if (target is ObjectMirror)
-					result = DoEvaluateProperty(frame.Thread, (ObjectMirror) target, name);
+					result = DoEvaluateProperty(thread, (ObjectMirror) target, name);
 					
 				else if (target is StructMirror)
-					result = DoEvaluateProperty(frame.Thread, (StructMirror) target, name);
+					result = DoEvaluateProperty(thread, (StructMirror) target, name);
 			}
 			
 			return result;
@@ -64,11 +64,11 @@ namespace Debugger
 		{
 			Value result = null;
 			
-			FieldInfoMirror field = mirror.Type.GetFields().FirstOrDefault(f => f.Name == name);
+			FieldInfoMirror field = mirror.Type.ResolveField(name);
 			if (field != null)
 			{
-				if (field.IsStatic)
-					result = mirror.Type.GetValue(field);
+			if (field.IsStatic)
+					result = field.DeclaringType.GetValue(field);
 				else
 					result = mirror.GetValue(field);
 			}
@@ -80,17 +80,13 @@ namespace Debugger
 		{
 			Value result = null;
 			
-			FieldInfoMirror[] fields = mirror.Type.GetFields();
-			for (int i = 0; i < fields.Length && result == null; ++i)
+			FieldInfoMirror field = mirror.Type.ResolveField(name);
+			if (field != null)
 			{
-				FieldInfoMirror field = fields[i];
-				if (field.Name == name)
-				{
-					if (field.IsStatic)
-						result = mirror.Type.GetValue(field);
-					else
-						result = mirror.Fields[i];
-				}
+				if (field.IsStatic)
+					result = mirror.Type.GetValue(field);
+				else
+					result = mirror[name];
 			}
 			
 			return result;
@@ -100,14 +96,10 @@ namespace Debugger
 		{
 			Value result = null;
 			
-			PropertyInfoMirror prop = obj.Type.GetProperty(name);
-			if (prop != null)
+			MethodMirror method = obj.Type.ResolveProperty(name);
+			if (method != null)
 			{
-				MethodMirror method = prop.GetGetMethod(true);
-				if (method != null)
-				{
-					result = obj.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
-				}
+				result = obj.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
 			}
 			
 			return result;
@@ -117,17 +109,13 @@ namespace Debugger
 		{
 			Value result = null;
 			
-			PropertyInfoMirror prop = obj.Type.GetProperty(name);
-			if (prop != null)
+			MethodMirror method = obj.Type.ResolveProperty(name);
+			if (method != null)
 			{
-				MethodMirror method = prop.GetGetMethod(true);
-				if (method != null)
-				{
-					if (method.IsStatic)
-						result = obj.Type.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
-					else
-						result = obj.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
-				}
+				if (method.IsStatic)
+					result = method.DeclaringType.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+				else
+					result = obj.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
 			}
 			
 			return result;

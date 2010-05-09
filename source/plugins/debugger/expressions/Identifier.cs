@@ -70,7 +70,7 @@ namespace Debugger
 			if (result == null)
 			{
 				Value thisPtr = frame.GetThis();
-				result = EvalMember.Evaluate(frame, thisPtr, m_name);
+				result = EvalMember.Evaluate(frame.Thread, thisPtr, m_name);
 			}
 			
 			if (result == null)

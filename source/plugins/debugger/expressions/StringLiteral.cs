@@ -41,7 +41,7 @@ namespace Debugger
 		
 		public override string ToString()
 		{
-			return string.Format("\"{0}\"", m_value).EscapeAll();
+			return string.Format("\"{0}\"", m_value.EscapeAll());
 		}
 		
 		private string m_value;

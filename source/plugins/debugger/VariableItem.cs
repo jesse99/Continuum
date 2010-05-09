@@ -57,7 +57,7 @@ namespace Debugger
 			{
 				m_name = CreateString(name);
 				m_type = CreateString(type);
-				m_value = CreateString(GetValueText(thread, value));
+				m_value = CreateString(value.Stringify(thread));
 			}
 		}
 		
@@ -103,7 +103,7 @@ namespace Debugger
 		public virtual void RefreshValue(ThreadMirror thread, Value value)
 		{
 			string oldText = m_value.ToString();
-			string newText = GetValueText(thread, value);
+			string newText = value.Stringify(thread);
 			
 			// Note that we always reset the text (so that we can go from red back to black).
 			m_value.release();
@@ -147,7 +147,7 @@ namespace Debugger
 				{
 					// null to non-null
 					newItem = CreateVariable(Name.ToString(), TypeName.ToString(), v, thread, setter);
-					string newText = GetValueText(thread, v);
+					string newText = v.Stringify(thread);
 					newItem.m_value = CreateString(NSColor.redColor(), newText);
 					this.release();
 				}
@@ -162,99 +162,6 @@ namespace Debugger
 		}
 		
 		#region Protected Methods
-		protected static string OnPrimitiveToString(object value)
-		{
-			if (value == null)
-				return "null";
-				
-			else if (value.Equals(true))
-				return "true";
-				
-			else if (value.Equals(false))
-				return "false";
-				
-			else if (value is char)
-				if ((char) value > 0x7F && VariableController.ShowUnicode)
-					return "'" + new string((char) value, 1) + "'";
-				else
-					return "'" + CharHelpers.ToText((char) value) + "'";
-				
-			else if (value is SByte)
-				if (VariableController.ShowHex)
-					return "0x" + ((SByte) value).ToString("X1");
-				else
-					return ((SByte) value).ToString("N0");
-				
-			else if (value is Byte)
-				if (VariableController.ShowHex)
-					return "0x" + ((Byte) value).ToString("X1");
-				else
-					return ((Byte) value).ToString("N0");
-				
-			else if (value is Int16)
-				if (VariableController.ShowHex)
-					return "0x" + ((Int16) value).ToString("X2");
-				else if (VariableController.ShowThousands)
-					return ((Int16) value).ToString("N0");
-				else
-					return ((Int16) value).ToString("G");
-				
-			else if (value is Int32)
-				if (VariableController.ShowHex)
-					return "0x" + ((Int32) value).ToString("X4");
-				else if (VariableController.ShowThousands)
-					return ((Int32) value).ToString("N0");
-				else
-					return ((Int32) value).ToString("G");
-				
-			else if (value is Int64)
-				if (VariableController.ShowHex)
-					return "0x" + ((Int64) value).ToString("X8");
-				else if (VariableController.ShowThousands)
-					return ((Int64) value).ToString("N0");
-				else
-					return ((Int64) value).ToString("G");
-				
-			else if (value is UInt16)
-				if (VariableController.ShowHex)
-					return "0x" + ((UInt16) value).ToString("X2");
-				else if (VariableController.ShowThousands)
-					return ((UInt16) value).ToString("N0");
-				else
-					return ((UInt16) value).ToString("G");
-				
-			else if (value is UInt32)
-				if (VariableController.ShowHex)
-					return "0x" + ((UInt32) value).ToString("X4");
-				else if (VariableController.ShowThousands)
-					return ((UInt32) value).ToString("N0");
-				else
-					return ((UInt32) value).ToString("G");
-				
-			else if (value is UInt64)
-				if (VariableController.ShowHex)
-					return "0x" + ((UInt64) value).ToString("X8");
-				else if (VariableController.ShowThousands)
-					return ((UInt64) value).ToString("N0");
-				else
-					return ((UInt64) value).ToString("G");
-				
-			else if (value is Single)
-				if (VariableController.ShowThousands)
-					return ((Single) value).ToString("N");
-				else
-					return ((Single) value).ToString("G");
-				
-			else if (value is Double)
-				if (VariableController.ShowThousands)
-					return ((Double) value).ToString("N");
-				else
-					return ((Double) value).ToString("G");
-				
-			else
-				return value.ToString();
-		}
-		
 		protected VariableItem CreateVariable(string name, string type, TypeMirror v, ThreadMirror thread)
 		{
 			VariableItem variable = new TypeValueItem(name, type, v, thread);
@@ -340,80 +247,6 @@ namespace Debugger
 			return NSAttributedString.Create(text, attrs).Retain();
 		}
 		
-		public static string GetValueText(ThreadMirror thread, Value value)
-		{
-			string text = string.Empty;
-			
-			do
-			{
-				if (value == null)
-				{
-					text = "null";
-					break;
-				}
-				
-				// these two have to appear first
-				var obj = value as ObjectMirror;
-				if (obj != null)
-				{
-					if (obj.IsCollected)
-					{
-						text = "garbage collected";
-					}
-					else if (!(value is StringMirror) && !obj.Type.IsArray)
-					{
-						MethodMirror method = obj.Type.FindMethod("ToString", 0);
-						if (method.DeclaringType.FullName != "System.Object")
-						{
-							Value v = obj.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
-							StringMirror s = (StringMirror) v;
-							text = s.Value;
-						}
-					}
-					if (text.Length > 0)
-						break;
-				}
-				
-				var strct = value as StructMirror;
-				if (strct != null)
-				{
-					MethodMirror method = strct.Type.FindMethod("ToString", 0);
-					if (method.DeclaringType.FullName != "System.ValueType" && method.DeclaringType.FullName != "System.Enum")
-					{
-						Value v = strct.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
-						StringMirror s = (StringMirror) v;
-						text = s.Value;
-					}
-					if (text.Length > 0)
-						break;
-				}
-				
-				var enm = value as EnumMirror;
-				if (enm != null)
-				{
-					text = CecilExtensions.ArgToString(enm.Type.Metadata, enm.Value, false, false);
-					break;
-				}
-				
-				var primitive = value as PrimitiveValue;
-				if (primitive != null)
-				{
-					text = OnPrimitiveToString(primitive.Value);
-					break;
-				}
-				
-				var str = value as StringMirror;
-				if (str != null)
-				{
-					text = DoStringToText(str.Value);
-					break;
-				}
-			}
-			while (false);
-			
-			return text;
-		}
-		
 		protected override void OnDealloc()
 		{
 			if (m_name != null)
@@ -439,33 +272,6 @@ namespace Debugger
 		#endregion
 		
 		#region Private Methods
-		private static string DoStringToText(string str)
-		{
-			var builder = new System.Text.StringBuilder(str.Length + 2);
-			
-			builder.Append('"');
-			foreach (char ch in str)
-			{
-				if (ch > 0x7F && VariableController.ShowUnicode)
-					builder.Append(ch);
-				else if (ch == '\'')
-					builder.Append(ch);
-				else if (ch == '"')
-					builder.Append("\\\"");
-				else
-					builder.Append(CharHelpers.ToText(ch));
-					
-				if (builder.Length > 256)
-				{
-					builder.Append(Constants.Ellipsis);
-					break;
-				}
-			}
-			builder.Append('"');
-			
-			return builder.ToString();
-		}
-		
 		private bool DoIsGCed(Value value)
 		{
 			var obj = value as ObjectMirror;

@@ -375,6 +375,7 @@ namespace Debugger
 			m_frame = frame;
 			
 			LocalVariable[] locals = frame.Method.GetLocals();
+			Array.Sort(locals, (lhs, rhs) => lhs.Name.CompareTo(rhs.Name));
 			Value[] values = frame.GetValues(locals);
 			Contract.Assert(locals.Length == values.Length);
 			
@@ -410,7 +411,8 @@ namespace Debugger
 			if (frame != null)			// will be null if view options changed
 				m_frame = frame;
 			
-			LocalVariable[] locals = m_frame.Method.GetLocals();
+			LocalVariable[] locals = m_frame.Method.GetLocals();	// this includes parameters
+			Array.Sort(locals, (lhs, rhs) => lhs.Name.CompareTo(rhs.Name));
 			Value[] values = m_frame.GetValues(locals);
 			Contract.Assert(locals.Length == values.Length);
 			Contract.Assert(locals.Length <= m_items.Count);
@@ -501,17 +503,16 @@ namespace Debugger
 			{
 				if (m_items != null)
 				{
-					FieldInfoMirror[] fields = m_object.Type.GetFields();
+					FieldInfoMirror[] fields = m_object.Type.GetAllFields().ToArray();
+					Array.Sort(fields, (lhs, rhs) => lhs.Name.CompareTo(rhs.Name));
 					Contract.Assert(m_items.Length == fields.Length);
 					
-					Value[] values = DoGetValues(fields);
-					Contract.Assert(values.Length == fields.Length);
-					
-					for (int i = 0; i < values.Length; ++i)
+					for (int i = 0; i < fields.Length; ++i)
 					{
-						FieldInfoMirror tmp = fields[i];
-						Action<Value> setter = (Value v) => DoSetValue(tmp, v);
-						m_items[i] = m_items[i].RefreshVariable(thread, values[i], setter);
+						FieldInfoMirror field = fields[i];
+						Action<Value> setter = (Value v) => DoSetValue(field, v);
+						Value ivalue = EvalMember.Evaluate(m_thread, m_object, field.Name);
+						m_items[i] = m_items[i].RefreshVariable(thread, ivalue, setter);
 					}
 				}
 			}
@@ -570,17 +571,16 @@ namespace Debugger
 			{
 				if (m_object != null && !m_object.IsCollected)
 				{
-					FieldInfoMirror[] fields = m_object.Type.GetFields();
+					FieldInfoMirror[] fields = m_object.Type.GetAllFields().ToArray();
+					Array.Sort(fields, (lhs, rhs) => lhs.Name.CompareTo(rhs.Name));
 					m_items = new VariableItem[fields.Length];
 					
-					Value[] values = DoGetValues(fields);
-					Contract.Assert(values.Length == fields.Length);
-					
-					for (int i = 0; i < values.Length; ++i)
+					for (int i = 0; i < fields.Length; ++i)
 					{
-						FieldInfoMirror tmp = fields[i];
-						Action<Value> setter = (Value v) => DoSetValue(tmp, v);
-						m_items[i] = CreateVariable(fields[i].Name, fields[i].FieldType.FullName, values[i], m_thread, setter);
+						FieldInfoMirror field = fields[i];
+						Action<Value> setter = (Value v) => DoSetValue(field, v);
+						Value value = EvalMember.Evaluate(m_thread, m_object, field.Name);
+						m_items[i] = CreateVariable(field.Name, field.FieldType.FullName, value, m_thread, setter);
 					}
 				}
 				else
@@ -590,25 +590,10 @@ namespace Debugger
 			}
 		}
 		
-		private Value[] DoGetValues(FieldInfoMirror[] fields)
-		{
-			Value[] values = new Value[fields.Length];
-		
-			for (int i = 0; i < fields.Length; ++i)
-			{
-				if (fields[i].IsStatic)
-					values[i] = m_object.Type.GetValue(fields[i]);
-				else
-					values[i] = m_object.GetValue(fields[i]);
-			}
-			
-			return values;
-		}
-		
 		private void DoSetValue(FieldInfoMirror field, Value value)
 		{
 			if (field.IsStatic)
-				m_object.Type.SetValue(field, value);
+				field.DeclaringType.SetValue(field, value);
 			else
 				m_object.SetValue(field, value);
 		}
@@ -638,7 +623,7 @@ namespace Debugger
 		{
 			object value = Parse(text, TypeName.ToString());
 			m_setter(m_vm.CreateValue(value));
-			m_value = CreateString(OnPrimitiveToString(value));
+			m_value = CreateString(value.Stringify());
 			
 			return this;
 		}
@@ -947,7 +932,7 @@ namespace Debugger
 			// which complicates things...
 			var fields = new List<FieldInfoMirror>();
 			var fim = m_object.Type.GetFields();
-			fields.AddRange((from f in fim where !f.IsStatic select f).ToArray());
+			fields.AddRange((from f in fim where !f.IsStatic select f).ToArray());		// TODO: it's hard to use orderby f.Name in these two queries because StructMirror.Fields is keyed by index
 			fields.AddRange((from f in fim where f.IsStatic select f).ToArray());
 			m_fields = fields.ToArray();
 		}
@@ -1067,7 +1052,7 @@ namespace Debugger
 	{
 		public TypeValueItem(string name, string type, TypeMirror value, ThreadMirror thread) : base(name, type, "TypeValueItem")
 		{
-			m_fields = (from f in value.GetFields() where f.IsStatic select f).ToArray();
+			m_fields = (from f in value.GetFields() where f.IsStatic orderby f.Name select f).ToArray();
 			m_object = value;
 			m_thread = thread;
 		}

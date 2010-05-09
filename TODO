@@ -63,18 +63,35 @@ public abstract class Mono.Debugger.Value
 	public class Mono.Debugger.ObjectMirror
 		public class Mono.Debugger.StringMirror
 		public class Mono.Debugger.ArrayMirror	
+		
+		look at a delegate in the debugger
+		don't recurse into boxed primitives	
+		
+		System.Delegate
+		IntPtr
 
-* Show the instruction pointer for other threads:
-	- would be nice if there was a context menu or tooltip showing the thread id/name
-* Might want a window to show performance counters:
-	- see http://www.mono-project.com/Mono_Performance_Counters
-	- maybe treeview
-* Work on breakpoints window:
-	- special case floating point equality? optionally?
+* Get methods resolving upwards:
+	- are we bottlenecking calls to ToString?
+	- do we really need this?
+	- make sure instance and static both work
+	- make sure structs work
+* Special case auto-props?
+* Special case delegate types? Events? IntPtr? Other system types?
+* In the variable display special case objects which are delegates:
+	- this should all fall out if we handle fields correctly
+	- probably want a variable item type for delegates
+	- show the target (be sure to handle null)
+	- show the method name
+	- don't allow the method name to be edited
+	- make sure this works for static delegates
+* See if invoking base properties works at all.
+* File a bug report.
+* Look at other uses of GetProperty and GetProperties.
+* Also GetMethod and GetMethods.
 * Can we sort the variables? Maybe add some sort of key field?
-* Optionally(?) show properties.
+* Optionally(?) show properties. Or maybe just the auto props?
+* Maybe optionally hide fields too.
 * Upgrade to mono 2.6.4
-* Why doesn't stuff like var thread = (ThreadMirror) value auto-complete?
 * Need a break all command (Suspend looks like it may work).
 * Special case collections:
 	- don't evaluate IEnumerable properties (they are not pure)
@@ -99,6 +116,7 @@ public abstract class Mono.Debugger.Value
 	- breakpoint conditions should be persisted
 	- would be nice if conditional expressions worked with types, eg int.MaxValue
 	- allow more complex epressions (and properties) to be used with conditional breakpoints
+	- might want to, at least optionally, show properties in the variables window
 	- watchpoint windows
 		` drag and drop to add new variables
 		` draw in gray if the current context does not have the variable in any stack frame
@@ -111,6 +129,8 @@ public abstract class Mono.Debugger.Value
 	- also need to check for loops
 	- might be neat to show the references to a specified type
 	- when would we take a snapshot? send a signal? specify file and line? 
+* Why doesn't stuff like var thread = (ThreadMirror) value auto-complete?
+* Show short form on Action didn't show the Delegate members.
 * Dot should complete auto-complete text.
 * Should deduce type of typeof(xxx).
 * Would be nice not to highlight the linq query keywords (from, which, etc) if System.Linq is not

@@ -23,6 +23,7 @@ using MObjc.Helpers;
 using Mono.Debugger.Soft;
 using Shared;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Debugger
@@ -123,5 +124,255 @@ namespace Debugger
 				
 			return method;
 		}
+		
+		public static MethodMirror FindLastMethod(this TypeMirror type, string name, int numArgs)
+		{
+			MethodMirror method = null;
+			
+			while (type != null)
+			{
+				MethodMirror result = type.GetMethods().FirstOrDefault(
+					m => m.Name == name && m.GetParameters().Length == numArgs);
+				if (result != null)
+					method = result;
+				
+				type = type.BaseType;
+			}
+			
+			return method;
+		}
+		
+		public static IEnumerable<FieldInfoMirror> GetAllFields(this TypeMirror type)
+		{
+			while (type != null)
+			{
+				foreach (FieldInfoMirror field in type.GetFields())
+				{
+					yield return field;
+				}
+				
+				type = type.BaseType;
+			}
+		}
+		
+		public static IEnumerable<MethodMirror> GetAllMethods(this TypeMirror type)
+		{
+			while (type != null)
+			{
+				foreach (MethodMirror method in type.GetMethods())
+				{
+					yield return method;
+				}
+				
+				type = type.BaseType;
+			}
+		}
+		
+		public static IEnumerable<PropertyInfoMirror> GetAllProperties(this TypeMirror type)
+		{
+			while (type != null)
+			{
+				foreach (PropertyInfoMirror prop in type.GetProperties())
+				{
+					yield return prop;
+				}
+				
+				type = type.BaseType;
+			}
+		}
+		
+		// Note that this does not check interfaces because TypeMirror does not currently
+		// expose them.
+		public static bool IsType(this TypeMirror type, string fullName)
+		{
+			Contract.Requires(!string.IsNullOrEmpty(fullName));
+			
+			if (type != null)
+			{
+				if (type.FullName == fullName)
+					return true;
+					
+				return type.BaseType.IsType(fullName);
+			}
+			
+			return false;
+		}
+		
+		public static FieldInfoMirror ResolveField(this TypeMirror type, string fieldName)
+		{
+			FieldInfoMirror field = type.GetField(fieldName);
+			
+			if (field == null && type.BaseType != null)
+				field = ResolveField(type.BaseType, fieldName);
+			
+			return field;
+		}
+		
+		public static MethodMirror ResolveProperty(this TypeMirror type, string propName)
+		{
+			MethodMirror result = null;
+			
+			PropertyInfoMirror prop = type.GetProperty(propName);
+			if (prop != null)
+				result = prop.GetGetMethod(true);
+			
+			if (result == null && type.BaseType != null)
+				result = ResolveProperty(type.BaseType, propName);
+			
+			return result;
+		}
+	}
+	
+	internal static class ValueExtensions
+	{
+		public static bool IsNull(this Value v)
+		{
+			var primitive = v as PrimitiveValue;
+			if (primitive != null)
+			{
+				return primitive.Value == null;
+			}
+			
+			return false;
+		}
+		
+		public static string Stringify(this Value value, ThreadMirror thread)
+		{
+			string text = string.Empty;
+			
+			do
+			{
+				if (value == null)		// this will happen for NullValueItem
+				{
+					text = "null";
+					break;
+				}
+				
+				// this has to appear first
+				var obj = value as ObjectMirror;
+				if (obj != null)
+				{
+					if (obj.IsCollected)
+					{
+						text = "garbage collected";
+					}
+					else if (!(value is StringMirror) && !obj.Type.IsArray)
+					{
+						MethodMirror method = obj.Type.FindMethod("ToString", 0);
+						if (method.DeclaringType.FullName != "System.Object")
+						{
+							Value v = obj.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+							StringMirror s = (StringMirror) v;
+							text = s.Value;
+						}
+					}
+					if (text.Length > 0)
+						break;
+				}
+				
+				var enm = value as EnumMirror;
+				if (enm != null)
+				{
+					text = CecilExtensions.ArgToString(enm.Type.Metadata, enm.Value, false, false);
+					break;
+				}
+				
+				var strct = value as StructMirror;
+				if (strct != null)
+				{
+					MethodMirror method = strct.Type.FindMethod("ToString", 0);
+					if (method.DeclaringType.FullName != "System.ValueType")
+					{
+						if (strct.Type.IsPrimitive)
+						{
+							// Boxed primitive (we need this special case or InvokeMethod will hang).
+							if (strct.Fields.Length > 0 && (strct.Fields[0] is PrimitiveValue))
+								return ((PrimitiveValue)strct.Fields[0]).Value.Stringify();
+						}
+						else
+						{
+							Value v = strct.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+							StringMirror s = (StringMirror) v;
+							text = s.Value;
+						}
+					}
+					if (text.Length > 0)
+						break;
+				}
+				
+				var primitive = value as PrimitiveValue;
+				if (primitive != null)
+				{
+					text = primitive.Value.Stringify();
+					break;
+				}
+				
+				var str = value as StringMirror;
+				if (str != null)
+				{
+					text = DoStringToText(str.Value);
+					break;
+				}
+			}
+			while (false);
+			
+			return text;
+		}
+		
+		public static string TypeName(this Value v)
+		{
+			var primitive = v as PrimitiveValue;
+			if (primitive != null)
+			{
+				if (primitive.Value == null)
+					return "null";
+				else
+					return primitive.Value.GetType().FullName;
+			}
+			
+			var obj = v as ObjectMirror;
+			if (obj != null)
+			{
+				return obj.Type.FullName;
+			}
+			
+			var strct = v as StructMirror;
+			if (strct != null)
+			{
+				return strct.Type.FullName;
+			}
+			
+			Console.Error.WriteLine("bad type: {0}", v.GetType());
+			return string.Empty;
+		}
+		
+		#region Private Methods
+		private static string DoStringToText(string str)
+		{
+			var builder = new System.Text.StringBuilder(str.Length + 2);
+			
+			builder.Append('"');
+			foreach (char ch in str)
+			{
+				if (ch > 0x7F && VariableController.ShowUnicode)
+					builder.Append(ch);
+				else if (ch == '\'')
+					builder.Append(ch);
+				else if (ch == '"')
+					builder.Append("\\\"");
+				else
+					builder.Append(CharHelpers.ToText(ch));
+					
+				if (builder.Length > 256)
+				{
+					builder.Append(Constants.Ellipsis);
+					break;
+				}
+			}
+			builder.Append('"');
+			
+			return builder.ToString();
+		}
+		#endregion
 	}
 }
