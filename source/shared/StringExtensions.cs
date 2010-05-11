@@ -30,21 +30,10 @@ namespace Shared
 	[ThreadModel(ThreadModel.Concurrent)]
 	public static class StringExtensions
 	{
-		// Removes all whitespace from the string.
 		[Pure]
-		public static string TrimAll(this string s)
+		public static int Count(this string s, char c)
 		{
-			Contract.Requires(s != null, "s is null");
-			
-			string result;
-			
-			int index = s.IndexOfAny(ms_whitespace);
-			if (index >= 0)
-				result = DoTrimAll(s, index);
-			else
-				result = s;			// we don't want to build a new string for the common case of no whitespace
-			
-			return result;
+			return s.Count(d => d == c);
 		}
 		
 		// Escapes control characters and high ASCII.
@@ -82,10 +71,21 @@ namespace Shared
 			return builder.ToString();
 		}
 		
+		// Removes all whitespace from the string.
 		[Pure]
-		public static int Count(this string s, char c)
+		public static string TrimAll(this string s)
 		{
-			return s.Count(d => d == c);
+			Contract.Requires(s != null, "s is null");
+			
+			string result;
+			
+			int index = s.IndexOfAny(ms_whitespace);
+			if (index >= 0)
+				result = DoTrimAll(s, index);
+			else
+				result = s;			// we don't want to build a new string for the common case of no whitespace
+			
+			return result;
 		}
 		
 		#region Private Methods		
