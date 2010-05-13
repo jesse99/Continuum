@@ -185,6 +185,12 @@ namespace Debugger
 					break;
 				}
 				
+				if (v.IsType("System.Delegate"))
+				{
+					variable = new DelegateValueItem(thread, name, type, v);
+					break;
+				}
+				
 				var array = v as ArrayMirror;
 				if (array != null)
 				{

@@ -244,6 +244,41 @@ namespace Debugger
 			return false;
 		}
 		
+		public static bool IsType(this Value v, string typeName)
+		{
+			TypeMirror type = null;
+			var primitive = v as PrimitiveValue;
+			if (primitive != null)
+			{
+				if (typeName == "System.Object" || typeName == "System.ValueType")
+					return true;
+				
+				if (primitive.Value != null)
+					return primitive.Value.GetType().FullName == typeName;
+			}
+			
+			var obj = v as ObjectMirror;
+			if (obj != null)
+			{
+				type = obj.Type;
+			}
+			
+			var strct = v as StructMirror;
+			if (strct != null)
+			{
+				type = strct.Type;
+			}
+			
+			bool result = false;
+			while (!result && type != null)
+			{
+				result = type.FullName == typeName;
+				type = type.BaseType;
+			}
+			
+			return result;
+		}
+		
 		public static string Stringify(this Value value, ThreadMirror thread)
 		{
 			string text = string.Empty;

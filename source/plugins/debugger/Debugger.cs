@@ -675,6 +675,8 @@ namespace Debugger
 		// running.
 		// 3) We need to process TypeLoad events while the VM is suspended but they can
 		// happen at any time and will normally be batched.
+		// 4) TypeLoad and AssemblyLoad can happen even while we're sitting at a breakpoint
+		// if the variable or breakpoints window evaluates a property.
 		[ThreadModel(ThreadModel.SingleThread)]
 		private void DoDispatchEvents()
 		{

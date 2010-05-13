@@ -26,6 +26,7 @@ using MObjc;
 using Mono.Debugger.Soft;
 using Shared;
 using System;
+using System.Threading;
 
 namespace Debugger
 {
@@ -45,14 +46,25 @@ namespace Debugger
 			Broadcaster.Register("changed thread", this);
 			
 			DoLoadPrefs();
+			
+			Contract.Assert(Instance == null);
+			Instance = this;
+		}
+		
+		public static VariableController Instance {get; private set;}
+		
+		public void Reload()
+		{
+			if (m_method != null)
+				m_table.reloadData();
 		}
 		
 		public void OnBroadcast(string name, object value)
 		{
 			switch (name)
 			{
-				case "debugger processed breakpoint event":	
-				case "debugger thrown exception":	
+				case "debugger processed breakpoint event":
+				case "debugger thrown exception":
 				case "debugger processed step event":
 					var context = (Context) value;
 					StackFrame[] frames = context.Thread.GetFrames();

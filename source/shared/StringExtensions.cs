@@ -36,6 +36,21 @@ namespace Shared
 			return s.Count(d => d == c);
 		}
 		
+		[Pure]
+		public static bool IsNullOrWhiteSpace(this string s)	// .NET 4.0 method
+		{
+			if (s == null || s.Length == 0)
+				return true;
+			
+			foreach (char ch in s)
+			{
+				if (!char.IsWhiteSpace(ch))
+					return false;
+			}
+			
+			return true;
+		}
+		
 		// Escapes control characters and high ASCII.
 		[Pure]
 		public static string EscapeAll(this string s)

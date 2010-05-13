@@ -63,7 +63,23 @@ public abstract class Mono.Debugger.Value
 	public class Mono.Debugger.ObjectMirror
 		public class Mono.Debugger.StringMirror
 		public class Mono.Debugger.ArrayMirror	
-		
+
+* Use an async invoker class:
+	- variables controller needs a dirtied mutex
+	- variables controller needs a thread which waits on the mutex and calls reload
+	- variables need to be passed the mutex (or make it static?)
+	- DelegateValueItem needs to pulse the mutex when setting
+	- text should default to …
+* Need to rewrite the debugger:
+	OnEvent			executes within a thread
+		do the work
+		notify the main thread via the event loop
+		resume the VM (for most events)
+* Should we allow properties on primitives? Could probably do this by boxing.
+* Special case System.Delegate:
+	- show target and method
+* Special case System.MulticastDelegate:	
+	- show next and prev (but not if both are null)
 * Special case delegate types? Events? IntPtr? Other system types?
 * In the variable display special case objects which are delegates:
 	- this should all fall out if we handle fields correctly
@@ -87,7 +103,7 @@ public abstract class Mono.Debugger.Value
 * Special case IEnumerable somehow.
 * Make sure infinite enumerables work
 * Work on a debugger:
-	- make sure we don't fall down if the debugger throws
+	- make sure we don't fall down if the debugger throws (especially invokes)
 	- improve the controls window, or do we even want this?
 	- context breakpoint menu should have close do a broadcast so the breakpoint can be toggled
 	- mention the osascript debugging command 
@@ -161,7 +177,7 @@ public abstract class Mono.Debugger.Value
 	- google code search might be a good example
 	- or maybe a simple diff tool
 	
-* Add better support for apple script (and concurrently use it to write functional tests).
+* Add better support for AppleScript/IronPython (and concurrently use it to write functional tests).
 	http://developer.apple.com/cocoa/applescriptforapps.html
 	http://developer.apple.com/mac/library/documentation/Cocoa/Conceptual/ScriptableCocoaApplications/SApps_about_apps/SAppsAboutApps.html
 	http://developer.apple.com/mac/library/technotes/tn2002/tn2106.html
@@ -173,6 +189,7 @@ public abstract class Mono.Debugger.Value
 	http://developer.apple.com/qa/qa2006/qa1487.html
 * NSWorkspace has enw methods to duplicate and trash files.
 * NSError has a helpAnchor method.
+* Generate stub seems fairly nifty.
 * Stagger windows, especially find results and assembly browser.
 * Need to do a better job with Refactor Language.rtf (prose and the grammar)
 * Read up on MEF
