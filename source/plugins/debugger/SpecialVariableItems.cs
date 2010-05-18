@@ -37,21 +37,13 @@ namespace Debugger
 	{
 		public DelegateValueItem(ThreadMirror thread, string name, string type, Value value) : base(thread, name, value, type, "DelegateValueItem")
 		{
-			// Set target and method to ellipsis until we can get the actual values.
-			StringMirror sm = thread.Domain.CreateString("...");			// TODO: VM disconnects if we try to use the ellipsis character
-			Action<Value> setter = (v) => {throw new Exception("Can't set the target of a delegate.");};
-			m_children[0] = new StringValueItem(thread, "Target", "System.String", sm, setter);
+			var invoker = new InvokeMethod();
+			Value result = invoker.Invoke(thread, value, "Target");
+			DoSetTarget(thread, result);
 			
-			setter = (v) => {throw new Exception("Can't set the method of a delegate.");};
-			m_children[1] = new StringValueItem(thread, "Method", "System.String", sm, setter);
-			
-			// Asynchronously get the target.
-			var invoker = new InvokeMethod(this.DoSetTarget);
-			invoker.Invoke(thread, value, "Target");
-			
-			// Asynchronously get the method.
-			invoker = new InvokeMethod(this.DoSetMethod);
-			invoker.Invoke(thread, value, "Method");
+			invoker = new InvokeMethod();
+			result = invoker.Invoke(thread, value, "Method");
+			DoSetMethod(thread, result);
 		}
 		
 		public override bool IsExpandable
@@ -84,8 +76,6 @@ namespace Debugger
 		#region Private Methods
 		private void DoSetTarget(ThreadMirror thread, Value value)
 		{
-			m_children[0].release();
-			
 			if (value.IsNull())
 			{
 				m_children[0] = new NullValueItem(thread, "Target", "System.Object");
@@ -95,15 +85,10 @@ namespace Debugger
 				Action<Value> setter = (v) => {throw new Exception("Can't set the target of a delegate.");};
 				m_children[0] = new ObjectValueItem("Target", "System.Object", (ObjectMirror) value, thread, setter);
 			}
-			
-			// Not sure why, but we lock up if we don't use BeginInvoke here. 
-			NSApplication.sharedApplication().BeginInvoke(() => VariableController.Instance.Reload());
 		}
 		
 		private void DoSetMethod(ThreadMirror thread, Value value)
 		{
-			m_children[1].release();
-			
 			if (value.IsNull())
 			{
 				m_children[1] = new NullValueItem(thread, "Method", "System.Object");
@@ -113,8 +98,6 @@ namespace Debugger
 				Action<Value> setter = (v) => {throw new Exception("Can't set the method of a delegate.");};
 				m_children[1] = CreateVariable("Method", value.TypeName(), value, thread, setter);
 			}
-			
-			NSApplication.sharedApplication().BeginInvoke(() => VariableController.Instance.Reload());
 		}
 		#endregion
 		

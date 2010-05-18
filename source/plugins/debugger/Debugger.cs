@@ -279,6 +279,7 @@ namespace Debugger
 		
 		private HandlerAction DoBreakpointEvent(BreakpointEvent e)
 		{
+			Contract.Assert(!m_suspended);		// events should not be processed if we are already at a breakpoint
 			DoTransition(State.Paused);
 			
 			m_currentThread = e.Thread;
@@ -297,6 +298,7 @@ namespace Debugger
 			if (action == HandlerAction.Suspend)
 			{
 				Log.WriteLine(TraceLevel.Info, "Debugger", "Hit breakpoint at {0}:{1:X4}", e.Method.FullName, bp.Key.Offset);
+				m_suspended = true;					// note that this has to be set before we allow arbitrary Continuum code to run
 				var context = new Context(e.Thread, e.Method, bp.Key.Offset);
 				Broadcaster.Invoke("debugger processed breakpoint event", context);
 			}
@@ -310,6 +312,7 @@ namespace Debugger
 		
 		private HandlerAction DoExceptionEvent(ExceptionEvent e)
 		{
+			Contract.Assert(!m_suspended);		// events should not be processed if we are already at a breakpoint
 			DoTransition(State.Paused);
 			
 			m_currentThread = e.Thread;
@@ -320,6 +323,7 @@ namespace Debugger
 				m_stepRequest = null;
 			}
 			
+			m_suspended = true;
 			Mono.Debugger.Soft.StackFrame[] frames = e.Thread.GetFrames();
 			Mono.Debugger.Soft.StackFrame frame = frames[0];
 			if (DebuggerWindows.WriteEvents)
@@ -332,6 +336,7 @@ namespace Debugger
 		
 		private HandlerAction DoStepEvent(StepEvent e)
 		{
+			Contract.Assert(!m_suspended);		// events should not be processed if we are already at a breakpoint
 			Location location = e.Method.LocationAtILOffset((int) e.Location);
 			if (location != null)
 				Log.WriteLine(TraceLevel.Info, "Debugger", "Stepped to {0}:{1:X4} in {2}:{3}", e.Method.FullName, e.Location, location.SourceFile, location.LineNumber);
@@ -339,6 +344,7 @@ namespace Debugger
 				Log.WriteLine(TraceLevel.Info, "Debugger", "Stepped to {0}:{1:X4}", e.Method.FullName, e.Location);
 			DoTransition(State.Paused);
 			
+			m_suspended = true;
 			m_currentThread = e.Thread;
 			m_stepRequest.Disable();
 			m_stepRequest = null;
@@ -594,7 +600,7 @@ namespace Debugger
 		
 		private void DoTransition(State newState)
 		{
-			if (newState != m_state)	
+			if (newState != m_state)
 			{
 				Log.WriteLine(TraceLevel.Verbose, "Debugger", "Transitioning from {0} to {1}", m_state, newState);
 				m_state = newState;
@@ -635,8 +641,47 @@ namespace Debugger
 			return action;
 		}
 		
-		// We might want to BeginInvoke ourselves so we don't lock up the main thread
-		// for too long.
+		// This is where we execute events that we have received while we have the soft debugger
+		// suspended. This can happen when we do things like execute methods to populate the 
+		// variables window after hitting a breakpoint. These have to be special cased or we will
+		// deadlock by queueing the event up to be processed by the main thread while the main
+		// thread is blocked trying to process the original event.
+		private void DoDeferredEvents()
+		{
+			lock (m_mutex)
+			{
+				while (m_deferredEvents.Count > 0 && m_state != State.Disconnected)
+				{
+					Event e = m_deferredEvents.Dequeue();
+					
+					// We want to ignore breakpoints or thrown exceptions when we explicitly
+					// call into the VM. Step events should probably not happen but if they
+					// somehow do happen we'll just require the user to step again.
+					if (e is BreakpointEvent || e is ExceptionEvent || e is StepEvent)
+					{
+						Log.WriteLine(TraceLevel.Info, "Debugger", "Ignoring {0} (suspended)", e);
+					}
+					
+					// If the VM died we need to just bail.
+					else if (e is VMDeathEvent || e is VMDisconnectEvent)
+					{
+						Unused.Value = DoProcessEvent(e);
+						break;
+					}
+					
+					// Otherwise it should be some sort of notification event that we do care
+					// about (like type load or thread started), but it should not be one that
+					// wants to block the VM because we need to restart it in order to avoid
+					// deadlocking.
+					else
+					{
+						HandlerAction action = DoProcessEvent(e);
+						Contract.Assert(action == HandlerAction.Resume);		// if this fires then it is probably an event we need to ignore
+					}
+				}
+			}
+		}
+		
 		private void DoProcessEvents()
 		{
 			bool resume = true;
@@ -664,7 +709,12 @@ namespace Debugger
 			}
 			
 			if (m_state != State.Disconnected && resume)
-				m_vm.Resume();
+			{
+				m_suspended = false;
+				DoDeferredEvents();
+				if (m_state != State.Disconnected)
+					m_vm.Resume();
+			}
 		}
 		
 		// A couple of things make this tricky:
@@ -702,6 +752,14 @@ namespace Debugger
 					{
 						var e2 = (ThreadDeathEvent) e;
 						NSApplication.sharedApplication().BeginInvoke(() => DoThreadDeathEvent(e2));
+						m_vm.Resume();
+					}
+					else if (m_suspended)
+					{
+						lock (m_mutex)
+						{
+							m_deferredEvents.Enqueue(e);
+						}
 						m_vm.Resume();
 					}
 					else
@@ -752,8 +810,10 @@ namespace Debugger
 		private Thread m_eventThread;
 		private Thread m_stdoutThread;
 		private Thread m_stderrThread;
+		private volatile bool m_suspended;
 		private object m_mutex = new object();
-			private Queue<Event> m_events = new Queue<Event>();
+			private Queue<Event> m_events = new Queue<Event>();					// normal events from the soft debugger
+			private Queue<Event> m_deferredEvents = new Queue<Event>();		// events sent while we've suspended the soft debugger
 			
 		private static bool ms_running;
 		#endregion

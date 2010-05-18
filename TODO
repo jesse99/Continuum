@@ -63,21 +63,11 @@ public abstract class Mono.Debugger.Value
 	public class Mono.Debugger.ObjectMirror
 		public class Mono.Debugger.StringMirror
 		public class Mono.Debugger.ArrayMirror	
+		
 
-* Use an async invoker class:
-	- variables controller needs a dirtied mutex
-	- variables controller needs a thread which waits on the mutex and calls reload
-	- variables need to be passed the mutex (or make it static?)
-	- DelegateValueItem needs to pulse the mutex when setting
-	- text should default to …
-* Need to rewrite the debugger:
-	OnEvent			executes within a thread
-		do the work
-		notify the main thread via the event loop
-		resume the VM (for most events)
+* Catch alls may need to special case ContractException
+	- might want to do something with the thread refactors too
 * Should we allow properties on primitives? Could probably do this by boxing.
-* Special case System.Delegate:
-	- show target and method
 * Special case System.MulticastDelegate:	
 	- show next and prev (but not if both are null)
 * Special case delegate types? Events? IntPtr? Other system types?
@@ -88,9 +78,8 @@ public abstract class Mono.Debugger.Value
 	- show the method name
 	- don't allow the method name to be edited
 	- make sure this works for static delegates
-* See if invoking base properties works at all.
-* File a bug report.
 * Look at other uses of GetProperty and GetProperties.
+* Should be able to view a string as an array.
 * Also GetMethod and GetMethods.
 * Can we sort the variables? Maybe add some sort of key field?
 * Optionally(?) show properties. Or maybe just the auto props?
@@ -128,6 +117,7 @@ public abstract class Mono.Debugger.Value
 	- custom viewer dlls
 	- might want a context menu to show really large strings, should this be editable? live?
 * Can we use the soft debugger to trace GC roots?
+	- see if heap-shot works now
 	- would have to check the stack for all threads and static fields of all types
 	- maybe package this as a command line app
 	- also need to check for loops
