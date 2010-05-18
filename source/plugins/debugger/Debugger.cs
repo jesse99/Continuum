@@ -156,6 +156,8 @@ namespace Debugger
 			
 			Log.WriteLine(TraceLevel.Info, "Debugger", "Running");
 			DoTransition(State.Running);
+			m_suspended = false;
+			DoDeferredEvents();
 			m_vm.Resume();
 			
 			if (m_eventThread == null)
@@ -595,6 +597,8 @@ namespace Debugger
 			m_stepRequest.Enabled = true;
 			
 			DoTransition(State.Running);
+			m_suspended = false;
+			DoDeferredEvents();
 			m_vm.Resume();
 		}
 		

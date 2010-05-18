@@ -65,8 +65,6 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.ArrayMirror	
 		
 
-* Catch alls may need to special case ContractException
-	- might want to do something with the thread refactors too
 * Should we allow properties on primitives? Could probably do this by boxing.
 * Special case System.MulticastDelegate:	
 	- show next and prev (but not if both are null)

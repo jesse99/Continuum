@@ -110,7 +110,7 @@ namespace Continuum
 			{
 				stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite);
 			}
-			catch (Exception e)
+			catch (Exception e)	// TODO: this pretty much sucks: we should catch a specific exception so things like ContractExceptions don't slip through the cracks
 			{
 				// We don't want to just roll over and die if the app is run on a machine that
 				// doesn't have the log path used by the machine it was built for.
