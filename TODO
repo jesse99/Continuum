@@ -65,9 +65,7 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.ArrayMirror	
 		
 
-* Should we allow properties on primitives? Could probably do this by boxing.
-* Special case System.MulticastDelegate:	
-	- show next and prev (but not if both are null)
+* There are races resuming the vm...
 * Special case delegate types? Events? IntPtr? Other system types?
 * In the variable display special case objects which are delegates:
 	- this should all fall out if we handle fields correctly

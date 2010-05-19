@@ -33,17 +33,15 @@ using System.Linq;
 namespace Debugger
 {
 	[ExportClass("DelegateValueItem", "VariableItem")]
-	internal sealed class DelegateValueItem : VariableItem
+	internal class DelegateValueItem : VariableItem
 	{
-		public DelegateValueItem(ThreadMirror thread, string name, string type, Value value) : base(thread, name, value, type, "DelegateValueItem")
+		protected DelegateValueItem(ThreadMirror thread, string name, string type, Value value, string typeName) : base(thread, name, value, type, typeName)
 		{
-			var invoker = new InvokeMethod();
-			Value result = invoker.Invoke(thread, value, "Target");
-			DoSetTarget(thread, result);
-			
-			invoker = new InvokeMethod();
-			result = invoker.Invoke(thread, value, "Method");
-			DoSetMethod(thread, result);
+			OnSetup(thread, value);
+		}
+		
+		public DelegateValueItem(ThreadMirror thread, string name, string type, Value value) : this(thread, name, type, value, "DelegateValueItem")
+		{
 		}
 		
 		public override bool IsExpandable
@@ -70,6 +68,20 @@ namespace Debugger
 			}
 			
 			base.OnDealloc();
+		}
+		
+		protected virtual void OnSetup(ThreadMirror thread, Value target)
+		{
+			if (m_children == null)
+				m_children = new VariableItem[2];
+			
+			var invoker = new InvokeMethod();
+			Value result = invoker.Invoke(thread, target, "Target");
+			DoSetTarget(thread, result);
+			
+			invoker = new InvokeMethod();
+			result = invoker.Invoke(thread, target, "Method");
+			DoSetMethod(thread, result);
 		}
 		#endregion
 		
@@ -102,7 +114,61 @@ namespace Debugger
 		#endregion
 		
 		#region Fields
-		private VariableItem[] m_children = new VariableItem[2];
+		protected VariableItem[] m_children;
+		#endregion
+	}
+	
+	[ExportClass("MulticastDelegateValueItem", "DelegateValueItem")]
+	internal sealed class MulticastDelegateValueItem : DelegateValueItem
+	{
+		public MulticastDelegateValueItem(ThreadMirror thread, string name, string type, Value value) : base(thread, name, type, value, "MulticastDelegateValueItem")
+		{
+		}
+		
+		#region Protected Methods
+		protected override void OnSetup(ThreadMirror thread, Value target)
+		{
+			Value next = EvalMember.Evaluate(thread, target, "kpm_next");
+			Value prev = EvalMember.Evaluate(thread, target, "prev");
+			
+			if (!next.IsNull() || !prev.IsNull())
+			{
+				m_children = new VariableItem[4];
+				
+				DoSetNext(thread, next);
+				DoSetPrev(thread, prev);
+			}
+			
+			base.OnSetup(thread, target);
+		}
+		#endregion
+		
+		#region Private Methods
+		private void DoSetNext(ThreadMirror thread, Value value)
+		{
+			if (value.IsNull())
+			{
+				m_children[2] = new NullValueItem(thread, "Next", "System.Object");
+			}
+			else
+			{
+				Action<Value> setter = (v) => {throw new Exception("Can't set the next delegate of a MulticastDelegate.");};
+				m_children[2] = new ObjectValueItem("Next", "System.Object", (ObjectMirror) value, thread, setter);
+			}
+		}
+		
+		private void DoSetPrev(ThreadMirror thread, Value value)
+		{
+			if (value.IsNull())
+			{
+				m_children[3] = new NullValueItem(thread, "Prev", "System.Object");
+			}
+			else
+			{
+				Action<Value> setter = (v) => {throw new Exception("Can't set the previous delegate of a MulticastDelegate.");};
+				m_children[3] = CreateVariable("Prev", value.TypeName(), value, thread, setter);
+			}
+		}
 		#endregion
 	}
 }

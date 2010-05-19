@@ -185,6 +185,12 @@ namespace Debugger
 					break;
 				}
 				
+				if (v.IsType("System.MulticastDelegate"))
+				{
+					variable = new MulticastDelegateValueItem(thread, name, type, v);
+					break;
+				}
+				
 				if (v.IsType("System.Delegate"))
 				{
 					variable = new DelegateValueItem(thread, name, type, v);
