@@ -66,9 +66,6 @@ public abstract class Mono.Debugger.Value
 		
 
 * Special case:
-	- IntPtr		no children, use hex		FF FF   FF FF
-	- UIntPtr
-	- Nullable and Nullable<T>
 	- DateTime
 	- TimeSpan
 	- Uri

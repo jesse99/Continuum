@@ -197,9 +197,9 @@ namespace Debugger
 					break;
 				}
 				
-				if (v.IsType("System.IntPtr") || v.IsType("System.UIntPtr"))
+				if (v.IsType("System.IntPtr") || v.IsType("System.UIntPtr") || v.TypeName() == "System.Nullable`1")
 				{
-					variable = new IntPtrValueItem(thread, name, type, v);
+					variable = new SimpleValueItem(thread, name, type, v);
 					break;
 				}
 				

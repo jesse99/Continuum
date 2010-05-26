@@ -118,14 +118,6 @@ namespace Debugger
 		#endregion
 	}
 	
-	[ExportClass("IntPtrValueItem", "VariableItem")]
-	internal class IntPtrValueItem : VariableItem
-	{
-		public IntPtrValueItem(ThreadMirror thread, string name, string type, Value value) : base(thread, name, value, type, "IntPtrValueItem")
-		{
-		}
-	}
-	
 	[ExportClass("MulticastDelegateValueItem", "DelegateValueItem")]
 	internal sealed class MulticastDelegateValueItem : DelegateValueItem
 	{
@@ -178,5 +170,15 @@ namespace Debugger
 			}
 		}
 		#endregion
+	}
+	
+	// Used for types which may have fields, but there is no point in showing the fields.
+	// For example, IntPtr or Nullable<T>.
+	[ExportClass("SimpleValueItem", "VariableItem")]
+	internal class SimpleValueItem : VariableItem
+	{
+		public SimpleValueItem(ThreadMirror thread, string name, string type, Value value) : base(thread, name, value, type, "SimpleValueItem")
+		{
+		}
 	}
 }

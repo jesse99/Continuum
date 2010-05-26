@@ -331,6 +331,22 @@ namespace Debugger
 						s = (StringMirror) v;
 						text = "0x" + s.Value;
 					}
+					else if (strct.TypeName() == "System.Nullable`1")
+					{
+						Value v = EvalMember.Evaluate(thread, strct, "HasValue");
+						PrimitiveValue p = v as PrimitiveValue;
+						if (p != null && p.Value.ToString() == "False")
+						{
+							text = "null";
+						}
+						else
+						{
+							MethodMirror method = strct.Type.FindMethod("ToString", 0);
+							v = strct.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+							StringMirror s = (StringMirror) v;
+							text = s.Value;
+						}
+					}
 					else
 					{
 						MethodMirror method = strct.Type.FindMethod("ToString", 0);
@@ -375,29 +391,44 @@ namespace Debugger
 		
 		public static string TypeName(this Value v)
 		{
-			var primitive = v as PrimitiveValue;
-			if (primitive != null)
-			{
-				if (primitive.Value == null)
-					return "null";
-				else
-					return primitive.Value.GetType().FullName;
-			}
+			string result;
 			
-			var obj = v as ObjectMirror;
-			if (obj != null)
+			do
 			{
-				return obj.Type.FullName;
+				var primitive = v as PrimitiveValue;
+				if (primitive != null)
+				{
+					if (primitive.Value == null)
+						result = "null";
+					else
+						result = primitive.Value.GetType().FullName;
+					break;
+				}
+				
+				var obj = v as ObjectMirror;
+				if (obj != null)
+				{
+					result = obj.Type.FullName;
+					break;
+				}
+				
+				var strct = v as StructMirror;
+				if (strct != null)
+				{
+					result = strct.Type.FullName;
+					break;
+				}
+				
+				Console.Error.WriteLine("bad type: {0}", v.GetType());
+				result = string.Empty;
 			}
+			while (false);
 			
-			var strct = v as StructMirror;
-			if (strct != null)
-			{
-				return strct.Type.FullName;
-			}
+			int index = result.IndexOf("[[");	// strip off stuff like "[[System.Int32, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]"
+			if (index > 0)
+				result = result.Substring(0, index);
 			
-			Console.Error.WriteLine("bad type: {0}", v.GetType());
-			return string.Empty;
+			return result;
 		}
 		
 		#region Private Methods
