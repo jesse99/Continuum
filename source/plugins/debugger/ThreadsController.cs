@@ -136,7 +136,7 @@ namespace Debugger
 		
 		public NSObject tableView_objectValueForTableColumn_row(NSTableView table, NSTableColumn col, int row)
 		{
-			if (m_threads.Count == 0 || m_debugger.State == State.Disconnected)
+			if (m_threads.Count == 0 || !Debugger.IsRunning)
 				return NSString.Empty;
 			
 			ThreadMirror thread = m_threads[row];

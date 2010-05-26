@@ -45,8 +45,8 @@ namespace Debugger
 			handler.Register(this, 63, () => m_debugger.StepIn(), this.DoIsPaused);
 			handler.Register(this, 64, () => m_debugger.StepOut(), this.DoIsPaused);
 			
-			Broadcaster.Register("debugger connected", this);
 			Broadcaster.Register("debugger state changed", this);
+			Broadcaster.Register("debugger started", this);
 			Broadcaster.Register("debugger stopped", this);
 		}
 		
@@ -54,14 +54,13 @@ namespace Debugger
 		{
 			switch (name)
 			{
-				case "debugger connected":
-					m_debugger = (Debugger) value;
-					m_debugger.Run();
-					break;
-				
 				case "debugger state changed":
 					var state = (State) value;
 					DoStateChanged(state);
+					break;
+				
+				case "debugger started":
+					m_debugger = (Debugger) value;
 					break;
 				
 				case "debugger stopped":
@@ -83,7 +82,7 @@ namespace Debugger
 		
 		private bool DoIsPaused()
 		{
-			return m_debugger != null && m_debugger.State == State.Paused;
+			return m_debugger != null && m_debugger.IsPaused;
 		}
 		#endregion
 		

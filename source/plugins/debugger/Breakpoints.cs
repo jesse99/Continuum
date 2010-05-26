@@ -55,6 +55,8 @@ namespace Debugger
 			Broadcaster.Register("swapped code view", this);
 			Broadcaster.Register("closing document window", this);
 			
+			Broadcaster.Register("debugger resumed", this);
+			Broadcaster.Register("debugger started", this);
 			Broadcaster.Register("debugger stopped", this);
 			Broadcaster.Register("debugger resolved breakpoint", this);
 			Broadcaster.Register("debugger unresolved breakpoint", this);
@@ -72,33 +74,16 @@ namespace Debugger
 		}
 		
 		// Note that this may return the same breakpoint more than once.
-		internal static IEnumerable<Breakpoint> GetBreakpoints(string file)
+		[ThreadModel(ThreadModel.Concurrent)]
+		internal static Breakpoint[] GetBreakpoints(string file)	// we don't return an IEnumerable because we want to eagerly return a snapshot so that we can be thread safe
 		{
 			Contract.Requires(!string.IsNullOrEmpty(file), "file is empty or null");
 			
-			// First get the breakpoints for open windows.
-			bool found = false;
-			foreach (WindowedBreakpoint wbp in ms_windowedBreakpoints)
+			lock (ms_mutex)
 			{
-				if (wbp.File == file)
-				{
-					found = true;
-					yield return new Breakpoint(wbp.File, wbp.GetLine());
-				}
-			}
-			
-			if (!found)
-			{
-				// If we did not find a window associated with the file then try to
-				// get breakpoints for closed windows or from a previous run of 
-				// Continuum.
-				foreach (Breakpoint bp in ms_savedBreakpoints)
-				{
-					if (bp.File == file)
-					{
-						yield return bp;
-					}
-				}
+				var bps = from b in ms_cachedBreakpoints where b.File == file select b;
+				
+				return bps.ToArray();
 			}
 		}
 		
@@ -136,6 +121,14 @@ namespace Debugger
 					}
 					break;
 					
+				case "debugger started":
+				case "debugger resumed":
+					lock (ms_mutex)
+					{
+						DoCacheBreakpoints();
+					}
+					break;
+				
 				case "debugger stopped":
 					foreach (Breakpoint bp in m_resolved.ToArray())		// ToArray so we can operate on the collection while we iterate over it
 					{
@@ -399,6 +392,18 @@ namespace Debugger
 				select e.File + ':' + e.Line).ToArray();
 			defaults.setObject_forKey(NSArray.Create(names), NSString.Create("breakpoints"));
 		}
+		
+		private static void DoCacheBreakpoints()
+		{
+			ms_cachedBreakpoints.Clear();
+			
+			ms_cachedBreakpoints.AddRange(from b in ms_windowedBreakpoints select new Breakpoint(b.File, b.GetLine()));
+			
+			ms_cachedBreakpoints.AddRange(
+				from b in ms_savedBreakpoints
+					where !ms_windowedBreakpoints.Any(w => w.File == b.File)
+				select b);
+		}
 		#endregion
 		
 		#region Private Types 
@@ -437,10 +442,12 @@ namespace Debugger
 		#region Fields 
 		private Boss m_boss;
 		private HashSet<Breakpoint> m_resolved = new HashSet<Breakpoint>();
-		private static List<Breakpoint> ms_savedBreakpoints = new List<Breakpoint>();
-		private static List<WindowedBreakpoint> ms_windowedBreakpoints = new List<WindowedBreakpoint>();
 		private static NSColor ms_resolvedColor;
 		private static NSColor ms_unresolvedColor;
+		private static List<Breakpoint> ms_savedBreakpoints = new List<Breakpoint>();
+		private static List<WindowedBreakpoint> ms_windowedBreakpoints = new List<WindowedBreakpoint>();
+		private static object ms_mutex = new object();
+			private static List<Breakpoint> ms_cachedBreakpoints = new List<Breakpoint>();
 		#endregion
 	}
 }

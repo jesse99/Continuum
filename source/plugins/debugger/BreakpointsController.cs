@@ -172,9 +172,9 @@ namespace Debugger
 		}
 		
 		#region Private Methods
-		private Debugger.HandlerAction DoEvaluateCondition(StackFrame frame, Breakpoint bp)
+		private DebuggerThread.HandlerAction DoEvaluateCondition(StackFrame frame, Breakpoint bp)
 		{
-			Debugger.HandlerAction result = Debugger.HandlerAction.Suspend;
+			var result = DebuggerThread.HandlerAction.Suspend;
 			
 			try
 			{
@@ -184,7 +184,7 @@ namespace Debugger
 				ExtendedValue value = cbp.Condition.Evaluate(frame);
 				bool stop = value.Get<bool>();
 				if (!stop)
-					result = Debugger.HandlerAction.Resume;
+					result = DebuggerThread.HandlerAction.Resume;
 			}
 			catch (Exception e)
 			{
