@@ -66,8 +66,6 @@ public abstract class Mono.Debugger.Value
 		
 
 * Special case:
-	- DateTime
-	- TimeSpan
 	- Uri
 * Should be able to view a string as an array.
 * Look at other uses of GetProperty and GetProperties.

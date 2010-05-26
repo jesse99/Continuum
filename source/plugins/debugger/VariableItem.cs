@@ -197,7 +197,7 @@ namespace Debugger
 					break;
 				}
 				
-				if (v.IsType("System.IntPtr") || v.IsType("System.UIntPtr") || v.TypeName() == "System.Nullable`1")
+				if (v.IsType("System.IntPtr") || v.IsType("System.UIntPtr") || v.IsType("System.DateTime") || v.IsType("System.TimeSpan") || v.IsType("System.Uri") || v.TypeName() == "System.Nullable`1")
 				{
 					variable = new SimpleValueItem(thread, name, type, v);
 					break;
