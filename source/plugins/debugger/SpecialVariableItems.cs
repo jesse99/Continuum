@@ -118,6 +118,14 @@ namespace Debugger
 		#endregion
 	}
 	
+	[ExportClass("IntPtrValueItem", "VariableItem")]
+	internal class IntPtrValueItem : VariableItem
+	{
+		public IntPtrValueItem(ThreadMirror thread, string name, string type, Value value) : base(thread, name, value, type, "IntPtrValueItem")
+		{
+		}
+	}
+	
 	[ExportClass("MulticastDelegateValueItem", "DelegateValueItem")]
 	internal sealed class MulticastDelegateValueItem : DelegateValueItem
 	{

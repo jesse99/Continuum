@@ -65,16 +65,15 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.ArrayMirror	
 		
 
-* Special case IntPtr? Other system types?
-* In the variable display special case objects which are delegates:
-	- this should all fall out if we handle fields correctly
-	- probably want a variable item type for delegates
-	- show the target (be sure to handle null)
-	- show the method name
-	- don't allow the method name to be edited
-	- make sure this works for static delegates
-* Look at other uses of GetProperty and GetProperties.
+* Special case:
+	- IntPtr		no children, use hex		FF FF   FF FF
+	- UIntPtr
+	- Nullable and Nullable<T>
+	- DateTime
+	- TimeSpan
+	- Uri
 * Should be able to view a string as an array.
+* Look at other uses of GetProperty and GetProperties.
 * Also GetMethod and GetMethods.
 * Can we sort the variables? Maybe add some sort of key field?
 * Optionally(?) show properties. Or maybe just the auto props?

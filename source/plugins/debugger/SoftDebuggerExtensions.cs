@@ -323,20 +323,31 @@ namespace Debugger
 				var strct = value as StructMirror;
 				if (strct != null)
 				{
-					MethodMirror method = strct.Type.FindMethod("ToString", 0);
-					if (method.DeclaringType.FullName != "System.ValueType")
+					if (strct.Type.FullName == "System.IntPtr" || strct.Type.FullName == "System.UIntPtr")
 					{
-						if (strct.Type.IsPrimitive)
+						MethodMirror method = strct.Type.FindMethod("ToString", 1);
+						StringMirror s = thread.Domain.CreateString("X8");		// TODO: not 64-bit ready
+						Value v = strct.InvokeMethod(thread, method, new Value[]{s}, InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+						s = (StringMirror) v;
+						text = "0x" + s.Value;
+					}
+					else
+					{
+						MethodMirror method = strct.Type.FindMethod("ToString", 0);
+						if (method.DeclaringType.FullName != "System.ValueType")
 						{
-							// Boxed primitive (we need this special case or InvokeMethod will hang).
-							if (strct.Fields.Length > 0 && (strct.Fields[0] is PrimitiveValue))
-								return ((PrimitiveValue)strct.Fields[0]).Value.Stringify();
-						}
-						else
-						{
-							Value v = strct.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
-							StringMirror s = (StringMirror) v;
-							text = s.Value;
+							if (strct.Type.IsPrimitive)
+							{
+								// Boxed primitive (we need this special case or InvokeMethod will hang).
+								if (strct.Fields.Length > 0 && (strct.Fields[0] is PrimitiveValue))
+									return ((PrimitiveValue)strct.Fields[0]).Value.Stringify();
+							}
+							else
+							{
+								Value v = strct.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+								StringMirror s = (StringMirror) v;
+								text = s.Value;
+							}
 						}
 					}
 					if (text.Length > 0)

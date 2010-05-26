@@ -197,6 +197,12 @@ namespace Debugger
 					break;
 				}
 				
+				if (v.IsType("System.IntPtr") || v.IsType("System.UIntPtr"))
+				{
+					variable = new IntPtrValueItem(thread, name, type, v);
+					break;
+				}
+				
 				var array = v as ArrayMirror;
 				if (array != null)
 				{
