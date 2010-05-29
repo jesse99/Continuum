@@ -55,7 +55,7 @@ namespace Debugger
 		
 		public void Reload()
 		{
-			if (m_method != null)
+			if (m_item != null)
 				m_table.reloadData();
 		}
 		
@@ -113,22 +113,31 @@ namespace Debugger
 		public void toggleHex(NSObject sender)
 		{
 			ms_showHex = !ms_showHex;
-			m_method.Refresh(null);
-			m_table.reloadData();
+			if (m_item != null)
+			{
+				m_item.Refresh(m_frame.Thread);
+				m_table.reloadData();
+			}
 		}
 		
 		public void toggleThousands(NSObject sender)
 		{
 			ms_hideThousands = !ms_hideThousands;
-			m_method.Refresh(null);
-			m_table.reloadData();
+			if (m_item != null)
+			{
+				m_item.Refresh(m_frame.Thread);
+				m_table.reloadData();
+			}
 		}
 		
 		public void toggleUnicode(NSObject sender)
 		{
 			ms_hideUnicode = !ms_hideUnicode;
-			m_method.Refresh(null);
-			m_table.reloadData();
+			if (m_item != null)
+			{
+				m_item.Refresh(m_frame.Thread);
+				m_table.reloadData();
+			}
 		}
 		
 		public bool validateUserInterfaceItem(NSObject sender)
@@ -165,10 +174,10 @@ namespace Debugger
 			try
 			{
 				string text = value.description();
-				VariableItem newItem = item.SetValue(text);
-				if (!ReferenceEquals(newItem, item))
+				object newValue = ValueSet.Invoke(item.Owner, item.Value, text);
+				if (newValue != null)
 				{
-					m_method.Refresh(null);
+					item.RefreshValue(m_frame.Thread, newValue);
 				}
 			}
 			catch (Exception e)
@@ -182,55 +191,59 @@ namespace Debugger
 		
 		public int outlineView_numberOfChildrenOfItem(NSOutlineView table, VariableItem item)
 		{
-			if (m_method == null)
+			if (m_item == null)
 				return 0;
 			
-			return item == null ? m_method.Count : item.Count;
+			return item == null ? m_item.NumberOfChildren : item.NumberOfChildren;
 		}
 		
 		public bool outlineView_isItemExpandable(NSOutlineView table, VariableItem item)
 		{
-			return item == null ? true : item.IsExpandable;
+			return item == null ? true : item.NumberOfChildren > 0;
 		}
 		
 		public NSObject outlineView_child_ofItem(NSOutlineView table, int index, VariableItem item)
 		{
-			if (m_method == null)
+			if (m_item == null)
 				return null;
 			
-			return item == null ? m_method[index] : item[index];
+			return item == null ? m_item.GetChild(m_frame.Thread, index) : item.GetChild(m_frame.Thread, index);
 		}
 		
 		public NSObject outlineView_objectValueForTableColumn_byItem(NSOutlineView table, NSTableColumn col, VariableItem item)
 		{
-			if (m_method == null)
+			if (m_item == null)
 				return NSString.Empty;
 			
 			if (col.identifier().ToString() == "0")
-				return item == null ? m_method.Name : item.Name;
+				return item == null ? m_item.AttributedName : item.AttributedName;
 			else if (col.identifier().ToString() == "1")
-				return item == null ? m_method.Value : item.Value;
+				return item == null ? m_item.GetAttributedValue(m_frame.Thread) : item.GetAttributedValue(m_frame.Thread);
 			else
-				return item == null ? m_method.TypeName : item.TypeName;
+				return item == null ? m_item.AttributedType : item.AttributedType;
 		}
 		
 		#region Private Methods
 		private void DoReset(StackFrame frame)
 		{
-			if (m_method != null && m_method.Frame.Matches(frame))
+			if (m_item != null && ((StackFrame) m_item.Value).Matches(frame))
 			{
-				m_method.Refresh(frame);
+				m_frame = frame;
+				m_item.RefreshValue(m_frame.Thread, frame);
 			}
 			else
 			{
-				if (m_method != null)
+				if (m_item != null)
 				{
-					m_method.release();
-					m_method = null;
+					m_item.release();
+					m_item = null;
 				}
 				
 				if (frame != null)
-					m_method = new MethodValueItem(frame);
+				{
+					m_frame = frame;
+					m_item = new VariableItem(m_frame.Thread, "stack frame", frame.Method, frame);
+				}
 			}
 			
 			m_table.reloadData();
@@ -258,7 +271,8 @@ namespace Debugger
 		
 		#region Fields
 		private NSOutlineView m_table;
-		private MethodValueItem m_method;
+		private StackFrame m_frame;
+		private VariableItem m_item;
 		
 		private static bool ms_showHex;
 		private static bool ms_hideThousands;

@@ -402,7 +402,11 @@ namespace Debugger
 						break;
 						
 					Event e = vm.GetNextEvent();
-					Log.WriteLine(TraceLevel.Verbose, "Debugger", "dispatching {0}", e);
+					TypeLoadEvent tl = e as TypeLoadEvent;
+					if (tl != null)
+						Log.WriteLine(TraceLevel.Verbose, "Debugger", "dispatching {0} ({1})", e, tl.Type.FullName);
+					else
+						Log.WriteLine(TraceLevel.Verbose, "Debugger", "dispatching {0}", e);
 					
 					lock (m_mutex)
 					{

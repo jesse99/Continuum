@@ -29,296 +29,210 @@ using System;
 namespace Debugger
 {
 	[ExportClass("VariableItem", "NSObject")]
-	internal abstract class VariableItem : NSObject
+	internal sealed class VariableItem : NSObject
 	{
-		protected VariableItem(string typeName) : base(NSObject.AllocAndInitInstance(typeName))
+		// owner will be something like a StackFrame, ObjectMirror, StringMirror, etc.
+		// item will be something like a LocalVariable, FieldInfoMirror, char, etc.
+		public VariableItem(ThreadMirror thread, string name, object owner, object value) : base(NSObject.AllocAndInitInstance("VariableItem"))
 		{
-			m_name = CreateString(string.Empty);
-			m_type = CreateString(string.Empty);
-			m_value = CreateString(string.Empty);
+			Contract.Requires(!string.IsNullOrEmpty(name));
+			Contract.Requires(owner != null);
+			Contract.Requires(value != null);					// null debugger values are PrimitiveValues with a null Value
+			
+			Owner = owner;
+			Value = value;
+			
+			AttributedName = NSAttributedString.Create(name).Retain();
+			AttributedType = NSAttributedString.Create(ValueType.Invoke(Owner, Value)).Retain();
+			NumberOfChildren = ValueNumChildren.Invoke(Owner, Value);
 		}
 		
-		protected VariableItem(string name, string type, string typeName) : base(NSObject.AllocAndInitInstance(typeName))
+		public NSAttributedString AttributedName {get; private set;}
+		public NSAttributedString AttributedType {get; private set;}
+		
+		public NSAttributedString GetAttributedValue(ThreadMirror thread)
 		{
-			name = DoGetFriendlyName(name);
-			
-			m_name = CreateString(name);
-			m_type = CreateString(type);
-			m_value = CreateString(string.Empty);
+			// Note that if we do this in the ctor the act of invoking a ToString method is enough
+			// to render the StackFrame object we're trying to use unuseable which hoses us when
+			// we try to get the local variables.
+			if (m_attributedValue == null)
+				m_attributedValue = NSAttributedString.Create(ValueText.Invoke(thread, Owner, Value)).Retain();
+			return m_attributedValue;
 		}
 		
-		protected VariableItem(ThreadMirror thread, string name, Value value, string type, string typeName) : base(NSObject.AllocAndInitInstance(typeName))
+		public object Owner {get; private set;}
+		public object Value {get; private set;}
+		
+		public int NumberOfChildren {get; private set;}
+		
+		public VariableItem GetChild(ThreadMirror thread, int index)
 		{
-			name = DoGetFriendlyName(name);
+			Contract.Requires(index >= 0);
+			Contract.Requires(index < NumberOfChildren);
 			
-			if (DoIsGCed(value))
+			if (m_children == null)
 			{
-				m_name = CreateString(NSColor.disabledControlTextColor(), name);
-				m_type = CreateString(NSColor.disabledControlTextColor(), type);
-				m_value = CreateString(NSColor.disabledControlTextColor(), "garbage collected");
+				m_children = new VariableItem[NumberOfChildren];
+				
+				if (DoShouldEagerlyLoad())
+					DoEagerLoad(thread);
 			}
-			else
+			
+			if (m_children[index] == null)
+				m_children[index] = ValueChild.Invoke(thread, Owner, Value, index);
+			
+			return m_children[index];
+		}
+		
+		public void RefreshValue(ThreadMirror thread, object value)
+		{
+			Contract.Requires(value != null);
+			
+			Value = value;
+			Refresh(thread);
+		}
+		
+		// Update the value and recursively all the children to reflect state changes in the debugee.
+		public void Refresh(ThreadMirror thread)
+		{
+			DoRefreshValueText(thread);
+			DoRefreshTypeText();
+			
+			int count = ValueNumChildren.Invoke(Owner, Value);
+			if (count == NumberOfChildren)
 			{
-				m_name = CreateString(name);
-				m_type = CreateString(type);
-				m_value = CreateString(value.Stringify(thread));
-			}
-		}
-		
-		// Note that this should be used instead of Count because it will not force
-		// all children to be loaded.
-		public virtual bool IsExpandable
-		{
-			get {return false;}
-		}
-		
-		public virtual int Count
-		{
-			get {return 0;}
-		}
-		
-		public virtual VariableItem this[int index]
-		{
-			get {Contract.Assert(false); return null;}
-		}
-		
-		public NSAttributedString Name
-		{
-			get {return m_name;}
-		}
-		
-		public NSAttributedString Value
-		{
-			get {return m_value;}
-		}
-		
-		public NSAttributedString TypeName
-		{
-			get {return m_type;}
-		}
-		
-		public virtual VariableItem SetValue(string text)
-		{
-			Functions.NSBeep();
-			
-			return this;
-		}
-		
-		public virtual void RefreshValue(ThreadMirror thread, Value value)
-		{
-			string oldText = m_value.ToString();
-			string newText = value.Stringify(thread);
-			
-			// Note that we always reset the text (so that we can go from red back to black).
-			m_value.release();
-			
-			const string NotNullText = "\u25BC";		// BLACK DOWN-POINTING TRIANGLE
-			
-			if (DoIsGCed(value))
-				m_value = CreateString(NSColor.disabledControlTextColor(), newText);
-			else if (newText != oldText)
-				if (newText.Length == 0)
-					m_value = CreateString(NSColor.redColor(), NotNullText);
-				else
-				m_value = CreateString(NSColor.redColor(), newText);
-			else
-				m_value = CreateString(newText);
-		}
-		
-		public VariableItem RefreshVariable(ThreadMirror thread, Value v, Action<Value> setter)
-		{
-			VariableItem newItem;
-			
-			var primitive = v as PrimitiveValue;
-			if (v == null || (primitive != null && primitive.Value == null))
-			{
-				if (this is NullValueItem)
+				if (m_children != null)
 				{
-					newItem = this;
-					newItem.m_value = CreateString("null");
-				}
-				else
-				{
-					// non-null to null
-					newItem = new NullValueItem(thread, Name.ToString(), TypeName.ToString());
-					newItem.m_value = CreateString(NSColor.redColor(), "null");
-					this.release();
+					foreach (VariableItem child in m_children)
+					{
+						if (child != null)
+							child.Refresh(thread);
+					}
 				}
 			}
 			else
 			{
-				if (this is NullValueItem)
-				{
-					// null to non-null
-					newItem = CreateVariable(Name.ToString(), TypeName.ToString(), v, thread, setter);
-					string newText = v.Stringify(thread);
-					newItem.m_value = CreateString(NSColor.redColor(), newText);
-					this.release();
-				}
-				else
-				{
-					newItem = this;
-					newItem.RefreshValue(thread, v);
-				}
+				DoDeleteChildren();
+				NumberOfChildren = count;
 			}
-			
-			return newItem;
 		}
 		
 		#region Protected Methods
-		protected VariableItem CreateVariable(string name, string type, TypeMirror v, ThreadMirror thread)
-		{
-			VariableItem variable = new TypeValueItem(name, type, v, thread);
-			
-			return variable;
-		}
-		
-		protected VariableItem CreateVariable(string name, string type, Value v, ThreadMirror thread, Action<Value> setter)
-		{
-			VariableItem variable = null;
-			
-			do
-			{
-				if (v == null)		// don't think we normally hit this case
-				{
-					variable = new NullValueItem(thread, name, type);
-					break;
-				}
-				
-				if (v.IsType("System.MulticastDelegate"))
-				{
-					variable = new MulticastDelegateValueItem(thread, name, type, v);
-					break;
-				}
-				
-				if (v.IsType("System.Delegate"))
-				{
-					variable = new DelegateValueItem(thread, name, type, v);
-					break;
-				}
-				
-				if (v.IsType("System.IntPtr") || v.IsType("System.UIntPtr") || v.IsType("System.DateTime") || v.IsType("System.TimeSpan") || v.IsType("System.Uri") || v.TypeName() == "System.Nullable`1")
-				{
-					variable = new SimpleValueItem(thread, name, type, v);
-					break;
-				}
-				
-				var array = v as ArrayMirror;
-				if (array != null)
-				{
-					variable = new ArrayValueItem(name, type, array, thread, setter);
-					break;
-				}
-				
-				var enm = v as EnumMirror;
-				if (enm != null)
-				{
-					CodeViewer.CacheAssembly(enm.Type.Assembly);
-					variable = new EnumValueItem(thread, name, type, enm, setter);
-					break;
-				}
-				
-				var primitive = v as PrimitiveValue;
-				if (primitive != null)
-				{
-					if (primitive.Value == null)
-						variable = new NullValueItem(thread, name, type);
-					else
-						variable = new PrimitiveValueItem(thread, name, type, primitive, setter);
-					break;
-				}
-				
-				var str = v as StringMirror;
-				if (str != null)
-				{
-					variable = new StringValueItem(thread, name, type, str, setter);
-					break;
-				}
-				
-				// these two have to appear last
-				var obj = v as ObjectMirror;
-				if (obj != null)
-				{
-					variable = new ObjectValueItem(name, type, obj, thread, setter);
-					break;
-				}
-				
-				var strct = v as StructMirror;
-				if (strct != null)
-				{
-					variable = new StructValueItem(name, type, strct, thread, setter);
-					break;
-				}
-				
-				Console.Error.WriteLine("bad type: {0}", v.GetType());
-			}
-			while (false);
-			
-			return variable;
-		}
-		
-		protected NSAttributedString CreateString(string text)
-		{
-			return NSAttributedString.Create(text).Retain();
-		}
-		
-		protected NSAttributedString CreateString(NSColor color, string text)
-		{
-			var attrs = NSMutableDictionary.Create();
-			attrs.setObject_forKey(color, Externs.NSForegroundColorAttributeName);
-			return NSAttributedString.Create(text, attrs).Retain();
-		}
-		
 		protected override void OnDealloc()
 		{
-			if (m_name != null)
-			{
-				m_name.release();
-				m_name = null;
-			}
+			if (AttributedName != null)		// this may be called if a ctor throws so we need all the null checks
+				AttributedName.release();
 			
-			if (m_value != null)
-			{
-				m_value.release();
-				m_value = null;
-			}
+			if (AttributedType != null)
+				AttributedType.release();
 			
-			if (m_type != null)
-			{
-				m_type.release();
-				m_type = null;
-			}
+			if (m_attributedValue != null)
+				m_attributedValue.release();
+			
+			DoDeleteChildren();
 			
 			base.OnDealloc();
 		}
 		#endregion
 		
 		#region Private Methods
-		private string DoGetFriendlyName(string name)
+		// There are a couple of reasons why we want to eagerly create children: for most
+		// types we want to sort the children by name and we need them all to do that.
+		// In addition, StackFrames don't remain useable for very long so we need to get
+		// all of their children while we can.
+		//
+		// Conversely collection classes may be very large so we only want to load the 
+		// children that we must (NSOutlineView will be smart and only ask for the children
+		// that need to be rendered).
+		private bool DoShouldEagerlyLoad()
 		{
-			string result = name;
+			bool lazy = Value is ArrayMirror || Value is StringMirror;
 			
-			int i = name.IndexOf('<');
-			int j = name.IndexOf('>');
-			if (i == 0 && i < j)
-				result = name.Substring(i + 1, j - i - 1);		// auto-props look like "<Command>k_BackingField"
-			
-			return result;
+			return !lazy;
 		}
 		
-		private bool DoIsGCed(Value value)
+		private void DoEagerLoad(ThreadMirror thread)
 		{
-			var obj = value as ObjectMirror;
-			bool collected = obj != null && obj.IsCollected;
+			for (int i = 0; i < NumberOfChildren; ++i)
+			{
+				m_children[i] = ValueChild.Invoke(thread, Owner, Value, i);
+			}
 			
-			return collected;
+			Array.Sort(m_children, (lhs, rhs) => lhs.AttributedName.ToString().CompareTo(rhs.AttributedName.ToString()));
+		}
+		
+		private void DoDeleteChildren()
+		{
+			if (m_children != null)
+			{
+				foreach (VariableItem child in m_children)
+				{
+					if (child != null)
+						child.release();
+				}
+				m_children = null;
+			}
+		}
+		
+		private void DoRefreshValueText(ThreadMirror thread)
+		{
+			NSAttributedString str;
+			
+			ObjectMirror obj = Value as ObjectMirror;
+			if (obj != null && obj.IsCollected)
+			{
+				str = DoCreateString("garbage collected", NSColor.disabledControlTextColor());
+			}
+			else
+			{
+				const string NotNullText = "\u25BC";		// BLACK DOWN-POINTING TRIANGLE
+				
+				string newValue = ValueText.Invoke(thread, Owner, Value);
+				string oldValue = m_attributedValue.ToString();
+				if (newValue != oldValue)
+					if (newValue.Length == 0)
+						str = DoCreateString(NotNullText, NSColor.redColor());	// make it a bit more obvious that we have gone from "null" to non-null (for types without a custom ToString method)
+					else
+						str = DoCreateString(newValue, NSColor.redColor());
+				else
+					str = NSAttributedString.Create(newValue).Retain();
+			}
+			
+			m_attributedValue.release();										// note that we want to reset the text even if it has not changed so that we go from red back to black
+			m_attributedValue = str;
+		}
+		
+		private void DoRefreshTypeText()
+		{
+			NSAttributedString str;
+			
+			string newType = ValueType.Invoke(Owner, Value);			// the declared type should not change but we show the actual type which may
+			string oldType = AttributedType.ToString();
+			if (newType != oldType)
+				if (newType.Length > 0)
+					str = DoCreateString(newType, NSColor.redColor());
+				else
+					str = NSAttributedString.Create(oldType).Retain();	// this will happen if the value goes to null
+			else
+				str = NSAttributedString.Create(newType).Retain();
+			
+			AttributedType.release();
+			AttributedType = str;
+		}
+		
+		private NSAttributedString DoCreateString(string newValue, NSColor color)
+		{
+			var attrs = NSMutableDictionary.Create();
+			attrs.setObject_forKey(color, Externs.NSForegroundColorAttributeName);
+			NSAttributedString result = NSAttributedString.Create(newValue, attrs).Retain();
+			
+			return result;
 		}
 		#endregion
 		
 		#region Fields
-		protected NSAttributedString m_name;
-		protected NSAttributedString m_type;
-		protected NSAttributedString m_value;
+		private NSAttributedString m_attributedValue;
+		private VariableItem[] m_children;
 		#endregion
 	}
 }

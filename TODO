@@ -63,23 +63,36 @@ public abstract class Mono.Debugger.Value
 	public class Mono.Debugger.ObjectMirror
 		public class Mono.Debugger.StringMirror
 		public class Mono.Debugger.ArrayMirror	
-		
 
-* Special case:
-	- Uri
-* Should be able to view a string as an array.
+* Get value and type working for:
+	- ObjectMirror
+	- EnumMirror
+	- StructMirror
+	- should return a better type name for the nullable
+	- special types
+* Get this showing up.
+* Get statics showing up.
+* Get setting values working.
+* Make sure stepping and running changes values.
+* Redo the yucky VariableItem class:
+	- make sure nothing important has been lost
+	- delete the old code
+	- make sure NSTableView really is smart about which children it gets
 * Look at other uses of GetProperty and GetProperties.
 * Also GetMethod and GetMethods.
-* Can we sort the variables? Maybe add some sort of key field?
+* Can we sort the variables? Maybe add some sort of key field?	string
 * Optionally(?) show properties. Or maybe just the auto props?
+* Auto-complete window should have context menu for showing only properties.
 * Maybe optionally hide fields too.
-* Upgrade to mono 2.6.4
+* Upgrade to mono 2.6.4?
 * Need a break all command (Suspend looks like it may work).
 * Special case collections:
-	- don't evaluate IEnumerable properties (they are not pure)
+	- don't evaluate IEnumerable properties
 	- special case types that implement something like IList
+	- VariableItem.GetChild needs to be updated too
 * Special case IEnumerable somehow.
 * Make sure infinite enumerables work
+* Make sure that we work if a custom ToString throws.
 * Work on a debugger:
 	- make sure we don't fall down if the debugger throws (especially invokes)
 	- improve the controls window, or do we even want this?

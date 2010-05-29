@@ -278,7 +278,8 @@ namespace Debugger
 			
 			return result;
 		}
-		
+
+#if UNUSED
 		public static string Stringify(this Value value, ThreadMirror thread)
 		{
 			string text = string.Empty;
@@ -388,6 +389,7 @@ namespace Debugger
 			
 			return text;
 		}
+#endif
 		
 		public static string TypeName(this Value v)
 		{

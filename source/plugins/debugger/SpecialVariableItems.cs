@@ -30,6 +30,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
+#if UNUSED
 namespace Debugger
 {
 	[ExportClass("DelegateValueItem", "VariableItem")]
@@ -182,3 +183,4 @@ namespace Debugger
 		}
 	}
 }
+#endif

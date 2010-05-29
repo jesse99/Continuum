@@ -30,6 +30,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
+#if BLECH
+
 namespace Debugger
 {
 	[ExportClass("ArrayElementItem", "VariableItem")]
@@ -766,8 +768,24 @@ namespace Debugger
 		{
 			Contract.Requires(setter != null, "setter is null");
 			
+			m_object = value;
 			m_thread = thread;
 			m_setter = setter;
+		}
+		
+		public override bool IsExpandable
+		{
+			get {return m_object != null && !m_object.IsCollected && m_object.Length > 0;}
+		}
+		
+		public override int Count
+		{
+			get {DoConstructItems(); return m_items.Length;}
+		}
+		
+		public override VariableItem this[int index]
+		{
+			get {DoConstructItems(); return m_items[index];}
 		}
 		
 		public override VariableItem SetValue(string text)
@@ -893,6 +911,28 @@ namespace Debugger
 		}
 		
 		#region Private Methods
+		private void DoConstructItems()
+		{
+			if (m_items == null)
+			{
+				if (m_object != null && !m_object.IsCollected)
+				{
+					m_items = new VariableItem[m_object.Length];
+					for (int i = 0; i < m_object.Length; ++i)
+					{
+						string name = DoGetName(i);
+						int tmp = i;
+						Action<Value> setter = (Value v) => m_object[tmp] = v;	// TODO: won't work for multiple dimensions, throw?
+						m_items[i] = new ArrayElementItem(name, m_object.Type.GetElementType().FullName, m_object[i], m_thread, setter);
+					}
+				}
+				else
+				{
+					m_items = new VariableItem[0];
+				}
+			}
+		}
+		
 		private static bool DoIsHexDigit(char ch)
 		{
 			return (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F');
@@ -912,6 +952,7 @@ namespace Debugger
 		#endregion
 		
 		#region Fields
+		private StringMirror m_object;
 		private ThreadMirror m_thread;
 		private Action<Value> m_setter;
 		#endregion
@@ -1144,3 +1185,4 @@ namespace Debugger
 		#endregion
 	}
 }
+#endif		// BLECH
