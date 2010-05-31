@@ -64,16 +64,14 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.StringMirror
 		public class Mono.Debugger.ArrayMirror	
 
-* Get value and type working for:
-	- ObjectMirror
-	- EnumMirror
-	- StructMirror
-	- should return a better type name for the nullable
-	- special types
-* Get this showing up.
-* Get statics showing up.
-* Get setting values working.
-* Make sure stepping and running changes values.
+* Work on stuff:
+	- get enums working
+	- get structs working
+	- make sure stepping and running works
+	- get this working
+	- get statics working
+	- get setting values working
+	- get special types working
 * Redo the yucky VariableItem class:
 	- make sure nothing important has been lost
 	- delete the old code

@@ -19,46 +19,59 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-//using MCocoa;
-//using MObjc;
 using MObjc.Helpers;
 using Mono.Debugger.Soft;
 using Shared;
 using System;
 
+#if UNUSED
 namespace Debugger
 {
 	internal static class ValueTypeOverloads
 	{
 		[ValueType.Overload]
-		public static string GetTypeName(object owner, object item)
+		public static string GetTypeName(ArrayMirror owner, int value)
 		{
-			return item.GetType().FullName;
+			return owner.Type.GetElementType().FullName;
 		}
 		
 		[ValueType.Overload]
-		public static string GetTypeName(object owner, ObjectMirror item)
+		public static string GetTypeName(object owner, FieldInfoMirror value)
 		{
-			return item.Type.FullName;
-			
-//			int index = result.IndexOf("[[");	// strip off stuff like "[[System.Int32, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]"
-//			if (index > 0)
-//				result = result.Substring(0, index);
+			return value.FieldType.FullName;
 		}
 		
 		[ValueType.Overload]
-		public static string GetTypeName(object owner, PrimitiveValue item)
+		public static string GetTypeName(object owner, object value)
 		{
-			if (item.Value == null)
+			return value.GetType().FullName;
+		}
+		
+		[ValueType.Overload]
+		public static string GetTypeName(object owner, LocalVariable value)
+		{
+			return value.Type.FullName;
+		}
+		
+		[ValueType.Overload]
+		public static string GetTypeName(object owner, ObjectMirror value)
+		{
+			return value.Type.FullName;
+		}
+		
+		[ValueType.Overload]
+		public static string GetTypeName(object owner, PrimitiveValue value)
+		{
+			if (value.Value == null)
 				return string.Empty;
 			else
-				return item.Value.GetType().FullName;
+				return value.Value.GetType().FullName;
 		}
 		
 		[ValueType.Overload]
-		public static string GetTypeName(object owner, StructMirror item)
+		public static string GetTypeName(object owner, StructMirror value)
 		{
-			string result = item.Type.FullName;
+			string result = value.Type.FullName;
 			
 			int index = result.IndexOf("[[");	// strip off stuff like "[[System.Int32, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]"
 			if (index > 0)
@@ -66,5 +79,12 @@ namespace Debugger
 			
 			return result;
 		}
+		
+		[ValueType.Overload]
+		public static string GetTypeName(StringMirror owner, char value)
+		{
+			return "System.Char";
+		}
 	}
 }
+#endif

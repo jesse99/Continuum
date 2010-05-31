@@ -26,41 +26,36 @@ using Mono.Debugger.Soft;
 using Shared;
 using System;
 
+using Debug = Debugger;
+
 namespace Debugger
 {
 	[ExportClass("VariableItem", "NSObject")]
 	internal sealed class VariableItem : NSObject
 	{
-		// owner will be something like a StackFrame, ObjectMirror, StringMirror, etc.
-		// item will be something like a LocalVariable, FieldInfoMirror, char, etc.
-		public VariableItem(ThreadMirror thread, string name, object owner, object value) : base(NSObject.AllocAndInitInstance("VariableItem"))
+		// These form a tree representing all of the values the user is currently examining
+		// in the variables window. Note that we try to preserve the objects that form the
+		// tree to prevent the outline view from closing open items. 
+		public VariableItem(ThreadMirror thread, string name, object value, int index) : base(NSObject.AllocAndInitInstance("VariableItem"))
 		{
 			Contract.Requires(!string.IsNullOrEmpty(name));
-			Contract.Requires(owner != null);
 			Contract.Requires(value != null);					// null debugger values are PrimitiveValues with a null Value
+			Contract.Requires(index >= 0);
 			
-			Owner = owner;
 			Value = value;
+			AttributedName = NSMutableAttributedString.Create(name).Retain();
+			m_index = index;
 			
-			AttributedName = NSAttributedString.Create(name).Retain();
-			AttributedType = NSAttributedString.Create(ValueType.Invoke(Owner, Value)).Retain();
-			NumberOfChildren = ValueNumChildren.Invoke(Owner, Value);
+			Item item = GetItem.Invoke(thread, Value);
+			AttributedType = NSAttributedString.Create(item.Type).Retain();
+			AttributedValue = NSAttributedString.Create(item.Text).Retain();
+			NumberOfChildren = item.Count;
 		}
 		
-		public NSAttributedString AttributedName {get; private set;}
+		public NSMutableAttributedString AttributedName {get; private set;}
 		public NSAttributedString AttributedType {get; private set;}
+		public NSAttributedString AttributedValue {get; private set;}
 		
-		public NSAttributedString GetAttributedValue(ThreadMirror thread)
-		{
-			// Note that if we do this in the ctor the act of invoking a ToString method is enough
-			// to render the StackFrame object we're trying to use unuseable which hoses us when
-			// we try to get the local variables.
-			if (m_attributedValue == null)
-				m_attributedValue = NSAttributedString.Create(ValueText.Invoke(thread, Owner, Value)).Retain();
-			return m_attributedValue;
-		}
-		
-		public object Owner {get; private set;}
 		public object Value {get; private set;}
 		
 		public int NumberOfChildren {get; private set;}
@@ -79,7 +74,7 @@ namespace Debugger
 			}
 			
 			if (m_children[index] == null)
-				m_children[index] = ValueChild.Invoke(thread, Owner, Value, index);
+				m_children[index] = Debug::GetChild.Invoke(thread, Value, index);
 			
 			return m_children[index];
 		}
@@ -95,25 +90,32 @@ namespace Debugger
 		// Update the value and recursively all the children to reflect state changes in the debugee.
 		public void Refresh(ThreadMirror thread)
 		{
-			DoRefreshValueText(thread);
-			DoRefreshTypeText();
+			Item item = GetItem.Invoke(thread, Value);
+			DoRefreshValueText(item.Text);
+			DoRefreshTypeText(item.Type);
 			
-			int count = ValueNumChildren.Invoke(Owner, Value);
-			if (count == NumberOfChildren)
+			if (item.Count == NumberOfChildren)
 			{
 				if (m_children != null)
 				{
-					foreach (VariableItem child in m_children)
+					for (int i = 0; i < item.Count; ++i)
 					{
+						VariableItem child = m_children[i];
+						
 						if (child != null)
-							child.Refresh(thread);
+						{
+							VariableItem newChild = Debug::GetChild.Invoke(thread, Value, child.m_index);
+							Contract.Assert(child.AttributedName.ToString() == newChild.AttributedName.ToString(), string.Format("oldName: {0}, newName: {1}", child.AttributedName.ToString(), newChild.AttributedName.ToString()));
+							
+							child.RefreshValue(thread, newChild.Value);
+						}
 					}
 				}
 			}
 			else
 			{
 				DoDeleteChildren();
-				NumberOfChildren = count;
+				NumberOfChildren = item.Count;
 			}
 		}
 		
@@ -126,8 +128,8 @@ namespace Debugger
 			if (AttributedType != null)
 				AttributedType.release();
 			
-			if (m_attributedValue != null)
-				m_attributedValue.release();
+			if (AttributedValue != null)
+				AttributedValue.release();
 			
 			DoDeleteChildren();
 			
@@ -155,7 +157,7 @@ namespace Debugger
 		{
 			for (int i = 0; i < NumberOfChildren; ++i)
 			{
-				m_children[i] = ValueChild.Invoke(thread, Owner, Value, i);
+				m_children[i] = Debug::GetChild.Invoke(thread, Value, i);
 			}
 			
 			Array.Sort(m_children, (lhs, rhs) => lhs.AttributedName.ToString().CompareTo(rhs.AttributedName.ToString()));
@@ -174,39 +176,50 @@ namespace Debugger
 			}
 		}
 		
-		private void DoRefreshValueText(ThreadMirror thread)
+		private void DoRefreshValueText(string newValue)
 		{
 			NSAttributedString str;
+			NSColor nameColor = NSColor.blackColor();
 			
 			ObjectMirror obj = Value as ObjectMirror;
 			if (obj != null && obj.IsCollected)
 			{
 				str = DoCreateString("garbage collected", NSColor.disabledControlTextColor());
+				nameColor = NSColor.disabledControlTextColor();
 			}
 			else
 			{
-				const string NotNullText = "\u25BC";		// BLACK DOWN-POINTING TRIANGLE
-				
-				string newValue = ValueText.Invoke(thread, Owner, Value);
-				string oldValue = m_attributedValue.ToString();
+				string oldValue = AttributedValue.ToString();
 				if (newValue != oldValue)
+				{
 					if (newValue.Length == 0)
-						str = DoCreateString(NotNullText, NSColor.redColor());	// make it a bit more obvious that we have gone from "null" to non-null (for types without a custom ToString method)
+					{
+						str = DoCreateString(string.Empty, NSColor.redColor());
+						nameColor = NSColor.redColor();						// we've gone from having value text to not having it (probably because the value went from null to non-null), so make it more obvious that it has changed
+					}
 					else
+					{
 						str = DoCreateString(newValue, NSColor.redColor());
+					}
+				}
 				else
+				{
 					str = NSAttributedString.Create(newValue).Retain();
+				}
 			}
 			
-			m_attributedValue.release();										// note that we want to reset the text even if it has not changed so that we go from red back to black
-			m_attributedValue = str;
+			AttributedValue.release();										// note that we want to reset the text even if it has not changed so that we go from red back to black
+			AttributedValue = str;
+			
+			NSRange range = new NSRange(0, (int) AttributedName.length());
+			AttributedName.addAttribute_value_range(Externs.NSForegroundColorAttributeName, nameColor, range);
 		}
 		
-		private void DoRefreshTypeText()
+		// The declared type should not change but we show the actual type which may.
+		private void DoRefreshTypeText(string newType)
 		{
 			NSAttributedString str;
 			
-			string newType = ValueType.Invoke(Owner, Value);			// the declared type should not change but we show the actual type which may
 			string oldType = AttributedType.ToString();
 			if (newType != oldType)
 				if (newType.Length > 0)
@@ -231,7 +244,7 @@ namespace Debugger
 		#endregion
 		
 		#region Fields
-		private NSAttributedString m_attributedValue;
+		private int m_index;
 		private VariableItem[] m_children;
 		#endregion
 	}

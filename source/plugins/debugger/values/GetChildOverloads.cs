@@ -19,55 +19,51 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-using MObjc.Helpers;
+//using MObjc.Helpers;
 using Mono.Debugger.Soft;
-using Shared;
+//using Shared;
 using System;
 using System.Linq;
 
-#if UNUSED
 namespace Debugger
 {
-	internal static class ValueChildOverloads
+	internal static class GetChildOverloads
 	{
-		[ValueChild.Overload]
+		[GetChild.Overload]
 		public static VariableItem GetChild(ThreadMirror thread, ArrayMirror value, int index)
 		{
 			string name = DoGetArrayName(value, index);
-			return new VariableItem(thread, name, value, index);
+			Value child = value[index];
+			return new VariableItem(thread, name, child, index);
 		}
 		
-		[ValueChild.Overload]
+		[GetChild.Overload]
 		public static VariableItem GetChild(ThreadMirror thread, CachedStackFrame value, int index)
 		{
 			LocalVariable local = value.GetLocal(index);
 			
 			string name = local.Name;
 			if (string.IsNullOrEmpty(name))
-				name = "$" + local.Index;		// temporary variable
+				name = "$" + local.Index;			// temporary variable
 			
-			return new VariableItem(thread, name, value, local);
+			Value child = value.GetValue(local);
+			return new VariableItem(thread, name, child, index);
 		}
 		
-		[ValueChild.Overload]
+		[GetChild.Overload]
 		public static VariableItem GetChild(ThreadMirror thread, ObjectMirror value, int index)
 		{
 			FieldInfoMirror field = value.Type.GetAllFields().ElementAt(index);
-			return new VariableItem(thread, field.Name, value, field);
+			Value child = EvalMember.Evaluate(thread, value, field.Name);
+			return new VariableItem(thread, field.Name, child, index);
 		}
 		
-		[ValueChild.Overload]
+		[GetChild.Overload]
 		public static VariableItem GetChild(ThreadMirror thread, StringMirror value, int index)
 		{
-			char ch = value.Value[index];
-			return new VariableItem(thread, index.ToString(), value, ch);
-		}
-		
-		[ValueChild.Overload]
-		public static VariableItem GetChild(ThreadMirror thread, StructMirror value, int index)
-		{
-			FieldInfoMirror field = value.Type.GetFields()[index];
-			return new VariableItem(thread, field.Name, value, field);
+			string name = index.ToString();
+			char child = value.Value[index];
+			return new VariableItem(thread, name, child, index);
 		}
 		
 		#region Private Methods
@@ -111,4 +107,3 @@ namespace Debugger
 		#endregion
 	}
 }
-#endif

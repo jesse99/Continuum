@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
+#if UNUSED
 namespace Debugger
 {
 	// Dynamically dispatches to the best ValueSet overload.
@@ -330,3 +331,4 @@ namespace Debugger
 		#endregion
 	}
 }
+#endif

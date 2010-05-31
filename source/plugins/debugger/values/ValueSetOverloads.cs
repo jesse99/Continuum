@@ -26,6 +26,7 @@ using Mono.Debugger.Soft;
 using Shared;
 using System;
 
+#if UNUSED
 namespace Debugger
 {
 	internal static class ValueSetOverloads
@@ -37,3 +38,4 @@ namespace Debugger
 		}
 	}
 }
+#endif

@@ -23,54 +23,46 @@ using MObjc.Helpers;
 using Mono.Debugger.Soft;
 using Shared;
 using System;
-using System.Linq;
+using System.Collections.Generic;
 
-#if UNUSED
 namespace Debugger
 {
-	internal static class ValueNumChildrenOverloads
+	// StackFrame becomes unuseable pretty much immediately (e.g. after doing
+	// an invoke) so we need to get values for all locals asap.
+	internal sealed class CachedStackFrame
 	{
-		[ValueNumChildren.Overload]
-		public static int GetNumChildren(object owner, ArrayMirror value)
+		public CachedStackFrame(StackFrame frame)
 		{
-			return value.IsCollected ? 0 : value.Length;
+			Frame = frame;
+			Thread = frame.Thread;
+			VirtualMachine = frame.VirtualMachine;
+			
+			m_locals = frame.Method.GetLocals();
+			m_values = frame.GetValues(m_locals);
 		}
 		
-		[ValueNumChildren.Overload]
-		public static int GetNumChildren(object owner, CachedStackFrame value)
+		public StackFrame Frame {get; private set;}
+		
+		public ThreadMirror Thread {get; private set;}
+		
+		public VirtualMachine VirtualMachine {get; private set;}
+		
+		public int Length {get {return m_values.Length;}}
+		
+		public LocalVariable GetLocal(int index)
 		{
-			return value.Length;	// TODO: include a this or statics child
+			return m_locals[index];
 		}
 		
-		[ValueNumChildren.Overload]
-		public static int GetNumChildren(object owner, EnumMirror value)
+		public Value GetValue(LocalVariable local)
 		{
-			return 0;
+			int index = Array.IndexOf(m_locals, local);
+			return m_values[index];
 		}
 		
-		[ValueNumChildren.Overload]
-		public static int GetNumChildren(object owner, object value)
-		{
-			return 0;
-		}
-		
-		[ValueNumChildren.Overload]
-		public static int GetNumChildren(object owner, ObjectMirror value)
-		{
-			return value.IsCollected ? 0 : value.Type.GetAllFields().Count();
-		}
-		
-		[ValueNumChildren.Overload]
-		public static int GetNumChildren(object owner, StringMirror value)
-		{
-			return value.IsCollected ? 0 : value.Value.Length;
-		}
-		
-		[ValueNumChildren.Overload]
-		public static int GetNumChildren(object owner, StructMirror value)
-		{
-			return value.Fields.Length;
-		}
+		#region Private Methods
+		private LocalVariable[] m_locals;
+		private Value[] m_values;
+		#endregion
 	}
 }
-#endif

@@ -20,57 +20,31 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using MObjc.Helpers;
-using Mono.Debugger.Soft;
-using Shared;
 using System;
-using System.Linq;
 
-#if UNUSED
 namespace Debugger
 {
-	internal static class ValueNumChildrenOverloads
+	// Used to initialize and refresh VariableItem instances.
+	internal struct Item
 	{
-		[ValueNumChildren.Overload]
-		public static int GetNumChildren(object owner, ArrayMirror value)
+		public Item(int count, string text, string type) : this()
 		{
-			return value.IsCollected ? 0 : value.Length;
+			Contract.Requires(count >= 0);
+			Contract.Requires(text != null);
+			Contract.Requires(type != null);
+			
+			Count = count;
+			Text = text;
+			Type = type;
 		}
 		
-		[ValueNumChildren.Overload]
-		public static int GetNumChildren(object owner, CachedStackFrame value)
-		{
-			return value.Length;	// TODO: include a this or statics child
-		}
+		// The number of children for this value.
+		public int Count {get; private set;}
 		
-		[ValueNumChildren.Overload]
-		public static int GetNumChildren(object owner, EnumMirror value)
-		{
-			return 0;
-		}
+		// String representation for the value (may be empty).
+		public string Text {get; private set;}
 		
-		[ValueNumChildren.Overload]
-		public static int GetNumChildren(object owner, object value)
-		{
-			return 0;
-		}
-		
-		[ValueNumChildren.Overload]
-		public static int GetNumChildren(object owner, ObjectMirror value)
-		{
-			return value.IsCollected ? 0 : value.Type.GetAllFields().Count();
-		}
-		
-		[ValueNumChildren.Overload]
-		public static int GetNumChildren(object owner, StringMirror value)
-		{
-			return value.IsCollected ? 0 : value.Value.Length;
-		}
-		
-		[ValueNumChildren.Overload]
-		public static int GetNumChildren(object owner, StructMirror value)
-		{
-			return value.Fields.Length;
-		}
+		// String representation for the type (may be empty iff value is null).
+		public string Type {get; private set;}
 	}
 }
-#endif

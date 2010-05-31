@@ -171,6 +171,7 @@ namespace Debugger
 		
 		public void outlineView_setObjectValue_forTableColumn_byItem(NSTableView table, NSObject value, NSTableColumn col, VariableItem item)
 		{
+#if NOT_YET
 			try
 			{
 				string text = value.description();
@@ -187,6 +188,7 @@ namespace Debugger
 				transcript.Show();
 				transcript.WriteLine(Output.Error, "{0}", e.Message);
 			}
+#endif
 		}
 		
 		public int outlineView_numberOfChildrenOfItem(NSOutlineView table, VariableItem item)
@@ -218,7 +220,7 @@ namespace Debugger
 			if (col.identifier().ToString() == "0")
 				return item == null ? m_item.AttributedName : item.AttributedName;
 			else if (col.identifier().ToString() == "1")
-				return item == null ? m_item.GetAttributedValue(m_frame.Thread) : item.GetAttributedValue(m_frame.Thread);
+				return item == null ? m_item.AttributedValue : item.AttributedValue;
 			else
 				return item == null ? m_item.AttributedType : item.AttributedType;
 		}
@@ -226,10 +228,10 @@ namespace Debugger
 		#region Private Methods
 		private void DoReset(StackFrame frame)
 		{
-			if (m_item != null && ((StackFrame) m_item.Value).Matches(frame))
+			if (m_item != null && ((CachedStackFrame) m_item.Value).Frame.Matches(frame))
 			{
 				m_frame = frame;
-				m_item.RefreshValue(m_frame.Thread, frame);
+				m_item.RefreshValue(m_frame.Thread, new CachedStackFrame(frame));
 			}
 			else
 			{
@@ -242,7 +244,7 @@ namespace Debugger
 				if (frame != null)
 				{
 					m_frame = frame;
-					m_item = new VariableItem(m_frame.Thread, "stack frame", frame.Method, frame);
+					m_item = new VariableItem(m_frame.Thread, "stack frame", new CachedStackFrame(frame), 0);
 				}
 			}
 			
