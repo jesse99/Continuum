@@ -19,9 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-//using MObjc.Helpers;
 using Mono.Debugger.Soft;
-//using Shared;
 using System;
 using System.Linq;
 
@@ -55,7 +53,7 @@ namespace Debugger
 		{
 			FieldInfoMirror field = value.Type.GetAllFields().ElementAt(index);
 			Value child = EvalMember.Evaluate(thread, value, field.Name);
-			return new VariableItem(thread, field.Name, child, index);
+			return new VariableItem(thread, DoSanitizeFieldName(field), child, index);
 		}
 		
 		[GetChild.Overload]
@@ -66,7 +64,28 @@ namespace Debugger
 			return new VariableItem(thread, name, child, index);
 		}
 		
+		[GetChild.Overload]
+		public static VariableItem GetChild(ThreadMirror thread, StructMirror value, int index)
+		{
+			FieldInfoMirror field = value.Type.GetFields()[index];
+			Value child = value.Fields[index];
+			return new VariableItem(thread, DoSanitizeFieldName(field), child, index);
+		}
+		
 		#region Private Methods
+		private static string DoSanitizeFieldName(FieldInfoMirror field)
+		{
+			string name = field.Name;
+			
+			if (name.StartsWith("<") && name.EndsWith("BackingField"))
+			{
+				int i = name.IndexOf('>');
+				name = name.Substring(1, i - 1);
+			}
+			
+			return name;
+		}
+		
 		private static string DoGetArrayName(ArrayMirror value, int i)
 		{
 			var builder = new System.Text.StringBuilder();

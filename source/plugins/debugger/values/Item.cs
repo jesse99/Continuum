@@ -36,6 +36,10 @@ namespace Debugger
 			Count = count;
 			Text = text;
 			Type = type;
+			
+			int index = Type.IndexOf("[[");	// strip off stuff like "[[System.Int32, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]"
+			if (index > 0)
+				Type = Type.Substring(0, index);
 		}
 		
 		// The number of children for this value.

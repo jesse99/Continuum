@@ -83,6 +83,19 @@ namespace Debugger
 		}
 		
 		[GetItem.Overload]
+		public static Item GetItem(ThreadMirror thread, EnumMirror value)
+		{
+			string text;
+			if (value.Type.Assembly.Metadata == null)
+				value.Type.Assembly.Metadata = AssemblyCache.Load(value.Type.Assembly.Location, false);
+			if (value.Type.Metadata != null)
+				text = CecilExtensions.ArgToString(value.Type.Metadata, value.Value, false, false);
+			else
+				text = value.StringValue;
+			return new Item(0, text, value.Type.FullName);
+		}
+		
+		[GetItem.Overload]
 		public static Item GetItem(ThreadMirror thread, Int16 value)
 		{
 			if (VariableController.ShowHex)
@@ -162,6 +175,7 @@ namespace Debugger
 				return new Item(0, "null", string.Empty);
 			}
 		}
+		
 		[GetItem.Overload]
 		public static Item GetItem(ThreadMirror thread, SByte value)
 		{
@@ -186,7 +200,32 @@ namespace Debugger
 			if (value.IsCollected)
 				return new Item(0, "garbage collected", value.Type.FullName);
 			else
-				return new Item(value.Value.Length, value.Value, "System.String");
+				return new Item(value.Value.Length, DoStringToText(value.Value), "System.String");
+		}
+		
+		[GetItem.Overload]
+		public static Item GetItem(ThreadMirror thread, StructMirror value)
+		{
+			string text = string.Empty;
+			
+			MethodMirror method = value.Type.FindMethod("ToString", 0);
+			if (method.DeclaringType.FullName != "System.ValueType")
+			{
+				if (value.Type.IsPrimitive)
+				{
+					// Boxed primitive (we need this special case or InvokeMethod will hang).
+					if (value.Fields.Length > 0 && (value.Fields[0] is PrimitiveValue))
+						text = ((PrimitiveValue)value.Fields[0]).Value.Stringify();
+				}
+				else
+				{
+					Value v = value.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+					StringMirror s = (StringMirror) v;
+					text = s.Value;
+				}
+			}
+			
+			return new Item(value.Fields.Length, text, value.Type.FullName);
 		}
 		
 		[GetItem.Overload]
@@ -221,5 +260,34 @@ namespace Debugger
 			else
 				return new Item(0, value.ToString("G"), value.GetType().FullName);
 		}
+		
+		#region Private Methods
+		private static string DoStringToText(string str)
+		{
+			var builder = new System.Text.StringBuilder(str.Length + 2);
+			
+			builder.Append('"');
+			foreach (char ch in str)
+			{
+				if (ch > 0x7F && VariableController.ShowUnicode)
+					builder.Append(ch);
+				else if (ch == '\'')
+					builder.Append(ch);
+				else if (ch == '"')
+					builder.Append("\\\"");
+				else
+					builder.Append(CharHelpers.ToText(ch));
+					
+				if (builder.Length > 256)
+				{
+					builder.Append(Constants.Ellipsis);
+					break;
+				}
+			}
+			builder.Append('"');
+			
+			return builder.ToString();
+		}
+		#endregion
 	}
 }
