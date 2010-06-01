@@ -63,9 +63,10 @@ public abstract class Mono.Debugger.Value
 	public class Mono.Debugger.ObjectMirror
 		public class Mono.Debugger.StringMirror
 		public class Mono.Debugger.ArrayMirror	
+		
 
 * Work on stuff:
-	- do a better job showing generic types	
+	- use a type hint
 	- get 'this' working
 	- get statics working
 	- get setting values working

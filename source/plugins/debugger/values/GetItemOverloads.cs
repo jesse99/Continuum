@@ -35,9 +35,14 @@ namespace Debugger
 		public static Item GetItem(ThreadMirror thread, ArrayMirror value)
 		{
 			if (value.IsCollected)
+			{
 				return new Item(0, "garbage collected", value.Type.FullName);
+			}
 			else
-				return new Item(value.Length, string.Empty, value.Type.FullName);
+			{
+				string type = DoGetFullerName(value.Type);
+				return new Item(value.Length, string.Empty, type);
+			}
 		}
 		
 		[GetItem.Overload]
@@ -85,9 +90,10 @@ namespace Debugger
 		[GetItem.Overload]
 		public static Item GetItem(ThreadMirror thread, EnumMirror value)
 		{
-			string text;
 			if (value.Type.Assembly.Metadata == null)
 				value.Type.Assembly.Metadata = AssemblyCache.Load(value.Type.Assembly.Location, false);
+			
+			string text;
 			if (value.Type.Metadata != null)
 				text = CecilExtensions.ArgToString(value.Type.Metadata, value.Value, false, false);
 			else
@@ -157,7 +163,8 @@ namespace Debugger
 					text = s.Value;
 				}
 				
-				return new Item(numChildren, text, value.Type.FullName);
+				string type = DoGetFullerName(value.Type);
+				return new Item(numChildren, text, type);
 			}
 		}
 		
@@ -225,7 +232,8 @@ namespace Debugger
 				}
 			}
 			
-			return new Item(value.Fields.Length, text, value.Type.FullName);
+			string type = DoGetFullerName(value.Type);
+			return new Item(value.Fields.Length, text, type);
 		}
 		
 		[GetItem.Overload]
@@ -262,6 +270,20 @@ namespace Debugger
 		}
 		
 		#region Private Methods
+		private static string DoGetFullerName(TypeMirror value)
+		{
+			if (value.Assembly.Metadata == null)
+				value.Assembly.Metadata = AssemblyCache.Load(value.Assembly.Location, false);
+			
+			string type;
+			if (value.Metadata != null)
+				type = value.Metadata.FullName;		// Cecil returns much better names, eg for generics (TODO: or it would if the debugger returned TypeReference subclasses)
+			else
+				type = value.FullName;
+			
+			return type;
+		}
+		
 		private static string DoStringToText(string str)
 		{
 			var builder = new System.Text.StringBuilder(str.Length + 2);
