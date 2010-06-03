@@ -32,7 +32,7 @@ namespace Debugger
 		{
 			string name = DoGetArrayName(value, index);
 			Value child = value[index];
-			return new VariableItem(thread, name, child, index);
+			return new VariableItem(thread, name, null, child, index);
 		}
 		
 		[GetChild.Overload]
@@ -45,7 +45,7 @@ namespace Debugger
 				name = "$" + local.Index;			// temporary variable
 			
 			Value child = value.GetValue(local);
-			return new VariableItem(thread, name, child, index);
+			return new VariableItem(thread, name, local, child, index);
 		}
 		
 		[GetChild.Overload]
@@ -53,7 +53,7 @@ namespace Debugger
 		{
 			FieldInfoMirror field = value.Type.GetAllFields().ElementAt(index);
 			Value child = EvalMember.Evaluate(thread, value, field.Name);
-			return new VariableItem(thread, DoSanitizeFieldName(field), child, index);
+			return new VariableItem(thread, DoSanitizeFieldName(field), field, child, index);
 		}
 		
 		[GetChild.Overload]
@@ -61,7 +61,7 @@ namespace Debugger
 		{
 			string name = index.ToString();
 			char child = value.Value[index];
-			return new VariableItem(thread, name, child, index);
+			return new VariableItem(thread, name, null, child, index);
 		}
 		
 		[GetChild.Overload]
@@ -69,7 +69,7 @@ namespace Debugger
 		{
 			FieldInfoMirror field = value.Type.GetFields()[index];
 			Value child = value.Fields[index];
-			return new VariableItem(thread, DoSanitizeFieldName(field), child, index);
+			return new VariableItem(thread, DoSanitizeFieldName(field), field, child, index);
 		}
 		
 		#region Private Methods

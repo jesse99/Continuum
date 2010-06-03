@@ -36,7 +36,7 @@ namespace Debugger
 		// These form a tree representing all of the values the user is currently examining
 		// in the variables window. Note that we try to preserve the objects that form the
 		// tree to prevent the outline view from closing open items. 
-		public VariableItem(ThreadMirror thread, string name, object value, int index) : base(NSObject.AllocAndInitInstance("VariableItem"))
+		public VariableItem(ThreadMirror thread, string name, object hint, object value, int index) : base(NSObject.AllocAndInitInstance("VariableItem"))
 		{
 			Contract.Requires(!string.IsNullOrEmpty(name));
 			Contract.Requires(value != null);					// null debugger values are PrimitiveValues with a null Value
@@ -45,8 +45,9 @@ namespace Debugger
 			Value = value;
 			AttributedName = NSMutableAttributedString.Create(name).Retain();
 			m_index = index;
+			m_hint = hint;
 			
-			Item item = GetItem.Invoke(thread, Value);
+			Item item = GetItem.Invoke(thread, hint, Value);
 			AttributedType = NSAttributedString.Create(item.Type).Retain();
 			AttributedValue = NSAttributedString.Create(item.Text).Retain();
 			NumberOfChildren = item.Count;
@@ -90,7 +91,7 @@ namespace Debugger
 		// Update the value and recursively all the children to reflect state changes in the debugee.
 		public void Refresh(ThreadMirror thread)
 		{
-			Item item = GetItem.Invoke(thread, Value);
+			Item item = GetItem.Invoke(thread, m_hint, Value);
 			DoRefreshValueText(item.Text);
 			DoRefreshTypeText(item.Type);
 			
@@ -245,6 +246,7 @@ namespace Debugger
 		
 		#region Fields
 		private int m_index;
+		private object m_hint;				// used to get the declared type of a value
 		private VariableItem[] m_children;
 		#endregion
 	}

@@ -184,7 +184,6 @@ namespace Debugger
 				m_transcript.WriteLine(Output.Normal, "Loaded assembly '{0}'", e.Assembly.GetName().Name);
 				
 			e.Assembly.Metadata = AssemblyCache.Load(e.Assembly.Location, false);
-	Console.WriteLine("e.Assembly.Metadata: {0}", e.Assembly.Metadata); Console.Out.Flush();
 			
 			Broadcaster.Invoke("debugger loaded assembly", e.Assembly);
 		}

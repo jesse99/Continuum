@@ -244,7 +244,7 @@ namespace Debugger
 				if (frame != null)
 				{
 					m_frame = frame;
-					m_item = new VariableItem(m_frame.Thread, "stack frame", new CachedStackFrame(frame), 0);
+					m_item = new VariableItem(m_frame.Thread, "stack frame", null, new CachedStackFrame(frame), 0);
 				}
 			}
 			

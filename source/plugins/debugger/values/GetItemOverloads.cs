@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using MObjc.Helpers;
+using Mono.Cecil;
 using Mono.Debugger.Soft;
 using Shared;
 using System;
@@ -32,7 +33,7 @@ namespace Debugger
 	internal static class GetItemOverloads
 	{
 		[GetItem.Overload]
-		public static Item GetItem(ThreadMirror thread, ArrayMirror value)
+		public static Item GetItem(ThreadMirror thread, object hint, ArrayMirror value)
 		{
 			if (value.IsCollected)
 			{
@@ -40,13 +41,13 @@ namespace Debugger
 			}
 			else
 			{
-				string type = DoGetFullerName(value.Type);
+				string type = DoGetFullerName(hint, value.Type);
 				return new Item(value.Length, string.Empty, type);
 			}
 		}
 		
 		[GetItem.Overload]
-		public static Item GetItem(ThreadMirror thread, bool value)
+		public static Item GetItem(ThreadMirror thread, object hint, bool value)
 		{
 			if (value)
 				return new Item(0, "true", value.GetType().FullName);
@@ -55,7 +56,7 @@ namespace Debugger
 		}
 		
 		[GetItem.Overload]
-		public static Item GetItem(ThreadMirror thread, Byte value)
+		public static Item GetItem(ThreadMirror thread, object hint, Byte value)
 		{
 			if (VariableController.ShowHex)
 				return new Item(0, "0x" + value.ToString("X1"), value.GetType().FullName);
@@ -64,13 +65,13 @@ namespace Debugger
 		}
 		
 		[GetItem.Overload]
-		public static Item GetItem(ThreadMirror thread, CachedStackFrame value)
+		public static Item GetItem(ThreadMirror thread, object hint, CachedStackFrame value)
 		{
 			return new Item(value.Length, string.Empty, "Mono.Debugger.Soft.StackFrame");
 		}
 		
 		[GetItem.Overload]
-		public static Item GetItem(ThreadMirror thread, char value)
+		public static Item GetItem(ThreadMirror thread, object hint, char value)
 		{
 			if (value > 0x7F && VariableController.ShowUnicode)
 				return new Item(0, "'" + new string(value, 1) + "'", value.GetType().FullName);
@@ -79,7 +80,7 @@ namespace Debugger
 		}
 		
 		[GetItem.Overload]
-		public static Item GetItem(ThreadMirror thread, Double value)
+		public static Item GetItem(ThreadMirror thread, object hint, Double value)
 		{
 			if (VariableController.ShowThousands)
 				return new Item(0, value.ToString("N"), value.GetType().FullName);
@@ -88,7 +89,7 @@ namespace Debugger
 		}
 		
 		[GetItem.Overload]
-		public static Item GetItem(ThreadMirror thread, EnumMirror value)
+		public static Item GetItem(ThreadMirror thread, object hint, EnumMirror value)
 		{
 			if (value.Type.Assembly.Metadata == null)
 				value.Type.Assembly.Metadata = AssemblyCache.Load(value.Type.Assembly.Location, false);
@@ -102,7 +103,7 @@ namespace Debugger
 		}
 		
 		[GetItem.Overload]
-		public static Item GetItem(ThreadMirror thread, Int16 value)
+		public static Item GetItem(ThreadMirror thread, object hint, Int16 value)
 		{
 			if (VariableController.ShowHex)
 				return new Item(0, "0x" + value.ToString("X2"), value.GetType().FullName);
@@ -113,7 +114,7 @@ namespace Debugger
 		}
 		
 		[GetItem.Overload]
-		public static Item GetItem(ThreadMirror thread, Int32 value)
+		public static Item GetItem(ThreadMirror thread, object hint, Int32 value)
 		{
 			if (VariableController.ShowHex)
 				return new Item(0, "0x" + value.ToString("X4"), value.GetType().FullName);
@@ -124,7 +125,7 @@ namespace Debugger
 		}
 		
 		[GetItem.Overload]
-		public static Item GetItem(ThreadMirror thread, Int64 value)
+		public static Item GetItem(ThreadMirror thread, object hint, Int64 value)
 		{
 			if (VariableController.ShowHex)
 				return new Item(0, "0x" + value.ToString("X8"), value.GetType().FullName);
@@ -135,7 +136,7 @@ namespace Debugger
 		}
 		
 		[GetItem.Overload]
-		public static Item GetItem(ThreadMirror thread, object value)
+		public static Item GetItem(ThreadMirror thread, object hint, object value)
 		{
 			if (value != null)
 				return new Item(0, value.ToString(), value.GetType().FullName);
@@ -144,7 +145,7 @@ namespace Debugger
 		}
 		
 		[GetItem.Overload]
-		public static Item GetItem(ThreadMirror thread, ObjectMirror value)
+		public static Item GetItem(ThreadMirror thread, object hint, ObjectMirror value)
 		{
 			if (value.IsCollected)
 			{
@@ -163,28 +164,29 @@ namespace Debugger
 					text = s.Value;
 				}
 				
-				string type = DoGetFullerName(value.Type);
+				string type = DoGetFullerName(hint, value.Type);
 				return new Item(numChildren, text, type);
 			}
 		}
 		
 		[GetItem.Overload]
-		public static Item GetItem(ThreadMirror thread, PrimitiveValue value)
+		public static Item GetItem(ThreadMirror thread, object hint, PrimitiveValue value)
 		{
 			if (value.Value != null)
 			{
-				Item item = Debug::GetItem.Invoke(thread, value.Value);
+				Item item = Debug::GetItem.Invoke(thread, hint, value.Value);
 				Contract.Assert(item.Count == 0);
 				return new Item(0, item.Text, item.Type);
 			}
 			else
 			{
-				return new Item(0, "null", string.Empty);
+				string type = DoGetFullerName(hint, null);
+				return new Item(0, "null", type);
 			}
 		}
 		
 		[GetItem.Overload]
-		public static Item GetItem(ThreadMirror thread, SByte value)
+		public static Item GetItem(ThreadMirror thread, object hint, SByte value)
 		{
 			if (VariableController.ShowHex)
 				return new Item(0, "0x" + value.ToString("X1"), value.GetType().FullName);
@@ -193,7 +195,7 @@ namespace Debugger
 		}
 		
 		[GetItem.Overload]
-		public static Item GetItem(ThreadMirror thread, Single value)
+		public static Item GetItem(ThreadMirror thread, object hint, Single value)
 		{
 			if (VariableController.ShowThousands)
 				return new Item(0, value.ToString("N"), value.GetType().FullName);
@@ -202,7 +204,7 @@ namespace Debugger
 		}
 		
 		[GetItem.Overload]
-		public static Item GetItem(ThreadMirror thread, StringMirror value)
+		public static Item GetItem(ThreadMirror thread, object hint, StringMirror value)
 		{
 			if (value.IsCollected)
 				return new Item(0, "garbage collected", value.Type.FullName);
@@ -211,7 +213,7 @@ namespace Debugger
 		}
 		
 		[GetItem.Overload]
-		public static Item GetItem(ThreadMirror thread, StructMirror value)
+		public static Item GetItem(ThreadMirror thread, object hint, StructMirror value)
 		{
 			string text = string.Empty;
 			
@@ -232,12 +234,12 @@ namespace Debugger
 				}
 			}
 			
-			string type = DoGetFullerName(value.Type);
+			string type = DoGetFullerName(hint, value.Type);
 			return new Item(value.Fields.Length, text, type);
 		}
 		
 		[GetItem.Overload]
-		public static Item GetItem(ThreadMirror thread, UInt16 value)
+		public static Item GetItem(ThreadMirror thread, object hint, UInt16 value)
 		{
 			if (VariableController.ShowHex)
 				return new Item(0, "0x" + value.ToString("X2"), value.GetType().FullName);
@@ -248,7 +250,7 @@ namespace Debugger
 		}
 		
 		[GetItem.Overload]
-		public static Item GetItem(ThreadMirror thread, UInt32 value)
+		public static Item GetItem(ThreadMirror thread, object hint, UInt32 value)
 		{
 			if (VariableController.ShowHex)
 				return new Item(0, "0x" + value.ToString("X4"), value.GetType().FullName);
@@ -259,7 +261,7 @@ namespace Debugger
 		}
 		
 		[GetItem.Overload]
-		public static Item GetItem(ThreadMirror thread, UInt64 value)
+		public static Item GetItem(ThreadMirror thread, object hint, UInt64 value)
 		{
 			if (VariableController.ShowHex)
 				return new Item(0, "0x" + value.ToString("X8"), value.GetType().FullName);
@@ -270,16 +272,62 @@ namespace Debugger
 		}
 		
 		#region Private Methods
-		private static string DoGetFullerName(TypeMirror value)
+		private static string DoGetFullerName(object hint, TypeMirror value)
 		{
-			if (value.Assembly.Metadata == null)
-				value.Assembly.Metadata = AssemblyCache.Load(value.Assembly.Location, false);
-			
 			string type;
-			if (value.Metadata != null)
-				type = value.Metadata.FullName;		// Cecil returns much better names, eg for generics (TODO: or it would if the debugger returned TypeReference subclasses)
+			
+			if (value != null && value.Assembly.Metadata == null)
+				value.Assembly.Metadata = AssemblyCache.Load(value.Assembly.Location, false);
+				
+			// If the value is null then we have to use the declaration type. If the declared type
+			// is the same as the actual type then we also want to use the declaration type
+			// because it will be the one with template arguments filled in. TODO: the later
+			// deosn't work because we always get a TypeDefinition from the declaration (as
+			// opposed to a GenericInstanceType. However MD has this working somehow...)
+			TypeReference tr = DoGetHintType(hint);
+			if (value == null || (tr != null && tr.HasGenericParameters && tr.Name == value.Name))
+			{
+				type = tr.FullName;
+			}
 			else
-				type = value.FullName;
+			{
+				if (value.Metadata != null)
+					type = value.Metadata.FullName;
+				else
+					type = value.FullName;
+			}
+			
+			return type;
+		}
+		
+		private static TypeReference DoGetHintType(object hint)
+		{
+			TypeReference type = null;
+			
+			do
+			{
+				LocalVariable lv = hint as LocalVariable;
+				if (lv != null)
+				{
+					type = lv.Type.Metadata;
+					break;
+				}
+				
+				ParameterInfoMirror pm = hint as ParameterInfoMirror;
+				if (pm != null)
+				{
+					type = pm.ParameterType.Metadata;
+					break;
+				}
+				
+				FieldInfoMirror fm = hint as FieldInfoMirror;
+				if (fm != null)
+				{
+					type = fm.DeclaringType.Metadata;
+					break;
+				}
+			}
+			while (false);
 			
 			return type;
 		}
@@ -302,7 +350,7 @@ namespace Debugger
 					
 				if (builder.Length > 256)
 				{
-					builder.Append(Constants.Ellipsis);
+					builder.Append(Shared.Constants.Ellipsis);
 					break;
 				}
 			}
