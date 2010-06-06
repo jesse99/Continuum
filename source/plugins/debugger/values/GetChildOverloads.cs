@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Mono.Debugger.Soft;
+using MObjc.Helpers;
 using System;
 using System.Linq;
 
@@ -38,14 +39,45 @@ namespace Debugger
 		[GetChild.Overload]
 		public static VariableItem GetChild(ThreadMirror thread, CachedStackFrame value, int index)
 		{
-			LocalVariable local = value.GetLocal(index);
+			VariableItem child;
 			
-			string name = local.Name;
-			if (string.IsNullOrEmpty(name))
-				name = "$" + local.Index;			// temporary variable
+			if (index < value.Length)
+			{
+				LocalVariable local = value.GetLocal(index);
+				
+				string name = local.Name;
+				if (string.IsNullOrEmpty(name))
+					name = "$" + local.Index;			// temporary variable
+				
+				Value v = value.GetValue(local);
+				child = new VariableItem(thread, name, local, v, index);
+			}
+			else
+			{
+				FieldInfoMirror[] fields = value.Frame.Method.DeclaringType.GetAllFields().ToArray();
+				Contract.Assert(fields.Length > 0);
+				
+				object v = null;
+				if (value.ThisPtr is ObjectMirror)
+					v = new InstanceValue((ObjectMirror) value.ThisPtr, fields);
+				else if (value.ThisPtr is StructMirror)
+					v = new InstanceValue((StructMirror) value.ThisPtr, fields);
+				else if (value.ThisPtr == null || value.ThisPtr.IsNull())
+					v = new TypeValue(value.Method.DeclaringType, fields);
+				else
+					Contract.Assert(false, value.ThisPtr.TypeName() + " is bogus");
+					
+				string name = fields.All(f => f.IsStatic) ? "statics" : "this";
+				child = new VariableItem(thread, name, value.ThisPtr, v, index);
+			}
 			
-			Value child = value.GetValue(local);
-			return new VariableItem(thread, name, local, child, index);
+			return child;
+		}
+		
+		[GetChild.Overload]
+		public static VariableItem GetChild(ThreadMirror thread, InstanceValue value, int index)
+		{
+			return value.GetChild(thread, index);
 		}
 		
 		[GetChild.Overload]
@@ -70,6 +102,20 @@ namespace Debugger
 			FieldInfoMirror field = value.Type.GetFields()[index];
 			Value child = value.Fields[index];
 			return new VariableItem(thread, DoSanitizeFieldName(field), field, child, index);
+		}
+		
+		[GetChild.Overload]
+		public static VariableItem GetChild(ThreadMirror thread, TypeMirror value, int index)
+		{
+			FieldInfoMirror field = value.GetAllFields().ElementAt(index);
+			Value child = value.GetValue(field);
+			return new VariableItem(thread, DoSanitizeFieldName(field), field, child, index);
+		}
+		
+		[GetChild.Overload]
+		public static VariableItem GetChild(ThreadMirror thread, TypeValue value, int index)
+		{
+			return value.GetChild(thread, index);
 		}
 		
 		#region Private Methods

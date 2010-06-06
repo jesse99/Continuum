@@ -24,6 +24,7 @@ using Mono.Cecil;
 using Mono.Debugger.Soft;
 using Shared;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Debug = Debugger;
@@ -67,7 +68,9 @@ namespace Debugger
 		[GetItem.Overload]
 		public static Item GetItem(ThreadMirror thread, object hint, CachedStackFrame value)
 		{
-			return new Item(value.Length, string.Empty, "Mono.Debugger.Soft.StackFrame");
+			IEnumerable<FieldInfoMirror> fields = value.Frame.Method.DeclaringType.GetAllFields();
+			int delta = fields.Any() ?  1 : 0;
+			return new Item(value.Length + delta, string.Empty, "Mono.Debugger.Soft.StackFrame");
 		}
 		
 		[GetItem.Overload]
@@ -100,6 +103,12 @@ namespace Debugger
 			else
 				text = value.StringValue;
 			return new Item(0, text, value.Type.FullName);
+		}
+		
+		[GetItem.Overload]
+		public static Item GetItem(ThreadMirror thread, object hint, InstanceValue value)
+		{
+			return new Item(value.Length, value.GetText(thread), value.Type.FullName);
 		}
 		
 		[GetItem.Overload]
@@ -239,6 +248,12 @@ namespace Debugger
 		}
 		
 		[GetItem.Overload]
+		public static Item GetItem(ThreadMirror thread, object hint, TypeValue value)
+		{
+			return new Item(value.Length, value.GetText(thread), value.Type.FullName);
+		}
+		
+		[GetItem.Overload]
 		public static Item GetItem(ThreadMirror thread, object hint, UInt16 value)
 		{
 			if (VariableController.ShowHex)
@@ -284,46 +299,42 @@ namespace Debugger
 			// because it will be the one with template arguments filled in. TODO: the later
 			// deosn't work because we always get a TypeDefinition from the declaration (as
 			// opposed to a GenericInstanceType. However MD has this working somehow...)
-			TypeReference tr = DoGetHintType(hint);
-			if (value == null || (tr != null && tr.HasGenericParameters && tr.Name == value.Name))
-			{
-				type = tr.FullName;
-			}
+			TypeMirror hintType = DoGetHintType(hint);
+			if (value == null || (hintType != null && hintType.Metadata != null && hintType.Metadata.HasGenericParameters && hintType.Metadata.Name == value.Name))
+				value = hintType;
+			
+			if (value.Metadata != null)
+				type = value.Metadata.FullName;
 			else
-			{
-				if (value.Metadata != null)
-					type = value.Metadata.FullName;
-				else
-					type = value.FullName;
-			}
+				type = value.FullName;
 			
 			return type;
 		}
 		
-		private static TypeReference DoGetHintType(object hint)
+		private static TypeMirror DoGetHintType(object hint)
 		{
-			TypeReference type = null;
+			TypeMirror type = null;
 			
 			do
 			{
 				LocalVariable lv = hint as LocalVariable;
 				if (lv != null)
 				{
-					type = lv.Type.Metadata;
+					type = lv.Type;
 					break;
 				}
 				
 				ParameterInfoMirror pm = hint as ParameterInfoMirror;
 				if (pm != null)
 				{
-					type = pm.ParameterType.Metadata;
+					type = pm.ParameterType;
 					break;
 				}
 				
 				FieldInfoMirror fm = hint as FieldInfoMirror;
 				if (fm != null)
 				{
-					type = fm.DeclaringType.Metadata;
+					type = fm.DeclaringType;
 					break;
 				}
 			}

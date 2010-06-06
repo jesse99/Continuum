@@ -25,51 +25,38 @@ using Shared;
 using System;
 using System.Collections.Generic;
 
+using Debug = Debugger;
+
 namespace Debugger
 {
-	// StackFrame becomes unuseable pretty much immediately (e.g. after doing
-	// an invoke) so we need to get values for all locals asap.
-	internal sealed class CachedStackFrame
+	// Fields associated with the type of a static method executing a stack frame.
+	internal sealed class TypeValue
 	{
-		public CachedStackFrame(StackFrame frame)
+		public TypeValue(TypeMirror instance, FieldInfoMirror[] fields)
 		{
-			ThisPtr = frame.GetThis();
-			Method = frame.Method;
-			Frame = frame;
-			Thread = frame.Thread;
-			VirtualMachine = frame.VirtualMachine;
+			Contract.Requires(instance != null);
+			Contract.Requires(fields != null);
 			
-			m_locals = frame.Method.GetLocals();
-			m_values = frame.GetValues(m_locals);
+			m_instance = instance;
+			Length = fields.Length;
 		}
 		
-		// null means that the method associated with the stack frame is static.
-		public Value ThisPtr {get; private set;}
-
-		public MethodMirror Method {get; private set;}
-
-		public StackFrame Frame {get; private set;}
+		public int Length {get; private set;}
 		
-		public ThreadMirror Thread {get; private set;}
+		public TypeMirror Type {get {return m_instance;}}
 		
-		public VirtualMachine VirtualMachine {get; private set;}
-		
-		public int Length {get {return m_values.Length;}}
-		
-		public LocalVariable GetLocal(int index)
+		public string GetText(ThreadMirror thread)
 		{
-			return m_locals[index];
+			return string.Empty;
 		}
 		
-		public Value GetValue(LocalVariable local)
+		public VariableItem GetChild(ThreadMirror thread, int index)
 		{
-			int index = Array.IndexOf(m_locals, local);
-			return m_values[index];
+			return Debug::GetChild.Invoke(thread, m_instance, index);
 		}
 		
 		#region Private Methods
-		private LocalVariable[] m_locals;
-		private Value[] m_values;
+		private TypeMirror m_instance;
 		#endregion
 	}
 }

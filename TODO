@@ -66,17 +66,24 @@ public abstract class Mono.Debugger.Value
 		
 
 * Work on stuff:
-	- use a type hint
-	- get 'this' working
-	- get statics working
 	- get setting values working
 	- special case IntPtr and Nullable text
 	- get special types working
+		XML
+		Regex
+		StringBuilder
+		Type
 * Redo the yucky VariableItem class:
 	- make sure nothing important has been lost
 	- delete the old code
 	- review SoftDebuggerExtensions
 	- make sure NSTableView really is smart about which children it gets
+* Add a show command:
+	- ints can show different bases and char
+	- should be live
+	- floats can maybe show G and the round-trip version
+	- IntPtr and Buffer 1K or so of binary
+	- strings binary
 * Look at other uses of GetProperty and GetProperties.
 * Also GetMethod and GetMethods.
 * Can we sort the variables? Maybe add some sort of key field?	string
