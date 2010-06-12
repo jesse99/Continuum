@@ -94,13 +94,13 @@ namespace Debugger
 					break;
 				
 				case "changed stack frame":
-					var frame = (StackFrame) value;
+					var frame = (LiveStackFrame) value;
 					var context3 = new Context(frame.Thread, frame.Method, frame.ILOffset);
 					DoPaused(context3);
 					break;
 				
 				case "changed thread":
-					var stack = (StackFrame[]) value;
+					var stack = (LiveStack) value;
 					var context4 = new Context(stack[0].Thread, stack[0].Method, stack[0].ILOffset);
 					DoPaused(context4);
 					break;

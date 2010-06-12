@@ -19,57 +19,49 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-using MObjc.Helpers;
 using Mono.Debugger.Soft;
-using Shared;
+using MObjc.Helpers;
 using System;
-using System.Collections.Generic;
+using System.Linq;
 
 namespace Debugger
 {
-	// StackFrame becomes unuseable pretty much immediately (e.g. after doing
-	// an invoke) so we need to get values for all locals asap.
-	internal sealed class CachedStackFrame
+	internal static class SetValueOverloads
 	{
-		public CachedStackFrame(StackFrame frame)
+		[SetValue.Overload]
+		public static void Set(LiveStackFrame frame, VariableItem item, Element<ArrayMirror, int> hint, Value newValue)
 		{
-			ThisPtr = frame.GetThis();
-			Method = frame.Method;
-			Frame = frame;
-			Thread = frame.Thread;
-			VirtualMachine = frame.VirtualMachine;
-			
-			m_locals = frame.Method.GetLocals();
-			m_values = frame.GetValues(m_locals);
+			hint.Owner.SetValues(hint.Key, new Value[]{newValue});
 		}
 		
-		// null means that the method associated with the stack frame is static.
-		public Value ThisPtr {get; private set;}
-
-		public MethodMirror Method {get; private set;}
-
-		public StackFrame Frame {get; private set;}
-		
-		public ThreadMirror Thread {get; private set;}
-		
-		public VirtualMachine VirtualMachine {get; private set;}
-		
-		public int Length {get {return m_values.Length;}}
-		
-		public LocalVariable GetLocal(int index)
+		[SetValue.Overload]
+		public static void Set(LiveStackFrame frame, VariableItem item, Element<ObjectMirror, FieldInfoMirror> hint, Value newValue)
 		{
-			return m_locals[index];
+			if (hint.Key.IsStatic)
+				hint.Key.DeclaringType.SetValue(hint.Key, newValue);
+			else
+				hint.Owner.SetValue(hint.Key, newValue);
 		}
 		
-		public Value GetValue(LocalVariable local)
+		[SetValue.Overload]
+		public static void Set(LiveStackFrame frame, VariableItem item, LocalVariable hint, Value newValue)
 		{
-			int index = Array.IndexOf(m_locals, local);
-			return m_values[index];
+			frame.SetValue(hint, newValue);
 		}
 		
-		#region Private Methods
-		private LocalVariable[] m_locals;
-		private Value[] m_values;
-		#endregion
+		[SetValue.Overload]
+		public static void Set(LiveStackFrame frame, VariableItem item, Element<StructMirror, int> hint, Value newValue)
+		{
+			FieldInfoMirror[] fields = hint.Owner.Type.GetFields();
+			if (fields[hint.Key].IsStatic)
+			{
+				hint.Owner.Type.SetValue(fields[hint.Key], newValue);
+			}
+			else
+			{
+				hint.Owner.Fields[hint.Key] = newValue;
+//				SetValue.Invoke(frame, item.Parent, item.Parent.Hint, newValue);
+			}
+		}
 	}
 }

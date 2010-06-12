@@ -35,7 +35,7 @@ namespace Debugger
 			m_name = name;
 		}
 		
-		public override ExtendedValue Evaluate(StackFrame frame)
+		public override ExtendedValue Evaluate(LiveStackFrame frame)
 		{
 			Value value = DoGetValue(frame);
 			return new ExtendedValue(value);
@@ -47,7 +47,7 @@ namespace Debugger
 		}
 		
 		#region Private Methods
-		private Value DoGetValue(StackFrame frame)
+		private Value DoGetValue(LiveStackFrame frame)
 		{
 			Value result = null;
 			
@@ -69,7 +69,7 @@ namespace Debugger
 			// And finally fields and properties.
 			if (result == null)
 			{
-				Value thisPtr = frame.GetThis();
+				Value thisPtr = frame.ThisPtr;
 				result = EvalMember.Evaluate(frame.Thread, thisPtr, m_name);
 			}
 			

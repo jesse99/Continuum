@@ -67,18 +67,18 @@ namespace Debugger
 				case "debugger thrown exception":
 				case "debugger processed step event":
 					var context = (Context) value;
-					StackFrame[] frames = context.Thread.GetFrames();
-					DoReset(frames[0]);
+					var frame = new LiveStackFrame(context.Thread, 0);
+					DoReset(frame);
 					break;
 				
 				case "changed thread":
-					var stack = (StackFrame[]) value;
+					var stack = (LiveStack) value;
 					DoReset(stack[0]);
 					break;
 				
 				case "changed stack frame":
-					var frame = (StackFrame) value;
-					DoReset(frame);
+					var frame2 = (LiveStackFrame) value;
+					DoReset(frame2);
 					break;
 				
 				case "debugger stopped":
@@ -86,6 +86,7 @@ namespace Debugger
 					break;
 				
 				case "exiting event loop":
+					DoReset(null);
 					DoSavePrefs();
 					break;
 				
@@ -171,24 +172,24 @@ namespace Debugger
 		
 		public void outlineView_setObjectValue_forTableColumn_byItem(NSTableView table, NSObject value, NSTableColumn col, VariableItem item)
 		{
-#if NOT_YET
 			try
 			{
 				string text = value.description();
-				object newValue = ValueSet.Invoke(item.Owner, item.Value, text);
-				if (newValue != null)
-				{
-					item.RefreshValue(m_frame.Thread, newValue);
-				}
+				Value newValue = ParseValue.Invoke(m_frame.Thread, item, item.Value, text);
+				
+				SetValue.Invoke(m_frame, item, item.Hint, newValue);
+				item.RefreshValue(m_frame.Thread, newValue);
 			}
 			catch (Exception e)
 			{
 				Boss boss = ObjectModel.Create("Application");
 				var transcript = boss.Get<ITranscript>();
 				transcript.Show();
+//				transcript.WriteLine(Output.Error, "{0}", e);	
 				transcript.WriteLine(Output.Error, "{0}", e.Message);
+				if (e.InnerException != null)
+					transcript.WriteLine(Output.Error, "   {0}", e.InnerException.Message);
 			}
-#endif
 		}
 		
 		public int outlineView_numberOfChildrenOfItem(NSOutlineView table, VariableItem item)
@@ -226,12 +227,12 @@ namespace Debugger
 		}
 		
 		#region Private Methods
-		private void DoReset(StackFrame frame)
+		private void DoReset(LiveStackFrame frame)
 		{
-			if (m_item != null && ((CachedStackFrame) m_item.Value).Frame.Matches(frame))
+			if (m_item != null && ((LiveStackFrame) m_item.Value) == frame)
 			{
 				m_frame = frame;
-				m_item.RefreshValue(m_frame.Thread, new CachedStackFrame(frame));
+				m_item.RefreshValue(m_frame.Thread, frame);
 			}
 			else
 			{
@@ -244,7 +245,7 @@ namespace Debugger
 				if (frame != null)
 				{
 					m_frame = frame;
-					m_item = new VariableItem(m_frame.Thread, "stack frame", null, new CachedStackFrame(frame), 0);
+					m_item = new VariableItem(m_frame.Thread, "stack frame", null, frame, 0);
 				}
 			}
 			
@@ -273,7 +274,7 @@ namespace Debugger
 		
 		#region Fields
 		private NSOutlineView m_table;
-		private StackFrame m_frame;
+		private LiveStackFrame m_frame;
 		private VariableItem m_item;
 		
 		private static bool ms_showHex;

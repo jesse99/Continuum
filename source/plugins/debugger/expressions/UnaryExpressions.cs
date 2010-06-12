@@ -34,7 +34,7 @@ namespace Debugger
 			m_expr = expr;
 		}
 		
-		public override ExtendedValue Evaluate(StackFrame frame)
+		public override ExtendedValue Evaluate(LiveStackFrame frame)
 		{
 			bool value = m_expr.Evaluate(frame).Get<bool>();
 			

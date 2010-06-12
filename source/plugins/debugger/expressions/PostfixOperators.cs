@@ -34,7 +34,7 @@ namespace Debugger
 			m_memberName = memberName;
 		}
 		
-		public override ExtendedValue Evaluate(StackFrame frame)
+		public override ExtendedValue Evaluate(LiveStackFrame frame)
 		{
 			ExtendedValue result;
 			if (Target.Value is ObjectMirror || Target.Value is StructMirror)
@@ -74,7 +74,7 @@ namespace Debugger
 			m_index = index;
 		}
 		
-		public override ExtendedValue Evaluate(StackFrame frame)
+		public override ExtendedValue Evaluate(LiveStackFrame frame)
 		{
 			if (Target.Value is ArrayMirror)
 			{

@@ -66,11 +66,12 @@ namespace Debugger
 		}
 		
 		[GetItem.Overload]
-		public static Item GetItem(ThreadMirror thread, object hint, CachedStackFrame value)
+		public static Item GetItem(ThreadMirror thread, object hint, LiveStackFrame value)
 		{
-			IEnumerable<FieldInfoMirror> fields = value.Frame.Method.DeclaringType.GetAllFields();
+			IEnumerable<FieldInfoMirror> fields = value.Method.DeclaringType.GetAllFields();
 			int delta = fields.Any() ?  1 : 0;
-			return new Item(value.Length + delta, string.Empty, "Mono.Debugger.Soft.StackFrame");
+			LocalVariable[] locals = value.Method.GetLocals();
+			return new Item(locals.Length + delta, string.Empty, "LiveStackFrame");
 		}
 		
 		[GetItem.Overload]
@@ -244,7 +245,9 @@ namespace Debugger
 			}
 			
 			string type = DoGetFullerName(hint, value.Type);
-			return new Item(value.Fields.Length, text, type);
+			
+			FieldInfoMirror[] fields = value.Type.GetFields();
+			return new Item(fields.Length, text, type);
 		}
 		
 		[GetItem.Overload]
@@ -317,24 +320,31 @@ namespace Debugger
 			
 			do
 			{
-				LocalVariable lv = hint as LocalVariable;
+				var lv = hint as LocalVariable;
 				if (lv != null)
 				{
 					type = lv.Type;
 					break;
 				}
 				
-				ParameterInfoMirror pm = hint as ParameterInfoMirror;
+				var pm = hint as ParameterInfoMirror;
 				if (pm != null)
 				{
 					type = pm.ParameterType;
 					break;
 				}
 				
-				FieldInfoMirror fm = hint as FieldInfoMirror;
+				var fm = hint as FieldInfoMirror;
 				if (fm != null)
 				{
 					type = fm.DeclaringType;
+					break;
+				}
+				
+				var of = hint as Element<ObjectMirror, FieldInfoMirror>;
+				if (of != null)
+				{
+					type = of.Key.DeclaringType;
 					break;
 				}
 			}

@@ -20,34 +20,21 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Mono.Debugger.Soft;
-using MObjc.Helpers;
 using System;
 
 namespace Debugger
 {
-	// Used to store expressions that don't parse (so the user doesn't have to type them
-	// in twice).
-	internal sealed class BadExpression : Expression
+	// Hint used to help set array elements, object fields, etc.
+	internal sealed class Element<OWNER, KEY>
 	{
-		public BadExpression(string expr)
+		public Element(OWNER owner, KEY key)
 		{
-			Contract.Requires(expr != null, "expr is null");
-			
-			m_expr = expr;
+			Owner = owner;
+			Key = key;
 		}
 		
-		public override ExtendedValue Evaluate(LiveStackFrame frame)
-		{
-			return new ExtendedValue(frame.VirtualMachine.CreateValue(true));
-		}
+		public OWNER Owner {get; private set;}
 		
-		public override string ToString()
-		{
-			return m_expr;
-		}
-		
-		#region Fields
-		private string m_expr;
-		#endregion
+		public KEY Key {get; private set;}
 	}
 }

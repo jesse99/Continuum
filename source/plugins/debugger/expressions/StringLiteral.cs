@@ -34,7 +34,7 @@ namespace Debugger
 			m_value = value;
 		}
 		
-		public override ExtendedValue Evaluate(StackFrame frame)
+		public override ExtendedValue Evaluate(LiveStackFrame frame)
 		{
 			return new ExtendedValue(frame.Thread.Domain.CreateString(m_value));
 		}

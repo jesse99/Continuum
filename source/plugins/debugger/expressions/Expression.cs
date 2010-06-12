@@ -27,6 +27,6 @@ namespace Debugger
 	internal abstract class Expression
 	{
 		// Returns a primitive type or throws an error.
-		public abstract ExtendedValue Evaluate(StackFrame frame);
+		public abstract ExtendedValue Evaluate(LiveStackFrame frame);
 	}
 }

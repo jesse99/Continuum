@@ -103,7 +103,7 @@ namespace Debugger
 			int row = m_table.selectedRow();
 			if (!m_threads[row].IsCollected)
 			{
-				StackFrame[] stack = m_threads[row].GetFrames();
+				var stack = new LiveStack(m_threads[row]);
 				if (stack.Length > 0)
 				{
 					m_selected = row;

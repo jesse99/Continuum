@@ -64,15 +64,28 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.StringMirror
 		public class Mono.Debugger.ArrayMirror	
 		
-
+* Work on setting values:
+	- struct instance field, probably have to add a Parent property to VariableItem
+	  and replace Hint with Key
+	  get rid of Element
+	- does setting a field in a base class work?
+	- higher stack frame
+* Do a checkin.
 * Work on stuff:
-	- get setting values working
 	- special case IntPtr and Nullable text
 	- get special types working
 		XML
 		Regex
 		StringBuilder
 		Type
+* Console had a stack trace:
+  at MObjc.Helpers.Contract.Requires (Boolean predicate, System.String mesg) [0x0000d] in /Users/jessejones/Source/mobjc/source/helpers/Contract.cs:218 
+  at MObjc.NSObject.get_Item (System.String ivarName) [0x00013] in /Users/jessejones/Source/mobjc/source/NSObject.cs:327 
+  at MObjc.IBOutlet`1[MCocoa.NSProgressIndicator].get_Value () [0x00000] in /Users/jessejones/Source/mobjc/source/IBOutlet.cs:48 
+  at Find.FindProgressController.DoUpdate () [0x00000] in /Users/jessejones/Source/Continuum/source/plugins/find/FindProgressController.cs:68 
+  at MCocoa.AppHelper.onDelayedAction (MCocoa.NSNumber id) [0x00048] in /Users/jessejones/Source/mcocoa/source/appkit/AppHelper.cs:114 
+* May want to color code this and params.
+* Probably should re-check that switching threads works still.
 * Redo the yucky VariableItem class:
 	- make sure nothing important has been lost
 	- delete the old code

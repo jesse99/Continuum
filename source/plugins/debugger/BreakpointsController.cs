@@ -172,7 +172,7 @@ namespace Debugger
 		}
 		
 		#region Private Methods
-		private DebuggerThread.HandlerAction DoEvaluateCondition(StackFrame frame, Breakpoint bp)
+		private DebuggerThread.HandlerAction DoEvaluateCondition(LiveStackFrame frame, Breakpoint bp)
 		{
 			var result = DebuggerThread.HandlerAction.Suspend;
 			

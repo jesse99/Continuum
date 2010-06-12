@@ -196,7 +196,7 @@ namespace Debugger
 			Broadcaster.Invoke("debugger unloaded assembly", e.Assembly);
 		}
 		
-		internal Func<Mono.Debugger.Soft.StackFrame, Breakpoint, DebuggerThread.HandlerAction> BreakpointCondition {get; set;}
+		internal Func<LiveStackFrame, Breakpoint, DebuggerThread.HandlerAction> BreakpointCondition {get; set;}
 		
 		internal void OnBreakpoint(BreakpointEvent e, ResolvedBreakpoint bp)
 		{
@@ -208,7 +208,7 @@ namespace Debugger
 				m_stepRequest = null;
 			}
 			
-			Mono.Debugger.Soft.StackFrame[] frames = m_currentThread.GetFrames();
+			var frames = new LiveStack(m_currentThread);
 			
 			Contract.Assert(BreakpointCondition != null, "BreakpointCondition is null");
 			DebuggerThread.HandlerAction action = BreakpointCondition(frames[0], bp.BreakPoint);
@@ -243,8 +243,8 @@ namespace Debugger
 				m_stepRequest = null;
 			}
 			
-			Mono.Debugger.Soft.StackFrame[] frames = e.Thread.GetFrames();
-			Mono.Debugger.Soft.StackFrame frame = frames[0];
+			var frames = new LiveStack(e.Thread);
+			LiveStackFrame frame = frames[0];
 			if (DebuggerWindows.WriteEvents)
 				m_transcript.WriteLine(Output.Normal, "{0} exception was thrown at {1}:{2:X4}", e.Exception.Type.FullName, frame.Method.FullName, frame.ILOffset);
 			var context = new Context(e.Thread, frame.Method, frame.ILOffset);

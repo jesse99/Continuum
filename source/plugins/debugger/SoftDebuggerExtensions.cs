@@ -73,6 +73,7 @@ namespace Debugger
 		#endregion
 	}
 	
+#if UNUSED	// TODO: get rid of this
 	internal static class StackFrameExtensions
 	{
 		// Returns true if the two stack frames are the same.
@@ -111,6 +112,7 @@ namespace Debugger
 			return matches;
 		}
 	}
+#endif
 	
 	internal static class TypeMirrorExtensions
 	{

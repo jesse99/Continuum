@@ -33,17 +33,18 @@ namespace Debugger
 		{
 			string name = DoGetArrayName(value, index);
 			Value child = value[index];
-			return new VariableItem(thread, name, null, child, index);
+			return new VariableItem(thread, name, new Element<ArrayMirror, int>(value, index), child, index);
 		}
 		
 		[GetChild.Overload]
-		public static VariableItem GetChild(ThreadMirror thread, CachedStackFrame value, int index)
+		public static VariableItem GetChild(ThreadMirror thread, LiveStackFrame value, int index)
 		{
 			VariableItem child;
 			
-			if (index < value.Length)
+			LocalVariable[] locals = value.Method.GetLocals();
+			if (index < locals.Length)
 			{
-				LocalVariable local = value.GetLocal(index);
+				LocalVariable local = locals[index];
 				
 				string name = local.Name;
 				if (string.IsNullOrEmpty(name))
@@ -54,7 +55,7 @@ namespace Debugger
 			}
 			else
 			{
-				FieldInfoMirror[] fields = value.Frame.Method.DeclaringType.GetAllFields().ToArray();
+				FieldInfoMirror[] fields = value.Method.DeclaringType.GetAllFields().ToArray();
 				Contract.Assert(fields.Length > 0);
 				
 				object v = null;
@@ -85,7 +86,7 @@ namespace Debugger
 		{
 			FieldInfoMirror field = value.Type.GetAllFields().ElementAt(index);
 			Value child = EvalMember.Evaluate(thread, value, field.Name);
-			return new VariableItem(thread, DoSanitizeFieldName(field), field, child, index);
+			return new VariableItem(thread, DoSanitizeFieldName(field), new Element<ObjectMirror, FieldInfoMirror>(value, field), child, index);
 		}
 		
 		[GetChild.Overload]
@@ -100,8 +101,12 @@ namespace Debugger
 		public static VariableItem GetChild(ThreadMirror thread, StructMirror value, int index)
 		{
 			FieldInfoMirror field = value.Type.GetFields()[index];
-			Value child = value.Fields[index];
-			return new VariableItem(thread, DoSanitizeFieldName(field), field, child, index);
+			Value child;
+			if (field.IsStatic)
+				child = value.Type.GetValue(field);
+			else
+				child = value.Fields[index];
+			return new VariableItem(thread, DoSanitizeFieldName(field), new Element<StructMirror, int>(value, index), child, index);
 		}
 		
 		[GetChild.Overload]
@@ -109,7 +114,7 @@ namespace Debugger
 		{
 			FieldInfoMirror field = value.GetAllFields().ElementAt(index);
 			Value child = value.GetValue(field);
-			return new VariableItem(thread, DoSanitizeFieldName(field), field, child, index);
+			return new VariableItem(thread, DoSanitizeFieldName(field), new Element<TypeMirror, int>(value, index), child, index);
 		}
 		
 		[GetChild.Overload]

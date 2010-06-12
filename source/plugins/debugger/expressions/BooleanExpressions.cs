@@ -67,7 +67,7 @@ namespace Debugger
 		{
 		}
 		
-		public override ExtendedValue Evaluate(StackFrame frame)
+		public override ExtendedValue Evaluate(LiveStackFrame frame)
 		{
 			ExtendedValue left = m_lhs.Evaluate(frame);
 			ExtendedValue right = m_rhs.Evaluate(frame);

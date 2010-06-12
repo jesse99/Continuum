@@ -48,12 +48,12 @@ namespace Debugger
 		{
 			switch (name)
 			{
-				case "debugger processed breakpoint event":	
-				case "debugger thrown exception":	
+				case "debugger processed breakpoint event":
+				case "debugger thrown exception":
 				case "debugger processed step event":
 					var context = (Context) value;
-					StackFrame[] stack = context.Thread.GetFrames();
-					if (!StackFrameExtensions.Matches(stack, m_stack))
+					var stack = new LiveStack(context.Thread);
+					if (stack != m_stack)
 					{
 						m_stack = stack;
 						m_selected = 0;
@@ -63,8 +63,8 @@ namespace Debugger
 					break;
 				
 				case "changed thread":
-					var stack2 = (StackFrame[]) value;
-					if (!StackFrameExtensions.Matches(stack2, m_stack))
+					var stack2 = (LiveStack) value;
+					if (stack2 != m_stack)
 					{
 						m_stack = stack2;
 						m_selected = 0;
@@ -97,20 +97,9 @@ namespace Debugger
 			int row = m_table.selectedRow();
 			row = m_stack.Length - row - 1;		// frames are drawn top down
 			
-			StackFrame[] stack = m_stack[0].Thread.GetFrames();		// we need to get a fresh copy of the stack frame or the debugger whines that the "the specified stack frame is no longer valid"
-			if (stack[row].Matches(m_stack[row]))
-			{
-				m_selected = row;
-				m_table.reloadData();
-				Broadcaster.Invoke("changed stack frame", stack[row]);
-			}
-			else
-			{
-				Boss boss = ObjectModel.Create("Application");
-				var transcript = boss.Get<ITranscript>();
-				transcript.Show();
-				transcript.WriteLine(Output.Error, "Current stack doesn't match cached stack.");
-			}
+			m_selected = row;
+			m_table.reloadData();
+			Broadcaster.Invoke("changed stack frame", m_stack[row]);
 		}
 		
 		public int numberOfRowsInTableView(NSTableView table)
@@ -124,7 +113,7 @@ namespace Debugger
 				return NSString.Empty;
 			
 			row = m_stack.Length - row - 1;		// draw the frames top down
-			StackFrame frame = m_stack[row];
+			LiveStackFrame frame = m_stack[row];
 			
 			if (col.identifier().ToString() == "0")
 				return DoCreateString(System.IO.Path.GetFileName(frame.FileName), row);
@@ -169,7 +158,7 @@ namespace Debugger
 		
 		#region Fields
 		private NSTableView m_table;
-		private StackFrame[] m_stack;
+		private LiveStack m_stack;
 		private State m_state;
 		private int m_selected;
 		#endregion

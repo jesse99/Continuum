@@ -45,7 +45,7 @@ namespace Debugger
 			Value = value;
 			AttributedName = NSMutableAttributedString.Create(name).Retain();
 			m_index = index;
-			m_hint = hint;
+			Hint = hint;
 			
 			Item item = GetItem.Invoke(thread, hint, Value);
 			AttributedType = NSAttributedString.Create(item.Type).Retain();
@@ -57,6 +57,7 @@ namespace Debugger
 		public NSAttributedString AttributedType {get; private set;}
 		public NSAttributedString AttributedValue {get; private set;}
 		
+		public object Hint {get; private set;}				// used to get the declared type of a value (and to set values)
 		public object Value {get; private set;}
 		
 		public int NumberOfChildren {get; private set;}
@@ -91,7 +92,7 @@ namespace Debugger
 		// Update the value and recursively all the children to reflect state changes in the debugee.
 		public void Refresh(ThreadMirror thread)
 		{
-			Item item = GetItem.Invoke(thread, m_hint, Value);
+			Item item = GetItem.Invoke(thread, Hint, Value);
 			DoRefreshValueText(item.Text);
 			DoRefreshTypeText(item.Type);
 			
@@ -246,7 +247,6 @@ namespace Debugger
 		
 		#region Fields
 		private int m_index;
-		private object m_hint;				// used to get the declared type of a value
 		private VariableItem[] m_children;
 		#endregion
 	}

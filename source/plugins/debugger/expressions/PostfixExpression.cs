@@ -34,7 +34,7 @@ namespace Debugger
 			m_suffixes = suffixes;
 		}
 		
-		public override ExtendedValue Evaluate(StackFrame frame)
+		public override ExtendedValue Evaluate(LiveStackFrame frame)
 		{
 			ExtendedValue result = m_identifier.Evaluate(frame);
 			
