@@ -264,12 +264,12 @@ namespace Debugger
 			else if (text.Length >= 2 && text.StartsWith("\"") && text.EndsWith("\""))
 			{
 				string naked = text.Substring(1, text.Length - 2);
-				result = thread.Domain.CreateString(DoParseNakedString(naked));
+				result = thread.Domain.CreateString(ParseNakedString(naked));
 			}
 			else if (text.Length >= 3 && text.StartsWith("@\"") && text.EndsWith("\""))
 			{
 				string naked = text.Substring(2, text.Length - 3);
-				result = thread.Domain.CreateString(DoParseNakedVerbatimString(naked));
+				result = thread.Domain.CreateString(ParseNakedVerbatimString(naked));
 			}
 			else
 			{
@@ -338,6 +338,96 @@ namespace Debugger
 			Value result = thread.VirtualMachine.CreateValue(value);
 			
 			return result;
+		}
+		
+		public static string ParseNakedVerbatimString(string text)
+		{
+			var builder = new System.Text.StringBuilder(text.Length);
+			
+			int i = 0;
+			while (i < text.Length)
+			{
+				char ch = text[i++];
+				
+				if (ch == '"' && i < text.Length && text[i] == '"')
+				{
+					builder.Append('"');
+					++i;
+				}
+				else
+				{
+					builder.Append(ch);
+				}
+			}
+			
+			return builder.ToString();
+		}
+		
+		public static string ParseNakedString(string text)
+		{
+			var builder = new System.Text.StringBuilder(text.Length);
+			
+			int i = 0;
+			while (i < text.Length)
+			{
+				char ch = text[i++];
+				
+				if (ch == '\\' && i + 1 < text.Length)
+				{
+					if (text[i] == 'n')
+					{
+						builder.Append('\n');
+						++i;
+					}
+					else if (text[i] == 'r')
+					{
+						builder.Append('\r');
+						++i;
+					}
+					else if (text[i] == 't')
+					{
+						builder.Append('\t');
+						++i;
+					}
+					else if (text[i] == 'f')
+					{
+						builder.Append('\f');
+						++i;
+					}
+					else if (text[i] == '"')
+					{
+						builder.Append('"');
+						++i;
+					}
+					else if (text[i] == '\\')
+					{
+						builder.Append('\\');
+						++i;
+					}
+					else if (text[i] == 'x' || text[i] == 'u')
+					{
+						++i;
+						uint codePoint = 0;
+						int count = 0;
+						while (i < text.Length && DoIsHexDigit(text[i]) && count < 4)
+						{
+							codePoint = 16*codePoint + DoGetHexValue(text[i++]);
+							++count;
+						}
+						builder.Append((char) codePoint);
+					}
+					else
+					{
+						builder.Append(ch);
+					}
+				}
+				else
+				{
+					builder.Append(ch);
+				}
+			}
+			
+			return builder.ToString();
 		}
 		
 		#region Private Methods
@@ -416,96 +506,6 @@ namespace Debugger
 			}
 			
 			return result;
-		}
-		
-		private static string DoParseNakedVerbatimString(string text)
-		{
-			var builder = new System.Text.StringBuilder(text.Length);
-			
-			int i = 0;
-			while (i < text.Length)
-			{
-				char ch = text[i++];
-				
-				if (ch == '"' && i < text.Length && text[i] == '"')
-				{
-					builder.Append('"');
-					++i;
-				}
-				else
-				{
-					builder.Append(ch);
-				}
-			}
-			
-			return builder.ToString();
-		}
-		
-		private static string DoParseNakedString(string text)
-		{
-			var builder = new System.Text.StringBuilder(text.Length);
-			
-			int i = 0;
-			while (i < text.Length)
-			{
-				char ch = text[i++];
-				
-				if (ch == '\\' && i + 1 < text.Length)
-				{
-					if (text[i] == 'n')
-					{
-						builder.Append('\n');
-						++i;
-					}
-					else if (text[i] == 'r')
-					{
-						builder.Append('\r');
-						++i;
-					}
-					else if (text[i] == 't')
-					{
-						builder.Append('\t');
-						++i;
-					}
-					else if (text[i] == 'f')
-					{
-						builder.Append('\f');
-						++i;
-					}
-					else if (text[i] == '"')
-					{
-						builder.Append('"');
-						++i;
-					}
-					else if (text[i] == '\\')
-					{
-						builder.Append('\\');
-						++i;
-					}
-					else if (text[i] == 'x' || text[i] == 'u')
-					{
-						++i;
-						uint codePoint = 0;
-						int count = 0;
-						while (i < text.Length && DoIsHexDigit(text[i]) && count < 4)
-						{
-							codePoint = 16*codePoint + DoGetHexValue(text[i++]);
-							++count;
-						}
-						builder.Append((char) codePoint);
-					}
-					else
-					{
-						builder.Append(ch);
-					}
-				}
-				else
-				{
-					builder.Append(ch);
-				}
-			}
-			
-			return builder.ToString();
 		}
 		
 		private static bool DoIsHexDigit(char ch)

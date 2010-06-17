@@ -147,14 +147,14 @@ namespace Debugger
 		// Text will be "\"blah\"'.
 		private Expression DoParseString(string text)
 		{
-			string value = Parsers.ParseString(text.Substring(1, text.Length - 2));
+			string value = ParseValueOverloads.ParseNakedString(text.Substring(1, text.Length - 2));
 			return new StringLiteral(value);
 		}
 		
 		// Text will be @"\"blah\"'.
 		private Expression DoParseVerbatimString(string text)
 		{
-			string value = Parsers.ParseVerbatimString(text.Substring(2, text.Length - 3));
+			string value = ParseValueOverloads.ParseNakedVerbatimString(text.Substring(2, text.Length - 3));
 			return new StringLiteral(value);
 		}
 	}

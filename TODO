@@ -64,7 +64,8 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.StringMirror
 		public class Mono.Debugger.ArrayMirror	
 		
-* Do a checkin.
+* Work on enums.
+* Get rid of the old code.
 * Work on stuff:
 	- special case IntPtr and Nullable text
 	- get special types working	
