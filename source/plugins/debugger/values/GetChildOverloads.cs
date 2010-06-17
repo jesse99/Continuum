@@ -29,19 +29,19 @@ namespace Debugger
 	internal static class GetChildOverloads
 	{
 		[GetChild.Overload]
-		public static VariableItem GetChild(ThreadMirror thread, ArrayMirror value, int index)
+		public static VariableItem GetChild(ThreadMirror thread, VariableItem parentItem, ArrayMirror parent, int index)
 		{
-			string name = DoGetArrayName(value, index);
-			Value child = value[index];
-			return new VariableItem(thread, name, new Element<ArrayMirror, int>(value, index), child, index);
+			string name = DoGetArrayName(parent, index);
+			Value child = parent[index];
+			return new VariableItem(thread, name, parentItem, index, child, index);
 		}
 		
 		[GetChild.Overload]
-		public static VariableItem GetChild(ThreadMirror thread, LiveStackFrame value, int index)
+		public static VariableItem GetChild(ThreadMirror thread, VariableItem parentItem, LiveStackFrame parent, int index)
 		{
 			VariableItem child;
 			
-			LocalVariable[] locals = value.Method.GetLocals();
+			LocalVariable[] locals = parent.Method.GetLocals();
 			if (index < locals.Length)
 			{
 				LocalVariable local = locals[index];
@@ -50,77 +50,77 @@ namespace Debugger
 				if (string.IsNullOrEmpty(name))
 					name = "$" + local.Index;			// temporary variable
 				
-				Value v = value.GetValue(local);
-				child = new VariableItem(thread, name, local, v, index);
+				Value v = parent.GetValue(local);
+				child = new VariableItem(thread, name, parentItem, local, v, index);
 			}
 			else
 			{
-				FieldInfoMirror[] fields = value.Method.DeclaringType.GetAllFields().ToArray();
+				FieldInfoMirror[] fields = parent.Method.DeclaringType.GetAllFields().ToArray();
 				Contract.Assert(fields.Length > 0);
 				
 				object v = null;
-				if (value.ThisPtr is ObjectMirror)
-					v = new InstanceValue((ObjectMirror) value.ThisPtr, fields);
-				else if (value.ThisPtr is StructMirror)
-					v = new InstanceValue((StructMirror) value.ThisPtr, fields);
-				else if (value.ThisPtr == null || value.ThisPtr.IsNull())
-					v = new TypeValue(value.Method.DeclaringType, fields);
+				if (parent.ThisPtr is ObjectMirror)
+					v = new InstanceValue((ObjectMirror) parent.ThisPtr, fields);
+				else if (parent.ThisPtr is StructMirror)
+					v = new InstanceValue((StructMirror) parent.ThisPtr, fields);
+				else if (parent.ThisPtr == null || parent.ThisPtr.IsNull())
+					v = new TypeValue(parent.Method.DeclaringType, fields);
 				else
-					Contract.Assert(false, value.ThisPtr.TypeName() + " is bogus");
+					Contract.Assert(false, parent.ThisPtr.TypeName() + " is bogus");
 					
 				string name = fields.All(f => f.IsStatic) ? "statics" : "this";
-				child = new VariableItem(thread, name, value.ThisPtr, v, index);
+				child = new VariableItem(thread, name, parentItem, index, v, index);
 			}
 			
 			return child;
 		}
 		
 		[GetChild.Overload]
-		public static VariableItem GetChild(ThreadMirror thread, InstanceValue value, int index)
+		public static VariableItem GetChild(ThreadMirror thread, VariableItem parentItem, InstanceValue parent, int index)
 		{
-			return value.GetChild(thread, index);
+			return parent.GetChild(thread, parentItem, index);
 		}
 		
 		[GetChild.Overload]
-		public static VariableItem GetChild(ThreadMirror thread, ObjectMirror value, int index)
+		public static VariableItem GetChild(ThreadMirror thread, VariableItem parentItem, ObjectMirror parent, int index)
 		{
-			FieldInfoMirror field = value.Type.GetAllFields().ElementAt(index);
-			Value child = EvalMember.Evaluate(thread, value, field.Name);
-			return new VariableItem(thread, DoSanitizeFieldName(field), new Element<ObjectMirror, FieldInfoMirror>(value, field), child, index);
+			FieldInfoMirror field = parent.Type.GetAllFields().ElementAt(index);
+			Value child = EvalMember.Evaluate(thread, parent, field.Name);
+			return new VariableItem(thread, DoSanitizeFieldName(field), parentItem, field, child, index);
 		}
 		
 		[GetChild.Overload]
-		public static VariableItem GetChild(ThreadMirror thread, StringMirror value, int index)
+		public static VariableItem GetChild(ThreadMirror thread, VariableItem parentItem, StringMirror parent, int index)
 		{
 			string name = index.ToString();
-			char child = value.Value[index];
-			return new VariableItem(thread, name, null, child, index);
+			char child = parent.Value[index];
+			return new VariableItem(thread, name, parentItem, index, child, index);
 		}
 		
 		[GetChild.Overload]
-		public static VariableItem GetChild(ThreadMirror thread, StructMirror value, int index)
+		public static VariableItem GetChild(ThreadMirror thread, VariableItem parentItem, StructMirror parent, int index)
 		{
-			FieldInfoMirror field = value.Type.GetFields()[index];
+			FieldInfoMirror field = parent.Type.GetFields()[index];
 			Value child;
 			if (field.IsStatic)
-				child = value.Type.GetValue(field);
+				child = parent.Type.GetValue(field);
 			else
-				child = value.Fields[index];
-			return new VariableItem(thread, DoSanitizeFieldName(field), new Element<StructMirror, int>(value, index), child, index);
+				child = parent.Fields[index];
+			return new VariableItem(thread, DoSanitizeFieldName(field), parentItem, index, child, index);
 		}
 		
 		[GetChild.Overload]
-		public static VariableItem GetChild(ThreadMirror thread, TypeMirror value, int index)
+		public static VariableItem GetChild(ThreadMirror thread, VariableItem parentItem, TypeMirror parent, int index)
 		{
-			FieldInfoMirror field = value.GetAllFields().ElementAt(index);
-			Value child = value.GetValue(field);
-			return new VariableItem(thread, DoSanitizeFieldName(field), new Element<TypeMirror, int>(value, index), child, index);
+			FieldInfoMirror field = parent.GetAllFields().ElementAt(index);
+			Value child = parent.GetValue(field);
+			return new VariableItem(thread, DoSanitizeFieldName(field), parentItem, index, child, index);
 		}
 		
 		[GetChild.Overload]
-		public static VariableItem GetChild(ThreadMirror thread, TypeValue value, int index)
+		public static VariableItem GetChild(ThreadMirror thread, VariableItem parentItem, TypeValue parent, int index)
 		{
-			return value.GetChild(thread, index);
+			return parent.GetChild(thread, parentItem, index);
 		}
 		
 		#region Private Methods
@@ -137,15 +137,15 @@ namespace Debugger
 			return name;
 		}
 		
-		private static string DoGetArrayName(ArrayMirror value, int i)
+		private static string DoGetArrayName(ArrayMirror parent, int i)
 		{
 			var builder = new System.Text.StringBuilder();
 			
-			for (int dim = 0; dim < value.Rank; ++dim)
+			for (int dim = 0; dim < parent.Rank; ++dim)
 			{
-				int length = DoGetArrayLength(value, dim);
+				int length = DoGetArrayLength(parent, dim);
 				int index;
-				if (dim < value.Rank - 1)
+				if (dim < parent.Rank - 1)
 				{
 					index = i/length;
 					i = i - length*index;
@@ -155,21 +155,21 @@ namespace Debugger
 					index = i;
 				}
 				
-				builder.Append((index + value.GetLowerBound(dim)).ToString());
-				if (dim + 1 < value.Rank)
+				builder.Append((index + parent.GetLowerBound(dim)).ToString());
+				if (dim + 1 < parent.Rank)
 					builder.Append(", ");
 			}
 			
 			return builder.ToString();
 		}
 		
-		private static int DoGetArrayLength(ArrayMirror value, int dimension)
+		private static int DoGetArrayLength(ArrayMirror parent, int dimension)
 		{
 			int length = 1;
 			
-			for (int dim = dimension + 1; dim < value.Rank; ++dim)
+			for (int dim = dimension + 1; dim < parent.Rank; ++dim)
 			{
-				length *= value.GetLength(dim);
+				length *= parent.GetLength(dim);
 			}
 			
 			return length;

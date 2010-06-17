@@ -50,9 +50,9 @@ namespace Debugger
 			return string.Empty;
 		}
 		
-		public VariableItem GetChild(ThreadMirror thread, int index)
+		public VariableItem GetChild(ThreadMirror thread, VariableItem parent, int index)
 		{
-			return Debug::GetChild.Invoke(thread, m_instance, index);
+			return Debug::GetChild.Invoke(thread, parent, m_instance, index);
 		}
 		
 		#region Private Methods

@@ -20,54 +20,62 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using MObjc.Helpers;
+using Mono.Cecil;
 using Mono.Debugger.Soft;
 using Shared;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using Debug = Debugger;
 
 namespace Debugger
 {
-	// Fields associated with the object executing a stack frame.
-	internal sealed class InstanceValue
+	internal static class DeclaredTypeOverloads
 	{
-		public InstanceValue(ObjectMirror instance, FieldInfoMirror[] fields)
+		[DeclaredType.Overload]
+		public static TypeMirror GetType(ArrayMirror parent, int key)
 		{
-			Contract.Requires(instance != null);
-			Contract.Requires(fields != null);
-			
-			Instance = instance;
-			Length = fields.Length;
-			Type = instance.Type;
+			return parent.Type.GetElementType();
 		}
 		
-		public InstanceValue(StructMirror instance, FieldInfoMirror[] fields)
+		[DeclaredType.Overload]
+		public static TypeMirror GetType(InstanceValue parent, int key)
 		{
-			Contract.Requires(instance != null);
-			Contract.Requires(fields != null);
-			
-			Instance = instance;
-			Length = fields.Length;
-			Type = instance.Type;
+			FieldInfoMirror[] fields = parent.Type.GetFields();
+			return fields[key].DeclaringType;
 		}
 		
-		public object Instance {get; private set;}
-		
-		public int Length {get; private set;}
-		
-		public TypeMirror Type {get; private set;}
-		
-		public string GetText(ThreadMirror thread)
+		[DeclaredType.Overload]
+		public static TypeMirror GetType(LiveStackFrame parent, int key)
 		{
-			Item item = GetItem.Invoke(thread, null, null, Instance);
-			
-			return item.Text;
+			return parent.Method.DeclaringType;
 		}
 		
-		public VariableItem GetChild(ThreadMirror thread, VariableItem parent, int index)
+		[DeclaredType.Overload]
+		public static TypeMirror GetType(TypeValue parent, int key)
 		{
-			return Debug::GetChild.Invoke(thread, parent, Instance, index);
+			FieldInfoMirror[] fields = parent.Type.GetFields();
+			return fields[key].DeclaringType;
+		}
+		
+		[DeclaredType.Overload]
+		public static TypeMirror GetType(object parent, FieldInfoMirror key)
+		{
+			return key.DeclaringType;
+		}
+		
+		[DeclaredType.Overload]
+		public static TypeMirror GetType(object parent, LocalVariable key)
+		{
+			return key.Type;
+		}
+		
+		[DeclaredType.Overload]
+		public static TypeMirror GetType(StructMirror parent, int key)
+		{
+			FieldInfoMirror[] fields = parent.Type.GetFields();
+			return fields[key].DeclaringType;
 		}
 	}
 }

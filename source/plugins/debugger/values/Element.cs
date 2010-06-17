@@ -22,6 +22,7 @@
 using Mono.Debugger.Soft;
 using System;
 
+#if UNUSED
 namespace Debugger
 {
 	// Hint used to help set array elements, object fields, etc.
@@ -38,3 +39,4 @@ namespace Debugger
 		public KEY Key {get; private set;}
 	}
 }
+#endif

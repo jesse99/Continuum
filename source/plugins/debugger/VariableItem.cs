@@ -30,24 +30,36 @@ using Debug = Debugger;
 
 namespace Debugger
 {
+	// These form a tree representing all of the values the user is currently examining
+	// in the variables window. Note that we try to preserve the objects that form the
+	// tree to prevent the outline view from closing open items. 
 	[ExportClass("VariableItem", "NSObject")]
-	internal sealed class VariableItem : NSObject
+	internal sealed class VariableItem : NSObject, IFormattable
 	{
-		// These form a tree representing all of the values the user is currently examining
-		// in the variables window. Note that we try to preserve the objects that form the
-		// tree to prevent the outline view from closing open items. 
-		public VariableItem(ThreadMirror thread, string name, object hint, object value, int index) : base(NSObject.AllocAndInitInstance("VariableItem"))
+		public VariableItem(ThreadMirror thread, LiveStackFrame frame) : this(thread, frame.Method.DeclaringType.FullName + " Stack Frame", null, null, frame, 0)
 		{
+		}
+		
+		// name is a field name, local variable name, etc.
+		// parent is a LiveStackFrame, ObjectMirror, ArrayMirror, etc. Parents are always non-null except for the LiveStackFrame parent.
+		// key is an integral index, a FieldInfoMirror, LocalVariable, etc.
+		// value is the object associated with the parent/key. It will be a Value or a primitive type (like char or int).
+		public VariableItem(ThreadMirror thread, string name, VariableItem parent, object key, object value, int index) : base(NSObject.AllocAndInitInstance("VariableItem"))
+		{
+			Contract.Requires(thread != null);
 			Contract.Requires(!string.IsNullOrEmpty(name));
+			Contract.Requires(parent != null || value is LiveStackFrame);
+			Contract.Requires(key != null || value is LiveStackFrame);
 			Contract.Requires(value != null);					// null debugger values are PrimitiveValues with a null Value
 			Contract.Requires(index >= 0);
 			
+			Parent = parent;
+			Key = key;
 			Value = value;
-			AttributedName = NSMutableAttributedString.Create(name).Retain();
 			m_index = index;
-			Hint = hint;
 			
-			Item item = GetItem.Invoke(thread, hint, Value);
+			Item item = GetItem.Invoke(thread, parent != null ? parent.Value : null, Key, Value);
+			AttributedName = NSMutableAttributedString.Create(name).Retain();
 			AttributedType = NSAttributedString.Create(item.Type).Retain();
 			AttributedValue = NSAttributedString.Create(item.Text).Retain();
 			NumberOfChildren = item.Count;
@@ -57,7 +69,8 @@ namespace Debugger
 		public NSAttributedString AttributedType {get; private set;}
 		public NSAttributedString AttributedValue {get; private set;}
 		
-		public object Hint {get; private set;}				// used to get the declared type of a value (and to set values)
+		public VariableItem Parent {get; private set;}
+		public object Key {get; private set;}
 		public object Value {get; private set;}
 		
 		public int NumberOfChildren {get; private set;}
@@ -76,7 +89,7 @@ namespace Debugger
 			}
 			
 			if (m_children[index] == null)
-				m_children[index] = Debug::GetChild.Invoke(thread, Value, index);
+				m_children[index] = Debug::GetChild.Invoke(thread, this, Value, index);
 			
 			return m_children[index];
 		}
@@ -92,7 +105,7 @@ namespace Debugger
 		// Update the value and recursively all the children to reflect state changes in the debugee.
 		public void Refresh(ThreadMirror thread)
 		{
-			Item item = GetItem.Invoke(thread, Hint, Value);
+			Item item = GetItem.Invoke(thread, Parent != null ? Parent.Value : null, Key, Value);
 			DoRefreshValueText(item.Text);
 			DoRefreshTypeText(item.Type);
 			
@@ -106,7 +119,7 @@ namespace Debugger
 						
 						if (child != null)
 						{
-							VariableItem newChild = Debug::GetChild.Invoke(thread, Value, child.m_index);
+							VariableItem newChild = Debug::GetChild.Invoke(thread, this, Value, child.m_index);
 							Contract.Assert(child.AttributedName.ToString() == newChild.AttributedName.ToString(), string.Format("oldName: {0}, newName: {1}", child.AttributedName.ToString(), newChild.AttributedName.ToString()));
 							
 							child.RefreshValue(thread, newChild.Value);
@@ -119,6 +132,31 @@ namespace Debugger
 				DoDeleteChildren();
 				NumberOfChildren = item.Count;
 			}
+		}
+		
+		public override string ToString()
+		{
+			return ToString("G", null);
+		}
+		
+		public string ToString(string format)
+		{
+			return ToString(format, null);
+		}
+		
+		public override string ToString(string format, IFormatProvider provider)
+		{
+			if (provider != null)
+			{
+				ICustomFormatter formatter = provider.GetFormat(GetType()) as ICustomFormatter;
+				if (formatter != null)
+					return formatter.Format(format, this, provider);
+			}
+			
+			var builder = new System.Text.StringBuilder();
+			DoToString(builder, format, 0);
+			
+			return builder.ToString();
 		}
 		
 		#region Protected Methods
@@ -140,6 +178,34 @@ namespace Debugger
 		#endregion
 		
 		#region Private Methods
+		private void DoToString(System.Text.StringBuilder builder, string format, int depth)
+		{
+			switch (format)
+			{
+				case "":
+				case null:
+				case "g":
+				case "G":
+					builder.AppendFormat("{0} {1} {2}", AttributedType.ToString(), AttributedName.ToString(), AttributedValue.ToString());
+					break;
+					
+				case "f":
+				case "F":
+					builder.Append(' ', 3*depth);
+					builder.AppendFormat("{0} {1} {2} (key = {3})", AttributedType.ToString(), AttributedName.ToString(), AttributedValue.ToString(), Key);
+					if (Parent != null)
+					{
+						builder.AppendLine();
+						Parent.DoToString(builder, format, depth + 1);
+					}
+					break;
+				
+				default:
+					builder.Append(base.ToString(format, null));
+					break;
+			}
+		}
+		
 		// There are a couple of reasons why we want to eagerly create children: for most
 		// types we want to sort the children by name and we need them all to do that.
 		// In addition, StackFrames don't remain useable for very long so we need to get
@@ -159,7 +225,7 @@ namespace Debugger
 		{
 			for (int i = 0; i < NumberOfChildren; ++i)
 			{
-				m_children[i] = Debug::GetChild.Invoke(thread, Value, i);
+				m_children[i] = Debug::GetChild.Invoke(thread, this, Value, i);
 			}
 			
 			Array.Sort(m_children, (lhs, rhs) => lhs.AttributedName.ToString().CompareTo(rhs.AttributedName.ToString()));
@@ -246,8 +312,8 @@ namespace Debugger
 		#endregion
 		
 		#region Fields
-		private int m_index;
 		private VariableItem[] m_children;
+		private int m_index;						// cache the index (because we sort by name so the old indices become invalid when reloading)
 		#endregion
 	}
 }

@@ -64,16 +64,10 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.StringMirror
 		public class Mono.Debugger.ArrayMirror	
 		
-* Work on setting values:
-	- struct instance field, probably have to add a Parent property to VariableItem
-	  and replace Hint with Key
-	  get rid of Element
-	- does setting a field in a base class work?
-	- higher stack frame
 * Do a checkin.
 * Work on stuff:
 	- special case IntPtr and Nullable text
-	- get special types working
+	- get special types working	
 		XML
 		Regex
 		StringBuilder
@@ -86,6 +80,7 @@ public abstract class Mono.Debugger.Value
   at MCocoa.AppHelper.onDelayedAction (MCocoa.NSNumber id) [0x00048] in /Users/jessejones/Source/mcocoa/source/appkit/AppHelper.cs:114 
 * May want to color code this and params.
 * Probably should re-check that switching threads works still.
+* Closing the debug window doesn't seem to properly shutdown the debugger.
 * Redo the yucky VariableItem class:
 	- make sure nothing important has been lost
 	- delete the old code

@@ -177,7 +177,7 @@ namespace Debugger
 				string text = value.description();
 				Value newValue = ParseValue.Invoke(m_frame.Thread, item, item.Value, text);
 				
-				SetValue.Invoke(m_frame, item, item.Hint, newValue);
+				SetValue.Invoke(item, item.Parent.Value, item.Key, newValue);
 				item.RefreshValue(m_frame.Thread, newValue);
 			}
 			catch (Exception e)
@@ -185,10 +185,10 @@ namespace Debugger
 				Boss boss = ObjectModel.Create("Application");
 				var transcript = boss.Get<ITranscript>();
 				transcript.Show();
-//				transcript.WriteLine(Output.Error, "{0}", e);	
-				transcript.WriteLine(Output.Error, "{0}", e.Message);
-				if (e.InnerException != null)
-					transcript.WriteLine(Output.Error, "   {0}", e.InnerException.Message);
+				transcript.WriteLine(Output.Error, "{0}", e);	// TODO: use the commented out code
+//				transcript.WriteLine(Output.Error, "{0}", e.Message);
+//				if (e.InnerException != null)
+//					transcript.WriteLine(Output.Error, "   {0}", e.InnerException.Message);
 			}
 		}
 		
@@ -229,7 +229,7 @@ namespace Debugger
 		#region Private Methods
 		private void DoReset(LiveStackFrame frame)
 		{
-			if (m_item != null && ((LiveStackFrame) m_item.Value) == frame)
+			if (m_item != null && ((LiveStackFrame) m_item.Value) == frame) 
 			{
 				m_frame = frame;
 				m_item.RefreshValue(m_frame.Thread, frame);
@@ -245,7 +245,7 @@ namespace Debugger
 				if (frame != null)
 				{
 					m_frame = frame;
-					m_item = new VariableItem(m_frame.Thread, "stack frame", null, frame, 0);
+					m_item = new VariableItem(m_frame.Thread, frame);
 				}
 			}
 			

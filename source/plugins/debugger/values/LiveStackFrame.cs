@@ -137,6 +137,8 @@ namespace Debugger
 			return this == rhs;
 		}
 		
+		// Returns true if lhs and rhs refer to the same stack frame (but not
+		// necessarily the same place within the stack frame).
 		public static bool operator==(LiveStackFrame lhs, LiveStackFrame rhs)
 		{
 			if (object.ReferenceEquals(lhs, rhs))
@@ -152,9 +154,6 @@ namespace Debugger
 				return false;
 			
 			if (lhs.Method.MetadataToken != rhs.Method.MetadataToken)
-				return false;
-			
-			if (lhs.ILOffset != rhs.ILOffset)
 				return false;
 			
 			return true;

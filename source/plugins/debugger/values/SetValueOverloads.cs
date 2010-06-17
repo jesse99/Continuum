@@ -29,39 +29,88 @@ namespace Debugger
 	internal static class SetValueOverloads
 	{
 		[SetValue.Overload]
-		public static void Set(LiveStackFrame frame, VariableItem item, Element<ArrayMirror, int> hint, Value newValue)
+		public static void Set(VariableItem item, ArrayMirror parent, int key, Value newValue)
 		{
-			hint.Owner.SetValues(hint.Key, new Value[]{newValue});
+			parent.SetValues(key, new Value[]{newValue});
 		}
 		
 		[SetValue.Overload]
-		public static void Set(LiveStackFrame frame, VariableItem item, Element<ObjectMirror, FieldInfoMirror> hint, Value newValue)
+		public static void Set(VariableItem item, InstanceValue parent, FieldInfoMirror key, Value newValue)
 		{
-			if (hint.Key.IsStatic)
-				hint.Key.DeclaringType.SetValue(hint.Key, newValue);
-			else
-				hint.Owner.SetValue(hint.Key, newValue);
-		}
-		
-		[SetValue.Overload]
-		public static void Set(LiveStackFrame frame, VariableItem item, LocalVariable hint, Value newValue)
-		{
-			frame.SetValue(hint, newValue);
-		}
-		
-		[SetValue.Overload]
-		public static void Set(LiveStackFrame frame, VariableItem item, Element<StructMirror, int> hint, Value newValue)
-		{
-			FieldInfoMirror[] fields = hint.Owner.Type.GetFields();
-			if (fields[hint.Key].IsStatic)
+			if (key.IsStatic)
 			{
-				hint.Owner.Type.SetValue(fields[hint.Key], newValue);
+				key.DeclaringType.SetValue(key, newValue);
 			}
 			else
 			{
-				hint.Owner.Fields[hint.Key] = newValue;
-//				SetValue.Invoke(frame, item.Parent, item.Parent.Hint, newValue);
+				var o = (ObjectMirror) parent.Instance;
+				o.SetValue(key, newValue);
 			}
+		}
+		
+		[SetValue.Overload]
+		public static void Set(VariableItem item, InstanceValue parent, int key, Value newValue)
+		{
+			FieldInfoMirror field = parent.Type.GetFields()[key];
+			Contract.Assert(!field.IsStatic);
+			
+			ObjectMirror o = parent.Instance as ObjectMirror;
+			if (o != null)
+			{
+				o.SetValue(field, newValue);
+			}
+			else
+			{
+				var s = (StructMirror) parent.Instance;
+				s.Fields[key] = newValue;
+				SetValue.Invoke(item.Parent, item.Parent.Parent.Value, item.Parent.Key, s);
+			}
+		}
+		
+		[SetValue.Overload]
+		public static void Set(VariableItem item, LiveStackFrame parent, int key, Value newValue)
+		{
+			LocalVariable local = parent.Method.GetLocals()[key];
+			parent.SetValue(local, newValue);
+		}
+		
+		[SetValue.Overload]
+		public static void Set(VariableItem item, LiveStackFrame parent, LocalVariable key, Value newValue)
+		{
+			parent.SetValue(key, newValue);
+		}
+		
+		[SetValue.Overload]
+		public static void Set(VariableItem item, ObjectMirror parent, FieldInfoMirror key, Value newValue)
+		{
+			if (key.IsStatic)
+				key.DeclaringType.SetValue(key, newValue);
+			else
+				parent.SetValue(key, newValue);
+		}
+		
+		[SetValue.Overload]
+		public static void Set(VariableItem item, StructMirror parent, int key, Value newValue)
+		{
+			FieldInfoMirror[] fields = parent.Type.GetFields();
+			if (fields[key].IsStatic)
+			{
+				parent.Type.SetValue(fields[key], newValue);
+			}
+			else
+			{
+				parent.Fields[key] = newValue;
+				SetValue.Invoke(item.Parent, item.Parent.Parent.Value, item.Parent.Key, parent);
+			}
+		}
+		
+		[SetValue.Overload]
+		public static void Set(VariableItem item, TypeValue parent, int key, Value newValue)
+		{
+			FieldInfoMirror field = parent.Type.GetFields()[key];
+			Contract.Assert(field.IsStatic);
+			
+			parent.Type.SetValue(field, newValue);
 		}
 	}
 }
