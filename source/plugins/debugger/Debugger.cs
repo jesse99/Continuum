@@ -80,8 +80,9 @@ namespace Debugger
 		{
 			if (!m_disposed)
 			{
-				// Note that we are disposing of a managed object here so we
-				// can't also do a Dispose from our finalizer.
+				// Note that we cannot do a Dispose from our finalizer because we
+				// would be attempting to clean up a VirtualMachine which contains
+				// a finalizeable (Processs) field.
 				try
 				{
 					if (m_vm != null)
