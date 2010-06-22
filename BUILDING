@@ -25,6 +25,9 @@ use the one in the gac which is normally at a path like:
 can use the one on the gac if you have Mono 2.6, but for earlier mono's you'll want to grab 
 the one from the Continuum binary distribution or build it from source.
 
+* Copy Mono.Debugger.Soft.dll and Mono.Debugger.Soft.dll.mdb into Continuum's bin directory.
+You can copy these out of the gac, but you may need to use mono 2.6.3 or later.
+
 Once you have those assemblies in the bin directory you can build Continuum itself. To do
 that type either `make app` or `make run-app`.
 
