@@ -84,9 +84,16 @@ namespace Debugger
 		[GetChild.Overload]
 		public static VariableItem GetChild(ThreadMirror thread, VariableItem parentItem, ObjectMirror parent, int index)
 		{
-			FieldInfoMirror field = parent.Type.GetAllFields().ElementAt(index);
-			Value child = EvalMember.Evaluate(thread, parent, field.Name);
-			return new VariableItem(thread, DoSanitizeFieldName(field), parentItem, field, child, index);
+			if (parent.Type.IsType("System.MulticastDelegate"))
+			{
+				return DoGetMulticastDelegateChild(thread, parentItem, parent, index);
+			}
+			else
+			{
+				FieldInfoMirror field = parent.Type.GetAllFields().ElementAt(index);
+				Value child = EvalMember.Evaluate(thread, parent, field.Name);
+				return new VariableItem(thread, DoSanitizeFieldName(field), parentItem, field, child, index);
+			}
 		}
 		
 		[GetChild.Overload]
@@ -124,6 +131,38 @@ namespace Debugger
 		}
 		
 		#region Private Methods
+		private static VariableItem DoGetMulticastDelegateChild(ThreadMirror thread, VariableItem parentItem, ObjectMirror target, int index)
+		{
+			Value result;
+			FieldInfoMirror field;
+			switch (index)
+			{
+				case 0:
+					result = EvalMember.Evaluate(thread, target, "Target");
+					field = target.Type.GetAllFields().Single(f => f.Name == "m_target");
+					return new VariableItem(thread, "Target", parentItem, field, result, index);
+				
+				case 1:
+					result = EvalMember.Evaluate(thread, target, "Method");
+					field = target.Type.GetAllFields().Single(f => f.Name == "method");
+					return new VariableItem(thread, "Method", parentItem, field, result, index);
+				
+				case 2:
+					result = EvalMember.Evaluate(thread, target, "kpm_next");
+					field = target.Type.GetAllFields().Single(f => f.Name == "kpm_next");
+					return new VariableItem(thread, "Next", parentItem, field, result, index);
+				
+				case 3:
+					result = EvalMember.Evaluate(thread, target, "prev");
+					field = target.Type.GetAllFields().Single(f => f.Name == "prev");
+					return new VariableItem(thread, "Previous", parentItem, field, result, index);
+				
+				default:
+					Contract.Assert(false);
+					return null;
+			}
+		}
+		
 		private static string DoSanitizeFieldName(FieldInfoMirror field)
 		{
 			string name = field.Name;

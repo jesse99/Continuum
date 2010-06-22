@@ -77,6 +77,8 @@ namespace Debugger
 		[SetValue.Overload]
 		public static void Set(VariableItem item, LiveStackFrame parent, LocalVariable key, Value newValue)
 		{
+	Console.WriteLine("name: {0}, type: {1}", key.Name, newValue.TypeName()); Console.Out.Flush();
+	Console.WriteLine("   type: {0}", key.Type.FullName); Console.Out.Flush();
 			parent.SetValue(key, newValue);
 		}
 		

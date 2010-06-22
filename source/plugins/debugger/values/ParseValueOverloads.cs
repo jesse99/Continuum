@@ -280,6 +280,26 @@ namespace Debugger
 		}
 		
 		[ParseValue.Overload]
+		public static Value Parse(ThreadMirror thread, VariableItem item, StructMirror value, string text)
+		{
+//			if (value.Type.FullName == "System.IntPtr")
+//			{
+//				FieldInfoMirror[] fields = value.Type.GetFields();
+//				int i = Array.FindIndex(fields, f => f.Name == "m_value");
+//				if (i >= 0)
+//					value.Fields[i] = Parse(thread, null, (void*) 0, text);
+//				else
+//					throw new Exception("Couldn't find IntPtr.m_value");
+//			}
+//			else
+//			{
+				throw new Exception("Don't know how to parse the value for a " + value.Type.FullName);
+//			}
+			
+//			return value;
+		}
+		
+		[ParseValue.Overload]
 		public static Value Parse(ThreadMirror thread, VariableItem item, TimeSpan value, string text)
 		{
 			value = TimeSpan.Parse(text);

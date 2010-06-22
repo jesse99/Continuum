@@ -73,47 +73,6 @@ namespace Debugger
 		#endregion
 	}
 	
-#if UNUSED	// TODO: get rid of this
-	internal static class StackFrameExtensions
-	{
-		// Returns true if the two stack frames are the same.
-		public static bool Matches(this StackFrame lhs, StackFrame rhs)
-		{
-			bool matches = false;
-			
-			if (lhs == rhs)					// this will use reference equality (as of mono 2.6)
-			{
-				matches = true;
-			}
-			else if (lhs != null && rhs != null)
-			{
-				if (lhs.Thread.Id == rhs.Thread.Id)			// note that Address can change after a GC
-					if (lhs.Method.MetadataToken == rhs.Method.MetadataToken)
-						if (lhs.Method.FullName == rhs.Method.FullName)	// this is kind of expensive, but we can't rely on just the metadata token (we need the assembly as well which we can't always get)
-							matches = true;
-			}
-			
-			return matches;
-		}
-		
-		public static bool Matches(StackFrame[] lhs, StackFrame[] rhs)
-		{
-			bool matches = false;
-			
-			if (ReferenceEquals(lhs, rhs))
-			{
-				matches = true;
-			}
-			else if (lhs != null && rhs != null && lhs.Length == rhs.Length)
-			{
-				matches = Contract.ForAll(0, lhs.Length, i => lhs[i].Matches(rhs[i]));
-			}
-			
-			return matches;
-		}
-	}
-#endif
-	
 	internal static class TypeMirrorExtensions
 	{
 		public static MethodMirror FindMethod(this TypeMirror type, string name, int numArgs)

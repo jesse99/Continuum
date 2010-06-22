@@ -157,26 +157,33 @@ namespace Debugger
 		[GetItem.Overload]
 		public static Item GetItem(ThreadMirror thread, object parent, object key, ObjectMirror value)
 		{
+			Item item = new Item();
+			
 			if (value.IsCollected)
 			{
-				return new Item(0, "garbage collected", value.Type.FullName);
+				item = new Item(0, "garbage collected", value.Type.FullName);
 			}
 			else
 			{
-				int numChildren = value.Type.GetAllFields().Count();
-				
-				string text = string.Empty;
-				MethodMirror method = value.Type.FindMethod("ToString", 0);
-				if (method.DeclaringType.FullName != "System.Object")
+				if (!DoProcessSpecialObject(thread, value, ref item))
 				{
-					Value v = value.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
-					StringMirror s = (StringMirror) v;
-					text = s.Value;
+					int numChildren = value.Type.GetAllFields().Count();
+					
+					string text = string.Empty;
+					MethodMirror method = value.Type.FindMethod("ToString", 0);
+					if (method.DeclaringType.FullName != "System.Object")
+					{
+						Value v = value.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+						StringMirror s = (StringMirror) v;
+						text = s.Value;
+					}
+					
+					string type = DoGetFullerName(parent, key, value.Type);
+					item = new Item(numChildren, text, type);
 				}
-				
-				string type = DoGetFullerName(parent, key, value.Type);
-				return new Item(numChildren, text, type);
 			}
+			
+			return item;
 		}
 		
 		[GetItem.Overload]
@@ -225,29 +232,35 @@ namespace Debugger
 		[GetItem.Overload]
 		public static Item GetItem(ThreadMirror thread, object parent, object key, StructMirror value)
 		{
-			string text = string.Empty;
-			
-			MethodMirror method = value.Type.FindMethod("ToString", 0);
-			if (method.DeclaringType.FullName != "System.ValueType")
-			{
-				if (value.Type.IsPrimitive)
-				{
-					// Boxed primitive (we need this special case or InvokeMethod will hang).
-					if (value.Fields.Length > 0 && (value.Fields[0] is PrimitiveValue))
-						text = ((PrimitiveValue)value.Fields[0]).Value.Stringify();
-				}
-				else
-				{
-					Value v = value.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
-					StringMirror s = (StringMirror) v;
-					text = s.Value;
-				}
-			}
+			Item item = new Item();
 			
 			string type = DoGetFullerName(parent, key, value.Type);
+			if (!DoProcessSpecialStruct(thread, type, value, ref item))
+			{
+				string text = string.Empty;
+				
+				MethodMirror method = value.Type.FindMethod("ToString", 0);
+				if (method.DeclaringType.FullName != "System.ValueType")
+				{
+					if (value.Type.IsPrimitive)
+					{
+						// Boxed primitive (we need this special case or InvokeMethod will hang).
+						if (value.Fields.Length > 0 && (value.Fields[0] is PrimitiveValue))
+							text = ((PrimitiveValue)value.Fields[0]).Value.Stringify();
+					}
+					else
+					{
+						Value v = value.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+						StringMirror s = (StringMirror) v;
+						text = s.Value;
+					}
+				}
+				
+				FieldInfoMirror[] fields = value.Type.GetFields();
+				item = new Item(fields.Length, text, type);
+			}
 			
-			FieldInfoMirror[] fields = value.Type.GetFields();
-			return new Item(fields.Length, text, type);
+			return item;
 		}
 		
 		[GetItem.Overload]
@@ -290,6 +303,66 @@ namespace Debugger
 		}
 		
 		#region Private Methods
+		public static bool DoProcessSpecialObject(ThreadMirror thread, ObjectMirror value, ref Item item)
+		{
+			if (value.Type.IsType("System.MulticastDelegate"))
+			{
+				string text = "null";
+				Value mv = EvalMember.Evaluate(thread, value, "Method");
+				if (!mv.IsNull())
+				{
+					ObjectMirror mo = (ObjectMirror) mv;
+					MethodMirror method = mo.Type.FindMethod("ToString", 0);
+					
+					Value v = mo.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+					text = ((StringMirror) v).Value;
+				}
+
+				item = new Item(4, text, value.TypeName());
+				return true;
+			}
+			
+			return false;
+		}
+		
+		public static bool DoProcessSpecialStruct(ThreadMirror thread, string type, StructMirror value, ref Item item)
+		{
+			if (type == "System.IntPtr" || type == "System.UIntPtr")
+			{
+				MethodMirror method = value.Type.FindMethod("ToString", 1);
+				
+				Value format = thread.Domain.CreateString("X4");		// TODO: not 32-bit safe
+				Value v = value.InvokeMethod(thread, method, new Value[]{format}, InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+				StringMirror s = (StringMirror) v;
+				
+				item = new Item(0, "0x" + s.Value, type);
+				return true;
+			}
+			else if (type == "System.Nullable`1")
+			{
+				MethodMirror method = value.Type.FindMethod("ToString", 0);
+				
+				Value v = value.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+				StringMirror s = (StringMirror) v;
+				string text = s.Value.Length > 0 ? s.Value : "null";
+				
+				item = new Item(0, text, type);
+				return true;
+			}
+			else if (type == "System.DateTime" || type == "System.TimeSpan")
+			{
+				MethodMirror method = value.Type.FindMethod("ToString", 0);
+				
+				Value v = value.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+				StringMirror s = (StringMirror) v;
+				
+				item = new Item(0, s.Value, type);
+				return true;
+			}
+			
+			return false;
+		}
+		
 		private static string DoGetFullerName(object parent, object key, TypeMirror value)
 		{
 			string type;

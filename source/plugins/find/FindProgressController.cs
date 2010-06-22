@@ -65,23 +65,26 @@ namespace Find
 		// files changed, ideally with line numbers.
 		private void DoUpdate()
 		{
-			m_bar.Value.setMaxValue(m_find.FileCount);	// this is not known when we start out so we'll just set it each time through
-			
-			if (m_find.ProcessedCount >= m_find.FileCount)
+			if (!m_find.Cancelled)
 			{
-				m_bar.Value.setDoubleValue(m_find.FileCount);
+				m_bar.Value.setMaxValue(m_find.FileCount);	// this is not known when we start out so we'll just set it each time through
 				
-				if (m_find.ChangeCount > 0)
-					m_text.Value.setStringValue(NSString.Create("Processed {0} files and changed {1}.", m_find.FileCount, m_find.ChangeCount));
+				if (m_find.ProcessedCount >= m_find.FileCount)
+				{
+					m_bar.Value.setDoubleValue(m_find.FileCount);
+					
+					if (m_find.ChangeCount > 0)
+						m_text.Value.setStringValue(NSString.Create("Processed {0} files and changed {1}.", m_find.FileCount, m_find.ChangeCount));
+					else
+						m_text.Value.setStringValue(NSString.Create("Processed {0} files. None were changed.", m_find.FileCount));
+				}
 				else
-					m_text.Value.setStringValue(NSString.Create("Processed {0} files. None were changed.", m_find.FileCount));
-			}
-			else
-			{
-				m_bar.Value.setDoubleValue(m_find.ProcessedCount);
-				m_text.Value.setStringValue(NSString.Create(m_find.Processing));
-				
-				NSApplication.sharedApplication().BeginInvoke(this.DoUpdate, TimeSpan.FromSeconds(1));
+				{
+					m_bar.Value.setDoubleValue(m_find.ProcessedCount);
+					m_text.Value.setStringValue(NSString.Create(m_find.Processing));
+					
+					NSApplication.sharedApplication().BeginInvoke(this.DoUpdate, TimeSpan.FromSeconds(1));
+				}
 			}
 		}
 		#endregion
