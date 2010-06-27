@@ -92,6 +92,13 @@ namespace Debugger
 				return new Item(0, value.ToString("G"), value.GetType().FullName);
 		}
 		
+//		[GetItem.Overload]
+//		public static Item GetItem(ThreadMirror thread, object parent, int key, EnumerableValue value)
+//		{
+//			value.Reload(thread);
+//			return new Item(value.Length, string.Empty, value.Type.FullName);
+//		}
+		
 		[GetItem.Overload]
 		public static Item GetItem(ThreadMirror thread, object parent, object key, EnumMirror value)
 		{
@@ -177,6 +184,9 @@ namespace Debugger
 						StringMirror s = (StringMirror) v;
 						text = s.Value;
 					}
+					
+//					if (value.Type.FullName.StartsWith("System.Collections") && value.Type.FindMethod("GetEnumerator", 0) != null)	// TODO: better to use Is(ICollection) but TypeMirror does not expose interfaces
+//						numChildren = 1;
 					
 					string type = DoGetFullerName(parent, key, value.Type);
 					item = new Item(numChildren, text, type);
@@ -317,7 +327,7 @@ namespace Debugger
 					Value v = mo.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
 					text = ((StringMirror) v).Value;
 				}
-
+				
 				item = new Item(4, text, value.TypeName());
 				return true;
 			}

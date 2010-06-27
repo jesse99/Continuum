@@ -65,20 +65,35 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.ArrayMirror	
 		
 	
+decimal: 20
+hex: 14
+binary: 1 0100
+
+
+
+char: '\x14'
+name: DEVICE CONTROL FOUR				IUnicodeName
+decimal: 20
+hex: 14
+
+
+
+The quick brown fox 						escape all
+
+
+
+intptr is binary								up to 1K
+http://gitref.org/
+http://www.newartisans.com/2008/04/git-from-the-bottom-up.html
+
+
 * Add a show command:
-	- ints can show different bases and char
-	- should be live
-	- floats can maybe show G and the round-trip version
-	- IntPtr and Buffer 1K or so of binary
-	- strings binary
-* Upgrade to mono 2.6.4?
-* Need a break all command (Suspend looks like it may work).
-* Special case collections:
-	- don't evaluate IEnumerable properties
-	- special case types that implement something like IList
-	- VariableItem.GetChild needs to be updated too
-* Special case IEnumerable somehow.
-* Make sure infinite enumerables work
+	- should be a context menu for selected types
+	- not live, but when resuming disable the text
+	- support ints, char, string, IntPtr, UIntPtr
+	- should be live, how do we do this? struct mirrors at least need to be re-generated, maybe
+	  store a path to the field being watched?
+* Upgrade to mono 2.6.4
 * Make sure that we work if a custom ToString throws.
 * Work on a debugger:
 	- make sure we don't fall down if the debugger throws (especially invokes)
@@ -86,6 +101,7 @@ public abstract class Mono.Debugger.Value
 	- context breakpoint menu should have close do a broadcast so the breakpoint can be toggled
 	- mention the osascript debugging command 
 	- CodeViewer is being deallocated but not GCed (there is some object with a reference to the boss)
+* Need a break all command (Suspend looks like it may work).
 * Might want to push out an alpha version.
 * Should DoGetOperatorName handle names like:
 	ObjectModel Error  bad operator: op_UnaryNegation_Int32
@@ -170,7 +186,7 @@ public abstract class Mono.Debugger.Value
 * Need a directory for custom plugins:
 	- google code search might be a good example
 	- or maybe a simple diff tool
-	
+
 * Add better support for AppleScript/IronPython (and concurrently use it to write functional tests).
 	http://developer.apple.com/cocoa/applescriptforapps.html
 	http://developer.apple.com/mac/library/documentation/Cocoa/Conceptual/ScriptableCocoaApplications/SApps_about_apps/SAppsAboutApps.html
@@ -184,8 +200,13 @@ public abstract class Mono.Debugger.Value
 * NSWorkspace has enw methods to duplicate and trash files.
 * NSError has a helpAnchor method.
 * Generate stub seems fairly nifty.
+* Work on collection support:
+	- classes that implement ICollection should use EnumerableValue
+	- may want to also support arbitrary IEnumerable types
+	- may want a context menu to show more than the first 200 items
 * Stagger windows, especially find results and assembly browser.
 * Need to do a better job with Refactor Language.rtf (prose and the grammar)
+* http://cx4a.org/software/gccsense/
 * Read up on MEF
 	http://www.codeplex.com/MEF
 * Refactor to generate forwarding methods? Maybe can select methods and then it generates

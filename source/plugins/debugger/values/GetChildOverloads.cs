@@ -36,6 +36,12 @@ namespace Debugger
 			return new VariableItem(thread, name, parentItem, index, child, index);
 		}
 		
+//		[GetChild.Overload]
+//		public static VariableItem GetChild(ThreadMirror thread, VariableItem parentItem, EnumerableValue parent, int index)
+//		{
+//			return parent.GetChild(thread, parentItem, index);
+//		}
+		
 		[GetChild.Overload]
 		public static VariableItem GetChild(ThreadMirror thread, VariableItem parentItem, LiveStackFrame parent, int index)
 		{
@@ -88,6 +94,11 @@ namespace Debugger
 			{
 				return DoGetMulticastDelegateChild(thread, parentItem, parent, index);
 			}
+//			else if (parent.Type.FullName.StartsWith("System.Collections") && parent.Type.FindMethod("GetEnumerator", 0) != null)	// TODO: better to use Is(ICollection) but TypeMirror does not expose interfaces
+//			{
+//				var child = new EnumerableValue(parentItem, parent);
+//				return new VariableItem(thread, "Enumerable", parentItem, index, child, index);
+//			}
 			else
 			{
 				FieldInfoMirror field = parent.Type.GetAllFields().ElementAt(index);

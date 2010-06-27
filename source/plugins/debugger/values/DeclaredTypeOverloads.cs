@@ -71,6 +71,12 @@ namespace Debugger
 			return key.Type;
 		}
 		
+//		[DeclaredType.Overload]
+//		public static TypeMirror GetType(ObjectMirror parent, EnumerableValue key)
+//		{
+//			return parent.Type;
+//		}
+		
 		[DeclaredType.Overload]
 		public static TypeMirror GetType(StructMirror parent, int key)
 		{

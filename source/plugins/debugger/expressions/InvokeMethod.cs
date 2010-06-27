@@ -44,15 +44,29 @@ namespace Debugger
 			
 			try
 			{
-				if (target is ObjectMirror)
-					result = DoInvoke(thread, (ObjectMirror) target, name);
-				else
-					result = DoInvoke(thread, (StructMirror) target, name);
+				result = UnsafeInvoke(thread, target, name);
 			}
 			catch (Exception e)
 			{
 				result = thread.Domain.CreateString(e.Message);
 			}
+			
+			return result;
+		}
+		
+		// Like the above except exceptions are allowed to escape.
+		public Value UnsafeInvoke(ThreadMirror thread, Value target, string name)
+		{
+			Contract.Requires(thread != null, "thread is null");
+			Contract.Requires(target != null, "target is null");
+			Contract.Requires(target is ObjectMirror || target is StructMirror, "target is a " + target.GetType().FullName);
+			Contract.Requires(!name.IsNullOrWhiteSpace());
+			
+			Value result;
+			if (target is ObjectMirror)
+				result = DoInvoke(thread, (ObjectMirror) target, name);
+			else
+				result = DoInvoke(thread, (StructMirror) target, name);
 			
 			return result;
 		}
@@ -63,6 +77,9 @@ namespace Debugger
 			Value result;
 			
 			MethodMirror method = obj.Type.ResolveProperty(name);
+			if (method == null)
+				method = obj.Type.FindLastMethod(name, 0);
+				
 			if (method != null)
 			{
 				IAsyncResult ar = obj.BeginInvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded, null, null);
@@ -92,6 +109,9 @@ namespace Debugger
 			Value result = null;
 			
 			MethodMirror method = obj.Type.ResolveProperty(name);
+			if (method == null)
+				method = obj.Type.FindLastMethod(name, 0);
+				
 			if (method != null)
 			{
 				if (obj.Type.IsPrimitive)
