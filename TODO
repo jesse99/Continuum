@@ -65,38 +65,7 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.ArrayMirror	
 		
 	
-decimal: 20
-hex: 14
-binary: 1 0100
-
-
-
-char: '\x14'
-name: DEVICE CONTROL FOUR				IUnicodeName
-decimal: 20
-hex: 14
-
-
-
-The quick brown fox 						escape all
-
-
-
-intptr is binary								up to 1K
-http://gitref.org/
-http://www.newartisans.com/2008/04/git-from-the-bottom-up.html
-
-
-* Add a show command:
-	- should be a context menu for selected types
-	- not live, but when resuming disable the text
-	- support ints, char, string, IntPtr, UIntPtr
-	- should be live, how do we do this? struct mirrors at least need to be re-generated, maybe
-	  store a path to the field being watched?
-* Upgrade to mono 2.6.4
-* Make sure that we work if a custom ToString throws.
 * Work on a debugger:
-	- make sure we don't fall down if the debugger throws (especially invokes)
 	- improve the controls window, or do we even want this?
 	- context breakpoint menu should have close do a broadcast so the breakpoint can be toggled
 	- mention the osascript debugging command 
@@ -147,6 +116,7 @@ http://www.newartisans.com/2008/04/git-from-the-bottom-up.html
 * Auto-complete window should have context menu for showing only properties.
 * Maybe optionally hide fields too.
 * Should deduce type of typeof(xxx).
+* Upgrade to mono 2.6.4
 * Would be nice not to highlight the linq query keywords (from, which, etc) if System.Linq is not
    being used.
 * COuldn't open (via drag and drop) /Users/jessejones/Source/Third_Party/mono-2.6.3/mono/mini/ChangeLog
@@ -204,6 +174,12 @@ http://www.newartisans.com/2008/04/git-from-the-bottom-up.html
 	- classes that implement ICollection should use EnumerableValue
 	- may want to also support arbitrary IEnumerable types
 	- may want a context menu to show more than the first 200 items
+* Add a show command:
+	- should be a context menu for selected types
+	- not live, but when resuming disable the text
+	- support ints, char, string, IntPtr, UIntPtr
+	- should be live, how do we do this? struct mirrors at least need to be re-generated, maybe
+	  store a path to the field being watched?
 * Stagger windows, especially find results and assembly browser.
 * Need to do a better job with Refactor Language.rtf (prose and the grammar)
 * http://cx4a.org/software/gccsense/

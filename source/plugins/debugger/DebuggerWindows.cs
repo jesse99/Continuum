@@ -182,7 +182,6 @@ namespace Debugger
 		private HashSet<WindowInfo> m_windows = new HashSet<WindowInfo>
 		{
 			new WindowInfo("breakpoints", 665),
-			new WindowInfo("controls", 661),
 			new WindowInfo("variables", 662),
 			new WindowInfo("stack", 663),
 			new WindowInfo("threads", 664),

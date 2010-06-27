@@ -1364,15 +1364,6 @@
 												<reference key="NSMixedImage" ref="851651225"/>
 												<int key="NSTag">665</int>
 											</object>
-											<object class="NSMenuItem" id="598072272">
-												<reference key="NSMenu" ref="313439319"/>
-												<string key="NSTitle">Controls</string>
-												<string key="NSKeyEquiv"/>
-												<int key="NSMnemonicLoc">2147483647</int>
-												<reference key="NSOnImage" ref="357837154"/>
-												<reference key="NSMixedImage" ref="851651225"/>
-												<int key="NSTag">661</int>
-											</object>
 											<object class="NSMenuItem" id="286363655">
 												<reference key="NSMenu" ref="313439319"/>
 												<string key="NSTitle">Stack</string>
@@ -2425,14 +2416,6 @@
 						<reference key="destination" ref="344519768"/>
 					</object>
 					<int key="connectionID">714</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">appHandler:</string>
-						<reference key="source" ref="446385640"/>
-						<reference key="destination" ref="598072272"/>
-					</object>
-					<int key="connectionID">716</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -3560,7 +3543,6 @@
 							<reference ref="286363655"/>
 							<reference ref="728446879"/>
 							<reference ref="1040366509"/>
-							<reference ref="598072272"/>
 						</object>
 						<reference key="parent" ref="560910603"/>
 					</object>
@@ -3593,11 +3575,6 @@
 						<int key="objectID">713</int>
 						<reference key="object" ref="344519768"/>
 						<reference key="parent" ref="475939574"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">715</int>
-						<reference key="object" ref="598072272"/>
-						<reference key="parent" ref="313439319"/>
 					</object>
 				</object>
 			</object>
@@ -3842,7 +3819,6 @@
 					<string>709.IBPluginDependency</string>
 					<string>711.IBPluginDependency</string>
 					<string>713.IBPluginDependency</string>
-					<string>715.IBPluginDependency</string>
 					<string>72.IBPluginDependency</string>
 					<string>72.ImportedFromIB2</string>
 					<string>73.IBPluginDependency</string>
@@ -4129,8 +4105,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{1210, 659}, {132, 103}}</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>{{1210, 679}, {132, 83}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>

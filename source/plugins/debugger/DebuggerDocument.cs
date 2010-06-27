@@ -43,6 +43,13 @@ namespace Debugger
 			if (ms_windows == null)
 				ms_windows = new DebuggerWindows();
 			
+			Boss boss = ObjectModel.Create("Application");
+			var handler = boss.Get<IMenuHandler>();
+			handler.Register(this, 61, () => m_debugger.Run(), this.DoIsPaused);
+			handler.Register(this, 62, () => m_debugger.StepOver(), this.DoIsPaused);
+			handler.Register(this, 63, () => m_debugger.StepIn(), this.DoIsPaused);
+			handler.Register(this, 64, () => m_debugger.StepOut(), this.DoIsPaused);
+			
 			Broadcaster.Register("debugger loaded app domain", this);
 			Broadcaster.Register("debugger unloaded app domain", this);
 			Broadcaster.Register("debugger loaded assembly", this);
@@ -198,6 +205,11 @@ namespace Debugger
 			
 			var window = boss.Get<IWindow>();
 			return window.Window;
+		}
+		
+		private bool DoIsPaused()
+		{
+			return m_debugger != null && m_debugger.IsPaused;
 		}
 		
 		private void DoShowInfo()
