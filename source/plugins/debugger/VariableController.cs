@@ -141,6 +141,27 @@ namespace Debugger
 			}
 		}
 		
+		public void showLiveObjects(NSObject sender)
+		{
+			Boss boss = Gear.ObjectModel.Create("FileSystem");
+			var fs = boss.Get<IFileSystem>();
+			
+			string file = fs.GetTempFile("Live Objects", ".txt");
+			using (var stream = new System.IO.StreamWriter(file))
+			{
+				var tracer = new TraceRoots(m_frame.VirtualMachine.GetThreads());
+				foreach (Trace trace in tracer.Walk(null))
+				{
+					trace.Write(stream, 0);
+					stream.WriteLine();
+				}
+			}
+			
+			boss = Gear.ObjectModel.Create("Application");
+			var launcher = boss.Get<ILaunch>();
+			launcher.Launch(file, -1, -1, 1);
+		}
+		
 		public bool validateUserInterfaceItem(NSObject sender)
 		{
 			bool enabled = true;
@@ -158,6 +179,9 @@ namespace Debugger
 			else if (sel.Name == "toggleUnicode:")
 			{
 				Unused.Value = sender.Call("setTitle:", NSString.Create("Show Unicode {0}", ms_hideUnicode ? "Characters" : "Code Points"));
+			}
+			else if (sel.Name == "showLiveObjects:")
+			{
 			}
 			else if (respondsToSelector(sel))
 			{

@@ -62,19 +62,17 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.EnumMirror
 	public class Mono.Debugger.ObjectMirror
 		public class Mono.Debugger.StringMirror
-		public class Mono.Debugger.ArrayMirror	
+		public class Mono.Debugger.ArrayMirror	 
 		
 	
-* Work on a debugger:
-	- improve the controls window, or do we even want this?
-	- context breakpoint menu should have close do a broadcast so the breakpoint can be toggled
-	- mention the osascript debugging command 
-	- CodeViewer is being deallocated but not GCed (there is some object with a reference to the boss)
-* Need a break all command (Suspend looks like it may work).
-* Might want to push out an alpha version.
-* Should DoGetOperatorName handle names like:
-	ObjectModel Error  bad operator: op_UnaryNegation_Int32
-	maybe tweak the warning?
+* Can we use the soft debugger to trace GC roots?
+	- support static field roots
+	- get filtering working
+	- show roots for <type> (could use this if nothing is selected)
+	- show roots for <field> (could use this if nothing is selected)
+	- ignore structs?
+	- include obj-c ref counts
+	- see if heap-shot works now
 * Fix this:
 	glob TODO is associated with language todo, but there is no xml file
 	for that language
@@ -82,34 +80,35 @@ public abstract class Mono.Debugger.Value
 	for that language
 * Make sure that double clicking a file with no glob and no associated application does something sane.
 	- probably should fall back on opening it in Continuum if the OS can't open it
+* Mention the osascript debugging command 
+* Need a break all command (Suspend looks like it may work).
+* Push out an alpha version.
+
+* Work on a debugger:
+	- context breakpoint menu should have close do a broadcast so the breakpoint can be toggled
+	- CodeViewer is being deallocated but not GCed (there is some object with a reference to the boss)
+* Should DoGetOperatorName handle names like:
+	ObjectModel Error  bad operator: op_UnaryNegation_Int32
+	maybe tweak the warning?
 * Do some more work on the debugger:
 	- would be nice if could add breakpoints to IL views
-	- add an imediate window
+	- add an immediate window
 	- allow richer expressions in conditional breakpoints
 	- might be cool to keep a fixed window of variable histories
 	- allow users to specify which exceptions they want to break on, either a list or a regex
 	  or maybe it would be better to have a black list of exceptions to ignore
 	- allow users to set the ToString format specifier?
-	- allow users to invoke arbitrary methods on variables, maybe some sort of CodePad
 	- can't set values for types like IntPtr, Nullable`1
 	- breakpoint conditions should be persisted
 	- would be nice if conditional expressions worked with types, eg int.MaxValue
 	- might want to show all properties (instead of just the auto-generated ones)
-	- allow more complex epressions (and properties) to be used with conditional breakpoints
+	- allow more complex expressions (and properties) to be used with conditional breakpoints
 	- might want to, at least optionally, show properties in the variables window
 	- watchpoint windows
 		` drag and drop to add new variables
 		` draw in gray if the current context does not have the variable in any stack frame
 	- moving the instruction pointer
 	- custom viewer dlls
-	- might want a context menu to show really large strings, should this be editable? live?
-* Can we use the soft debugger to trace GC roots?
-	- see if heap-shot works now
-	- would have to check the stack for all threads and static fields of all types
-	- maybe package this as a command line app
-	- also need to check for loops
-	- might be neat to show the references to a specified type
-	- when would we take a snapshot? send a signal? specify file and line? 
 * Why doesn't stuff like var thread = (ThreadMirror) value auto-complete?
 * Show short form on Action didn't show the Delegate members.
 * Dot should complete auto-complete text.
