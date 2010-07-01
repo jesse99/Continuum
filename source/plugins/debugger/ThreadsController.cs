@@ -52,14 +52,14 @@ namespace Debugger
 		{
 			switch (name)
 			{
-				case "debugger started":	
+				case "debugger started":
 					m_debugger = (Debugger) value;
 					DoRefreshThreads();
 					m_table.reloadData();
 					break;
 					
-				case "debugger processed breakpoint event":	
-				case "debugger thrown exception":	
+				case "debugger processed breakpoint event":
+				case "debugger thrown exception":
 				case "debugger processed step event":
 					var context = (Context) value;
 					DoRefreshThreads();						// need to refresh this each time because thread states may have changed
