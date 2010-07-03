@@ -64,15 +64,12 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.StringMirror
 		public class Mono.Debugger.ArrayMirror	 
 		
-	
+		
 * Can we use the soft debugger to trace GC roots?
-	- support static field roots
-	- get filtering working
-	- show roots for <type> (could use this if nothing is selected)
-	- show roots for <field> (could use this if nothing is selected)
-	- ignore structs?
+	- add a top level item to grep for a type or name
+	- use a custom language?
+	- special case weak pointers?
 	- include obj-c ref counts
-	- see if heap-shot works now
 * Fix this:
 	glob TODO is associated with language todo, but there is no xml file
 	for that language
@@ -81,15 +78,19 @@ public abstract class Mono.Debugger.Value
 * Make sure that double clicking a file with no glob and no associated application does something sane.
 	- probably should fall back on opening it in Continuum if the OS can't open it
 * Mention the osascript debugging command 
+* What happens when trying to look at an object wth a thread static field?
 * Need a break all command (Suspend looks like it may work).
+* Use the trace roots goo to see why CodeViewer is hanging around
 * Push out an alpha version.
 
+* File debugger tickets.
 * Work on a debugger:
 	- context breakpoint menu should have close do a broadcast so the breakpoint can be toggled
 	- CodeViewer is being deallocated but not GCed (there is some object with a reference to the boss)
 * Should DoGetOperatorName handle names like:
 	ObjectModel Error  bad operator: op_UnaryNegation_Int32
 	maybe tweak the warning?
+* Can probably get rid of ActiveObjects now.
 * Do some more work on the debugger:
 	- would be nice if could add breakpoints to IL views
 	- add an immediate window

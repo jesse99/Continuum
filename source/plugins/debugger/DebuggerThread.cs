@@ -161,6 +161,18 @@ namespace Debugger
 			return types;
 		}
 		
+		public FieldInfoMirror[] GetStaticFields()
+		{
+			FieldInfoMirror[] fields;
+			
+			lock (m_mutex)
+			{
+				fields = m_staticFields.ToArray();
+			}
+			
+			return fields;
+		}
+		
 		#region Event Handlers
 		// Note that DoDispatchEvents grabs the lock before calling these.
 		[ThreadModel(ThreadModel.SingleThread)]
@@ -249,6 +261,8 @@ namespace Debugger
 		[ThreadModel(ThreadModel.SingleThread)]
 		private HandlerAction DoTypeLoadEvent(TypeLoadEvent e)
 		{
+			m_staticFields.AddRange(from f in e.Type.GetFields() where f.IsStatic select f);
+			
 			foreach (MethodMirror method in e.Type.GetMethods())
 			{
 				string path = method.SourceFile;
@@ -447,6 +461,7 @@ namespace Debugger
 			private ExceptionEventRequest m_exceptionRequest;
 			private Dictionary<ResolvedBreakpoint, BreakpointEventRequest> m_breakpoints = new Dictionary<ResolvedBreakpoint, BreakpointEventRequest>();
 			private Dictionary<string, List<TypeMirror>> m_types = new Dictionary<string, List<TypeMirror>>();
+			private List<FieldInfoMirror> m_staticFields = new List<FieldInfoMirror>();
 		#endregion
 	}
 }

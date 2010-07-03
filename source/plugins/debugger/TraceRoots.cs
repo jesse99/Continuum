@@ -23,6 +23,7 @@ using MObjc.Helpers;
 using Mono.Debugger.Soft;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Debugger
 {
@@ -63,11 +64,12 @@ namespace Debugger
 	// all objects.
 	internal sealed class TraceRoots
 	{
-		public TraceRoots(IList<ThreadMirror> threads)
+		public TraceRoots(IList<ThreadMirror> threads, FieldInfoMirror[] staticFields)
 		{
 			Contract.Requires(threads != null);
 			
 			m_threads = threads;
+			m_staticFields = staticFields;
 		}
 		
 		// Returns all traces from roots where the leaf satisfies the filter (which
@@ -76,35 +78,85 @@ namespace Debugger
 		{
 			var roots = new List<Trace>();
 			
-			DoWalkThreads(roots, filter);
-//			DoWalkStatics(roots, filter);
+			DoWalkThreadRoots(roots, filter);
+			DoWalkStaticRoots(roots, filter);
 			
 			return roots;
 		}
 		
 		#region Private Methods
-		private void DoWalkThreads(List<Trace> roots, Func<object, bool> filter)
+		private void DoWalkThreadRoots(List<Trace> roots, Func<object, bool> filter)
 		{
 			foreach (ThreadMirror thread in m_threads)
 			{
 				string name = ThreadsController.GetThreadName(thread);
 //	Console.WriteLine("thread: {0}", name); Console.Out.Flush();
-				var root = new Trace("root " + name, "System.Threading.Thread", thread);
-				DoWalkThread(thread, root);
-				if (root.Children.Count > 0)
+				var root = new Trace("thread " + name, "System.Threading.Thread", thread);
+				DoWalkStackFrames(thread, root);
+				if (DoFilter(root, filter))
 					roots.Add(root);
 			}
 		}
 		
-		private void DoWalkThread(ThreadMirror thread, Trace parent)
+		private void DoWalkStaticRoots(List<Trace> roots, Func<object, bool> filter)
 		{
-			foreach (StackFrame frame in thread.GetFrames())
+			foreach (FieldInfoMirror field in m_staticFields)
 			{
-				DoWalkFrame(frame, parent);
+				// TODO: need to somehow get thread statics working (presumably the
+				// runtime uses TLS to store these but there doesn't appear to be a way
+				// to iterate over the thread local items and the soft debugger throws
+				// if you try to get their values using the code below).
+				if (!field.GetCustomAttributes(false).Any(c => c.Constructor.FullName.Contains("System.ThreadStaticAttribute:.ctor")))
+				{
+					string name = "static " + field.Name;
+					var root = new Trace(name, field.FieldType.FullName, field);
+					Value v = field.DeclaringType.GetValue(field);
+					DoWalkValue(v, root);
+					if (DoFilter(root, filter))
+						roots.Add(root);
+				}
 			}
 		}
 		
-		private void DoWalkFrame(StackFrame frame, Trace parent)
+		// Returns true if parent or a child satisfies the filter.
+		private bool DoFilter(Trace parent, Func<object, bool> filter)
+		{
+			bool satisfies = false;
+			
+			if (filter != null)
+			{
+				parent.Children.RemoveAll(child => !DoFilter(child, filter));
+				satisfies = parent.Children.Count > 0 || filter(parent.Object);
+			}
+			else
+			{
+				satisfies = true;
+			}
+			
+			return satisfies;
+		}
+		
+		private void DoWalkStackFrames(ThreadMirror thread, Trace parent)
+		{
+			StackFrame[] frames = thread.GetFrames();
+			for (int i = frames.Length - 1; i >= 0; --i)		// go backwards so that the frames at the top of the stack appear first
+			{
+				StackFrame frame = frames[i];
+			
+				string name;
+				if (string.IsNullOrEmpty(frame.FileName))
+					name = string.Format("method {0}", frame.Method.Name);
+				else
+					name = string.Format("method {0} at {1}:{2}", frame.Method.Name, frame.FileName, frame.LineNumber);
+					
+				var child = new Trace(name, string.Empty, frame);
+				DoWalkStackFrame(frame, child);
+				if (child.Children.Count > 0)
+					parent.Children.Add(child);
+			}
+		}
+		
+		private void DoWalkStackFrame(StackFrame frame, Trace parent)
 		{
 			LocalVariable[] locals = frame.Method.GetLocals();
 			for (int i = 0; i < locals.Length; ++i)
@@ -139,7 +191,7 @@ namespace Debugger
 			for (int i = 0; i < value.Length; ++i)
 			{
 //	Console.WriteLine("array index: {0}", i); Console.Out.Flush();
-				var child = new Trace(i.ToString(), value.Type.FullName, value[i]);
+				var child = new Trace("item " + i, value.Type.FullName, value[i]);
 				DoWalkValue(value[i], child);
 				if (child.Children.Count > 0)
 					parent.Children.Add(child);
@@ -185,6 +237,7 @@ namespace Debugger
 		
 		#region Fields
 		private IList<ThreadMirror> m_threads;
+		private FieldInfoMirror[] m_staticFields;
 		private HashSet<long> m_objects = new HashSet<long>();
 		#endregion
 	}

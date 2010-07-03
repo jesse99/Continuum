@@ -40,6 +40,7 @@ namespace Debugger
 			Broadcaster.Register("debugger processed breakpoint event", this);
 			Broadcaster.Register("debugger thrown exception", this);
 			Broadcaster.Register("debugger processed step event", this);
+			Broadcaster.Register("debugger started", this);
 			Broadcaster.Register("debugger stopped", this);
 			Broadcaster.Register("changed stack frame", this);
 			Broadcaster.Register("exiting event loop", this);
@@ -63,6 +64,10 @@ namespace Debugger
 		{
 			switch (name)
 			{
+				case "debugger started":
+					m_debugger = (Debugger) value;
+					break;
+					
 				case "debugger processed breakpoint event":
 				case "debugger thrown exception":
 				case "debugger processed step event":
@@ -143,23 +148,43 @@ namespace Debugger
 		
 		public void showLiveObjects(NSObject sender)
 		{
-			Boss boss = Gear.ObjectModel.Create("FileSystem");
-			var fs = boss.Get<IFileSystem>();
-			
-			string file = fs.GetTempFile("Live Objects", ".txt");
-			using (var stream = new System.IO.StreamWriter(file))
+			DoShowRoots("Live Objects", null);
+		}
+		
+		public void showTypeRoots(NSObject sender)
+		{
+			string type = DoGetSelectedType();
+			Func<object, bool> filter = obj =>
 			{
-				var tracer = new TraceRoots(m_frame.VirtualMachine.GetThreads());
-				foreach (Trace trace in tracer.Walk(null))
-				{
-					trace.Write(stream, 0);
-					stream.WriteLine();
-				}
+				Value value = obj as Value;
+				if (value != null)
+					return value.TypeName() == type;
+				else
+					return obj.GetType().FullName == type;
+			};
+			DoShowRoots(type + " Roots", filter);
+		}
+		
+		public void showInstanceRoots(NSObject sender)
+		{
+			VariableItem selected = DoGetSelectedObject();
+			var instance = selected.Value as ObjectMirror;
+			
+			if (instance == null)
+			{
+				InstanceValue iv = selected.Value as InstanceValue;
+				instance = (ObjectMirror) iv.Instance;
 			}
 			
-			boss = Gear.ObjectModel.Create("Application");
-			var launcher = boss.Get<ILaunch>();
-			launcher.Launch(file, -1, -1, 1);
+			Func<object, bool> filter = obj =>
+			{
+				var value = obj as ObjectMirror;
+				if (value != null)
+					return value.Address == instance.Address;
+				else
+					return false;
+			};
+			DoShowRoots(selected.AttributedName + " Roots", filter);
 		}
 		
 		public bool validateUserInterfaceItem(NSObject sender)
@@ -182,6 +207,24 @@ namespace Debugger
 			}
 			else if (sel.Name == "showLiveObjects:")
 			{
+			}
+			else if (sel.Name == "showTypeRoots:")
+			{
+				string type = DoGetSelectedType();
+				Unused.Value = sender.Call("setTitle:", NSString.Create("Show Roots for {0}", type));
+			}
+			else if (sel.Name == "showInstanceRoots:")
+			{
+				VariableItem instance = DoGetSelectedObject();
+				if (instance != null)
+				{
+					Unused.Value = sender.Call("setTitle:", NSString.Create("Show Roots for {0}", instance.AttributedName.ToString()));
+				}
+				else
+				{
+					Unused.Value = sender.Call("setTitle:", NSString.Create("Show Roots for Object"));
+					enabled = false;
+				}
 			}
 			else if (respondsToSelector(sel))
 			{
@@ -208,11 +251,11 @@ namespace Debugger
 			{
 				Boss boss = ObjectModel.Create("Application");
 				var transcript = boss.Get<ITranscript>();
-				transcript.Show();
-				transcript.WriteLine(Output.Error, "{0}", e);	// TODO: use the commented out code
-//				transcript.WriteLine(Output.Error, "{0}", e.Message);
-//				if (e.InnerException != null)
-//					transcript.WriteLine(Output.Error, "   {0}", e.InnerException.Message);
+//				transcript.Show();
+//				transcript.WriteLine(Output.Error, "{0}", e);
+				transcript.WriteLine(Output.Error, "{0}", e.Message);
+				if (e.InnerException != null)
+					transcript.WriteLine(Output.Error, "   {0}", e.InnerException.Message);
 			}
 		}
 		
@@ -251,6 +294,64 @@ namespace Debugger
 		}
 		
 		#region Private Methods
+		private void DoShowRoots(string title, Func<object, bool> filter)
+		{
+			Boss boss = Gear.ObjectModel.Create("FileSystem");
+			var fs = boss.Get<IFileSystem>();
+			
+			string file = fs.GetTempFile(title, ".txt");
+			using (var stream = new System.IO.StreamWriter(file))
+			{
+				var tracer = new TraceRoots(m_frame.VirtualMachine.GetThreads(), m_debugger.GetStaticFields());
+				foreach (Trace trace in tracer.Walk(filter))
+				{
+					trace.Write(stream, 0);
+					stream.WriteLine();
+				}
+			}
+			
+			boss = Gear.ObjectModel.Create("Application");
+			var launcher = boss.Get<ILaunch>();
+			launcher.Launch(file, -1, -1, 1);
+		}
+		
+		private string DoGetSelectedType()
+		{
+			string type;
+			
+			int index = m_table.selectedRow();
+			if (index >= 0)
+			{
+				var item = m_table.itemAtRow(index).To<VariableItem>();
+				type = item.AttributedType.ToString();
+			}
+			else
+			{
+				type = m_frame.Method.DeclaringType.FullName;
+			}
+			
+			return type;
+		}
+		
+		private VariableItem DoGetSelectedObject()
+		{
+			VariableItem item = null;
+			
+			int index = m_table.selectedRow();
+			if (index >= 0)
+			{
+				var candidate = m_table.itemAtRow(index).To<VariableItem>();
+				if (candidate.Value is ObjectMirror)
+					item = candidate;
+				
+				InstanceValue instance = candidate.Value as InstanceValue;
+				if (instance != null && instance.Instance is ObjectMirror)
+					item = candidate;
+			}
+			
+			return item;
+		}
+		
 		private void DoReset(LiveStackFrame frame)
 		{
 			if (m_item != null && ((LiveStackFrame) m_item.Value) == frame) 
@@ -297,6 +398,7 @@ namespace Debugger
 		#endregion
 		
 		#region Fields
+		private Debugger m_debugger;
 		private NSOutlineView m_table;
 		private LiveStackFrame m_frame;
 		private VariableItem m_item;

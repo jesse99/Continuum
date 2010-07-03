@@ -178,6 +178,11 @@ namespace Debugger
 			m_thread.RemoveBreakpoint(bp, method, ilOffset);
 		}
 		
+		public FieldInfoMirror[] GetStaticFields()
+		{
+			return m_thread.GetStaticFields();
+		}
+		
 		#region Thread Callbacks
 		internal void OnAssemblyLoad(AssemblyLoadEvent e)
 		{
