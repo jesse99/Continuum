@@ -74,7 +74,7 @@ namespace Debugger
 		
 		// Returns all traces from roots where the leaf satisfies the filter (which
 		// may be null).
-		public IEnumerable<Trace> Walk(Func<object, bool> filter)
+		public IEnumerable<Trace> Walk(Func<string, object, bool> filter)
 		{
 			var roots = new List<Trace>();
 			
@@ -85,7 +85,7 @@ namespace Debugger
 		}
 		
 		#region Private Methods
-		private void DoWalkThreadRoots(List<Trace> roots, Func<object, bool> filter)
+		private void DoWalkThreadRoots(List<Trace> roots, Func<string, object, bool> filter)
 		{
 			foreach (ThreadMirror thread in m_threads)
 			{
@@ -93,12 +93,12 @@ namespace Debugger
 //	Console.WriteLine("thread: {0}", name); Console.Out.Flush();
 				var root = new Trace("thread " + name, "System.Threading.Thread", thread);
 				DoWalkStackFrames(thread, root);
-				if (DoFilter(root, filter))
+				if (DoFilter(root, filter, 0))
 					roots.Add(root);
 			}
 		}
 		
-		private void DoWalkStaticRoots(List<Trace> roots, Func<object, bool> filter)
+		private void DoWalkStaticRoots(List<Trace> roots, Func<string, object, bool> filter)
 		{
 			foreach (FieldInfoMirror field in m_staticFields)
 			{
@@ -112,21 +112,21 @@ namespace Debugger
 					var root = new Trace(name, field.FieldType.FullName, field);
 					Value v = field.DeclaringType.GetValue(field);
 					DoWalkValue(v, root);
-					if (DoFilter(root, filter))
+					if (DoFilter(root, filter, 0))
 						roots.Add(root);
 				}
 			}
 		}
 		
 		// Returns true if parent or a child satisfies the filter.
-		private bool DoFilter(Trace parent, Func<object, bool> filter)
+		private bool DoFilter(Trace parent, Func<string, object, bool> filter, int indent)
 		{
 			bool satisfies = false;
 			
 			if (filter != null)
 			{
-				parent.Children.RemoveAll(child => !DoFilter(child, filter));
-				satisfies = parent.Children.Count > 0 || filter(parent.Object);
+				parent.Children.RemoveAll(child => !DoFilter(child, filter, indent + 1));
+				satisfies = parent.Children.Count > 0 || filter(parent.Type, parent.Object);
 			}
 			else
 			{

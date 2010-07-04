@@ -13,9 +13,9 @@
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<integer value="114"/>
-			<integer value="90"/>
 			<integer value="3"/>
 			<integer value="46"/>
+			<integer value="90"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -340,7 +340,7 @@
 					</object>
 					<object class="NSMenuItem" id="1047205710">
 						<reference key="NSMenu" ref="62248454"/>
-						<string key="NSTitle">Show All Live Objects</string>
+						<string key="NSTitle">Show Matching Roots…</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
 						<reference key="NSOnImage" ref="572879687"/>

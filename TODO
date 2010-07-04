@@ -66,8 +66,6 @@ public abstract class Mono.Debugger.Value
 		
 		
 * Can we use the soft debugger to trace GC roots?
-	- add a top level item to grep for a type or name
-	- use a custom language?
 	- special case weak pointers?
 	- include obj-c ref counts
 * Fix this:

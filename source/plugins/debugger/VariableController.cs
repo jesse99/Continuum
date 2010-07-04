@@ -26,6 +26,7 @@ using MObjc;
 using Mono.Debugger.Soft;
 using Shared;
 using System;
+using System.Text.RegularExpressions;
 using System.Threading;
 
 namespace Debugger
@@ -148,20 +149,30 @@ namespace Debugger
 		
 		public void showLiveObjects(NSObject sender)
 		{
-			DoShowRoots("Live Objects", null);
+			var getter = new GetString{Title = "Show Live Objects", Label = "Type:", Text = ".*"};
+			string pattern = getter.Run();
+			if (pattern != null)
+			{
+				try
+				{
+					var re = new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace);
+					Func<string, object, bool> filter = (type, obj) => re.IsMatch(type);
+					DoShowRoots(string.Format("({0}) Objects", pattern), filter);			// add parens so GetFileExtension doesn't get confused
+				}
+				catch (ArgumentException e)
+				{
+					Boss boss = ObjectModel.Create("Application");
+					var transcript = boss.Get<ITranscript>();
+					transcript.Show();
+					transcript.WriteLine(Output.Error, "{0}", e.Message);
+				}
+			}
 		}
 		
 		public void showTypeRoots(NSObject sender)
 		{
 			string type = DoGetSelectedType();
-			Func<object, bool> filter = obj =>
-			{
-				Value value = obj as Value;
-				if (value != null)
-					return value.TypeName() == type;
-				else
-					return obj.GetType().FullName == type;
-			};
+			Func<string, object, bool> filter = (inType, obj) => inType == type;
 			DoShowRoots(type + " Roots", filter);
 		}
 		
@@ -176,7 +187,7 @@ namespace Debugger
 				instance = (ObjectMirror) iv.Instance;
 			}
 			
-			Func<object, bool> filter = obj =>
+			Func<string, object, bool> filter = (type, obj) =>
 			{
 				var value = obj as ObjectMirror;
 				if (value != null)
@@ -294,7 +305,7 @@ namespace Debugger
 		}
 		
 		#region Private Methods
-		private void DoShowRoots(string title, Func<object, bool> filter)
+		private void DoShowRoots(string title, Func<string, object, bool> filter)
 		{
 			Boss boss = Gear.ObjectModel.Create("FileSystem");
 			var fs = boss.Get<IFileSystem>();
