@@ -77,6 +77,7 @@ namespace Debugger
 	{
 		public static MethodMirror FindMethod(this TypeMirror type, string name, int numArgs)
 		{
+//		Console.WriteLine("checking: {0}", type.FullName); Console.Out.Flush();
 			MethodMirror method = type.GetMethods().FirstOrDefault(
 				m => m.Name == name && m.GetParameters().Length == numArgs);
 				

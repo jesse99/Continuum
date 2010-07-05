@@ -65,9 +65,7 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.ArrayMirror	 
 		
 		
-* Can we use the soft debugger to trace GC roots?
-	- special case weak pointers?
-	- include obj-c ref counts
+* Do a checkin.
 * Fix this:
 	glob TODO is associated with language todo, but there is no xml file
 	for that language

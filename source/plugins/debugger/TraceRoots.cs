@@ -40,17 +40,19 @@ namespace Debugger
 				Type = Type.Substring(0, index);
 		}
 		
-		public void Write(System.IO.StreamWriter stream, int indent)
+		public void Write(System.IO.StreamWriter stream, ThreadMirror thread, int indent)
 		{
 			for (int i = 0; i < indent; ++i)
 			{
 				stream.Write('\t');
 			}
-			stream.WriteLine("{0}\t\t\t\t{1}", Name, Type);
+			
+			string refCount = DoGetRefCount(thread);
+			stream.WriteLine("{0}{1}\t\t\t\t{2}", Name, refCount, Type);
 			
 			foreach (Trace child in Children)
 			{
-				child.Write(stream, indent + 1);
+				child.Write(stream, thread, indent + 1);
 			}
 		}
 		
@@ -58,6 +60,33 @@ namespace Debugger
 		public readonly string Type;
 		public readonly object Object;
 		public readonly List<Trace> Children = new List<Trace>();
+		
+		private string DoGetRefCount(ThreadMirror thread)
+		{
+			string result = null;
+		
+			// Using InvokeMethod causes the VM to exit. Not sure what calling InvokeMethod
+			// does, but if it is working it takes forever to finish.
+#if DOES_NOT_WORK
+			ObjectMirror value = Object as ObjectMirror;
+			if (value != null && value.Type.IsType("MObjc.NSObject"))
+			{
+				MethodMirror method = value.Type.FindMethod("retainCount", 0);
+				if (method != null)
+				{
+			Console.WriteLine("found method: {0}", method.FullName); Console.Out.Flush();
+					Value v = value.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+//					var invoker = new InvokeMethod();
+//					Value v = invoker.Invoke(thread, value, "retainCount");
+					PrimitiveValue p = v as PrimitiveValue;
+					if (p != null)
+						result = string.Format(" (retainCount = {0})", p.Value);
+				}
+			}
+#endif
+			
+			return result;
+		}
 	}
 	
 	// Prints references from garbage collector roots to a specific object/type or to
@@ -218,6 +247,8 @@ namespace Debugger
 			}
 		}
 		
+		// TODO: Should special case the target of GCHandle, but only if it is not a weak reference
+		// (and it is far from clear how to determine the GCHandleType).
 		private void DoWalkStruct(StructMirror value, Trace parent)
 		{
 			foreach (FieldInfoMirror field in value.Type.GetFields())

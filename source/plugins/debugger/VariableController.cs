@@ -316,7 +316,7 @@ namespace Debugger
 				var tracer = new TraceRoots(m_frame.VirtualMachine.GetThreads(), m_debugger.GetStaticFields());
 				foreach (Trace trace in tracer.Walk(filter))
 				{
-					trace.Write(stream, 0);
+					trace.Write(stream, m_frame.Thread, 0);
 					stream.WriteLine();
 				}
 			}
