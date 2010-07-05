@@ -24,6 +24,7 @@ using MObjc;
 using Shared;
 using System;
 using System.Diagnostics;
+using System.IO;
 
 namespace Debugger
 {
@@ -38,6 +39,8 @@ namespace Debugger
 		{
 			NSString path = directParameter().To<NSString>();
 			NSObject args = evaluatedArguments().objectForKey(NSString.Create("Args"));
+			NSObject uses = evaluatedArguments().objectForKey(NSString.Create("Using"));
+			NSDocument doc = null;
 			
 			try
 			{
@@ -47,7 +50,7 @@ namespace Debugger
 				NSURL url = NSURL.fileURLWithPath(path);
 				NSDocumentController controller = NSDocumentController.sharedDocumentController();
 				
-				NSDocument doc = controller.documentForURL(url);
+				doc = controller.documentForURL(url);
 				if (NSObject.IsNullOrNil(doc))
 				{
 					NSError err;
@@ -57,8 +60,8 @@ namespace Debugger
 						err.Raise();
 						
 					controller.addDocument(doc);
-					if (!NSObject.IsNullOrNil(args))
-						doc.Call("makeWindowControllersNoUI:", args);
+					if (!NSObject.IsNullOrNil(args) || !NSObject.IsNullOrNil(uses))
+						doc.Call("makeWindowControllersNoUI", uses, args);
 					else
 						doc.makeWindowControllers();
 				}

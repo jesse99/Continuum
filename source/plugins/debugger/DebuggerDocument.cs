@@ -89,7 +89,7 @@ namespace Debugger
 					throw new Exception("The debugger is already running.");
 				
 				m_breakInMain = true;
-				makeWindowControllersNoUI(NSString.Empty);
+				makeWindowControllersNoUI(null, NSString.Empty);
 			}
 			catch (Exception e)
 			{
@@ -102,7 +102,7 @@ namespace Debugger
 		}
 		
 		// Used when opening mdb files or exe files (via AppleScript).
-		public void makeWindowControllersNoUI(NSString args)
+		public void makeWindowControllersNoUI(NSString uses, NSString args)
 		{
 			string path = fileURL().path().ToString();
 			string dir = Path.GetDirectoryName(path);
@@ -112,7 +112,7 @@ namespace Debugger
 			else
 				m_executable = Path.Combine(dir, path);
 			
-			// The Soft debugger returns a VM in EndInvoke even when you pass
+			// The soft debugger returns a VM in EndInvoke even when you pass
 			// it a completely bogus path so we need to do this check. 
 			if (!File.Exists(m_executable))
 				throw new FileNotFoundException(m_executable + " was not found.");
@@ -123,7 +123,7 @@ namespace Debugger
 			else
 				info.Arguments = string.Format("--debug {0}", m_executable);
 //			info.EnvironmentVariables.Add("key", "value");		// TODO: might want to support this
-			info.FileName = "mono";
+			info.FileName = NSObject.IsNullOrNil(uses) ? "mono" : uses.ToString();
 			info.RedirectStandardInput = false;
 			info.RedirectStandardOutput = true;
 			info.RedirectStandardError = true;
@@ -189,6 +189,19 @@ namespace Debugger
 			
 			return read;
 		}
+		
+		#region Protected Methods
+		protected override void OnDealloc()
+		{
+			Boss boss = ObjectModel.Create("Application");
+			var handler = boss.Get<IMenuHandler>();
+			handler.Deregister(this);
+			
+			Broadcaster.Unregister(this);
+			
+			base.OnDealloc();
+		}
+		#endregion
 		
 		#region Private Methods
 		private NSWindow DoCreateCodeWindow()
