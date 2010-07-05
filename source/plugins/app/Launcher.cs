@@ -47,7 +47,17 @@ namespace App
 		{
 			try
 			{
-				if (DoCanOpen(path))
+				// If we don't have a glob for the path then try to open it using the Finder.
+				bool opened = false;
+				if (!DoCanOpen(path))
+				{
+					Boss boss = ObjectModel.Create("FileSystem");
+					var fs = boss.Get<IFileSystem>();
+					opened = fs.Launch(path);
+				}
+				
+				// If we have a glob or can't open it with the Finder then use Continuum.
+				if (!opened)
 				{
 					NSError err;
 					NSURL url = NSURL.fileURLWithPath(NSString.Create(path));
@@ -60,12 +70,6 @@ namespace App
 					if (line != -1)
 						DoShowLine(path, line, col, tabWidth);
 //						NSApplication.sharedApplication().BeginInvoke(() => DoShowLine(path, line, col, tabWidth));	// use BeginInvoke in case the text controller restores the scrollers
-				}
-				else
-				{
-					Boss boss = ObjectModel.Create("FileSystem");
-					var fs = boss.Get<IFileSystem>();
-					fs.Launch(path);
 				}
 			}
 			catch (Exception e)
@@ -83,7 +87,15 @@ namespace App
 		{
 			try
 			{
-				if (DoCanOpen(path))
+				bool opened = false;
+				if (!DoCanOpen(path))
+				{
+					Boss boss = ObjectModel.Create("FileSystem");
+					var fs = boss.Get<IFileSystem>();
+					opened = fs.Launch(path);
+				}
+				
+				if (!opened)
 				{
 					NSError err;
 					NSURL url = NSURL.fileURLWithPath(NSString.Create(path));
@@ -95,12 +107,6 @@ namespace App
 					
 					DoSetSelection(path, selection);
 //					NSApplication.sharedApplication().BeginInvoke(() => DoSetSelection(path, selection));		// use BeginInvoke in case the text controller restores the scrollers
-				}
-				else
-				{
-					Boss boss = ObjectModel.Create("FileSystem");
-					var fs = boss.Get<IFileSystem>();
-					fs.Launch(path);
 				}
 			}
 			catch (Exception e)

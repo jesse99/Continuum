@@ -44,11 +44,12 @@ namespace App
 			get {return m_boss;}
 		}
 		
-		public void Launch(string path)
+		public bool Launch(string path)
 		{
 			Contract.Requires(!string.IsNullOrEmpty(path), "path is null or empty");
 			
-			Unused.Value = NSWorkspace.sharedWorkspace().openFile(NSString.Create(path));
+			bool opened = NSWorkspace.sharedWorkspace().openFile(NSString.Create(path)).To<bool>();
+			return opened;
 		}
 		
 		// Returns the size of a file or the files within a directory.

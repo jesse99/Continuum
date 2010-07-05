@@ -22,13 +22,14 @@
 using Gear;
 
 namespace Shared
-{	
+{
 	// File system methods that know how to deal with platform quirks
 	// better than System.IO.
 	public interface IFileSystem : IInterface
 	{
-		// Open the file with its associated application.
-		void Launch(string path);
+		// Open the file with its associated application. Returns false if the file could
+		// not be opened.
+		bool Launch(string path);
 		
 		// Returns the size of a file or the files within a directory.
 		// Note that directories and files that start with a '.' are
@@ -43,9 +44,9 @@ namespace Shared
 		// Returns a path to a temporary file where the file name starts with
 		// prefix and ends with extension.
 		string GetTempFile(string prefix, string extension);
-
+		
 		// This works like Directory.GetFiles with the AllDirectories option but
 		// does not fall down if the contents of the path are changing.
 		string[] GetAllFiles(string path, string glob);
-	} 
+	}
 }

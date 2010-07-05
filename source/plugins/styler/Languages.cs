@@ -112,10 +112,11 @@ namespace Styler
 				
 				DoLoadLanguages();
 				
+				// TODO: globs are saved in a pref but we never prune stale globs from the list...
 				foreach (KeyValuePair<string, string> entry in ms_globs)
 				{
 					if (!ms_languages.ContainsKey(entry.Value))
-						Console.Error.WriteLine("glob {0} is associated with language {1}, but there is no xml file for that language", entry.Key, entry.Value);
+						Log.WriteLine(TraceLevel.Info, "Startup", "glob {0} is associated with language {1}, but there is no xml file for that language", entry.Key, entry.Value);
 				}
 				
 				foreach (string name in ms_languages.Keys)

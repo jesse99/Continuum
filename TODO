@@ -65,12 +65,6 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.ArrayMirror	 
 		
 		
-* Do a checkin.
-* Fix this:
-	glob TODO is associated with language todo, but there is no xml file
-	for that language
-	glob NOTES is associated with language todo, but there is no xml file
-	for that language
 * Make sure that double clicking a file with no glob and no associated application does something sane.
 	- probably should fall back on opening it in Continuum if the OS can't open it
 * Mention the osascript debugging command 
