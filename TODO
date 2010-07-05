@@ -65,8 +65,6 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.ArrayMirror	 
 		
 		
-* Make sure that double clicking a file with no glob and no associated application does something sane.
-	- probably should fall back on opening it in Continuum if the OS can't open it
 * Mention the osascript debugging command 
 * What happens when trying to look at an object wth a thread static field?
 * Need a break all command (Suspend looks like it may work).
