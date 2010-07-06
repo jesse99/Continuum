@@ -12,7 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="286"/>
+			<integer value="252"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1452,7 +1452,7 @@
 								<object class="NSTabViewItem" id="138988970">
 									<string key="NSIdentifier">6</string>
 									<object class="NSView" key="NSView" id="114304367">
-										<nil key="NSNextResponder"/>
+										<reference key="NSNextResponder" ref="103927451"/>
 										<int key="NSvFlags">256</int>
 										<object class="NSMutableArray" key="NSSubviews">
 											<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1535,7 +1535,7 @@
 												<object class="NSTextFieldCell" key="NSCell" id="859601271">
 													<int key="NSCellFlags">69336577</int>
 													<int key="NSCellFlags2">272891904</int>
-													<string key="NSContents">Use `sudo launchctl start com.apple.locate` to rebuild the locate database after changing the root.</string>
+													<string key="NSContents">If you've just downloaded these sources use `sudo launchctl start com.apple.locate` to rebuild the locate database.</string>
 													<object class="NSFont" key="NSSupport">
 														<string key="NSName">LucidaGrande</string>
 														<double key="NSSize">13</double>
@@ -1548,6 +1548,7 @@
 											</object>
 										</object>
 										<string key="NSFrame">{{1, 1}, {540, 303}}</string>
+										<reference key="NSSuperview" ref="103927451"/>
 									</object>
 									<string key="NSLabel">Environment</string>
 									<reference key="NSColor" ref="284092931"/>
@@ -1556,7 +1557,7 @@
 								<object class="NSTabViewItem" id="834400760">
 									<string key="NSIdentifier">7</string>
 									<object class="NSView" key="NSView" id="758370198">
-										<reference key="NSNextResponder" ref="103927451"/>
+										<nil key="NSNextResponder"/>
 										<int key="NSvFlags">256</int>
 										<object class="NSMutableArray" key="NSSubviews">
 											<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1816,21 +1817,20 @@
 											</object>
 										</object>
 										<string key="NSFrame">{{1, 1}, {540, 303}}</string>
-										<reference key="NSSuperview" ref="103927451"/>
 									</object>
 									<string key="NSLabel">Language Globs</string>
 									<reference key="NSColor" ref="284092931"/>
 									<reference key="NSTabView" ref="103927451"/>
 								</object>
 							</object>
-							<reference key="NSSelectedTabViewItem" ref="834400760"/>
+							<reference key="NSSelectedTabViewItem" ref="138988970"/>
 							<reference key="NSFont" ref="26355228"/>
 							<int key="NSTvFlags">5</int>
 							<bool key="NSAllowTruncatedLabels">YES</bool>
 							<bool key="NSDrawsBackground">YES</bool>
 							<object class="NSMutableArray" key="NSSubviews">
 								<bool key="EncodedWithXMLCoder">YES</bool>
-								<reference ref="758370198"/>
+								<reference ref="114304367"/>
 							</object>
 						</object>
 						<object class="NSScrollView" id="825834731">

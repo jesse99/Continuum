@@ -64,12 +64,61 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.StringMirror
 		public class Mono.Debugger.ArrayMirror	 
 		
-		
+
+* Rework readme:
+	- setup: installation, prefs, osascript, databases, locate command
+	- operation: 
+	- scripting: text scripts, refactors
+	- known issues:
+	- future plans
+	- delete the old readme
 * Mention the osascript debugging command 
+* There are two debug menus...
+* sdef files should default to color coded.
+* Got:
+	Managed exception: MObjc.NSObject outlineView_objectValueForTableColumn_byItem(MCocoa.NSOutlineView, MCocoa.NSTableColumn, Debugger.VariableItem)
+	MObjc.InvalidCallException: Expected a Debugger.VariableItem when calling outlineView_objectValueForTableColumn_byItem but have a MCocoa.NSMutableDictionary.
+	  at MObjc.Managed.Call (IntPtr dummy, IntPtr resultBuffer, IntPtr argBuffers) [0x00187] in /Users/jessejones/Source/mobjc/source/Managed.cs:93 
+	2010-07-05 17:38:01.266 Continuum[19482:903] Exception raised during posting of notification.  Ignored.  exception: 'Expected a Debugger.VariableItem when calling outlineView_objectValueForTableColumn_byItem but have a MCocoa.NSMutableDictionary.'  invoked observer method: '*** -[VariableView textDidEndEditing:]'  observer: 0xa350b0  notification name: 'NSTextDidEndEditingNotification'
+* Get an error alert when right clicking past the bottom of an rtf file.
 * What happens when trying to look at an object wth a thread static field?
 * Need a break all command (Suspend looks like it may work).
 * Use the trace roots goo to see why CodeViewer is hanging around
-* Push out an alpha version.
+* Build a new foreshadow.
+* Release checklist:
+	- update generated config file logging categories (search for "Log.WriteLine")
+	- update the version number
+	- delete build_num
+	- make sure directory objects go away
+	- make sure directory editor boss goes away
+	- make sure text objects go away (after forcing a GC)
+	- make sure text editor boss goes away
+	- make sure auto complete objects go away
+	- make sure debugger bosses go away
+	- make sure debugger objects go away
+	- run continuum with no prefs
+	- run continuum with no databases (including the windows db)
+	- run continuum with no Continuum Files dir
+	- look at memory usage
+	- run unit tests in debug
+	- run unit tests in release
+	- make sure untitled docs work OK
+	- build a new foreshadow
+	- review BUILDING doc
+	- update known issues in the README
+	- review README
+	- review config file
+	- mention that thr debugger requires mono 2.6.3 or later
+	- run from the finder
+	- review tar targets
+	- use svn log -r 1:HEAD > CHANGE_LOG
+	- update CHANGES file
+	- make sure gear is checked in
+	- upload the new binary
+	- build a new foreshadow
+	- review the front page of the web site
+	- review the screen shots
+	- email
 
 * File debugger tickets.
 * Work on a debugger:
@@ -606,6 +655,7 @@ public abstract class Mono.Debugger.Value
 	- make sure untitled docs work OK
 	- build a new foreshadow
 	- review BUILDING doc
+	- update known issues in the README
 	- review README
 	- review config file
 	- mention that thr debugger requires mono 2.6.3 or later
