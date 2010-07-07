@@ -43,13 +43,16 @@ namespace App
 			m_root = DoGetRoot();
 			m_timeMachineDir = DoGetTimeMachineDir();
 			
-			boss = ObjectModel.Create("Application");
-			var handler = boss.Get<IMenuHandler>();
-			
-			handler.Register(this, 43, this.DoOpen, this.DoCanOpen);
-			Broadcaster.Register("opening document window", this);
-			Broadcaster.Register("document path changed", this);
-			Broadcaster.Register("closed document window", this);
+			if (m_timeMachineDir != null)
+			{
+				boss = ObjectModel.Create("Application");
+				var handler = boss.Get<IMenuHandler>();
+				
+				handler.Register(this, 43, this.DoOpen, this.DoCanOpen);
+				Broadcaster.Register("opening document window", this);
+				Broadcaster.Register("document path changed", this);
+				Broadcaster.Register("closed document window", this);
+			}
 		}
 		
 		public Boss Boss
@@ -59,7 +62,7 @@ namespace App
 		
 		public void Get(Boss boss, string selection, bool editable, List<TextContextItem> items)
 		{
-			if (selection == null)
+			if (selection == null && m_timeMachineDir != null)
 			{
 				ITextEditor editor = DoGetMainEditor();
 				if (editor != null && editor.Path != null)
@@ -437,7 +440,7 @@ namespace App
 		
 		#region Fields
 		private Boss m_boss;
-		private string m_root;						// the volume "/" maps to, e.g. "/Volumes/Macintosh HD"
+		private string m_root;					// the volume "/" maps to, e.g. "/Volumes/Macintosh HD"
 		private string m_timeMachineDir;		// contains the Latest directory plus the time-stamped directories
 		
 		private Thread m_thread;
@@ -445,7 +448,7 @@ namespace App
 			private MultiIndex<Backup> m_backups = new MultiIndex<Backup>(
 				new OrderedNonUnique<string, Backup>("real path", b => b.RealPath),
 				new OrderedUnique<string, Backup>("tm path", b => b.TimeMachinePath));
-			private int m_highwater = 10;	// TODO: make this larger
+			private int m_highwater = 30;
 			
 			private List<string> m_newFiles = new List<string>();
 		#endregion
