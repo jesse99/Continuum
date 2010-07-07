@@ -64,15 +64,12 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.StringMirror
 		public class Mono.Debugger.ArrayMirror	 
 		
+/Files/VendorSource/ContinuumTrunk/continuum-ide-read-only/source/plugins/app/TimeMachine.cs:142
 
-* Rework readme:
-	- setup: installation, prefs, osascript, databases, locate command
-	- operation: 
-	- scripting: text scripts, refactors
-	- known issues:
-	- future plans
-	- delete the old readme
-* Mention the osascript debugging command 
+* Work on stuff:
+	- languages are taken from the glob file
+	- TimeMachine wasn't handling missing dir well
+* make-foreshadow needs to rename the sdef file.
 * There are two debug menus...
 * sdef files should default to color coded.
 * Got:
@@ -121,6 +118,7 @@ public abstract class Mono.Debugger.Value
 	- email
 
 * File debugger tickets.
+* Get rid of glob files? Would be easier (and less confusing) if the default globs were part of the language.
 * Work on a debugger:
 	- context breakpoint menu should have close do a broadcast so the breakpoint can be toggled
 	- CodeViewer is being deallocated but not GCed (there is some object with a reference to the boss)

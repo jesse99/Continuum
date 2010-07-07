@@ -9,8 +9,7 @@
 \pard\pardeftab480\ql\qnatural\pardirnatural
 
 \fs28 \cf0 \
-\pard\tx0\pardeftab480\ql\qnatural\pardirnatural
-\cf0 You don't have to do any sort of installation to run Continuum, but there are a few things that you can do to make it operate better:\
+You don't have to do any sort of installation to run Continuum, but there are a few things that you can do to make it operate better:\
 \
 \'95 Continuum uses the Unix locate command quite a bit when searching for files. Unfortunately the locate command is disabled in Snow Leopard. To enable it you need to type the following into a terminal: 
 \f1 sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.locate.plist
@@ -25,8 +24,7 @@
 In order to do things like auto-complete Continuum has to parse the assemblies you build as well as all of the assemblies that they reference. This information is cached in sqlite databases stored in 
 \f1 ~/Library/Caches/Continuum
 \f0 . These files can be quite large so you may want to delete them if you uninstall Continuum.\
-\pard\pardeftab480\ql\qnatural\pardirnatural
-\cf0 \
+\
 \pard\pardeftab480\ql\qnatural\pardirnatural
 
 \fs48 \cf0 2 Operation\
@@ -69,8 +67,9 @@ On occasion control or Unicode characters slip into source code files (e.g. when
 \f1 Special Characters
 \f0  comand in the Text menu).\
 \
+\pard\pardeftab480\ql\qnatural\pardirnatural
 
-\f1 Find
+\f1 \cf0 Find
 \f0  and 
 \f1 Find in Files
 \f0  optionally allow regular expressions to be used. These are the .NET regular expressions (see <http://msdn.microsoft.com/en-us/library/hs600312.aspx>). Note that when replacing $1 is used to insert the first matched parenthesized expression instead of \\1.\
@@ -89,8 +88,7 @@ On occasion control or Unicode characters slip into source code files (e.g. when
 \pard\pardeftab480\ql\qnatural\pardirnatural
 
 \fs28 \cf0 \
-\pard\pardeftab480\ql\qnatural\pardirnatural
-\cf0 Auto-complete is currently initiated by typing a '.' or quickly pressing tab twice when the insertion point is just after an identifier. A period will complete namespaces or members. A double tab will complete constructors when used in a new expression or locals, arguments, and members otherwise. The auto-complete window has a context menu which allows you to filter out items using criteria such as whether it is an extension method or belongs to a class or interface. \
+Auto-complete is currently initiated by typing a '.' or quickly pressing tab twice when the insertion point is just after an identifier. A period will complete namespaces or members. A double tab will complete constructors when used in a new expression or locals, arguments, and members otherwise. The auto-complete window has a context menu which allows you to filter out items using criteria such as whether it is an extension method or belongs to a class or interface. \
 \
 The argument completion window which pops up after auto-completion may be dragged using the mouse and also has a context menu which allows you to close the window or select a different overload.\
 \pard\pardeftab480\ql\qnatural\pardirnatural
@@ -100,10 +98,8 @@ The argument completion window which pops up after auto-completion may be dragge
 \pard\pardeftab480\ql\qnatural\pardirnatural
 
 \fs28 \cf0 \
-\pard\pardeftab480\ql\qnatural\pardirnatural
-\cf0 Option-tab allows you to select the identifier after the insertion point. Shift-option-tab allows you to select the identifier before the insertion point. Command-~ allows you to cycle between open windows.\
-\pard\pardeftab480\ql\qnatural\pardirnatural
-\cf0 \
+Option-tab allows you to select the identifier after the insertion point. Shift-option-tab allows you to select the identifier before the insertion point. Command-~ allows you to cycle between open windows.\
+\
 \pard\pardeftab480\ql\qnatural\pardirnatural
 
 \fs48 \cf0 3 Debugging\
@@ -118,16 +114,15 @@ A mono executable can be debugged by using Continuum to open a *.mdb file or wit
 \f1 using
 \f0  parameter to specify the mono script. It's often convenient to do this within make files:\
 \
-\pard\tx0\pardeftab480\ql\qnatural\pardirnatural
+\pard\pardeftab480\ql\qnatural\pardirnatural
 
 \b \cf2 debug:
 \b0 \cf0  app\
 \cb3 	\cb1 osascript -e \cf4 'tell application "Continuum" to debug "bin/my-app.exe" with "--arg=value --arg2"'\
 	\
-\pard\tx0\pardeftab480\ql\qnatural\pardirnatural
-\cf0 The debugger's usage should be obvious but it does have one unusual feature: the ability to trace garbage collector roots. You can do this via the contextual menu in the Variables window and trace roots for either a type or a class instance. When the trace finishes a window will popup showing references from GC roots (e.g. locals and statics) to whatever you are tracing.\
 \pard\pardeftab480\ql\qnatural\pardirnatural
-\cf0 \
+\cf0 The debugger's usage should be obvious but it does have one unusual feature: the ability to trace garbage collector roots. You can do this via the contextual menu in the Variables window and trace roots for either a type or a class instance. When the trace finishes a window will popup showing references from GC roots (e.g. locals and statics) to whatever you are tracing.\
+\
 \pard\pardeftab480\ql\qnatural\pardirnatural
 
 \fs48 \cf0 4 Customization\
@@ -140,40 +135,33 @@ A mono executable can be debugged by using Continuum to open a *.mdb file or wit
 \pard\pardeftab480\ql\qnatural\pardirnatural
 
 \fs28 \cf0 \
-\pard\tx0\pardeftab480\ql\qnatural\pardirnatural
-\cf0 Syntax highlighting and the method popup menu at the bottom of text editor windows is done with the aid of language files. These are xml files which use .NET regular expressions to define patterns for things like comments, keywords, strings, type definitions, and member definitions. You can add new languages by going to the Continuum preferences, navigating to the Language Globs panel, and pressing the Open Languages button. \
+Syntax highlighting and the method popup menu at the bottom of text editor windows is done with the aid of language files. These are xml files which use .NET regular expressions to define patterns for things like comments, keywords, strings, type definitions, and member definitions. You can add new languages by going to the Continuum preferences, navigating to the Language Globs panel, and pressing the Open Languages button. \
 \
-After you do this a directory in the Finder will open up allowing you to add a new language to the user directory. The syntax for these files is defined by the standard/Language.schema file. After adding a new language you will need to restart Continuum for it to be recognized. Once you have a new language defined you can use the Language Globs preference panel to associate file globs with it (or the Globs.xml file in the user directory).\
-\pard\pardeftab480\ql\qnatural\pardirnatural
-\cf0 \
+After you do this a directory in the Finder will open up allowing you to add a new language to the user directory. The syntax for these files is defined by the standard/Language.schema file. After adding a new language edit the Globs file in the custom directory and restart Continuum.\
+\
 \pard\pardeftab480\ql\qnatural\pardirnatural
 
 \fs36 \cf0 4.2 Text Scripts\
 \pard\pardeftab480\ql\qnatural\pardirnatural
 
 \fs28 \cf0 \
-\pard\tx0\pardeftab480\ql\qnatural\pardirnatural
-\cf0 These are shell scripts which read from stdin and write to stdout. They are automatically added to the Text menu and the text editor contextual menu. When invoked they pass the current selection into the script via stdin and replace the selection with stdout. New scripts can be added by selecting the Open Scripts command from the Text menu and adding a new tool to the user directory.\
-\pard\pardeftab480\ql\qnatural\pardirnatural
-\cf0 \
+These are shell scripts which read from stdin and write to stdout. They are automatically added to the Text menu and the text editor contextual menu. When invoked they pass the current selection into the script via stdin and replace the selection with stdout. New scripts can be added by selecting the Open Scripts command from the Text menu and adding a new tool to the user directory.\
+\
 \pard\pardeftab480\ql\qnatural\pardirnatural
 
 \fs36 \cf0 4.3 Refactor Scripts\
 \pard\pardeftab480\ql\qnatural\pardirnatural
 
 \fs28 \cf0 \
-\pard\tx0\pardeftab480\ql\qnatural\pardirnatural
-\cf0 These scripts allow you to do more complex processing of C# source. They are written in a custom little language which allows you to easily access and change C# code. To add a new refactor select the Open Refactors menu item from the Refactor menu. standard/Refactor Language.rtf explains the language used to write the refactors.\
-\pard\pardeftab480\ql\qnatural\pardirnatural
-\cf0 \
+These scripts allow you to do more complex processing of C# source. They are written in a custom little language which allows you to easily access and change C# code. To add a new refactor select the Open Refactors menu item from the Refactor menu. standard/Refactor Language.rtf explains the language used to write the refactors.\
+\
 \pard\pardeftab480\ql\qnatural\pardirnatural
 
 \fs48 \cf0 5 Known Issues\
 \pard\pardeftab480\ql\qnatural\pardirnatural
 
 \fs28 \cf0 \
-\pard\pardeftab480\ql\qnatural\pardirnatural
-\cf0 \'95 Auto-complete won't complete subscripted expressions (name[0].) or bound generic types (List<string> foo; foo.First().).\
+\'95 Auto-complete won't complete subscripted expressions (name[0].) or bound generic types (List<string> foo; foo.First().).\
 \
 \'95 Auto-complete will attempt to deduce the type of local variables declared as var but this only works when the expression is a new expression, an as cast, a function call like Get<T>(), or a linq query.\
 \
