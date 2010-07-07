@@ -44,6 +44,8 @@ ui-resources := $(cocoa-dlls),$(gear-dll),bin/shared.dll
 ui-files := $(shell echo $(ui-resources) | sed "s/,/ /g")
 ui-files += bin/csc_flags
 
+contents := $(abspath bin/Continuum.app/Contents)
+
 all:
 
 program-targets :=
@@ -65,6 +67,9 @@ all: $(program-targets)
 plugins: $(plugin-targets)
 
 app: bin/install-tool $(program-targets) bin/continuum.exe.config
+
+debug: app
+	osascript -e 'tell application "Foreshadow" to debug "$(contents)/Resources/continuum.exe" using "$(contents)/MacOS/Continuum"'
 
 # Note that running this way (instead of via open or the Finder) allows us to see 
 # console output in the terminal instead of the system log.
