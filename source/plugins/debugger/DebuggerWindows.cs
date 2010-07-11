@@ -50,7 +50,7 @@ namespace Debugger
 				Unused.Value = new IBOutlet<NSWindowController>(this, info.Name + "Controller").Value;	// Not sure why but we need to do this but if we don't the controllers are not constructed.
 				
 				WindowInfo temp = info;
-				handler.Register(this, info.MenuId, () => temp.Window.makeKeyAndOrderFront(this), () => Debugger.IsRunning);
+				handler.Register(this, temp.MenuId, () => temp.Window.makeKeyAndOrderFront(this), () => Debugger.IsRunning);
 			}
 			
 			Broadcaster.Register("debugger started", this);

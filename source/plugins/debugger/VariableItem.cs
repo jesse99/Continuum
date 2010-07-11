@@ -57,7 +57,7 @@ namespace Debugger
 			Key = key;
 			Value = value;
 			m_index = index;
-			
+
 			Item item = GetItem.Invoke(thread, parent != null ? parent.Value : null, Key, Value);
 			AttributedName = NSMutableAttributedString.Create(name).Retain();
 			AttributedType = NSAttributedString.Create(item.Type).Retain();

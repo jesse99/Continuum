@@ -272,36 +272,80 @@ namespace Debugger
 		
 		public int outlineView_numberOfChildrenOfItem(NSOutlineView table, VariableItem item)
 		{
-			if (m_item == null)
-				return 0;
+			int count = 0;
 			
-			return item == null ? m_item.NumberOfChildren : item.NumberOfChildren;
+			try
+			{
+				if (m_item != null)
+					count = item == null ? m_item.NumberOfChildren : item.NumberOfChildren;
+			}
+			catch (Exception e)
+			{
+				if (!Debugger.IsShuttingDown(e))
+					throw;
+			}
+			
+			return count;
 		}
 		
 		public bool outlineView_isItemExpandable(NSOutlineView table, VariableItem item)
 		{
-			return item == null ? true : item.NumberOfChildren > 0;
+			bool expandable = false;
+			
+			try
+			{
+				expandable = item == null ? true : item.NumberOfChildren > 0;
+			}
+			catch (Exception e)
+			{
+				if (!Debugger.IsShuttingDown(e))
+					throw;
+			}
+			
+			return expandable;
 		}
 		
 		public NSObject outlineView_child_ofItem(NSOutlineView table, int index, VariableItem item)
 		{
-			if (m_item == null)
-				return null;
+			NSObject child = null;
 			
-			return item == null ? m_item.GetChild(m_frame.Thread, index) : item.GetChild(m_frame.Thread, index);
+			try
+			{
+				if (m_item != null)
+					child = item == null ? m_item.GetChild(m_frame.Thread, index) : item.GetChild(m_frame.Thread, index);
+			}
+			catch (Exception e)
+			{
+				if (!Debugger.IsShuttingDown(e))
+					throw;
+			}
+			
+			return child;
 		}
 		
 		public NSObject outlineView_objectValueForTableColumn_byItem(NSOutlineView table, NSTableColumn col, VariableItem item)
 		{
-			if (m_item == null)
-				return NSString.Empty;
+			NSObject value = null;
 			
-			if (col.identifier().ToString() == "0")
-				return item == null ? m_item.AttributedName : item.AttributedName;
-			else if (col.identifier().ToString() == "1")
-				return item == null ? m_item.AttributedValue : item.AttributedValue;
-			else
-				return item == null ? m_item.AttributedType : item.AttributedType;
+			try
+			{
+				if (m_item != null)
+				{
+					if (col.identifier().ToString() == "0")
+						value = item == null ? m_item.AttributedName : item.AttributedName;
+					else if (col.identifier().ToString() == "1")
+						value = item == null ? m_item.AttributedValue : item.AttributedValue;
+					else
+						value = item == null ? m_item.AttributedType : item.AttributedType;
+				}
+			}
+			catch (Exception e)
+			{
+				if (!Debugger.IsShuttingDown(e))
+					throw;
+			}
+			
+			return value;
 		}
 		
 		#region Private Methods
@@ -365,7 +409,7 @@ namespace Debugger
 		
 		private void DoReset(LiveStackFrame frame)
 		{
-			if (m_item != null && ((LiveStackFrame) m_item.Value) == frame) 
+			if (m_item != null && ((LiveStackFrame) m_item.Value) == frame)
 			{
 				m_frame = frame;
 				m_item.RefreshValue(m_frame.Thread, frame);

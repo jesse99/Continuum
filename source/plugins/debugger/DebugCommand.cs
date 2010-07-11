@@ -70,10 +70,14 @@ namespace Debugger
 			}
 			catch (System.Reflection.TargetInvocationException t)
 			{
+				if (doc != null)
+					doc.close();
 				DoError(t.InnerException, path, args);
 			}
 			catch (Exception e)
 			{
+				if (doc != null)
+					doc.close();
 				DoError(e, path, args);
 			}
 			

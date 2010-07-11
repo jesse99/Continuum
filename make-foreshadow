@@ -11,6 +11,7 @@ rm -rf bin/Foreshadow.app &&
 mv ${resources}/continuum.exe ${resources}/foreshadow.exe &&
 mv ${resources}/continuum.exe.mdb ${resources}/foreshadow.exe.mdb &&
 mv ${resources}/continuum.exe.config ${resources}/foreshadow.exe.config &&
+mv ${resources}/Continuum.sdef ${resources}/Foreshadow.sdef &&
 sed -i '' "s|/tmp/continuum.log|${here}/foreshadow.log|g" ${resources}/foreshadow.exe.config &&
 sed -i '' "s/continuum/foreshadow/g" ${contents}/MacOS/launcher &&
 sed -i '' "s/Continuum/Foreshadow/g" ${contents}/MacOS/launcher &&

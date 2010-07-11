@@ -62,24 +62,70 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.EnumMirror
 	public class Mono.Debugger.ObjectMirror
 		public class Mono.Debugger.StringMirror
-		public class Mono.Debugger.ArrayMirror	 
+		public class Mono.Debugger.ArrayMirror	
 		
-/Files/VendorSource/ContinuumTrunk/continuum-ide-read-only/source/plugins/app/TimeMachine.cs:142
+ 
 
-* Work on stuff:
-	- languages are taken from the glob file
-	- TimeMachine wasn't handling missing dir well
-* make-foreshadow needs to rename the sdef file.
-* There are two debug menus...
-* sdef files should default to color coded.
-* Got:
-	Managed exception: MObjc.NSObject outlineView_objectValueForTableColumn_byItem(MCocoa.NSOutlineView, MCocoa.NSTableColumn, Debugger.VariableItem)
-	MObjc.InvalidCallException: Expected a Debugger.VariableItem when calling outlineView_objectValueForTableColumn_byItem but have a MCocoa.NSMutableDictionary.
-	  at MObjc.Managed.Call (IntPtr dummy, IntPtr resultBuffer, IntPtr argBuffers) [0x00187] in /Users/jessejones/Source/mobjc/source/Managed.cs:93 
-	2010-07-05 17:38:01.266 Continuum[19482:903] Exception raised during posting of notification.  Ignored.  exception: 'Expected a Debugger.VariableItem when calling outlineView_objectValueForTableColumn_byItem but have a MCocoa.NSMutableDictionary.'  invoked observer method: '*** -[VariableView textDidEndEditing:]'  observer: 0xa350b0  notification name: 'NSTextDidEndEditingNotification'
+* Getting a hang when showing variables window:
+	- looks like this is a hang in the soft debugger
+	- are we getting called back from multiple debugger threads?
+	- add writes when trying to enter, entering, and exiting mutexes (have to special case monitors)
+	  maybe can do this for now just in DebuggerThread
+	- try getting rid of the perform within the lock
+	- debugger thread is deadlocking because we're loading a type while invoking ToString?
+* Do a checkin.
+* Adding a breakpoint to MethodSignature didn't do anything when the program was running.
+* Check in mcocoa and mobjc changes.
+* Look at:
+Managed exception: MObjc.NSObject outlineView_child_ofItem(MCocoa.NSOutlineView, Int32, Debugger.VariableItem)
+System.Reflection.TargetInvocationException: Exception has been thrown by the target of an invocation. ---> System.Reflection.TargetInvocationException: Exception has been thrown by the target of an invocation. ---> Mono.Debugger.Soft.VMDisconnectedException: Exception of type 'Mono.Debugger.Soft.VMDisconnectedException' was thrown.
+  at Mono.Debugger.Soft.Connection.SendReceive (CommandSet command_set, Int32 command, Mono.Debugger.Soft.PacketWriter packet) [0x000d7] in /private/tmp/monobuild/build/BUILD/mono-2.6.3/mcs/class/Mono.Debugger.Soft/Mono.Debugger.Soft/Connection.cs:1093 
+  at Mono.Debugger.Soft.Connection.Thread_GetFrameInfo (Int64 id, Int32 start_frame, Int32 length) [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.6.3/mcs/class/Mono.Debugger.Soft/Mono.Debugger.Soft/Connection.cs:1398 
+  at Mono.Debugger.Soft.ThreadMirror.GetFrames () [0x00000] in /private/tmp/monobuild/build/BUILD/mono-2.6.3/mcs/class/Mono.Debugger.Soft/Mono.Debugger.Soft/ThreadMirror.cs:15 
+  at Debugger.LiveStackFrame.GetValue (Mono.Debugger.Soft.LocalVariable variable) [0x00013] in /Users/jessejones/Source/Continuum/source/plugins/debugger/values/LiveStackFrame.cs:105 
+  at Debugger.GetChildOverloads.GetChild (Mono.Debugger.Soft.ThreadMirror thread, Debugger.VariableItem parentItem, Debugger.LiveStackFrame parent, Int32 index) [0x00041] in /Users/jessejones/Source/Continuum/source/plugins/debugger/values/GetChildOverloads.cs:59 
+  at (wrapper managed-to-native) System.Reflection.MonoMethod:InternalInvoke (object,object[],System.Exception&)
+  at System.Reflection.MonoMethod.Invoke (System.Object obj, BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x00000] in <filename unknown>:0 
+  --- End of inner exception stack trace ---
+  at System.Reflection.MonoMethod.Invoke (System.Object obj, BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x00000] in <filename unknown>:0 
+  at System.Reflection.MethodBase.Invoke (System.Object obj, System.Object[] parameters) [0x00000] in <filename unknown>:0 
+  at Debugger.GetChild+<Register>c__AnonStorey24.<>m__48 (Mono.Debugger.Soft.ThreadMirror a1, Debugger.VariableItem a2, System.Object a3, Int32 a4) [0x00000] in /Users/jessejones/Source/Continuum/source/plugins/debugger/values/GetChild.cs:84 
+  at Debugger.GetChild.Invoke (Mono.Debugger.Soft.ThreadMirror thread, Debugger.VariableItem parentItem, System.Object parent, Int32 index) [0x00092] in /Users/jessejones/Source/Continuum/source/plugins/debugger/values/GetChild.cs:40 
+  at Debugger.VariableItem.DoEagerLoad (Mono.Debugger.Soft.ThreadMirror thread) [0x00007] in /Users/jessejones/Source/Continuum/source/plugins/debugger/VariableItem.cs:239 
+  at Debugger.VariableItem.GetChild (Mono.Debugger.Soft.ThreadMirror thread, Int32 index) [0x00041] in /Users/jessejones/Source/Continuum/source/plugins/debugger/VariableItem.cs:99 
+  at Debugger.VariableController.outlineView_child_ofItem (MCocoa.NSOutlineView table, Int32 index, Debugger.VariableItem item) [0x00013] in /Users/jessejones/Source/Continuum/source/plugins/debugger/VariableController.cs:291 
+  at (wrapper managed-to-native) System.Reflection.MonoMethod:InternalInvoke (object,object[],System.Exception&)
+  at System.Reflection.MonoMethod.Invoke (System.Object obj, BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x00000] in <filename unknown>:0 
+  --- End of inner exception stack trace ---
+  at System.Reflection.MonoMethod.Invoke (System.Object obj, BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x00000] in <filename unknown>:0 
+  at System.Reflection.MethodBase.Invoke (System.Object obj, System.Object[] parameters) [0x00000] in <filename unknown>:0 
+  at MObjc.Managed.Call (IntPtr dummy, IntPtr resultBuffer, IntPtr argBuffers) [0x001bf] in /Users/jessejones/Source/mobjc/source/Managed.cs:97 
+System.Runtime.Serialization.SerializationException: Type Mono.Debugger.Soft.VMDisconnectedException is not marked as Serializable.
+  at System.Runtime.Serialization.Formatters.Binary.BinaryCommon.CheckSerializable (System.Type type, ISurrogateSelector selector, StreamingContext context) [0x00000] in <filename unknown>:0 
+  at System.Runtime.Serialization.Formatters.Binary.ObjectWriter.GetObjectData (System.Object obj, System.Runtime.Serialization.Formatters.Binary.TypeMetadata& metadata, System.Object& data) [0x00000] in <filename unknown>:0 
+  at System.Runtime.Serialization.Formatters.Binary.ObjectWriter.WriteObject (System.IO.BinaryWriter writer, Int64 id, System.Object obj) [0x00000] in <filename unknown>:0 
+  at System.Runtime.Serialization.Formatters.Binary.ObjectWriter.WriteObjectInstance (System.IO.BinaryWriter writer, System.Object obj, Boolean isValueObject) [0x00000] in <filename unknown>:0 
+  at System.Runtime.Serialization.Formatters.Binary.ObjectWriter.WriteQueuedObjects (System.IO.BinaryWriter writer) [0x00000] in <filename unknown>:0 
+  at System.Runtime.Serialization.Formatters.Binary.ObjectWriter.WriteObjectGraph (System.IO.BinaryWriter writer, System.Object obj, System.Runtime.Remoting.Messaging.Header[] headers) [0x00000] in <filename unknown>:0 
+  at System.Runtime.Serialization.Formatters.Binary.BinaryFormatter.Serialize (System.IO.Stream serializationStream, System.Object graph, System.Runtime.Remoting.Messaging.Header[] headers) [0x00000] in <filename unknown>:0 
+  at System.Runtime.Serialization.Formatters.Binary.BinaryFormatter.Serialize (System.IO.Stream serializationStream, System.Object graph) [0x00000] in <filename unknown>:0 
+  at MObjc.Managed.DoCreateNativeException (System.Exception e) [0x00139] in /Users/jessejones/Source/mobjc/source/Managed.cs:166 
+
+Unhandled Exception: MObjc.CocoaException: System.Reflection.TargetInvocationException. Exception has been thrown by the target of an invocation.
+  at MObjc.CocoaException.Raise (IntPtr instance) [0x00162] in /Users/jessejones/Source/mobjc/source/CocoaException.cs:122 
+  at MObjc.Ffi.Call (IntPtr cif, IntPtr imp, IntPtr result, MObjc.Helpers.PtrArray args) [0x00026] in /Users/jessejones/Source/mobjc/source/Ffi.cs:94 
+  at MObjc.Native.Invoke () [0x00020] in /Users/jessejones/Source/mobjc/source/Native.cs:106 
+  at MCocoa.NSApplication.run () [0x00000] in /Users/jessejones/Source/mcocoa/source/appkit/NSApplication.cs:122 
+  at App.Application.Run (System.String[] args) [0x00148] in /Users/jessejones/Source/Continuum/source/plugins/app/Application.cs:76 
+  at Continuum.Program.Main (System.String[] args) [0x0005f] in /Users/jessejones/Source/Continuum/source/continuum/Program.cs:50 
+* Debug target should probably make the mono link if it doesn't exist.
 * Get an error alert when right clicking past the bottom of an rtf file.
+* Disable ConfigurationErrorsException breaking by default?
 * What happens when trying to look at an object wth a thread static field?
 * Need a break all command (Suspend looks like it may work).
+* Edited directories are not always added to find in files (e.g. when opening the app and re-loading
+   previuosly used directory).
+* Create Exception and Add Exception didn't work when adding to an empty class.
 * Use the trace roots goo to see why CodeViewer is hanging around
 * Build a new foreshadow.
 * Release checklist:

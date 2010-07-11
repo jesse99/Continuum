@@ -78,23 +78,32 @@ namespace Debugger
 			
 			MethodMirror method = obj.Type.ResolveProperty(name);
 			if (method == null)
-				method = obj.Type.FindLastMethod(name, 0);
+				method = obj.Type.FindMethod(name, 0);
 				
 			if (method != null)
 			{
-				IAsyncResult ar = obj.BeginInvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded, null, null);
-				
-				if (!ar.IsCompleted)
-					ar.AsyncWaitHandle.WaitOne(Timeout);
-				
-				if (!ar.IsCompleted)
+				if (!Debugger.IsTypeLoaded(method.DeclaringType.FullName))
 				{
-					Func<Value> getter = () => obj.EndInvokeMethod(ar);
-					ThreadPool.QueueUserWorkItem(o => DoWaitForResult(getter, ar));	// the pool uses background threads so the app will exit even if this thread is still running
-					throw new Exception("Timed out");
+					result = thread.Domain.CreateString("type not loaded");
 				}
-				
-				result = obj.EndInvokeMethod(ar);
+				else
+				{
+					IAsyncResult ar = obj.BeginInvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded, null, null);
+					
+					if (!ar.IsCompleted)
+						ar.AsyncWaitHandle.WaitOne(Timeout);
+					
+					if (ar.IsCompleted)
+					{
+						result = obj.EndInvokeMethod(ar);
+					}
+					else
+					{
+						Func<Value> getter = () => obj.EndInvokeMethod(ar);
+						ThreadPool.QueueUserWorkItem(o => DoIgnoreResult(getter, ar));	// the pool uses background threads so the app will exit even if this thread is still running
+						result = thread.Domain.CreateString("timed out");
+					}
+				}
 			}
 			else
 			{
@@ -110,11 +119,19 @@ namespace Debugger
 			
 			MethodMirror method = obj.Type.ResolveProperty(name);
 			if (method == null)
-				method = obj.Type.FindLastMethod(name, 0);
+				method = obj.Type.FindMethod(name, 0);
 				
 			if (method != null)
 			{
-				if (obj.Type.IsPrimitive)
+				if (!Debugger.IsTypeLoaded(method.DeclaringType.FullName))
+				{
+					// TODO: The soft debugger was timing out when calling BeginInvokeMethod and
+					// then locking up when CreateString was called. This works around that problem,
+					// but not in a good way because it's possible that the ToString will use fields which
+					// have types which are not loaded.
+					result = thread.Domain.CreateString("type not loaded");
+				}
+				else if (obj.Type.IsPrimitive)
 				{
 					// Boxed primitive (we need this special case or BeginInvokeMethod will hang).
 					if (obj.Fields.Length > 0 && (obj.Fields[0] is PrimitiveValue))
@@ -141,19 +158,26 @@ namespace Debugger
 					else
 					{
 						ar = obj.BeginInvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded, null, null);
-						getter = () => obj.EndInvokeMethod(ar);
+						getter = () =>
+						{
+							Value vvv = null;
+							vvv = obj.EndInvokeMethod(ar);
+							return vvv;
+						};
 					}
 					
 					if (!ar.IsCompleted)
 						ar.AsyncWaitHandle.WaitOne(Timeout);
 					
-					if (!ar.IsCompleted)
+					if (ar.IsCompleted)
 					{
-						ThreadPool.QueueUserWorkItem(o => DoWaitForResult(getter, ar));	// the pool uses background threads so the app will exit even if this thread is still running
-						throw new Exception("Timed out");
+						result = getter();
 					}
-					
-					result = getter();
+					else
+					{
+						ThreadPool.QueueUserWorkItem(o => DoIgnoreResult(getter, ar));	// the pool uses background threads so the app will exit even if this thread is still running
+						result = thread.Domain.CreateString("timed out");
+					}
 				}
 			}
 			else
@@ -165,14 +189,14 @@ namespace Debugger
 		}
 		
 		[ThreadModel(ThreadModel.SingleThread)]
-		private void DoWaitForResult(Func<Value> getter, IAsyncResult ar)
+		private void DoIgnoreResult(Func<Value> getter, IAsyncResult ar)
 		{
 			try
 			{
 				ar.AsyncWaitHandle.WaitOne();
 				Unused.Value = getter();				// we need to call EndInvoke or we'll get leaks
 			}
-			catch
+			catch (Exception eee)
 			{
 				// We don't care about errors here.
 			}

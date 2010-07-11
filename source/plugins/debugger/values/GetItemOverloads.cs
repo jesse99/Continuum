@@ -260,7 +260,8 @@ namespace Debugger
 					}
 					else
 					{
-						Value v = value.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+						Value v = new InvokeMethod().Invoke(thread, value, "ToString");
+//						Value v = value.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
 						StringMirror s = (StringMirror) v;
 						text = s.Value;
 					}

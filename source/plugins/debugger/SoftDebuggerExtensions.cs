@@ -87,23 +87,6 @@ namespace Debugger
 			return method;
 		}
 		
-		public static MethodMirror FindLastMethod(this TypeMirror type, string name, int numArgs)
-		{
-			MethodMirror method = null;
-			
-			while (type != null)
-			{
-				MethodMirror result = type.GetMethods().FirstOrDefault(
-					m => m.Name == name && m.GetParameters().Length == numArgs);
-				if (result != null)
-					method = result;
-				
-				type = type.BaseType;
-			}
-			
-			return method;
-		}
-		
 		public static IEnumerable<FieldInfoMirror> GetAllFields(this TypeMirror type)
 		{
 			while (type != null)
