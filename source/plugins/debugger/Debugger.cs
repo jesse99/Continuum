@@ -121,8 +121,15 @@ namespace Debugger
 		
 		public bool IsPaused
 		{
-			get {Console.WriteLine("m_thread.GetState(): {0}", m_thread.GetState()); Console.Out.Flush(); return m_thread.GetState() == State.Paused;}
-			
+			get {return m_thread.GetState() == State.Paused;}
+		}
+		
+		public static bool IsShuttingDown(Exception e)
+		{
+			if (e is System.Reflection.TargetInvocationException)
+				return IsShuttingDown(e.InnerException);
+				
+			return (e is VMDisconnectedException) || (e is System.Net.Sockets.SocketException);
 		}
 		
 		// Either start running after connecting or after pausing (e.g. via a breakpoint).
@@ -181,6 +188,11 @@ namespace Debugger
 		public FieldInfoMirror[] GetStaticFields()
 		{
 			return m_thread.GetStaticFields();
+		}
+		
+		internal static bool IsTypeLoaded(string fullName)
+		{
+			return ms_loadedTypes.Contains(fullName);
 		}
 		
 		#region Thread Callbacks
@@ -296,6 +308,11 @@ namespace Debugger
 				m_transcript.WriteLine(Output.Normal, "Thread '{0}' started", ThreadsController.GetThreadName(e.Thread));
 		}
 		
+		internal void OnTypeLoad(TypeLoadEvent e)
+		{
+			ms_loadedTypes.Add(e.Type.FullName);
+		}
+		
 		internal void OnUnloadedAppDomain(AppDomainUnloadEvent e)
 		{
 			if (DebuggerWindows.WriteEvents)
@@ -312,6 +329,7 @@ namespace Debugger
 		internal void OnVMDied()
 		{
 			Broadcaster.Invoke("debugger stopped", this);
+			ms_loadedTypes.Clear();
 		}
 		
 		internal void OnVMStarted()
@@ -470,6 +488,7 @@ namespace Debugger
 		private Thread m_stdoutThread;
 		private Thread m_stderrThread;
 		private static bool ms_running;
+		private static HashSet<string> ms_loadedTypes = new HashSet<string>();
 		#endregion
 	}
 }

@@ -293,6 +293,7 @@ namespace Debugger
 					}
 				}
 			}
+			NSApplication.sharedApplication().BeginInvoke(() => m_debugger.OnTypeLoad(e));
 			
 			return HandlerAction.Resume;
 		}
@@ -377,18 +378,21 @@ namespace Debugger
 				else
 					action = DoUnknownEvent(e);
 			}
-			catch (VMDisconnectedException)
-			{
-				Log.WriteLine(TraceLevel.Error, "Debugger", "VMDisconnectedException while trying to process {0}", e);
-				DoTransition(State.Disconnected);
-			}
 			catch (Exception ex)
 			{
-				Log.WriteLine(TraceLevel.Error, "Debugger", "{0}", ex);
-				
-				NSString title = NSString.Create("Error processing {0}.", ex);
-				NSString message = NSString.Create(ex.Message);
-				NSApplication.sharedApplication().BeginInvoke(() => Functions.NSRunAlertPanel(title, message));
+				if (Debugger.IsShuttingDown(ex))
+				{
+					Log.WriteLine(TraceLevel.Error, "Debugger", "VMDisconnectedException while trying to process {0}", e);
+					DoTransition(State.Disconnected);
+				}
+				else
+				{
+					Log.WriteLine(TraceLevel.Error, "Debugger", "{0}", ex);
+					
+					NSString title = NSString.Create("Error processing {0}.", ex);
+					NSString message = NSString.Create(ex.Message);
+					NSApplication.sharedApplication().BeginInvoke(() => Functions.NSRunAlertPanel(title, message));
+				}
 			}
 			
 			return action;
