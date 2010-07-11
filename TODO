@@ -66,15 +66,6 @@ public abstract class Mono.Debugger.Value
 		
  
 
-* Getting a hang when showing variables window:
-	- looks like this is a hang in the soft debugger
-	- are we getting called back from multiple debugger threads?
-	- add writes when trying to enter, entering, and exiting mutexes (have to special case monitors)
-	  maybe can do this for now just in DebuggerThread
-	- try getting rid of the perform within the lock
-	- debugger thread is deadlocking because we're loading a type while invoking ToString?
-* Do a checkin.
-* Adding a breakpoint to MethodSignature didn't do anything when the program was running.
 * Check in mcocoa and mobjc changes.
 * Look at:
 Managed exception: MObjc.NSObject outlineView_child_ofItem(MCocoa.NSOutlineView, Int32, Debugger.VariableItem)
@@ -118,6 +109,8 @@ Unhandled Exception: MObjc.CocoaException: System.Reflection.TargetInvocationExc
   at MCocoa.NSApplication.run () [0x00000] in /Users/jessejones/Source/mcocoa/source/appkit/NSApplication.cs:122 
   at App.Application.Run (System.String[] args) [0x00148] in /Users/jessejones/Source/Continuum/source/plugins/app/Application.cs:76 
   at Continuum.Program.Main (System.String[] args) [0x0005f] in /Users/jessejones/Source/Continuum/source/continuum/Program.cs:50 
+* Bring the app to the foreground after breaking.
+* Put the app in the background after running?
 * Debug target should probably make the mono link if it doesn't exist.
 * Get an error alert when right clicking past the bottom of an rtf file.
 * Disable ConfigurationErrorsException breaking by default?

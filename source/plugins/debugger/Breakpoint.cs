@@ -43,6 +43,11 @@ namespace Debugger
 		
 		public int Line {get; private set;}
 		
+		public override string ToString()
+		{
+			return string.Format("{0}:{1}", System.IO.Path.GetFileName(File), Line);
+		}
+		
 		#region Equality
 		public override bool Equals(object obj)
 		{

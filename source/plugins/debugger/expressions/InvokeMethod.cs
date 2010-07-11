@@ -196,7 +196,7 @@ namespace Debugger
 				ar.AsyncWaitHandle.WaitOne();
 				Unused.Value = getter();				// we need to call EndInvoke or we'll get leaks
 			}
-			catch (Exception eee)
+			catch (Exception)
 			{
 				// We don't care about errors here.
 			}

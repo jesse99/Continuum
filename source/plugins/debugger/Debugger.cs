@@ -432,8 +432,7 @@ namespace Debugger
 		private bool DoTryGetMethod(Breakpoint bp, out MethodMirror method, out int offset)
 		{
 			TypeMirror[] types = m_thread.GetTypesDefinedWithin(bp.File);
-			IEnumerable<Breakpoint> breakpoints = Breakpoints.GetBreakpoints(bp.File);
-			if (types.Length > 0 && breakpoints.Any())
+			if (types.Length > 0)
 			{
 				foreach (TypeMirror type in types)
 				{

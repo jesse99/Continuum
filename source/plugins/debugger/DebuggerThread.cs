@@ -268,17 +268,17 @@ namespace Debugger
 				string path = method.SourceFile;
 				if (!string.IsNullOrEmpty(path))
 				{
+					List<TypeMirror> types;
+					if (!m_types.TryGetValue(path, out types))
+					{
+						types = new List<TypeMirror>();
+						m_types.Add(path, types);
+					}
+					types.Add(e.Type);
+					
 					Breakpoint[] bps = Breakpoints.GetBreakpoints(path);		// TODO: could probably make this a bit more efficient by using TypeMirror.GetSourceFiles
 					if (bps.Length > 0)
 					{
-						List<TypeMirror> types;
-						if (!m_types.TryGetValue(path, out types))
-						{
-							types = new List<TypeMirror>();
-							m_types.Add(path, types);
-						}
-						types.Add(e.Type);
-						
 						foreach (Breakpoint bp in bps)
 						{
 							Location loc = method.Locations.FirstOrDefault(l => l.LineNumber == bp.Line);
