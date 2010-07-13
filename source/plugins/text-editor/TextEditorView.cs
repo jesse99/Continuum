@@ -281,14 +281,19 @@ namespace TextEditor
 			{
 				// Get the selection.
 				int index = DoMouseEventToIndex(evt);
-					
+				
 				m_range = selectedRange();
 				if (m_range.length == 0 && index < string_().length() && string_()[index] == '\n')
 				{
 					m_selection = null;		// don't extend the selection if the user clicked off to the right side of a line
 				}
+				else if (index >= string_().length())
+				{
+					m_selection = null;		// don't extend the selection if the user clicked below the last line of text
+				}
 				else
 				{
+					// Extend the selection so that it contains the entire word the user right-clicked on.
 					if (m_range.length == 0 || !m_range.Intersects(index))
 					{
 						m_range = new NSRange(index, 1);

@@ -140,6 +140,8 @@ namespace Debugger
 			
 			Log.WriteLine(TraceLevel.Info, "Debugger", "Running");
 			Broadcaster.Invoke("debugger resumed", this);
+			
+//			NSApplication.sharedApplication().deactivate();			// this doesn't seem to do anything...
 			m_thread.Resume();
 		}
 		
@@ -235,6 +237,9 @@ namespace Debugger
 				Log.WriteLine(TraceLevel.Info, "Debugger", "Hit breakpoint at {0}:{1:X4}", e.Method.FullName, bp.Offset);
 				var context = new Context(e.Thread, e.Method, bp.Offset);
 				Broadcaster.Invoke("debugger processed breakpoint event", context);
+				
+				if (!NSApplication.sharedApplication().isActive())
+					NSApplication.sharedApplication().activateIgnoringOtherApps(true);
 			}
 			else
 			{

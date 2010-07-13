@@ -69,6 +69,7 @@ plugins: $(plugin-targets)
 app: bin/install-tool $(program-targets) bin/continuum.exe.config
 
 debug: app
+	-ln `which mono` "$(contents)/MacOS/Continuum"
 	osascript -e 'tell application "Foreshadow" to debug "$(contents)/Resources/continuum.exe" using "$(contents)/MacOS/Continuum"'
 
 # Note that running this way (instead of via open or the Finder) allows us to see 
