@@ -97,6 +97,7 @@ namespace Debugger
 					if (boss.Has<ITextEditor>())
 					{
 						var handler = boss.Get<IMenuHandler>();
+						handler.Deregister(this);
 						handler.Register(this, 65, () => DoToggle(boss), () => DoCanToggleBreakpoint(boss));
 						
 						DoCopyBreakpointsToWindow(boss);
