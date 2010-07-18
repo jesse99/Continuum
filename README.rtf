@@ -67,9 +67,8 @@ On occasion control or Unicode characters slip into source code files (e.g. when
 \f1 Special Characters
 \f0  comand in the Text menu).\
 \
-\pard\pardeftab480\ql\qnatural\pardirnatural
 
-\f1 \cf0 Find
+\f1 Find
 \f0  and 
 \f1 Find in Files
 \f0  optionally allow regular expressions to be used. These are the .NET regular expressions (see <http://msdn.microsoft.com/en-us/library/hs600312.aspx>). Note that when replacing $1 is used to insert the first matched parenthesized expression instead of \\1.\
@@ -114,11 +113,14 @@ A mono executable can be debugged by using Continuum to open a *.mdb file or wit
 \f1 using
 \f0  parameter to specify the mono script. It's often convenient to do this within make files:\
 \
+\pard\tx0\pardeftab360\ql\qnatural\pardirnatural
+\cf0 bin := $(abspath bin)\
 \pard\pardeftab480\ql\qnatural\pardirnatural
 
-\b \cf2 debug:
+\b \cf2 \
+debug:
 \b0 \cf0  app\
-\cb3 	\cb1 osascript -e \cf4 'tell application "Continuum" to debug "bin/my-app.exe" with "--arg=value --arg2"'\
+\cb3 	\cb1 osascript -e \cf4 'tell application "Continuum" to debug "$(bin)/my-app.exe" with "--arg=value --arg2"'\
 	\
 \pard\pardeftab480\ql\qnatural\pardirnatural
 \cf0 The debugger's usage should be obvious but it does have one unusual feature: the ability to trace garbage collector roots. You can do this via the contextual menu in the Variables window and trace roots for either a type or a class instance. When the trace finishes a window will popup showing references from GC roots (e.g. locals and statics) to whatever you are tracing.\
