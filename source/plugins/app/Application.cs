@@ -95,6 +95,7 @@ namespace App
 		{
 			try
 			{
+				Log.WriteLine(TraceLevel.Info, "Startup", "opening '{0}'", path);
 				NSURL url = NSURL.fileURLWithPath(NSString.Create(path));
 				NSError err;
 				NSDocumentController.sharedDocumentController().openDocumentWithContentsOfURL_display_error(
@@ -105,9 +106,14 @@ namespace App
 			}
 			catch (Exception e)
 			{
-				NSString title = NSString.Create("Couldn't open the file.");
-				NSString message = NSString.Create(e.Message);
-				Unused.Value = Functions.NSRunAlertPanel(title, message);
+				// A path like '-psn_0_9378033' is now passed in as the first argument when running mono.
+				// Not sure what it is, but we don't want to bother users about it...
+				if (!path.StartsWith("-psn_"))
+				{
+					NSString title = NSString.Create("Couldn't open the file.");
+					NSString message = NSString.Create(e.Message);
+					Unused.Value = Functions.NSRunAlertPanel(title, message);
+				}
 			}
 		}
 		

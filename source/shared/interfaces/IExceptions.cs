@@ -20,28 +20,13 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
-using System;
 
-namespace Debugger
+namespace Shared
 {
-	// Internal interface used to initialize the code viewer
-	internal interface ICodeViewer : IInterface
+	// Debugger related exception options.
+	public interface IExceptions : IInterface
 	{
-		void Init(DebuggerDocument doc);
-		
-		bool IsShowingSource();
-		
-		bool CanDisplaySource();
-		
-		bool CanDisplayIL();
-		
-		void ShowSource();
-		void ShowIL();
-		
-		void OpenSource();
-
-		// Full path to the file currently being viewed.
-		// May be null.
-		string Path {get;}
+		// Full names of exceptions to ignore when they are thrown.
+		string[] Ignored {get; set;}
 	}
 }

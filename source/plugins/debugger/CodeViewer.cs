@@ -152,6 +152,13 @@ namespace Debugger
 			DoShowSource();
 		}
 		
+		public void OpenSource()
+		{
+			Boss boss = ObjectModel.Create("Application");
+			var launcher = boss.Get<ILaunch>();
+			launcher.Launch(m_context.SourceFile, m_context.Location.LineNumber, -1, 1);
+		}
+		
 		public void ShowIL()
 		{
 			m_showIL = true;

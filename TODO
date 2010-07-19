@@ -64,16 +64,22 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.StringMirror
 		public class Mono.Debugger.ArrayMirror	
 		
- 
-* Get an error alert when right clicking past the bottom of an rtf file.
-* Might want a context menu to open the source file.
-* Disable ConfigurationErrorsException breaking by default?
+
+* Show all properties (probably show these and then fields).
+* Rename Run Resume?
+* Make sure auto-props are OK.
+* Close the code viewer window when done debugging.
+* Make sure can still debug twice.
 * What happens when trying to look at an object wth a thread static field?
 * Need a break all command (Suspend looks like it may work).
 * Edited directories are not always added to find in files (e.g. when opening the app and re-loading
    previuosly used directory).
 * Create Exception and Add Exception didn't work when adding to an empty class.
 * Use the trace roots goo to see why CodeViewer is hanging around
+* Brace highlighting isn't reliable.
+* Should be able to see variable (and probably properties) by hovering.
+* Continuum doesn't build using Continuum when it is launched from the Finder (/usr/local/bin
+   doesn't seem to be part of PATH). Could maybe add a note to the make file.
 * Build a new foreshadow.
 * Release checklist:
 	- update generated config file logging categories (search for "Log.WriteLine")
@@ -119,6 +125,8 @@ public abstract class Mono.Debugger.Value
 	ObjectModel Error  bad operator: op_UnaryNegation_Int32
 	maybe tweak the warning?
 * Can probably get rid of ActiveObjects now.
+* Should make font bigger (or smaller) change the defaults for source code windows? It would probably
+   have to change all the defaults?
 * Do some more work on the debugger:
 	- would be nice if could add breakpoints to IL views
 	- add an immediate window
@@ -183,7 +191,8 @@ public abstract class Mono.Debugger.Value
 	- also using Time Machine as a sccs
 * Need a directory for custom plugins:
 	- google code search might be a good example
-	- or maybe a simple diff tool
+	- or maybe a simple diff tool	regime
+	- or maybe a MRU window list (context menu?)
 
 * Add better support for AppleScript/IronPython (and concurrently use it to write functional tests).
 	http://developer.apple.com/cocoa/applescriptforapps.html
@@ -376,6 +385,7 @@ public abstract class Mono.Debugger.Value
 	- handle spaces in args
 	- support line numbers via colons
 	- finder seems to sometimes get confused about which mono app to open
+	- could use a custom apple event (or maybe add parameters to the open event)
 * About box needs a bit more info.
 * Probably want an uninstall script.
 * May want to bundle cecil with the app.

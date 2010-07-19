@@ -93,7 +93,7 @@ namespace Debugger
 			}
 		}
 		
-		public static bool BreakOnExceptions
+		public static bool BreakOnExceptions// might want to move this into Exceptions
 		{
 			get {return !ms_ignoreExceptions;}
 		}

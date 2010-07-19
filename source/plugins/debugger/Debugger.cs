@@ -222,18 +222,18 @@ namespace Debugger
 		{
 			m_currentThread = e.Thread;
 			
-			if (m_stepRequest != null)
-			{
-				m_stepRequest.Disable();
-				m_stepRequest = null;
-			}
-			
 			var frames = new LiveStack(m_currentThread);
 			
 			Contract.Assert(BreakpointCondition != null, "BreakpointCondition is null");
 			DebuggerThread.HandlerAction action = BreakpointCondition(frames[0], bp.BreakPoint);
 			if (action == DebuggerThread.HandlerAction.Suspend)
 			{
+				if (m_stepRequest != null)
+				{
+					m_stepRequest.Disable();
+					m_stepRequest = null;
+				}
+				
 				Log.WriteLine(TraceLevel.Info, "Debugger", "Hit breakpoint at {0}:{1:X4}", e.Method.FullName, bp.Offset);
 				var context = new Context(e.Thread, e.Method, bp.Offset);
 				Broadcaster.Invoke("debugger processed breakpoint event", context);
@@ -258,20 +258,31 @@ namespace Debugger
 		
 		internal void OnException(ExceptionEvent e)
 		{
-			m_currentThread = e.Thread;
-			
-			if (m_stepRequest != null)
-			{
-				m_stepRequest.Disable();
-				m_stepRequest = null;
-			}
-			
 			var frames = new LiveStack(e.Thread);
 			LiveStackFrame frame = frames[0];
-			if (DebuggerWindows.WriteEvents)
-				m_transcript.WriteLine(Output.Normal, "{0} exception was thrown at {1}:{2:X4}", e.Exception.Type.FullName, frame.Method.FullName, frame.ILOffset);
-			var context = new Context(e.Thread, frame.Method, frame.ILOffset);
-			Broadcaster.Invoke("debugger thrown exception", context);
+			
+			Boss boss = ObjectModel.Create("Application");
+			var exceptions = boss.Get<IExceptions>();
+			if (!DoTypeIsIn(e.Exception.Type, exceptions.Ignored))
+			{
+				m_currentThread = e.Thread;
+				
+				if (m_stepRequest != null)
+				{
+					m_stepRequest.Disable();
+					m_stepRequest = null;
+				}
+				
+				if (DebuggerWindows.WriteEvents)
+					m_transcript.WriteLine(Output.Normal, "{0} exception was thrown at {1}:{2:X4}", e.Exception.Type.FullName, frame.Method.FullName, frame.ILOffset);
+				var context = new Context(e.Thread, frame.Method, frame.ILOffset);
+				Broadcaster.Invoke("debugger thrown exception", context);
+			}
+			else
+			{
+				m_transcript.WriteLine(Output.Normal, "Ignoring {0} in {1}:{2}", e.Exception.Type.FullName, frame.Method.DeclaringType.Name, frame.Method.Name);
+				m_thread.Resume();
+			}
 		}
 		
 		internal void OnResolvedBreakpoint(ResolvedBreakpoint bp)
@@ -409,6 +420,17 @@ namespace Debugger
 			{
 				Log.WriteLine(TraceLevel.Error, "Debugger", "{0}", e);
 			}
+		}
+		
+		private bool DoTypeIsIn(TypeMirror type, string[] types)
+		{
+			foreach (string candidate in types)
+			{
+				if (type.IsType(candidate))
+					return true;
+			}
+			
+			return false;
 		}
 		
 		private void DoAddedBreakpoint(Breakpoint bp)

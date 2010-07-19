@@ -230,7 +230,14 @@ fi
 				Sccs.Execute(command, path);
 			}
 		}
-
+		
+		public void ignoreExceptions(NSObject sender)
+		{
+			var controller = new IgnoreExceptionController();
+			Unused.Value = NSApplication.sharedApplication().runModalForWindow(controller.window());
+			controller.release();
+		}
+		
 #if DEBUG
 		public void dumpBosses(NSObject sender)
 		{

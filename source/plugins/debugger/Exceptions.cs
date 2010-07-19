@@ -20,13 +20,18 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using Gear.Helpers;
+using MCocoa;
+using MObjc;
 using Shared;
 using System;
+using System.Linq;
+using System.Diagnostics;
 using System.Collections.Generic;
 
 namespace Debugger
 {
-	internal sealed class ContextMenu : ITextContextCommands
+	internal sealed class Exceptions : IExceptions
 	{
 		public void Instantiated(Boss boss)
 		{
@@ -38,43 +43,55 @@ namespace Debugger
 			get {return m_boss;}
 		}
 		
-		public void Get(Boss boss, string selection, bool editable, List<TextContextItem> items)
+		public string[] Ignored
 		{
-			boss = DoGetWindowBoss();
-			if (boss != null)
+			get
 			{
-				var viewer = boss.Get<ICodeViewer>();
-				if (viewer.CanDisplaySource())
-				{
-					if (viewer.CanDisplayIL())
-					{
-						if (viewer.IsShowingSource())
-							items.Add(new TextContextItem("Show IL", s => {viewer.ShowIL(); return s;}, 0.01f));
-						else
-							items.Add(new TextContextItem("Show Source", s => {viewer.ShowSource(); return s;}, 0.01f));
-					}
-					
-					items.Add(new TextContextItem("Open Source", s => {viewer.OpenSource(); return s;}, 0.011f));
-				}
+				if (m_ignored == null)
+					m_ignored = DoLoad();
+				
+				return m_ignored;
+			}
+			set
+			{
+				Contract.Requires(value != null);
+				
+				DoSave(value);
+				m_ignored = value;
 			}
 		}
 		
 		#region Private Methods
-		private Boss DoGetWindowBoss()
+		private void DoSave(string[] types)
 		{
-			Boss boss = ObjectModel.Create("TextEditorPlugin");
-			var windows = boss.Get<IWindows>();
-			boss = windows.Main();
+			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
+			Array.Sort(types);
 			
-			if (boss != null && !boss.Has<ICodeViewer>())
-				boss = null;
+			NSArray value = NSArray.Create(types);
+			defaults.setObject_forKey(value, NSString.Create("ignored-exceptions"));
+		}
+		
+		private string[] DoLoad()
+		{
+			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
+			NSArray value = defaults.arrayForKey(NSString.Create("ignored-exceptions"));
 			
-			return boss;
+			var types = new List<string>();
+			if (!NSObject.IsNullOrNil(value))
+			{
+				foreach (NSString s in value)
+				{
+					types.Add(s.ToString());
+				}
+			}
+			
+			return types.ToArray();
 		}
 		#endregion
 		
 		#region Fields 
 		private Boss m_boss;
+		private string[] m_ignored;
 		#endregion
 	}
 }
