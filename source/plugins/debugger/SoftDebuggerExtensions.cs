@@ -147,10 +147,9 @@ namespace Debugger
 		{
 			FieldInfoMirror field = null;
 			
-			string autoName = "<" + fieldName + ">";	// auto-props look like "<Command>k_BackingField"
 			IEnumerable<FieldInfoMirror> fields =
 				from f in type.GetFields()
-					where f.Name == fieldName || f.Name.StartsWith(autoName)
+					where f.Name == fieldName
 				select f;
 			
 			if (fields.Any())

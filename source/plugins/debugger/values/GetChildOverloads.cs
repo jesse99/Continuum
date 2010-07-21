@@ -65,16 +65,25 @@ namespace Debugger
 				Contract.Assert(fields.Length > 0);
 				
 				object v = null;
+				string name = "this";
 				if (parent.ThisPtr is ObjectMirror)
+				{
 					v = new InstanceValue((ObjectMirror) parent.ThisPtr, fields);
+				}
 				else if (parent.ThisPtr is StructMirror)
+				{
 					v = new InstanceValue((StructMirror) parent.ThisPtr, fields);
+				}
 				else if (parent.ThisPtr == null || parent.ThisPtr.IsNull())
-					v = new TypeValue(parent.Method.DeclaringType, fields);
+				{
+					v = new TypeValue(parent.Method.DeclaringType);
+					name = "statics";
+				}
 				else
+				{
 					Contract.Assert(false, parent.ThisPtr.TypeName() + " is bogus");
-					
-				string name = fields.All(f => f.IsStatic) ? "statics" : "this";
+				}
+				
 				child = new VariableItem(thread, name, parentItem, index, v, index);
 			}
 			
@@ -101,9 +110,20 @@ namespace Debugger
 //			}
 			else
 			{
-				FieldInfoMirror field = parent.Type.GetAllFields().ElementAt(index);
-				Value child = EvalMember.Evaluate(thread, parent, field.Name);
-				return new VariableItem(thread, DoSanitizeFieldName(field), parentItem, field, child, index);
+				PropertyInfoMirror[] props = parent.Type.GetAllProperties().ToArray();
+				if (index < props.Length)
+				{
+					PropertyInfoMirror prop = props[index];
+					Value child = EvalMember.Evaluate(thread, parent, prop.Name);
+					return new VariableItem(thread, prop.Name, parentItem, prop, child, index);
+				}
+				else
+				{
+					FieldInfoMirror[] fields = (from f in parent.Type.GetAllFields() where !f.Name.Contains("__BackingField") select f).ToArray();
+					FieldInfoMirror field = fields[index - props.Length];
+					Value child = EvalMember.Evaluate(thread, parent, field.Name);
+					return new VariableItem(thread, field.Name, parentItem, field, child, index);
+				}
 			}
 		}
 		
@@ -118,21 +138,44 @@ namespace Debugger
 		[GetChild.Overload]
 		public static VariableItem GetChild(ThreadMirror thread, VariableItem parentItem, StructMirror parent, int index)
 		{
-			FieldInfoMirror field = parent.Type.GetFields()[index];
-			Value child;
-			if (field.IsStatic)
-				child = parent.Type.GetValue(field);
+			PropertyInfoMirror[] props = parent.Type.GetAllProperties().ToArray();
+			if (index < props.Length)
+			{
+				PropertyInfoMirror prop = props[index];
+				Value child = EvalMember.Evaluate(thread, parent, prop.Name);
+				return new VariableItem(thread, prop.Name, parentItem, prop, child, index);
+			}
 			else
-				child = parent.Fields[index];
-			return new VariableItem(thread, DoSanitizeFieldName(field), parentItem, index, child, index);
+			{
+				FieldInfoMirror[] fields = (from f in parent.Type.GetAllFields() where !f.Name.Contains("__BackingField") select f).ToArray();
+				FieldInfoMirror field = fields[index - props.Length];
+				Value child;
+				if (field.IsStatic)
+					child = parent.Type.GetValue(field);
+				else
+					child = parent.Fields[index - props.Length];
+				return new VariableItem(thread, field.Name, parentItem, index, child, index);
+			}
 		}
 		
 		[GetChild.Overload]
 		public static VariableItem GetChild(ThreadMirror thread, VariableItem parentItem, TypeMirror parent, int index)
 		{
-			FieldInfoMirror field = parent.GetAllFields().ElementAt(index);
-			Value child = parent.GetValue(field);
-			return new VariableItem(thread, DoSanitizeFieldName(field), parentItem, index, child, index);
+			var props = (from p in parent.GetAllProperties() where (p.GetGetMethod() != null && p.GetGetMethod().IsStatic) || (p.GetSetMethod() != null && p.GetSetMethod().IsStatic) select p).ToArray();
+			if (index < props.Length)
+			{
+				PropertyInfoMirror prop = props[index];
+				MethodMirror method = parent.ResolveProperty(prop.Name);
+				Value child = parent.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+				return new VariableItem(thread, prop.Name, parentItem, prop, child, index);
+			}
+			else
+			{
+				var fields = from f in parent.GetAllFields() where f.IsStatic select f;
+				FieldInfoMirror field = fields.ElementAt(index - props.Length);
+				Value child = field.DeclaringType.GetValue(field);
+				return new VariableItem(thread, field.Name, parentItem, index, child, index);
+			}
 		}
 		
 		[GetChild.Overload]
@@ -172,19 +215,6 @@ namespace Debugger
 					Contract.Assert(false);
 					return null;
 			}
-		}
-		
-		private static string DoSanitizeFieldName(FieldInfoMirror field)
-		{
-			string name = field.Name;
-			
-			if (name.StartsWith("<") && name.EndsWith("BackingField"))
-			{
-				int i = name.IndexOf('>');
-				name = name.Substring(1, i - 1);
-			}
-			
-			return name;
 		}
 		
 		private static string DoGetArrayName(ArrayMirror parent, int i)

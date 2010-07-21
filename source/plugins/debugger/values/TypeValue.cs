@@ -24,6 +24,7 @@ using Mono.Debugger.Soft;
 using Shared;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using Debug = Debugger;
 
@@ -32,13 +33,15 @@ namespace Debugger
 	// Fields associated with the type of a static method executing a stack frame.
 	internal sealed class TypeValue
 	{
-		public TypeValue(TypeMirror instance, FieldInfoMirror[] fields)
+		public TypeValue(TypeMirror instance)
 		{
 			Contract.Requires(instance != null);
-			Contract.Requires(fields != null);
+			
+			var props = from p in instance.GetAllProperties() where (p.GetGetMethod() != null && p.GetGetMethod().IsStatic) || (p.GetSetMethod() != null && p.GetSetMethod().IsStatic) select p;
+			var fields = from f in instance.GetAllFields() where f.IsStatic select f;
 			
 			m_instance = instance;
-			Length = fields.Length;
+			Length = props.Count() + fields.Count();
 		}
 		
 		public int Length {get; private set;}

@@ -174,7 +174,9 @@ namespace Debugger
 			{
 				if (!DoProcessSpecialObject(thread, value, ref item))
 				{
-					int numChildren = value.Type.GetAllFields().Count();
+					int numChildren = 0;
+					numChildren += value.Type.GetAllProperties().Count();
+					numChildren += value.Type.GetAllFields().Count(f => !f.Name.Contains("__BackingField"));
 					
 					string text = string.Empty;
 					MethodMirror method = value.Type.FindMethod("ToString", 0);
@@ -267,8 +269,10 @@ namespace Debugger
 					}
 				}
 				
-				FieldInfoMirror[] fields = value.Type.GetFields();
-				item = new Item(fields.Length, text, type);
+				int numChildren = 0;
+				numChildren += value.Type.GetAllProperties().Count();
+				numChildren += value.Type.GetAllFields().Count(f => !f.Name.Contains("__BackingField"));
+				item = new Item(numChildren, text, type);
 			}
 			
 			return item;

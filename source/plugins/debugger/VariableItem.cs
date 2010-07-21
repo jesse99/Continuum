@@ -228,7 +228,18 @@ namespace Debugger
 				m_children[i] = Debug::GetChild.Invoke(thread, this, Value, i);
 			}
 			
-			Array.Sort(m_children, (lhs, rhs) => lhs.AttributedName.ToString().CompareTo(rhs.AttributedName.ToString()));
+			Array.Sort(m_children, (lhs, rhs) =>
+			{
+				// Sort so that properties appear before fields (for people with sane
+				// naming conventions).
+				string l = lhs.AttributedName.ToString();
+				string r = rhs.AttributedName.ToString();
+				if (char.IsUpper(l[0]) && !char.IsUpper(r[0]))
+					return -1;
+				else if (!char.IsUpper(l[0]) && char.IsUpper(r[0]))
+					return +1;
+				return l.CompareTo(r);
+			});
 		}
 		
 		private void DoDeleteChildren()

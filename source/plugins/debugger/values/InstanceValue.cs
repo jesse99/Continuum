@@ -24,6 +24,7 @@ using Mono.Debugger.Soft;
 using Shared;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using Debug = Debugger;
 
@@ -38,8 +39,10 @@ namespace Debugger
 			Contract.Requires(fields != null);
 			
 			Instance = instance;
-			Length = fields.Length;
 			Type = instance.Type;
+			
+			Length += instance.Type.GetAllProperties().Count();
+			Length += instance.Type.GetAllFields().Count(f => !f.Name.Contains("__BackingField"));
 		}
 		
 		public InstanceValue(StructMirror instance, FieldInfoMirror[] fields)
@@ -48,8 +51,10 @@ namespace Debugger
 			Contract.Requires(fields != null);
 			
 			Instance = instance;
-			Length = fields.Length;
 			Type = instance.Type;
+			
+			Length += instance.Type.GetAllProperties().Count();
+			Length += instance.Type.GetAllFields().Count(f => !f.Name.Contains("__BackingField"));
 		}
 		
 		public object Instance {get; private set;}

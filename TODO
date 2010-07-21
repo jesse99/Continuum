@@ -65,15 +65,25 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.ArrayMirror	
 		
 
-* Show all properties (probably show these and then fields).
-* Make sure auto-props are OK.
+* Upgrade to mono 2.6.7:
+	- review the changelist
+	- drop the new assemblies into bin
+	- EventSet?
+	- ThreadMirror.cs has a ThreadId property
+* Show all props:
+	- probably should not show indexers
+	- get sets working (if the prop has a setter), or maybe just for auto-props?
+	- look at the config exception again
 * Close the code viewer window when done debugging.
 * Make sure can still debug twice.
 * Rename Run Resume?
-* What happens when trying to look at an object wth a thread static field?
+* Might want to name the debugging window: "[debugging: Foo.cs]"
 * Need a break all command (Suspend looks like it may work).
+* Use the new StackFrame.GetVisibleVariables method.
+* What happens when trying to look at an object wth a thread static field?
 * Edited directories are not always added to find in files (e.g. when opening the app and re-loading
    previously used directory).
+* Period should work like return in auto-complete window.
 * Create Exception and Add Exception didn't work when adding to an empty class.
 * Use the trace roots goo to see why CodeViewer is hanging around
 * Brace highlighting isn't reliable.
@@ -136,6 +146,7 @@ public abstract class Mono.Debugger.Value
 	  or maybe it would be better to have a black list of exceptions to ignore
 	- allow users to set the ToString format specifier?
 	- can't set values for types like IntPtr, Nullable`1
+	- support remote debugging
 	- breakpoint conditions should be persisted
 	- would be nice if conditional expressions worked with types, eg int.MaxValue
 	- might want to show all properties (instead of just the auto-generated ones)

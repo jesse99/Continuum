@@ -40,35 +40,27 @@ namespace Debugger
 		}
 		
 		[DeclaredType.Overload]
-		public static TypeMirror GetType(InstanceValue parent, int key)
-		{
-			FieldInfoMirror[] fields = parent.Type.GetFields();
-			return fields[key].DeclaringType;
-		}
-		
-		[DeclaredType.Overload]
 		public static TypeMirror GetType(LiveStackFrame parent, int key)
 		{
 			return parent.Method.DeclaringType;
 		}
 		
 		[DeclaredType.Overload]
-		public static TypeMirror GetType(TypeValue parent, int key)
-		{
-			FieldInfoMirror[] fields = parent.Type.GetFields();
-			return fields[key].DeclaringType;
-		}
-		
-		[DeclaredType.Overload]
 		public static TypeMirror GetType(object parent, FieldInfoMirror key)
 		{
-			return key.DeclaringType;
+			return key.FieldType;
 		}
 		
 		[DeclaredType.Overload]
 		public static TypeMirror GetType(object parent, LocalVariable key)
 		{
 			return key.Type;
+		}
+		
+		[DeclaredType.Overload]
+		public static TypeMirror GetType(object parent, PropertyInfoMirror key)
+		{
+			return key.PropertyType;
 		}
 		
 //		[DeclaredType.Overload]
