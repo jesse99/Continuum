@@ -64,13 +64,11 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.StringMirror
 		public class Mono.Debugger.ArrayMirror	
 		
+/Library/Frameworks/Mono.framework/Versions/2.6.7/lib/mono/gac/Mono.Cecil
+/Library/Frameworks/Mono.framework/Versions/2.6.7/lib/mono/gac/Mono.Cecil.Mdb
+/Library/Frameworks/Mono.framework/Versions/2.6.7/lib/mono/gac/Mono.Debugger.Soft
 
-* Upgrade to mono 2.6.7:
-	- review the changelist
-	- drop the new assemblies into bin
-	- EventSet?
-	- ThreadMirror.cs has a ThreadId property
-* Show all props:
+ * Show all props:
 	- probably should not show indexers
 	- get sets working (if the prop has a setter), or maybe just for auto-props?
 	- look at the config exception again
@@ -79,8 +77,9 @@ public abstract class Mono.Debugger.Value
 * Rename Run Resume?
 * Might want to name the debugging window: "[debugging: Foo.cs]"
 * Need a break all command (Suspend looks like it may work).
-* Use the new StackFrame.GetVisibleVariables method.
 * What happens when trying to look at an object wth a thread static field?
+* Command j should be jump to selection.
+* Command l should be goto line (need to figure out something for next/prev error, maybe >).
 * Edited directories are not always added to find in files (e.g. when opening the app and re-loading
    previously used directory).
 * Period should work like return in auto-complete window.
@@ -157,11 +156,14 @@ public abstract class Mono.Debugger.Value
 		` draw in gray if the current context does not have the variable in any stack frame
 	- moving the instruction pointer
 	- custom viewer dlls
+* Use the new StackFrame.GetVisibleVariables method.
+* Start using VirtualMachine.GetNextEventSet.
 * Why doesn't stuff like var thread = (ThreadMirror) value auto-complete?
 * Show short form on Action didn't show the Delegate members.
 * Dot should complete auto-complete text.
 * Auto-complete window should have context menu for showing only properties.
 * Maybe optionally hide fields too.
+* Add a pref to make find wrap around (and beep if we get back to where we started).
 * Should deduce type of typeof(xxx).
 * Upgrade to mono 2.6.4
 * Would be nice not to highlight the linq query keywords (from, which, etc) if System.Linq is not

@@ -163,7 +163,7 @@ namespace Debugger
 		{
 			string name = thread.Name;
 			
-			if (thread.Id == 1)
+			if (thread.Id == 1)				// TODO: should we be using ThreadId here?
 				name =  "main";
 			else if (thread.Id == 2)
 				name =  "finalizer";

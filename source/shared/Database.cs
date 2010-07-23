@@ -411,7 +411,7 @@ namespace Shared
 					{
 						string[] header = new string[numCols];
 						for (int i = 0; i < numCols; ++i)
-							header[i] = Marshal.PtrToStringAuto(names[i]);
+							header[i] = Marshal.PtrToStringAnsi(names[i]);
 						hc(header);
 						calledHeader = true;
 					}
@@ -420,7 +420,7 @@ namespace Shared
 					for (int i = 0; i < numCols; ++i)
 					{
 						Contract.Assert(values[i] != IntPtr.Zero, "we don't support null values");
-						row[i] = Marshal.PtrToStringAuto(values[i]);
+						row[i] = Marshal.PtrToStringAnsi(values[i]);
 					}
 					
 					++count;
@@ -446,7 +446,8 @@ namespace Shared
 				// reader/writer lock.
 				IntPtr errMesg = IntPtr.Zero;
 				Error err = sqlite3_exec(m_database, command, callback, IntPtr.Zero, out errMesg);
-					
+				GC.KeepAlive(callback);
+				
 				if (timer != null)
 					Log.WriteLine(TraceLevel.Verbose, "Database", "query took {0:0.000} secs and {1} rows were processed", timer.ElapsedMilliseconds/1000.0, count);
 				
@@ -454,7 +455,7 @@ namespace Shared
 					DoRaiseError(command, err, errMesg);
 				if (exception != null)
 				{
-					string mesg = string.Format("Failed to execute '{0}'", command);
+					string mesg = string.Format("Failed to execute `{0}`", command);
 					throw new DatabaseException(mesg, exception);
 				}
 			}
@@ -478,6 +479,7 @@ namespace Shared
 			Database.RowCallback rc = (r) => {rows.Add(r); return true;};
 			
 			Query(command, null, rc);
+			GC.KeepAlive(rc);
 			
 			return rows.ToArray();
 		}
@@ -493,6 +495,7 @@ namespace Shared
 			Database.RowCallback rc = (r) => {rows.Add(r); return true;};
 			
 			Query(command, null, rc);
+			GC.KeepAlive(rc);
 			
 			return new NamedRows(DoGetNames(command), rows.ToArray());
 		}
@@ -525,11 +528,11 @@ namespace Shared
 		#region Private Methods
 		private void DoRaiseError(string command, Error err, IntPtr errMesg)
 		{
-			string mesg = string.Format("Failed to execute '{0}'", command);
+			string mesg = string.Format("Failed to execute `{0}`", command);
 			
 			if (errMesg != IntPtr.Zero)
 			{
-				mesg += string.Format(" ({0})", Marshal.PtrToStringAuto(errMesg));
+				mesg += string.Format(" ({0})", Marshal.PtrToStringAnsi(errMesg));
 				sqlite3_free(errMesg);
 			}
 			else

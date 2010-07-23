@@ -22,8 +22,10 @@
 using Gear.Helpers;
 using MCocoa;
 using MObjc;
+using Shared;
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Find
@@ -150,6 +152,11 @@ namespace Find
 			}
 			
 			var attrs = NSDictionary.dictionaryWithObject_forKey(NSNumber.Create(-3.0f), Externs.NSStrokeWidthAttributeName);
+			
+			// A normal path like /foo/bar/baz can easily be cut off on the right side
+			// thereby hiding the name of the file. Reversing the path makes the filename
+			// prominent and still includes the path components which are informative.
+			path = path.ReversePath();
 			m_styledPath = NSAttributedString.Create(path, attrs).Retain();
 		}
 		

@@ -129,7 +129,7 @@ namespace Shared
 			for (int i = 0; i < numEvents; ++i)
 			{
 				IntPtr p = Marshal.ReadIntPtr(eventPaths, i*bytes);
-				paths[i] = Marshal.PtrToStringAuto(p);
+				paths[i] = Marshal.PtrToStringAnsi(p);
 			}
 			
 			var handler = Changed;
