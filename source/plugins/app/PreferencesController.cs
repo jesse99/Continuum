@@ -206,15 +206,16 @@ namespace App
 		}
 		
 		public void setOther1Font(NSObject sender)
-		{			
+		{
 			DoEditFont("text", "text other1");
 		}
 		
 		public void setOther2Font(NSObject sender)
-		{			
+		{
 			DoEditFont("text", "text other2");
 		}
 		
+		// Sent by NSFontManager up the responder chain when fonts are changed via the font panel.
 		public void changeFont(NSObject sender)
 		{
 			m_font = NSFontManager.sharedFontManager().convertFont(m_font);
@@ -228,6 +229,7 @@ namespace App
 			Broadcaster.Invoke(m_styleName + " font changed", true);
 		}
 		
+		// Sent by NSFontManager up the responder chain when font attributes are changed via the font panel.
 		public void changeAttributes(NSObject sender)
 		{
 			m_attributes = sender.Call("convertAttributes:", m_attributes).To<NSDictionary>().Retain();
