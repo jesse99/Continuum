@@ -87,6 +87,7 @@ public abstract class Mono.Debugger.Value
 * Use the trace roots goo to see why CodeViewer is hanging around
 * Brace highlighting isn't reliable.
 * Should be able to see variable (and probably properties) by hovering.
+* Get rid of active objects?
 * Continuum doesn't build using Continuum when it is launched from the Finder (/usr/local/bin
    doesn't seem to be part of PATH). Could maybe add a note to the make file.
 * Build a new foreshadow.
@@ -125,7 +126,7 @@ public abstract class Mono.Debugger.Value
 	- review the screen shots
 	- email
 
-* File debugger tickets.
+* File debugger tickets.	
 * Get rid of glob files? Would be easier (and less confusing) if the default globs were part of the language.
 * Work on a debugger:
 	- context breakpoint menu should have close do a broadcast so the breakpoint can be toggled
@@ -133,7 +134,6 @@ public abstract class Mono.Debugger.Value
 * Should DoGetOperatorName handle names like:
 	ObjectModel Error  bad operator: op_UnaryNegation_Int32
 	maybe tweak the warning?
-* Can probably get rid of ActiveObjects now.
 * Should make font bigger (or smaller) change the defaults for source code windows? It would probably
    have to change all the defaults?
 * Do some more work on the debugger:

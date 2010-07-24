@@ -230,7 +230,7 @@ namespace App
 		
 		public void changeAttributes(NSObject sender)
 		{
-			m_attributes = sender.Call("convertAttributes:", m_attributes).To<NSDictionary>();
+			m_attributes = sender.Call("convertAttributes:", m_attributes).To<NSDictionary>().Retain();
 			
 			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
 			NSData data = NSArchiver.archivedDataWithRootObject(m_attributes);
