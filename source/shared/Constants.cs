@@ -33,6 +33,9 @@ namespace Shared
 		public static readonly string ZeroWidthSpace = "\x200B";
 		public static readonly string ZeroWidthNonJoiner = "\x200C";
 		public static readonly string ZeroWidthJoiner = "\x200D";
+
+		public static readonly string ThinSpace = "\x2009";
+		public static readonly string HairSpace = "\x200A";
 		
 		public static readonly string LeftSingleQuote = "\x2018";
 		public static readonly string RightSingleQuote = "\x2019";

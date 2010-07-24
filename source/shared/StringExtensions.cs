@@ -91,10 +91,10 @@ namespace Shared
 		public static string ReversePath(this string path)
 		{
 #if true
-			// Returns "baz•bar•foo" for "/foo/bar/baz".
+			// Returns "baz • bar • foo" for "/foo/bar/baz".
 			string[] parts = path.Split(new char[]{'/'}, StringSplitOptions.RemoveEmptyEntries);
 			Array.Reverse(parts);
-			return string.Join(Constants.Bullet, parts);
+			return string.Join(Constants.ThinSpace + Constants.Bullet + Constants.ThinSpace, parts);
 #else
 			// Returns "baz \ bar \ foo" for "/foo/bar/baz"
 			var pathSep = " \\ ";
