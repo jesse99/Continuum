@@ -21,6 +21,7 @@
 
 using Gear.Helpers;
 using MCocoa;
+using Mono.Unix;
 using MObjc;
 using Shared;
 using System;
@@ -35,6 +36,7 @@ namespace DirectoryEditor
 		public TableItem(string path, DirectoryItemStyler styler, string type) : base(NSObject.AllocAndInitInstance(type))
 		{
 			m_path = path;
+			m_canonicalPath = UnixPath.GetCanonicalPath(path);
 			m_styler = styler;
 			
 			DoRefreshName();
@@ -59,6 +61,11 @@ namespace DirectoryEditor
 		public string Path
 		{
 			get {return m_path;}
+		}
+		
+		public string CanonicalPath
+		{
+			get {return m_canonicalPath;}
 		}
 		
 		public NSAttributedString Name
@@ -141,6 +148,7 @@ namespace DirectoryEditor
 		
 		#region Fields
 		private readonly string m_path;
+		private readonly string m_canonicalPath;
 		private readonly DirectoryItemStyler m_styler;
 		private NSMutableAttributedString m_name;
 		#endregion

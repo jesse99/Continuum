@@ -88,6 +88,7 @@ namespace Find
 					case '+':
 					case '?':
 					case '#':
+					case '\\':
 					case ' ':		// need this because our regex ignores whitespace
 						builder.Append('\\');
 						break;

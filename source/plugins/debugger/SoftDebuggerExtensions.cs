@@ -73,6 +73,18 @@ namespace Debugger
 		#endregion
 	}
 	
+	internal static class PropertyMirrorExtensions
+	{
+		public static bool IsIndexor(this PropertyInfoMirror prop)
+		{
+			MethodMirror method = prop.GetGetMethod();
+			if (method != null && method.GetParameters().Length == 1)
+				return true;
+			else
+				return false;
+		}
+	}
+	
 	internal static class TypeMirrorExtensions
 	{
 		public static MethodMirror FindMethod(this TypeMirror type, string name, int numArgs)

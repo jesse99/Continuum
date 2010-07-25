@@ -64,12 +64,8 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.StringMirror
 		public class Mono.Debugger.ArrayMirror	
 		
-/Library/Frameworks/Mono.framework/Versions/2.6.7/lib/mono/gac/Mono.Cecil
-/Library/Frameworks/Mono.framework/Versions/2.6.7/lib/mono/gac/Mono.Cecil.Mdb
-/Library/Frameworks/Mono.framework/Versions/2.6.7/lib/mono/gac/Mono.Debugger.Soft
 
  * Show all props:
-	- probably should not show indexers
 	- get sets working (if the prop has a setter), or maybe just for auto-props?
 	- look at the config exception again
 * Close the code viewer window when done debugging.
@@ -77,16 +73,18 @@ public abstract class Mono.Debugger.Value
 * Rename Run Resume?
 * Might want to name the debugging window: "[debugging: Foo.cs]"
 * Need a break all command (Suspend looks like it may work).
+* C include list should include *.cc
 * What happens when trying to look at an object wth a thread static field?
 * Command j should be jump to selection.
 * Command l should be goto line (need to figure out something for next/prev error, maybe >).
 * Edited directories are not always added to find in files (e.g. when opening the app and re-loading
    previously used directory).
 * Period should work like return in auto-complete window.
+* Why does the auto-complete keep growing. Is it being saved with a frame a bit too small each time?
 * Create Exception and Add Exception didn't work when adding to an empty class.
 * Use the trace roots goo to see why CodeViewer is hanging around
 * Brace highlighting isn't reliable.
-* Should be able to see variable (and probably properties) by hovering.
+* Should be able to see variable (and properties) by hovering.
 * Get rid of active objects?
 * Continuum doesn't build using Continuum when it is launched from the Finder (/usr/local/bin
    doesn't seem to be part of PATH). Could maybe add a note to the make file.

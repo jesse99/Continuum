@@ -114,7 +114,7 @@ namespace ObjectModel
 			{
 				watcher.Changed -= this.DoDirChanged;
 			}
-						
+			
 			m_thread = null;
 		}
 		
@@ -177,9 +177,9 @@ namespace ObjectModel
 		}
 		
 		[ThreadModel(ThreadModel.SingleThread)]
-		private void DoParseAssemblies(string path)	// threaded
+		private void DoParseAssemblies(string path)
 		{
-			m_database = new Database(path, "Populate-" + Path.GetFileNameWithoutExtension(path));			
+			m_database = new Database(path, "Populate-" + Path.GetFileNameWithoutExtension(path));
 			DoCreateTables();
 			
 			while (true)
@@ -208,7 +208,7 @@ namespace ObjectModel
 					bool added = false;
 					foreach (string file in files)
 					{
-						if (!file.Contains(".app/") && !file.Contains("/.svn"))
+						if (!file.Contains(".app/") && !file.Contains("/.svn") && !m_blackList.Contains(file))
 						{
 							if (DoAddAssembly(file))
 								added = true;
@@ -236,7 +236,7 @@ namespace ObjectModel
 		// auto-complete queries rather painful because they want access to names
 		// for the parse cache.
 		[ThreadModel(ThreadModel.SingleThread)]
-		private void DoCreateTables()		// threaded
+		private void DoCreateTables()
 		{
 			// We could place an upper limit on some of the field sizes, but it won't
 			// do much good because sqlite stores just what is needed.
@@ -355,7 +355,7 @@ namespace ObjectModel
 		}
 		
 		[ThreadModel(ThreadModel.SingleThread)]
-		private void DoDeleteAssemblies()		// threaded
+		private void DoDeleteAssemblies()
 		{
 			int count = 0;
 			
@@ -394,7 +394,7 @@ namespace ObjectModel
 		}
 		
 		[ThreadModel(ThreadModel.SingleThread)]
-		private void DoDeleteAssemblyReferences(string id)		// threaded
+		private void DoDeleteAssemblyReferences(string id)
 		{
 			m_database.Update(string.Format(@"
 				DELETE FROM Namespaces 
@@ -473,10 +473,12 @@ namespace ObjectModel
 			catch (BadImageFormatException)
 			{
 				// not an assembly
+				m_blackList.Add(path);
 			}
 			catch (ImageFormatException)
 			{
 				// not an assembly
+				m_blackList.Add(path);
 			}
 			catch (FormatException)
 			{
@@ -655,7 +657,7 @@ namespace ObjectModel
 		}
 		
 		[ThreadModel(ThreadModel.SingleThread)]
-		private void DoQueueReferencedAssemblies(AssemblyDefinition assembly, string path)		// threaded
+		private void DoQueueReferencedAssemblies(AssemblyDefinition assembly, string path)
 		{
 			var resolver = (BaseAssemblyResolver) assembly.Resolver;
 			resolver.AddSearchDirectory(Path.GetDirectoryName(path));
@@ -687,7 +689,7 @@ namespace ObjectModel
 					}
 				}
 			}
-		}		
+		}
 		#endregion
 		
 		#region Fields
@@ -697,6 +699,7 @@ namespace ObjectModel
 		private Database m_database;
 		private List<string> m_resolvedAssemblies = new List<string>();
 		private List<DirectoryWatcher> m_watchers = new List<DirectoryWatcher>();
+		private HashSet<string> m_blackList = new HashSet<string>();
 		private object m_lock = new object();
 			private bool m_running = true;
 			private List<string> m_files = new List<string>();

@@ -41,7 +41,7 @@ namespace Debugger
 			Instance = instance;
 			Type = instance.Type;
 			
-			Length += instance.Type.GetAllProperties().Count();
+			Length += instance.Type.GetAllProperties().Count(p => !p.IsIndexor());
 			Length += instance.Type.GetAllFields().Count(f => !f.Name.Contains("__BackingField"));
 		}
 		
@@ -53,7 +53,7 @@ namespace Debugger
 			Instance = instance;
 			Type = instance.Type;
 			
-			Length += instance.Type.GetAllProperties().Count();
+			Length += instance.Type.GetAllProperties().Count(p => !p.IsIndexor());
 			Length += instance.Type.GetAllFields().Count(f => !f.Name.Contains("__BackingField"));
 		}
 		

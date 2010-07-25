@@ -22,6 +22,7 @@
 using Gear;
 using Gear.Helpers;
 using MCocoa;
+using Mono.Unix;
 using MObjc;
 using Shared;
 using System;
@@ -128,7 +129,7 @@ namespace DirectoryEditor
 			// Remove items not in paths.
 			for (int i = m_children.Count - 1; i >= 0; --i)
 			{
-				if (!paths.Any(p => Paths.AreEqual(p, m_children[i].Path)))
+				if (!paths.Any(p => p == m_children[i].CanonicalPath))
 				{
 					m_children[i].release();
 					m_children.RemoveAt(i);
@@ -146,7 +147,7 @@ namespace DirectoryEditor
 			// Add any items from paths that are missing.
 			foreach (string path in paths)
 			{
-				if (!m_children.Any(c => Paths.AreEqual(c.Path, path)))
+				if (!m_children.Any(c => c.CanonicalPath == path))
 				{
 					TableItem item;
 					if (System.IO.File.Exists(path) || NSWorkspace.sharedWorkspace().isFilePackageAtPath(NSString.Create(path)))
@@ -177,7 +178,7 @@ namespace DirectoryEditor
 					else
 						return lhs.Path.ToLower().CompareTo(rhs.Path.ToLower());
 				});
-			}
+		}
 			
 			return changed;
 		}
@@ -191,7 +192,10 @@ namespace DirectoryEditor
 				foreach (string entry in System.IO.Directory.GetFileSystemEntries(Path))
 				{
 					if (!DoIsIgnored(System.IO.Path.GetFileName(entry)))
-						children.Add(entry);
+					{
+						string path = UnixPath.GetCanonicalPath(entry);
+						children.AddIfMissing(path);
+					}
 				}
 			}
 			catch (System.IO.IOException)
