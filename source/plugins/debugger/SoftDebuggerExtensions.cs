@@ -75,13 +75,10 @@ namespace Debugger
 	
 	internal static class PropertyMirrorExtensions
 	{
-		public static bool IsIndexor(this PropertyInfoMirror prop)
+		public static bool HasSimpleGetter(this PropertyInfoMirror prop)
 		{
-			MethodMirror method = prop.GetGetMethod();
-			if (method != null && method.GetParameters().Length == 1)
-				return true;
-			else
-				return false;
+			MethodMirror method = prop.GetGetMethod(true);
+			return method != null && method.GetParameters().Length == 0 && !method.IsAbstract;
 		}
 	}
 	

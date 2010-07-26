@@ -29,13 +29,13 @@ namespace Debugger
 	internal static class SetValueOverloads
 	{
 		[SetValue.Overload]
-		public static void Set(VariableItem item, ArrayMirror parent, int key, Value newValue)
+		public static void Set(ThreadMirror thread, VariableItem item, ArrayMirror parent, int key, Value newValue)
 		{
 			parent.SetValues(key, new Value[]{newValue});
 		}
 		
 		[SetValue.Overload]
-		public static void Set(VariableItem item, InstanceValue parent, FieldInfoMirror key, Value newValue)
+		public static void Set(ThreadMirror thread, VariableItem item, InstanceValue parent, FieldInfoMirror key, Value newValue)
 		{
 			if (key.IsStatic)
 			{
@@ -49,7 +49,7 @@ namespace Debugger
 		}
 		
 		[SetValue.Overload]
-		public static void Set(VariableItem item, InstanceValue parent, int key, Value newValue)
+		public static void Set(ThreadMirror thread, VariableItem item, InstanceValue parent, int key, Value newValue)
 		{
 			FieldInfoMirror field = parent.Type.GetFields()[key];
 			Contract.Assert(!field.IsStatic);
@@ -63,27 +63,25 @@ namespace Debugger
 			{
 				var s = (StructMirror) parent.Instance;
 				s.Fields[key] = newValue;
-				SetValue.Invoke(item.Parent, item.Parent.Parent.Value, item.Parent.Key, s);
+				SetValue.Invoke(thread, item.Parent, item.Parent.Parent.Value, item.Parent.Key, s);
 			}
 		}
 		
 		[SetValue.Overload]
-		public static void Set(VariableItem item, LiveStackFrame parent, int key, Value newValue)
+		public static void Set(ThreadMirror thread, VariableItem item, LiveStackFrame parent, int key, Value newValue)
 		{
 			LocalVariable local = parent.Method.GetLocals()[key];
 			parent.SetValue(local, newValue);
 		}
 		
 		[SetValue.Overload]
-		public static void Set(VariableItem item, LiveStackFrame parent, LocalVariable key, Value newValue)
+		public static void Set(ThreadMirror thread, VariableItem item, LiveStackFrame parent, LocalVariable key, Value newValue)
 		{
-	Console.WriteLine("name: {0}, type: {1}", key.Name, newValue.TypeName()); Console.Out.Flush();
-	Console.WriteLine("   type: {0}", key.Type.FullName); Console.Out.Flush();
 			parent.SetValue(key, newValue);
 		}
 		
 		[SetValue.Overload]
-		public static void Set(VariableItem item, ObjectMirror parent, FieldInfoMirror key, Value newValue)
+		public static void Set(ThreadMirror thread, VariableItem item, ObjectMirror parent, FieldInfoMirror key, Value newValue)
 		{
 			if (key.IsStatic)
 				key.DeclaringType.SetValue(key, newValue);
@@ -92,7 +90,23 @@ namespace Debugger
 		}
 		
 		[SetValue.Overload]
-		public static void Set(VariableItem item, StructMirror parent, int key, Value newValue)
+		public static void Set(ThreadMirror thread, VariableItem item, ObjectMirror parent, PropertyInfoMirror key, Value newValue)
+		{
+			Contract.Assert(key.HasSimpleGetter());		// indexors aren't shown...
+			
+			MethodMirror method = key.GetSetMethod(true);
+			if (method != null)
+			{
+				Unused.Value = parent.InvokeMethod(thread, method, new Value[]{newValue}, InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+			}
+			else
+			{
+				throw new Exception("Property does not have a setter.");
+			}
+		}
+		
+		[SetValue.Overload]
+		public static void Set(ThreadMirror thread, VariableItem item, StructMirror parent, int key, Value newValue)
 		{
 			FieldInfoMirror[] fields = parent.Type.GetFields();
 			if (fields[key].IsStatic)
@@ -102,12 +116,12 @@ namespace Debugger
 			else
 			{
 				parent.Fields[key] = newValue;
-				SetValue.Invoke(item.Parent, item.Parent.Parent.Value, item.Parent.Key, parent);
+				SetValue.Invoke(thread, item.Parent, item.Parent.Parent.Value, item.Parent.Key, parent);
 			}
 		}
 		
 		[SetValue.Overload]
-		public static void Set(VariableItem item, TypeValue parent, int key, Value newValue)
+		public static void Set(ThreadMirror thread, VariableItem item, TypeValue parent, int key, Value newValue)
 		{
 			FieldInfoMirror field = parent.Type.GetFields()[key];
 			Contract.Assert(field.IsStatic);

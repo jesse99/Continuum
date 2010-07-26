@@ -110,7 +110,7 @@ namespace Debugger
 //			}
 			else
 			{
-				PropertyInfoMirror[] props = (from p in parent.Type.GetAllProperties() where !p.IsIndexor() select p).ToArray();
+				PropertyInfoMirror[] props = (from p in parent.Type.GetAllProperties() where p.HasSimpleGetter() select p).ToArray();
 				if (index < props.Length)
 				{
 					PropertyInfoMirror prop = props[index];
@@ -138,7 +138,7 @@ namespace Debugger
 		[GetChild.Overload]
 		public static VariableItem GetChild(ThreadMirror thread, VariableItem parentItem, StructMirror parent, int index)
 		{
-			PropertyInfoMirror[] props = (from p in parent.Type.GetAllProperties() where !p.IsIndexor() select p).ToArray();
+			PropertyInfoMirror[] props = (from p in parent.Type.GetAllProperties() where p.HasSimpleGetter() select p).ToArray();
 			if (index < props.Length)
 			{
 				PropertyInfoMirror prop = props[index];
@@ -161,7 +161,7 @@ namespace Debugger
 		[GetChild.Overload]
 		public static VariableItem GetChild(ThreadMirror thread, VariableItem parentItem, TypeMirror parent, int index)
 		{
-			var props = (from p in parent.GetAllProperties() where !p.IsIndexor() && (p.GetGetMethod() != null && p.GetGetMethod().IsStatic) || (p.GetSetMethod() != null && p.GetSetMethod().IsStatic) select p).ToArray();
+			var props = (from p in parent.GetAllProperties() where p.HasSimpleGetter() && (p.GetGetMethod(true) != null && p.GetGetMethod(true).IsStatic) || (p.GetSetMethod(true) != null && p.GetSetMethod(true).IsStatic) select p).ToArray();
 			if (index < props.Length)
 			{
 				PropertyInfoMirror prop = props[index];

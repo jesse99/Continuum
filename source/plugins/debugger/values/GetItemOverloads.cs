@@ -175,7 +175,7 @@ namespace Debugger
 				if (!DoProcessSpecialObject(thread, value, ref item))
 				{
 					int numChildren = 0;
-					numChildren += value.Type.GetAllProperties().Count(p => !p.IsIndexor());
+					numChildren += value.Type.GetAllProperties().Count(p => p.HasSimpleGetter());
 					numChildren += value.Type.GetAllFields().Count(f => !f.Name.Contains("__BackingField"));
 					
 					string text = string.Empty;
@@ -270,7 +270,7 @@ namespace Debugger
 				}
 				
 				int numChildren = 0;
-				numChildren += value.Type.GetAllProperties().Count(p => !p.IsIndexor());
+				numChildren += value.Type.GetAllProperties().Count(p => p.HasSimpleGetter());
 				numChildren += value.Type.GetAllFields().Count(f => !f.Name.Contains("__BackingField"));
 				item = new Item(numChildren, text, type);
 			}

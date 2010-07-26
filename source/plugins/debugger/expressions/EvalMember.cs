@@ -29,8 +29,7 @@ namespace Debugger
 	internal static class EvalMember
 	{
 		// Target should be a ObjectMirror or a StructMirror. Name should be the name of a
-		// property (e.g. Count) or field (eg Empty). Returns null if a suitable member cannot 
-		// be found.
+		// property (e.g. Count) or field (eg Empty). Returns an error string.
 		public static Value Evaluate(ThreadMirror thread, Value target, string name)
 		{
 			Contract.Requires(thread != null, "thread is null");
@@ -54,6 +53,9 @@ namespace Debugger
 					
 				else if (target is StructMirror)
 					result = DoEvaluateProperty(thread, (StructMirror) target, name);
+					
+				else
+					Contract.Assert(false, "Expected an ObjectMirror or StructMirror but got a " + target.GetType().FullName);
 			}
 			
 			return result;
@@ -96,10 +98,22 @@ namespace Debugger
 		{
 			Value result = null;
 			
-			MethodMirror method = obj.Type.ResolveProperty(name);
-			if (method != null)
+			try
 			{
-				result = obj.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+				MethodMirror method = obj.Type.ResolveProperty(name);
+				if (method != null)
+				{
+					result = obj.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+				}
+				else
+				{
+					result = obj.Domain.CreateString("No getter");
+				}
+			}
+			catch (Exception e)
+			{
+				string mesg = string.Format("{0} calling {1}.{2}", e.Message, obj.TypeName(), name);
+				result = obj.Domain.CreateString(mesg);
 			}
 			
 			return result;
@@ -116,6 +130,10 @@ namespace Debugger
 					result = method.DeclaringType.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
 				else
 					result = obj.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+			}
+			else
+			{
+				result = obj.VirtualMachine.CreateValue("No getter");
 			}
 			
 			return result;

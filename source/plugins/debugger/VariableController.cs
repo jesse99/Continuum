@@ -255,8 +255,8 @@ namespace Debugger
 				string text = value.description();
 				Value newValue = ParseValue.Invoke(m_frame.Thread, item, item.Value, text);
 				
-				SetValue.Invoke(item, item.Parent.Value, item.Key, newValue);
-				item.RefreshValue(m_frame.Thread, newValue);
+				SetValue.Invoke(m_frame.Thread, item, item.Parent.Value, item.Key, newValue);
+				item.RefreshValue(m_frame.Thread, newValue);			// if we're setting a (non-auto) property we might also want to refresh all fields for that type
 			}
 			catch (Exception e)
 			{
