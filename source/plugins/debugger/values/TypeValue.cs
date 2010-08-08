@@ -38,7 +38,7 @@ namespace Debugger
 			Contract.Requires(instance != null);
 			
 			var props = from p in instance.GetAllProperties() where p.HasSimpleGetter() && (p.GetGetMethod(true) != null && p.GetGetMethod(true).IsStatic) || (p.GetSetMethod() != null && p.GetSetMethod().IsStatic) select p;
-			var fields = from f in instance.GetAllFields() where f.IsStatic select f;
+			var fields = from f in instance.GetAllFields() where f.IsStatic && !f.HasCustomAttribute("System.ThreadStaticAttribute") select f;
 			
 			m_instance = instance;
 			Length = props.Count() + fields.Count();

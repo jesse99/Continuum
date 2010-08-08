@@ -28,6 +28,22 @@ using System.Linq;
 
 namespace Debugger
 {
+	internal static class FieldMirrorExtensions
+	{
+		// Name should be something like System.Runtime.CompilerServices.CompilerGeneratedAttribute.
+		public static bool HasCustomAttribute(this FieldInfoMirror field, string name)
+		{
+			name += ":.ctor";
+			foreach (CustomAttributeDataMirror custom in field.GetCustomAttributes(false))
+			{
+				if (custom.Constructor.FullName.Contains(name))
+					return true;
+			}
+			
+			return false;
+		}
+	}
+	
 	internal static class MethodMirrorExtensions
 	{
 		// MethodMirror.FullName doesn't include parameters (with Mono 2.6) so
