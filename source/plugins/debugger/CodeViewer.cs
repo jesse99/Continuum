@@ -180,7 +180,7 @@ namespace Debugger
 		
 		public string GetTitle(string displayName)
 		{
-			return "[" + m_title + "]";
+			return "[debugging " + m_title + "]";
 		}
 		
 		public string GetExtension()
@@ -443,7 +443,7 @@ namespace Debugger
 		private Boss m_boss;
 		private bool m_showIL;
 		private DebuggerDocument m_document;
-		private string m_title = "[debug]";
+		private string m_title = "unknown";
 		private string m_currentView;
 		private Context m_context;
 		private string m_path;
