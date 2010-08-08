@@ -90,6 +90,20 @@ namespace Debugger
 			}
 		}
 		
+		public void Suspend()
+		{
+			// Note that we don't get any events from the soft debugger after suspending.
+			m_debugger.VM.Suspend();
+			
+			lock (m_mutex)
+			{
+				DoTransition(State.Paused);
+			}
+			
+			// Need to defer this because DoTransition defers the state change notification.
+			NSApplication.sharedApplication().BeginInvoke(() => m_debugger.OnBreakAll());
+		}
+		
 		[ThreadModel(ThreadModel.Concurrent)]
 		public void AddBreakpoint(Breakpoint bp, MethodMirror method, long ilOffset)
 		{

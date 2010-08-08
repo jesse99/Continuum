@@ -38,6 +38,7 @@ namespace Debugger
 			m_table.setDoubleAction("doubleClicked:");
 			
 			Broadcaster.Register("debugger processed breakpoint event", this);
+			Broadcaster.Register("debugger break all", this);
 			Broadcaster.Register("debugger stopped", this);
 			Broadcaster.Register("debugger thrown exception", this);
 			Broadcaster.Register("debugger processed step event", this);
@@ -56,6 +57,7 @@ namespace Debugger
 				case "debugger processed breakpoint event":
 				case "debugger thrown exception":
 				case "debugger processed step event":
+				case "debugger break all":
 					var context = (Context) value;
 					var stack = new LiveStack(context.Thread);
 					if (stack != m_stack)

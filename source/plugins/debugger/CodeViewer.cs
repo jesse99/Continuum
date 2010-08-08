@@ -38,6 +38,7 @@ namespace Debugger
 			
 			Broadcaster.Register("closing document window", this);
 			Broadcaster.Register("debugger loaded assembly", this);
+			Broadcaster.Register("debugger break all", this);
 			Broadcaster.Register("debugger processed breakpoint event", this);
 			Broadcaster.Register("debugger thrown exception", this);
 			Broadcaster.Register("debugger processed step event", this);
@@ -91,6 +92,7 @@ namespace Debugger
 				
 				case "debugger processed breakpoint event":
 				case "debugger thrown exception":
+				case "debugger break all":
 					var context = (Context) value;
 					DoBreakpoint(context);
 					break;

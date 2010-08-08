@@ -177,6 +177,11 @@ namespace Debugger
 			DoStep(StepDepth.Out);
 		}
 		
+		public void Suspend()
+		{
+			m_thread.Suspend();
+		}
+		
 		public void AddBreakpoint(Breakpoint bp, MethodMirror method, long ilOffset)
 		{
 			Contract.Assert(!m_shutDown);
@@ -219,6 +224,18 @@ namespace Debugger
 		}
 		
 		internal Func<LiveStackFrame, Breakpoint, DebuggerThread.HandlerAction> BreakpointCondition {get; set;}
+		
+		internal void OnBreakAll()
+		{
+			IList<ThreadMirror> threads = VM.GetThreads();
+			ThreadMirror main = threads.Single(t => t.Id == 1);
+			var frame = main.GetFrames()[0];
+			var context = new Context(main, frame.Method, frame.ILOffset);
+			Broadcaster.Invoke("debugger break all", context);
+			
+			if (!NSApplication.sharedApplication().isActive())
+				NSApplication.sharedApplication().activateIgnoringOtherApps(true);
+		}
 		
 		internal void OnBreakpoint(BreakpointEvent e, ResolvedBreakpoint bp)
 		{

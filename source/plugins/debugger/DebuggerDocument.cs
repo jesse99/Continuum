@@ -49,6 +49,7 @@ namespace Debugger
 			handler.Register(this, 62, () => m_debugger.StepOver(), this.DoIsPaused);
 			handler.Register(this, 63, () => m_debugger.StepIn(), this.DoIsPaused);
 			handler.Register(this, 64, () => m_debugger.StepOut(), this.DoIsPaused);
+			handler.Register(this, 68, () => m_debugger.Suspend(), this.DoIsNotPaused);
 			
 			Broadcaster.Register("debugger loaded app domain", this);
 			Broadcaster.Register("debugger unloaded app domain", this);
@@ -223,6 +224,11 @@ namespace Debugger
 		private bool DoIsPaused()
 		{
 			return m_debugger != null && m_debugger.IsPaused;
+		}
+		
+		private bool DoIsNotPaused()
+		{
+			return m_debugger != null && !m_debugger.IsPaused;
 		}
 		
 		private void DoShowInfo()
