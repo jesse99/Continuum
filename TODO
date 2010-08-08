@@ -65,10 +65,6 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.ArrayMirror	
 		
 
-* What happens when trying to look at an object wth a thread static field?
-* C include list should include *.cc
-* *.csproj should be xml.
-* *.sln should be text.
 * Command j should be jump to selection.
 * Command l should be goto line (need to figure out something for next/prev error, maybe >).
 * Edited directories are not always added to find in files (e.g. when opening the app and re-loading

@@ -5,7 +5,7 @@
 	<Glob language = "cil">*.cil</Glob>
 	<Glob language = "css">*.css</Glob>
 	<Glob language = "c#">*.cs</Glob>
-	<Glob language = "c++">*.cpp *.hpp *.cxx *.hxx algorithm bitset cassert cctype cerrno cfloat ciso646 climits clocale cmath complex csetjmp csignal cstdarg cstddef cstdio cstdlib cstring ctime cwchar cwctype cxxabi.h deque exception fstream functional iomanip ios iosfwd iostream istream iterator limits list locale map memory new numeric ostream queue set sstream stack stdexcept streambuf string typeinfo utility valarray vector</Glob>
+	<Glob language = "c++">*.cpp *.hpp *.cxx *.cc *.hxx algorithm bitset cassert cctype cerrno cfloat ciso646 climits clocale cmath complex csetjmp csignal cstdarg cstddef cstdio cstdlib cstring ctime cwchar cwctype cxxabi.h deque exception fstream functional iomanip ios iosfwd iostream istream iterator limits list locale map memory new numeric ostream queue set sstream stack stdexcept streambuf string typeinfo utility valarray vector</Glob>
 	<Glob language = "html">*.html *.htm</Glob>
 	<Glob language = "info">*.info</Glob>
 	<Glob language = "ignore">*.ignore</Glob>		<!-- gendarme ignore file -->
@@ -13,9 +13,9 @@
 	<Glob language = "m4">*.m4</Glob>
 	<Glob language = "objective-c">*.h *.m</Glob>
 	<Glob language = "patch">diff *.patch *.diff</Glob>
-	<Glob language = "plain-text">BUILDING README AUTHORS CHANGES ChangeLog *.txt *.text *.svn-blame *.svn-log *.log</Glob>
+	<Glob language = "plain-text">BUILDING README AUTHORS CHANGES ChangeLog *.txt *.text *.svn-blame *.svn-log *.log *.sln</Glob>
 	<Glob language = "refactor">*.ref</Glob>
 	<Glob language = "python">*.py SConstruct</Glob>
 	<Glob language = "shell">*.sh</Glob>
-	<Glob language = "xml">*.xml *.xsd *.xsdl *.xsl *.schema *.config *.plist *.sdef *.dtd *.build *.resx</Glob>
+	<Glob language = "xml">*.xml *.xsd *.xsdl *.xsl *.schema *.config *.plist *.sdef *.dtd *.csproj *.build *.resx</Glob>
 </Globs>
