@@ -505,6 +505,14 @@ namespace TextEditor
 				Functions.NSBeep();
 		}
 		
+		public void findSelection(NSObject sender)
+		{
+			NSRange range = m_textView.Value.selectedRange();
+			
+			m_textView.Value.scrollRangeToVisible(range);
+			m_textView.Value.showFindIndicatorForRange(range);
+		}
+		
 		public void balance(NSObject sender)
 		{
 			NSRange originalRange = m_textView.Value.selectedRange();

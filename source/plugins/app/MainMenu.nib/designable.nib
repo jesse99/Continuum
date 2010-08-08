@@ -12,7 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="680"/>
+			<integer value="435"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -990,6 +990,15 @@
 								<object class="NSMenuItem" id="114736172">
 									<reference key="NSMenu" ref="852513665"/>
 									<string key="NSTitle">Find Line</string>
+									<string key="NSKeyEquiv">l</string>
+									<int key="NSKeyEquivModMask">1048576</int>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="357837154"/>
+									<reference key="NSMixedImage" ref="851651225"/>
+								</object>
+								<object class="NSMenuItem" id="696576632">
+									<reference key="NSMenu" ref="852513665"/>
+									<string key="NSTitle">Find Selection</string>
 									<string key="NSKeyEquiv">j</string>
 									<int key="NSKeyEquivModMask">1048576</int>
 									<int key="NSMnemonicLoc">2147483647</int>
@@ -1203,8 +1212,8 @@
 								<object class="NSMenuItem" id="748195998">
 									<reference key="NSMenu" ref="200351840"/>
 									<string key="NSTitle">Previous Error</string>
-									<string key="NSKeyEquiv">L</string>
-									<int key="NSKeyEquivModMask">1179648</int>
+									<string key="NSKeyEquiv">&lt;</string>
+									<int key="NSKeyEquivModMask">1048576</int>
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="357837154"/>
 									<reference key="NSMixedImage" ref="851651225"/>
@@ -1213,7 +1222,7 @@
 								<object class="NSMenuItem" id="471813333">
 									<reference key="NSMenu" ref="200351840"/>
 									<string key="NSTitle">Next Error</string>
-									<string key="NSKeyEquiv">l</string>
+									<string key="NSKeyEquiv">&gt;</string>
 									<int key="NSKeyEquivModMask">1048576</int>
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="357837154"/>
@@ -2451,6 +2460,14 @@
 					</object>
 					<int key="connectionID">721</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">findSelection:</string>
+						<reference key="source" ref="1014"/>
+						<reference key="destination" ref="696576632"/>
+					</object>
+					<int key="connectionID">725</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -3068,6 +3085,7 @@
 							<reference ref="114736172"/>
 							<reference ref="574873569"/>
 							<reference ref="380865855"/>
+							<reference ref="696576632"/>
 						</object>
 						<reference key="parent" ref="599779568"/>
 					</object>
@@ -3622,6 +3640,11 @@
 						<reference key="object" ref="976846495"/>
 						<reference key="parent" ref="475939574"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">722</int>
+						<reference key="object" ref="696576632"/>
+						<reference key="parent" ref="852513665"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -3869,6 +3892,7 @@
 					<string>72.IBPluginDependency</string>
 					<string>72.ImportedFromIB2</string>
 					<string>720.IBPluginDependency</string>
+					<string>722.IBPluginDependency</string>
 					<string>73.IBPluginDependency</string>
 					<string>73.ImportedFromIB2</string>
 					<string>74.IBPluginDependency</string>
@@ -3953,7 +3977,7 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{658, 739}, {244, 183}}</string>
+					<string>{{714, 739}, {241, 183}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{725, 181}, {244, 183}}</string>
@@ -3991,7 +4015,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{758, 749}, {178, 173}}</string>
+					<string>{{758, 749}, {175, 173}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{724, 336}, {164, 153}}</string>
 					<object class="NSMutableDictionary">
@@ -4006,7 +4030,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{919, 769}, {204, 153}}</string>
+					<string>{{919, 769}, {206, 153}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{881, 211}, {207, 153}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -4048,7 +4072,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{856, 589}, {262, 333}}</string>
+					<string>{{856, 569}, {262, 353}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{765, 111}, {265, 293}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -4166,6 +4190,7 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
@@ -4207,7 +4232,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">721</int>
+			<int key="maxID">725</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -4313,6 +4338,7 @@
 							<string>findLine:</string>
 							<string>findOnApple:</string>
 							<string>findOnMSDN:</string>
+							<string>findSelection:</string>
 							<string>getInfo:</string>
 							<string>ignoreExceptions:</string>
 							<string>lookUpInDict:</string>
@@ -4331,6 +4357,7 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
