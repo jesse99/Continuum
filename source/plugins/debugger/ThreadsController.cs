@@ -40,6 +40,7 @@ namespace Debugger
 			m_table.setDoubleAction("doubleClicked:");
 			
 			Broadcaster.Register("debugger started", this);
+			Broadcaster.Register("debugger stopped", this);
 			Broadcaster.Register("debugger processed breakpoint event", this);
 			Broadcaster.Register("debugger thrown exception", this);
 			Broadcaster.Register("debugger processed step event", this);
@@ -56,6 +57,11 @@ namespace Debugger
 					m_debugger = (Debugger) value;
 					DoRefreshThreads();
 					m_table.reloadData();
+					break;
+					
+				case "debugger stopped":
+					m_debugger = null;
+					m_threads.Clear();
 					break;
 					
 				case "debugger processed breakpoint event":
@@ -180,8 +186,11 @@ namespace Debugger
 		private void DoRefreshThreads()
 		{
 			m_threads.Clear();
-			m_threads.AddRange(m_debugger.VM.GetThreads());
-			m_threads.Sort((lhs, rhs) => GetThreadName(lhs).CompareTo(GetThreadName(rhs)));
+			if (m_debugger != null)
+			{
+				m_threads.AddRange(m_debugger.VM.GetThreads());
+				m_threads.Sort((lhs, rhs) => GetThreadName(lhs).CompareTo(GetThreadName(rhs)));
+			}
 			
 			m_selected = -1;
 		}

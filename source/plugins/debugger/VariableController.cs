@@ -88,6 +88,7 @@ namespace Debugger
 					break;
 				
 				case "debugger stopped":
+					m_debugger = null;
 					DoReset(null);
 					break;
 				
@@ -426,6 +427,11 @@ namespace Debugger
 				{
 					m_frame = frame;
 					m_item = new VariableItem(m_frame.Thread, frame);
+				}
+				else
+				{
+					m_frame = null;
+					m_item = null;
 				}
 			}
 			

@@ -38,6 +38,7 @@ namespace Debugger
 			m_table.setDoubleAction("doubleClicked:");
 			
 			Broadcaster.Register("debugger processed breakpoint event", this);
+			Broadcaster.Register("debugger stopped", this);
 			Broadcaster.Register("debugger thrown exception", this);
 			Broadcaster.Register("debugger processed step event", this);
 			Broadcaster.Register("debugger state changed", this);
@@ -48,6 +49,10 @@ namespace Debugger
 		{
 			switch (name)
 			{
+				case "debugger stopped":
+					m_stack = null;
+					break;
+					
 				case "debugger processed breakpoint event":
 				case "debugger thrown exception":
 				case "debugger processed step event":

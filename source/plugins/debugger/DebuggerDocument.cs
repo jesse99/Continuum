@@ -140,7 +140,7 @@ namespace Debugger
 		{
 			if (m_debugger != null)
 			{
-				m_debugger.Dispose();
+				m_debugger.Shutdown();
 				m_debugger = null;
 			}
 			

@@ -28,7 +28,7 @@ need a debugger window so we dont leave tons of open windows behind?
 red B could be a breakpoint
 green > the current IP
 
-/Users/jessejones/Source/Third_Party/monodevelop/main/src/addins/MonoDevelop.Debugger.Soft/Mono.Debugging.Soft/SoftDebuggerSession.cs
+/Users/jessejones/Source/Third_Party/monodevelop-2.4/src/addins/MonoDevelop.Debugger.Soft/Mono.Debugging.Soft/SoftDebuggerSession.cs
 
 The Algorithm Design Manual
 
@@ -65,13 +65,20 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.ArrayMirror	
 		
 
+* Think about threading:
+	- can we add breakpoints while the vm is running?
+	- debugger should probably not expose VM (will need some sort of context with threads)
+	- file a ticket asking about thread safety?
 * Close the code viewer window when done debugging.
 * Make sure can still debug twice.
 * Rename Run Resume?
+* Debugging windows don't remember that they should be re-opened?
 * Might want to name the debugging window: "[debugging: Foo.cs]"
 * Need a break all command (Suspend looks like it may work).
 * Look at how the test code shuts down the debugger.
 * C include list should include *.cc
+* *.csproj should be xml.
+* *.sln should be text.
 * What happens when trying to look at an object wth a thread static field?
 * Command j should be jump to selection.
 * Command l should be goto line (need to figure out something for next/prev error, maybe >).
@@ -85,6 +92,7 @@ public abstract class Mono.Debugger.Value
 * Brace highlighting isn't reliable.
 * Should be able to see variable (and properties) by hovering.
 * Get rid of active objects?
+* Double clicking a directory in the directory editor should toggle expansion.
 * Continuum doesn't build using Continuum when it is launched from the Finder (/usr/local/bin
    doesn't seem to be part of PATH). Could maybe add a note to the make file.
 * Build a new foreshadow.
@@ -131,6 +139,11 @@ public abstract class Mono.Debugger.Value
 * Should DoGetOperatorName handle names like:
 	ObjectModel Error  bad operator: op_UnaryNegation_Int32
 	maybe tweak the warning?
+* Work on auto-completion:
+	- genie effect is distracting?
+	- use a custom database? only have a limited set of queries and can replace database files
+	   instead of updating them
+	- nosql? serialized CsDeclarations?
 * Should make font bigger (or smaller) change the defaults for source code windows? It would probably
    have to change all the defaults?
 * Do some more work on the debugger:
@@ -156,21 +169,19 @@ public abstract class Mono.Debugger.Value
 * Use the new StackFrame.GetVisibleVariables method.
 * Start using VirtualMachine.GetNextEventSet.
 * Why doesn't stuff like var thread = (ThreadMirror) value auto-complete?
+* SHouldn't we warn if two language files use the same language?
 * Show short form on Action didn't show the Delegate members.
 * Dot should complete auto-complete text.
 * Auto-complete window should have context menu for showing only properties.
 * Maybe optionally hide fields too.
 * Add a pref to make find wrap around (and beep if we get back to where we started).
 * Should deduce type of typeof(xxx).
-* Upgrade to mono 2.6.4
 * Would be nice not to highlight the linq query keywords (from, which, etc) if System.Linq is not
    being used.
-* COuldn't open (via drag and drop) /Users/jessejones/Source/Third_Party/mono-2.6.3/mono/mini/ChangeLog
+* Couldn't open (via drag and drop) /Users/jessejones/Source/Third_Party/mono-2.6.3/mono/mini/ChangeLog
 * Mention can right click on completion window.
 * Attributes and base classes need to handle global::
 * global should be a c# keyword?
-* *.csproj should be xml.
-* *.sln should be text.
 * Getting errors right clicking at the bottom of short text documents.
 * Doesn't the create thread refactor need to use a field for the thread object?
 * Mention useful to download mono source (and set the associated pref):
@@ -214,7 +225,7 @@ public abstract class Mono.Debugger.Value
 * Typing seems slower than it used to be, eg when typing in the middle of a comment.
 * Would be nice to support hyperlinks in rich text files
 	http://developer.apple.com/qa/qa2006/qa1487.html
-* NSWorkspace has enw methods to duplicate and trash files.
+* NSWorkspace has new methods to duplicate and trash files.
 * NSError has a helpAnchor method.
 * Generate stub seems fairly nifty.
 * Work on collection support:

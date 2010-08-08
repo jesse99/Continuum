@@ -431,9 +431,9 @@ namespace Debugger
 						HandlerAction action = DoProcessEvent(e);
 						if (m_state == State.Disconnected)		// error or VMDeathEvent or VMDisconnectEvent
 							break;
-							
+						
 						if (action == HandlerAction.Resume)
-							vm.Resume();
+							DoResume(vm);
 					}
 				}
 			}
@@ -444,6 +444,21 @@ namespace Debugger
 			}
 			
 			m_eventThread = null;
+		}
+		
+		// We need to trap exceptions on resume because the VM in the debugee is running
+		// asynchronously and it hits the breakpoint while we are trying to process a type
+		// load event. TODO: GetNextEventSet might help with this. 
+		private void DoResume(VirtualMachine vm)
+		{
+			try
+			{
+				vm.Resume();
+			}
+			catch (InvalidOperationException e)
+			{
+				Log.WriteLine(TraceLevel.Error, "Debugger", "DoResume> {0}", e.Message);
+			}
 		}
 		#endregion
 		

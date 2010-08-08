@@ -33,7 +33,7 @@ using System.Collections.Generic;
 namespace Debugger
 {
 	// This is the class that handles all interaction with the soft debugger.
-	internal sealed class Debugger : IDisposable, IObserver
+	internal sealed class Debugger : IObserver
 	{
 		public Debugger(ProcessStartInfo info)
 		{
@@ -45,7 +45,9 @@ namespace Debugger
 			m_transcript = boss.Get<ITranscript>();
 			
 			StepBy = StepSize.Line;
-			Unused.Value = VirtualMachineManager.BeginLaunch(info, this.OnLaunched);
+			var options = new LaunchOptions();
+//			options.AgentArgs = "loglevel=1,logfile='/Users/jessejones/Source/Continuum/sdb.log'";
+			Unused.Value = VirtualMachineManager.BeginLaunch(info, this.OnLaunched, options);
 			
 			Broadcaster.Register("added breakpoint", this);
 			Broadcaster.Register("removing breakpoint", this);
@@ -76,34 +78,41 @@ namespace Debugger
 			}
 		}
 		
-		public void Dispose()
+		public void Shutdown()
 		{
-			if (!m_disposed)
+			if (!m_shutDown)
 			{
-				// Note that we cannot do a Dispose from our finalizer because we
-				// would be attempting to clean up a VirtualMachine which contains
-				// a finalizeable (Processs) field.
-				try
+				if (m_vm != null)
 				{
-					if (m_vm != null)
+					// Tell everyone that the debugger is going away.
+					Broadcaster.Invoke("debugger stopped", this);
+					Broadcaster.Unregister(this);
+					
+					// Force the VM to exit (which should kill the debugee).
+					try
 					{
-						Broadcaster.Invoke("debugger stopped", this);
-						Broadcaster.Unregister(this);
-						
-						Log.WriteLine(TraceLevel.Info, "Debugger", "Dispose");
-						m_vm.Exit(0);
-						m_vm.Dispose();
+						Log.WriteLine(TraceLevel.Info, "Debugger", "Exiting VM");
+						m_vm.Exit(5);
+					}
+					catch (System.Net.Sockets.SocketException e)
+					{
+						Log.WriteLine(TraceLevel.Warning, "Debugger", "Error exiting VM: {0}", e.Message);
+					}
+					catch (VMDisconnectedException)
+					{
+					}
+					
+					// If the debugee did not exit then give it a bit more time and then
+					// hit it with a big hammer. (The debuggee will die asynchronously
+					// so we'll often land in this code).
+					Process process = m_vm.Process;
+					if (process != null && !process.HasExited)
+					{
+						NSApplication.sharedApplication().BeginInvoke(() => DoKillProcess(process), TimeSpan.FromSeconds(3));
 					}
 				}
-				catch (VMDisconnectedException)
-				{
-				}
-				catch (Exception e)
-				{
-					Log.WriteLine(TraceLevel.Error, "Debugger", "{0}", e);
-				}
 				
-				m_disposed = true;
+				m_shutDown = true;
 				m_vm = null;
 				ms_running = false;
 			}
@@ -135,8 +144,7 @@ namespace Debugger
 		// Either start running after connecting or after pausing (e.g. via a breakpoint).
 		public void Run()
 		{
-			if (m_disposed)
-				throw new ObjectDisposedException(GetType().Name);
+			Contract.Assert(!m_shutDown);
 			
 			Log.WriteLine(TraceLevel.Info, "Debugger", "Running");
 			Broadcaster.Invoke("debugger resumed", this);
@@ -152,38 +160,31 @@ namespace Debugger
 		
 		public void StepOver()
 		{
-			if (m_disposed)
-				throw new ObjectDisposedException(GetType().Name);
+			Contract.Assert(!m_shutDown);
 			DoStep(StepDepth.Over);
 		}
 		
 		public void StepIn()
 		{
-			if (m_disposed)
-				throw new ObjectDisposedException(GetType().Name);
+			Contract.Assert(!m_shutDown);
 			DoStep(StepDepth.Into);
 		}
 		
 		public void StepOut()
 		{
-			if (m_disposed)
-				throw new ObjectDisposedException(GetType().Name);
+			Contract.Assert(!m_shutDown);
 			DoStep(StepDepth.Out);
 		}
 		
 		public void AddBreakpoint(Breakpoint bp, MethodMirror method, long ilOffset)
 		{
-			if (m_disposed)
-				throw new ObjectDisposedException(GetType().Name);
-				
+			Contract.Assert(!m_shutDown);
 			m_thread.AddBreakpoint(bp, method, ilOffset);
 		}
 		
 		public void RemoveBreakpoint(Breakpoint bp, MethodMirror method, long ilOffset)
 		{
-			if (m_disposed)
-				throw new ObjectDisposedException(GetType().Name);
-			
+			Contract.Assert(!m_shutDown);
 			m_thread.RemoveBreakpoint(bp, method, ilOffset);
 		}
 		
@@ -308,7 +309,7 @@ namespace Debugger
 		
 		internal void OnStateChanged(State newState)
 		{
-			if (!m_disposed)
+			if (!m_shutDown)
 				Broadcaster.Invoke("debugger state changed", newState);
 		}
 		
@@ -344,8 +345,11 @@ namespace Debugger
 		
 		internal void OnVMDied()
 		{
-			Broadcaster.Invoke("debugger stopped", this);
-			ms_loadedTypes.Clear();
+			if (ms_running)
+			{
+				Broadcaster.Invoke("debugger stopped", this);
+				ms_loadedTypes.Clear();
+			}
 		}
 		
 		internal void OnVMStarted()
@@ -355,6 +359,22 @@ namespace Debugger
 		#endregion
 		
 		#region Private Methods
+		private void DoKillProcess(Process process)
+		{
+			try
+			{
+				if (!process.HasExited)
+				{
+					Log.WriteLine(TraceLevel.Warning, "Debugger", "Force killing process");
+					process.Kill();
+				}
+			}
+			catch (Exception e)
+			{
+				m_transcript.WriteLine(Output.Error, "Error force killing debugee: {0}.", e.Message);
+			}
+		}
+		
 		[ThreadModel(ThreadModel.SingleThread)]
 		private void OnLaunched(IAsyncResult result)
 		{
@@ -363,12 +383,12 @@ namespace Debugger
 				m_vm = VirtualMachineManager.EndLaunch(result);
 				
 				m_stdoutThread = new Thread(() => DoOutputThread(m_vm.StandardOutput, Output.Normal));
-				m_stdoutThread.Name = "Debugger.StdOutThread";
+				m_stdoutThread.Name = "Debugger.stdout";
 				m_stdoutThread.IsBackground = true;		// allow the app to quit even if the thread is still running
 				m_stdoutThread.Start();
 				
 				m_stderrThread = new Thread(() => DoOutputThread(m_vm.StandardError, Output.Error));
-				m_stderrThread.Name = "Debugger.StdErrThread";
+				m_stderrThread.Name = "Debugger.stderr";
 				m_stderrThread.IsBackground = true;		// allow the app to quit even if the thread is still running
 				m_stderrThread.Start();
 				
@@ -505,7 +525,7 @@ namespace Debugger
 		#region Fields
 		private ITranscript m_transcript;
 		private VirtualMachine m_vm;
-		private bool m_disposed;
+		private bool m_shutDown;
 		private DebuggerThread m_thread;
 		
 		private StepEventRequest m_stepRequest;
