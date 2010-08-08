@@ -85,7 +85,8 @@ namespace Debugger
 				if (m_vm != null)
 				{
 					// Tell everyone that the debugger is going away.
-					Broadcaster.Invoke("debugger stopped", this);
+					if (ms_running)
+						Broadcaster.Invoke("debugger stopped", this);
 					Broadcaster.Unregister(this);
 					
 					// Force the VM to exit (which should kill the debugee).
@@ -349,6 +350,7 @@ namespace Debugger
 			{
 				Broadcaster.Invoke("debugger stopped", this);
 				ms_loadedTypes.Clear();
+				ms_running = false;
 			}
 		}
 		

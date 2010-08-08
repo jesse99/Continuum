@@ -65,13 +65,9 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.ArrayMirror	
 		
 
-* Close the code viewer window when done debugging.
-* Make sure can still debug twice.
 * Rename Run Resume?
-* Debugging windows don't remember that they should be re-opened?	
 * Might want to name the debugging window: "[debugging: Foo.cs]"
 * Need a break all command (Suspend looks like it may work).
-* Look at how the test code shuts down the debugger.
 * C include list should include *.cc
 * *.csproj should be xml.
 * *.sln should be text.

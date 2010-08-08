@@ -63,6 +63,7 @@ namespace Debugger
 			switch (name)
 			{
 				case "debugger started":
+					ms_running = true;
 					DoLoadPrefs();
 					
 					foreach (WindowInfo info in m_windows)
@@ -74,17 +75,18 @@ namespace Debugger
 				
 				case "debugger stopped":
 					DoSavePrefs();
+					ms_running = false;
 					
 					foreach (WindowInfo info in m_windows)
 					{
 						info.Window.saveFrameUsingName(NSString.Create("debugger {0} window", info.Name));
 						info.Window.orderOut(this);
 					}
-					
 					break;
 				
 				case "exiting event loop":
-					DoSavePrefs();
+					if (ms_running)
+						DoSavePrefs();
 					break;
 					
 				default:
@@ -188,6 +190,7 @@ namespace Debugger
 		};
 		private static bool ms_ignoreExceptions;
 		private static bool ms_writeEvents;
+		private static bool ms_running;
 		#endregion
 	}
 }
