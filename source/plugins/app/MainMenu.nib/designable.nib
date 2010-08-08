@@ -1260,7 +1260,7 @@
 								<bool key="EncodedWithXMLCoder">YES</bool>
 								<object class="NSMenuItem" id="46599873">
 									<reference key="NSMenu" ref="475939574"/>
-									<string key="NSTitle">Run</string>
+									<string key="NSTitle">Resume</string>
 									<string key="NSKeyEquiv"></string>
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="357837154"/>
