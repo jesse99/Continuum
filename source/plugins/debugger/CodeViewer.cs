@@ -41,6 +41,7 @@ namespace Debugger
 			Broadcaster.Register("debugger processed breakpoint event", this);
 			Broadcaster.Register("debugger thrown exception", this);
 			Broadcaster.Register("debugger processed step event", this);
+			Broadcaster.Register("debugger stopped", this);
 			Broadcaster.Register("debugger state changed", this);
 			Broadcaster.Register("changed stack frame", this);
 			Broadcaster.Register("changed thread", this);
@@ -75,6 +76,12 @@ namespace Debugger
 						Broadcaster.Unregister(this);
 //						NSApplication.sharedApplication().BeginInvoke(() => m_boss.Free());
 					}
+					break;
+					
+				case "debugger stopped":
+					var window = m_boss.Get<IWindow>();
+					Action action = () => window.Window.close();
+					NSApplication.sharedApplication().BeginInvoke(action, TimeSpan.FromMilliseconds(100));
 					break;
 				
 				case "debugger loaded assembly":

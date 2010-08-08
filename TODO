@@ -65,14 +65,10 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.ArrayMirror	
 		
 
-* Think about threading:
-	- can we add breakpoints while the vm is running?
-	- debugger should probably not expose VM (will need some sort of context with threads)
-	- file a ticket asking about thread safety?
 * Close the code viewer window when done debugging.
 * Make sure can still debug twice.
 * Rename Run Resume?
-* Debugging windows don't remember that they should be re-opened?
+* Debugging windows don't remember that they should be re-opened?	
 * Might want to name the debugging window: "[debugging: Foo.cs]"
 * Need a break all command (Suspend looks like it may work).
 * Look at how the test code shuts down the debugger.
