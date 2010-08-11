@@ -29,6 +29,7 @@ red B could be a breakpoint
 green > the current IP
 
 /Users/jessejones/Source/Third_Party/monodevelop-2.4/src/addins/MonoDevelop.Debugger.Soft/Mono.Debugging.Soft/SoftDebuggerSession.cs
+/Users/jessejones/Source/Third_Party/mono-2.6.7/mcs/class/Mono.Debugger.Soft
 
 The Algorithm Design Manual
 
@@ -65,12 +66,6 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.ArrayMirror	
 		
 
-* Edited directories are not always added to find in files (e.g. when opening the app and re-loading
-   previously used directory).
-* Period should work like return in auto-complete window.
-* Parser needs to support abstract properties (see XmlReader.cs)
-* Why does the auto-complete window keep growing. Is it being saved with a frame a bit too large 
-   each time?
 * Double clicking a directory in the directory editor should toggle expansion.
 * Create Exception and Add Exception didn't work when adding to an empty class.
 * Use the trace roots goo to see why CodeViewer is hanging around
@@ -116,6 +111,7 @@ public abstract class Mono.Debugger.Value
 
 * File debugger tickets.	
 * Get rid of glob files? Would be easier (and less confusing) if the default globs were part of the language.
+* Look at using a replacement for sqlite. Maybe a custom database or some nosql sort of thing.
 * Work on a debugger:
 	- context breakpoint menu should have close do a broadcast so the breakpoint can be toggled
 	- CodeViewer is being deallocated but not GCed (there is some object with a reference to the boss)
@@ -127,6 +123,7 @@ public abstract class Mono.Debugger.Value
 	- use a custom database? only have a limited set of queries and can replace database files
 	   instead of updating them
 	- nosql? serialized CsDeclarations?
+* Period should work like return in auto-complete window.
 * Should make font bigger (or smaller) change the defaults for source code windows? It would probably
    have to change all the defaults?
 * Do some more work on the debugger:

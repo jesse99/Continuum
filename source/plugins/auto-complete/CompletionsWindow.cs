@@ -51,13 +51,16 @@ namespace AutoComplete
 			return new NSRect(
 				x,						// this is the origin of the sheet in parent window coordinates
 				m_loc.y - 4.0f,
-				0.0f,					// this is reserved
-				1.0f);				// if this is smaller then the window the sheet genies out, else it slides out
+				0.0f,					// if this is smaller then the window the sheet genies out, else it slides out
+				0.0f);					// this is reserved
 		}
 		
 		public new void setFrame_display(NSRect frame, bool display)
 		{
+			// Do the default sizing.
 			this.SuperCall(NSWindow.Class, "setFrame:display:", frame, display);
+			
+			// Constrain the result to the screen.
 			NSRect current = this.frame();
 			NSRect constrained = DoConstrainToScreen(current);
 			if (constrained != current)
