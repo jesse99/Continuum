@@ -65,8 +65,6 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.ArrayMirror	
 		
 
-* Look at toggleAutomaticLinkDetection.
-* Build a new foreshadow.
 * Edited directories are not always added to find in files (e.g. when opening the app and re-loading
    previously used directory).
 * Period should work like return in auto-complete window.

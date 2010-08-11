@@ -64,8 +64,9 @@ namespace Find
 			this.didChangeValueForKey(NSString.Create("excludeList"));
 			
 			m_dirPopup = new IBOutlet<NSPopUpButton>(this, "dirPopup");	// pulldown buttons probably look a bit better but I was never able to get them working correctly
-			string dir = DoGetDirectory();
+			string dir = DoGetInitialDirectory();
 			AddDefaultDirs();
+			DoAddOpenDirs();
 			if (dir != null)
 			{
 				NSString name = NSString.Create(dir);
@@ -145,11 +146,11 @@ namespace Find
 			Unused.Value = new FindProgressController(replaceAll);		// FindProgressController will handle retain counts and references
 		}
 		
-		public void setDir(NSObject sender)	
+		public void setDir(NSObject sender)
 		{
 			Unused.Value = sender;
 			
-			NSOpenPanel panel = NSOpenPanel.openPanel();	
+			NSOpenPanel panel = NSOpenPanel.openPanel();
 			panel.setCanChooseFiles(false);
 			panel.setCanChooseDirectories(true);
 			panel.setAllowsMultipleSelection(false);
@@ -264,7 +265,20 @@ namespace Find
 			return excludes.ToArray();
 		}
 		
-		private string DoGetDirectory()
+		private void DoAddOpenDirs()
+		{
+			Boss boss = ObjectModel.Create("DirectoryEditorPlugin");
+			var windows = boss.Get<IWindows>();
+			foreach (Boss b in windows.All())
+			{
+				var editor = b.Get<IDirectoryEditor>();
+				
+				NSString name = NSString.Create(editor.Path);
+				m_dirPopup.Value.addItemWithTitle(name);
+			}
+		}
+		
+		private string DoGetInitialDirectory()
 		{
 			string dir = null;
 			
