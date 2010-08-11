@@ -30,7 +30,7 @@ using System.Collections.Generic;
 namespace Debugger
 {
 	// Customizes the normal text editor boss behavior.
-	internal sealed class CodeViewer : ICodeViewer, IDocumentWindowTitle, IDocumentExtension, IObserver
+	internal sealed class CodeViewer : ICodeViewer, IDocumentWindowTitle, IDocumentExtension, IObserver, ITooltip
 	{
 		public void Instantiated(Boss boss)
 		{
@@ -123,6 +123,31 @@ namespace Debugger
 					Contract.Assert(false, "bad name: " + name);
 					break;
 			}
+		}
+		
+		// Note that this will match locals and fields and such anywhere in the window. This can be
+		// nice because you can see the values of things that aren't used in the current method
+		// but may also be potentially confusing.
+		public string GetTooltip(int index)
+		{
+			var text = m_boss.Get<IText>();
+			
+			int begin = index;
+			while (index > 0 && (char.IsLetterOrDigit(text.Text[begin - 1]) || text.Text[begin - 1] == '_'))
+				--begin;
+			
+			int count = index - begin + 1;
+			while (begin + count < text.Text.Length && (char.IsLetterOrDigit(text.Text[begin + count]) || text.Text[begin + count] == '_'))
+				++count;
+				
+			string result = null;
+			if (count > 0)
+			{
+				string word = text.Text.Substring(begin, count);
+				result = VariableController.Instance.GetValue(word);
+			}
+			
+			return result;
 		}
 		
 		public bool IsShowingSource()

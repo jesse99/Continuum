@@ -6,7 +6,7 @@
 	
 	<Boss name = "CodeViewer">
 		<Compose name = "TextEditor"/>
-		<Implementation interfaces = "ICodeViewer IDocumentWindowTitle IDocumentExtension" name = "CodeViewer"/>
+		<Implementation interfaces = "ICodeViewer IDocumentWindowTitle IDocumentExtension ITooltip" name = "CodeViewer"/>
 	</Boss>
 	
 	<Extend name = "TextEditorPlugin">

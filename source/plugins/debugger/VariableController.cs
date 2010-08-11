@@ -26,6 +26,7 @@ using MObjc;
 using Mono.Debugger.Soft;
 using Shared;
 using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading;
 
@@ -105,6 +106,13 @@ namespace Debugger
 			}
 		}
 		
+		public string GetValue(string name)
+		{
+			string value;
+			Unused.Value = m_nameTable.TryGetValue(name, out value);
+			return value;
+		}
+		
 		public static bool ShowHex
 		{
 			get {return ms_showHex;}
@@ -125,6 +133,9 @@ namespace Debugger
 			ms_showHex = !ms_showHex;
 			if (m_item != null)
 			{
+				if (m_frame != null)
+					DoLoadNameTable(m_frame.Thread, m_item);
+				
 				m_item.Refresh(m_frame.Thread);
 				m_table.reloadData();
 			}
@@ -135,6 +146,9 @@ namespace Debugger
 			ms_hideThousands = !ms_hideThousands;
 			if (m_item != null)
 			{
+				if (m_frame != null)
+					DoLoadNameTable(m_frame.Thread, m_item);
+				
 				m_item.Refresh(m_frame.Thread);
 				m_table.reloadData();
 			}
@@ -145,6 +159,9 @@ namespace Debugger
 			ms_hideUnicode = !ms_hideUnicode;
 			if (m_item != null)
 			{
+				if (m_frame != null)
+					DoLoadNameTable(m_frame.Thread, m_item);
+				
 				m_item.Refresh(m_frame.Thread);
 				m_table.reloadData();
 			}
@@ -412,6 +429,8 @@ namespace Debugger
 		
 		private void DoReset(LiveStackFrame frame)
 		{
+			m_nameTable.Clear();
+			
 			if (m_item != null && ((LiveStackFrame) m_item.Value) == frame)
 			{
 				m_frame = frame;
@@ -437,7 +456,46 @@ namespace Debugger
 				}
 			}
 			
+			if (m_frame != null)
+				DoLoadNameTable(m_frame.Thread, m_item);
+			
 			m_table.reloadData();
+		}
+		
+		private void DoLoadNameTable(ThreadMirror thread, VariableItem parent)
+		{
+			for (int i = 0; i < parent.NumberOfChildren; ++i)
+			{
+				VariableItem child = parent.GetChild(thread, i);
+				
+				string value = child.AttributedValue.ToString();
+				if (value.Length > 0)
+					m_nameTable[child.AttributedName.ToString()] = value;
+					
+				var iv = child.Value as InstanceValue;
+				if (iv != null)
+				{
+					for (int j = 0; j < iv.Length; ++j)
+					{
+						VariableItem gchild = iv.GetChild(thread, child, j);
+						value = gchild.AttributedValue.ToString();
+						if (value.Length > 0)
+							m_nameTable[gchild.AttributedName.ToString()] = value;
+					}
+				}
+					
+				var tv = child.Value as TypeValue;
+				if (tv != null)
+				{
+					for (int j = 0; j < tv.Length; ++j)
+					{
+						VariableItem gchild = tv.GetChild(thread, child, j);
+						value = gchild.AttributedValue.ToString();
+						if (value.Length > 0)
+							m_nameTable[gchild.AttributedName.ToString()] = value;
+					}
+				}
+			}
 		}
 		
 		private void DoLoadPrefs()
@@ -465,6 +523,7 @@ namespace Debugger
 		private NSOutlineView m_table;
 		private LiveStackFrame m_frame;
 		private VariableItem m_item;
+		private Dictionary<string, string> m_nameTable = new Dictionary<string, string>();
 		
 		private static bool ms_showHex;
 		private static bool ms_hideThousands;

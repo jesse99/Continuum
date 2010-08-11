@@ -394,7 +394,10 @@ namespace Debugger
 			{
 				TypeMirror declaredType = DeclaredType.Invoke(parent, key);
 				if (value == null || (declaredType != null && declaredType.Metadata != null && declaredType.Metadata.HasGenericParameters && declaredType.Metadata.Name == value.Name))
-					value = declaredType;
+					if (declaredType != null)
+						value = declaredType;
+					else
+						return "?";
 			}
 			
 			if (value.Metadata != null)

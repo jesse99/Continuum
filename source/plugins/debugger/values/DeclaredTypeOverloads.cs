@@ -75,5 +75,11 @@ namespace Debugger
 			FieldInfoMirror[] fields = parent.Type.GetFields();
 			return fields[key].DeclaringType;
 		}
+		
+		[DeclaredType.Overload]
+		public static TypeMirror GetType(TypeValue parent, int key)
+		{
+			return null;			// we don't have enough info to return a decent type
+		}
 	}
 }

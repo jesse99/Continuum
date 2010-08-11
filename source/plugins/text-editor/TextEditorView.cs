@@ -45,12 +45,45 @@ namespace TextEditor
 			m_boss = controller.Boss;
 			m_autoComplete = m_boss.Get<IAutoComplete>();
 			setTypingAttributes(CurrentStyles.DefaultAttributes);
+			
+			if (m_boss.Has<ITooltip>())
+			{
+				m_tooltip = m_boss.Get<ITooltip>();
+				m_timer = new System.Threading.Timer((object state) =>
+				{
+					NSApplication.sharedApplication().BeginInvoke(this.DoShowTooltip);
+				});
+			}
 		}
 		
 		public void onClosing(TextController controller)
 		{
 			m_autoComplete = null;		// note that these won't be GCed if we don't null them out
 			m_boss = null;
+		}
+		
+		public new void mouseMoved(NSEvent e)
+		{
+			if (m_tooltip != null)
+			{
+				m_moveIndex = DoMouseEventToIndex(e);
+				m_timer.Change(TimeSpan.FromMilliseconds(500), TimeSpan.FromMilliseconds(-1));
+			}
+			Unused.Value = SuperCall(NSTextView.Class, "mouseMoved:", e);
+		}
+		
+		public new void mouseExited(NSEvent e)
+		{
+			if (m_tooltipWindow != null)
+			{
+				m_tooltipWindow.Close();
+				m_tooltipWindow = null;
+			}
+			
+			if (m_timer != null)
+				m_timer.Change(TimeSpan.FromMilliseconds(-1), TimeSpan.FromMilliseconds(-1));
+			
+			Unused.Value = SuperCall(NSTextView.Class, "mouseExited:", e);
 		}
 		
 		public new void drawRect(NSRect dirtyRect)
@@ -479,6 +512,30 @@ namespace TextEditor
 		#endregion
 		
 		#region Private Methods
+		// Note that NSView has support for tooltips, but it's not designed for the sort of very
+		// dynamic tooltips that we need to support.
+		private void DoShowTooltip()
+		{
+			if (m_tooltipWindow != null)
+			{
+				m_tooltipWindow.Close();
+				m_tooltipWindow = null;
+			}
+			
+			string text = m_tooltip.GetTooltip(m_moveIndex);
+			if (!string.IsNullOrEmpty(text) && m_boss != null)	// boss will be null if the window closed
+			{
+				var editor = m_boss.Get<ITextEditor>();
+				var range = new NSRange(m_moveIndex, 1);
+				m_tooltipWindow = editor.GetAnnotation(range, AnnotationAlignment.Top);
+				
+				m_tooltipWindow.BackColor = NSColor.colorWithDeviceRed_green_blue_alpha(1.0f, 0.96f, 0.0f, 1.0f);
+				m_tooltipWindow.Text= text;
+				m_tooltipWindow.Draggable = false;
+				m_tooltipWindow.Visible = true;
+			}
+		}
+		
 		private bool DoMatchesWord(NSString text, int location, int length, Regex word)
 		{
 			bool matches = false;
@@ -775,6 +832,10 @@ namespace TextEditor
 		private string m_selection;
 		private List<Entry> m_entries = new List<Entry>();
 		private IAutoComplete m_autoComplete;
+		private ITooltip m_tooltip;
+		private int m_moveIndex;
+		private System.Threading.Timer m_timer;
+		private ITextAnnotation m_tooltipWindow;
 		
 		private string m_overlayText;
 		private NSRect m_overlayRect;
