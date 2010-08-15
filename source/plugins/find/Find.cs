@@ -73,7 +73,32 @@ namespace Find
 				int length = text.Text.Length - index;
 				
 				DoMakeRe();
-				Match match = m_re.Match(text.Text, index, length);
+				
+				// If we are searching for new text then we'll remember where we
+				// started so we can indicate to the user when the entire document 
+				// has been searched.
+				if (m_re != m_oldFindRe)		// note that we have to use Re because Regex is too lame to override Equals
+				{
+					m_oldFindIndex = text.Selection.location;
+					m_oldWrapped = false;
+					m_oldFindRe = m_re;
+				}
+				
+				Match match = m_regex.Match(text.Text, index, length);
+				
+				// find wrap
+				if (!match.Success)
+				{
+					var defaults = NSUserDefaults.standardUserDefaults();
+					var defaultsKey = NSString.Create("find wrap");
+					bool wrap = defaults.objectForKey(defaultsKey).IsNil() || defaults.boolForKey(defaultsKey).To<bool>();
+					if (wrap)
+					{
+						match = m_regex.Match(text.Text, 0, index);
+						m_oldWrapped = true;
+					}
+				}
+				
 				if (match.Success)
 				{
 					var window = text.Boss.Get<IWindow>();
@@ -81,6 +106,14 @@ namespace Find
 					
 					text.Selection = new NSRange(match.Index, match.Length);
 					text.ShowSelection();
+					
+					if (m_oldWrapped && match.Index >= m_oldFindIndex)
+					{
+						var editor = text.Boss.Get<ITextEditor>();
+						editor.ShowInfo("Reached Start");
+						
+						m_oldWrapped = false;
+					}
 				}
 				else
 					Functions.NSBeep();
@@ -109,7 +142,7 @@ namespace Find
 				Match match = null;
 				while (true)
 				{
-					Match candidate = m_re.Match(text.Text, index);
+					Match candidate = m_regex.Match(text.Text, index);
 					if (candidate.Success)
 					{
 						if (candidate.Index < text.Selection.location)
@@ -158,7 +191,7 @@ namespace Find
 				int length = text.Text.Length - index;
 				
 				DoMakeRe();
-				Match match = m_re.Match(text.Text, index, length);
+				Match match = m_regex.Match(text.Text, index, length);
 				if (match.Success)
 				{
 					string result = match.Result(ReplaceText);
@@ -188,7 +221,7 @@ namespace Find
 				DoMakeRe();
 				
 				// If the current selection matches the re then replace it.
-				Match match = m_re.Match(text.Text, text.Selection.location, text.Selection.length);
+				Match match = m_regex.Match(text.Text, text.Selection.location, text.Selection.length);
 				if (match.Success)
 				{
 					string result = match.Result(ReplaceText);
@@ -217,7 +250,7 @@ namespace Find
 				
 				DoMakeRe();
 				
-				string result = m_re.Replace(text.Text, ReplaceText, int.MaxValue, index);
+				string result = m_regex.Replace(text.Text, ReplaceText, int.MaxValue, index);
 				if (result != text.Text)
 				{
 					text.Replace(result, 0, text.Text.Length, "Replace All");
@@ -371,14 +404,15 @@ namespace Find
 		#region Private Methods
 		private void DoMakeRe()
 		{
-			Re re = new Re
+			m_re = new Re
 			{
 				UseRegex = m_find.UseRegex,
 				CaseSensitive = m_find.CaseSensitive,
 				MatchWords = m_find.MatchWords,
 				WithinText = m_find.WithinText,
+				Pattern = FindText,
 			};
-			m_re = re.Make(FindText);
+			m_regex = m_re.Make();
 		}
 		
 		private IText DoFindTextWindow()
@@ -408,7 +442,12 @@ namespace Find
 		private Boss m_boss;
 		private FindController m_find;
 		private FindInFilesController m_findInFiles;
-		private Regex m_re;
+		private Regex m_regex;
+		private Re m_re;
+		
+		private Re m_oldFindRe;
+		private int m_oldFindIndex;
+		private bool m_oldWrapped;
 		#endregion
 	}
 }

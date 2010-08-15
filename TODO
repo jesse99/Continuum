@@ -24,10 +24,6 @@ http://www.jetbrains.com/resharper/features/
 select declaring_root_name,return_type_name from Methods where name = 'get_BaseTypes';
 sudo fs_usage -f filesys
 
-need a debugger window so we dont leave tons of open windows behind?
-red B could be a breakpoint
-green > the current IP
-
 /Users/jessejones/Source/Third_Party/monodevelop-2.4/src/addins/MonoDevelop.Debugger.Soft/Mono.Debugging.Soft/SoftDebuggerSession.cs
 /Users/jessejones/Source/Third_Party/mono-2.6.7/mcs/class/Mono.Debugger.Soft
 
@@ -66,16 +62,10 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.ArrayMirror	
 		
 http://research.microsoft.com/en-us/projects/pex/
-		
 
-* Can't build continuum when launching foreshadow from the dock. Maybe the
-   launcher script can add /usr/local and /usr/local/bin to PATH.
-   - make sure update-libraries works
 * Bugs with pasting:
 	- tab stops often get screwed up (eg pasting from safari)
 	- when pasting from a copy link the anchor label gets pasted not the link itself
-* Apply patches.
-* Check out the new transcript window.
 * Double clicking a directory in the directory editor should toggle expansion.
 * Create Exception and Add Exception didn't work when adding to an empty class.
 * Look at TextMate.

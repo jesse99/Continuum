@@ -335,13 +335,20 @@ namespace DirectoryEditor
 		
 		public void doubleClicked(NSOutlineView sender)
 		{
-			DoOpenSelection();
+			TableItem[] selectedItems = DoGetSelectedItems().ToArray();
+			if (selectedItems.Length == 1 && selectedItems[0].IsExpandable)
+				if (m_table.isItemExpanded(selectedItems[0]))
+					m_table.collapseItem(selectedItems[0]);
+				else
+					m_table.expandItem(selectedItems[0]);
+			else
+				DoOpenSelection();
 		}
 		
-		public new void keyDown(NSEvent evt)	
+		public new void keyDown(NSEvent evt)
 		{
 			if (evt.keyCode() == 36)
-				DoOpenSelection();
+				doubleClicked(m_table);
 			else
 				Unused.Value = SuperCall(NSWindowController.Class, "keyDown:", evt);
 		}

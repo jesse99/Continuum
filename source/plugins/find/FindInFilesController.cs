@@ -114,9 +114,10 @@ namespace Find
 				CaseSensitive = CaseSensitive,
 				MatchWords = MatchWords,
 				WithinText = WithinText,
+				Pattern = FindText,
 			};
 			
-			var findAll = new FindAll(dir, re.Make(FindText), Include, AllExcludes());
+			var findAll = new FindAll(dir, re.Make(), Include, AllExcludes());
 			findAll.Title = string.Format("Find '{0}'", FindText);
 			findAll.Run();
 			
@@ -137,9 +138,10 @@ namespace Find
 				CaseSensitive = CaseSensitive,
 				MatchWords = MatchWords,
 				WithinText = WithinText,
+				Pattern = FindText,
 			};
 			
-			var replaceAll = new ReplaceAll(dir, re.Make(FindText), ReplaceText, Include, AllExcludes());
+			var replaceAll = new ReplaceAll(dir, re.Make(), ReplaceText, Include, AllExcludes());
 			replaceAll.Title = string.Format("Replacing '{0}' with '{1}'.", FindText, ReplaceText);
 			replaceAll.Run();
 			

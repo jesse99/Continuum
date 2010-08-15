@@ -191,6 +191,11 @@ namespace Transcript
 			NSFont font = NSFont.fontWithName_size(fname, ptSize);
 			m_attributes[name].setObject_forKey(font, Externs.NSFontAttributeName);
 			
+			// paragraph
+			NSMutableParagraphStyle paraStyle = NSParagraphStyle.defaultParagraphStyle().mutableCopy().To<NSMutableParagraphStyle>();
+			paraStyle.setHeadIndent(36.0f); // lines up nicely with 'gmcs'
+			m_attributes[name].setObject_forKey(paraStyle, Externs.NSParagraphStyleAttributeName);
+			
 			// attributes
 			var data = defaults.objectForKey(NSString.Create(key + "attributes")).To<NSData>();
 			if (!NSObject.IsNullOrNil(data))

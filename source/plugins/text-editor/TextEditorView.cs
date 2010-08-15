@@ -121,17 +121,46 @@ namespace TextEditor
 				}
 				
 				// Option-tab selects the next identifier.
-				if (evt.keyCode() == Constants.TabKey && (evt.modifierFlags() & Enums.NSAlternateKeyMask) != 0)
-				{
-					if ((evt.modifierFlags() & Enums.NSShiftKeyMask) == 0)
+				if (evt.keyCode() == Constants.TabKey) {
+					if ((evt.modifierFlags() & Enums.NSAlternateKeyMask) != 0)
 					{
-						if (DoSelectNextIdentifier(controller))
-							break;
+						if ((evt.modifierFlags() & Enums.NSShiftKeyMask) == 0)
+						{
+							if (DoSelectNextIdentifier(controller))
+								break;
+						}
+						else
+						{
+							if (DoSelectPreviousIdentifier(controller))
+								break;
+						}
+					}
+					else if ((evt.modifierFlags() & Enums.NSCommandKeyMask) != 0)
+					{
+					}
+					else if ((evt.modifierFlags() & Enums.NSControlKeyMask) != 0)
+					{
+					}
+					else if ((evt.modifierFlags() & Enums.NSShiftKeyMask) != 0)
+					{
+						// unindent the code / shift left
+						controller.shiftLeft(this);
+						break;
 					}
 					else
 					{
-						if (DoSelectPreviousIdentifier(controller))
+						var selRange = selectedRange();
+						if (selRange.location > 0 && selRange.length > 1)
+						{
+							// indent the code / shift right
+							controller.shiftRight(this);
 							break;
+						}
+						else if (selRange.location > 0 && selRange.length == 0)
+						{
+							if (DoMatchPriorLineTabs(selRange.location))
+								break;
+						}
 					}
 				}
 				
@@ -179,7 +208,7 @@ namespace TextEditor
 					if (evt.keyCode() == Constants.UpArrowKey || evt.keyCode() == Constants.DownArrowKey)
 					{
 						NSString text = string_();
-						int start = DoGetLineStart(text, range.location);
+						int start = DoGetLineStartFromSpaceOrTab(text, range.location);
 						if (start >= 0)
 						{
 							setSelectedRange(new NSRange(start, 0));
@@ -189,7 +218,7 @@ namespace TextEditor
 			}
 			while (false);
 		}
-		
+
 #if false
 		public new void mouseDown(NSEvent evt)
 		{
@@ -205,7 +234,7 @@ namespace TextEditor
 				// If the user clicked in the whitespace at the start of a line then set
 				// the insertion point to the start of the line. TODO: may want a pref
 				// for this.
-				int start = DoGetLineStart(text, index);
+				int start = DoGetLineStartFromSpaceOrTab(text, index);
 				if (start >= 0)
 				{
 					setSelectedRange(new NSRange(start, 0));
@@ -292,8 +321,9 @@ namespace TextEditor
 			NSRange newRange = new NSRange(oldRange.location, (int) newText.length());
 			
 			NSArray oldArgs = NSArray.Create(NSValue.valueWithRange(newRange), oldText, args.objectAtIndex(2));
-			window().windowController().document().undoManager().registerUndoWithTarget_selector_object(this, "replaceSelection:", oldArgs);
-			window().windowController().document().undoManager().setActionName(args.objectAtIndex(2).To<NSString>());
+			var undoManager = window().windowController().document().undoManager();
+			undoManager.registerUndoWithTarget_selector_object(this, "replaceSelection:", oldArgs);
+			undoManager.setActionName(args.objectAtIndex(2).To<NSString>());
 		}
 		
 		public new NSMenu menuForEvent(NSEvent evt)
@@ -512,6 +542,54 @@ namespace TextEditor
 		#endregion
 		
 		#region Private Methods
+		// DoMatchPriorLineTabs:
+		//    If at eol and all preceding chars on current line are tabs (or empty),
+		//    then match the leading tabs of the above line and return true.
+		// Terms: eol = end of line, bof = beginning of file, etc.
+		// Test cases:
+		//    * At bol, prev line has >= 1 leading tabs. Press Tab.
+		//    * At bol, prev line has 0 leading tabs. Press Tab.
+		//    * At eol with one leading tab, prev line has >= 1 leading tabs. Press Tab.
+		//    * At eol with one leading tab, prev line has 0 leading tabs. Press Tab.
+		//    * Empty file. Press Tab.
+		//	  * At bof. Press Tab.
+		// To do:
+		//    * Doesn't handle when there are nothing but tabs after the current cursor location.
+		private bool DoMatchPriorLineTabs(int location) {
+			var text = string_();
+			if (location >= text.length()) return false;  // out of range
+			var thisLineStart = DoGetLineStart(text, location);
+			if (thisLineStart == 0) return false;  // there is no previous line to match tab chars with
+			if (location != text.length()      // not at end of text
+				&& location != text.length()-1 // not at end of text
+				&& text[location] != '\n')     // not at end of line
+				{ return false; }
+			// at this point, there is a previous line and the cursor is at the end of the current line
+			// now exit if non-tab chars between the bol and location
+			int i;
+			for (i = thisLineStart; i < location; i++)
+				if (text[i] != '\t') return false;
+			var prevLineStart = DoGetLineStart(text, thisLineStart - 2);
+			int prevTabCount = DoGetLeadingTabCount(text, prevLineStart);
+			if (prevTabCount <= (location - thisLineStart)) return false;
+			// add new tabs with undo
+			var newTabs = new String('\t', prevTabCount - (location - thisLineStart));
+			NSArray args = NSArray.Create(NSValue.valueWithRange(new NSRange(location, 0)), NSString.Create(newTabs), NSString.Create());
+			replaceSelection(args);
+			setSelectedRange(new NSRange(location + newTabs.Length, 0));
+			return true;
+		}
+		
+		private int DoGetLeadingTabCount(NSString text, int i) {
+			Contract.Requires(text != null && !text.IsNil());
+			Contract.Requires(i >= 0);
+			Contract.Requires(i == 0 || text[i-1] == '\n');
+			var textLen = text.length();
+			var j = i;
+			while (j < textLen && text[j] == '\t') j++;
+			return j - i;
+		}
+		
 		// Note that NSView has support for tooltips, but it's not designed for the sort of very
 		// dynamic tooltips that we need to support.
 		private void DoShowTooltip()
@@ -754,7 +832,22 @@ namespace TextEditor
 			}
 		}
 		
+		// Returns a new index >= 0 and <= text.length()
+		// and <= than the original index, unless a negative value was passed in.
+		// Returns the same index if the previous character is a newline.
 		private int DoGetLineStart(NSString text, int index)
+		{
+			int len = (int)text.length();
+			if (len == 0) return 0;
+			if (index > len) index = len - 1;
+			else if (index < 0) index = 0;
+			if (index > 0 && text[index-1] == '\n') return index;
+			while (index > 0 && text[index-1] != '\n') --index;
+			if (index < 0) index = 0;
+			return index;
+		}
+		
+		private int DoGetLineStartFromSpaceOrTab(NSString text, int index)
 		{
 			bool within = false;
 			

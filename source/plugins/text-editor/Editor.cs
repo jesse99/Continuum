@@ -161,6 +161,18 @@ namespace TextEditor
 			}
 		}
 		
+		public void ShowInfo(string text)
+		{
+			TextController controller = (TextController) m_window.windowController();
+			controller.ShowInfo(text);
+		}
+		
+		public void ShowWarning(string text)
+		{
+			TextController controller = (TextController) m_window.windowController();
+			controller.ShowWarning(text);
+		}
+		
 		public LiveRange GetRange(NSRange range)
 		{
 			Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");

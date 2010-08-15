@@ -57,16 +57,19 @@ namespace TextEditor
 			m_background = NSBezierPath.Create().Retain();
 			m_background.appendBezierPathWithRoundedRect_xRadius_yRadius(m_window.contentView().bounds(), 20.0f, 20.0f);
 			
-			m_color = NSColor.colorWithDeviceRed_green_blue_alpha(250/255.0f, 128/255.0f, 114/255.0f, 1.0f).Retain();	
+			m_color = NSColor.colorWithDeviceRed_green_blue_alpha(250/255.0f, 128/255.0f, 114/255.0f, 1.0f).Retain();
 			
 			ActiveObjects.Add(this);
 		}
 		
-		public void Show(NSWindow parent, string text)
+		public void Show(NSWindow parent, string text, byte r, byte g, byte b)
 		{
 			if ((object) m_text != null)
 				m_text.release();
-				
+			
+			m_color.release();
+			m_color = NSColor.colorWithDeviceRed_green_blue_alpha(r/255.0f, g/255.0f, b/255.0f, 1.0f).Retain();
+			
 			m_text = NSString.Create(text).Retain();
 			
 			NSRect pframe = parent.frame();
@@ -85,8 +88,7 @@ namespace TextEditor
 		{
 			if (m_opening)
 			{
-				if (m_alpha == MinAlpha)
-					m_window.orderFront(null);
+				m_window.orderFront(null);		// if we don't always do this the find reached start window goes away too fast...
 				
 				m_alpha += 10;
 				if (m_alpha == 100)
@@ -102,7 +104,7 @@ namespace TextEditor
 			if (m_alpha >= MinAlpha)
 			{
 				DoDraw();
-				NSApplication.sharedApplication().BeginInvoke(() => DoAnimate(), TimeSpan.FromMilliseconds(30));					
+				NSApplication.sharedApplication().BeginInvoke(() => DoAnimate(), TimeSpan.FromMilliseconds(30));	
 			}
 		}
 		

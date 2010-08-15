@@ -272,6 +272,22 @@ namespace TextEditor
 			get {return m_scrollView.Value;}
 		}
 		
+		public void ShowInfo(string text)
+		{
+			if (ms_warning == null)
+				ms_warning = new WarningWindow();
+				
+			ms_warning.Show(window(), text, 135, 206, 250);
+		}
+		
+		public void ShowWarning(string text)
+		{
+			if (ms_warning == null)
+				ms_warning = new WarningWindow();
+				
+			ms_warning.Show(window(), text, 250, 128, 114);
+		}
+		
 		public Boss GetDirEditorBoss()
 		{
 			Boss boss = ObjectModel.Create("DirectoryEditorPlugin");
@@ -843,10 +859,7 @@ namespace TextEditor
 						else if (range.location >= 0 && range.location < text.Length)
 						{
 							// Otherwise pop up a translucent warning window for a second.
-							if (ms_warning == null)
-								ms_warning = new WarningWindow();
-								
-							ms_warning.Show(window(), "Unmatched '" + text[range.location] + "'");
+							ShowWarning("Unmatched '" + text[range.location] + "'");
 						}
 					}
 					

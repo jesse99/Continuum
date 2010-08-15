@@ -55,5 +55,11 @@ namespace Shared
 		// Returns a rectangle in window coordinates that encloses the characters
 		// in the range.
 		NSRect GetBoundingBox(NSRange range);
+		
+		// Briefly displays a translucent informational window in the middle of the text window.
+		void ShowInfo(string text);
+		
+		// Briefly displays a translucent warning window in the middle of the text window.
+		void ShowWarning(string text);
 	}
 }
