@@ -105,7 +105,7 @@ namespace TextEditor
 			{
 				// TODO: may need to use NSLineBreakByWordWrapping once we support
 				// multi-line annotations
-				int options = Enums.NSStringDrawingUsesLineFragmentOrigin | Enums.NSStringDrawingDisableScreenFontSubstitution;
+				int options = Enums.NSStringDrawingUsesLineFragmentOrigin;	// this makes the vertical centering a bit better
 				NSRect r = new NSRect(rect.Left + LeftMargin, rect.Bottom + LeftMargin, rect.size.width - 2*LeftMargin, rect.size.height);
 				m_text.drawWithRect_options(r, options);
 			}
@@ -447,8 +447,6 @@ namespace TextEditor
 			// returns 0.0 so we can't use that to try to fix it up...
 			NSSize size = value.size();
 			size.width += 2*AnnotateView.LeftMargin;
-			if (value.length() > 1)
-				size.width += 0.3f*size.width/value.length();		// size isn't always quite large enough to display all of the text without this, e.g. for String.IndexOf(char)
 			size.height = 2*AnnotateView.LeftMargin + m_fontHeight;
 			
 			DoAdjustFrame(size);
