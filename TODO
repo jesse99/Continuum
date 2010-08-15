@@ -68,6 +68,14 @@ public abstract class Mono.Debugger.Value
 http://research.microsoft.com/en-us/projects/pex/
 		
 
+* Can't build continuum when launching foreshadow from the dock. Maybe the
+   launcher script can add /usr/local and /usr/local/bin to PATH.
+   - make sure update-libraries works
+* Bugs with pasting:
+	- tab stops often get screwed up (eg pasting from safari)
+	- when pasting from a copy link the anchor label gets pasted not the link itself
+* Apply patches.
+* Check out the new transcript window.
 * Double clicking a directory in the directory editor should toggle expansion.
 * Create Exception and Add Exception didn't work when adding to an empty class.
 * Look at TextMate.
