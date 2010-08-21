@@ -245,6 +245,9 @@ namespace TextEditor
 					m_applier.ResetTabs();
 					m_applier.ClearStyles();
 					
+					if (m_restorer == null)
+						m_restorer = new RestoreViewState(this);
+					
 					// force runs to be rebuilt
 					m_editCount = unchecked(m_editCount + 1);
 					m_applier.EditedRange(NSRange.Empty);

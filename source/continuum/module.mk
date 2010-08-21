@@ -45,6 +45,9 @@ other-resources := $(shell echo $(strip $(other-files)) | sed "s/ /,/g")
 # of have this now but the environment variables are pulled out of the make file instead 
 # of added by the user. We'd probably have to do something similar for PATH so that
 # the project will build on other machines without manual intervention).
+#
+# Another option would be to set the UseShellExecute property in the ProcessStartInfo, but
+# we'd also have to do some fairly icky goo to get stdout and stderr to redirect properly.
 $(app-path): $(exe-path) source/plugins/app/Info.plist $(other-files) $(nib-files) $(plugin-targets)
 	@echo "building $(app-path)"
 	@$(PACK) --app=$(app-path) --exe=$(exe-path) --mono-flags='$(MONO_FLAGS)' --plist=source/plugins/app/Info.plist           \

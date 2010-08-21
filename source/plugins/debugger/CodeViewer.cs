@@ -130,21 +130,24 @@ namespace Debugger
 		// but may also be potentially confusing.
 		public string GetTooltip(int index)
 		{
+			string result = null;
 			var text = m_boss.Get<IText>();
 			
-			int begin = index;
-			while (index > 0 && (char.IsLetterOrDigit(text.Text[begin - 1]) || text.Text[begin - 1] == '_'))
-				--begin;
-			
-			int count = index - begin + 1;
-			while (begin + count < text.Text.Length && (char.IsLetterOrDigit(text.Text[begin + count]) || text.Text[begin + count] == '_'))
-				++count;
-				
-			string result = null;
-			if (count > 0)
+			if (index < text.Text.Length)
 			{
-				string word = text.Text.Substring(begin, count);
-				result = VariableController.Instance.GetValue(word);
+				int begin = index;
+				while (index > 0 && (char.IsLetterOrDigit(text.Text[begin - 1]) || text.Text[begin - 1] == '_'))
+					--begin;
+				
+				int count = index - begin + 1;
+				while (begin + count + 1 < text.Text.Length && (char.IsLetterOrDigit(text.Text[begin + count]) || text.Text[begin + count] == '_'))
+					++count;
+					
+				if (count > 0)
+				{
+					string word = text.Text.Substring(begin, count);
+					result = VariableController.Instance.GetValue(word);
+				}
 			}
 			
 			return result;
@@ -287,6 +290,7 @@ namespace Debugger
 			{
 				Broadcaster.Invoke("swapping code view", m_boss);
 				m_path = m_context.SourceFile;
+				m_lines.Clear();
 				
 				string name = System.IO.Path.GetFileName(m_context.SourceFile);
 				DoSetTitle(name);
@@ -305,7 +309,6 @@ namespace Debugger
 				var text = m_boss.Get<IText>();
 				text.Replace(System.IO.File.ReadAllText(m_context.SourceFile));
 				m_currentView = m_context.SourceFile;
-				m_lines.Clear();
 				m_document.Debugger.StepBy = StepSize.Line;
 				
 				Broadcaster.Invoke("swapped code view", m_boss);
@@ -349,7 +352,7 @@ namespace Debugger
 			{
 				var editor = m_boss.Get<ITextEditor>();
 				editor.ShowLine(line, -1, 8);
-			
+				
 				DoSetInstructionPointer(line);
 			}
 			else

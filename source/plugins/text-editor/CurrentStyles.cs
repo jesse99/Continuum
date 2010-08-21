@@ -121,6 +121,8 @@ namespace TextEditor
 		{
 			m_appliedRuns.Clear();
 			m_currentRuns.Clear();
+			m_applied = false;
+			
 			DoClearOld();
 		}
 		
@@ -230,9 +232,11 @@ namespace TextEditor
 						m_queued = true;
 						NSApplication.sharedApplication().BeginInvoke(() => DoApplyStyles(false), ApplyDelay);
 					}
-//					else
+					else
+					{
 //						NSApplication.sharedApplication().BeginInvoke(() => {m_applied = true;});
-					m_applied = true;
+						m_applied = true;
+					}
 				}
 				finally
 				{

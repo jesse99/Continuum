@@ -108,6 +108,31 @@ namespace TextEditor
 			}
 		}
 		
+		public new void paste(NSObject sender)
+		{
+			// If we are styling the text then we want to paste just the text, not the
+			// text and the attributes (if we paste the attributes the styler won't
+			// always reset them all, especially things like paragraph styles).
+			TextController controller = (TextController) window().windowController();
+			if (controller.Language != null)
+			{
+				var pasteboard = NSPasteboard.generalPasteboard();
+				var text = pasteboard.stringForType(NSPasteboard.NSStringPboardType);
+				if (!NSObject.IsNullOrNil(text))
+				{
+					this.insertText(text);
+				}
+				else
+				{
+					Functions.NSBeep();
+				}
+			}
+			else
+			{
+				SuperCall(NSTextView.Class, "paste:", sender);
+			}
+		}
+		
 		public new void keyDown(NSEvent evt)
 		{
 			do

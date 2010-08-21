@@ -61,12 +61,19 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.StringMirror
 		public class Mono.Debugger.ArrayMirror	
 		
-http://research.microsoft.com/en-us/projects/pex/
+http://research.microsoft.com/en-us/projects/pex/	AddMessageFilter
 
-* Bugs with pasting:
-	- tab stops often get screwed up (eg pasting from safari)
-	- when pasting from a copy link the anchor label gets pasted not the link itself
-* Double clicking a directory in the directory editor should toggle expansion.
+Ignoring BeginInvoke exception:
+System.Reflection.TargetInvocationException: 
+Exception has been thrown by the target of an invocation. ---> 
+System.Reflection.TargetInvocationException:
+Exception has been thrown by the target of an invocation. ---> 
+System.MissingMethodException: 
+Invoke failed to find an overload for DeclaredType(Debugger.InstanceValue, System.Int32).
+
+* Why can't we step into Console.WriteLine?
+* Probably want to add the RegexDeclarations fix.
+* Build a new foreshadow.
 * Create Exception and Add Exception didn't work when adding to an empty class.
 * Look at TextMate.
 * Open Selection should always be enabled.
