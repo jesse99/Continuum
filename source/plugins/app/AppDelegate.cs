@@ -166,6 +166,13 @@ namespace App
 			}
 		}
 		
+		public void openSelection(NSObject sender)
+		{
+			Boss boss = ObjectModel.Create("TextEditorPlugin");
+			var opener = boss.Get<IOpenSelection>();
+			opener.Open();
+		}
+		
 		private const string Script = @"#!/bin/sh
 # Takes a list of files and opens them within {0}.
 app={1}

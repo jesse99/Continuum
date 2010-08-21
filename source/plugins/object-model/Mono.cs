@@ -23,14 +23,9 @@ using Gear;
 using Gear.Helpers;
 using MCocoa;
 using MObjc;
-//using Mono.Cecil;
 using Shared;
 using System;
-//using System.Collections.Generic;
-//using System.Diagnostics;
 using System.IO;
-//using System.Linq;
-//using System.Text;
 
 namespace ObjectModel
 {

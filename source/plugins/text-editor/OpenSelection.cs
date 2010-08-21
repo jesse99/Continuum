@@ -28,17 +28,18 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace TextEditor
 {
 	// Here are some test cases which should work:
-	// source/plugins/find/Find.cs																		relative path (this should work as well for files not in the locate db)
-	// DatabaseTest.cs																						local file
-	// <AppKit/NSResponder.h>																		non-local relative path
+	// source/plugins/find/Find.cs																relative path (this should work as well for files not in the locate db)
+	// DatabaseTest.cs																			local file
+	// <AppKit/NSResponder.h>																non-local relative path
 	// /Users/jessejones/Source/Continuum/source/plugins/find/AssemblyInfo.cs		absolute path
 	// http://dev.mysql.com/tech-resources/articles/why-data-modeling.html			url
-	// NSWindow.h																							file in preferred directory																
-	// c#.cs																										file not in preferred directory
+	// NSWindow.h																				file in preferred directory																
+	// c#.cs																						file not in preferred directory
 	internal sealed class OpenSelection : IOpenSelection
 	{
 		public void Instantiated(Boss boss)
@@ -49,6 +50,17 @@ namespace TextEditor
 		public Boss Boss
 		{
 			get {return m_boss;}
+		}
+		
+		public void Open()
+		{
+			string text = new GetString{Title = "Open Selection", ValidRegex = m_validator}.Run();
+			if (text != null)
+				text = text.Trim();
+			
+			if (!string.IsNullOrEmpty(text))
+				if (!Open(text))
+					Functions.NSBeep();
 		}
 		
 		public bool Open(string text)
@@ -90,6 +102,11 @@ namespace TextEditor
 			}
 			
 			return opened;
+		}
+		
+		public bool IsValid(string text)
+		{
+			return m_validator.IsMatch(text) && !text.Contains('\n');
 		}
 		
 		#region Private Methods
@@ -478,6 +495,7 @@ namespace TextEditor
 		
 		#region Fields
 		private Boss m_boss;
+		private Regex m_validator = new Regex(@"\S+");
 		#endregion
 	}
 }

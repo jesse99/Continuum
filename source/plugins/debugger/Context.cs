@@ -66,6 +66,8 @@ namespace Debugger
 				{
 					if (Location != null && Location.SourceFile != null)
 					{
+						// Note that the mono installer does not install mdb files so if you want source
+						// debugging of mono classes you'll need to build from source.
 						Boss boss = ObjectModel.Create("Application");
 						var mono = boss.Get<IMono>();
 						m_sourceFile = mono.GetPath(Location.SourceFile);

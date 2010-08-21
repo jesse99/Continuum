@@ -22,15 +22,20 @@
 using Gear;
 
 namespace Shared
-{	
+{
 	// Used to open a file or url.
 	public interface IOpenSelection : IInterface
 	{
+		// Ask the user for a file to open.
+		void Open();
+		
 		// Returns true if the selection was opened.
 		bool Open(string text);
-
+		
 		// The selection will first be expanded and then opened. The expanded
 		// selection is returned. Returns true if the selection was opened.
 		bool Open(string text, ref int location, ref int length);
-	} 
+		
+		bool IsValid(string text);
+	}
 }

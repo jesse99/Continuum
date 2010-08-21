@@ -63,26 +63,10 @@ public abstract class Mono.Debugger.Value
 		
 http://research.microsoft.com/en-us/projects/pex/	AddMessageFilter
 
-Ignoring BeginInvoke exception:
-System.Reflection.TargetInvocationException: 
-Exception has been thrown by the target of an invocation. ---> 
-System.Reflection.TargetInvocationException:
-Exception has been thrown by the target of an invocation. ---> 
-System.MissingMethodException: 
-Invoke failed to find an overload for DeclaredType(Debugger.InstanceValue, System.Int32).
 
-* Why can't we step into Console.WriteLine?
-* Probably want to add the RegexDeclarations fix.
-* Build a new foreshadow.
-* Create Exception and Add Exception didn't work when adding to an empty class.
-* Look at TextMate.
-* Open Selection should always be enabled.
 * Use the trace roots goo to see why CodeViewer is hanging around
 * Brace highlighting isn't reliable.
 * Get rid of active objects?
-* Continuum doesn't build using Continuum when it is launched from the Finder (/usr/local/bin
-   doesn't seem to be part of PATH). Could maybe add a note to the make file. Or maybe the
-   launcher script can add /usr/local and /usr/local/bin to PATH.
 * Build a new foreshadow.
 * Release checklist:
 	- update generated config file logging categories (search for "Log.WriteLine")

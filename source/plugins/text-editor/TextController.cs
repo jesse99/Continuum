@@ -438,8 +438,6 @@ namespace TextEditor
 			Boss boss = ObjectModel.Create("TextEditorPlugin");
 			var opener = boss.Get<IOpenSelection>();
 			
-			var validator = new Regex(@"\S+");
-			
 			bool valid = false;
 			NSRange range = m_textView.Value.selectedRange();
 			if (range.length > 0)
@@ -448,7 +446,7 @@ namespace TextEditor
 				
 				int loc = range.location, len = range.length;
 				string str= text.Substring(loc, len);
-				if (validator.IsMatch(str) && !str.Contains('\n'))
+				if (opener.IsValid(str))
 				{
 					if (opener.Open(text, ref loc, ref len))
 						m_textView.Value.setSelectedRange(new NSRange(loc, len));
@@ -460,15 +458,7 @@ namespace TextEditor
 			}
 			
 			if (!valid)
-			{
-				string text = new GetString{Title = "Open Selection", ValidRegex = validator}.Run();
-				if (text != null)
-					text = text.Trim();
-					
-				if (!string.IsNullOrEmpty(text))
-					if (!opener.Open(text))
-						Functions.NSBeep();
-			}
+				opener.Open();
 		}
 		
 		public void findGremlins(NSObject sender)
