@@ -52,6 +52,12 @@ namespace Debugger
 		}
 		
 		[DeclaredType.Overload]
+		public static TypeMirror GetType(InstanceValue parent, int key)
+		{
+			return null;			// we don't have enough info to return a decent type
+		}
+		
+		[DeclaredType.Overload]
 		public static TypeMirror GetType(object parent, LocalVariable key)
 		{
 			return key.Type;
