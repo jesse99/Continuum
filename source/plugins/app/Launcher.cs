@@ -72,6 +72,9 @@ namespace App
 //						NSApplication.sharedApplication().BeginInvoke(() => DoShowLine(path, line, col, tabWidth));	// use BeginInvoke in case the text controller restores the scrollers
 				}
 			}
+			catch (OperationCanceledException)
+			{
+			}
 			catch (Exception e)
 			{
 				Log.WriteLine(TraceLevel.Error, "App", "Couldn't open '{0}'", path);
@@ -108,6 +111,9 @@ namespace App
 					DoSetSelection(path, selection);
 //					NSApplication.sharedApplication().BeginInvoke(() => DoSetSelection(path, selection));		// use BeginInvoke in case the text controller restores the scrollers
 				}
+			}
+			catch (OperationCanceledException)
+			{
 			}
 			catch (Exception e)
 			{

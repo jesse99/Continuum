@@ -23,7 +23,9 @@ using MObjc.Helpers;
 using Mono.Debugger.Soft;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using Shared;
 
 namespace Debugger
 {
@@ -74,7 +76,6 @@ namespace Debugger
 				MethodMirror method = value.Type.FindMethod("retainCount", 0);
 				if (method != null)
 				{
-			Console.WriteLine("found method: {0}", method.FullName); Console.Out.Flush();
 					Value v = value.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
 //					var invoker = new InvokeMethod();
 //					Value v = invoker.Invoke(thread, value, "retainCount");
@@ -119,11 +120,15 @@ namespace Debugger
 			foreach (ThreadMirror thread in m_threads)
 			{
 				string name = ThreadsController.GetThreadName(thread);
-//	Console.WriteLine("thread: {0}", name); Console.Out.Flush();
+				Log.WriteLine(TraceLevel.Info, "TraceRoots", "thread root {0}", name);
+				Log.Indent();
+				
 				var root = new Trace("thread " + name, "System.Threading.Thread", thread);
 				DoWalkStackFrames(thread, root);
 				if (DoFilter(root, filter, 0))
 					roots.Add(root);
+					
+				Log.Unindent();
 			}
 		}
 		
@@ -137,12 +142,19 @@ namespace Debugger
 				// if you try to get their values using the code below).
 				if (!field.GetCustomAttributes(false).Any(c => c.Constructor.FullName.Contains("System.ThreadStaticAttribute:.ctor")))
 				{
-					string name = "static " + field.Name;
-					var root = new Trace(name, field.FieldType.FullName, field);
-					Value v = field.DeclaringType.GetValue(field);
-					DoWalkValue(v, root);
-					if (DoFilter(root, filter, 0))
-						roots.Add(root);
+					if (DoShouldWalkType(field.FieldType))
+					{
+						Log.WriteLine(TraceLevel.Info, "TraceRoots", "static root {0}.{1} [{2}]", field.DeclaringType.FullName, field.Name, field.FieldType.FullName);
+						Log.Indent();
+						
+						var root = new Trace("static " + field.Name, field.FieldType.FullName, field);
+						Value v = field.DeclaringType.GetValue(field);
+						DoWalkValue(v, root, field.Name);
+						if (DoFilter(root, filter, 0))
+							roots.Add(root);
+							
+						Log.Unindent();
+					}
 				}
 			}
 		}
@@ -167,43 +179,50 @@ namespace Debugger
 		
 		private void DoWalkStackFrames(ThreadMirror thread, Trace parent)
 		{
-			StackFrame[] frames = thread.GetFrames();
+			Mono.Debugger.Soft.StackFrame[] frames = thread.GetFrames();
 			for (int i = frames.Length - 1; i >= 0; --i)		// go backwards so that the frames at the top of the stack appear first
 			{
-				StackFrame frame = frames[i];
+				var frame = frames[i];
 			
 				string name;
 				if (string.IsNullOrEmpty(frame.FileName))
-					name = string.Format("method {0}", frame.Method.Name);
+					name = string.Format("method {0}.{1}", frame.Method.DeclaringType.FullName, frame.Method.Name);
 				else
-					name = string.Format("method {0} at {1}:{2}", frame.Method.Name, frame.FileName, frame.LineNumber);
-					
+					name = string.Format("method {0}.{1} [{2}:{3}]", frame.Method.DeclaringType.FullName, frame.Method.Name, frame.FileName, frame.LineNumber);
+				Log.WriteLine(TraceLevel.Info, "TraceRoots", name);
+				Log.Indent();
+				
 				var child = new Trace(name, string.Empty, frame);
 				DoWalkStackFrame(frame, child);
 				if (child.Children.Count > 0)
 					parent.Children.Add(child);
+				
+				Log.Unindent();
 			}
 		}
 		
-		private void DoWalkStackFrame(StackFrame frame, Trace parent)
+		private void DoWalkStackFrame(Mono.Debugger.Soft.StackFrame frame, Trace parent)
 		{
 			LocalVariable[] locals = frame.Method.GetLocals();
 			for (int i = 0; i < locals.Length; ++i)
 			{
-				Value value = frame.GetValue(locals[i]);
-//	Console.WriteLine("local: {0}", locals[i].Name); Console.Out.Flush();
+				if (string.IsNullOrEmpty(locals[i].Name))
+					Log.WriteLine(TraceLevel.Verbose, "TraceRoots", "local{0} {1} [{2}]", locals[i].Index, locals[i].Name, locals[i].Type.FullName);
+				else
+					Log.WriteLine(TraceLevel.Verbose, "TraceRoots", "local{0} [{1}]", locals[i].Index, locals[i].Type.FullName);
 				
+				Value value = frame.GetValue(locals[i]);
 				var child = new Trace("local " + locals[i].Name, locals[i].Type.FullName, value);
-				DoWalkValue(value, child);
+				DoWalkValue(value, child, locals[i].Name ?? locals[i].Index.ToString());
 				parent.Children.Add(child);
 			}
 		}
 		
-		private void DoWalkValue(Value value, Trace parent)
+		private void DoWalkValue(Value value, Trace parent, string name)
 		{
 			if (value is ArrayMirror)
 			{
-				DoWalkArray((ArrayMirror) value, parent);
+				DoWalkArray((ArrayMirror) value, parent, name);
 			}
 			else if (value is ObjectMirror)
 			{
@@ -215,33 +234,45 @@ namespace Debugger
 			}
 		}
 		
-		private void DoWalkArray(ArrayMirror value, Trace parent)
+		private void DoWalkArray(ArrayMirror value, Trace parent, string name)
 		{
-			for (int i = 0; i < value.Length; ++i)
+			if (!value.IsCollected && !m_objects.Contains(value.Address))
 			{
-//	Console.WriteLine("array index: {0}", i); Console.Out.Flush();
-				var child = new Trace("item " + i, value.Type.FullName, value[i]);
-				DoWalkValue(value[i], child);
-				if (child.Children.Count > 0)
-					parent.Children.Add(child);
+				m_objects.Add(value.Address);
+				if (value.Length > 0 &&  DoShouldWalkType(value.Type.GetElementType()))		// there's no need to walk arrays of primitives and they can be very large
+				{
+					for (int i = 0; i < value.Length; ++i)
+					{
+						string temp = string.Format("{0}[{1}]", name, i);
+						Log.WriteLine(TraceLevel.Verbose, "TraceRoots", temp);
+						
+						var child = new Trace(temp, value.Type.FullName, value[i]);
+						DoWalkValue(value[i], child, temp);
+						if (child.Children.Count > 0)
+							parent.Children.Add(child);
+					}
+				}
 			}
 		}
 		
 		private void DoWalkObject(ObjectMirror value, Trace parent)
 		{
-			if (!m_objects.Contains(value.Address))
+			if (!value.IsCollected && !m_objects.Contains(value.Address))
 			{
 				m_objects.Add(value.Address);
 				foreach (FieldInfoMirror field in value.Type.GetAllFields())
 				{
-					if (!field.IsStatic)
+					if (!field.IsStatic && DoShouldWalkType(field.FieldType))
 					{
-//	Console.WriteLine("object field: {0} {1}", field.Name, field.FieldType.FullName); Console.Out.Flush();
-						Value v = value.GetValue(field);
+						Log.WriteLine(TraceLevel.Verbose, "TraceRoots", "object {0}.{1} [{2}]", field.DeclaringType.FullName, field.Name, field.FieldType.FullName);
+						Log.Indent();
 						
+						Value v = value.GetValue(field);
 						var child = new Trace(field.Name, field.FieldType.FullName, v);
-						DoWalkValue(v, child);
+						DoWalkValue(v, child, field.Name);
 						parent.Children.Add(child);
+						
+						Log.Unindent();
 					}
 				}
 			}
@@ -251,18 +282,29 @@ namespace Debugger
 		// (and it is far from clear how to determine the GCHandleType).
 		private void DoWalkStruct(StructMirror value, Trace parent)
 		{
-			foreach (FieldInfoMirror field in value.Type.GetFields())
+			if (DoShouldWalkType(value.Type))
 			{
-				if (!field.IsStatic)
+				foreach (FieldInfoMirror field in value.Type.GetFields())
 				{
-					Value v = value[field.Name];
-//	Console.WriteLine("struct field: {0} {1}", field.Name, field.FieldType.FullName); Console.Out.Flush();
-					
-					var child = new Trace(field.Name, field.FieldType.FullName, v);
-					DoWalkValue(v, child);
-					parent.Children.Add(child);
+					if (!field.IsStatic && DoShouldWalkType(field.FieldType))
+					{
+						Log.WriteLine(TraceLevel.Verbose, "TraceRoots", "struct {0}.{1} [{2}]", field.DeclaringType.FullName, field.Name, field.FieldType.FullName);
+						Log.Indent();
+						
+						Value v = value[field.Name];
+						var child = new Trace(field.Name, field.FieldType.FullName, v);
+						DoWalkValue(v, child, field.Name);
+						parent.Children.Add(child);
+						
+						Log.Unindent();
+					}
 				}
 			}
+		}
+		
+		private bool DoShouldWalkType(TypeMirror type)
+		{
+			return !type.IsPrimitive && !type.IsEnum && type.FullName != "System.WeakReference" && type.FullName != "System.String";
 		}
 		#endregion
 		

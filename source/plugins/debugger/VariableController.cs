@@ -169,7 +169,7 @@ namespace Debugger
 		
 		public void showLiveObjects(NSObject sender)
 		{
-			var getter = new GetString{Title = "Show Live Objects", Label = "Type:", Text = ".*"};
+			var getter = new GetString{Title = "Show Live Objects", Label = "Type:", Text = "[\\w.]+"};
 			string pattern = getter.Run();
 			if (pattern != null)
 			{
@@ -377,7 +377,10 @@ namespace Debugger
 			string file = fs.GetTempFile(title, ".txt");
 			using (var stream = new System.IO.StreamWriter(file))
 			{
-				var tracer = new TraceRoots(m_frame.VirtualMachine.GetThreads(), m_debugger.GetStaticFields());
+				IList<ThreadMirror> threads = m_frame.VirtualMachine.GetThreads();
+				FieldInfoMirror[] staticFields = m_debugger.GetStaticFields();
+				
+				var tracer = new TraceRoots(threads, staticFields);
 				foreach (Trace trace in tracer.Walk(filter))
 				{
 					trace.Write(stream, m_frame.Thread, 0);
@@ -431,7 +434,7 @@ namespace Debugger
 		{
 			m_nameTable.Clear();
 			
-			if (m_item != null && ((LiveStackFrame) m_item.Value) == frame)
+			if (frame != null && m_item != null && ((LiveStackFrame) m_item.Value) == frame)
 			{
 				m_frame = frame;
 				m_item.RefreshValue(m_frame.Thread, frame);
@@ -452,7 +455,6 @@ namespace Debugger
 				else
 				{
 					m_frame = null;
-					m_item = null;
 				}
 			}
 			
@@ -478,6 +480,8 @@ namespace Debugger
 					for (int j = 0; j < iv.Length; ++j)
 					{
 						VariableItem gchild = iv.GetChild(thread, child, j);
+						gchild.autorelease();
+						
 						value = gchild.AttributedValue.ToString();
 						if (value.Length > 0)
 							m_nameTable[gchild.AttributedName.ToString()] = value;
@@ -490,6 +494,8 @@ namespace Debugger
 					for (int j = 0; j < tv.Length; ++j)
 					{
 						VariableItem gchild = tv.GetChild(thread, child, j);
+						gchild.autorelease();
+						
 						value = gchild.AttributedValue.ToString();
 						if (value.Length > 0)
 							m_nameTable[gchild.AttributedName.ToString()] = value;

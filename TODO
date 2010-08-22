@@ -24,7 +24,7 @@ http://www.jetbrains.com/resharper/features/
 select declaring_root_name,return_type_name from Methods where name = 'get_BaseTypes';
 sudo fs_usage -f filesys
 
-/Users/jessejones/Source/Third_Party/monodevelop-2.4/src/addins/MonoDevelop.Debugger.Soft/Mono.Debugging.Soft/SoftDebuggerSession.cs
+/Users/jessejones/Source/Third_Party/mono-2.6.7/mono/mini/debugger-agent.c
 /Users/jessejones/Source/Third_Party/mono-2.6.7/mcs/class/Mono.Debugger.Soft
 
 The Algorithm Design Manual
@@ -61,13 +61,10 @@ public abstract class Mono.Debugger.Value
 		public class Mono.Debugger.StringMirror
 		public class Mono.Debugger.ArrayMirror	
 		
-http://research.microsoft.com/en-us/projects/pex/	AddMessageFilter
+http://research.microsoft.com/en-us/projects/pex/	
 
 
-* Use the trace roots goo to see why CodeViewer is hanging around
-* Brace highlighting isn't reliable.
-* Get rid of active objects?
-* Build a new foreshadow.
+* Brace highlighting isn't reliable?
 * Release checklist:
 	- update generated config file logging categories (search for "Log.WriteLine")
 	- update the version number
@@ -104,6 +101,9 @@ http://research.microsoft.com/en-us/projects/pex/	AddMessageFilter
 	- email
 
 * File debugger tickets.	
+* Can we improve syntax hilghting? Maybe with something other than regexen? Would be
+   nice to optionally style types, fields, methods, locals and arguments.
+   - also different colors for classes vs structs, static access vs instance access, etc
 * Get rid of glob files? Would be easier (and less confusing) if the default globs were part of the language.
 * Look at using a replacement for sqlite. Maybe a custom database or some nosql sort of thing.
 * Work on a debugger:

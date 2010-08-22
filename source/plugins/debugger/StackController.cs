@@ -52,6 +52,7 @@ namespace Debugger
 			{
 				case "debugger stopped":
 					m_stack = null;
+					m_table.reloadData();
 					break;
 					
 				case "debugger processed breakpoint event":

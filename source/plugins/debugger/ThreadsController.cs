@@ -63,6 +63,7 @@ namespace Debugger
 				case "debugger stopped":
 					m_debugger = null;
 					m_threads.Clear();
+					m_table.reloadData();
 					break;
 					
 				case "debugger processed breakpoint event":

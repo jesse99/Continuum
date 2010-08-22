@@ -32,7 +32,6 @@ namespace Debugger
 		{
 		}
 		
-		
 		public new NSMenu menuForEvent(NSEvent evt)
 		{
 			// If the item clicked on is not selected then select it.

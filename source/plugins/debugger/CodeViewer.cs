@@ -80,6 +80,11 @@ namespace Debugger
 					break;
 					
 				case "debugger stopped":
+					if (m_ipAnnotation != null)
+					{
+						m_ipAnnotation.Close();
+						m_ipAnnotation = null;
+					}
 					var window = m_boss.Get<IWindow>();
 					Action action = () => window.Window.close();
 					NSApplication.sharedApplication().BeginInvoke(action, TimeSpan.FromMilliseconds(100));

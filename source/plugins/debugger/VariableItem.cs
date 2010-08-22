@@ -57,7 +57,7 @@ namespace Debugger
 			Key = key;
 			Value = value;
 			m_index = index;
-
+			
 			Item item = GetItem.Invoke(thread, parent != null ? parent.Value : null, Key, Value);
 			AttributedName = NSMutableAttributedString.Create(name).Retain();
 			AttributedType = NSAttributedString.Create(item.Type).Retain();
@@ -120,6 +120,7 @@ namespace Debugger
 						if (child != null)
 						{
 							VariableItem newChild = Debug::GetChild.Invoke(thread, this, Value, child.m_index);
+							newChild.autorelease();
 							Contract.Assert(child.AttributedName.ToString() == newChild.AttributedName.ToString(), string.Format("oldName: {0}, newName: {1}", child.AttributedName.ToString(), newChild.AttributedName.ToString()));
 							
 							child.RefreshValue(thread, newChild.Value);
@@ -225,6 +226,7 @@ namespace Debugger
 		{
 			for (int i = 0; i < NumberOfChildren; ++i)
 			{
+				Contract.Assert(m_children[i] == null);
 				m_children[i] = Debug::GetChild.Invoke(thread, this, Value, i);
 			}
 			
