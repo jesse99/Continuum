@@ -89,8 +89,6 @@ Paste with Cmd+V
 Save to a new file such as "foo.cs"
 
 
-* Should tweak equality and comparison refector layouts.
-* Default ignores should include *.sln and *.csproj and Properties.
 * Brace highlighting isn't reliable?
 * Release checklist:
 	- update generated config file logging categories (search for "Log.WriteLine")
