@@ -38,7 +38,7 @@ namespace TextEditor
 {
 	internal enum LineEndian
 	{
-		Mac,					// "\r"
+		Mac,				// "\r"
 		Unix,				// "\n"
 		Windows,			// "\r\n"
 	}
@@ -101,6 +101,7 @@ namespace TextEditor
 				if (value != m_endian)
 				{
 					m_endian = value;
+			Console.WriteLine("setting endian to {0}", value); Console.Out.Flush();
 					updateChangeCount(Enums.NSChangeDone);
 				}
 			}
@@ -541,6 +542,7 @@ namespace TextEditor
 			
 			else
 				m_endian = LineEndian.Unix;
+			Console.WriteLine("initting endian to {0}", m_endian); Console.Out.Flush();
 				
 			// To make life easier on ourselves text documents in memory are always
 			// unix endian (this will also fixup files with mixed line endings).
@@ -556,6 +558,7 @@ namespace TextEditor
 			NSRange range = new NSRange(0, (int) str.length());
 			NSString target = NSString.Create("\n");
 			
+			Console.WriteLine("restoring endian using {0}", m_endian); Console.Out.Flush();
 			if (m_endian == LineEndian.Windows)
 			{
 				NSString replacement = NSString.Create("\r\n");
@@ -692,7 +695,7 @@ namespace TextEditor
 		private NSURL m_url;
 		private uint m_size;
 		private bool m_binary;
-		private LineEndian m_endian;
+		private LineEndian m_endian = LineEndian.Unix;
 		private uint m_encoding;
 		private bool m_autoSaving;
 		

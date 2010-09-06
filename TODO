@@ -63,7 +63,34 @@ public abstract class Mono.Debugger.Value
 		
 http://research.microsoft.com/en-us/projects/pex/	
 
+http://www.eqatec.com/tools/profiler
+http://code.google.com/p/nprof/
+ms (but team version)
+http://www.wikihow.com/Optimize-Your-Program%27s-Performance
+http://stackoverflow.com/questions/375913/what-can-i-use-to-profile-c-code-in-linux/378024#378024
 
+every N seconds, for main thread
+	record methods in the stack trace
+	if a method appears more than M times then record the entire stack trace
+	
+print traces for the top O methods (where O >= M)
+include the percentage of samples that that method appeared in the stack trace
+
+Go
+D2
+rust
+
+
+Launch Continuum.
+Open a C# file such as Find.cs
+Select several lines of text and copy with Cmd+C
+Make a new file with Cmd+N
+Paste with Cmd+V
+Save to a new file such as "foo.cs"
+
+
+* Should tweak equality and comparison refector layouts.
+* Default ignores should include *.sln and *.csproj and Properties.
 * Brace highlighting isn't reliable?
 * Release checklist:
 	- update generated config file logging categories (search for "Log.WriteLine")
