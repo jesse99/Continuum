@@ -49,28 +49,6 @@ define ProcessClass(type)
 }")
 	end
 	
-	if not type.HasMember("Compare", [type.Name]) then
-		type.AddMember(
-"public static int Compare•(#{type.Name} lhs, #{type.Name} rhs)
-{
-	if (object.ReferenceEquals•(lhs, rhs))
-		return 0;
-	
-	if ((object) lhs == null)
-		if ((object) rhs == null)
-			return 0;
-		else
-			return -1;
-	else if ((object) rhs == null)
-		return +1;
-	
-	int result = 0;
-	
-#{GetCompareMembers(type)}
-	return result;
-}")
-	end
-
 	if not type.HasMember("CompareTo", [type.Name]) then
 		type.AddMember(
 "public int CompareTo•(#{type.Name} rhs)
@@ -127,6 +105,28 @@ define ProcessClass(type)
 }")
 	end
 
+	if not type.HasMember("Compare", [type.Name]) then
+		type.AddMember(
+"public static int Compare•(#{type.Name} lhs, #{type.Name} rhs)
+{
+	if (object.ReferenceEquals•(lhs, rhs))
+		return 0;
+	
+	if ((object) lhs == null)
+		if ((object) rhs == null)
+			return 0;
+		else
+			return -1;
+	else if ((object) rhs == null)
+		return +1;
+	
+	int result = 0;
+	
+#{GetCompareMembers(type)}
+	return result;
+}")
+	end
+
 	if not type.HasMember("GetHashCode", []) then
 		type.AddMember(
 "public override int GetHashCode•()
@@ -163,17 +163,6 @@ define ProcessStruct(type)
 "public bool Equals•(#{type.Name} rhs)
 {
 	return CompareTo•(rhs) == 0;
-}")
-	end
-
-	if not type.HasMember("CompareTo", [type.Name]) then
-		type.AddMember(
-"public int CompareTo•(#{type.Name} rhs)
-{
-	int result = 0;
-	
-#{GetCompareMembers(type)}
-	return result;
 }")
 	end
 
@@ -222,6 +211,17 @@ define ProcessStruct(type)
 "public static bool operator<•(#{type.Name} lhs, #{type.Name} rhs)
 {
 	return lhs.CompareTo•(rhs) < 0;
+}")
+	end
+
+	if not type.HasMember("CompareTo", [type.Name]) then
+		type.AddMember(
+"public int CompareTo•(#{type.Name} rhs)
+{
+	int result = 0;
+	
+#{GetCompareMembers(type)}
+	return result;
 }")
 	end
 

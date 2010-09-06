@@ -48,6 +48,14 @@ define ProcessClass(type)
 }")
 	end
 
+	if not type.HasMember("!=", [type.Name, type.Name]) then
+		type.AddMember(
+"public static bool operator!=•(#{type.Name} lhs, #{type.Name} rhs)
+{
+	return !(lhs == rhs);
+}")
+	end
+	
 	if not type.HasMember("==", [type.Name, type.Name]) then
 		type.AddMember(
 "public static bool operator==•(#{type.Name} lhs, #{type.Name} rhs)
@@ -63,14 +71,6 @@ define ProcessClass(type)
 }")
 	end
 
-	if not type.HasMember("!=", [type.Name, type.Name]) then
-		type.AddMember(
-"public static bool operator!=•(#{type.Name} lhs, #{type.Name} rhs)
-{
-	return !(lhs == rhs);
-}")
-	end
-	
 	if not type.HasMember("GetHashCode", []) then
 		type.AddMember(
 "public override int GetHashCode•()
@@ -110,20 +110,20 @@ define ProcessStruct(type)
 }")
 	end
 
+	if not type.HasMember("!=", [type.Name, type.Name]) then
+		type.AddMember(
+"public static bool operator!=•(#{type.Name} lhs, #{type.Name} rhs)
+{
+	return !(lhs == rhs);
+}")
+	end
+
 	if not type.HasMember("==", [type.Name, type.Name]) then
 		type.AddMember(
 "public static bool operator==•(#{type.Name} lhs, #{type.Name} rhs)
 {
 #{GetEqualMembers(type)}
 	return true;
-}")
-	end
-
-	if not type.HasMember("!=", [type.Name, type.Name]) then
-		type.AddMember(
-"public static bool operator!=•(#{type.Name} lhs, #{type.Name} rhs)
-{
-	return !(lhs == rhs);
 }")
 	end
 
