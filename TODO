@@ -81,14 +81,6 @@ D2
 rust
 
 
-Launch Continuum.
-Open a C# file such as Find.cs
-Select several lines of text and copy with Cmd+C
-Make a new file with Cmd+N
-Paste with Cmd+V
-Save to a new file such as "foo.cs"
-
-
 * Brace highlighting isn't reliable?
 * Release checklist:
 	- update generated config file logging categories (search for "Log.WriteLine")

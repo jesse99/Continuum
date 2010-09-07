@@ -4,6 +4,7 @@
 		<Implementation interfaces = "ILaunch" name = "Launcher"/>
 		<Implementation interfaces = "IMenuHandler" name = "MenuHandler"/>
 		<Implementation interfaces = "ISccs" name = "FallbackSccs"/>
+		<Implementation interfaces = "IInterface +IParseErrors" name = "DParser"/>
 		<Implementation interfaces = "IInterface +IParseErrors" name = "GmcsParser"/>
 		<Implementation interfaces = "IInterface +IParseErrors" name = "GccParser"/>
 		<Implementation interfaces = "IInterface +IParseErrors" name = "MakeParser"/>
@@ -13,7 +14,7 @@
 		<Implementation interfaces = "IInterface +IStartup" name = "ResolveNamespace"/>
 	</Boss>
 	
-	<Boss name = "Builders" singleton = "true">	
+	<Boss name = "Builders" singleton = "true">
 		<!-- this will have ICanBuild implementations -->
 	</Boss>
 	
