@@ -143,6 +143,7 @@ dist-clean:
 	-rm -f foreshadow.log
 	-rm -f source/AssemblyVersion.cs
 
+# When building Continuum the config file used is the one in bin.
 bin/continuum.exe.config:
 	@echo "generating bin/continuum.exe.config"
 	@echo "<!-- Note that make-foreshadow uses the foreshadow.exe.config file >" > bin/continuum.exe.config
