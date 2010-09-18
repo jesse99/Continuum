@@ -109,12 +109,13 @@ A mono executable can be debugged by using Continuum to open a *.mdb file or wit
 \f1 debug
 \f0  and has a direct parameter naming the exe or mdb file to open as well as an optional 
 \f1 with
-\f0  parameter to specify arguments to the exe and an optional 
+\f0  parameter to specify arguments to the exe, an optional 
+\f1 vars
+\f0  parameter to specify space separated environment variables, and an optional 
 \f1 using
 \f0  parameter to specify the mono script. It's often convenient to do this within make files:\
 \
-\pard\tx0\pardeftab360\ql\qnatural\pardirnatural
-\cf0 bin := $(abspath bin)\
+bin := $(abspath bin)\
 \pard\pardeftab480\ql\qnatural\pardirnatural
 
 \b \cf2 \

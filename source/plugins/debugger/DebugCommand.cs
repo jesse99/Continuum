@@ -40,6 +40,7 @@ namespace Debugger
 			NSString path = directParameter().To<NSString>();
 			NSObject args = evaluatedArguments().objectForKey(NSString.Create("Args"));
 			NSObject uses = evaluatedArguments().objectForKey(NSString.Create("Using"));
+			NSObject env = evaluatedArguments().objectForKey(NSString.Create("Env"));
 			NSDocument doc = null;
 			
 			try
@@ -60,8 +61,8 @@ namespace Debugger
 						err.Raise();
 						
 					controller.addDocument(doc);
-					if (!NSObject.IsNullOrNil(args) || !NSObject.IsNullOrNil(uses))
-						doc.Call("makeWindowControllersNoUI", uses, args);
+					if (!NSObject.IsNullOrNil(args) || !NSObject.IsNullOrNil(uses) || !NSObject.IsNullOrNil(env))
+						doc.Call("makeWindowControllersNoUI", uses, args, env);
 					else
 						doc.makeWindowControllers();
 				}

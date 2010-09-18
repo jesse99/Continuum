@@ -90,7 +90,7 @@ namespace Debugger
 					throw new Exception("The debugger is already running.");
 				
 				m_breakInMain = true;
-				makeWindowControllersNoUI(null, NSString.Empty);
+				makeWindowControllersNoUI(null, NSString.Empty, NSString.Empty);
 			}
 			catch (Exception e)
 			{
@@ -103,7 +103,7 @@ namespace Debugger
 		}
 		
 		// Used when opening mdb files or exe files (via AppleScript).
-		public void makeWindowControllersNoUI(NSString uses, NSString args)
+		public void makeWindowControllersNoUI(NSString uses, NSString args, NSString env)
 		{
 			string path = fileURL().path().ToString();
 			string dir = Path.GetDirectoryName(path);
@@ -123,13 +123,27 @@ namespace Debugger
 				info.Arguments = string.Format("--debug {0} {1:D}", m_executable, args);
 			else
 				info.Arguments = string.Format("--debug {0}", m_executable);
-//			info.EnvironmentVariables.Add("key", "value");		// TODO: might want to support this
 			info.FileName = NSObject.IsNullOrNil(uses) ? "mono" : uses.ToString();
 			info.RedirectStandardInput = false;
 			info.RedirectStandardOutput = true;
 			info.RedirectStandardError = true;
 			info.UseShellExecute = false;
 			info.WorkingDirectory = dir;
+			
+			if (!NSObject.IsNullOrNil(env))
+			{
+				foreach (string entry in env.ToString().Split(new char[]{' '}, StringSplitOptions.RemoveEmptyEntries))
+				{
+					int i = entry.IndexOf('=');
+					if (i < 0)
+						throw new Exception("Expected an '=' in " + entry);
+						
+					Console.WriteLine("name: {0}", entry.Substring(0, i));
+					Console.WriteLine("value: {0}", entry.Substring(i + 1));
+						
+					info.EnvironmentVariables.Add(entry.Substring(0, i), entry.Substring(i + 1));
+				}
+			}
 			
 			m_debugger = new Debugger(info);
 			
