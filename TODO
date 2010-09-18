@@ -76,12 +76,17 @@ every N seconds, for main thread
 print traces for the top O methods (where O >= M)
 include the percentage of samples that that method appeared in the stack trace
 
-Go
-D2
-rust
+[0] http://mono.ximian.com/monobuild/preview/download-preview/
+[1] http://www.mono-project.com/Release_Notes_Mono_2.8
+[2] http://www.mono-project.com/Compacting_GC
+[3] http://www.mono-project.com/Mono_LLVM
 
-
-* Brace highlighting isn't reliable?
+* Should have some sort of Debug assembly command:
+	- path to assembly
+	- working dir
+	- options
+	- env vars
+* Work on the D language file.
 * Release checklist:
 	- update generated config file logging categories (search for "Log.WriteLine")
 	- update the version number
@@ -127,13 +132,10 @@ rust
 	- context breakpoint menu should have close do a broadcast so the breakpoint can be toggled
 	- CodeViewer is being deallocated but not GCed (there is some object with a reference to the boss)
 * Should DoGetOperatorName handle names like:
-	ObjectModel Error  bad operator: op_UnaryNegation_Int32
+	ObjectModel Error bad operator: op_UnaryNegation_Int32
 	maybe tweak the warning?
-* Work on auto-completion:
-	- genie effect is distracting?
-	- use a custom database? only have a limited set of queries and can replace database files
-	   instead of updating them
-	- nosql? serialized CsDeclarations?
+* Genie effect with auto-complete is distracting?
+
 * Period should work like return in auto-complete window.
 * Should make font bigger (or smaller) change the defaults for source code windows? It would probably
    have to change all the defaults?
@@ -161,6 +163,33 @@ rust
 * Start using VirtualMachine.GetNextEventSet.
 * Why doesn't stuff like var thread = (ThreadMirror) value auto-complete?
 * SHouldn't we warn if two language files use the same language?
+* Auto-complete speed is kind of poor:
+   ResolveName::ctor                             00.141    00
+      DoGetVariables                             00.14     00.058
+         ResolveMembers::Resolve                 00.074    00.039
+            TargetDatabase::GetMembers1          00.015    00.015
+            TargetDatabase::HasType              00.013    00.013
+            TargetDatabase::GetExtensionMethods1 00.003    00.003
+            TargetDatabase::GetFields1           00.002    00.002
+            TargetDatabase::GetBases             00.002    00.002
+         ResolveType::Resolve1                   00.008    00.008
+      DoFindMember                               00.001    00.001
+   ResolveMembers::Resolve                       00.047    00.01
+      TargetDatabase::GetMembers1                00.027    00.027
+      TargetDatabase::HasType                    00.004    00.004
+      TargetDatabase::GetBases                   00.003    00.003
+      TargetDatabase::GetFields1                 00.002    00.002
+      TargetDatabase::GetExtensionMethods1       00.001    00.001
+   ResolveExpr::Resolve                          00.015    00.004
+      ResolveName::Resolve                       00.011    00.005
+         ResolveType::Resolve1                   00.005    00.002
+            TargetDatabase::HasType              00.003    00.003
+         ResolveType::Resolve2                   00.001    00.001
+   AutoComplete::DoGetNamespacesNamed            00.011    00.007
+      TargetDatabase::GetNamespaces              00.004    00.004
+	- database is only about 0.013
+	- so the bulk of the time seems to be logic and such
+	- maybe it would help if we restricted searches by leveraging the using declarations in the file
 * Show short form on Action didn't show the Delegate members.
 * Dot should complete auto-complete text.
 * Auto-complete window should have context menu for showing only properties.

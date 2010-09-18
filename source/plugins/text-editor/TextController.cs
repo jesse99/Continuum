@@ -468,8 +468,9 @@ namespace TextEditor
 			
 			// Find the next non 7-bit ASCII character or control character.
 			int index = -1;
-			for (int i = range.location + 1; i < text.Length && index < 0; ++i)
+			for (int offset = 0; offset < text.Length && index < 0; ++offset)
 			{
+				int i = (range.location + offset + 1) % text.Length;
 				int codePoint = (int) text[i];
 				
 				if (codePoint < 32)
@@ -488,6 +489,7 @@ namespace TextEditor
 			if (index >= 0)
 			{
 				// If we found one then select it and,
+				int findIndex = m_oldFindIndex;
 				range = new NSRange(index, 1);
 				m_textView.Value.setSelectedRange(range);
 				m_textView.Value.scrollRangeToVisible(range);
@@ -508,6 +510,18 @@ namespace TextEditor
 						transcript.Show();
 						window().makeKeyAndOrderFront(null);
 					}
+				}
+				
+				// Tell the user if we've wrapped all the way around.
+				m_oldFindIndex = findIndex;
+				if (m_oldFindIndex < 0)
+				{
+					m_oldFindIndex = index;
+				}
+				else if (index == m_oldFindIndex)
+				{
+					var editor = m_boss.Get<ITextEditor>();
+					editor.ShowInfo("Reached Start");
 				}
 			}
 			else
@@ -824,6 +838,7 @@ namespace TextEditor
 			if ((storage.editedMask() & Enums.NSTextStorageEditedCharacters) != 0)
 			{
 				m_editCount = unchecked(m_editCount + 1);
+				m_oldFindIndex = -1;
 				
 				int oldNumLines = m_metrics.LineCount;
 				string text = Text;										// TODO: this is slow for very large files
@@ -899,6 +914,8 @@ namespace TextEditor
 		public void textViewDidChangeSelection(NSNotification notification)
 		{
 			string text = Text;			// note that this will ensure m_metrics is up to date
+			
+			m_oldFindIndex = -1;
 			
 //			if (m_language != null)
 			{
@@ -1183,6 +1200,7 @@ namespace TextEditor
 		private RestoreViewState m_restorer;
 		private bool m_wordWrap;
 		private List<WeakReference> m_ranges = new List<WeakReference>();
+		private int m_oldFindIndex = -1;
 		
 		public static WarningWindow ms_warning;
 		#endregion
