@@ -49,11 +49,17 @@ namespace AutoComplete
 			m_locals = boss.Get<ICsLocalsParser>();
 #endif
 			
+			Profile.Start("DoFindMember");
 			m_member = DoFindMember(m_globals);
+			Profile.Stop("DoFindMember");
+			
+			Profile.Start("DoGetVariables");
 			m_variables = DoGetVariables(text, locals);
+			Profile.Stop("DoGetVariables");
+			
 			Profile.Stop("ResolveName::ctor");
 		}
-				
+		
 		// Returns all of the names which may be used at the specified offset in the code.
 		public Variable[] Variables
 		{
