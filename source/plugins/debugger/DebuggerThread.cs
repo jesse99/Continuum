@@ -43,11 +43,12 @@ namespace Debugger
 	// This is the class that processes events sent by the soft debugger.
 	internal sealed class DebuggerThread
 	{
-		public DebuggerThread(Debugger debugger)
+		public DebuggerThread(Debugger debugger, bool breakInMain)
 		{
 			Contract.Requires(debugger != null, "debugger is null");
 			
 			m_debugger = debugger;
+			m_breakInMain = breakInMain;
 			
 			m_handlers.Add(typeof(AppDomainCreateEvent), (Event e) => DoAppDomainCreateEvent((AppDomainCreateEvent) e));
 			m_handlers.Add(typeof(AppDomainUnloadEvent), (Event e) => DoAppDomainUnloadEvent((AppDomainUnloadEvent) e));
@@ -208,6 +209,11 @@ namespace Debugger
 		[ThreadModel(ThreadModel.SingleThread)]
 		private HandlerAction DoAssemblyLoadEvent(AssemblyLoadEvent e)
 		{
+			if (m_breakInMain && e.Assembly.EntryPoint != null)
+			{
+				AddBreakpoint(new Breakpoint("entry point", 1), e.Assembly.EntryPoint, 0);
+			}
+			
 			NSApplication.sharedApplication().BeginInvoke(() => m_debugger.OnAssemblyLoad(e));
 			
 			return HandlerAction.Resume;
@@ -488,6 +494,7 @@ namespace Debugger
 		private Debugger m_debugger;
 		private Dictionary<Type, Func<Event, HandlerAction>> m_handlers = new Dictionary<Type, Func<Event, HandlerAction>>();
 		private Thread m_eventThread;
+		private bool m_breakInMain;
 		
 		private object m_mutex = new object();
 			private State m_state;

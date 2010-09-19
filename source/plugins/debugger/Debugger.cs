@@ -35,11 +35,11 @@ namespace Debugger
 	// This is the class that handles all interaction with the soft debugger.
 	internal sealed class Debugger : IObserver
 	{
-		public Debugger(ProcessStartInfo info)
+		public Debugger(ProcessStartInfo info, bool breakInMain)
 		{
 			Contract.Requires(info != null, "info is null");
 			
-			m_thread = new DebuggerThread(this);
+			m_thread = new DebuggerThread(this, breakInMain);
 			
 			Boss boss = ObjectModel.Create("Application");
 			m_transcript = boss.Get<ITranscript>();

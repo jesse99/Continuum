@@ -41,6 +41,8 @@ namespace Debugger
 			NSObject args = evaluatedArguments().objectForKey(NSString.Create("Args"));
 			NSObject uses = evaluatedArguments().objectForKey(NSString.Create("Using"));
 			NSObject env = evaluatedArguments().objectForKey(NSString.Create("Env"));
+			NSObject dir = evaluatedArguments().objectForKey(NSString.Create("WDir"));
+			NSObject brk = evaluatedArguments().objectForKey(NSString.Create("Break"));
 			NSDocument doc = null;
 			
 			try
@@ -61,10 +63,21 @@ namespace Debugger
 						err.Raise();
 						
 					controller.addDocument(doc);
-					if (!NSObject.IsNullOrNil(args) || !NSObject.IsNullOrNil(uses) || !NSObject.IsNullOrNil(env))
-						doc.Call("makeWindowControllersNoUI", uses, args, env);
+					if (!NSObject.IsNullOrNil(args) || !NSObject.IsNullOrNil(uses) || !NSObject.IsNullOrNil(env) || !NSObject.IsNullOrNil(dir) || !NSObject.IsNullOrNil(brk))
+					{
+						bool breakInMain = false;
+						if (!NSObject.IsNullOrNil(brk))
+						{
+							var b = brk.To<NSNumber>();
+							breakInMain = b.boolValue();
+						}
+						
+						doc.Call("makeWindowControllersNoUI", uses, args, env, dir, breakInMain);
+					}
 					else
+					{
 						doc.makeWindowControllers();
+					}
 				}
 				
 				doc.showWindows();

@@ -89,8 +89,7 @@ namespace Debugger
 				if (Debugger.IsRunning)
 					throw new Exception("The debugger is already running.");
 				
-				m_breakInMain = true;
-				makeWindowControllersNoUI(null, NSString.Empty, NSString.Empty);
+				makeWindowControllersNoUI(null, NSString.Empty, NSString.Empty, NSString.Empty, true);
 			}
 			catch (Exception e)
 			{
@@ -103,7 +102,7 @@ namespace Debugger
 		}
 		
 		// Used when opening mdb files or exe files (via AppleScript).
-		public void makeWindowControllersNoUI(NSString uses, NSString args, NSString env)
+		public void makeWindowControllersNoUI(NSString uses, NSString args, NSString env, NSString workingDir, bool breakInMain)
 		{
 			string path = fileURL().path().ToString();
 			string dir = Path.GetDirectoryName(path);
@@ -128,8 +127,15 @@ namespace Debugger
 			info.RedirectStandardOutput = true;
 			info.RedirectStandardError = true;
 			info.UseShellExecute = false;
-			info.WorkingDirectory = dir;
+			if (!NSObject.IsNullOrNil(workingDir))
+				info.WorkingDirectory = workingDir.ToString();
+			else
+				info.WorkingDirectory = dir;
 			
+			Log.WriteLine(TraceLevel.Verbose, "Debugger", "Launching debugger with:");
+			Log.WriteLine(TraceLevel.Verbose, "Debugger", "file: {0}", info.FileName);
+			Log.WriteLine(TraceLevel.Verbose, "Debugger", "working dir: {0}", info.WorkingDirectory);
+			Log.WriteLine(TraceLevel.Verbose, "Debugger", "args: {0}", info.Arguments);
 			if (!NSObject.IsNullOrNil(env))
 			{
 				foreach (string entry in env.ToString().Split(new char[]{' '}, StringSplitOptions.RemoveEmptyEntries))
@@ -142,10 +148,11 @@ namespace Debugger
 					Console.WriteLine("value: {0}", entry.Substring(i + 1));
 						
 					info.EnvironmentVariables.Add(entry.Substring(0, i), entry.Substring(i + 1));
+					Log.WriteLine(TraceLevel.Verbose, "Debugger", "variable: {0}", entry);
 				}
 			}
 			
-			m_debugger = new Debugger(info);
+			m_debugger = new Debugger(info, breakInMain);
 			
 			NSWindow window = DoCreateCodeWindow();
 			addWindowController(window.windowController());
@@ -176,11 +183,6 @@ namespace Debugger
 		public string Executable
 		{
 			get {return m_executable;}
-		}
-		
-		public bool BreakInMain
-		{
-			get {return m_breakInMain;}
 		}
 		
 		public bool readFromData_ofType_error(NSData data, NSString typeName, IntPtr outError)
@@ -318,7 +320,6 @@ namespace Debugger
 		#region Fields
 		private string m_executable;
 		private Debugger m_debugger;
-		private bool m_breakInMain;
 		
 		private HashSet<AssemblyMirror> m_assemblies = new HashSet<AssemblyMirror>();
 		private HashSet<AppDomainMirror> m_domains = new HashSet<AppDomainMirror>();

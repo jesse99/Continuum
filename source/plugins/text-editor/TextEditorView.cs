@@ -625,17 +625,20 @@ namespace TextEditor
 				m_tooltipWindow = null;
 			}
 			
-			string text = m_tooltip.GetTooltip(m_moveIndex);
-			if (!string.IsNullOrEmpty(text) && m_boss != null)	// boss will be null if the window closed
+			if (m_boss != null)	// window may have closed while this  methodwas queued up
 			{
-				var editor = m_boss.Get<ITextEditor>();
-				var range = new NSRange(m_moveIndex, 1);
-				m_tooltipWindow = editor.GetAnnotation(range, AnnotationAlignment.Top);
-				
-				m_tooltipWindow.BackColor = NSColor.colorWithDeviceRed_green_blue_alpha(1.0f, 0.96f, 0.0f, 1.0f);
-				m_tooltipWindow.Text= text;
-				m_tooltipWindow.Draggable = false;
-				m_tooltipWindow.Visible = true;
+				string text = m_tooltip.GetTooltip(m_moveIndex);
+				if (!string.IsNullOrEmpty(text) && m_boss != null)	// boss will be null if the window closed
+				{
+					var editor = m_boss.Get<ITextEditor>();
+					var range = new NSRange(m_moveIndex, 1);
+					m_tooltipWindow = editor.GetAnnotation(range, AnnotationAlignment.Top);
+					
+					m_tooltipWindow.BackColor = NSColor.colorWithDeviceRed_green_blue_alpha(1.0f, 0.96f, 0.0f, 1.0f);
+					m_tooltipWindow.Text= text;
+					m_tooltipWindow.Draggable = false;
+					m_tooltipWindow.Visible = true;
+				}
 			}
 		}
 		

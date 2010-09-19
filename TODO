@@ -81,12 +81,9 @@ include the percentage of samples that that method appeared in the stack trace
 [2] http://www.mono-project.com/Compacting_GC
 [3] http://www.mono-project.com/Mono_LLVM
 
-* Should have some sort of Debug assembly command:
-	- path to assembly
-	- working dir
-	- options
-	- env vars
+
 * Work on the D language file.
+* Build a new foreshadow.
 * Release checklist:
 	- update generated config file logging categories (search for "Log.WriteLine")
 	- update the version number

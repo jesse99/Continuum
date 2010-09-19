@@ -88,6 +88,12 @@ namespace App
 			}
 			else
 				dict.setObject_forKey(NSString.Create("/some/thing/mono-2.2"), NSString.Create("mono_root"));
+			
+			dict.setObject_forKey(NSString.Create("~"), NSString.Create("debug_assembly_path"));
+			dict.setObject_forKey(NSString.Create("~"), NSString.Create("debug_assembly_working_dir"));
+			dict.setObject_forKey(NSString.Empty, NSString.Create("debug_assembly_args"));
+			dict.setObject_forKey(NSString.Empty, NSString.Create("debug_assembly_env"));
+			dict.setObject_forKey(NSString.Create("mono"), NSString.Create("debug_assembly_tool"));
 		}
 		
 		#region Private Methods

@@ -39,12 +39,15 @@ namespace App
 {
 	// http://developer.apple.com/documentation/Cocoa/Reference/ApplicationKit/Classes/NSApplication_Class/Reference/Reference.html#//apple_ref/doc/uid/20000012-BAJFJIIB
 	[ExportClass("AppDelegate", "NSObject", Outlets = "SccsMenu")]
-	internal sealed class AppDelegate : NSObject
+	internal sealed class AppDelegate : NSObject, IObserver
 	{
 		private AppDelegate(IntPtr instance) : base(instance)
 		{
 			ActiveObjects.Add(this);
 			Profile.Start("App");
+			
+			Broadcaster.Register("debugger started", this);
+			Broadcaster.Register("debugger stopped", this);
 		}
 		
 		public void applicationDidFinishLaunching(NSObject notification)
@@ -89,8 +92,6 @@ namespace App
 		public void applicationDidBecomeActive(NSObject notification)
 		{
 			Log.WriteLine(TraceLevel.Verbose, "Startup", "applicationDidBecomeActive");
-//			Boss boss = ObjectModel.Create("TextEditorPlugin");
-//			DoReload(boss);
 			
 			Boss boss = ObjectModel.Create("DirectoryEditorPlugin");
 			DoReload(boss);
@@ -109,14 +110,30 @@ namespace App
 				downer.OnShutdown();
 			}
 			
-//			NSUserDefaults.standardUserDefaults().synchronize();
-
 			Profile.Stop("App");
 #if PROFILE
 			Console.WriteLine(Profile.GetResults());
 #endif
 			
 			Log.WriteLine("App", "exiting normally");
+		}
+		
+		public void OnBroadcast(string name, object value)
+		{
+			switch (name)
+			{
+				case "debugger started":
+					m_debugging = true;
+					break;
+				
+				case "debugger stopped":
+					m_debugging = false;
+					break;
+				
+				default:
+					Contract.Assert(false, "bad name: " + name);
+					break;
+			}
 		}
 		
 		// We handle the enabling manually for the Sccs menu so that we can call
@@ -243,6 +260,15 @@ fi
 			var controller = new IgnoreExceptionController();
 			Unused.Value = NSApplication.sharedApplication().runModalForWindow(controller.window());
 			controller.release();
+		}
+		
+		public void debugAssembly(NSObject sender)
+		{
+			if (m_debugAssembly == null)
+				m_debugAssembly = new DebugAssemblyController();
+				
+			m_debugAssembly.Show();
+			Unused.Value = NSApplication.sharedApplication().runModalForWindow(m_debugAssembly.window());
 		}
 		
 #if DEBUG
@@ -440,6 +466,10 @@ fi
 				enabled = (state & MenuState.Enabled) == MenuState.Enabled;
 				sender.Call("setState:", (state & MenuState.Checked) == MenuState.Checked ? 1 : 0);
 			}
+			else if (sel.Name == "debugAssembly:")
+			{
+				enabled = !m_debugging;
+			}
 			else if (sel.Name == "find:")
 			{
 				var find = m_boss.Get<IFind>();
@@ -608,6 +638,8 @@ fi
 		#region Fields
 		private Boss m_boss;
 		private PreferencesController m_prefs;
+		private DebugAssemblyController m_debugAssembly;
+		private bool m_debugging;
 		#endregion
 	}
 }

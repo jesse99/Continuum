@@ -37,7 +37,6 @@ namespace Debugger
 			m_boss = boss;
 			
 			Broadcaster.Register("closing document window", this);
-			Broadcaster.Register("debugger loaded assembly", this);
 			Broadcaster.Register("debugger break all", this);
 			Broadcaster.Register("debugger processed breakpoint event", this);
 			Broadcaster.Register("debugger thrown exception", this);
@@ -88,11 +87,6 @@ namespace Debugger
 					var window = m_boss.Get<IWindow>();
 					Action action = () => window.Window.close();
 					NSApplication.sharedApplication().BeginInvoke(action, TimeSpan.FromMilliseconds(100));
-					break;
-				
-				case "debugger loaded assembly":
-					var assembly = (AssemblyMirror) value;
-					DoAssemblyLoaded(assembly);
 					break;
 				
 				case "debugger processed breakpoint event":
@@ -462,14 +456,6 @@ namespace Debugger
 				m_ipAnnotation.Text = ">";
 				m_ipAnnotation.Draggable = false;
 				m_ipAnnotation.Visible = true;
-			}
-		}
-		
-		private void DoAssemblyLoaded(AssemblyMirror assembly)
-		{
-			if (m_document.BreakInMain && assembly.EntryPoint != null)
-			{
-				m_document.Debugger.AddBreakpoint(new Breakpoint("entry point", 1), assembly.EntryPoint, 0);
 			}
 		}
 		#endregion
