@@ -82,8 +82,6 @@ include the percentage of samples that that method appeared in the stack trace
 [3] http://www.mono-project.com/Mono_LLVM
 
 
-* Work on the D language file.
-* Build a new foreshadow.
 * Release checklist:
 	- update generated config file logging categories (search for "Log.WriteLine")
 	- update the version number

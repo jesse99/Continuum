@@ -300,7 +300,7 @@ namespace TextEditor
 					
 					string text = m_text.string_().description();
 					DoSetEndian(text);
-					DoCheckForControlChars(text);
+					DoCheckForControlChars();
 						
 					m_size = data.length();
 					
@@ -344,7 +344,7 @@ namespace TextEditor
 			
 			try
 			{
-				DoCheckForControlChars(m_controller.Text);
+				DoCheckForControlChars();
 				
 				NSMutableAttributedString astr = m_controller.TextView.textStorage().mutableCopy().To<NSMutableAttributedString>();
 				NSMutableString str = astr.mutableString();
@@ -629,16 +629,16 @@ namespace TextEditor
 		// when it does happen it can be quite annoying, especially because they
 		// cannot ordinarily be seen. So, if this happens we'll write a message 
 		// to the transcript window to alert the user.
-		private void DoCheckForControlChars(string text)
+		private void DoCheckForControlChars()
 		{
-			Dictionary<char, int> chars = DoFindControlChars(text);
+			Dictionary<char, int> chars = DoFindControlChars();
 				
 			if (chars.Count > 0)
 			{
 				string path = fileURL().path().ToString();
 				
 				string mesg;
-				if (chars.Count <= 2)
+				if (chars.Count <= 5)
 					mesg = string.Format("Found {0} in '{1}'.", DoCharsToString(chars), path);
 				else
 					mesg = string.Format("Found {0} control characters of {1} different types in '{2}'.", chars.Values.Sum(), chars.Count, path);
@@ -667,19 +667,33 @@ namespace TextEditor
 			return string.Join(" and ", strs) + (plural ? " characters" : " character");
 		}
 		
-		private Dictionary<char, int> DoFindControlChars(string text)
+		private Dictionary<char, int> DoFindControlChars()
 		{
 			var chars = new Dictionary<char, int>();
 			
-			foreach (char ch in text)
+			NSString str = m_text.string_();
+			int len = (int) str.length();
+			
+			NSRange range = new NSRange(0, len);
+			while (true)
 			{
-				if (CharHelpers.IsBadControl(ch))
+				NSRange temp = str.rangeOfCharacterFromSet_options_range(
+					NSCharacterSet.controlCharacterSet(),
+					Enums.NSLiteralSearch,
+					range);
+				if (temp.length == 0)
+					break;
+					
+				char ch = str.characterAtIndex((uint) temp.location);
+				if (ch != '\r' && ch != '\n' && ch != '\t')
 				{
 					if (chars.ContainsKey(ch))
 						chars[ch] = chars[ch] + 1;
 					else
 						chars[ch] = 1;
 				}
+				
+				range = new NSRange(temp.location + 1, len - (temp.location + 1));
 			}
 			
 			return chars;
@@ -698,6 +712,7 @@ namespace TextEditor
 		
 		private static Dictionary<char, string> ms_controlNames = new Dictionary<char, string>
 		{
+			// See http://www.fileformat.info/info/unicode/category/Cc/list.htm
 			{'\x00', "nul"},
 			{'\x01', "soh"},
 			{'\x02', "stx"},
@@ -730,7 +745,40 @@ namespace TextEditor
 			{'\x1D', "gs"},
 			{'\x1E', "rs"},
 			{'\x1F', "us"},
+			
 			{'\x7F', "del"},
+			{'\x80', "0x80 (control)"},
+			{'\x81', "0x81 (control)"},
+			{'\x82', "BREAK PERMITTED HERE"},
+			{'\x83', "NO BREAK HERE"},
+			{'\x84', "0x84 (control)"},
+			{'\x85', "NEXT LINE (NEL)"},
+			{'\x86', "START OF SELECTED AREA"},
+			{'\x87', "END OF SELECTED AREA"},
+			{'\x88', "CHARACTER TABULATION SET"},
+			{'\x89', "CHARACTER TABULATION WITH JUSTIFICATION"},
+			{'\x8A', "LINE TABULATION SET"},
+			{'\x8B', "PARTIAL LINE FORWARD"},
+			{'\x8C', "PARTIAL LINE BACKWARD"},
+			{'\x8D', "REVERSE LINE FEED"},
+			{'\x8E', "SINGLE SHIFT TWO"},
+			{'\x8F', "SINGLE SHIFT THREE"},
+			{'\x90', "DEVICE CONTROL STRING"},
+			{'\x91', "PRIVATE USE ONE"},
+			{'\x92', "PRIVATE USE TWO"},
+			{'\x93', "SET TRANSMIT STATE"},
+			{'\x94', "CANCEL CHARACTER"},
+			{'\x95', "MESSAGE WAITING"},
+			{'\x96', "START OF GUARDED AREA"},
+			{'\x97', "END OF GUARDED AREA"},
+			{'\x98', "START OF STRING"},
+			{'\x99', "0x99 (control)"},
+			{'\x9A', "SINGLE CHARACTER INTRODUCER"},
+			{'\x9B', "CONTROL SEQUENCE INTRODUCER"},
+			{'\x9C', "STRING TERMINATOR"},
+			{'\x9D', "OPERATING SYSTEM COMMAND"},
+			{'\x9E', "PRIVACY MESSAGE"},
+			{'\x9F', "APPLICATION PROGRAM COMMAND"},
 		};
 		#endregion
 	}
