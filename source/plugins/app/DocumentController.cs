@@ -19,9 +19,12 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear;
 using MCocoa;
 using MObjc;
+using Shared;
 using System;
+using System.Runtime.InteropServices;
 
 namespace App
 {
@@ -36,6 +39,38 @@ namespace App
 		{
 			SuperCall(NSDocumentController.Class, "init");
 			setAutosavingDelay(10.0);
+		}
+		
+		public new NSObject openDocumentWithContentsOfURL_display_error(NSURL absoluteURL, bool displayDocument, IntPtr outError)
+		{
+			NSObject result = null;
+			
+			string path = absoluteURL.path().ToString();
+			if (System.IO.Directory.Exists(path))
+			{
+				try
+				{
+					Boss boss = ObjectModel.Create("DirectoryEditorPlugin");	
+					var open = boss.Get<IOpen>();
+					result = open.Open(path).To<NSObject>();
+				}
+				catch (Exception e)
+				{
+					NSMutableDictionary userInfo = NSMutableDictionary.Create();
+					userInfo.setObject_forKey(NSString.Create("Couldn't open '{0}", path), Externs.NSLocalizedDescriptionKey);
+					userInfo.setObject_forKey(NSString.Create(e.Message), Externs.NSLocalizedFailureReasonErrorKey);
+					
+					NSObject error = NSError.errorWithDomain_code_userInfo(Externs.Cocoa3Domain, 2, userInfo);
+					Marshal.WriteIntPtr(outError, error);
+				}
+			}
+			else
+			{
+				result = SuperCall(NSDocumentController.Class, "openDocumentWithContentsOfURL:display:error:",
+					absoluteURL, displayDocument, outError).To<NSDocument>();
+			}
+			
+			return result;
 		}
 		
 		public new int runModalOpenPanel_forTypes(NSOpenPanel openPanel, NSArray types)

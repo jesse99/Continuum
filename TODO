@@ -78,10 +78,9 @@ include the percentage of samples that that method appeared in the stack trace
 
 [0] http://mono.ximian.com/monobuild/preview/download-preview/
 [1] http://www.mono-project.com/Release_Notes_Mono_2.8
-[2] http://www.mono-project.com/Compacting_GC
+[2] http://www.mono-project.com/Compacting_GC	System.ArgumentException
 [3] http://www.mono-project.com/Mono_LLVM
 
-* Need to be able to open directories using the command line tool.
 * Release checklist:
 	- update generated config file logging categories (search for "Log.WriteLine")
 	- update the version number

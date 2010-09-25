@@ -61,7 +61,7 @@ namespace DirectoryEditor
 			}
 		}
 		
-		public void Open(string path)
+		public NSObject Open(string path)
 		{
 			var windows = m_boss.Get<IWindows>();
 			foreach (Boss boss in windows.All())
@@ -71,11 +71,12 @@ namespace DirectoryEditor
 				{
 					var window = boss.Get<IWindow>();
 					window.Window.makeKeyAndOrderFront(NSApplication.sharedApplication());
-					return;
+					return window.Window.windowController();
 				}
 			}
 			
-			Gear.Helpers.Unused.Value = new DirectoryController(path);
+			var controller = new DirectoryController(path);
+			return controller;
 		}
 		
 		#region Fields 

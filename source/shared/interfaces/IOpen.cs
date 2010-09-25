@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using MObjc;
 
 namespace Shared
 {	
@@ -30,7 +31,7 @@ namespace Shared
 		// the user selected.
 		void Open();
 		
-		// Opens the specified file or directory.
-		void Open(string path);
-	} 
+		// Opens the specified file or directory. Normally returns a window controller.
+		NSObject Open(string path);
+	}
 }
