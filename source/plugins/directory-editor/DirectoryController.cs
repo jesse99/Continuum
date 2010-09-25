@@ -72,6 +72,7 @@ namespace DirectoryEditor
 				
 				DoLoadPrefs(path);
 				Broadcaster.Register("global ignores changed", this);
+				Broadcaster.Register("finished building", this);
 				DoUpdateTargets(string.Empty, null);
 			}
 			else
@@ -105,6 +106,14 @@ namespace DirectoryEditor
 			{
 				case "global ignores changed":
 					DoUpdateTargets(name, value);
+					break;
+				
+				// Automatic validation on toolbar items has problems in 10.6 (e.g. if
+				// you start a build the build buttons won't change state once the build
+				// finishes unless you do something like click on another window).
+				case "finished building":
+					this["build"].Call("validate");
+					this["cancel"].Call("validate");
 					break;
 					
 				default:
@@ -290,7 +299,7 @@ namespace DirectoryEditor
 			
 			if (sel.Name == "dirHandler:")
 			{
-				int tag = (int) sender.Call("tag");
+				int tag = (int) sender.Call("tag");	
 				
 				var handler = m_boss.Get<IMenuHandler>();
 				MenuState state = handler.GetState(tag);

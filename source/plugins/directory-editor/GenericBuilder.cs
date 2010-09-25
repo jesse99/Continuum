@@ -138,7 +138,8 @@ namespace DirectoryEditor
 			
 			try
 			{
-				m_process.Kill();
+				if (m_process != null)	// toolbar buttons are enabled via a timer (and apple doesn't validate them before processing a click) so we can be called when we aren't actually building
+					m_process.Kill();
 			}
 			catch (InvalidOperationException e)
 			{
@@ -267,6 +268,7 @@ namespace DirectoryEditor
 			
 			if (m_state != State.Canceled)
 				m_state = State.Built;
+			Broadcaster.Invoke("finished building", m_target);
 		}
 		
 		private void DoHandleErrors(string text)
