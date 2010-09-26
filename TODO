@@ -82,7 +82,6 @@ include the percentage of samples that that method appeared in the stack trace
 [3] http://www.mono-project.com/Mono_LLVM
 
 * Release checklist:
-	- CodeViewer boss isn't going away
 	- run continuum with no prefs
 	- run continuum with no databases (including the windows db)
 	- run continuum with no Continuum Files dir
@@ -672,7 +671,7 @@ include the percentage of samples that that method appeared in the stack trace
 	- make sure text objects go away (after forcing a GC)
 	- make sure text editor boss goes away
 	- make sure auto complete objects go away
-	- make sure debugger bosses go away
+	- make sure debugger bosses go away (CodeViewer boss is hanging around but only once instance)
 	- make sure debugger objects go away
 	- run continuum with no prefs
 	- run continuum with no databases (including the windows db)

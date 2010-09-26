@@ -67,12 +67,13 @@ namespace Debugger
 			switch (name)
 			{
 				case "closing document window":
-					if (m_boss == value)
-					{
+				if (m_boss == value)
+				{
 						var window = m_boss.Get<IWindow>();
 						window.Window.saveFrameUsingName(NSString.Create("debugger code viewer"));
 						
 						m_document = null;
+						m_context = null;
 						Broadcaster.Unregister(this);
 //						NSApplication.sharedApplication().BeginInvoke(() => m_boss.Free());
 					}

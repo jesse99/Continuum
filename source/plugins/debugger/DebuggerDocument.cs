@@ -144,9 +144,6 @@ namespace Debugger
 					if (i < 0)
 						throw new Exception("Expected an '=' in " + entry);
 						
-					Console.WriteLine("name: {0}", entry.Substring(0, i));
-					Console.WriteLine("value: {0}", entry.Substring(i + 1));
-						
 					info.EnvironmentVariables.Add(entry.Substring(0, i), entry.Substring(i + 1));
 					Log.WriteLine(TraceLevel.Verbose, "Debugger", "variable: {0}", entry);
 				}

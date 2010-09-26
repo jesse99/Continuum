@@ -39,6 +39,7 @@ namespace Debugger
 		{
 			Contract.Requires(info != null, "info is null");
 			
+			ActiveObjects.Add(this);
 			m_thread = new DebuggerThread(this, breakInMain);
 			
 			Boss boss = ObjectModel.Create("Application");
@@ -47,11 +48,16 @@ namespace Debugger
 			StepBy = StepSize.Line;
 			var options = new LaunchOptions();
 //			options.AgentArgs = "loglevel=1,logfile='/Users/jessejones/Source/Continuum/sdb.log'";
-			Unused.Value = VirtualMachineManager.BeginLaunch(info, this.OnLaunched, options);
+			
+			// We do this lame assignment to a static so that OnLaunched can be made a static
+			// method. Mono 2.6.7 doesn't GC asynchronously invoked delegates in a timely fashion
+			// (tho it does appear to collect them if more than ten stack up).
+			ms_debugger = this;
+			Unused.Value = VirtualMachineManager.BeginLaunch(info, Debugger.OnLaunched, options);
 			
 			Broadcaster.Register("added breakpoint", this);
 			Broadcaster.Register("removing breakpoint", this);
-			Broadcaster.Register("toggled exceptions", this);
+			Broadcaster.Register("toggled exceptions", this);	
 			
 			ms_running = true;
 		}
@@ -115,6 +121,8 @@ namespace Debugger
 				
 				m_shutDown = true;
 				m_vm = null;
+				m_thread = null;
+				m_currentThread = null;
 				ms_running = false;
 			}
 		}
@@ -395,27 +403,27 @@ namespace Debugger
 		}
 		
 		[ThreadModel(ThreadModel.SingleThread)]
-		private void OnLaunched(IAsyncResult result)
+		private static void OnLaunched(IAsyncResult result)
 		{
 			try
 			{
-				m_vm = VirtualMachineManager.EndLaunch(result);
+				ms_debugger.m_vm = VirtualMachineManager.EndLaunch(result);
 				
-				m_stdoutThread = new Thread(() => DoOutputThread(m_vm.StandardOutput, Output.Normal));
-				m_stdoutThread.Name = "Debugger.stdout";
-				m_stdoutThread.IsBackground = true;		// allow the app to quit even if the thread is still running
-				m_stdoutThread.Start();
+				ms_debugger.m_stdoutThread = new Thread(() => ms_debugger.DoOutputThread(ms_debugger.m_vm.StandardOutput, Output.Normal));
+				ms_debugger.m_stdoutThread.Name = "Debugger.stdout";
+				ms_debugger.m_stdoutThread.IsBackground = true;		// allow the app to quit even if the thread is still running
+				ms_debugger.m_stdoutThread.Start();
 				
-				m_stderrThread = new Thread(() => DoOutputThread(m_vm.StandardError, Output.Error));
-				m_stderrThread.Name = "Debugger.stderr";
-				m_stderrThread.IsBackground = true;		// allow the app to quit even if the thread is still running
-				m_stderrThread.Start();
+				ms_debugger.m_stderrThread = new Thread(() => ms_debugger.DoOutputThread(ms_debugger.m_vm.StandardError, Output.Error));
+				ms_debugger.m_stderrThread.Name = "Debugger.stderr";
+				ms_debugger.m_stderrThread.IsBackground = true;		// allow the app to quit even if the thread is still running
+				ms_debugger.m_stderrThread.Start();
 				
 				// Note that we need to be a bit careful about which of these we enable
 				// because we keep the VM suspended until we can process the event in
 				// the main thread (if we are not careful we can block the debuggee too
 				// much).
-				m_vm.EnableEvents(
+				ms_debugger.m_vm.EnableEvents(
 					EventType.AppDomainCreate,
 					EventType.AppDomainUnload,
 					EventType.AssemblyLoad,
@@ -430,7 +438,7 @@ namespace Debugger
 				);
 				
 				Log.WriteLine(TraceLevel.Info, "Debugger", "Launched debugger");
-				NSApplication.sharedApplication().BeginInvoke(this.Run);
+				NSApplication.sharedApplication().BeginInvoke(ms_debugger.Run);
 			}
 			catch (Exception e)
 			{
@@ -440,8 +448,9 @@ namespace Debugger
 				NSString message = NSString.Create(e.Message);
 				NSApplication.sharedApplication().BeginInvoke(() => Functions.NSRunAlertPanel(title, message));
 				
-				m_vm.Exit(1);
+				ms_debugger.m_vm.Exit(1);
 			}
+			ms_debugger = null;
 		}
 		
 		[ThreadModel(ThreadModel.Concurrent)]
@@ -554,6 +563,8 @@ namespace Debugger
 		private Thread m_stderrThread;
 		private static bool ms_running;
 		private static HashSet<string> ms_loadedTypes = new HashSet<string>();
+		
+		private static Debugger ms_debugger;
 		#endregion
 	}
 }

@@ -47,6 +47,7 @@ namespace Debugger
 		{
 			Contract.Requires(debugger != null, "debugger is null");
 			
+			ActiveObjects.Add(this);
 			m_debugger = debugger;
 			m_breakInMain = breakInMain;
 			

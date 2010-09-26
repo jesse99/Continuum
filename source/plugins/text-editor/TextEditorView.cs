@@ -58,6 +58,14 @@ namespace TextEditor
 		
 		public void onClosing(TextController controller)
 		{
+			if (m_tooltipWindow != null)
+			{
+				m_tooltipWindow.Close();
+				m_tooltipWindow = null;
+			}
+			if (m_timer != null)
+				m_timer.Dispose();
+			
 			m_autoComplete = null;		// note that these won't be GCed if we don't null them out
 			m_boss = null;
 		}
@@ -625,7 +633,7 @@ namespace TextEditor
 				m_tooltipWindow = null;
 			}
 			
-			if (m_boss != null)	// window may have closed while this  methodwas queued up
+			if (m_boss != null)	// window may have closed while this method was queued up
 			{
 				string text = m_tooltip.GetTooltip(m_moveIndex);
 				if (!string.IsNullOrEmpty(text) && m_boss != null)	// boss will be null if the window closed
