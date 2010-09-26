@@ -242,9 +242,6 @@ namespace TextEditor
 			else if (b >= 0xF5)
 				valid = false;
 			
-			else if (CharHelpers.IsBadControl((char) b))
-				valid = false;
-			
 			return valid;
 		}
 		

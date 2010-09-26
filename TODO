@@ -82,16 +82,7 @@ include the percentage of samples that that method appeared in the stack trace
 [3] http://www.mono-project.com/Mono_LLVM
 
 * Release checklist:
-	- update generated config file logging categories (search for "Log.WriteLine")
-	- update the version number
-	- delete build_num
-	- make sure directory objects go away
-	- make sure directory editor boss goes away
-	- make sure text objects go away (after forcing a GC)
-	- make sure text editor boss goes away
-	- make sure auto complete objects go away
-	- make sure debugger bosses go away
-	- make sure debugger objects go away
+	- CodeViewer boss isn't going away
 	- run continuum with no prefs
 	- run continuum with no databases (including the windows db)
 	- run continuum with no Continuum Files dir
@@ -111,6 +102,7 @@ include the percentage of samples that that method appeared in the stack trace
 	- update CHANGES file
 	- make sure gear is checked in
 	- upload the new binary
+	- make sure it works with mono 2.8
 	- build a new foreshadow
 	- review the front page of the web site
 	- review the screen shots

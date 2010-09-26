@@ -300,7 +300,7 @@ namespace TextEditor
 					
 					string text = m_text.string_().description();
 					DoSetEndian(text);
-					DoCheckForControlChars();
+					DoCheckForControlChars(m_text.string_());
 						
 					m_size = data.length();
 					
@@ -344,7 +344,7 @@ namespace TextEditor
 			
 			try
 			{
-				DoCheckForControlChars();
+				DoCheckForControlChars(m_controller.TextView.textStorage().string_());
 				
 				NSMutableAttributedString astr = m_controller.TextView.textStorage().mutableCopy().To<NSMutableAttributedString>();
 				NSMutableString str = astr.mutableString();
@@ -629,9 +629,9 @@ namespace TextEditor
 		// when it does happen it can be quite annoying, especially because they
 		// cannot ordinarily be seen. So, if this happens we'll write a message 
 		// to the transcript window to alert the user.
-		private void DoCheckForControlChars()
+		private void DoCheckForControlChars(NSString text)
 		{
-			Dictionary<char, int> chars = DoFindControlChars();
+			Dictionary<char, int> chars = DoFindControlChars(text);
 				
 			if (chars.Count > 0)
 			{
@@ -667,11 +667,10 @@ namespace TextEditor
 			return string.Join(" and ", strs) + (plural ? " characters" : " character");
 		}
 		
-		private Dictionary<char, int> DoFindControlChars()
+		private Dictionary<char, int> DoFindControlChars(NSString str)
 		{
 			var chars = new Dictionary<char, int>();
 			
-			NSString str = m_text.string_();
 			int len = (int) str.length();
 			
 			NSRange range = new NSRange(0, len);
