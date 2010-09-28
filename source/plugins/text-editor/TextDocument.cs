@@ -1,4 +1,4 @@
-// Copyright (C) 2008-2009 Jesse Jones
+// Copyright (C) 2008-2010 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -467,6 +467,11 @@ namespace TextEditor
 					var encoding = boss.Get<ITextEncoding>();
 					NSString str = encoding.Decode(data, out m_encoding);
 					m_text = NSMutableAttributedString.Alloc().initWithString(str).To<NSMutableAttributedString>();
+					
+					// If an html file is being edited in Continuum then ensure that it is saved
+					// as plain text. (To save a document as html the user needs to use save as
+					// and explicitly select html).
+					setFileType(NSString.Create("Plain Text, UTF8 Encoded"));
 					break;
 				
 				// These types are based on the file's extension so we can (more or less) trust them.
