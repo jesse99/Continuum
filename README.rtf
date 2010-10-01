@@ -15,7 +15,7 @@ You don't have to do any sort of installation to run Continuum, but there are a 
 \f1 sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.locate.plist
 \f0 .\
 \
-\'95\'a0There is a command line tool that can be used within a terminal to open files using Continuum. To install the tool open Continuum and select the 
+\'95\'a0There is a command line tool that can be used within a terminal to open files or directories using Continuum. To install the tool open Continuum and select the 
 \f1 Install Command Line Tool
 \f0  item from the Continuum menu.\
 \
@@ -59,7 +59,7 @@ If you right click on nothing then you can do things like hide the syntax colori
 \pard\pardeftab480\ql\qnatural\pardirnatural
 
 \fs28 \cf0 \
-On occasion control or Unicode characters slip into source code files (e.g. when pasting in copy from Wikipedia). These can cause hard to find compiler errors so the Search menu in Continuum has a 
+On occasion control or Unicode characters slip into source code files (e.g. when pasting in text from Wikipedia). These can cause hard to find compiler errors so the Search menu in Continuum has a 
 \f1 Find Gremlins
 \f0  command. This will start at the insertion point and select the next control or non-7-bit ASCII character. If it finds such a character it will write something like 
 \f1 0x03B2 GREEK SMALL LETTER BETA
@@ -108,8 +108,9 @@ Option-tab allows you to select the identifier after the insertion point. Shift-
 You can debug an assembly by dropping an mdb file onto the Continuum icon in the dock, by using the Debug item in the Debug menu, or via apple script. The AppleScript command is named 
 \f1 debug
 \f0  and has a direct parameter naming the exe or mdb file to open and the following optional parameters:\
+\pard\pardeftab480\ql\qnatural\pardirnatural
 
-\b with
+\b \cf0 with
 \b0  lists command line arguments to pass to the assembly.\
 
 \b vars 
@@ -119,7 +120,7 @@ You can debug an assembly by dropping an mdb file onto the Continuum icon in the
 \b0  is the working directory.\
 
 \b break 
-\b0 is a boolean parameter which defaults to false. If true a breakpoint is added to main,\
+\b0 is a boolean parameter which defaults to false. If true a breakpoint is added to main.\
 
 \b using
 \b0  is the name of the Unix tool used to run the assembly. It defaults to "mono".\
