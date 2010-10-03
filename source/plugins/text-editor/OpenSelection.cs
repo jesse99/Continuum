@@ -244,13 +244,16 @@ namespace TextEditor
 			return opened;
 		}
 		
+		// TODO: The operation of open selection is a little weird: when searching for
+		// local files we use the full file name, but when using the locate command
+		// we allow partial file name matches.
 		private bool DoOpenRelativePath(string name, int line, int col)
 		{
 			bool opened = false;
 			
 			try
 			{
-				if (!System.IO.Path.IsPathRooted(name) && name.Contains("/"))
+				if (!System.IO.Path.IsPathRooted(name))
 				{
 					// See if a file exists at local path + name.
 					Boss boss = ObjectModel.Create("DirectoryEditorPlugin");
