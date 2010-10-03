@@ -1,0 +1,10 @@
+<Bosses namespaces = "Gear Shared AutoComplete">
+	<Extend name = "Application">
+		<Implementation interfaces = "IInterface +IFactoryPrefs" name = "FactoryPrefs"/>
+	</Extend>
+	
+	<Extend name = "TextEditor">
+		<Implementation interfaces = "IAutoComplete" name = "AutoComplete"/>
+		<Implementation interfaces = "IArgsAnnotation" name = "ArgsAnnotation"/>
+	</Extend>
+</Bosses>

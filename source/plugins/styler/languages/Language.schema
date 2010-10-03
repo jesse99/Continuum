@@ -1,0 +1,36 @@
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:annotation>
+		<xsd:documentation xml:lang="en">
+			Schema for Continuum language files.
+		</xsd:documentation>
+	</xsd:annotation>
+	
+	<!-- root element -->
+	<xsd:element name="Language" type="LanguageType"/>
+	
+	<!-- All of the strings are .NET regular expressions. See http://msdn.microsoft.com/en-us/library/az24scfc(vs.71).aspx
+	and http://blogs.msdn.com/bclteam/archive/2005/03/15/396452.aspx for details. The regexen 
+	use the following options: Multiline | IgnorePatternWhitespace. 
+	
+	Note that if parens are used in the regexen they should be the non-grouping version:
+	(?: your expression here ). -->
+	<xsd:complexType name="LanguageType">	
+		<xsd:sequence>
+			<xsd:element name="comment" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="keyword" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="number" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="other1" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="other2" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="preprocessor" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="string" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="type" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="member" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="word" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>	<!-- used when double clicking -->
+		</xsd:sequence>
+		
+		<xsd:attribute name="name" type="xsd:string" use="required"/>
+		<xsd:attribute name="shebang" type="xsd:string"/>		<!-- space separated list of shebangs associated with the language, eg "sh csh bash" -->
+		<xsd:attribute name="tab_stops" type="xsd:string" default="0"/>
+		<xsd:attribute name="ignore_whitespace" type="xsd:boolean" default="false"/>
+	</xsd:complexType>
+</xsd:schema>

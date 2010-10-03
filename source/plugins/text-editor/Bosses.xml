@@ -1,0 +1,27 @@
+<Bosses namespaces = "Gear Shared TextEditor">
+	<Extend name = "Application">
+		<Implementation interfaces = "IInterface +IFactoryPrefs" name = "FactoryPrefs"/>
+		<Implementation interfaces = "IInterface +IDisplayBuildError" name = "DisplayError"/>
+		<Implementation interfaces = "IInterface +ICanOpen" name = "CanOpen"/>
+	</Extend>
+	
+	<Extend name = "TextEditorPlugin">
+		<Implementation interfaces = "ICreate" name = "CreateEditor"/>
+		<Implementation interfaces = "IWindows" name = "Windows"/>
+		<Implementation interfaces = "ITextEncoding" name = "TextEncoding"/>
+		<Implementation interfaces = "IOpenSelection" name = "OpenSelection"/>
+		<Implementation interfaces = "IUnicodeName" name = "UnicodeName"/>
+		<Implementation interfaces = "IInterface +ITextContextCommands" name = "ShowSpaces"/>
+	</Extend>
+	
+	<Extend name = "TextEditor">
+		<Implementation interfaces = "IWindow ITextEditor IText IReload ITextMetrics" name = "Editor"/>
+		<Implementation interfaces = "ISearchTokens" name = "SearchTokens"/>
+		<Implementation interfaces = "ITextOverlay" name = "TextOverlay"/>
+		<Implementation interfaces = "IMenuHandler" name = "MenuHandler"/>
+	</Extend>
+	
+	<Boss name = "TextWindow" singleton = "true">
+		<Implementation interfaces = "ICreate" name = "CreateWindow"/>
+	</Boss>
+</Bosses>

@@ -1,0 +1,11 @@
+<Language name = "python" shebang = "python">
+	<comment>\# [^\r\n]* [\r\n]</comment>	<!-- note that $ won't work quite right with windows line endings -->
+	<keyword>\b(?:  and | del | for | is | raise | assert | elif | from | lambda | return | break | else | global | not | try | class | except | if | or | while | continue | exec | import | pass | yield | def | finally | in | print | as | None)\b</keyword>
+	<keyword>\b(?: self | property | True | False)\b | \@property</keyword>
+	<number>(?&lt;= \W) (?: 0[xX])? \d+ [lL]? (?= \W)</number>
+	<string>&quot;&quot;&quot; (?: [^\\] | \\.)*? &quot;&quot;&quot;</string>
+	<string>r? &quot; (?: [^&quot;\r\n\\] | \\.)* &quot;</string>
+	<string>r? &apos; (?: [^&apos;\r\n\\] | \\.)* &apos;</string>
+	<type>(?&lt;=\b class \s+) \w+</type>
+	<member>(?&lt;=\b def \s+) \w+</member>
+</Language>

@@ -1,0 +1,13 @@
+<Bosses namespaces = "Gear Shared Disassembler">
+	<Extend name = "Application">
+		<Implementation interfaces = "IInterface +ICanOpen" name = "CanOpen"/>
+	</Extend>
+	
+	<Boss name = "Disassembler" singleton = "true">
+		<Implementation interfaces = "IDisassembler" name = "Disassembler"/>
+	</Boss>
+	
+	<Extend name = "TextEditorPlugin">
+		<Implementation interfaces = "IInterface +ITextContextCommands" name = "ContextMenu"/>
+	</Extend>
+</Bosses>

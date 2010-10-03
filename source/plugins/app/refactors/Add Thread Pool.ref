@@ -1,0 +1,45 @@
+# Adds code to create a thread using the pool and a stub for the thread method.
+define Run()
+	if Scope is Method then
+		Globals.AddUsing("System")				# need this for Exception
+		Globals.AddUsing("System.Threading")
+		
+		let type = Scope.DeclaringType, default = type.GetUniqueName("DoThread") in
+			let name = Ask("Thread method name:", default) in
+				if type.IsStatic then
+					StaticClass(Scope, name)
+				else
+					NormalClass(Scope, name)
+				end
+			end
+		end
+	else
+		Raise("Selection is not within a method.")
+	end
+end
+
+define NormalClass(method, name)
+	InsertAfterSelection("ThreadPool.QueueUserWorkItem•(o => #{name}•());	// the pool uses background threads so the app will exit even if this thread is still running")
+
+	method.AddMemberAfter(
+"private void #{name}•()
+{
+	try•{
+	}•catch (Exception)•{
+		// note that unhandled thread exceptions normally terminate the app
+	}
+}")
+end
+
+define StaticClass(method, name)
+	InsertAfterSelection("ThreadPool.QueueUserWorkItem•(o => #{name}•());	// the pool uses background threads so the app will exit even if this thread is still running")
+
+	method.AddMemberAfter(
+"private static void #{name}•()
+{
+	try•{
+	}•catch (Exception)•{
+		// note that unhandled thread exceptions normally terminate the app
+	}
+}")
+end

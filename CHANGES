@@ -1,0 +1,195 @@
+Version 0.6 (r261)
+
+* Documents (including new untitled documents) are now auto-saved every 10 seconds.
+* Added some new refactors: 
+	Add Null Check - inserts a Contract.Requires check for the current selection.
+	Add Null or Empty Check - inserts a Contract.Requires check for a null or empty string.
+	Create Attribute - creates a skeleton for a custom Attribute class.
+	ResolveNamespace - inserts a using namespace declaration for the type in the current selection.
+* (Shift)-option-tab now selects the previous or next identifier for all languages instead 
+of just C#.
+* gcc errors are now parsed so that the file with the error is opened and the offending
+line selected.
+* Added a regex for c++ syntax hilighting.
+* Added *.resx to the xml glob list.
+* The XML language files now support an optional list of shebang tool names. If a file
+is opened that does not have an extension associated with a language the shebang will
+be used to associate a language with the file.
+* Added shebangs for the python and shell languages.
+
+* Updated the Search in Apple URL so that it works with Apple's new organization.
+* Names that start with CA, CG, QC, and SB (and are followed by an upper-case letter)
+are now looked up on apple's site instead of msdn.
+* Transcript window again supports the find dialog.
+* When creating a new text window the default typing style is now set according to
+the user's default text preferences.
+* Setting the language using the Get Info window now works with unsaved windows.
+* Saving an untitled document will now re-style the text based on the file extension.
+* Fixed the Create Exception refactor so that the generated inner exception ctor 
+calls the correct base ctor.
+* Implement IDisposable refactor no longer adds throw new ObjectDisposedException 
+to private methods.
+* Fixed option-shift arrow so that it works when the selection starts or ends with whitespace.
+* If the directory is already open and an attempt is made to open it again the current
+directory window will be brought to the foreground instead of opening the directory twice.
+* Made underscore the command key for italic (I is used for get info).
+* C, C++, and ObjectiveC syntax highlighting regexen now recognize preprocessor 
+directives which have whitespace after the hash symbol.
+* Updated the regexen for a bunch of languages to work better with windows
+ line endings (mostly for comments which extend to the end of a line).
+* *.log glob defaults to plain text.
+* Right-clicking past the bottom of the text no longer pops up an error alert.
+
+* After opening a file from Time Machine that window's context menu will now have a
+disabled "Finding old Files" item until the worker thread finishes finding older versions of 
+the file.
+* Language XML files now have an optional entry for words which is used for things like
+double clicking. This prevents periods from counting as word characters on Snow Leopard
+and makes usage a bit nicer on languages with wacky identifiers.
+* Language regexen are stored in '~/Library/Application Support/Continuum' instead of the
+app bundle to make it easier to add custom languages.
+* Added a button to the language globs panel to open the languages directory.
+* typeof(xxx) now auto-completes when used in chained method calls.
+* Type of z in `var z = typeof(xxx)` is now inferred for auto-complete.
+* The Script type in the refactor language now has a Selection property which can
+be used to retrieve the current selection in the text being refactored.
+* Reworked the default find in files extensions list so there is an entry for C#/C/C++, an
+entry for script files, an entry for make/scons files, and an entry for xml files.
+* Renamed the "Show Implementors" context menu item "Show Derived Types"
+because interfaces can inherit from interfaces.
+* Allow words to start with a tilde in the C and C++ styler regexen.
+* Allow words to contain a colon in the Objective-C styler regex.
+* Shift-option-arrow now scrolls the selection into view.
+* Added -f to the rm commands in the clean targets so we don't get messages when
+trying to remove items which aren't there. Also deletes csc_flags.
+* Handle IOExceptions when building (mono 2.6 sometimes throws "Error creating 
+standard error pipe" when starting the System.Diagnostics.Process).
+* Handle IOExceptions when creating StreamWriters (this is for too many open file
+errors which can happen fairly easily with things like bittorrent apps because macs
+by default have a 256 global limit on the number of open files).
+
+
+Version 0.5 (r226)
+
+* Added support for building via nant.
+* Added support for disassembling assemblies. You can dissasemble entire assemblies by
+   opening them using the Open command or disassemble a type/methid using the context 
+   menu. Note that the disassembly is much nicer than monodis. Among other things it is color 
+   coded, nests exception handlers, and includes the source file in comments (if the assembly 
+   has an mdb file).
+* Added Open as Binary command.
+* Added support for viewing files in Time Machine. This is done by choosing Find in Time
+   Machine using the context menu which will open the latest version of the file from Time
+   Machine. Older versions can also be opened using the context menu on the files from
+   within Time Machine.
+* Added a Save To command.
+* Added a text document info window which allows line ending, format, encoding, and language
+   to be viewed and changed.
+* Text files can now be optionally word wrapped.
+* Added support for decoding utf-32.
+* Added a Reverse Lines script.
+* Added a Look Up in Dictionary command (which will use Wikipedia as well as the built-in
+   dictionary).
+* Added support for styling the m4 and css languages.
+* Added svn cat to the context menu.
+* Improved the directory window:
+   - It's now a lot more efficient for very large directory trees.
+   - Directories are no longer collapsed when an item underneath them changes.
+   - The selection is managed a lot better as the directories change.
+   - Assemblies now default to being drawn in red.
+* Improved auto-complete:
+   - Fixed two crashes for files with no using directives.
+   - The right members are now shown if System.Enum is being completed (as opposed 
+   to an enum type).
+   - Auto-completing the base keyword will now show protected members.
+   - Fixed completion for var variables which use as expressions.
+   - Improved auto-complete chaining for methods which return arrays.
+   - Events now auto-complete.
+   - Double tab now completes "new xxx" where xxx is the stem of an aliased type.
+   - Auto-completion inside nested classes wasn't finding locals and arguments.
+   - Auto-complete was not finding nested class names.
+* Improved show short form:
+   - Enums are now special cased so they look a lot nicer.
+   - Attributes are now included for types and members.
+   - Operators now have their own section.
+   - Moved static members to the end.
+   - Types which are both asbtract and sealed are now shown as static.
+* Improved the Open Selection command:
+   - It will now popup a dialog allowing you to select the paths you want to open if there
+   are more than two possibilities (instead of opening up to ten and beeping if there are
+   more than ten).
+   - The text is now trimmed before the command tries to open it.
+   - Try to open files before urls (we didn't always get errors when trying to open bogus urls).
+   - It now does a better job finding files with the locate command when some of the
+   files it returns no longer exist.
+* Type names in type declarations now default to being styled with a cool shadow.
+* Rewrote the language element styler so that it's more responsive and reliable.
+* Renamed "Find on Apple" "Search in Apple".
+* Renamed "Find on MSDN" "Search in MSDN".
+* Tab stops defaults to 18 instead of 20.
+* Changed the window name used with svn blame, cat, diff, and log.
+* Edited find results were not being dimmed when the edit happened.
+* Dirty files were not always being saved correctly before make was run. This was because
+   of undo coalescing in the document.
+* The match entire words find option now works much better if the search text does not 
+   start or end with a letter
+* Made *.svn-blame and *.svn-log plain text.
+* Zero length text files were not being opened correctly.
+* Fixed a bug which sometimes caused infinite loops if preprocessor directives were
+   embedded in verbatim strings.
+* Text style button titles weren't always updating when the text attributes changed.
+* Open file for types/members now works a bit better when some of the types/members
+   have no associated path (e.g. we couldn't find an mdb file for some assemblies).
+* Make windows the main window on right clicks so the context commands don't get confused.
+* Renamed Add Formatted ToString refactor Implement IFormattable and changed
+   it so it adds the IFormattable base if it is not already present.
+* Fixed regexen for C and Obejctive-C so #ifdef is styled correctly.
+* Type database no longer aborts processing assemblies when the assemblies mdb file doesn't
+   match the assembly.
+* Updated the default makefile target ignore list.
+* Conversion operators are now named using the type instead of "<conversion>" so that
+   they now work properly with syntax hiliting.
+   
+Version 0.4 (r156)
+
+* (Mostly) implemented auto-complete.
+* Added support for reading and writing utf16, 7-bit ASCII, rtf, html, word, open xml, and
+  open document files.
+* Added a Font menu for files which are not syntax hilited. 
+* Region directives now appear in the popup as disabled items (if the option key is not down).
+* Sccs menu now works for text editor windows (instead of just for directory editor windows).
+* Option tab now selects the next identifier using the c# scanner. Option-shift-tab
+   does the reverse.
+* Open type context menu item now falls back to using the locate command so interfaces 
+   and enums can be opened (if their file name is the same as the type name).
+* Open type context menu items now disambiguate file names if neccesary.   
+* Method names in the context menu now look better (C# aliased type names are used,
+   namespaces are removed, and params/this/ref/out keywords are added to parameters).
+* Open selection command now treats the mono root as a preferred directory.
+* Added a directory pref to add spaces before method args.
+* Added a directory pref to put curly braces on their own lines (for refactor commands).
+* Added Convert to Hex and Convert to Decimal scripts.
+* Added a menu item to install a tool which can be used to open files in continuum (or
+  foreshadow).
+* Added CoreFoundation to the default find in files directories.
+* Improved Transcript window speed.
+* Fixed searching locked files.
+* Make the editor window the key window on context click (otherwise confusion ensues
+   when we try to process the menu command).
+* Fixed styler sorting bug which sometimes causes styles to not be applied correctly.
+* Sleep a bit after saving files to attempt to ensure that make recognizes that the files have 
+  changed.
+* Instead of killing the app fallback on stdout if the log file cannot be created.
+* Only enable the refactor menu items if a text editor window is the main window and it's
+  editing C#.
+* Fixed a few minor bugs in the C# parser.
+* Short form shows the assembly for the most derived type, not the most base type.
+* Cleaned up some problems with using sqlite from threads.
+* Object databases are now about 3x smaller.
+* Databases are now placed into ~/Library/Caches/Continuum (note that Time Machine
+   ignores this directory).
+* Moved scripts to ~/Library/Application Support/Continuum.
+
+
+Version 0.2 (r18)
+* First public release.

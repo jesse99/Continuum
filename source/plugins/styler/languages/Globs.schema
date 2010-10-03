@@ -1,0 +1,24 @@
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:annotation>
+		<xsd:documentation xml:lang="en">
+			Schema for the file which maps file names to languages.
+		</xsd:documentation>
+	</xsd:annotation>
+
+	<!-- root element -->
+	<xsd:element name="Globs" type="GlobsType"/>
+
+	<xsd:complexType name="GlobsType">
+		<xsd:sequence>
+			<xsd:element name="Glob" type="GlobType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="GlobType">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:string">
+				<xsd:attribute name="language" type="xsd:string" use="required"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+</xsd:schema>

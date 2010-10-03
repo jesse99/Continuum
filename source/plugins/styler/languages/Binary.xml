@@ -1,0 +1,5 @@
+<Language name = "binary" tab_stops = "5">
+	<comment>// [^\r\n]* [\r\n]</comment>	<!-- note that $ won't work quite right with windows line endings -->
+	<number>^ \d [0-9a-fA-F]*</number>
+	<other1>. . . . . . . . . . . . . . . . . . .[\r\n]</other1>
+</Language>

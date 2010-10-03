@@ -1,0 +1,702 @@
+http://msdn.microsoft.com/en-us/devlabs/dd491992.aspx
+Foundations of F#
+ 
+https://home.comcast.net/~jesse98/public/Continuum-0.2.222.0.tar.gz
+
+BMPN - flow charts
+http://code.google.com
+http://dev.mysql.com/tech-resources/articles/why-data-modeling.html
+SQL and it's Applications
+http://otx.osxninja.com/
+NRefactory
+http://monodevelop.com/Proposal:_Code_Templates
+http://tirania.org/blog/archive/2009/Mar-19.html (cross-plaform IDE)
+http://tirania.org/blog/archive/2009/Mar-19.html
+Text Template Transformation Toolkit system: http://tirania.org/blog/archive/2009/Mar-10.htm
+http://lambda-the-ultimate.org/node/812
+http://www.onboard.jetbrains.com/is1/articles/04/10/lop/
+
+http://code.google.com/p/simple-assembly-explorer/
+http://www.slickedit.com/content/view/353/217/#surroundwith
+http://www.mono-project.com/StudentProjects#MonoDevelop
+http://www.jetbrains.com/resharper/features/
+
+select declaring_root_name,return_type_name from Methods where name = 'get_BaseTypes';
+sudo fs_usage -f filesys
+
+/Users/jessejones/Source/Third_Party/mono-2.6.7/mono/mini/debugger-agent.c
+/Users/jessejones/Source/Third_Party/mono-2.6.7/mcs/class/Mono.Debugger.Soft
+
+The Algorithm Design Manual
+
+public abstract class Mono.Debugger.Event
+	public class Mono.Debugger.Soft.AppDomainCreateEvent
+	public class Mono.Debugger.Soft.AppDomainUnloadEvent
+	public class Mono.Debugger.Soft.AssemblyLoadEvent
+	public class Mono.Debugger.Soft.AssemblyUnloadEvent
+	public class Mono.Debugger.Soft.BreakpointEvent
+	public class Mono.Debugger.Soft.ExceptionEvent
+	public class Mono.Debugger.Soft.MethodEntryEvent
+	public class Mono.Debugger.Soft.MethodExitEvent
+	public class Mono.Debugger.Soft.StepEvent
+	public class Mono.Debugger.Soft.ThreadDeathEvent
+	public class Mono.Debugger.Soft.ThreadStartEvent
+	public class Mono.Debugger.Soft.TypeLoadEvent
+	public class Mono.Debugger.Soft.VMDeathEvent
+	public class Mono.Debugger.Soft.VMDisconnectEvent
+	public class Mono.Debugger.Soft.VMStartEvent
+
+public abstract class Mono.Debugger.EventRequest
+	public sealed class Mono.Debugger.ExceptionEventRequest
+	public sealed class Mono.Debugger.BreakpointEventRequest
+	public sealed class Mono.Debugger.MethodEntryEventRequest	
+	public sealed class Mono.Debugger.MethodExitEventRequest
+	public sealed class Mono.Debugger.StepEventRequest
+	
+public abstract class Mono.Debugger.Value
+	public class Mono.Debugger.PrimitiveValue
+	public class Mono.Debugger.StructMirror
+		public class Mono.Debugger.EnumMirror
+	public class Mono.Debugger.ObjectMirror
+		public class Mono.Debugger.StringMirror
+		public class Mono.Debugger.ArrayMirror	
+		
+http://research.microsoft.com/en-us/projects/pex/	
+
+http://www.eqatec.com/tools/profiler
+http://code.google.com/p/nprof/
+ms (but team version)
+http://www.wikihow.com/Optimize-Your-Program%27s-Performance
+http://stackoverflow.com/questions/375913/what-can-i-use-to-profile-c-code-in-linux/378024#378024
+
+every N seconds, for main thread
+	record methods in the stack trace
+	if a method appears more than M times then record the entire stack trace
+	
+print traces for the top O methods (where O >= M)
+include the percentage of samples that that method appeared in the stack trace
+
+[0] http://mono.ximian.com/monobuild/preview/download-preview/
+[1] http://www.mono-project.com/Release_Notes_Mono_2.8
+[2] http://www.mono-project.com/Compacting_GC	System.ArgumentException
+[3] http://www.mono-project.com/Mono_LLVM
+
+* Release checklist:
+	- run continuum with no prefs
+	- run continuum with no databases (including the windows db)
+	- run continuum with no Continuum Files dir
+	- look at memory usage
+	- run unit tests in debug
+	- run unit tests in release
+	- make sure untitled docs work OK
+	- build a new foreshadow
+	- review BUILDING doc
+	- update known issues in the README
+	- review README
+	- review config file
+	- mention that thr debugger requires mono 2.6.3 or later
+	- run from the finder
+	- review tar targets
+	- use svn log -r 1:HEAD > CHANGE_LOG
+	- update CHANGES file
+	- make sure gear is checked in
+	- upload the new binary
+	- make sure it works with mono 2.8
+	- build a new foreshadow
+	- review the front page of the web site
+	- review the screen shots
+	- email
+
+* File debugger tickets.	
+* Can we improve syntax hilghting? Maybe with something other than regexen? Would be
+   nice to optionally style types, fields, methods, locals and arguments.
+   - also different colors for classes vs structs, static access vs instance access, etc
+* Get rid of glob files? Would be easier (and less confusing) if the default globs were part of the language.
+* Look at using a replacement for sqlite. Maybe a custom database or some nosql sort of thing.
+* Work on a debugger:
+	- context breakpoint menu should have close do a broadcast so the breakpoint can be toggled
+	- CodeViewer is being deallocated but not GCed (there is some object with a reference to the boss)
+* Should DoGetOperatorName handle names like:
+	ObjectModel Error bad operator: op_UnaryNegation_Int32
+	maybe tweak the warning?
+* Genie effect with auto-complete is distracting?
+
+* Period should work like return in auto-complete window.
+* Should make font bigger (or smaller) change the defaults for source code windows? It would probably
+   have to change all the defaults?
+* Do some more work on the debugger:
+	- would be nice if could add breakpoints to IL views
+	- add an immediate window
+	- allow richer expressions in conditional breakpoints
+	- might be cool to keep a fixed window of variable histories
+	- allow users to specify which exceptions they want to break on, either a list or a regex
+	  or maybe it would be better to have a black list of exceptions to ignore
+	- allow users to set the ToString format specifier?
+	- can't set values for types like IntPtr, Nullable`1
+	- support remote debugging
+	- breakpoint conditions should be persisted
+	- would be nice if conditional expressions worked with types, eg int.MaxValue
+	- might want to show all properties (instead of just the auto-generated ones)
+	- allow more complex expressions (and properties) to be used with conditional breakpoints
+	- might want to, at least optionally, show properties in the variables window
+	- watchpoint windows
+		` drag and drop to add new variables
+		` draw in gray if the current context does not have the variable in any stack frame
+	- moving the instruction pointer
+	- custom viewer dlls
+* Use the new StackFrame.GetVisibleVariables method.
+* Start using VirtualMachine.GetNextEventSet.
+* Why doesn't stuff like var thread = (ThreadMirror) value auto-complete?
+* SHouldn't we warn if two language files use the same language?
+* Auto-complete speed is kind of poor:
+   ResolveName::ctor                             00.141    00
+      DoGetVariables                             00.14     00.058
+         ResolveMembers::Resolve                 00.074    00.039
+            TargetDatabase::GetMembers1          00.015    00.015
+            TargetDatabase::HasType              00.013    00.013
+            TargetDatabase::GetExtensionMethods1 00.003    00.003
+            TargetDatabase::GetFields1           00.002    00.002
+            TargetDatabase::GetBases             00.002    00.002
+         ResolveType::Resolve1                   00.008    00.008
+      DoFindMember                               00.001    00.001
+   ResolveMembers::Resolve                       00.047    00.01
+      TargetDatabase::GetMembers1                00.027    00.027
+      TargetDatabase::HasType                    00.004    00.004
+      TargetDatabase::GetBases                   00.003    00.003
+      TargetDatabase::GetFields1                 00.002    00.002
+      TargetDatabase::GetExtensionMethods1       00.001    00.001
+   ResolveExpr::Resolve                          00.015    00.004
+      ResolveName::Resolve                       00.011    00.005
+         ResolveType::Resolve1                   00.005    00.002
+            TargetDatabase::HasType              00.003    00.003
+         ResolveType::Resolve2                   00.001    00.001
+   AutoComplete::DoGetNamespacesNamed            00.011    00.007
+      TargetDatabase::GetNamespaces              00.004    00.004
+	- database is only about 0.013
+	- so the bulk of the time seems to be logic and such
+	- maybe it would help if we restricted searches by leveraging the using declarations in the file
+* Show short form on Action didn't show the Delegate members.
+* Dot should complete auto-complete text.
+* Auto-complete window should have context menu for showing only properties.
+* Maybe optionally hide fields too.
+* Add a pref to make find wrap around (and beep if we get back to where we started).
+* Should deduce type of typeof(xxx).
+* Would be nice not to highlight the linq query keywords (from, which, etc) if System.Linq is not
+   being used.
+* Couldn't open (via drag and drop) /Users/jessejones/Source/Third_Party/mono-2.6.3/mono/mini/ChangeLog
+* Mention can right click on completion window.
+* Attributes and base classes need to handle global::
+* global should be a c# keyword?
+* Getting errors right clicking at the bottom of short text documents.
+* Doesn't the create thread refactor need to use a field for the thread object?
+* Mention useful to download mono source (and set the associated pref):
+	- dont need to compile
+	- allows source level debugging, context menus allow you to go to definitions for mono methods
+* Got a crash switching between different underline options for members:
+  at (wrapper managed-to-native) MObjc.Ffi.FfiCall (intptr,intptr,intptr,intptr,intptr&) <0x00004>
+  at (wrapper managed-to-native) MObjc.Ffi.FfiCall (intptr,intptr,intptr,intptr,intptr&) <0x00004>
+  at MObjc.Ffi.Call (intptr,intptr,intptr,MObjc.Helpers.PtrArray) [0x00006] in /Users/jessejones/Source/mobjc/source/Ffi.cs:91
+  at MObjc.Native.Invoke () [0x00020] in /Users/jessejones/Source/mobjc/source/Native.cs:106
+  at MObjc.Native.Call (intptr,string,object[]) [0x00090] in /Users/jessejones/Source/mobjc/source/Native.cs:135
+  at MObjc.NSObject.Call (string,object[]) [0x0003b] in /Users/jessejones/Source/mobjc/source/NSObject.cs:290
+  at App.PreferencesController.changeAttributes (MObjc.NSObject) [0x00000] in /Users/jessejones/Source/Continuum/source/plugins/app/PreferencesController.cs:233
+  at (wrapper runtime-invoke) <Module>.runtime_invoke_void__this___object (object,intptr,intptr,intptr) <IL 0x0001e, 0x00046>
+
+  at (wrapper managed-to-native) MObjc.DirectCalls.Calli (intptr,intptr,intptr&) <0x00004>
+  at (wrapper managed-to-native) MObjc.DirectCalls.Calli (intptr,intptr,intptr&) <0x00004>
+  at MObjc.NSObject.retainCount () [0x00032] in /Users/jessejones/Source/mobjc/source/NSObjectMethods.cs:240
+  at MObjc.NSObject.release () [0x00015] in /Users/jessejones/Source/mobjc/source/NSObjectMethods.cs:186
+  at App.PreferencesController.DoEditFont (string,string) [0x000bf] in /Users/jessejones/Source/Continuum/source/plugins/app/PreferencesController.cs:418
+  at App.PreferencesController.setPreprocessFont (MObjc.NSObject) [0x00000] in /Users/jessejones/Source/Continuum/source/plugins/app/PreferencesController.cs:190
+* Does setting the text color still work in prefs?
+* May want to mention short form too.
+* Option-arrow is skipping over periods.
+* Rewrite the readme using rtf:
+	- add some sort of tips and tricks section
+	- mention how powerful command-D is
+	- also using Time Machine as a sccs
+* Need a directory for custom plugins:
+	- google code search might be a good example
+	- or maybe a simple diff tool	regime
+	- or maybe a MRU window list (context menu?)
+
+* Add better support for AppleScript/IronPython (and concurrently use it to write functional tests).
+	http://developer.apple.com/cocoa/applescriptforapps.html
+	http://developer.apple.com/mac/library/documentation/Cocoa/Conceptual/ScriptableCocoaApplications/SApps_about_apps/SAppsAboutApps.html
+	http://developer.apple.com/mac/library/technotes/tn2002/tn2106.html
+	man 5 sdef
+	tell application "Continuum" to save document 1 in "/tmp/foo.html" as "HTML"
+* Look at the new error bubbles in snow leopard's XCode.	
+* Typing seems slower than it used to be, eg when typing in the middle of a comment.
+* Would be nice to support hyperlinks in rich text files
+	http://developer.apple.com/qa/qa2006/qa1487.html
+* NSWorkspace has new methods to duplicate and trash files.
+* NSError has a helpAnchor method.
+* Generate stub seems fairly nifty.
+* Work on collection support:
+	- classes that implement ICollection should use EnumerableValue
+	- may want to also support arbitrary IEnumerable types
+	- may want a context menu to show more than the first 200 items
+* Add a show command:
+	- should be a context menu for selected types
+	- not live, but when resuming disable the text
+	- support ints, char, string, IntPtr, UIntPtr
+	- should be live, how do we do this? struct mirrors at least need to be re-generated, maybe
+	  store a path to the field being watched?
+* Stagger windows, especially find results and assembly browser.
+* Need to do a better job with Refactor Language.rtf (prose and the grammar)
+* http://cx4a.org/software/gccsense/
+* Read up on MEF
+	http://www.codeplex.com/MEF
+* Refactor to generate forwarding methods? Maybe can select methods and then it generates
+   forwarding methods which can be cut and pasted. Or select a field and it pops up a dialog
+   allowing user to pick which methods he wants to forward.
+* Allow auto-completion via "CamelHumps"?
+	- ie for "WriteLine" can type "WL"
+* Add a ToString refactror, should default to returning fields and auto-props
+* Do the same for implement IFormatable.
+* MonoDevelop has an interesting Dynamic Abbrev Command: http://monodevelop.com/Download/What%27s_new_in_MonoDevelop_2.2
+* Get refactors enabling and disabling.
+* Add refactors to context menu.
+* Might be able to do some new refactors now like rename and extract method.
+* Do something different with /// styling?
+* Think about ways to allow easier customization and looser coupling. Maybe can use tuple spaces
+   to communicate (and even to do UI). How would we handle notifications? Or maybe a Plan 9
+   style virtual file system using unix sockets (concurrency may be an issue)
+* Make Add WriteLine a standard refactor?
+* Add Find Type command:
+	- uses a regex
+	- searches all types referenced by the current assembly
+	- start with System.*
+* Implement/Override Members
+	- pops up a dialog showing all the methods that can be overriden/implemented
+	- can check the ones to add
+	- stubbed methods are added
+	- might also want custom context menu when right clicking on "override"
+* Rename type refactor
+* Rename member refactor.
+* File compare.
+* Directory compare.
+* Extract method refactor.
+* Extract class refactor.
+* Safe delete refactor.
+* Remove Unused Using declarations:
+	- this should remove declarations that are definitely not needed
+	- error if file is newer than assembly
+	- process assembly and find the namespaces which were used
+	- remove any which were listed but not actually used
+* Change signature refactor.
+* Complete Statement would be nice:
+	- adds parens, braces, semi-colons, etc
+* Optimize using directives
+* Add Find Uses/References
+	- needs to be smarter than a text search
+	- add a warning icon or label if the current assembly is not up to date
+	- file must be up to date if the member we're searching for is overloaded?
+* "Resolve" context menu command - you can use it to insert a missing
+   "using" statement without going to the top of the document.
+* Implement help.
+* Add a refactor to add xml comment placeholders?
+* Odd things can happen when case differs in file paths. Should things like WindowDatabase
+   normalize path casing? An example is a make file which uses a line like Source/*.cs where
+   the case of Source does not match the file system. If there are errors in a source file then
+   the window jumps around a bit and double clicking the error window doesn't work.
+   - what if the file system is case sensitive?
+* Might want to log memory and NSObject highwater marks.
+* Look at other editors, eg TextMate, VS Expess.
+* Can use IronPython for scripting:
+	http://blogs.msdn.com/srivatsn/archive/2008/09/16/hosting-ironpython-made-easier.aspx
+	http://www.ironpython.info/index.php/Hosting_IronPython_2
+* Short form should have doc comments:
+	- arg completion window should have param and typeparam comments
+	- style these
+	- maybe use an html view, could have links to/from summary form and remarks
+* Auto-complete table should have comments too.
+** Double tab should also complete english words:
+	- use completionsForPartialWordRange:inString:language:inSpellDocumentWithTag:
+	- probably want to add some sort of double tab framework
+ Add a general svn command. Something like:
+	- floating window
+	- left side has a directory view showing directory items and revision numbers
+	- need to watch the root
+	- context menu should open the window and show the selected item
+	- top has popdowns with command, revision 1 (defaults to head), and revision 2
+	  (defaults to nothing)
+	- middle has editable text field with the command to be executed
+	- bottom has help and execute buttons
+	- output goes to either transcript or a new window
+	- probably need a way to set the more uncommon options
+* Enter should add snippets:
+	- look at CodeTemplates file
+	- $NAME is a placeholder
+	- insert NAME (or maybe assk the user for the real name)
+	- select the first place holder (if we don't ask users for the name)
+	- also need $date and $year
+	- first time a snippet is used copy the snippets to a local dir
+	- if a local snippet dir exists also copy any new snippets (on startup and on dir changed)
+	- snippets: add class, iterface, struct, exception, unit test, method rule, type rule
+	- get rid of Create Exception refactor
+* Can we do some sort of notification when assemblies finish parsing? Or to show parse
+   error message? Maybe a notifications window? Or directory window can have a
+   label somewhere? Also NSToolTipAttributeName
+   - could say stuff like "parsing mscorlib...", "parsing mscorlib...done", "[parser]
+     expected '}' on line 56"
+* Build errors should use annotations. What about the "Error 1 of 10" text?
+* Would be neat to have mcocoa project templates:
+	- generate source files, nibs, info.plist
+	- also either make or nant
+	- also a TODO file listing what needs to be customized
+* Mention option-tab somewhere.
+* Should be able to get rid of NSTreatUnknownArgumentsAsOpen hack.
+* Open method context menu items should be sorted by full declaring type name
+	- so TryParse should show the local stuff and then the system versions
+* Look at NSObject leaks again:
+	- try the mono profilers again
+	- might also want to look at the new performance counters
+	- make sure the little objects like strings aren't being leaked
+	- may want to add a debug flag to NSObject so it can store stack traces
+	- text windows
+	- editor windows
+	- method completion window
+	- argument completion window
+* Should spell check comments
+	- types and members should count as valid words
+* Might want to use NSFindPboard.
+* Make sure ComputeRuns is not called if runs are up to date.
+* Implement interface refactor.
+* Preprocessor commands can screw up the parser, see FileStream.cs for example.
+* Work on tab completion:
+	- might want to support completing names via F5, should also have a menu item
+	   for this	
+	- if a name cannot be resolved at all maybe it should be underlined in orange
+	- would be really nice to add an auto-complete (and maybe object-model)
+	  functional test
+	- get pointers completing
+	- get arrays completing
+	- get indexers completing
+	- get bound generics compelting
+	- might want to allow attributes to be tab completed
+	- it would be nice if tab could be used to complete type names, but the UI may
+	  be a bit gnarly if there is an ambiguity
+	- can we show the comments for the selection? maybe in a second window? or
+	   maybe some sort of context help window that can also be shown if the text 
+	   window selection is within a method? or a growl sort of window?
+	- need to work with namespace aliases
+	- might want to special case "throw new "
+* Expose CsBases.HasBaseClass to refactor.
+* Don't do brace hiliting if insertion point is not within code.
+* Implement IDisposable added throw to a private method.
+* Expose CsGlobalNamespace.Malformed to refactor. Or don't refactor if there are
+   parse errors.
+* Could probably speed up editing of large files if we got a pointer to the text from
+  native code and operated on that with unsafe code.
+* Code that executes in response to an edit should be constant time. If not queue
+   up a timer and do it after editing stops.
+* Might want to submit a bug report for System.Threading.ThreadPool.
+* Also why didn't PulseAll work?
+* Don't die if a factory pref handler throws.
+* Add some tool tips to the nibs.
+* Might be nice to bury all the C# knowledge in a plugin.
+* Might want a context menu to toggle showing/hiding of parse error annonations.
+* Need to handle aliaii in the Continuum directory.
+* Probably need to handle aliaii in open panels as well.
+* Find button locations look a bit odd.
+* Need a preference for Type.GetFieldName
+* Get parse errors for show base class. Maybe use an rtf format instead of cs.
+* Add a ChangeLog language?
+* Foreshadow/continuum scripts need work:
+	- should work if continuum is not running
+	- should be able to start/bring to front without an arg
+	- should be able to open dirs
+	- handle spaces in args
+	- support line numbers via colons
+	- finder seems to sometimes get confused about which mono app to open
+	- could use a custom apple event (or maybe add parameters to the open event)
+* About box needs a bit more info.
+* Probably want an uninstall script.
+* May want to bundle cecil with the app.
+* Confirmation if the user really wants to open a bunch of files
+	- open files
+	- return in dir editor
+	- return in find in files result
+   
+* Add support for auto backing up files. keepBackupFile
+* Warn on mixed line endings read.
+* Need to set file type for saved files.
+* Should be able to run from read-only media.
+* Database file names should probably include a hash or something for the dir path.
+* Might want to expose CsPreprocess to refactor.
+* Add ChangeLog support.
+* Add better support for svn commits.
+* Look at startup times.
+* Add support for scons.
+* Might want to allow enter to complete types and statements:
+	- should be template files
+	- users can edit these to put braces where they want
+	- users can add new templates (e.g. to paste copyright clause)
+* Work on rename refactor:
+	- if not private then do a make all
+	- use all of the local assemblies
+	- if the name cannot be found in an assembly emit an error (eg type isn't part of the
+	   build yet)
+	- only change local files
+* Need a way to build weird projects like Cecil, probably a pref with a build
+  command line which overrides make builder.
+* Look at iron python scripting (might also be able to use this for the refactor language)
+* Open as Binary won't work so well with really large files. Can we memory map them somehow?
+   Would probably require using a table instead of text view.
+* Command-8, or 2, or -, should switch between frontmost and next frontmost text windows.
+	- enable if there are more than two text windows and the main window is a text window
+	- probably need to track window z-order ourself
+	- might want a cycle command as well
+* Work on parser:
+	- see what safe speed is
+	- what about #if false?
+	- should we try to handle #if some_thing?
+	- remove unsafe from test.dll, plugin dll, and the class
+	- might want to use a StringSlice class in the scanner and parser, maybe with an
+	  implicit or explicit conversion to string
+	- think about integrating refactors into builds, might allow for AOP sort of stuff
+* Should be able to find properties like BuildStartTime.
+* Can we always generate response files? Maybe fix the timestamp?
+* Would be nice to have a find on python site command.
+* Short form should show comments
+	- both types
+	- should be able to do this w/o the scanner
+	- will need to special case attributes
+	- would be nice if we can tell if file does not match mdb
+* Add support for refactoring:
+	dump fields (may require reflection)
+	dump args, locals, fields used in a method
+	rename arg, need some sort of minimal statement/expr parser
+	rename field, need table with fields used by each type
+	rename method
+	rename type
+	split (non-cohesive) class
+	trace methods, might want to ask if exit should be traced
+* Cancel seems to have issues with make files (especially recursive ones)
+* May want to use the thread pool for any short lived threads.
+* Add (query) unicode database.
+* Add a simple calculator. Could use python or cssharp to evaluate expressions
+  and print them in one or more bases.
+  - or maybe an mpw style csharp shell
+  - context menu could allow output format(s) to be set
+* Libraries (but not apps) should always be built as debug?
+	- need to check to see if anything would be slow
+* Would be nice to have a monkey. Would probably need to disable save and things
+   like move to trash or svn revert.
+* Editor should work as well as bbedit:
+	- use setAutosaveExpandedItems?
+	- might want a favorites menu
+* Should support rectangular selections (option-shift-drag).
+* Support bookmarks:
+	- make sure we can embed graphics in the text, or use a floating window?
+	- add bookmark (cmd-/) adds up to nine bookmarks
+	- once at nine replaces ninth bookmark
+	- little graphic of a digit indicates bookmark
+	- cmd-1 to 9 change the selection to the bookmark
+	- bookmark is found with a live line number
+	- cmd-0 clears bookmarks
+* Work on databases:
+	- add a comment about separate versus mondo database
+	- can we add some sort of prefer local attribute for use when too many fields are
+	  returned?
+	- what if someone opens a root dir? maybe we should parse only immediate child
+	  directories? would probably need an option to recurse deeper
+	- probably should default to deleting the db on exit
+	- try using an assembly id instead of the hash for the key
+	- get the db size and the time for the second use of context menu
+* Might want to use alert sheets:
+	http://developer.apple.com/DOCUMENTATION/Cocoa/Conceptual/Sheets/Tasks/UsingAlertSheets.html#//apple_ref/doc/uid/20001045
+* Might want to add an align columns script. Kind of tricky to do though if the font
+   is proportional and tabs use stops.
+* Might want goto begin end of declaration commands.
+* Would be nice to degrade gracefully if sqlite is not installed (or has the wrong
+   version)
+* Undo has some problems with saving:
+	http://www.cocoabuilder.com/archive/message/cocoa/2002/12/28/62337
+* Need a way to easily open recent dirs.
+* More stuff:
+	code collapsing
+	integrated svn
+	queries
+	scid
+	alternate key bindings
+	integrated gendarme
+	diff
+	more complex refactors
+	replay
+	code coverage
+	gross performance cues
+* Good manifesto:
+	http://alarmingdevelopment.org/index.php?p=5
+	schematic tables
+* Do some more work on the svn plugin:
+	- ignore list, could probably use propget and propset
+	- add an svn manage command to do stuff like diffs and updates for the whole tree
+	- would be nice to better support revision numbers, maybe with a popup menu
+* Can we prevent the text view from treating colons as word characters? Messes
+   up option-arrow for example. Afaict there is no good way to do this.
+* Would be nice to auto-add using declarations.
+* Would be nice to collapse copyright boilerplate.
+* Would be really cool to have internal and external layout (ie to save files
+  using mono's crappy layout)
+* Keep an XML view of the open source documents in sync with the source
+	- need some sort of BadParse element, really we need a scanner more than a
+	  parser
+	- need a visual cue for bad parse lines
+	- xml is just a view, can't edit it
+* Would be nice to have color schemes. Should be easy to edit these.
+* Need a way to view what's happening to the code:
+	- save an annotated copy of open source files
+	- canonical copy should also be saved
+	- if crash need to pop up an alert and restore canonical copy
+	- edits should goto both files
+	- to start with annotated copy can record lines executed
+	- sidebar or something can show lines executed for last run
+	- later could add a debugger sort of thing for open files
+* Replay feature:
+	- instrument all assemblies
+	- on method entry record method and thread ids
+	- for stepping could instrument branches and record taken/not taken, when
+	  debugging create a reversible data structure
+	- should have an attribute to disable stepping in time critical code
+	- exception handlers need special instrumentation
+	- on field store record new value, maybe just ToString with a few special cases
+	  or inject ToReplayString if no ToString override and to default ToReplayString
+	- interop stores will be a little tricky, may have to special case blittable
+	  types
+	- should be able to set breakpoints, go forward, backward, etc
+	  conditional breakpoints
+	- break on exception
+	- could show code easily
+	- instead of showing a stack crawl show a stack crawl region
+	- won't instrumenting assemblies break pdb files?
+	- could show field history
+	- ref and out types would need special handling
+	- how do we figure out which fields refer to which objects?
+* mono has a code coverage switch.
+* Work on background builds:
+	- could so this on save
+	- maybe write a message when starting
+	- cancel if user saves again or starts a real build
+	- not sure how to handle errors, could write an error message saying "There
+	  were 12 errors from the background build." and let users do a next error
+	- recursive makes are hard to cancel
+* Might want to use row types.
+* Work on object-model plugin:
+	- windows showing query results should probably be live
+	- when doing a lookup need to only return the assemblies used by the file being
+	  edited
+	- need to handle namespaces better
+		` first try to treat x.y.z as a fully qualified name
+		` then check only the imported namespaces
+		` also handle aliased namespaces
+	- support interface locate (probably requires a custom database populator using
+	  a parser, also a source or provider column in the tables)
+	- support locate for other weird types like enums and delegates
+* Comments should be wiki format.
+* Would be cool to have a generate docs option. As html and some form suitable
+  for printing (maybe pdf).
+* First time a file is opened show a skeleton of public (and maybe protected)
+  members with no method bodies (except maybe asserts).
+* Can we do some sort of subtle hiliting of variable uses if the selection is
+  in a variable name?
+* Allow most everything to be collapsable?
+* Maybe have some visual cue for gross performance.
+* Can we link methods and tests somehow?
+* Do we want to make the app scriptable and recordable?
+* Might be nice to have a structured c# editor. Would allow nice stuff like 
+  user specific formating, local variable tab completion, smart statement 
+  insertion/tabbing, xml comment hiding/formatting, faster context menus, etc. 
+  One issue is that it would kind of suck to change an entire file to use 
+  project formatting if only one line changed.
+* Very important to be able to grok the code:
+	- static structure
+	- dynamic behavior
+		` app wide (code flow, threads, memory, assemblies)
+		` inter-procedural (threads, who called this)
+		` local (debugger, logging)
+* Lot's of good scid examples here:
+	http://mindprod.com/project/scid.html
+* Also
+	http://wesnerm.blogs.com/net_undocumented/2004/06/whidbey_may_mis.html
+* Might be able to do some refactors with drag and drop.
+* Look into lisp and smalltalk ides. Squeak and etoys.
+* Should be able to diff two entity instances.
+* Experiment with a runtime monitor plugin:
+	- have a low priority thread which monitors memory usage
+	- maybe use attributes or something to monitor runtime of selected methods
+	- maybe method/code coverage
+	- store results in a database somewhere?
+	- pop an alert if differences between two runs exceed some threshold
+* Look at literate programming again. TextMate, BBEdit, SlickEdit, MSVS, Eclipse,
+  Apple's. Resharper is supposed to be sweet.
+* IntelliJ IDEA is supposed to be one of the best IDEs
+	if I want to go to class MyMouseEventListener it's "Ctrl-NMMEL")
+* http://webpages.charter.net/edreamleo/front.html
+* Review other editors.
+* http://code.google.com/p/opentf/
+* Links: user editable list of text files, pdf files, html links, etc
+* Work on a structure editor?
+	- statements and method arguments should be plain text?
+	- might want empty blocks: correspond to non-terminals and act as insertion pts
+	- http://www.osenkov.com/diplom/
+	- http://www.onboard.jetbrains.com/is1/articles/04/10/lop/4.html
+	- add an xml editor first?
+	- might want sibling (cmd-[]), child (cmd-/), and peer (cmd-\) nodes
+	  child would be xml text or child element, peer would be attribute
+	- should be a generic framework (but only support c# for now)
+	- need structure definitions, eg if is a statement with an
+	  expression and a body, probably needs presentation info too (make this
+	  separate?)
+	- don't load malformed files
+	- when saving incomplete files use a special comment so we can load properly
+	- comments will be a bit tricky, probably need a hueristic to attach them to a node
+	- display should be non-editable text view
+	- return should open up an expandable text field for that node
+	- can delete contents and hit return to change node types
+	- use a gradient to color a node and its children
+	- optionally omit ;, noisy (), {}
+	- need both a view and a save style
+	- would be nice if save saved only the code that changed (or maybe the method(s)
+	  that were edited)
+	- would be cool if invariant support could be added via a script		
+* Release checklist:
+	- update generated config file logging categories (search for "Log.WriteLine")
+	- update the version number
+	- delete build_num
+	- make sure directory objects go away
+	- make sure directory editor boss goes away
+	- make sure text objects go away (after forcing a GC)
+	- make sure text editor boss goes away
+	- make sure auto complete objects go away
+	- make sure debugger bosses go away (CodeViewer boss is hanging around but only once instance)
+	- make sure debugger objects go away
+	- run continuum with no prefs
+	- run continuum with no databases (including the windows db)
+	- run continuum with no Continuum Files dir
+	- look at memory usage
+	- run unit tests in debug
+	- run unit tests in release
+	- make sure untitled docs work OK
+	- build a new foreshadow
+	- review BUILDING doc
+	- update known issues in the README
+	- review README
+	- review config file
+	- mention that thr debugger requires mono 2.6.3 or later
+	- run from the finder
+	- review tar targets
+	- use svn log -r 1:HEAD > CHANGE_LOG
+	- update CHANGES file
+	- make sure gear is checked in
+	- upload the new binary
+	- build a new foreshadow
+	- review the front page of the web site
+	- review the screen shots
+	- email
+
+ /Users/jessejones/Documents/Developer/UnixNotes.sh
+ /Users/jessejones/Documents/Developer/c#.cs
+

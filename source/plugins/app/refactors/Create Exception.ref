@@ -1,0 +1,42 @@
+# Creates a new exception class in the file's first namespace.
+define Run()
+	if Globals.Namespaces.IsEmpty then
+		Process(Globals)
+	else
+		Process(Globals.Namespaces.Head)
+	end
+end
+
+define Process(namespace)
+	let name = Ask("Exception name:", "MyException") in
+		Globals.AddUsing("System")
+		Globals.AddUsing("System.Runtime.Serialization")
+		Globals.AddUsing("System.Security.Permissions")
+		
+		# Note that the default ctor is needed for XML serialization and should be
+		# public in case the assembly disables reflection on private members. The
+		# SerializationInfo ctor is needed for binary serialization.
+		namespace.Body.InsertFirst(
+"[Serializable]
+public sealed class #{name} : Exception
+{
+	public #{name}•()
+	{
+	}
+	
+	public #{name}•(string message) : base•(message)
+	{
+	}
+	
+	public #{name}•(string message, Exception inner) : base•(message, inner)
+	{
+	}
+	
+	[SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+	private #{name}•(SerializationInfo info, StreamingContext context) : base•(info, context)
+	{
+	}
+}
+")
+	end
+end

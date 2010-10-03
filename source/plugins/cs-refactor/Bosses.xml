@@ -1,0 +1,9 @@
+<Bosses namespaces = "Gear Shared CsRefactor">
+	<Boss name = "Refactor" singleton = "true">
+		<Implementation interfaces = "IRefactorScript" name = "RefactorScript"/>
+	</Boss>
+	
+	<Boss name = "Refactors">
+		<Implementation interfaces = "IRefactors" name = "StandardRefactors"/>
+	</Boss>
+</Bosses>

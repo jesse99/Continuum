@@ -1,0 +1,5 @@
+<Bosses namespaces = "Gear Shared BuildErrors">
+	<Extend name = "Application">			
+		<Implementation interfaces = "IHandleBuildError +IStartup +IFactoryPrefs IBuildErrors" name = "HandleBuildError"/>
+	</Extend>
+</Bosses>

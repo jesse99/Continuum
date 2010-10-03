@@ -1,0 +1,5 @@
+<!-- Gendarme rule ignore files. -->
+<Language name = "ignore" ignore_whitespace = "true">
+	<comment>\# [^\r\n]* [\r\n]</comment>		<!-- note that $ won't work quite right with windows line endings -->
+	<other1>^R:.+[\r\n]</other1>
+</Language>

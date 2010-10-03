@@ -1,0 +1,19 @@
+#!/bin/bash
+# Copies the Continuum app and renames it Foreshadow so we can more easily
+# work on Continuum as we use it.
+here=`pwd`
+contents=bin/Foreshadow.app/Contents
+mac=bin/Foreshadow.app/Contents/MacOS
+resources=bin/Foreshadow.app/Contents/Resources
+
+rm -rf bin/Foreshadow.app &&
+/Developer/Tools/CpMac -r bin/Continuum.app bin/Foreshadow.app &&
+mv ${resources}/continuum.exe ${resources}/foreshadow.exe &&
+mv ${resources}/continuum.exe.mdb ${resources}/foreshadow.exe.mdb &&
+mv ${resources}/continuum.exe.config ${resources}/foreshadow.exe.config &&
+mv ${resources}/Continuum.sdef ${resources}/Foreshadow.sdef &&
+sed -i '' "s|/tmp/continuum.log|${here}/foreshadow.log|g" ${resources}/foreshadow.exe.config &&
+sed -i '' "s/continuum/foreshadow/g" ${contents}/MacOS/launcher &&
+sed -i '' "s/Continuum/Foreshadow/g" ${contents}/MacOS/launcher &&
+sed -i '' "s/Continuum/Foreshadow/g" ${contents}/Info.plist &&
+rm -rf ${mac}/Continuum

@@ -1,0 +1,109 @@
+Query := FromClause QueryBody
+
+FromClause := 'from' type? identifier 'in' expression 
+
+
+QueryBody := QueryBodyClause* (SelectClause | GroupClause) QueryContinuation?
+
+QueryBodyClause := FromClause | LetClause | WhereClause | JoinClause | JoinIntoClause | OrderByClause
+
+LetClause := 'let' identifier '=' expression
+
+WhereClause := 'where' BooleanExpression
+
+JoinClause := 'join' type? identifier 'in' expression 'on' expression 'equals' expression
+
+JoinIntoClause := 'join' type? identifier 'in' expression 'on' expression 'equals' expression 'into' identifier
+
+OrderByClause := 'orderby' Ordering+
+
+Ordering := expression ('ascending' | 'descending')?
+
+
+SelectClause := 'select' expression
+
+GroupClause := 'group' expression 'by' expression
+
+QueryContinuation := 'into' identifier QueryBody
+
+-----------------------------------------------------------------
+
+queries are live
+and only apply to stuff inside assemblies?
+
+Query := FromClause+ QueryClause* SelectClause?
+
+FromClause := name FromSources										name is a text field, defaults to "items"
+
+FromSources := files | types | methods | assemblies? | windows?		popup
+
+QueryClause := NoneClause | WhereClause | LetClause | JoinClause	first control is a popup which selects the clause type
+
+WhereClause := name Condition										name is a popup with the from and let names
+
+LetClause := name1 name2 Property									name1 is a text field, name2 is a pop with the from and let names, property is a popup
+
+JoinClause := name1 name2 Condition									text field and popup
+
+SelectClause := names												popup, can select multiple names
+
+Condition := NameCondition | FullNameCondition						first control is a property which selects a property
+
+NameCondition := TextCondition value								popup and combo box
+
+TextCondition := is | starts-with | ends-with | matches
+
+Property := name | full-name | contents | namespace | base-class	popup, contents depend on associated name
+
+
+sample queries
+*.dll and *.exe files
+	'from' [files] 'in' (gendarme.exe files)
+	'where' (files) (extension) (globs) [*.dll;*.exe]	
+
+	'from' [file1] 'in' (gendarme.exe files)
+	'from' [file2] 'in' (gendarme.exe files)
+	'where' (file1) (extension) (globs) [*.dll]	
+	'where' (file2) (extension) (globs) [*.exe]	
+	'select' (file1, file2)
+
+*.cs and *.sad files that contain "foobar"
+	'from' [file] 'in' (shield-anvil.exe files)
+	'where' (file) (extension) (globs) [*.cs;*.sad]	
+	'where' (file) (contents) (contains) [foobar]	
+
+types that have a finalizer and are IDisposable
+	'from' [types] 'in' (gendarme.exe types)
+	'from' [methods] 'in' (gendarme.exe methods)
+	'where' (types) (derive-from) [IDisposable]	
+	'where' (methods) (is-finalizer)	
+	'join' [results] 'in' (types) 'on' (methods) (declaring-type) (equals) (results) (full-name)
+	'select' [results]
+	
+types that have a finalizer but are not IDisposable			text field style
+	'from' [types] 'in' (gendarme.exe types)
+	'from' [methods] 'in' (gendarme.exe methods)
+	'where' [!(types derive-from IDisposable)]	
+	'where' [methods.is-finalizer]
+	'join' [results] 'in' (types) 'on' [methods.declaring-type == results.full-name]
+	'select' [results]
+	
+types that have a finalizer but are not IDisposable			rpn
+	'from' [types] 'in' (gendarme.exe types)
+	'from' [methods] 'in' (gendarme.exe methods)
+	'where' (types) (base-types) (System.IDisposable) (equals) (not) ()	
+	'where' (methods) (name) ("~") (methods) (declaring-type) (name) (concat) (equals) ()
+	'join' [results] 'in' (types) 'on' (methods) (declaring-type) (results) (full-name) (equals) ()
+	'select' [results]
+
+interface used in only one assembly
+
+list of bosses (would require xml support)
+
+••• how can we allow complex boolean expressions?
+••• maybe use a text field, context menu (and a little widget) can auto-complete property and operators
+••• rpn? could have a little widget to append a new component, combo-box with names and operators
+    (properties are unary operators)
+    
+probably want a comment or description field
+also a way to save queries

@@ -1,0 +1,18 @@
+The language files are used to do syntax hilighting for text files and to control
+what qualifies as a word for operations like double-clicking. Language globs
+are patterns used to associate a file with a language. Typically they are the 
+exact name of a file ('Makefile') or based on the file's extension ('*.cs').
+
+New languages can be added to the user directory. The languages are
+defined in terms of .NET regular expressions, see the Language.schema
+file for more details. When adding a new language the globs file should
+be updated to add a glob for that language.
+
+The standard languages may be modified, but it's best to do this by copying
+the language file into the user directory and modifying it there. If you don't
+do this then your changes will be lost when upgrading to a new version of
+Continuum.
+
+Note that changes to language files are not dynamic: you need to restart
+Continuum for them to take effect. Changes the language globs are also
+not dynamic unless you do them via the preferences panel.

@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+
+<!-- http://developer.apple.com/documentation/MacOSX/Conceptual/BPRuntimeConfig/BPRuntimeConfig.html#//apple_ref/doc/uid/10000170 -->
+<plist version="1.0">
+<dict>
+	<key>CFBundleIdentifier</key>
+	<string>${APPNAME}-IDE</string>
+	
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	
+	<key>CFBundleIconFile</key>
+	<string>AppIcon.icns</string>
+	
+	<key>NSMainNibFile</key>
+	<string>MainMenu</string>
+	
+	<!-- TODO: would be nice to use CFBundleTypeIconFile -->
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>*</string>
+			</array>
+			
+			<key>CFBundleTypeName</key>
+			<string>Plain Text, UTF8 Encoded</string>
+			
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			
+			<key>NSDocumentClass</key>
+			<string>TextDocument</string>
+		</dict>
+		
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>binary</string>
+			
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			
+			<key>NSDocumentClass</key>
+			<string>TextDocument</string>
+		</dict>
+		
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>exe</string>
+				<string>dll</string>
+			</array>
+			
+			<key>CFBundleTypeName</key>
+			<string>Assembly</string>
+			
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			
+			<key>NSDocumentClass</key>
+			<string>AssemblyDocument</string>
+		</dict>
+		
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>mdb</string>
+			</array>
+			
+			<key>CFBundleTypeName</key>
+			<string>Debugger</string>
+			
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			
+			<key>NSDocumentClass</key>
+			<string>DebuggerDocument</string>
+		</dict>
+		
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Plain Text, UTF16 Encoded</string>
+			
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			
+			<key>NSDocumentClass</key>
+			<string>TextDocument</string>
+		</dict>
+		
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Plain Text, 7-Bit ASCII Encoded</string>
+			
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			
+			<key>NSDocumentClass</key>
+			<string>TextDocument</string>
+		</dict>
+		
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>rtf</string>
+			</array>
+			
+			<key>CFBundleTypeName</key>
+			<string>Rich Text Format (RTF)</string>
+			
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			
+			<key>NSDocumentClass</key>
+			<string>TextDocument</string>
+		</dict>
+		
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>html</string>
+				<string>htm</string>
+			</array>
+			
+			<key>CFBundleTypeName</key>
+			<string>HTML</string>
+			
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			
+			<key>NSDocumentClass</key>
+			<string>TextDocument</string>
+		</dict>
+		
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>docx</string>
+				<string>docm</string>
+			</array>
+			
+			<key>CFBundleTypeName</key>
+			<string>Word 2007 Format (docx)</string>
+			
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			
+			<key>NSDocumentClass</key>
+			<string>TextDocument</string>
+		</dict>
+		
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>doc</string>
+			</array>
+			
+			<key>CFBundleTypeName</key>
+			<string>Word 97 Format (doc)</string>
+			
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			
+			<key>NSDocumentClass</key>
+			<string>TextDocument</string>
+		</dict>
+		
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>odt</string>
+			</array>
+			
+			<key>CFBundleTypeName</key>
+			<string>Open Document Text (odt)</string>
+			
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			
+			<key>NSDocumentClass</key>
+			<string>TextDocument</string>
+		</dict>
+	</array>
+	
+	<key>LSMinimumSystemVersion</key>
+	<string>10.5.0</string>
+	
+	<!-- Keys that should not be changed. -->
+	<key>CFBundleExecutable</key>
+	<string>launcher</string>
+	
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	
+	<key>CFBundleName</key>
+	<string>${APPNAME}</string>
+	
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	
+	<!-- This is what is shown to the user via the Finder's get info command. -->
+	<key>CFBundleShortVersionString</key>	<!-- major.minor.maintenance -->
+	<string>${VERSION}</string>
+	
+	<key>CFBundleSignature</key>
+	<string>Cont</string>
+	
+	<key>CFBundleVersion</key>
+	<string>${BUILDNUM}</string>
+	
+	<key>NSAppleScriptEnabled</key>
+	<string>YES</string>
+	
+	<key>OSAScriptingDefinition</key>
+	<string>${APPNAME}.sdef</string>
+	
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
+</dict>
+</plist>

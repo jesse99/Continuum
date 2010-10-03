@@ -1,0 +1,36 @@
+Continuum relies on a number of other projects. So, in order to build Continuum you'll
+need assemblies for all of them. If you're building the released version of the Continuum
+source you can simply copy the Mono.Cecil.Mdb, Mono.Cecil, gear, mcocoa, and mobjc dlls
+from the Continuum bundle into the bin directory. But if you are building from svn you
+should:
+
+* Build the gear project. You can find this at <http://code.google.com/p/gear-sharp/>.
+Use the version in svn and execute `make lib` followed by `sudo make install`.
+
+* Build the mobjc project. You can find this at <http://code.google.com/p/mobjc/>.
+Use the version in svn and execute `make libs` followed by `sudo make install`.
+
+* Build the mcocoa project. You can find this at <http://code.google.com/p/mcocoa/>.
+Use the version in svn and execute `make update-libraries`, `make generate`, `make lib`, 
+and `sudo make install`.
+ 
+* Navigate to the Continuum directory and execute `make update-libraries`. (This is the
+safe way to build, but you can also try simply copying the assemblies from the distributed
+application bundle into the bin directory).
+
+* Copy Mono.Cecil.dll and Mono.Cecil.Mdb into Continuum's bin directory (create 
+the bin directory if it does not exist). For Mono.Cecil.Mdb you should be able to
+use the one in the gac which is normally at a path like:
+/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/gac. For Mono.Cecil.dll you 
+can use the one on the gac if you have Mono 2.6, but for earlier mono's you'll want to grab 
+the one from the Continuum binary distribution or build it from source.
+
+* Copy Mono.Debugger.Soft.dll and Mono.Debugger.Soft.dll.mdb into Continuum's bin directory.
+You can copy these out of the gac, but you may need to use mono 2.6.3 or later.
+
+Once you have those assemblies in the bin directory you can build Continuum itself. To do
+that type either `make app` or `make run-app`.
+
+If you plan on working on Continuum you may want to execute `./make-foreshadow`. This will
+copy the Continuum app and make a new app named Foreshadow. Then you can use Foreshadow
+as a stable version of the app while you work on Continuum.

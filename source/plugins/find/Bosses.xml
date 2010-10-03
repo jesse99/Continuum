@@ -1,0 +1,6 @@
+<Bosses namespaces = "Gear Shared Find">
+	<Extend name = "Application">			
+		<Implementation interfaces = "IFind" name = "FindInFile"/>
+		<Implementation interfaces = "IInterface +IStartup" name = "Startup"/>
+	</Extend>
+</Bosses>

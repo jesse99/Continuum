@@ -1,0 +1,459 @@
+{\rtf1\ansi\ansicpg1252\cocoartf949\cocoasubrtf430
+{\fonttbl\f0\fnil\fcharset0 Verdana;}
+{\colortbl;\red255\green255\blue255;\red255\green255\blue177;\red0\green91\blue255;\red45\green148\blue76;
+\red4\green91\blue255;\red4\green91\blue255;\red242\green0\blue88;}
+\deftab360
+\pard\pardeftab360\ql\qnatural\pardirnatural
+
+\f0\b\fs36 \cf0 \cb2 I. Introduction
+\b0\fs28 \
+Many C# refactors can be written most easily using the little refactor language built \cb1 into Continuum. The language is a little unconventional:\
+\
+\'95 It is dynamic: methods and variables are not explicitly typed and any method can be called on any object (although it is a fatal runtime error if the object cannot handle the call).\
+\
+\'95 All objects are immutable. In particular methods like TypeDeclaration.AddMember\
+operate on the text store and do not affect the type instance for which it was called.\
+\
+\'95 It is object based not object oriented. All objects are class instances and classes may have derived classes, but it is not possible to define new classes.\
+\
+
+\b\fs36 II. Declarations
+\b0\fs28 \
+Might want to support some sort of extension method sort of thing. Maybe `define Type.Blarg(type)`.\
+\
+Methods which don't explicitly return a value return whatever was last executed.\
+\
+
+\b\fs36 III. Statements
+\b0\fs28 \
+\
+
+\b\fs36 IV. Expressions
+\b0\fs28 \
+Instances may be null.\
+\
+String interpolation is "value: #\{an expression\}".\
+\
+Bullets are used within strings as a placeholder for a space if the add space directory preference is set and for new lines when the braces on their own line preference is set.\
+\
+
+\b\fs36 V. Types
+\b0\fs28 \
+Types are classes and may have methods, properties, and operators. Scripts may define new methods and properties but cannot define new operators or types. The types are:\
+\
+
+\b Attribute
+\b0  : Declaration\
+Represents a .NET attribute declaration.\
+String \cf3 Arguments\cf0 	The arguments supplied to the attribute, e.g. "false". May be empty, but will not be null.\
+String \cf3 Name\cf0 				The attribute name, e.g. "CLSCompliant".\
+String \cf3 Target\cf0 			Name of the object the attribute applies to, e.g. "assembly". May be null.\
+\
+
+\b Body
+\b0  : Object\
+Represents a block of statements or declarations.\
+Edit \cf4 InsertFirst\cf0 (text)		Insert arbitrary code at the start of a block.\
+Edit \cf4 InsertLast\cf0 (text)		Insert arbitrary code at the end of a block.\
+\
+
+\b Boolean
+\b0  : Object\
+This class has two instances which are referred to by the literals 'true' and 'false'.\
+Boolean operator \cf3 and\cf0 (lhs, rhs)		Boolean and.\
+Boolean operator \cf3 not\cf0 (value)			Logical complement.\
+Boolean operator \cf3 or\cf0 (lhs, rhs)		Boolean or.\
+\
+
+\b Class
+\b0  : TypeDeclaration\
+Represents a C# class declaration. This type defines no new members.\
+\
+
+\b Declaration
+\b0  : Object\
+Base class for objects which may be declared in C# source code. This type defines no new members.\
+\
+
+\b Delegate
+\b0  : TypeDeclaration\
+Represents a C# delegate type declaration.\
+Sequence<Parameter> \cf3 Parameters\cf0 				\
+String \cf3 ReturnType\cf0 							E.g. "int". Will not have any whitespace.\
+\
+
+\b Edit
+\b0  : Object\
+The type of methods which affect the text store. Note that in order for edits to be sanely composed none of the edits done by a script can overlap. This type defines no new members.\
+\
+
+\b Enum
+\b0  : TypeDeclaration\
+Represents a C# enum type declaration.\
+String \cf3 BaseType\cf0 					E.g. "int". Will not have any whitespace.\
+Sequence <String> \cf3 Names\cf0 	Names of all of the enum values.\
+\
+
+\b Event
+\b0  : Member\
+Represents a C# event member declaration.\
+String \cf3 Type\cf0 					E.g. "bool". Will not have any whitespace.\
+\
+
+\b ExternAlias
+\b0  : Declaration\
+Represents an external alias. (These are used in conjunction with the alias form of gmcs's -reference command to reference distinct types which happen to have the same fully qualified name.)\
+String \cf3 Name\cf0 					E.g. "MyType".\
+\
+
+\b Field
+\b0  : Member\
+Represents a field member. May be a constant.\
+String \cf3 Type\cf0 				E.g. "int" Will not have any whitespace.\
+String \cf3 Value\cf0 				E.g. "3.1.4" May have whitespace and may be null, but will not be empty.\
+\
+
+\b GlobalNamespace
+\b0  : Namespace\
+The implicit global namespace.\
+Sequence<Attribute>\cf3 Attributes\cf0 			\
+\
+
+\b Indexer
+\b0  : Member\
+Represents an indexer member.\
+String \cf3 GetterAccess\cf0 								If not null then this overrides the indexer access.\
+Sequence<Attribute> \cf3 GetterAttributes\cf0 		Null if there is no getter or it is abstract.\
+Body \cf3 GetterBody\cf0 									Null if there is no getter or it is abstract.\
+Boolean \cf3 HasGetter\cf0 					\
+Boolean \cf3 HasSetter\cf0 					\
+Sequence<Parameter> \cf3 Parameters\cf0 				\
+String \cf3 ReturnType\cf0 									E.g. "Dictionary<string,int>. Will not have whitespace.\
+String \cf3 SetterAccess\cf0 									If not null then this overrides the indexer access.\
+Sequence<Attribute> \cf3 SetterAttributes\cf0 	Null if there is no setter or it is abstract.\
+Body \cf3 SetterBody\cf0 										Null if there is no setter or it is abstract.\
+\
+
+\b Interface
+\b0  : TypeDeclaration\
+Represents an interface type declaration. This type defines no new members.\
+\
+
+\b Member
+\b0  : Declaration\
+Base class for declarations that appear within types.\
+String \cf3 Access\cf0 								E.g. "public".\
+Edit \cf4 AddMemberAfter\cf0 (text)			It's an error to call this with a member signature that is already used by the type.\
+Edit \cf4 AddMemberBefore\cf0 (text)		It's an error to call this with a member signature that is already used by the type.\
+Sequence<Attribute> \cf3 Attributes\cf0 			\
+Edit \cf4 ChangeAccess\cf0 (access)			Change "public", "private", etc to a different value.\
+TypeDeclaration \cf3 DeclaringType\cf0 	The type the member is declared within. Will be null for delegates and enums declared in a namespace.\
+String \cf3 FullName\cf0 								\
+Boolean \cf3 IsAbstract\cf0 				\
+Boolean \cf3 IsConst\cf0 					\
+Boolean \cf3 IsInternal\cf0 				\
+Boolean \cf3 IsOverride\cf0 				\
+Boolean \cf3 IsProtected\cf0 				\
+Boolean \cf3 IsPrivate\cf0 				\
+Boolean \cf3 IsPublic\cf0 					\
+Boolean \cf3 IsReadonly\cf0 				\
+Boolean \cf3 IsSealed\cf0 				\
+Boolean \cf3 IsStatic\cf0 					\
+Boolean \cf3 IsVirtual\cf0 				\
+Boolean \cf3 IsVolatile\cf0 				\
+String \cf3 Modifiers\cf0 							E.g. "public, sealed".\
+String \cf3 Name\cf0 									\
+\
+
+\b Method
+\b0  : Member\
+Represents a method declaration.\
+String \cf3 Constraints\cf0 							E.g. "where KEY : new ()". May be null.\
+String \cf3 GenericArguments\cf0 				E.g. "KEY,VALUE" Will not have whitespace and will be null if the method is not generic.\
+Body \cf3 Body\cf0 										Null if the method has no body.\
+Boolean \cf3 IsConstructor\cf0 					\
+Boolean \cf3 IsExtension\cf0 							\
+Boolean \cf3 IsFinalizer\cf0 							\
+Sequence<Parameter> \cf3 Parameters\cf0 						\
+String \cf3 ReturnType\cf0 							Will not have whitespace.\
+\
+
+\b Namespace
+\b0  : TypeScope\
+Represents a C# namespace.\
+Edit \cf4 AddUsing\cf0 (name)							Add a new using directive. No-op if the name is already being used.\
+Sequence<UsingAlias> \cf3 Aliases\cf0 				\
+Sequence<ExternAlias> \cf3 Externs\cf0 				\
+Boolean \cf3 TypeMatches\cf0 (type, name)		Returns true if the type matches the name (e.g. TypeMatches(field.Type, "System.IntPtr")). Note that this accounts for using directives, namespace aliases, and type aliases.  \
+String \cf3 Name\cf0 											E.g. "System.IO" or "<globals>".\
+Sequence<Namespace> \cf3 Namespaces\cf0 		\
+Sequence<UsingDirective> \cf3 Uses\cf0 					\
+\
+
+\b Object
+\b0 \
+This is the base class for all types. It has the following members:\
+Boolean operator \cf3 ==\cf0 (lhs, rhs)			Returns true if the lhs and rhs have the same value.\
+Boolean operator \cf3 !=\cf0 (lhs, rhs)			Returns true if the lhs and rhs have different values.\
+Boolean operator \cf3 is\cf0 (value, name)		Returns true if value is or derives from the type name.\
+\
+
+\b Operator
+\b0  : Member\
+Represents an operator declaration.\
+Body \cf3 Body\cf0 										Null if the operator has no body.\
+Boolean \cf3 IsConversion\cf0 								\
+Boolean \cf3 IsExplicit\cf0 								Returns true if the operator is an explicit conversion operator.\
+Boolean \cf3 IsImplicit\cf0 							Returns true if the operator is an implicit conversion operator.\
+Sequence<Parameter> \cf3 Parameters\cf0 					\
+String \cf3 ReturnType\cf0 							Will not have whitespace.\
+\
+
+\b Parameter
+\b0  : Object\
+Represents a method or delegate formal argument declaration.\
+Sequence<Attribute> \cf3 Attributes\cf0 				\
+Boolean \cf3 IsParams\cf0 						True if the parameter was declared with the params keyword.\
+String \cf3 Modifier\cf0 							One of "none", "ref", "out", or "this".\
+String \cf3 Name\cf0 								E.g. "width".\
+String \cf3 Type\cf0 								Will not have whitespace.\
+\
+
+\b Property
+\b0  : Member\
+Represents a property declaration.\
+String \cf3 GetterAccess\cf0 								If not null then this overrides the property access.\
+Sequence<Attribute> \cf3 GetterAttributes\cf0 		Null if there is no getter or it is abstract.	\
+Body \cf3 GetterBody\cf0 									Null if there is no getter or it is abstract.\
+Boolean \cf3 HasGetter\cf0 										\
+Boolean \cf3 HasSetter\cf0 										\
+String \cf3 ReturnType\cf0 									Will not have whitespace.\
+String \cf3 SetterAccess\cf0 									If not null then this overrides the property access.\
+Sequence<Attribute>\cf3 SetterAttributes\cf0 		Null if there is no setter or it is abstract.\
+Body \cf3 SetterBody\cf0 										Null if there is no setter or it is abstract.\
+  \
+
+\b Script
+\b0  : Object\
+This is the type that your methods are added to. It has the following built-in\
+members:\
+Boolean \cf3 EnableTracing\cf0 					If this returns true method calls are written to stdout.\
+String \cf3 GetUniqueName\cf0 (name)		Creates a name that is unique within Scope.\
+GlobalNamespace \cf3 Globals\cf0 									\
+Boolean \cf5 HasSelection\cf0 					Returns true if the selection is not empty.\
+Edit \cf4 Indent\cf0 (tabs)							Insert zero or more tab characters to the start of each line which intersects the selection.\
+Edit \cf4 InsertAfterSelection\cf0 (text)		Inserts one or more lines after the last line in the selection.\
+Edit \cf4 InsertBeforeSelection\cf0 (text)	Inserts one or more lines before the first line in the selection.\
+Object \cf3 Ask\cf0 (prompt, default)\cf3 		\cf0 Pops up a dialog asking the user a question. Default may be a string or boolean.\
+Void \cf3 Raise\cf0 (message)					Abort the script with an error message.\
+Void \cf3 Run\cf0 ()									Entry point for scripts. Must be defined by all scripts.\
+Declaration \cf3 Scope\cf0 						The declaration the insertion point is within.\
+String \cf6 Selection\cf0 							Returns the selection.\
+Edit \cf3 Write\cf0 (o)\cf3 		\cf0 						Write an object to stdout.\
+Edit \cf3 WriteLine\cf0 (o)\cf3 	\cf0 						Writes an object and a new-line to stdout.\
+\
+
+\b Sequence
+\b0  : Object\
+Represents a list of values.\cf3 \
+\cf0 Boolean \cf3 Contains\cf0 (e)		Returns true if the sequence contains the specified element.\
+Object \cf3 Fifth\cf0 					Returns the object at index 4.\
+Object \cf3 First\cf0 					Returns the object at index 0.\
+Object \cf3 Fourth\cf0 				Returns the object at index 3.\
+Object \cf3 Head	\cf0 				Returns the first element of the sequence.\
+Boolean \cf3 IsEmpty\cf0 			Returns true if the sequence has no elements.\
+Object \cf3 Last	\cf0 				Returns the last object.\
+Object \cf3 Second\cf0 				Returns the object at index 1.\
+Sequence \cf3 Tail	\cf0 			Returns all but the first element of the sequence. Can be called on an empty sequence.\
+Object \cf3 Third\cf0 					Returns the object at index 2.\
+\
+
+\b String
+\b0  : Object\
+Represents a list of characters. \
+String operator \cf3 +\cf0 (rhs)				Concatenates a string and an arbitrary object.\
+Boolean \cf3 Contains\cf0 (s)					Returns true if the target contains the specified string.\
+Boolean \cf3 EndsWith\cf0 (s)				Returns true if the target ends with the specified string.\
+Boolean \cf3 IsEmpty\cf0 						Returns true if the string has no characters.\
+String \cf3 Join\cf0 (list)						Converts every element in the list to a string and concatenates them using the original string as a separator.\
+Boolean \cf3 Replace\cf0 (old, new)		Returns a new string with old instances replaced by new.\
+Boolean \cf3 StartsWith\cf0 (s)				Returns true if the target starts with the specified string.\
+\
+
+\b Struct
+\b0  : TypeDeclaration\
+Represents a struct type declaration. This type defines no new members.\
+\
+
+\b TypeDeclaration
+\b0  : TypeScope\
+Base type for Interface, Struct, and Class types.\
+String \cf3 Access\cf0 									E.g. "internal".\
+Edit \cf4 AddBase\cf0 (name)						Adds a new base class or interface to the type. No-op if the type already has the base.\
+Edit \cf4 AddMember\cf0 (text)						Adds a new method to the type. It's an error to call this with a method signature that is already used by the type.\
+Sequence<Attribute> \cf3 Attributes\cf0 				\
+Sequence<String> \cf3 Bases\cf0 					E.g. ["IBar", "IFoo"].\
+String \cf3 Constraints\cf0 							E.g. "where KEY : new ()". May be null.\
+TypeDeclaration \cf3 DeclaringType\cf0 		The type this type is declared within. Will be null if the type is not a nested type.\
+Sequence<Event> \cf3 Events\cf0 					\
+Sequence<Field> \cf3 Fields\cf0 									\
+String \cf3 FullName\cf0 								\
+String \cf3 GenericArguments\cf0 				E.g. "KEY,VALUE" Will not have whitespace and will be null if the method is not generic.\
+String \cf3 GetFieldName\cf0 (name)			Gets a unique field name. May add a prefix or suffix.\
+String \cf3 GetUniqueName\cf0 (name)			Creates a member name that is unique within type (but possibly not its base classes).\
+Boolean \cf3 HasMember\cf0 (name, types)	Returns true if the type has a member with the specified name and argument types (types should be a sequence of type name strings).\
+Sequence<Indexer> \cf3 Indexers\cf0 				\
+Boolean \cf3 IsAbstract\cf0 					\
+Boolean \cf3 IsInternal\cf0 					\
+Boolean \cf3 IsPartial\cf0 						\
+Boolean \cf3 IsPrivate\cf0 					\
+Boolean \cf3 IsProtected\cf0 					\
+Boolean \cf3 IsPublic\cf0 						\
+Boolean \cf3 IsSealed\cf0 								Returns true if the type is a struct or is decorated with the sealed keyword.\
+Boolean \cf3 IsStatic\cf0 						\
+Sequence <Member> \cf3 Members\cf0 				\
+Sequence <Method> \cf3 Methods\cf0 					\
+String \cf3 Modifiers\cf0 								E.g. "internal, abstract".\
+String \cf3 Name\cf0 								\
+Sequence<Operator> \cf3 Operators\cf0 				\
+Sequence<Property> \cf3 Properties\cf0 				\
+
+\b \
+TypeScope
+\b0  : Declaration\
+Base class for types which contain declarations: namespaces and types.\
+Body \cf3 Body\cf0 										\
+Sequence<Class> \cf3 Classes\cf0 			\
+Sequence<Declaration> \cf3 Declarations\cf0 	\
+Sequence<Delegate> \cf3 Delegates\cf0 					\
+Sequence<Enum> \cf3 Enums\cf0 			\
+Sequence<Interface> \cf3 Interfaces\cf0 		\
+Namespace \cf3 Namespace\cf0 					The namespace this container was declared in. Will be null if it was declared in the global namespace.\
+Sequence<Struct> \cf3 Structs\cf0 			\
+Sequence<Type> \cf3 Types\cf0 			\
+\
+
+\b UsingAlias
+\b0  : Declaration\
+Represents a using directive.\
+String \cf3 Alias\cf0 			E.g. "OldCollections" or "MyTable".\
+String \cf3 Value\cf0 			E.g. "System.Collections" or "Dictionary<string,string>" Will not have whitespace.\
+\
+
+\b UsingDirective
+\b0  : Declaration\
+Represents a type or namespace alias.\
+String \cf3 Namespace\cf0 	E.g. "System.IO".\
+\
+
+\b Void
+\b0  : Object\
+This is the type of the null literal. This type defines no new methods.\
+\
+
+\b\fs36 VI. Grammar
+\b0\fs28 \
+\cf7 # Declarations\cf0 \
+CompilationUnit := Declaration+\
+\
+Declaration := MethodDeclaration | PropertyDeclaration\
+\
+MethodDeclaration := '\cf3 define\cf0 ' Identifier FormalArgs Statement* '\cf3 end\cf0 '\
+\
+PropertyDeclaration := '\cf3 define\cf0 ' '\cf3 property\cf0 ' Identifier Statement* '\cf3 end\cf0 '\
+\
+FormalArgs := '(' IdentifierList? ')'\
+\
+IdentifierList := Identifier (',' Identifier)*\
+\
+\
+\cf7 # Statements\cf0 \
+Statement := IfStatement | ForStatement | LetStatement | MethodStatement | ReturnStatement\
+\
+IfStatement := IfClause ElifClause* ElseClause? '\cf3 end\cf0 '\
+\
+IfClause := '\cf3 if\cf0 ' Expression '\cf3 then\cf0 ' Statement*\
+\
+ElifClause := '\cf3 elif\cf0 ' Expression '\cf3 then\cf0 ' Statement*\
+\
+ElseClause := '\cf3 else\cf0 ' Statement*\
+\
+MethodStatement := CallExpression			\
+\
+ForStatement := ForClause WhereClause? '\cf3 do\cf0 ' Statement* '\cf3 end\cf0 '\
+\
+ForClause := '\cf3 for\cf0 ' Identifier '\cf3 in\cf0 ' CallExpression	\cf7 # Expression may be null\cf0 \
+\
+WhereClause := '\cf3 where\cf0 ' OrExpression\
+\
+LetStatement := '\cf3 let\cf0 ' LetLocal ('\cf3 ,\cf0 ' LetLocal)* '\cf3 in\cf0 ' Statement* '\cf3 end\cf0 '\
+\
+LetLocal := Identifier '=' Expression\
+\
+ReturnStatement := '\cf3 return\cf0 ' Expression\
+\
+\
+\cf7 # Expressions\cf0 \
+Expression := OrExpression | FromExpression | WhenExpression\
+\
+FromExpression := FromClause ('\cf3 where\cf0 ' OrExpression)? ('\cf3 select\cf0 ' OrExpression)?\
+\
+FromClause := '\cf3 from\cf0 ' Identifier '\cf3 in\cf0 ' CallExpression\
+\
+WhenExpression := OrExpression '\cf3 when\cf0 ' OrExpression '\cf3 else\cf0 ' OrExpression\
+\
+OrExpression := AndExpression ('\cf3 or\cf0 ' AndExpression)*\
+\
+AndExpression := EqualityExpression ('\cf3 and\cf0 ' EqualityExpression)*\
+\
+EqualityExpression := RelationalExpression (('==' | '!=') RelationalExpression)?\
+\
+RelationalExpression := AddExpresion ('\cf3 is\cf0 ' Identifier)?\
+\
+AddExpresion := UnaryExpression ('+' UnaryExpression)*\
+\
+UnaryExpression := '\cf3 not\cf0 '? CallExpression\
+\
+CallExpression := PrimaryExpression ('.' MethodCall)*			\
+\
+PrimaryExpression := Literal | Local | MethodCall | ParenthesizedExpression\
+	\
+Local := Identifier										\
+\
+MethodCall := Identifier ActualArgs?										\
+\
+ActualArgs := '(' ExpressionList? ')'\
+\
+ExpressionList := Expression (',' Expression)*\
+\
+ParenthesizedExpression := '(' Expression ')'\
+\
+\
+\cf7 # Lexical\cf0 \
+Identifier := IdentifierStart IdentifierSuffix*		\cf7 # but not a Keyword\cf0 \
+\
+IdentifierStart := ascii letter or underscore\
+\
+IdentifierSuffix := ascii letter, ascii digit, or underscore\
+\
+Literal := '\cf3 true\cf0 ' | '\cf3 false\cf0 ' | '\cf3 null\cf0 ' | '\cf3 self\cf0 ' | SequenceLiteral | StringLiteral\
+\
+SequenceLiteral := '[' ExpressionList? ']'\
+\
+StringLiteral := '"' StringChar+ '"'\
+\
+StringChar := any char but '"' or '""'\
+\
+Comment := '#' AnyChar* NewLine\
+\
+AnyChar := any character but \\n or \\r\
+\
+Keyword := Reserved | '\cf3 and\cf0 ' | '\cf3 define\cf0 ' | '\cf3 do\cf0 ' | '\cf3 elif\cf0 ' | '\cf3 else\cf0 ' | '\cf3 end\cf0 ' | '\cf3 false\cf0 ' | '\cf3 for\cf0 ' | '\cf3 if\cf0 ' | '\cf3 in\cf0 ' | '\cf3 is\cf0 ' | '\cf3 let\cf0 ' | '\cf3 not\cf0 ' | '\cf3 null\cf0 ' | '\cf3 or\cf0 ' | '\cf3 property\cf0 ' | '\cf3 return\cf0 ' | '\cf3 select\cf0 ' | '\cf3 self\cf0 ' | '\cf3 then\cf0 ' | '\cf3 true\cf0 ' | '\cf3 when\cf0 ' | '\cf3 where\cf0 '\
+\
+Reserved := 'assert' | 'class' | 'case' | 'except' | 'foreach' | 'from' | 'match' | 'otherwise' | 'while'\
+\
+NewLine := \\n\
+\
+Whitespace := ' ' | '\\t' | '\\n'\
+\
+}

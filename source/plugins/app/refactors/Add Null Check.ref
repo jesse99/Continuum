@@ -1,0 +1,27 @@
+# Adds a Contract.Assert to check the selected parameter for null.
+define Run()
+	if Scope is Method then
+		if ValidSelection(Selection, Scope) then
+			Scope.Body.InsertFirst("Contract.Requires•(#{Selection} != null, ""#{Selection} is null"");")
+			
+			# If you want to throw an exception you can enable this code 
+			# (ideally to a copy of this script placed in refactors/user).
+#			Globals.AddUsing("System")
+#			Scope.Body.InsertFirst("if (#{Selection} == null)")
+#			Scope.Body.InsertFirst("	throw new ArgumentNullException•(""#{Selection}"");")
+		else
+			Raise("#{Selection} is not a parameter name.")
+		end
+	else
+		Raise("Selection is not within a method.")
+	end
+end
+
+define ValidSelection(selection, method)
+	for candidate in method.Parameters do
+		if candidate.Name == selection then
+			return true
+		end
+	end
+	return false
+end

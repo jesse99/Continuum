@@ -1,0 +1,9 @@
+<Language name = "patch" ignore_whitespace = "true">
+	<comment>^Index: \ .*</comment>
+	<comment>^ =+ $</comment>
+	<comment>^ --- .*</comment>
+	<comment>^ \+\+\+ .*</comment>
+	<comment>^ @@ .*</comment>
+	<keyword>^\+ .*</keyword>
+	<string>^- .*</string>
+</Language>

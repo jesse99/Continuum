@@ -1,0 +1,62 @@
+# Adds any of the standard exception ctors which are missing.
+define Run()
+	if Scope is TypeDeclaration then
+		Process(Scope)
+			
+	elif Scope is Member then
+		Process(Scope.DeclaringType)
+			
+	else
+		Raise("Selection is not within a type or member.")
+	end
+end
+
+define Process(type)
+	if type.Bases.IsEmpty then
+		Raise("Type does not inherit from an exception class.")
+	elif not type.Bases.Head.Contains("Exception") then
+		Raise("Type does not inherit from an exception class.")
+	end
+	
+	Globals.AddUsing("System.Runtime.Serialization")
+	Globals.AddUsing("System.Security.Permissions")
+	
+	# This is needed for XML serialization and should be public in case the 
+	# assembly disables reflection on private members.
+	if not type.HasMember(type.Name, []) then
+		type.Body.InsertFirst(
+"public #{type.Name}•()
+{
+}
+")
+	end
+	
+	# Convention dictates that these be present.
+	if not type.HasMember(type.Name, ["string"]) then
+		type.Body.InsertFirst(
+"public #{type.Name}•(string message) : base•(message)
+{
+}
+")
+	end
+	
+	if not type.HasMember(type.Name, ["string", "Exception"]) then
+		type.Body.InsertFirst(
+"public #{type.Name}•(string message, Exception inner) : base•(message)
+{
+}
+")
+	end
+	
+	# This is needed for binary serialization.
+	if not type.HasMember(type.Name, ["SerializationInfo", "StreamingContext"]) then
+		let access = "private" when type.IsSealed else "protected" in
+			type.Body.InsertFirst(
+"[SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+#{access} #{type.Name}•(SerializationInfo info, StreamingContext context) : base•(info, context)
+{
+}
+")
+		end
+	end
+end

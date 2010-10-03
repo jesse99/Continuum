@@ -1,0 +1,38 @@
+<Bosses namespaces = "Gear Shared App">
+	<Boss name = "Application" singleton = "true">	
+		<Implementation interfaces = "IApplication +IFactoryPrefs" name = "Application"/>
+		<Implementation interfaces = "ILaunch" name = "Launcher"/>
+		<Implementation interfaces = "IMenuHandler" name = "MenuHandler"/>
+		<Implementation interfaces = "ISccs" name = "FallbackSccs"/>
+		<Implementation interfaces = "IInterface +IParseErrors" name = "DParser"/>
+		<Implementation interfaces = "IInterface +IParseErrors" name = "GmcsParser"/>
+		<Implementation interfaces = "IInterface +IParseErrors" name = "GccParser"/>
+		<Implementation interfaces = "IInterface +IParseErrors" name = "MakeParser"/>
+		<Implementation interfaces = "IScripts +IStartup" name = "Scripts"/>
+		<Implementation interfaces = "IRegisterRefactor +IStartup" name = "Refactors"/>
+		<Implementation interfaces = "IInterface +IStartup" name = "MoveSelectionToFile"/>
+		<Implementation interfaces = "IInterface +IStartup" name = "ResolveNamespace"/>
+	</Boss>
+	
+	<Boss name = "Builders" singleton = "true">
+		<!-- this will have ICanBuild implementations -->
+	</Boss>
+	
+	<Boss name = "FileSystem" singleton = "true">	
+		<Implementation interfaces = "IFileSystem" name = "FileSystem"/>
+	</Boss>
+	
+	<Boss name = "Sccs" singleton = "true">
+		<!-- this will have ISccs implementations -->
+	</Boss>
+	
+	<Boss name = "TextEditorPlugin" singleton = "true">
+		<Implementation interfaces = "IInterface +ITextContextCommands" name = "Spelling"/>
+		<Implementation interfaces = "IInterface +ITextContextCommands" name = "FindOnSites"/>
+		<Implementation interfaces = "IInterface +ITextContextCommands" name = "ScriptsMenu"/>
+		<Implementation interfaces = "IInterface +ITextContextCommands" name = "TimeMachine"/>
+	</Boss>
+	
+	<Boss name = "TextEditor">
+	</Boss>
+</Bosses>
