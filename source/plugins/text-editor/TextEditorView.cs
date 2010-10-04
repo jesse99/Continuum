@@ -590,8 +590,6 @@ namespace TextEditor
 		// Convert an NSString or an NSAttributedString to our internal (unix) endian.
 		private NSObject DoNormalizeString(NSObject str)
 		{
-		Console.WriteLine("converting: {0}", str); Console.Out.Flush();
-		Console.WriteLine("{0}", str.ToString().EscapeAll()); Console.Out.Flush();
 			var result = str.Call("mutableCopy").To<NSObject>();	// use a dynamic call because NSAttributedString and NSString don't share a common base class
 			
 			var replacement = NSString.Create("\n");
@@ -603,7 +601,6 @@ namespace TextEditor
 					result.Call("replaceCharactersInRange:withString:", range, replacement);
 				}
 			}
-		Console.WriteLine("   {0}", result.ToString().EscapeAll()); Console.Out.Flush();
 			
 			return result;
 		}

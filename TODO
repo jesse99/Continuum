@@ -29,38 +29,6 @@ sudo fs_usage -f filesys
 
 The Algorithm Design Manual
 
-public abstract class Mono.Debugger.Event
-	public class Mono.Debugger.Soft.AppDomainCreateEvent
-	public class Mono.Debugger.Soft.AppDomainUnloadEvent
-	public class Mono.Debugger.Soft.AssemblyLoadEvent
-	public class Mono.Debugger.Soft.AssemblyUnloadEvent
-	public class Mono.Debugger.Soft.BreakpointEvent
-	public class Mono.Debugger.Soft.ExceptionEvent
-	public class Mono.Debugger.Soft.MethodEntryEvent
-	public class Mono.Debugger.Soft.MethodExitEvent
-	public class Mono.Debugger.Soft.StepEvent
-	public class Mono.Debugger.Soft.ThreadDeathEvent
-	public class Mono.Debugger.Soft.ThreadStartEvent
-	public class Mono.Debugger.Soft.TypeLoadEvent
-	public class Mono.Debugger.Soft.VMDeathEvent
-	public class Mono.Debugger.Soft.VMDisconnectEvent
-	public class Mono.Debugger.Soft.VMStartEvent
-
-public abstract class Mono.Debugger.EventRequest
-	public sealed class Mono.Debugger.ExceptionEventRequest
-	public sealed class Mono.Debugger.BreakpointEventRequest
-	public sealed class Mono.Debugger.MethodEntryEventRequest	
-	public sealed class Mono.Debugger.MethodExitEventRequest
-	public sealed class Mono.Debugger.StepEventRequest
-	
-public abstract class Mono.Debugger.Value
-	public class Mono.Debugger.PrimitiveValue
-	public class Mono.Debugger.StructMirror
-		public class Mono.Debugger.EnumMirror
-	public class Mono.Debugger.ObjectMirror
-		public class Mono.Debugger.StringMirror
-		public class Mono.Debugger.ArrayMirror	
-		
 http://research.microsoft.com/en-us/projects/pex/	
 
 http://www.eqatec.com/tools/profiler
@@ -81,17 +49,20 @@ include the percentage of samples that that method appeared in the stack trace
 [2] http://www.mono-project.com/Compacting_GC	System.ArgumentException
 [3] http://www.mono-project.com/Mono_LLVM
 
+PID    COMMAND      %CPU TIME     		#TH #WQ        RPRVT  RSHRD RSIZE VPRVT
+45833- Foreshadow   0.0  00:07.17 12    1    139  647  25M      24M     52M    90M 		started
+49282- Foreshadow   0.0  01:23.03 14    3    215  929   46M     51M     77M    126M 
+50669- Foreshadow   0.0  01:35.73 24    1    167  1270 121M    46M-   153M-  208M	one run of debugger
+51687- Foreshadow   0.0  24:07.20 23    1    167  1945  74M+   45M-   103M   164M	fair amount of building and running
+
+# -w is used to inform git that the document has been closed
+git config --global core.editor "mate -w"		# or GIT_EDITOR
+	
+http://progit.org/
+
+* Build a new foreshadow.
+* Make a branch for the next release.
 * Release checklist:
-	- run continuum with no prefs
-	- run continuum with no databases (including the windows db)
-	- run continuum with no Continuum Files dir
-	- look at memory usage
-	- run unit tests in debug
-	- run unit tests in release
-	- make sure untitled docs work OK
-	- build a new foreshadow
-	- review BUILDING doc
-	- update known issues in the README
 	- review README
 	- review config file
 	- mention that thr debugger requires mono 2.6.3 or later
@@ -105,9 +76,20 @@ include the percentage of samples that that method appeared in the stack trace
 	- build a new foreshadow
 	- review the front page of the web site
 	- review the screen shots
+	- may want use a different format for the readme
+	- do something with the google code project
 	- email
+	- get a plan for the next version
 
 * File debugger tickets.	
+* Git support.
+* Add support for custom plugins:
+	- would it be possible for custom plugins to define IB menus which are merged into the real menus?
+	- would be nice to have some sort of extras directory
+	- could have a demo plugin that customizes menus, like 2010-10-manipulate-menus.diff
+	- maybe also support for overriding standard plugins
+* Some sort of dynamic find files thingy.
+* Outlining.
 * Can we improve syntax hilghting? Maybe with something other than regexen? Would be
    nice to optionally style types, fields, methods, locals and arguments.
    - also different colors for classes vs structs, static access vs instance access, etc
@@ -696,6 +678,7 @@ include the percentage of samples that that method appeared in the stack trace
 	- review the front page of the web site
 	- review the screen shots
 	- email
+	- get a plan for the next version
 
  /Users/jessejones/Documents/Developer/UnixNotes.sh
  /Users/jessejones/Documents/Developer/c#.cs
