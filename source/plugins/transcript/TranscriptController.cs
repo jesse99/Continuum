@@ -192,9 +192,12 @@ namespace Transcript
 			m_attributes[name].setObject_forKey(font, Externs.NSFontAttributeName);
 			
 			// paragraph
-			NSMutableParagraphStyle paraStyle = NSParagraphStyle.defaultParagraphStyle().mutableCopy().To<NSMutableParagraphStyle>();
-			paraStyle.setHeadIndent(36.0f); // lines up nicely with 'gmcs'
-			m_attributes[name].setObject_forKey(paraStyle, Externs.NSParagraphStyleAttributeName);
+			if (name == "transcript command font changed")
+			{
+				NSMutableParagraphStyle paraStyle = NSParagraphStyle.defaultParagraphStyle().mutableCopy().To<NSMutableParagraphStyle>();
+				paraStyle.setHeadIndent(36.0f); 		// lines up nicely with 'gmcs'
+				m_attributes[name].setObject_forKey(paraStyle, Externs.NSParagraphStyleAttributeName);
+			}
 			
 			// attributes
 			var data = defaults.objectForKey(NSString.Create(key + "attributes")).To<NSData>();
