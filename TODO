@@ -53,7 +53,9 @@ include the percentage of samples that that method appeared in the stack trace
 http://progit.org/
 
 * Make a branch for the next release.
+* Increment the master version number.
 * Release checklist:
+	- run gendarme
 	- review README
 	- review config file
 	- mention that thr debugger requires mono 2.6.3 or later
@@ -637,7 +639,6 @@ http://progit.org/
 	- would be cool if invariant support could be added via a script		
 * Release checklist:
 	- update generated config file logging categories (search for "Log.WriteLine")
-	- update the version number
 	- delete build_num
 	- make sure directory objects go away
 	- make sure directory editor boss goes away
@@ -652,6 +653,7 @@ http://progit.org/
 	- look at memory usage
 	- run unit tests in debug
 	- run unit tests in release
+	- run gendarme
 	- make sure untitled docs work OK
 	- build a new foreshadow
 	- review BUILDING doc
