@@ -49,18 +49,9 @@ include the percentage of samples that that method appeared in the stack trace
 [2] http://www.mono-project.com/Compacting_GC	System.ArgumentException
 [3] http://www.mono-project.com/Mono_LLVM
 
-PID    COMMAND      %CPU TIME     		#TH #WQ        RPRVT  RSHRD RSIZE VPRVT
-45833- Foreshadow   0.0  00:07.17 12    1    139  647  25M      24M     52M    90M 		started
-49282- Foreshadow   0.0  01:23.03 14    3    215  929   46M     51M     77M    126M 
-50669- Foreshadow   0.0  01:35.73 24    1    167  1270 121M    46M-   153M-  208M	one run of debugger
-51687- Foreshadow   0.0  24:07.20 23    1    167  1945  74M+   45M-   103M   164M	fair amount of building and running
-
-# -w is used to inform git that the document has been closed
-git config --global core.editor "mate -w"		# or GIT_EDITOR
 	
 http://progit.org/
 
-* Build a new foreshadow.
 * Make a branch for the next release.
 * Release checklist:
 	- review README
