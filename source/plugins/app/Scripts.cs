@@ -1,4 +1,4 @@
-// Copyright (C) 2009 Jesse Jones
+// Copyright (C) 2009-2010 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -63,7 +63,7 @@ namespace App
 			NSApplication app = NSApplication.sharedApplication();
 			NSMenu menu = app.Call("textMenu").To<NSMenu>();
 			int index = menu.indexOfItemWithTarget_andAction(app.delegate_(), "openScripts:") - 2;
-		
+			
 			while (!menu.itemAtIndex(index).isSeparatorItem())
 			{
 				menu.removeItemAtIndex(index--);
@@ -125,6 +125,8 @@ namespace App
 			
 			try
 			{
+				DoCheckEndian(selection, "\r", "Classic Mac");
+				DoCheckEndian(selection, "\r\n", "Windows");
 				SaveFile(path);
 				
 				// TODO: Need to handle aliaii here and possibly in open panel dialogs.
@@ -136,7 +138,7 @@ namespace App
 					process.StartInfo.RedirectStandardInput = true;
 					process.StartInfo.RedirectStandardOutput = true;
 					process.StartInfo.RedirectStandardError = true;
-		
+					
 					process.Start();
 					
 					TextWriter input = process.StandardInput;
@@ -146,10 +148,10 @@ namespace App
 					bool exited = process.WaitForExit(1000);
 					if (!exited)
 						throw new Exception("Timed out.");
-
+					
 					if (process.ExitCode == 0)
 						result = process.StandardOutput.ReadToEnd();
-
+					
 					string err = process.StandardError.ReadToEnd();
 					if (err.Length > 0)
 					{
@@ -167,9 +169,24 @@ namespace App
 				NSString message = NSString.Create(e.Message);
 				Unused.Value = Functions.NSRunAlertPanel(title, message);
 			}
-									
+			
 			return result;
 		}
+		
+		// This should not happen: Windows and Classic Mac endian files are converted
+		// to Unix endian when the document is opened. Pasted strings are also converted
+		// but in case there are other ways for text to enter the system we'll do this check.
+		private void DoCheckEndian(string text, string endian, string name)
+		{
+			if (text.Contains(endian))
+			{
+				Boss boss = ObjectModel.Create("Application");
+				var transcript = boss.Get<ITranscript>();
+				
+				transcript.Show();
+				transcript.WriteLine(Output.Error, "The selection contains {0} line endings so the script may not work properly.", name);
+			}
+		}
 		#endregion
-	} 
+	}
 }
