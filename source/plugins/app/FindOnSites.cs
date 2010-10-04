@@ -117,7 +117,7 @@ namespace App
 				name = name.Replace(":", "%20");
 			}
 			
-			NSURL url = NSURL.URLWithString(NSString.Create("http://www.google.com/search?q=" + name + "%20site:developer.apple.com/mac/library/documentation/Cocoa/Reference"));			// TODO: probably should use a pref for the sites
+			NSURL url = NSURL.URLWithString(NSString.Create("http://developer.apple.com/library/mac/search/?q=" + name));			// TODO: probably should use a pref for the sites
 			Unused.Value = NSWorkspace.sharedWorkspace().openURL(url);
 			
 			return selection;
