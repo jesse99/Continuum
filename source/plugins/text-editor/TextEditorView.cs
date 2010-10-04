@@ -118,26 +118,38 @@ namespace TextEditor
 		
 		public new void paste(NSObject sender)
 		{
-			// If we are styling the text then we want to paste just the text, not the
-			// text and the attributes (if we paste the attributes the styler won't
-			// always reset them all, especially things like paragraph styles).
-			TextController controller = (TextController) window().windowController();
+			NSArray classes;
+			var controller = (TextController) window().windowController();
 			if (controller.Language != null)
 			{
-				var pasteboard = NSPasteboard.generalPasteboard();
-				var text = pasteboard.stringForType(NSPasteboard.NSStringPboardType);
-				if (!NSObject.IsNullOrNil(text))
-				{
-					this.insertText(text);
-				}
-				else
-				{
-					Functions.NSBeep();
-				}
+				// If we are styling the text then we want to paste just the text, not the
+				// text and the attributes (if we paste the attributes the styler won't
+				// always reset them all, especially things like paragraph styles).
+				classes = NSArray.Create(NSString.Class);
 			}
 			else
 			{
-				SuperCall(NSTextView.Class, "paste:", sender);
+				classes = NSArray.Create(NSAttributedString.Class, NSString.Class);
+			}
+			
+			var options = NSDictionary.Create();
+			
+			var pasteboard = NSPasteboard.generalPasteboard();
+			NSArray items = pasteboard.readObjectsForClasses_options(classes, options);
+			if (!NSObject.IsNullOrNil(items))
+			{
+				// Pasted text is often mac endian (e.g. when pasting from the Finder).
+				// But we try to keep the in-memory document unix endian so that
+				// things like the text scripts work properly. So, whenever we paste we'll
+				// go through this tedious business of converting line endings.
+				NSObject text = items.objectAtIndex(0);
+				text = DoNormalizeString(text);
+				
+				this.insertText(text);
+			}
+			else
+			{
+				Functions.NSBeep();
 			}
 		}
 		
@@ -575,6 +587,48 @@ namespace TextEditor
 		#endregion
 		
 		#region Private Methods
+		// Convert an NSString or an NSAttributedString to our internal (unix) endian.
+		private NSObject DoNormalizeString(NSObject str)
+		{
+		Console.WriteLine("converting: {0}", str); Console.Out.Flush();
+		Console.WriteLine("{0}", str.ToString().EscapeAll()); Console.Out.Flush();
+			var result = str.Call("mutableCopy").To<NSObject>();	// use a dynamic call because NSAttributedString and NSString don't share a common base class
+			
+			var replacement = NSString.Create("\n");
+			foreach (string endian in new string[]{"\r\n", "\r"})
+			{
+				List<NSRange> ranges = DoGetSubstrings(result, endian);
+				foreach (NSRange range in ranges)
+				{
+					result.Call("replaceCharactersInRange:withString:", range, replacement);
+				}
+			}
+		Console.WriteLine("   {0}", result.ToString().EscapeAll()); Console.Out.Flush();
+			
+			return result;
+		}
+		
+		private List<NSRange> DoGetSubstrings(NSObject inStr, string inSubstr)
+		{
+			var ranges = new List<NSRange>();
+			
+			var str = (inStr.isKindOfClass(NSString.Class) ? inStr : inStr.Call("string")).To<NSString>();
+			var substr = NSString.Create(inSubstr);
+			
+			NSRange within = new NSRange(0, (int) str.length());
+			while (within.location < str.length())
+			{
+				NSRange range = str.rangeOfString_options_range(substr, Enums.NSLiteralSearch, within);
+				if (range.length == 0)
+					break;
+					
+				within = new NSRange(range.location + range.length, (int) (str.length() - (range.location + range.length)));
+				ranges.Add(range);
+			}
+			
+			return ranges;
+		}
+		
 		// DoMatchPriorLineTabs:
 		//    If at eol and all preceding chars on current line are tabs (or empty),
 		//    then match the leading tabs of the above line and return true.
