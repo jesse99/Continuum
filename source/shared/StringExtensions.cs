@@ -90,25 +90,10 @@ namespace Shared
 		[Pure]
 		public static string ReversePath(this string path)
 		{
-#if true
 			// Returns "baz • bar • foo" for "/foo/bar/baz".
 			string[] parts = path.Split(new char[]{'/'}, StringSplitOptions.RemoveEmptyEntries);
 			Array.Reverse(parts);
 			return string.Join(Constants.ThinSpace + Constants.Bullet + Constants.ThinSpace, parts);
-#else
-			// Returns "baz \ bar \ foo" for "/foo/bar/baz"
-			var pathSep = " \\ ";
-			var parts = new List<string>(path.Split('/'));
-			parts.Reverse();
-			var sep = "";
-			var sb = new StringBuilder(path.Length);
-			foreach (var part in parts) {
-				sb.Append(sep);
-				sb.Append(part);
-				sep = pathSep;
-			}
-			return sb.ToString();
-#endif
 		}
 		
 		// Removes all whitespace from the string.
