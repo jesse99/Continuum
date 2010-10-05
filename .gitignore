@@ -2,3 +2,6 @@ bin
 build_num
 foreshadow.log
 source/AssemblyVersion.cs
+tmp.txt
+diff
+
