@@ -192,7 +192,7 @@ namespace Transcript
 			m_attributes[name].setObject_forKey(font, Externs.NSFontAttributeName);
 			
 			// paragraph
-			if (name == "transcript command font changed")
+			if (name == "transcript stdout font changed")
 			{
 				NSMutableParagraphStyle paraStyle = NSParagraphStyle.defaultParagraphStyle().mutableCopy().To<NSMutableParagraphStyle>();
 				paraStyle.setHeadIndent(36.0f); 		// lines up nicely with 'gmcs'
