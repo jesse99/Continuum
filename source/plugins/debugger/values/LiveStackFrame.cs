@@ -173,7 +173,6 @@ namespace Debugger
 				hash += Thread.Id.GetHashCode();
 				hash += m_index.GetHashCode();
 				hash += Method.MetadataToken.GetHashCode();
-				hash += ILOffset.GetHashCode();
 			}
 			
 			return hash;
