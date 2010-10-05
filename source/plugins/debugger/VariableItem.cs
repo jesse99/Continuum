@@ -135,6 +135,7 @@ namespace Debugger
 			}
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		public override string ToString()
 		{
 			return ToString("G", null);
@@ -145,6 +146,7 @@ namespace Debugger
 			return ToString(format, null);
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		public override string ToString(string format, IFormatProvider provider)
 		{
 			if (provider != null)
@@ -161,6 +163,7 @@ namespace Debugger
 		}
 		
 		#region Protected Methods
+		[ThreadModel(ThreadModel.Concurrent)]
 		protected override void OnDealloc()
 		{
 			if (AttributedName != null)		// this may be called if a ctor throws so we need all the null checks

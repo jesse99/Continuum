@@ -43,6 +43,7 @@ namespace Shared
 			m_table.setDoubleAction("doubleClicked:");
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		protected override void OnDealloc()
 		{
 			if (m_items != null)

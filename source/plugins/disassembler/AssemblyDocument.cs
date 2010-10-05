@@ -41,6 +41,7 @@ namespace Disassembler
 			ActiveObjects.Add(this);
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		protected override void OnDealloc()
 		{
 			m_namespaces.ForEach(n => n.release());

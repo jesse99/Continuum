@@ -106,6 +106,7 @@ namespace DirectoryEditor
 			attrs.setObject_forKey(NSNumber.Create(-3.0f), Externs.NSStrokeWidthAttributeName);
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		protected override void OnDealloc()
 		{
 			if (m_children != null)
@@ -300,6 +301,7 @@ namespace DirectoryEditor
 			attrs.setObject_forKey(color, Externs.NSForegroundColorAttributeName);
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		protected override void OnDealloc()
 		{
 			if ((object) m_bytes != null)

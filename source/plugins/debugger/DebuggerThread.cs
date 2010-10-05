@@ -353,6 +353,7 @@ namespace Debugger
 			return HandlerAction.Suspend;
 		}
 		
+		[ThreadModel(ThreadModel.SingleThread)]
 		private HandlerAction DoUnknownEvent(Event e)
 		{
 			Log.WriteLine(TraceLevel.Info, "Debugger", "Unknown: {0}", e);
@@ -362,6 +363,7 @@ namespace Debugger
 		#endregion
 		
 		#region Private Methods
+		[ThreadModel(ThreadModel.SingleThread)]
 		private void DoReset()
 		{
 			foreach (ResolvedBreakpoint resolved in m_breakpoints.Keys)
@@ -470,6 +472,7 @@ namespace Debugger
 		// We need to trap exceptions on resume because the VM in the debugee is running
 		// asynchronously and it hits the breakpoint while we are trying to process a type
 		// load event. TODO: GetNextEventSet might help with this. 
+		[ThreadModel(ThreadModel.SingleThread)]
 		private void DoResume(VirtualMachine vm)
 		{
 			try

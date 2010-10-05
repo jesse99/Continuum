@@ -33,7 +33,7 @@ namespace DirectoryEditor
 	[ExportClass("TableItem", "NSObject")]
 	internal abstract class TableItem : NSObject, IObserver
 	{
-		public TableItem(string path, DirectoryItemStyler styler, string type) : base(NSObject.AllocAndInitInstance(type))
+		protected TableItem(string path, DirectoryItemStyler styler, string type) : base(NSObject.AllocAndInitInstance(type))
 		{
 			m_path = path;
 			m_canonicalPath = UnixPath.GetCanonicalPath(path);
@@ -103,12 +103,14 @@ namespace DirectoryEditor
 			return NSString.Create(m_path);
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		public override string ToString()
 		{
 			return m_path;
 		}
 		
 		#region Protected Methods
+		[ThreadModel(ThreadModel.Concurrent)]
 		protected override void OnDealloc()
 		{
 			if (m_name != null)

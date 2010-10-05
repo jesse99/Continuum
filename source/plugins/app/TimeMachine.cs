@@ -181,6 +181,7 @@ namespace App
 			return editor;
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		private string DoGetTimeMachinePath(string realPath, string version)
 		{
 			Contract.Requires(!string.IsNullOrEmpty(realPath), "realPath is null or empty");
