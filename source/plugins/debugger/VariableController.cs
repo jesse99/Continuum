@@ -57,12 +57,6 @@ namespace Debugger
 		
 		public static VariableController Instance {get; private set;}
 		
-		public void Reload()
-		{
-			if (m_item != null)
-				m_table.reloadData();
-		}
-		
 		public void OnBroadcast(string name, object value)
 		{
 			switch (name)

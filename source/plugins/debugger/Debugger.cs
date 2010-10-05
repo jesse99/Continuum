@@ -190,18 +190,6 @@ namespace Debugger
 			m_thread.Suspend();
 		}
 		
-		public void AddBreakpoint(Breakpoint bp, MethodMirror method, long ilOffset)
-		{
-			Contract.Assert(!m_shutDown);
-			m_thread.AddBreakpoint(bp, method, ilOffset);
-		}
-		
-		public void RemoveBreakpoint(Breakpoint bp, MethodMirror method, long ilOffset)
-		{
-			Contract.Assert(!m_shutDown);
-			m_thread.RemoveBreakpoint(bp, method, ilOffset);
-		}
-		
 		public FieldInfoMirror[] GetStaticFields()
 		{
 			return m_thread.GetStaticFields();

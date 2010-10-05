@@ -176,12 +176,6 @@ namespace Debugger
 			get {return m_debugger;}
 		}
 		
-		// Full path to the executable.
-		public string Executable
-		{
-			get {return m_executable;}
-		}
-		
 		public bool readFromData_ofType_error(NSData data, NSString typeName, IntPtr outError)
 		{
 			bool read = false;
@@ -205,6 +199,7 @@ namespace Debugger
 		}
 		
 		#region Protected Methods
+		[ThreadModel(ThreadModel.Concurrent)]
 		protected override void OnDealloc()
 		{
 			Boss boss = ObjectModel.Create("Application");
