@@ -17,6 +17,7 @@ A: build-errors
 A: continuum
 A: cs-parser
 A: cs-refactor
+A: debugger
 A: directory-editor
 A: file-system
 A: find
@@ -35,6 +36,7 @@ A: build-errors
 A: continuum
 A: cs-parser
 A: cs-refactor
+A: debugger
 A: directory-editor
 A: file-system
 A: find
@@ -53,6 +55,7 @@ A: build-errors
 A: continuum
 A: cs-parser
 A: cs-refactor
+A: debugger
 A: directory-editor
 A: file-system
 A: find
@@ -71,6 +74,7 @@ A: build-errors
 A: continuum
 A: cs-parser
 A: cs-refactor
+A: debugger
 A: directory-editor
 A: file-system
 A: find
@@ -89,6 +93,7 @@ A: build-errors
 A: continuum
 A: cs-parser
 A: cs-refactor
+A: debugger
 A: directory-editor
 A: file-system
 A: find
@@ -107,6 +112,7 @@ A: build-errors
 A: continuum
 A: cs-parser
 A: cs-refactor
+A: debugger
 A: directory-editor
 A: file-system
 A: find
@@ -125,6 +131,7 @@ A: build-errors
 A: continuum
 A: cs-parser
 A: cs-refactor
+A: debugger
 A: directory-editor
 A: file-system
 A: find
@@ -143,6 +150,7 @@ A: build-errors
 A: continuum
 A: cs-parser
 A: cs-refactor
+A: debugger
 A: directory-editor
 A: file-system
 A: find
@@ -161,6 +169,7 @@ A: build-errors
 A: continuum
 A: cs-parser
 A: cs-refactor
+A: debugger
 A: directory-editor
 A: file-system
 A: find
@@ -179,6 +188,7 @@ A: build-errors
 A: continuum
 A: cs-parser
 A: cs-refactor
+A: debugger
 A: directory-editor
 A: disassembler
 A: file-system
@@ -198,6 +208,7 @@ A: build-errors
 A: continuum
 A: cs-parser
 A: cs-refactor
+A: debugger
 A: directory-editor
 A: disassembler
 A: file-system
@@ -217,6 +228,7 @@ A: build-errors
 A: continuum
 A: cs-parser
 A: cs-refactor
+A: debugger
 A: directory-editor
 A: file-system
 A: find
@@ -235,6 +247,7 @@ A: build-errors
 A: continuum
 A: cs-parser
 A: cs-refactor
+A: debugger
 A: directory-editor
 A: file-system
 A: find
@@ -253,6 +266,7 @@ A: build-errors
 A: continuum
 A: cs-parser
 A: cs-refactor
+A: debugger
 A: directory-editor
 A: file-system
 A: find
@@ -271,6 +285,7 @@ A: build-errors
 A: continuum
 A: cs-parser
 A: cs-refactor
+A: debugger
 A: directory-editor
 A: file-system
 A: find
@@ -289,6 +304,7 @@ A: build-errors
 A: continuum
 A: cs-parser
 A: cs-refactor
+A: debugger
 A: directory-editor
 A: disassembler
 A: file-system
@@ -308,6 +324,7 @@ A: build-errors
 A: continuum
 A: cs-parser
 A: cs-refactor
+A: debugger
 A: directory-editor
 A: file-system
 A: find
@@ -326,6 +343,7 @@ A: build-errors
 A: continuum
 A: cs-parser
 A: cs-refactor
+A: debugger
 A: directory-editor
 A: file-system
 A: find
@@ -344,6 +362,7 @@ A: build-errors
 A: continuum
 A: cs-parser
 A: cs-refactor
+A: debugger
 A: directory-editor
 A: disassembler
 A: file-system
@@ -363,6 +382,7 @@ A: build-errors
 A: continuum
 A: cs-parser
 A: cs-refactor
+A: debugger
 A: directory-editor
 A: file-system
 A: find
@@ -381,6 +401,7 @@ A: build-errors
 A: continuum
 A: cs-parser
 A: cs-refactor
+A: debugger
 A: directory-editor
 A: file-system
 A: find
@@ -399,6 +420,7 @@ A: build-errors
 A: continuum
 A: cs-parser
 A: cs-refactor
+A: debugger
 A: directory-editor
 A: file-system
 A: find
@@ -423,6 +445,7 @@ A: build-errors
 A: continuum
 A: cs-parser
 A: cs-refactor
+A: debugger
 A: directory-editor
 A: file-system
 A: find
@@ -451,6 +474,7 @@ A: build-errors
 A: continuum
 A: cs-parser
 A: cs-refactor
+A: debugger
 A: directory-editor
 A: file-system
 A: find
@@ -477,11 +501,13 @@ A: text-editor
 
 R: Gendarme.Rules.Design.FlagsShouldNotDefineAZeroValueRule
 A: cs-refactor
+A: debugger
 
 R: Gendarme.Rules.Maintainability.AvoidComplexMethodsRule
 A: auto-complete
 A: cs-parser
 A: cs-refactor
+A: debugger
 A: object-model
 A: shared
 
@@ -492,6 +518,7 @@ A: build-errors
 A: continuum
 A: cs-parser
 A: cs-refactor
+A: debugger
 A: directory-editor
 A: file-system
 A: find
@@ -508,6 +535,7 @@ R: Gendarme.Rules.Maintainability.AvoidUnnecessarySpecializationRule
 A: app
 A: auto-complete
 A: cs-refactor
+A: debugger
 A: cs-parser
 A: object-model
 A: shared
