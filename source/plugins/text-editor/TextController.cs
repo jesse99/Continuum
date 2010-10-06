@@ -1,4 +1,4 @@
-// Copyright (C) 2008-2009 Jesse Jones
+// Copyright (C) 2008-2010 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -364,7 +364,9 @@ namespace TextEditor
 		
 		public new NSString windowTitleForDocumentDisplayName(NSString displayName)
 		{
-			NSString result = displayName;
+//			NSString result = displayName;
+			string path = Path;
+			NSString result = path != null ? NSString.Create(path.ReversePath()) : displayName;
 			
 			if (m_boss.Has<IDocumentWindowTitle>())
 			{
