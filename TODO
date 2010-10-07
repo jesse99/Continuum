@@ -52,17 +52,13 @@ include the percentage of samples that that method appeared in the stack trace
 	
 http://progit.org/
 
-* Make a branch for the next release.
-* Increment the master version number.
 * Release checklist:
-	- run gendarme
-	- review README
 	- review config file
-	- mention that thr debugger requires mono 2.6.3 or later
-	- run from the finder
+	- mention that the debugger requires mono 2.6.3 or later
 	- review tar targets
 	- use svn log -r 1:HEAD > CHANGE_LOG
 	- update CHANGES file
+	- review readme (especially description)
 	- make sure gear is checked in
 	- upload the new binary
 	- make sure it works with mono 2.8
@@ -74,6 +70,11 @@ http://progit.org/
 	- email
 	- get a plan for the next version
 
+* Merge release branch into master.
+* Update version in readme.
+* Add charles-esterbrook as a collabarator.
+* Add a topics/esterbrook branch.
+* Increment the master version number.
 * File debugger tickets.	
 * Git support.
 * Add support for custom plugins:
@@ -671,6 +672,8 @@ http://progit.org/
 	- review the front page of the web site
 	- review the screen shots
 	- email
+	- merge release branch into master
+	- update version (both in the make file and the readme)
 	- get a plan for the next version
 
  /Users/jessejones/Documents/Developer/UnixNotes.sh
