@@ -62,7 +62,7 @@ include source/continuum/module.mk
 
 # ------------------------------------------------------------------------
 # Primary targets		
-all: $(program-targets)
+all: $(program-targets) readme
 
 plugins: $(plugin-targets)
 
@@ -83,6 +83,9 @@ check: bin/tests.dll
 
 check1: bin/tests.dll
 	cd bin && "$(NUNIT)" -nologo -fixture=$(TEST1) tests.dll
+	
+readme: README.txt
+	asciidoc --backend=xhtml11 README.txt
 
 # ------------------------------------------------------------------------
 # Misc targets

@@ -1,0 +1,118 @@
+Continuum README
+=================
+
+== 0 Description ==
+
+Continuum is a Cocoa IDE for http://www.mono-project.com/Main_Page[Mono]. Unlike most IDEs Continuum doesn't actually build projects. It instead relies on tools like make or nant. Here is a https://home.comcast.net/\~jesse98/public/Screen1.tiff[screenshot] and https://home.comcast.net/\~jesse98/public/Screen2.tiff[here] is another.
+
+Continuum 0.7.0 includes the following features:
+
+ * Auto-completion for C# code.
+ * Builds using make or nant.
+ * Customizable regex based syntax highlighting.
+ * Support for showing make and gmcs build errors.
+ * An sqlite database containing information about the types in each project's assemblies and the assemblies they reference.
+ * Context commands which operate on the selection using the database such as show short form or show derived classes.
+ * Flexible regex based searching of single files or directories.
+ * Customizable scripts to change selections.
+ * Customizable scripts to refactor C# code.
+ * Time Machine integration.
+ * Basic integrated svn support.
+ * Basic integrated file system support.
+
+Continuum depends upon http://code.google.com/p/mobjc[mobjc], http://code.google.com/p/mcocoa[mcocoa], and http://code.google.com/p/gear-sharp[gear].
+
+== 1 Setup ==
+
+You don't have to do any sort of installation to run Continuum, but there are a few things that you can do to make it operate better:
+
+• Continuum uses the Unix locate command quite a bit when searching for files. Unfortunately the locate command is disabled in Snow Leopard. To enable it you need to type the following into a terminal: `sudo launchctl load &#x002D;w /System/Library/LaunchDaemons/com.apple.locate.plist`. 
+
+• There is a command line tool that can be used within a terminal to open files or directories using Continuum. To install the tool open Continuum and select the `Install Command Line Tool` item 
+from the Continuum menu. 
+
+• It's helpful to install the mono sources when using Continuum. This allows you to step into the mono source code when debugging and lets you open the source file associated with System or Mono types using a contextual menu. If you have one copy of the source code Continuum can figure out where it is using the locate command. But if you have multiple copies you may want to go to the Environment panel in Continuum's preferences and double-check that it is set correctly.
+
+In order to do things like auto-complete Continuum has to parse the assemblies you build as well as all of the assemblies that they reference. This information is cached in sqlite databases stored in `\~/Library/Caches/Continuum`. These files can be quite large so you may want to delete them if you uninstall Continuum.
+
+== 2 Operation ==
+
+==== 2.1 Directory Editor ====
+
+Continuum uses a different model than most other IDEs: instead of project or solution files you open arbitrary directories and use make or nant files within the directory to build. By default, every file within the directory appears in the directory editor but you can use the preferences associated with that directory to specify globs for files to exclude and to color code files which are included.
+
+There is a contextual menu for files within the directory editor which allows you to do basic file manager and svn tasks. Command-shift-D can be used to duplicate a file and clicking on a file twice allows you to rename it. The file list is live so it will update as files are updated or removed.
+
+==== 2.2 Text Editor ==== 
+
+The text editor is a more or less standard Cocoa editor but there are specialized contextual menus for types and methods allowing you to do things like search on apple or msdn, goto the definition, show the disassembly, show base or derived classes, and show the short form of a type.
+
+If you right click on nothing then you can do things like hide the syntax coloring for spaces and tabs or open the last associated file within Time Machine. When you do this a new file will open with a title like _App.cs (from 9 months 10 hours ago)_. If you right click on nothing in that file you can open even older versions of the file.
+
+==== 2.3 Searching ==== 
+
+On occasion control or Unicode characters slip into source code files (e.g. when pasting in text from Wikipedia). These can cause hard to find compiler errors so the Search menu in Continuum has a `Find Gremlins` command. This will start at the insertion point and select the next control or non-7-bit ASCII character. If it finds such a character it will write something like `0x03B2 GREEK SMALL LETTER BETA` to the Transcript window. (You can test this using the `Special Characters comand` in the Text menu).
+
+`Find` and `Find in Files` optionally allow regular expressions to be used. These are the .NET regular expressions (see http://msdn.microsoft.com/en-us/library/hs600312.aspx[.NET Framework Regular Expressions]). Note that when replacing $1 is used to insert the first matched parenthesized expression instead of \1.
+
+`Find in Files` allows you to control where the search happens. This is done by specifying a simple pattern with an ellipsis and an optional prefix or suffix. The search is done within the ellipsis text, but only if the text matches the prefix and suffix. So, _//…_ will search within comments and _@"…"_ will search within verbatim strings.
+
+==== 2.4 Auto-Complete ==== 
+
+Auto-complete is currently initiated by typing a '.' or quickly pressing tab twice when the insertion point is just after an identifier. A period will complete namespaces or members. A double tab will complete constructors when used in a new expression or locals, arguments, and members otherwise. The auto-complete window has a context menu which allows you to filter out items using criteria such as whether it is an extension method or belongs to a class or interface. 
+
+The argument completion window which pops up after auto-completion may be dragged using the mouse and also has a context menu which allows you to close the window or select a different overload.
+
+==== 2.5 Special Keys ==== 
+
+Option-tab allows you to select the identifier after the insertion point. Shift-option-tab allows you to select the identifier before the insertion point. Command-~ allows you to cycle between open windows.
+
+== 3 Debugging == 
+
+You can debug an assembly by dropping an mdb file onto the Continuum icon in the dock, by using the Debug item in the Debug menu, or via apple script. The AppleScript command is named debug and has a direct parameter naming the exe or mdb file to open and the following optional parameters:
+
+ * *with* lists command line arguments to pass to the assembly.
+ * *vars* contains a space separated list of environment variables formatted as NAME=value.
+ * *wdir* is the working directory.
+ * *break* is a boolean parameter which defaults to false. If true a breakpoint is added to main.
+ * *using* is the name of the Unix tool used to run the assembly. It defaults to "mono".
+
+It is often convenient to use make files or build scripts to debug an assembly. With make you can do something like:
+
+----
+bin := $(abspath bin)	# use a full path to specify the assembly
+debug: app
+	osascript -e 'tell application "Continuum" to debug "$(bin)/my-app.exe" with "--arg=value --arg2"'
+----
+	
+The debugger's usage should be obvious but it does have one unusual feature: the ability to trace garbage collector roots. You can do this via the contextual menu in the Variables window and trace roots for either a type or a class instance. When the trace finishes a window will popup showing references from GC roots (e.g. locals and statics) to whatever you are tracing.
+
+== 4 Customization == 
+
+==== 4.1 Languages ==== 
+
+Syntax highlighting and the method popup menu at the bottom of text editor windows is done with the aid of language files. These are xml files which use .NET regular expressions to define patterns for things like comments, keywords, strings, type definitions, and member definitions. You can add new languages by going to the Continuum preferences, navigating to the Language Globs panel, and pressing the Open Languages button. 
+
+After you do this a directory in the Finder will open up allowing you to add a new language to the user directory. The syntax for these files is defined by the standard/Language.schema file. After adding a new language edit the Globs file in the custom directory and restart Continuum.
+
+==== 4.2 Text Scripts ==== 
+
+These are shell scripts which read from stdin and write to stdout. They are automatically added to the Text menu and the text editor contextual menu. When invoked they pass the current selection into the script via stdin and replace the selection with stdout. New scripts can be added by selecting the Open Scripts command from the Text menu and adding a new tool to the user directory.
+
+==== 4.3 Refactor Scripts ==== 
+
+These scripts allow you to do more complex processing of C# source. They are written in a custom little language which allows you to easily access and change C# code. To add a new refactor select the `Open Refactors` menu item from the Refactor menu. `standard/Refactor Language.rtf` explains the language used to write the refactors.
+
+== 5 Known Issues == 
+
+ * Auto-complete won't complete subscripted expressions (name[0].) or bound generic types (List<string> foo; foo.First().).
+
+ * Auto-complete will attempt to deduce the type of local variables declared as var but this only works when the expression is a new expression, an as cast, a function call like Get<T>(), or a linq query.
+
+ * Cocoa doesn't handle aliases very well so work needs to be done to support it ourselves. 
+
+ * Editing very large files is slower than it should be.
+
+ * There is support for saving files using different encodings, but no support for specifying the encoding when loading (although utf8 and the various forms of utf16 should work fine).
+
+jesjones@mindspring.com
