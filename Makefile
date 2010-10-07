@@ -6,6 +6,7 @@ PACK ?= cocoa-pack
 SMOKE ?= smoke
 NUNIT ?= nunit-console2
 GENDARME ?= /usr/local/bin/gendarme
+ASCIIDOC ?= asciidoc
 
 ifdef RELEASE
 	CSC_FLAGS += -checked+ -debug+ -warn:4 -nowarn:1591 -optimize+ -d:TRACE
@@ -84,8 +85,8 @@ check: bin/tests.dll
 check1: bin/tests.dll
 	cd bin && "$(NUNIT)" -nologo -fixture=$(TEST1) tests.dll
 	
-readme: README.txt
-	asciidoc --backend=xhtml11 README.txt
+readme: README.asciidoc
+	$(ASCIIDOC) --backend=xhtml11 $^
 
 # ------------------------------------------------------------------------
 # Misc targets
