@@ -5,7 +5,7 @@ Continuum README
 
 Continuum is a Cocoa IDE for http://www.mono-project.com/Main_Page[Mono]. Unlike most IDEs Continuum doesn't actually build projects. It instead relies on tools like make or nant. Here is a https://home.comcast.net/\~jesse98/public/Screen1.tiff[screenshot] and https://home.comcast.net/\~jesse98/public/Screen2.tiff[here] is another.
 
-Continuum 0.7.0 includes the following features:
+Continuum 0.8.0 includes the following features:
 
  * Auto-completion for C# code.
  * Builds using make or nant.

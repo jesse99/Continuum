@@ -67,12 +67,10 @@ http://progit.org/
 	- review the screen shots
 	- may want use a different format for the readme
 	- do something with the google code project
+	- merge into master
 	- email
 	- get a plan for the next version
 
-* Merge release branch into master.
-* Update version in readme.
-* Add charles-esterbrook as a collabarator.
 * Add a topics/esterbrook branch.
 * Increment the master version number.
 * File debugger tickets.	
