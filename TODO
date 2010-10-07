@@ -71,8 +71,6 @@ http://progit.org/
 	- email
 	- get a plan for the next version
 
-* Add a topics/esterbrook branch.
-* Increment the master version number.
 * File debugger tickets.	
 * Git support.
 * Add support for custom plugins:
