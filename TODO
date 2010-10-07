@@ -52,8 +52,6 @@ include the percentage of samples that that method appeared in the stack trace
 	
 http://progit.org/
 
-* Rewrite the readme in asciidoc:
-	- make sure the readme displays in github
 * Release checklist:
 	- review config file
 	- mention that the debugger requires mono 2.6.3 or later
