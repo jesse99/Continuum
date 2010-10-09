@@ -52,40 +52,14 @@ include the percentage of samples that that method appeared in the stack trace
 	
 http://progit.org/
 
---- a/source/plugins/cs-parser/ScannerTest.cs
-                public void IckyString()
-                {
-                        string ick = @"#!/bin/sh
--# Takes a list of files and opens them within xxx.
- app=yyy
- 
- if [ ""$1"" = ""-?"" ] || [ ""$1"" = ""-h"" ] || [ ""$1"" = ""--help"" ] ; then
-
-* Upgrade to mono 2.8:
-	- can we use a static Class ctor?
-	- file a ticket about the static ctor changes?
-	- push changes
-	- may want to try sgen
 * Release checklist:
-	- review config file
-	- search for TODO (in all files)
-	- mention that the debugger requires mono 2.6.3 or later
-	- review tar targets
-	- use svn log -r 1:HEAD > CHANGE_LOG
-	- update CHANGES file
-	- review readme (especially description)
-	- make sure gear is checked in
 	- upload the new binary
-	- make sure it works with mono 2.8
-	- build a new foreshadow
-	- review the front page of the web site
-	- review the screen shots
-	- may want use a different format for the readme
 	- do something with the google code project
 	- merge into master
 	- email
 	- get a plan for the next version
 
+* May want to try sgen (could measure perf)
 * File debugger tickets.	
 * Git support.
 * Add support for custom plugins:

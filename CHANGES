@@ -1,3 +1,24 @@
+Version 0.7 (Fri Oct 8 17:58:35 2010)
+
+* Added debugging support using the Mono Soft Debugger.
+* Searching within a file now wraps around (and displays a transient alert window after wrapping all the way around).
+* Find on Apple uses Apple's search engine instead of google.
+* Tab now indents selections.
+* UI now uses reverse ellipsis separated paths in a number of places.
+* Added syntax highlighting for D.
+* Command line tool now can open directories.
+* Do a better job warning about embedded nulls in text documents.
+* Warn if a unicode text document has control characters in 0x80-0x9F.
+* Tweaked command keys to better match XCode and Textmate.
+* Directory editor is now much faster with large directories.
+* No longer crashes if a time machine directory cannot be found.
+* Command line tool can now handle spaces in file names.
+* Disassembler doesn't add source comments if the source is newer than the assembly.
+* Convert strings to Unix line endings when pasting (they'll be converted to the document endian when saving).
+* Paste strips attributes if the document is syntax highlighted (not all of the attributes
+were cleared by the highlighter).
+* Auto-complete window now no longer grows by a pixel each time it is opened.
+
 Version 0.6 (r261)
 
 * Documents (including new untitled documents) are now auto-saved every 10 seconds.

@@ -3,12 +3,13 @@ Continuum README
 
 == 0 Description ==
 
-Continuum is a Cocoa IDE for http://www.mono-project.com/Main_Page[Mono]. Unlike most IDEs Continuum doesn't actually build projects. It instead relies on tools like make or nant. Here is a https://home.comcast.net/\~jesse98/public/Screen1.tiff[screenshot] and https://home.comcast.net/\~jesse98/public/Screen2.tiff[here] is another.
+Continuum is a Cocoa IDE for http://www.mono-project.com/Main_Page[Mono]. Unlike most IDEs Continuum doesn't actually build projects. It instead relies on tools like make or nant. Here is a https://home.comcast.net/&#x7E;jesse98/public/Screen1.tiff[screenshot] and https://home.comcast.net/&#x7E;jesse98/public/Screen2.tiff[here] is another. Here is a screenshot of the new https://home.comcast.net/&#x7E;jesse98/public/Debugger.tiff[debugger].
 
 Continuum 0.8.0 includes the following features:
 
+ * A debugger implemented using the http://www.mono-project.com/Soft_Debugger[Mono Soft Debugger].
  * Auto-completion for C# code.
- * Builds using make or nant.
+ * Builds using http://www.gnu.org/software/make/manual/html_node/index.html[make] or http://nant.sourceforge.net/[nant].
  * Customizable regex based syntax highlighting.
  * Support for showing make and gmcs build errors.
  * An sqlite database containing information about the types in each project's assemblies and the assemblies they reference.
@@ -26,14 +27,14 @@ Continuum depends upon http://code.google.com/p/mobjc[mobjc], http://code.google
 
 You don't have to do any sort of installation to run Continuum, but there are a few things that you can do to make it operate better:
 
-• Continuum uses the Unix locate command quite a bit when searching for files. Unfortunately the locate command is disabled in Snow Leopard. To enable it you need to type the following into a terminal: `sudo launchctl load &#x002D;w /System/Library/LaunchDaemons/com.apple.locate.plist`. 
+• Continuum uses the Unix locate command quite a bit when searching for files. Unfortunately the locate command is disabled in Snow Leopard. To enable it you need to type the following into a terminal: `sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.locate.plist`. 
 
 • There is a command line tool that can be used within a terminal to open files or directories using Continuum. To install the tool open Continuum and select the `Install Command Line Tool` item 
 from the Continuum menu. 
 
 • It's helpful to install the mono sources when using Continuum. This allows you to step into the mono source code when debugging and lets you open the source file associated with System or Mono types using a contextual menu. If you have one copy of the source code Continuum can figure out where it is using the locate command. But if you have multiple copies you may want to go to the Environment panel in Continuum's preferences and double-check that it is set correctly.
 
-In order to do things like auto-complete Continuum has to parse the assemblies you build as well as all of the assemblies that they reference. This information is cached in sqlite databases stored in `\~/Library/Caches/Continuum`. These files can be quite large so you may want to delete them if you uninstall Continuum.
+In order to do things like auto-complete Continuum has to parse the assemblies you build as well as all of the assemblies that they reference. This information is cached in sqlite databases stored in `~/Library/Caches/Continuum`. These files can be quite large so you may want to delete them if you uninstall Continuum.
 
 == 2 Operation ==
 
@@ -53,7 +54,7 @@ If you right click on nothing then you can do things like hide the syntax colori
 
 On occasion control or Unicode characters slip into source code files (e.g. when pasting in text from Wikipedia). These can cause hard to find compiler errors so the Search menu in Continuum has a `Find Gremlins` command. This will start at the insertion point and select the next control or non-7-bit ASCII character. If it finds such a character it will write something like `0x03B2 GREEK SMALL LETTER BETA` to the Transcript window. (You can test this using the `Special Characters comand` in the Text menu).
 
-`Find` and `Find in Files` optionally allow regular expressions to be used. These are the .NET regular expressions (see http://msdn.microsoft.com/en-us/library/hs600312.aspx[.NET Framework Regular Expressions]). Note that when replacing $1 is used to insert the first matched parenthesized expression instead of \1.
+`Find` and `Find in Files` optionally allow regular expressions to be used. These are the .NET http://msdn.microsoft.com/en-us/library/hs600312.aspx[.NET Framework Regular Expressions[regular expressions]. Note that when replacing $1 is used to insert the first matched parenthesized expression instead of \1.
 
 `Find in Files` allows you to control where the search happens. This is done by specifying a simple pattern with an ellipsis and an optional prefix or suffix. The search is done within the ellipsis text, but only if the text matches the prefix and suffix. So, _//…_ will search within comments and _@"…"_ will search within verbatim strings.
 
