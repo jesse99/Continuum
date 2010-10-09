@@ -42,7 +42,7 @@ namespace Shared
 	[ThreadModel(ThreadModel.Concurrent)]
 	public struct Tuple2<T0, T1> : IEquatable<Tuple2<T0, T1>>	// TODO: probably should support IList, IList<object>
 	{
-		public Tuple2(T0 value0, T1 value1)
+		public Tuple2(T0 value0, T1 value1) : this()
 		{
 			First = value0;
 			Second = value1;
@@ -118,7 +118,7 @@ namespace Shared
 	[ThreadModel(ThreadModel.Concurrent)]
 	public struct Tuple3<T0, T1, T2> : IEquatable<Tuple3<T0, T1, T2>>
 	{
-		public Tuple3(T0 value0, T1 value1, T2 value2)
+		public Tuple3(T0 value0, T1 value1, T2 value2) : this()
 		{
 			First = value0;
 			Second = value1;

@@ -42,7 +42,7 @@ namespace Shared
 	[ThreadModel(ThreadModel.Concurrent)]
 	public struct Token : IEquatable<Token>
 	{
-		public Token(int offset)
+		public Token(int offset) : this()
 		{
 #if DEBUG
 			Contract.Requires(offset >= 0, "offset is negative");
@@ -55,7 +55,7 @@ namespace Shared
 			Kind = TokenKind.Invalid;
 		}
 		
-		public Token(string text, int line)
+		public Token(string text, int line) : this()
 		{
 #if DEBUG
 			Contract.Requires(text != null, "text is null");
@@ -69,7 +69,7 @@ namespace Shared
 			Kind = TokenKind.Invalid;
 		}
 		
-		public Token(string text, int offset, int length, int line, TokenKind kind)
+		public Token(string text, int offset, int length, int line, TokenKind kind) : this()
 		{
 #if DEBUG
 			Contract.Requires(text != null, "text is null");

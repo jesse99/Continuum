@@ -95,7 +95,7 @@ namespace Shared
 		#region Private Types
 		private struct Handlers
 		{
-			public Handlers(object owner, Action handler, Func<MenuState> state)
+			public Handlers(object owner, Action handler, Func<MenuState> state) : this()
 			{
 				Contract.Requires(owner != null, "owner is null");
 				Contract.Requires(handler != null, "handler is null");

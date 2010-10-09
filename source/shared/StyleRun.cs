@@ -47,7 +47,7 @@ namespace Shared
 	
 	public struct StyleRun : IComparable<StyleRun>, IEquatable<StyleRun>
 	{
-		public StyleRun(int offset, int length, StyleType type)
+		public StyleRun(int offset, int length, StyleType type) : this()
 		{
 #if DEBUG
 			Contract.Requires(offset >= 0, "offset is negative");
