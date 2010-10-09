@@ -250,7 +250,7 @@ namespace Find
 				
 				DoMakeRe();
 				
-				string result = m_regex.Replace(text.Text, ReplaceText, int.MaxValue, index);
+				string result = m_regex.Replace(text.Text, ReplaceText);
 				if (result != text.Text)
 				{
 					text.Replace(result, 0, text.Text.Length, "Replace All");
