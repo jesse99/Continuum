@@ -52,10 +52,7 @@ include the percentage of samples that that method appeared in the stack trace
 	
 http://progit.org/
 
-* Replace needs to wrap around:
-	- should this display a thingy if it does a replace above the insertion point?
 * Release checklist:
-	- review readme (especially description)
 	- make sure gear is checked in
 	- upload the new binary
 	- build a new foreshadow
@@ -65,11 +62,11 @@ http://progit.org/
 	- email
 	- get a plan for the next version
 
+* Merge into master
+* Build a new foreshadow.
 * May want to try sgen (could measure perf)
 * Merge release branch into master.
 * Update version in readme.
-* Add charles-esterbrook as a collabarator.
-* Add a topics/esterbrook branch.
 * Increment the master version number.
 * File debugger tickets.	
 * Git support.
