@@ -139,7 +139,7 @@ mini-clean:
 	
 dist: mini-clean app
 	tar --create --compress --exclude \*/.svn --exclude \*/.svn/\* --file=Continuum-$(version).tar.gz \
-		BUILDING CHANGES CHANGE_LOG Dictionary.txt MIT.X11 Makefile README Tables.rtf gendarme.ignore install-tool.c make-foreshadow source bin/Continuum.app
+		BUILDING CHANGES CHANGE_LOG Dictionary.txt MIT.X11 Makefile README.asciidoc README.html Tables.rtf gendarme.ignore install-tool.c make-foreshadow source bin/Continuum.app
 
 dist-clean:
 	-rm -rf bin
@@ -167,6 +167,7 @@ bin/continuum.exe.config:
 	@echo "			<add name = \"ContextMenu\" level = \"Warning\"/>" >> bin/continuum.exe.config
 	@echo "			<add name = \"CsParser\" level = \"Warning\"/>" >> bin/continuum.exe.config
 	@echo "			<add name = \"Database\" level = \"Warning\"/>" >> bin/continuum.exe.config
+	@echo "			<add name = \"Debugger\" level = \"Warning\"/>" >> bin/continuum.exe.config
 	@echo "			<add name = \"Errors\" level = \"Info\"/>" >> bin/continuum.exe.config
 	@echo "			<add name = \"FindInDatabase\" level = \"Warning\"/>" >> bin/continuum.exe.config
 	@echo "			<add name = \"LocalsParser\" level = \"Warning\"/>" >> bin/continuum.exe.config
@@ -177,6 +178,7 @@ bin/continuum.exe.config:
 	@echo "			<add name = \"Refactor Evaluate\" level = \"Warning\"/>" >> bin/continuum.exe.config
 	@echo "			<add name = \"Startup\" level = \"Info\"/>" >> bin/continuum.exe.config
 	@echo "			<add name = \"Styler\" level = \"Warning\"/>" >> bin/continuum.exe.config
+	@echo "			<add name = \"TraceRoots\" level = \"Warning\"/>" >> bin/continuum.exe.config
 	@echo "		</categories>" >> bin/continuum.exe.config
 	@echo "	</logger>" >> bin/continuum.exe.config
 	@echo "	" >> bin/continuum.exe.config
