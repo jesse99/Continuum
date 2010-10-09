@@ -53,11 +53,7 @@ include the percentage of samples that that method appeared in the stack trace
 http://progit.org/
 
 * Release checklist:
-	- make sure gear is checked in
 	- upload the new binary
-	- build a new foreshadow
-	- review the front page of the web site
-	- review the screen shots
 	- do something with the google code project
 	- email
 	- get a plan for the next version
