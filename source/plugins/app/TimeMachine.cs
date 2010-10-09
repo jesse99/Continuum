@@ -424,7 +424,7 @@ namespace App
 		#region Private Types
 		private struct Backup
 		{
-			public Backup(string rp, string tp, DateTime wt)
+			public Backup(string rp, string tp, DateTime wt) : this()
 			{
 				RealPath = rp;
 				TimeMachinePath = tp;

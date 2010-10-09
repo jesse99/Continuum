@@ -297,7 +297,6 @@ is a comment */
 		public void IckyString()
 		{
 			string ick = @"#!/bin/sh
-# Takes a list of files and opens them within xxx.
 app=yyy
 
 if [ ""$1"" = ""-?"" ] || [ ""$1"" = ""-h"" ] || [ ""$1"" = ""--help"" ] ; then

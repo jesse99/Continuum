@@ -244,11 +244,23 @@ namespace Debugger
 		[ThreadModel(ThreadModel.SingleThread)]
 		private HandlerAction DoExceptionEvent(ExceptionEvent e)
 		{
-			DoTransition(State.Paused);
-			
-			NSApplication.sharedApplication().BeginInvoke(() => m_debugger.OnException(e));
-			
-			return HandlerAction.Suspend;
+			if (m_state == State.Paused)
+			{
+				// We'll land here if we get an exception when doing things like
+				// calling into the debuggee to execute ToString methods.
+				var frame = e.Thread.GetFrames()[0];
+				Log.WriteLine(TraceLevel.Info, "Exception {0} in {1}:{2} while paused", e.Exception.Type.FullName, frame.Method.DeclaringType.Name, frame.Method.Name);
+				
+				return HandlerAction.Resume;
+			}
+			else
+			{
+				DoTransition(State.Paused);
+				
+				NSApplication.sharedApplication().BeginInvoke(() => m_debugger.OnException(e));
+				
+				return HandlerAction.Suspend;
+			}
 		}
 		
 		[ThreadModel(ThreadModel.SingleThread)]
@@ -441,19 +453,27 @@ namespace Debugger
 					VirtualMachine vm = m_debugger.VM;
 					if (vm == null)									// debugger may have been disposed 
 						break;
-						
-					Event e = vm.GetNextEvent();
-					TypeLoadEvent tl = e as TypeLoadEvent;
-					if (tl != null)
-						Log.WriteLine(TraceLevel.Verbose, "Debugger", "dispatching {0} ({1})", e, tl.Type.FullName);
-					else
-						Log.WriteLine(TraceLevel.Verbose, "Debugger", "dispatching {0}", e);
+					
+					EventSet events = vm.GetNextEventSet();
 					
 					lock (m_mutex)
 					{
-						HandlerAction action = DoProcessEvent(e);
-						if (m_state == State.Disconnected)		// error or VMDeathEvent or VMDisconnectEvent
-							break;
+						HandlerAction action = HandlerAction.Resume;
+						foreach (Event e in events.Events)
+						{
+							TypeLoadEvent tl = e as TypeLoadEvent;
+							if (tl != null)
+								Log.WriteLine(TraceLevel.Verbose, "Debugger", "dispatching {0} ({1})", e, tl.Type.FullName);
+							else
+								Log.WriteLine(TraceLevel.Verbose, "Debugger", "dispatching {0}", e);
+							
+							HandlerAction disposition = DoProcessEvent(e);
+							if (m_state == State.Disconnected)		// error or VMDeathEvent or VMDisconnectEvent
+								return;
+							
+							if (disposition != HandlerAction.Resume)
+								action = HandlerAction.Suspend;
+						}
 						
 						if (action == HandlerAction.Resume)
 							DoResume(vm);
@@ -465,8 +485,10 @@ namespace Debugger
 				Log.WriteLine(TraceLevel.Error, "Debugger", "DoDispatchEvents> {0}", e.Message);
 				DoTransition(State.Disconnected);
 			}
-			
-			m_eventThread = null;
+			finally
+			{
+				m_eventThread = null;
+			}
 		}
 		
 		// We need to trap exceptions on resume because the VM in the debugee is running

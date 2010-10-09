@@ -28,7 +28,7 @@ namespace Shared
 	[ThreadModel(ThreadModel.Concurrent)]
 	public struct Declaration : IEquatable<Declaration>
 	{
-		public Declaration(string name, NSRange extent, bool isType, bool isDir)
+		public Declaration(string name, NSRange extent, bool isType, bool isDir) : this()
 		{
 			Name = name;
 			Extent = extent;

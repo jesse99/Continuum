@@ -41,7 +41,7 @@ namespace App
 			setAutosavingDelay(10.0);
 		}
 		
-		public new NSObject openDocumentWithContentsOfURL_display_error(NSURL absoluteURL, bool displayDocument, IntPtr outError)
+		public NSObject openDocumentWithContentsOfURL_display_error(NSURL absoluteURL, bool displayDocument, IntPtr outError)
 		{
 			NSObject result = null;
 			

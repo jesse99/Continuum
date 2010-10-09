@@ -57,7 +57,7 @@ namespace Debugger
 			
 			Broadcaster.Register("added breakpoint", this);
 			Broadcaster.Register("removing breakpoint", this);
-			Broadcaster.Register("toggled exceptions", this);	
+			Broadcaster.Register("toggled exceptions", this);
 			
 			ms_running = true;
 		}
@@ -275,7 +275,7 @@ namespace Debugger
 		{
 			var frames = new LiveStack(e.Thread);
 			LiveStackFrame frame = frames[0];
-			
+				
 			Boss boss = ObjectModel.Create("Application");
 			var exceptions = boss.Get<IExceptions>();
 			if (!DoTypeIsIn(e.Exception.Type, exceptions.Ignored))
@@ -307,17 +307,18 @@ namespace Debugger
 		
 		internal void OnStep(StepEvent e)
 		{
-			Location location = e.Method.LocationAtILOffset((int) e.Location);
+			var frame = e.Thread.GetFrames()[0];		// in mono 2.6.7 we could get the location from the event, but that no longer works with mono 2.8
+			Location location = frame.Location;
 			if (location != null)
-				Log.WriteLine(TraceLevel.Info, "Debugger", "Stepped to {0}:{1:X4} in {2}:{3}", e.Method.FullName, e.Location, location.SourceFile, location.LineNumber);
+				Log.WriteLine(TraceLevel.Info, "Debugger", "Stepped to {0}:{1:X4} in {2}:{3}", e.Method.FullName, frame.ILOffset, location.SourceFile, location.LineNumber);
 			else
-				Log.WriteLine(TraceLevel.Info, "Debugger", "Stepped to {0}:{1:X4}", e.Method.FullName, e.Location);
-			
+				Log.WriteLine(TraceLevel.Info, "Debugger", "Stepped to {0}:{1:X4}", e.Method.FullName, frame.ILOffset);
+				
 			m_currentThread = e.Thread;
 			m_stepRequest.Disable();
 			m_stepRequest = null;
 			
-			var context = new Context(e.Thread, e.Method, e.Location);
+			var context = new Context(e.Thread, e.Method, frame.ILOffset);
 			Broadcaster.Invoke("debugger processed step event", context);
 		}
 		
