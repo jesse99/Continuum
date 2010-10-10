@@ -10,10 +10,10 @@ ASCIIDOC ?= asciidoc
 
 ifdef RELEASE
 	CSC_FLAGS += -checked+ -debug+ -warn:4 -nowarn:1591 -optimize+ -d:TRACE
-	MONO_FLAGS += --desktop
+	MONO_FLAGS += --desktop --gc=sgen
 else
 	CSC_FLAGS += -checked+ -debug+ -warnaserror+ -warn:4 -nowarn:1591 -d:DEBUG -d:TRACE -d:CONTRACTS_FULL
-	MONO_FLAGS += --desktop --debug
+	MONO_FLAGS += --desktop --debug --gc=sgen
 endif
 
 ifeq ($(PROFILE),1)
