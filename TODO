@@ -60,9 +60,6 @@ http://progit.org/
 	- email
 
 * Git support:
-	- gitk
-	- gitx?
-	- checkout (revert)
 	- blame		git blame --date=short $FILE
 * Add better support for AppleScript/IronPython (and concurrently use it to write functional tests).
 	http://developer.apple.com/cocoa/applescriptforapps.html

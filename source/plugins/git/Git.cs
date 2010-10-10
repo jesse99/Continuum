@@ -51,7 +51,10 @@ namespace Git
 			if (m_installled)
 			{
 				// Note that if this is changed GetCommands must be updated as well.
+				m_commands.Add(Name + " blame", this.DoBlame);
+				m_commands.Add(Name + " checkout", this.DoCheckout);
 				m_commands.Add(Name + " diff", this.DoDiff);
+				m_commands.Add(Name + "k", this.DoGitk);
 				m_commands.Add(Name + " log", this.DoLog);
 			}
 		}
@@ -103,12 +106,20 @@ namespace Git
 				
 				if (numModified == paths.Count())
 				{
+					commands.Add(Name + " blame");
+					commands.Add(Name + " checkout");
 					commands.Add(Name + " diff");
 					commands.Add(Name + " log");
 				}
 				else if (numControlled == paths.Count())
 				{
+					commands.Add(Name + " blame");
 					commands.Add(Name + " log");
+				}
+				
+				if (numControlled == 1 && paths.Count() == 1)
+				{
+					commands.Add(Name + "k");
 				}
 			}
 			
@@ -205,6 +216,46 @@ namespace Git
 			return Tuple.Make(stdout, stderr, err);
 		}
 		
+		private void DoBlame(string path)
+		{
+			var result = DoCommand(path, "blame --date=relative '{0}'", path);
+			if (!string.IsNullOrEmpty(result.Second))
+				throw new InvalidOperationException(result.Second);
+			else if (result.Third != 0)
+				throw new InvalidOperationException(string.Format("git result code was {0}", result.Third));
+			
+			Boss boss = ObjectModel.Create("FileSystem");
+			var fs = boss.Get<IFileSystem>();
+			string file = fs.GetTempFile(Path.GetFileNameWithoutExtension(path), ".git-blame");
+			
+			try
+			{
+				using (StreamWriter writer = new StreamWriter(file))
+				{
+					writer.WriteLine("{0}", result.First);
+				}
+				
+				boss = ObjectModel.Create("Application");
+				var launcher = boss.Get<ILaunch>();
+				launcher.Launch(file, -1, -1, 1);
+			}
+			catch (IOException e)	// can sometimes land here if too many files are open (max is system wide and only 256)
+			{
+				NSString title = NSString.Create("Couldn't process '{0}'.", path);
+				NSString message = NSString.Create(e.Message);
+				Unused.Value = Functions.NSRunAlertPanel(title, message);
+			}
+		}
+		
+		private void DoCheckout(string path)
+		{
+			var result = DoCommand(path, "checkout '{0}'", path);
+			if (!string.IsNullOrEmpty(result.Second))
+				throw new InvalidOperationException(result.Second);
+			else if (result.Third != 0)
+				throw new InvalidOperationException(string.Format("git result code was {0}", result.Third));
+		}
+		
 		private void DoDiff(string path)
 		{
 			var result = DoCommand(path, "diff --no-color --ignore-all-space '{0}'", path);
@@ -233,6 +284,27 @@ namespace Git
 				NSString title = NSString.Create("Couldn't process '{0}'.", path);
 				NSString message = NSString.Create(e.Message);
 				Unused.Value = Functions.NSRunAlertPanel(title, message);
+			}
+		}
+		
+		private void DoGitk(string path)
+		{
+			using (Process process = new Process())
+			{
+				process.StartInfo.FileName = "gitk";
+				process.StartInfo.UseShellExecute = false;
+				process.StartInfo.RedirectStandardOutput = false;
+				process.StartInfo.RedirectStandardError = false;
+				
+				if (path != null)
+				{
+					if (!Directory.Exists(path))
+						path = Path.GetDirectoryName(path);
+						
+					process.StartInfo.WorkingDirectory = path;
+				}
+				
+				process.Start();
 			}
 		}
 		
