@@ -53,62 +53,56 @@ include the percentage of samples that that method appeared in the stack trace
 http://progit.org/
 
 * Release checklist:
+	- add a known issue for stepping over p/invokes
 	- upload the new binary
 	- do something with the google code project
 	- merge into master
 	- email
-	- get a plan for the next version
 
-* May want to try sgen (could measure perf)
-* File debugger tickets.	
-* Git support.
+       --no-decorate, --decorate[=short|full|no]
+       --no-color
+       
+              --pretty[=<format>], --format=<format>
+           Pretty-print the contents of the commit logs in a given format,
+           where <format> can be one of oneline, short, medium, full, fuller,
+           email, raw and format:<string>. See the "PRETTY FORMATS" section
+       --abbrev-commit
+       --oneline
+       --relative-date
+
+
+* Git support:
+	- log
+	- diff
+	- gitk
+	- checkout (revert)
+	- blame		git blame --date=short $FILE
+* Add better support for AppleScript/IronPython (and concurrently use it to write functional tests).
+	http://developer.apple.com/cocoa/applescriptforapps.html
+	http://developer.apple.com/mac/library/documentation/Cocoa/Conceptual/ScriptableCocoaApplications/SApps_about_apps/SAppsAboutApps.html
+	http://developer.apple.com/mac/library/technotes/tn2002/tn2106.html
+	man 5 sdef
+	tell application "Continuum" to save document 1 in "/tmp/foo.html" as "HTML"
+* Can use IronPython for scripting:
+	http://blogs.msdn.com/srivatsn/archive/2008/09/16/hosting-ironpython-made-easier.aspx
+	http://www.ironpython.info/index.php/Hosting_IronPython_2
+* Would be nice to have a find on python site command. May want to add a pref for this to allow
+   default search URLs to be changed and to allow different file types to have their own URLs.
+* Can we add an immediate (MPW style) window which uses Iron Python?
+* Need a directory for custom plugins:
+	- google code search might be a good example
+	- or maybe a simple diff tool	regime
+	- or maybe a MRU window list (context menu?)
 * Add support for custom plugins:
 	- would it be possible for custom plugins to define IB menus which are merged into the real menus?
 	- would be nice to have some sort of extras directory
 	- could have a demo plugin that customizes menus, like 2010-10-manipulate-menus.diff
 	- maybe also support for overriding standard plugins
 * Some sort of dynamic find files thingy.
-* Outlining.
 * Can we improve syntax hilghting? Maybe with something other than regexen? Would be
    nice to optionally style types, fields, methods, locals and arguments.
    - also different colors for classes vs structs, static access vs instance access, etc
-* Get rid of glob files? Would be easier (and less confusing) if the default globs were part of the language.
-* Look at using a replacement for sqlite. Maybe a custom database or some nosql sort of thing.
-* Work on a debugger:
-	- context breakpoint menu should have close do a broadcast so the breakpoint can be toggled
-	- CodeViewer is being deallocated but not GCed (there is some object with a reference to the boss)
-* Should DoGetOperatorName handle names like:
-	ObjectModel Error bad operator: op_UnaryNegation_Int32
-	maybe tweak the warning?
-* Genie effect with auto-complete is distracting?
-
-* Period should work like return in auto-complete window.
-* Should make font bigger (or smaller) change the defaults for source code windows? It would probably
-   have to change all the defaults?
-* Do some more work on the debugger:
-	- would be nice if could add breakpoints to IL views
-	- add an immediate window
-	- allow richer expressions in conditional breakpoints
-	- might be cool to keep a fixed window of variable histories
-	- allow users to specify which exceptions they want to break on, either a list or a regex
-	  or maybe it would be better to have a black list of exceptions to ignore
-	- allow users to set the ToString format specifier?
-	- can't set values for types like IntPtr, Nullable`1
-	- support remote debugging
-	- breakpoint conditions should be persisted
-	- would be nice if conditional expressions worked with types, eg int.MaxValue
-	- might want to show all properties (instead of just the auto-generated ones)
-	- allow more complex expressions (and properties) to be used with conditional breakpoints
-	- might want to, at least optionally, show properties in the variables window
-	- watchpoint windows
-		` drag and drop to add new variables
-		` draw in gray if the current context does not have the variable in any stack frame
-	- moving the instruction pointer
-	- custom viewer dlls
-* Use the new StackFrame.GetVisibleVariables method.
-* Start using VirtualMachine.GetNextEventSet.
-* Why doesn't stuff like var thread = (ThreadMirror) value auto-complete?
-* SHouldn't we warn if two language files use the same language?
+* File a ticket (and investigate further) stepping over p/invokes.
 * Auto-complete speed is kind of poor:
    ResolveName::ctor                             00.141    00
       DoGetVariables                             00.14     00.058
@@ -136,59 +130,70 @@ http://progit.org/
 	- database is only about 0.013
 	- so the bulk of the time seems to be logic and such
 	- maybe it would help if we restricted searches by leveraging the using declarations in the file
-* Show short form on Action didn't show the Delegate members.
-* Dot should complete auto-complete text.
-* Auto-complete window should have context menu for showing only properties.
-* Maybe optionally hide fields too.
-* Add a pref to make find wrap around (and beep if we get back to where we started).
+* Look at the new error bubbles in snow leopard's XCode.	
+* Look at using a replacement for sqlite. Maybe a custom database or some nosql sort of thing.
+* Are old assemblies being left behind in the database?
+* Use the new StackFrame.GetVisibleVariables method?
+* Shouldn't we warn if two language files use the same language?
 * Should deduce type of typeof(xxx).
 * Would be nice not to highlight the linq query keywords (from, which, etc) if System.Linq is not
    being used.
-* Couldn't open (via drag and drop) /Users/jessejones/Source/Third_Party/mono-2.6.3/mono/mini/ChangeLog
-* Mention can right click on completion window.
-* Attributes and base classes need to handle global::
-* global should be a c# keyword?
-* Getting errors right clicking at the bottom of short text documents.
 * Doesn't the create thread refactor need to use a field for the thread object?
 * Mention useful to download mono source (and set the associated pref):
 	- dont need to compile
 	- allows source level debugging, context menus allow you to go to definitions for mono methods
-* Got a crash switching between different underline options for members:
-  at (wrapper managed-to-native) MObjc.Ffi.FfiCall (intptr,intptr,intptr,intptr,intptr&) <0x00004>
-  at (wrapper managed-to-native) MObjc.Ffi.FfiCall (intptr,intptr,intptr,intptr,intptr&) <0x00004>
-  at MObjc.Ffi.Call (intptr,intptr,intptr,MObjc.Helpers.PtrArray) [0x00006] in /Users/jessejones/Source/mobjc/source/Ffi.cs:91
-  at MObjc.Native.Invoke () [0x00020] in /Users/jessejones/Source/mobjc/source/Native.cs:106
-  at MObjc.Native.Call (intptr,string,object[]) [0x00090] in /Users/jessejones/Source/mobjc/source/Native.cs:135
-  at MObjc.NSObject.Call (string,object[]) [0x0003b] in /Users/jessejones/Source/mobjc/source/NSObject.cs:290
-  at App.PreferencesController.changeAttributes (MObjc.NSObject) [0x00000] in /Users/jessejones/Source/Continuum/source/plugins/app/PreferencesController.cs:233
-  at (wrapper runtime-invoke) <Module>.runtime_invoke_void__this___object (object,intptr,intptr,intptr) <IL 0x0001e, 0x00046>
+* Add a show command:
+	- should be a context menu for selected types
+	- not live, but when resuming disable the text
+	- support ints, char, string, IntPtr, UIntPtr
+	- should be live, how do we do this? struct mirrors at least need to be re-generated, maybe
+	  store a path to the field being watched?
+* Confirmation if the user really wants to open a bunch of files
+	- open files
+	- return in dir editor
+	- return in find in files result
+* Do a new release.
 
-  at (wrapper managed-to-native) MObjc.DirectCalls.Calli (intptr,intptr,intptr&) <0x00004>
-  at (wrapper managed-to-native) MObjc.DirectCalls.Calli (intptr,intptr,intptr&) <0x00004>
-  at MObjc.NSObject.retainCount () [0x00032] in /Users/jessejones/Source/mobjc/source/NSObjectMethods.cs:240
-  at MObjc.NSObject.release () [0x00015] in /Users/jessejones/Source/mobjc/source/NSObjectMethods.cs:186
-  at App.PreferencesController.DoEditFont (string,string) [0x000bf] in /Users/jessejones/Source/Continuum/source/plugins/app/PreferencesController.cs:418
-  at App.PreferencesController.setPreprocessFont (MObjc.NSObject) [0x00000] in /Users/jessejones/Source/Continuum/source/plugins/app/PreferencesController.cs:190
+* Outlining.
+* Get rid of glob files? Would be easier (and less confusing) if the default globs were part of the language.
+* Work on a debugger:
+	- context breakpoint menu should have close do a broadcast so the breakpoint can be toggled
+* Should DoGetOperatorName handle names like:
+	ObjectModel Error bad operator: op_UnaryNegation_Int32
+	maybe tweak the warning?
+* Genie effect with auto-complete is distracting?
+* Period should work like return in auto-complete window.
+* Should make font bigger (or smaller) change the defaults for source code windows? It would probably
+   have to change all the defaults?
+* Do some more work on the debugger:
+	- would be nice if could add breakpoints to IL views
+	- add an immediate window
+	- allow richer expressions in conditional breakpoints
+	- might be cool to keep a fixed window of variable histories
+	- allow users to set the ToString format specifier?
+	- can't set values for types like IntPtr, Nullable`1
+	- support remote debugging
+	- breakpoint conditions should be persisted
+	- would be nice if conditional expressions worked with types, eg int.MaxValue
+	- allow more complex expressions (and properties) to be used with conditional breakpoints
+	- might want to, at least optionally, show properties in the variables window
+	- watchpoint windows
+		` drag and drop to add new variables
+		` draw in gray if the current context does not have the variable in any stack frame
+	- moving the instruction pointer
+	- custom viewer dlls
+* Why doesn't stuff like var thread = (ThreadMirror) value auto-complete?
+* Show short form on Action didn't show the Delegate members.
+* Dot should complete auto-complete text.
+* Auto-complete window should have context menu for showing only properties.
+* Maybe optionally hide fields too.
+* Add a pref to make find wrap around?
+* Couldn't open (via drag and drop) /Users/jessejones/Source/Third_Party/mono-2.6.3/mono/mini/ChangeLog
+* Mention can right click on completion window.
+* Attributes and base classes need to handle global::
+* global should be a c# keyword?
 * Does setting the text color still work in prefs?
-* May want to mention short form too.
 * Option-arrow is skipping over periods.
-* Rewrite the readme using rtf:
-	- add some sort of tips and tricks section
-	- mention how powerful command-D is
-	- also using Time Machine as a sccs
-* Need a directory for custom plugins:
-	- google code search might be a good example
-	- or maybe a simple diff tool	regime
-	- or maybe a MRU window list (context menu?)
-
-* Add better support for AppleScript/IronPython (and concurrently use it to write functional tests).
-	http://developer.apple.com/cocoa/applescriptforapps.html
-	http://developer.apple.com/mac/library/documentation/Cocoa/Conceptual/ScriptableCocoaApplications/SApps_about_apps/SAppsAboutApps.html
-	http://developer.apple.com/mac/library/technotes/tn2002/tn2106.html
-	man 5 sdef
-	tell application "Continuum" to save document 1 in "/tmp/foo.html" as "HTML"
-* Look at the new error bubbles in snow leopard's XCode.	
-* Typing seems slower than it used to be, eg when typing in the middle of a comment.
 * Would be nice to support hyperlinks in rich text files
 	http://developer.apple.com/qa/qa2006/qa1487.html
 * NSWorkspace has new methods to duplicate and trash files.
@@ -198,12 +203,6 @@ http://progit.org/
 	- classes that implement ICollection should use EnumerableValue
 	- may want to also support arbitrary IEnumerable types
 	- may want a context menu to show more than the first 200 items
-* Add a show command:
-	- should be a context menu for selected types
-	- not live, but when resuming disable the text
-	- support ints, char, string, IntPtr, UIntPtr
-	- should be live, how do we do this? struct mirrors at least need to be re-generated, maybe
-	  store a path to the field being watched?
 * Stagger windows, especially find results and assembly browser.
 * Need to do a better job with Refactor Language.rtf (prose and the grammar)
 * http://cx4a.org/software/gccsense/
@@ -264,16 +263,12 @@ http://progit.org/
    the window jumps around a bit and double clicking the error window doesn't work.
    - what if the file system is case sensitive?
 * Might want to log memory and NSObject highwater marks.
-* Look at other editors, eg TextMate, VS Expess.
-* Can use IronPython for scripting:
-	http://blogs.msdn.com/srivatsn/archive/2008/09/16/hosting-ironpython-made-easier.aspx
-	http://www.ironpython.info/index.php/Hosting_IronPython_2
 * Short form should have doc comments:
 	- arg completion window should have param and typeparam comments
 	- style these
 	- maybe use an html view, could have links to/from summary form and remarks
 * Auto-complete table should have comments too.
-** Double tab should also complete english words:
+* Double tab should also complete english words:
 	- use completionsForPartialWordRange:inString:language:inSpellDocumentWithTag:
 	- probably want to add some sort of double tab framework
  Add a general svn command. Something like:
@@ -307,19 +302,9 @@ http://progit.org/
 	- generate source files, nibs, info.plist
 	- also either make or nant
 	- also a TODO file listing what needs to be customized
-* Mention option-tab somewhere.
 * Should be able to get rid of NSTreatUnknownArgumentsAsOpen hack.
 * Open method context menu items should be sorted by full declaring type name
 	- so TryParse should show the local stuff and then the system versions
-* Look at NSObject leaks again:
-	- try the mono profilers again
-	- might also want to look at the new performance counters
-	- make sure the little objects like strings aren't being leaked
-	- may want to add a debug flag to NSObject so it can store stack traces
-	- text windows
-	- editor windows
-	- method completion window
-	- argument completion window
 * Should spell check comments
 	- types and members should count as valid words
 * Might want to use NSFindPboard.
@@ -353,43 +338,29 @@ http://progit.org/
   native code and operated on that with unsafe code.
 * Code that executes in response to an edit should be constant time. If not queue
    up a timer and do it after editing stops.
-* Might want to submit a bug report for System.Threading.ThreadPool.
-* Also why didn't PulseAll work?
 * Don't die if a factory pref handler throws.
 * Add some tool tips to the nibs.
 * Might be nice to bury all the C# knowledge in a plugin.
 * Might want a context menu to toggle showing/hiding of parse error annonations.
 * Need to handle aliaii in the Continuum directory.
 * Probably need to handle aliaii in open panels as well.
-* Find button locations look a bit odd.
 * Need a preference for Type.GetFieldName
 * Get parse errors for show base class. Maybe use an rtf format instead of cs.
 * Add a ChangeLog language?
 * Foreshadow/continuum scripts need work:
 	- should work if continuum is not running
 	- should be able to start/bring to front without an arg
-	- should be able to open dirs
 	- handle spaces in args
 	- support line numbers via colons
 	- finder seems to sometimes get confused about which mono app to open
 	- could use a custom apple event (or maybe add parameters to the open event)
 * About box needs a bit more info.
 * Probably want an uninstall script.
-* May want to bundle cecil with the app.
-* Confirmation if the user really wants to open a bunch of files
-	- open files
-	- return in dir editor
-	- return in find in files result
-   
-* Add support for auto backing up files. keepBackupFile
-* Warn on mixed line endings read.
 * Need to set file type for saved files.
 * Should be able to run from read-only media.
 * Database file names should probably include a hash or something for the dir path.
 * Might want to expose CsPreprocess to refactor.
 * Add ChangeLog support.
-* Add better support for svn commits.
-* Look at startup times.
 * Add support for scons.
 * Might want to allow enter to complete types and statements:
 	- should be template files
@@ -403,13 +374,8 @@ http://progit.org/
 	- only change local files
 * Need a way to build weird projects like Cecil, probably a pref with a build
   command line which overrides make builder.
-* Look at iron python scripting (might also be able to use this for the refactor language)
 * Open as Binary won't work so well with really large files. Can we memory map them somehow?
    Would probably require using a table instead of text view.
-* Command-8, or 2, or -, should switch between frontmost and next frontmost text windows.
-	- enable if there are more than two text windows and the main window is a text window
-	- probably need to track window z-order ourself
-	- might want a cycle command as well
 * Work on parser:
 	- see what safe speed is
 	- what about #if false?
@@ -420,7 +386,6 @@ http://progit.org/
 	- think about integrating refactors into builds, might allow for AOP sort of stuff
 * Should be able to find properties like BuildStartTime.
 * Can we always generate response files? Maybe fix the timestamp?
-* Would be nice to have a find on python site command.
 * Short form should show comments
 	- both types
 	- should be able to do this w/o the scanner
@@ -436,7 +401,6 @@ http://progit.org/
 	split (non-cohesive) class
 	trace methods, might want to ask if exit should be traced
 * Cancel seems to have issues with make files (especially recursive ones)
-* May want to use the thread pool for any short lived threads.
 * Add (query) unicode database.
 * Add a simple calculator. Could use python or cssharp to evaluate expressions
   and print them in one or more bases.
@@ -449,7 +413,6 @@ http://progit.org/
 * Editor should work as well as bbedit:
 	- use setAutosaveExpandedItems?
 	- might want a favorites menu
-* Should support rectangular selections (option-shift-drag).
 * Support bookmarks:
 	- make sure we can embed graphics in the text, or use a floating window?
 	- add bookmark (cmd-/) adds up to nine bookmarks
@@ -479,7 +442,6 @@ http://progit.org/
 * Need a way to easily open recent dirs.
 * More stuff:
 	code collapsing
-	integrated svn
 	queries
 	scid
 	alternate key bindings

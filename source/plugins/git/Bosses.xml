@@ -1,0 +1,9 @@
+<Bosses namespaces = "Gear Shared Git">
+	<Extend name = "Sccs">
+		<Implementation interfaces = "IInterface +ISccs" name = "Git"/>
+	</Extend>
+	
+	<Extend name = "TextEditorPlugin">
+		<Implementation interfaces = "IInterface +ITextContextCommands" name = "GitTextCommands"/>
+	</Extend>
+</Bosses>
