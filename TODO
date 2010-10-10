@@ -59,22 +59,9 @@ http://progit.org/
 	- merge into master
 	- email
 
-       --no-decorate, --decorate[=short|full|no]
-       --no-color
-       
-              --pretty[=<format>], --format=<format>
-           Pretty-print the contents of the commit logs in a given format,
-           where <format> can be one of oneline, short, medium, full, fuller,
-           email, raw and format:<string>. See the "PRETTY FORMATS" section
-       --abbrev-commit
-       --oneline
-       --relative-date
-
-
 * Git support:
-	- log
-	- diff
 	- gitk
+	- gitx?
 	- checkout (revert)
 	- blame		git blame --date=short $FILE
 * Add better support for AppleScript/IronPython (and concurrently use it to write functional tests).

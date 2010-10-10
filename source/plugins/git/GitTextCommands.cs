@@ -100,7 +100,7 @@ namespace Git
 		
 		#region Fields
 		private Boss m_boss;
-		private readonly string[] m_candidates = new string[]{"Git log"};
+		private readonly string[] m_candidates = new string[]{"Git diff", "Git log"};
 		#endregion
 	}
 }

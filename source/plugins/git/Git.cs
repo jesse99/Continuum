@@ -51,6 +51,7 @@ namespace Git
 			if (m_installled)
 			{
 				// Note that if this is changed GetCommands must be updated as well.
+				m_commands.Add(Name + " diff", this.DoDiff);
 				m_commands.Add(Name + " log", this.DoLog);
 			}
 		}
@@ -97,9 +98,15 @@ namespace Git
 			
 			if (m_installled)
 			{
+				int numModified = paths.Count(this.DoIsModified);
 				int numControlled = paths.Count(this.DoIsControlled);
 				
-				if (numControlled == paths.Count())
+				if (numModified == paths.Count())
+				{
+					commands.Add(Name + " diff");
+					commands.Add(Name + " log");
+				}
+				else if (numControlled == paths.Count())
 				{
 					commands.Add(Name + " log");
 				}
@@ -136,6 +143,29 @@ namespace Git
 			}
 			
 			return controlled;
+		}
+		
+		private bool DoIsModified(string path)
+		{
+			bool modified = false;
+			
+			if (m_installled)
+			{
+				try
+				{
+					var result = DoCommand(path, "status -s '{0}'", path);
+					if (string.IsNullOrEmpty(result.Second) && result.Third == 0)
+						if (result.First.Trim().StartsWith("M "))
+							modified = true;
+				}
+				catch (Exception e)
+				{
+					Console.Error.WriteLine("Error calling git status:");	// this should not happen
+					Console.Error.WriteLine(e.Message);
+				}
+			}
+			
+			return modified;
 		}
 		
 		private Tuple3<string, string, int> DoCommand(string path, string format, params object[] args)
@@ -175,6 +205,37 @@ namespace Git
 			return Tuple.Make(stdout, stderr, err);
 		}
 		
+		private void DoDiff(string path)
+		{
+			var result = DoCommand(path, "diff --no-color --ignore-all-space '{0}'", path);
+			if (!string.IsNullOrEmpty(result.Second))
+				throw new InvalidOperationException(result.Second);
+			else if (result.Third != 0)
+				throw new InvalidOperationException(string.Format("git result code was {0}", result.Third));
+			
+			Boss boss = ObjectModel.Create("FileSystem");
+			var fs = boss.Get<IFileSystem>();
+			string file = fs.GetTempFile(Path.GetFileNameWithoutExtension(path), ".diff");
+			
+			try
+			{
+				using (StreamWriter writer = new StreamWriter(file))
+				{
+					writer.WriteLine("{0}", result.First);
+				}
+				
+				boss = ObjectModel.Create("Application");
+				var launcher = boss.Get<ILaunch>();
+				launcher.Launch(file, -1, -1, 1);
+			}
+			catch (IOException e)	// can sometimes land here if too many files are open (max is system wide and only 256)
+			{
+				NSString title = NSString.Create("Couldn't process '{0}'.", path);
+				NSString message = NSString.Create(e.Message);
+				Unused.Value = Functions.NSRunAlertPanel(title, message);
+			}
+		}
+		
 		private void DoLog(string path)
 		{
 			var result = DoCommand(path, "log --no-color --relative-date '{0}'", path);
@@ -191,7 +252,7 @@ namespace Git
 			{
 				using (StreamWriter writer = new StreamWriter(file))
 				{
-					writer.WriteLine("{0}", result.First); 
+					writer.WriteLine("{0}", result.First);
 				}
 				
 				boss = ObjectModel.Create("Application");
