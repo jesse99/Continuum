@@ -25,6 +25,7 @@ using MObjc.Helpers;
 using Mono.Debugger.Soft;
 using Shared;
 using System;
+using System.Diagnostics;
 
 using Debug = Debugger;
 
@@ -55,7 +56,7 @@ namespace Debugger
 			
 			Parent = parent;
 			Key = key;
-			Value = value;
+			Value = DoGetValue(value, thread);
 			m_index = index;
 			
 			Item item = GetItem.Invoke(thread, parent != null ? parent.Value : null, Key, Value);
@@ -324,6 +325,88 @@ namespace Debugger
 			NSAttributedString result = NSAttributedString.Create(newValue, attrs).Retain();
 			
 			return result;
+		}
+		
+		// Types may declare a proxy type which debuggers are supposed to use when showing
+		// instances of the type. For example, collections typically declare a proxy which exposes
+		// the elements of the collection as an array.
+		private object DoGetValue(object original, ThreadMirror thread)
+		{
+			object result = original;
+			
+			System.Diagnostics.DebuggerTypeProxyAttribute attr = null;
+			string originalTypeName = null;
+			if (original is ObjectMirror)
+			{
+				ObjectMirror oo = (ObjectMirror) original;
+				attr = oo.Type.GetAttribute<System.Diagnostics.DebuggerTypeProxyAttribute>();
+				originalTypeName = oo.Type.FullName;
+			}
+			else if (original is StructMirror)
+			{
+				StructMirror ss = (StructMirror) original;
+				attr = ss.Type.GetAttribute<System.Diagnostics.DebuggerTypeProxyAttribute>();
+				originalTypeName = ss.Type.FullName;
+			}
+			
+			if (attr != null)
+			{
+				if (!string.IsNullOrEmpty(attr.ProxyTypeName))
+				{
+					TypeMirror type = DoGetType(thread, attr.ProxyTypeName, originalTypeName);
+					if (type != null)
+					{
+						MethodMirror method = type.FindMethod(".ctor", 1);
+						try
+						{
+							if (method != null)
+							{
+								result = type.InvokeMethod(thread, method, new Value[]{(Value) original}, InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+							}
+							else
+							{
+								Log.WriteLine(TraceLevel.Error, "Debugger", "DoGetValue> couldn't find a one argument ctor in {0}", type.FullName);
+							}
+						}
+						catch (Exception e)
+						{
+							Log.WriteLine(TraceLevel.Error, "Debugger", "DoGetValue> {0}", e.Message);
+						}
+					}
+				}
+			}
+			
+			return result;
+		}
+		
+		private TypeMirror DoGetType(ThreadMirror thread, string proxyTypeName, string originalTypeName)
+		{
+			TypeMirror type = thread.GetType(proxyTypeName);
+			
+			if (type != null && type.FullName.Length > 2 && type.FullName[type.FullName.Length - 2] == '`')
+			{
+				// The proxy type is an unbound generic so we need to bind the type arguments using
+				// the original type. Proxy will be a name like "System.Collections.Generic.CollectionDebuggerView`1"
+				// original will be a name like "System.Collections.Generic.List`1[[System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]".
+				int i = originalTypeName.IndexOf('`');
+				if (i > 0 && i + 1 < originalTypeName.Length && originalTypeName[i + 1] == type.FullName[type.FullName.Length - 1])
+				{
+					proxyTypeName = type.FullName + originalTypeName.Substring(i + 2);
+					Log.WriteLine(TraceLevel.Verbose, "Debugger", "using {0} for {1}", proxyTypeName, originalTypeName);
+					type = thread.GetType(proxyTypeName);
+				}
+				else
+				{
+					// Either the original type is not generic or the number of generic arguments does not match.
+					Log.WriteLine(TraceLevel.Error, "Debugger", "DoGetType> {0} and {1} are not compatible", originalTypeName, proxyTypeName);
+				}
+			}
+			else if (type != null)
+			{
+				Log.WriteLine(TraceLevel.Verbose, "Debugger", "used {0} for {1}", proxyTypeName, originalTypeName);
+			}
+			
+			return type;
 		}
 		#endregion
 		

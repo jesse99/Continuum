@@ -24,6 +24,7 @@ using Mono.Debugger.Soft;
 using Shared;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Debugger
@@ -103,7 +104,6 @@ namespace Debugger
 	{
 		public static MethodMirror FindMethod(this TypeMirror type, string name, int numArgs)
 		{
-//		Console.WriteLine("checking: {0}", type.FullName); Console.Out.Flush();
 			MethodMirror method = type.GetMethods().FirstOrDefault(
 				m => m.Name == name && m.GetParameters().Length == numArgs);
 				
@@ -150,6 +150,19 @@ namespace Debugger
 				
 				type = type.BaseType;
 			}
+		}
+		
+		public static T GetAttribute<T>(this TypeMirror type, bool inherit = true) where T : class
+		{
+			string fullName = typeof(T).FullName;
+			
+			foreach (CustomAttributeDataMirror attr in type.GetCustomAttributes(inherit))
+			{
+				if (attr.Constructor.DeclaringType.FullName == fullName)
+					return DoInstantiateAttribute<T>(attr);
+			}
+			
+			return null;
 		}
 		
 		// Note that this does not check interfaces because TypeMirror does not currently
@@ -199,6 +212,121 @@ namespace Debugger
 			
 			return result;
 		}
+		
+		#region Private Methods
+		// Modeled after code in MonoDevelop.
+		private static T DoInstantiateAttribute<T>(CustomAttributeDataMirror attr)
+		{
+			var args = new List<object>();
+			foreach (CustomAttributeTypedArgumentMirror arg in attr.ConstructorArguments)
+			{
+				object val = arg.Value;
+				if (val is TypeMirror)
+				{
+					// The debugger attributes that take a type as parameter of the constructor have
+					// a corresponding constructor overload that takes a type name. We'll use that
+					// constructor because we can't load target types in the debugger process.
+					// So what we do here is convert the Type to a string.
+					var tm = (TypeMirror) val;
+					val = tm.FullName + ", " + tm.Assembly.ManifestModule.Name;
+				}
+				else if (val is EnumMirror)
+				{
+					EnumMirror em = (EnumMirror) val;
+					val = em.Value;
+				}
+				args.Add(val);
+			}
+			
+			Type type = typeof(T);
+			object at = Activator.CreateInstance(type, args.ToArray());
+			foreach (CustomAttributeNamedArgumentMirror arg in attr.NamedArguments)
+			{
+				object val = arg.TypedValue.Value;
+				string postFix = string.Empty;
+				if (arg.TypedValue.ArgumentType == typeof(Type))
+					postFix = "TypeName";
+				if (arg.Field != null)
+					type.GetField(arg.Field.Name + postFix).SetValue(at, val);
+				else if (arg.Property != null)
+					type.GetProperty(arg.Property.Name + postFix).SetValue(at, val, null);
+			}
+			
+			return (T) at;
+		}
+		#endregion
+	}
+	
+	internal static class ThreadMirrorExtensions
+	{
+		// Returns the TypeMirror associated with typeName. If the debuggee has not
+		// loaded the type it will be force loaded.
+		public static TypeMirror GetType(this ThreadMirror thread, string typeName)
+		{
+			// Loosely based on code from MonoDevelop.
+			TypeMirror result = DoGetType(thread, typeName);
+			
+			if (result == null)
+			{
+				TypeMirror type = (TypeMirror) thread.Type.GetTypeObject().Type;
+				MethodMirror method = type.FindMethod("GetType", 1);
+				try
+				{
+					if (method != null)
+					{
+						StringMirror str = thread.Domain.CreateString(typeName);
+						type.InvokeMethod(thread, method, new Value[]{str});
+						
+						result = DoGetType(thread, typeName);
+					}
+					else
+					{
+						Log.WriteLine(TraceLevel.Error, "Debugger", "LoadType> couldn't find a GetType method in {0}", thread.Type.GetTypeObject());
+					}
+				}
+				catch (Exception e)
+				{
+					Log.WriteLine(TraceLevel.Error, "Debugger", "LoadType> {0}", e.Message);
+				}
+			}
+			
+			return result;
+		}
+		
+		#region Private Methods
+		// Returns null if the type is not found or not loaded.
+		private static TypeMirror DoGetType(ThreadMirror thread, string name)
+		{
+			// Based on code from MonoDevelop.
+			int i = name.IndexOf(',');
+			if (i != -1)
+			{
+				// Find first comma outside brackets
+				int nest = 0;
+				for (int n=0; n<name.Length; n++)
+				{
+					char c = name [n];
+					if (c == '[')
+						nest++;
+					else if (c == ']')
+						nest--;
+					else if (c == ',' && nest == 0) {
+						name = name.Substring(0, n).Trim();
+						break;
+					}
+				}
+			}
+			
+			foreach (AssemblyMirror assembly in thread.Domain.GetAssemblies())
+			{
+				TypeMirror type = assembly.GetType(name, false, false);
+				if (type != null)
+					return type;
+			}
+			
+			return null;
+		}
+		#endregion
 	}
 	
 	internal static class ValueExtensions
