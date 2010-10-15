@@ -56,7 +56,7 @@ namespace Debugger
 			
 			Parent = parent;
 			Key = key;
-			Value = DoGetValue(value, thread);
+			Value = value;
 			m_index = index;
 			
 			Item item = GetItem.Invoke(thread, parent != null ? parent.Value : null, Key, Value);
@@ -64,6 +64,22 @@ namespace Debugger
 			AttributedType = NSAttributedString.Create(item.Type).Retain();
 			AttributedValue = NSAttributedString.Create(item.Text).Retain();
 			NumberOfChildren = item.Count;
+			
+			// If the value is to be represented by a proxy while debugging then,
+			object proxy = DoGetProxyValue(value, thread);
+			if (proxy != null)
+			{
+				// we need to use that value,
+				Value = proxy;
+				
+				// the children will be those of the proxy,
+				item = GetItem.Invoke(thread, parent != null ? parent.Value : null, Key, Value);
+				NumberOfChildren = item.Count;
+				
+				// and if the original value didn't provide a custom ToString see if the proxy does.
+				if (AttributedValue.length() == 0)
+					AttributedValue = NSAttributedString.Create(item.Text).Retain();
+			}
 		}
 		
 		public NSMutableAttributedString AttributedName {get; private set;}
@@ -330,9 +346,9 @@ namespace Debugger
 		// Types may declare a proxy type which debuggers are supposed to use when showing
 		// instances of the type. For example, collections typically declare a proxy which exposes
 		// the elements of the collection as an array.
-		private object DoGetValue(object original, ThreadMirror thread)
+		private object DoGetProxyValue(object original, ThreadMirror thread)
 		{
-			object result = original;
+			object result = null;
 			
 			System.Diagnostics.DebuggerTypeProxyAttribute attr = null;
 			string originalTypeName = null;
