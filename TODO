@@ -63,10 +63,8 @@ http://progit.org/
 	- email		
 	
 * Window menu shouldn't show the full path (may want to back port this).
-	- or maybe only show it if ambiguous
 * Use the debugging attributes:
-	- DebuggerHiddenAttribute
-	- DebuggerNonUserCodeAttribute
+	- DebuggerHiddenAttribute and DebuggerNonUserCodeAttribute
 	- DebuggerDisplayAttribute (System.Collections.Generic.KeyValuePair uses this)
 	- DebuggerVisualizerAttribute
 	- special case System.Collections.Generic.KeyValuePair (don't show the fields)
@@ -75,6 +73,11 @@ http://progit.org/
 	- add visualizers for some cocoa classes?
 	- probably should mention these debugging attributes in the readme
 * May want to look at the MonoDevelop change logs.
+* Probably want some sort of advanced prefs panel:
+	- these should be for stuff that most people won't want to change
+	- find wraps
+	- reverse paths in find all
+	- reverse paths in document window titles
 * Add better support for AppleScript/IronPython (and concurrently use it to write functional tests).
 	http://developer.apple.com/cocoa/applescriptforapps.html
 	http://developer.apple.com/mac/library/documentation/Cocoa/Conceptual/ScriptableCocoaApplications/SApps_about_apps/SAppsAboutApps.html

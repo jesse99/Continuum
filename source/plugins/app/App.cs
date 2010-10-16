@@ -28,6 +28,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Security.Permissions;
+using Shared;
 
 namespace App
 {
@@ -46,7 +47,7 @@ namespace App
 			NSObject controller = window.windowController();
 			if (controller.class_().Name == "DirectoryController")
 			{
-				NSMenuItem item = DoGetMenuItem(window);	
+				NSMenuItem item = DoGetMenuItem(window);
 				if (item != null)
 				{
 					var dict = NSMutableDictionary.Create();
@@ -58,8 +59,13 @@ namespace App
 					item.setAttributedTitle(str);
 				}
 			}
+			
+			// I tried making the path component of reversed paths gray, but it didn't always work and,
+			// when it did, it was only for the first window name. Cocoa does adjust the attributes for
+			// the menu item when it does things like underline dirty documents and I think that this
+			// is resetting the foreground color.
 		}
-				
+		
 		public NSMenu buildMenu()
 		{
 			return this["buildMenu"].To<NSMenu>();
@@ -110,7 +116,7 @@ namespace App
 			// Underline dirty documents.
 			if (obj.class_().Name == "TextController")
 			{
-				NSMenuItem item = DoGetMenuItem(window);	
+				NSMenuItem item = DoGetMenuItem(window);
 				if (item != null)
 				{
 					var dict = NSMutableDictionary.Create();
@@ -152,7 +158,7 @@ namespace App
 			NSMenu menu = windowsMenu();
 			int index = menu.indexOfItemWithTarget_andAction(window, "makeKeyAndOrderFront:");
 			if (index >= 0)
-				item = menu.itemAtIndex(index);	
+				item = menu.itemAtIndex(index);
 			
 			return item;
 		}
