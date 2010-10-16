@@ -110,7 +110,7 @@ namespace Debugger
 //			}
 			else
 			{
-				PropertyInfoMirror[] props = (from p in parent.Type.GetAllProperties() where p.HasSimpleGetter() select p).ToArray();
+				PropertyInfoMirror[] props = (from p in parent.Type.GetAllProperties() where p.ShouldDisplay() select p).ToArray();
 				if (index < props.Length)
 				{
 					PropertyInfoMirror prop = props[index];
@@ -119,7 +119,7 @@ namespace Debugger
 				}
 				else
 				{
-					FieldInfoMirror[] fields = (from f in parent.Type.GetAllFields() where !f.Name.Contains("__BackingField") && !f.HasCustomAttribute("System.ThreadStaticAttribute") select f).ToArray();	// TODO: sdb falls down for thread static fields
+					FieldInfoMirror[] fields = (from f in parent.Type.GetAllFields() where f.ShouldDisplay() select f).ToArray();
 					FieldInfoMirror field = fields[index - props.Length];
 					Value child = EvalMember.Evaluate(thread, parent, field.Name);
 					return new VariableItem(thread, field.Name, parentItem, field, child, index);
@@ -138,7 +138,7 @@ namespace Debugger
 		[GetChild.Overload]
 		public static VariableItem GetChild(ThreadMirror thread, VariableItem parentItem, StructMirror parent, int index)
 		{
-			PropertyInfoMirror[] props = (from p in parent.Type.GetAllProperties() where p.HasSimpleGetter() select p).ToArray();
+			PropertyInfoMirror[] props = (from p in parent.Type.GetAllProperties() where p.ShouldDisplay() select p).ToArray();
 			if (index < props.Length)
 			{
 				PropertyInfoMirror prop = props[index];
@@ -147,7 +147,7 @@ namespace Debugger
 			}
 			else
 			{
-				FieldInfoMirror[] fields = (from f in parent.Type.GetAllFields() where !f.Name.Contains("__BackingField") && !f.HasCustomAttribute("System.ThreadStaticAttribute") select f).ToArray();
+				FieldInfoMirror[] fields = (from f in parent.Type.GetAllFields() where f.ShouldDisplay() select f).ToArray();
 				FieldInfoMirror field = fields[index - props.Length];
 				Value child;
 				if (field.IsStatic)

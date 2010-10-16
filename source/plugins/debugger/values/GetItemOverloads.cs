@@ -175,8 +175,8 @@ namespace Debugger
 				if (!DoProcessSpecialObject(thread, value, ref item))
 				{
 					int numChildren = 0;
-					numChildren += value.Type.GetAllProperties().Count(p => p.HasSimpleGetter());
-					numChildren += value.Type.GetAllFields().Count(f => !f.Name.Contains("__BackingField") && !f.HasCustomAttribute("System.ThreadStaticAttribute"));
+					numChildren += value.Type.GetAllProperties().Count(p => p.ShouldDisplay());
+					numChildren += value.Type.GetAllFields().Count(f => f.ShouldDisplay());
 					
 					string text = string.Empty;
 					MethodMirror method = value.Type.FindMethod("ToString", 0);
@@ -270,8 +270,8 @@ namespace Debugger
 				}
 				
 				int numChildren = 0;
-				numChildren += value.Type.GetAllProperties().Count(p => p.HasSimpleGetter());
-				numChildren += value.Type.GetAllFields().Count(f => !f.Name.Contains("__BackingField") && !f.HasCustomAttribute("System.ThreadStaticAttribute"));
+				numChildren += value.Type.GetAllProperties().Count(p => p.ShouldDisplay());
+				numChildren += value.Type.GetAllFields().Count(f => f.ShouldDisplay());
 				item = new Item(numChildren, text, type);
 			}
 			

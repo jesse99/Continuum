@@ -41,8 +41,8 @@ namespace Debugger
 			Instance = instance;
 			Type = instance.Type;
 			
-			Length += instance.Type.GetAllProperties().Count(p => p.HasSimpleGetter());
-			Length += instance.Type.GetAllFields().Count(f => !f.Name.Contains("__BackingField") && !f.HasCustomAttribute("System.ThreadStaticAttribute"));
+			Length += instance.Type.GetAllProperties().Count(p => p.ShouldDisplay());
+			Length += instance.Type.GetAllFields().Count(f => f.ShouldDisplay());
 		}
 		
 		public InstanceValue(StructMirror instance, FieldInfoMirror[] fields)
@@ -53,8 +53,8 @@ namespace Debugger
 			Instance = instance;
 			Type = instance.Type;
 			
-			Length += instance.Type.GetAllProperties().Count(p => p.HasSimpleGetter());
-			Length += instance.Type.GetAllFields().Count(f => !f.Name.Contains("__BackingField") && !f.HasCustomAttribute("System.ThreadStaticAttribute"));
+			Length += instance.Type.GetAllProperties().Count(p => p.ShouldDisplay());
+			Length += instance.Type.GetAllFields().Count(f => f.ShouldDisplay());
 		}
 		
 		public object Instance {get; private set;}

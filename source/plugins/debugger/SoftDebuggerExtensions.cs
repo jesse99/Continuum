@@ -29,8 +29,65 @@ using System.Linq;
 
 namespace Debugger
 {
+	internal static class CustomAttributeDataMirrorExtensions
+	{
+		// Modeled after code in MonoDevelop.
+		public static T Instantiate<T>(this CustomAttributeDataMirror attr)
+		{
+			var args = new List<object>();
+			foreach (CustomAttributeTypedArgumentMirror arg in attr.ConstructorArguments)
+			{
+				object val = arg.Value;
+				if (val is TypeMirror)
+				{
+					// The debugger attributes that take a type as parameter of the constructor have
+					// a corresponding constructor overload that takes a type name. We'll use that
+					// constructor because we can't load target types in the debugger process.
+					// So what we do here is convert the Type to a string.
+					var tm = (TypeMirror) val;
+					val = tm.FullName + ", " + tm.Assembly.ManifestModule.Name;
+				}
+				else if (val is EnumMirror)
+				{
+					EnumMirror em = (EnumMirror) val;
+					val = em.Value;
+				}
+				args.Add(val);
+			}
+			
+			Type type = typeof(T);
+			object at = Activator.CreateInstance(type, args.ToArray());
+			foreach (CustomAttributeNamedArgumentMirror arg in attr.NamedArguments)
+			{
+				object val = arg.TypedValue.Value;
+				string postFix = string.Empty;
+				if (arg.TypedValue.ArgumentType == typeof(Type))
+					postFix = "TypeName";
+				if (arg.Field != null)
+					type.GetField(arg.Field.Name + postFix).SetValue(at, val);
+				else if (arg.Property != null)
+					type.GetProperty(arg.Property.Name + postFix).SetValue(at, val, null);
+			}
+			
+			return (T) at;
+		}
+	}
+		
 	internal static class FieldMirrorExtensions
 	{
+		public static T GetAttribute<T>(this FieldInfoMirror field, bool inherit = true) where T : class
+		{
+			string fullName = typeof(T).FullName;
+			
+			foreach (CustomAttributeDataMirror attr in field.GetCustomAttributes(inherit))
+			{
+				if (attr.Constructor.DeclaringType.FullName == fullName)
+					return attr.Instantiate<T>();
+			}
+			
+			return null;
+		}
+		
 		// Name should be something like System.Runtime.CompilerServices.CompilerGeneratedAttribute.
 		public static bool HasCustomAttribute(this FieldInfoMirror field, string name)
 		{
@@ -42,6 +99,22 @@ namespace Debugger
 			}
 			
 			return false;
+		}
+		
+		public static bool ShouldDisplay(this FieldInfoMirror field)
+		{
+			bool should = false;
+			
+			if (!field.HasCustomAttribute("System.ThreadStaticAttribute"))	// TODO: soft debugger crashes if we try to display these
+			{
+				if (!field.HasCustomAttribute("System.Runtime.CompilerServices.CompilerGeneratedAttribute"))
+				{
+					var attr = field.GetAttribute<DebuggerBrowsableAttribute>();
+					should = attr == null || attr.State != DebuggerBrowsableState.Never;
+				}
+			}
+			
+			return should;
 		}
 	}
 	
@@ -92,11 +165,37 @@ namespace Debugger
 	
 	internal static class PropertyMirrorExtensions
 	{
+		public static T GetAttribute<T>(this PropertyInfoMirror prop, bool inherit = true) where T : class
+		{
+			string fullName = typeof(T).FullName;
+			
+			foreach (CustomAttributeDataMirror attr in prop.GetCustomAttributes(inherit))
+			{
+				if (attr.Constructor.DeclaringType.FullName == fullName)
+					return attr.Instantiate<T>();
+			}
+			
+			return null;
+		}
+		
 		[Pure]
 		public static bool HasSimpleGetter(this PropertyInfoMirror prop)
 		{
 			MethodMirror method = prop.GetGetMethod(true);
 			return method != null && method.GetParameters().Length == 0 && !method.IsAbstract;
+		}
+		
+		public static bool ShouldDisplay(this PropertyInfoMirror prop)
+		{
+			bool should = false;
+			
+			if (HasSimpleGetter(prop))
+			{
+				var attr = prop.GetAttribute<DebuggerBrowsableAttribute>();
+				should = attr == null || attr.State != DebuggerBrowsableState.Never;
+			}
+			
+			return should;
 		}
 	}
 	
@@ -159,7 +258,7 @@ namespace Debugger
 			foreach (CustomAttributeDataMirror attr in type.GetCustomAttributes(inherit))
 			{
 				if (attr.Constructor.DeclaringType.FullName == fullName)
-					return DoInstantiateAttribute<T>(attr);
+					return attr.Instantiate<T>();
 			}
 			
 			return null;
@@ -212,49 +311,6 @@ namespace Debugger
 			
 			return result;
 		}
-		
-		#region Private Methods
-		// Modeled after code in MonoDevelop.
-		private static T DoInstantiateAttribute<T>(CustomAttributeDataMirror attr)
-		{
-			var args = new List<object>();
-			foreach (CustomAttributeTypedArgumentMirror arg in attr.ConstructorArguments)
-			{
-				object val = arg.Value;
-				if (val is TypeMirror)
-				{
-					// The debugger attributes that take a type as parameter of the constructor have
-					// a corresponding constructor overload that takes a type name. We'll use that
-					// constructor because we can't load target types in the debugger process.
-					// So what we do here is convert the Type to a string.
-					var tm = (TypeMirror) val;
-					val = tm.FullName + ", " + tm.Assembly.ManifestModule.Name;
-				}
-				else if (val is EnumMirror)
-				{
-					EnumMirror em = (EnumMirror) val;
-					val = em.Value;
-				}
-				args.Add(val);
-			}
-			
-			Type type = typeof(T);
-			object at = Activator.CreateInstance(type, args.ToArray());
-			foreach (CustomAttributeNamedArgumentMirror arg in attr.NamedArguments)
-			{
-				object val = arg.TypedValue.Value;
-				string postFix = string.Empty;
-				if (arg.TypedValue.ArgumentType == typeof(Type))
-					postFix = "TypeName";
-				if (arg.Field != null)
-					type.GetField(arg.Field.Name + postFix).SetValue(at, val);
-				else if (arg.Property != null)
-					type.GetProperty(arg.Property.Name + postFix).SetValue(at, val, null);
-			}
-			
-			return (T) at;
-		}
-		#endregion
 	}
 	
 	internal static class ThreadMirrorExtensions
