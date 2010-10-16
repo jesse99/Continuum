@@ -25,6 +25,7 @@ using MObjc.Helpers;
 using Mono.Debugger.Soft;
 using Shared;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 using Debug = Debugger;
@@ -65,19 +66,26 @@ namespace Debugger
 			AttributedValue = NSAttributedString.Create(item.Text).Retain();
 			NumberOfChildren = item.Count;
 			
-			// If the value is to be represented by a proxy while debugging then,
-			object proxy = DoGetProxyValue(value, thread);
-			if (proxy != null)
+			// If the value is decorated with DebuggerTypeProxyAttribute then we need to
+			// use a proxy value instead of the original value.
+			object replacement = DoGetProxyValue(value, thread);
+			
+			// If a property or field of the value is decorated with DebuggerBrowsableAttribute
+			// and RootHidden then we need to display just the value of that property or field.
+			replacement = DoGetRootValue(replacement ?? value, thread);
+			
+			// If we found a replacement for the original value then,
+			if (replacement != null)
 			{
 				// we need to use that value,
-				Value = proxy;
+				Value = replacement;
 				
-				// the children will be those of the proxy,
+				// the children will be those of the replacement,
 				item = GetItem.Invoke(thread, parent != null ? parent.Value : null, Key, Value);
 				NumberOfChildren = item.Count;
 				
-				// and if the original value didn't provide a custom ToString see if the proxy does.
-				if (AttributedValue.length() == 0)
+				// and if the original value didn't provide a custom ToString see if the replacement does.
+				if (!string.IsNullOrEmpty(item.Text))
 					AttributedValue = NSAttributedString.Create(item.Text).Retain();
 			}
 		}
@@ -341,6 +349,57 @@ namespace Debugger
 			NSAttributedString result = NSAttributedString.Create(newValue, attrs).Retain();
 			
 			return result;
+		}
+		
+		// Types may declare that the value of a single property or field is to be displayed
+		// in place of the memebers of the type. This is used, for example, by the proxy
+		// collection classes to show just the Items property.
+		private object DoGetRootValue(object original, ThreadMirror thread)
+		{
+			object result = null;
+			
+			if (original is ObjectMirror)
+			{
+				ObjectMirror oo = (ObjectMirror) original;
+				result = DoGetRootValue(oo, oo.Type.GetAllProperties(), thread);
+				result = result ?? DoGetRootValue(oo, oo.Type.GetAllFields(), thread);
+			}
+			else if (original is StructMirror)
+			{
+				StructMirror ss = (StructMirror) original;
+				result = DoGetRootValue(ss, ss.Type.GetAllProperties(), thread);
+				result = result ?? DoGetRootValue(ss, ss.Type.GetAllFields(), thread);
+			}
+			
+			return result;
+		}
+		
+		private object DoGetRootValue(Value target, IEnumerable<PropertyInfoMirror> props, ThreadMirror thread)
+		{
+			foreach (PropertyInfoMirror prop in props)
+			{
+				var attr = prop.GetAttribute<DebuggerBrowsableAttribute>();
+				if (attr != null && attr.State == DebuggerBrowsableState.RootHidden)
+				{
+					return EvalMember.Evaluate(thread, target, prop.Name);
+				}
+			}
+			
+			return null;
+		}
+		
+		private object DoGetRootValue(Value target, IEnumerable<FieldInfoMirror> fields, ThreadMirror thread)
+		{
+			foreach (FieldInfoMirror field in fields)
+			{
+				var attr = field.GetAttribute<DebuggerBrowsableAttribute>();
+				if (attr != null && attr.State == DebuggerBrowsableState.RootHidden)
+				{
+					return EvalMember.Evaluate(thread, target, field.Name);
+				}
+			}
+			
+			return null;
 		}
 		
 		// Types may declare a proxy type which debuggers are supposed to use when showing

@@ -56,17 +56,23 @@ http://progit.org/
 	- do a release monday
 	- may want to say only officially supports mono 2.8
 	- add a known issue for stepping over p/invokes
+	- add a known issue about viewing collections in the debugger
 	- upload the new binary
 	- do something with the google code project	
 	- merge into master
 	- email		
 	
+* Window menu shouldn't show the full path (may want to back port this).
+	- or maybe only show it if ambiguous
 * Use the debugging attributes:
-	- handle DebuggerBrowsableAttribute root hidden (shouldn't display any other members)
-	- DebuggerDisplayAttribute
 	- DebuggerHiddenAttribute
 	- DebuggerNonUserCodeAttribute
+	- DebuggerDisplayAttribute (System.Collections.Generic.KeyValuePair uses this)
 	- DebuggerVisualizerAttribute
+	- special case System.Collections.Generic.KeyValuePair (don't show the fields)
+		may not need this once we support DebuggerDisplayAttribute
+	- for arrays may want to set the text to something like "5 elements"
+	- add visualizers for some cocoa classes?
 	- probably should mention these debugging attributes in the readme
 * May want to look at the MonoDevelop change logs.
 * Add better support for AppleScript/IronPython (and concurrently use it to write functional tests).
@@ -82,6 +88,7 @@ http://progit.org/
 	http://www.ironpython.info/index.php/Hosting_IronPython_2
 * Can we add an immediate (MPW style) window which uses Iron Python?
 * Need a directory for custom plugins:
+	- debugger visualizer might be a good example
 	- google code search might be a good example
 	- or maybe a simple diff tool	regime
 	- or maybe a MRU window list (context menu?)
