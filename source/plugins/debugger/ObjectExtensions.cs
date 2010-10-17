@@ -114,7 +114,7 @@ namespace Debugger
 					return ((Double) value).ToString("N");
 				else
 					return ((Double) value).ToString("G");
-				
+			
 			else
 				return value.ToString();
 		}

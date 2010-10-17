@@ -26,6 +26,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Debugger
 {
@@ -444,6 +445,131 @@ namespace Debugger
 //			return result;
 //		}
 		
+		public static string ToDisplayText(this Value theValue, ThreadMirror thread, string type = null)
+		{
+			string result = string.Empty;
+			
+			if (theValue is PrimitiveValue)
+			{
+				var value = theValue as PrimitiveValue;
+				
+				if (value.Value == null)
+					result = "null";
+				else
+					result = value.Value.ToString();
+			}
+			else if (theValue is EnumMirror)
+			{
+				var value = theValue as EnumMirror;
+				
+				if (value.Type.Assembly.Metadata == null)
+					value.Type.Assembly.Metadata = AssemblyCache.Load(value.Type.Assembly.Location, false);
+				
+				if (value.Type.Metadata != null)
+					result = CecilExtensions.ArgToString(value.Type.Metadata, value.Value, false, false);
+				else
+					result = value.StringValue;
+			}
+			else if (theValue is StringMirror)
+			{
+				var value = theValue as StringMirror;
+				
+				result = DoStringToText(value.Value);
+			}
+			
+			if (result.Length == 0 && theValue is StructMirror)
+			{
+				var value = theValue as StructMirror;
+				
+				if (type == null)
+					type = value.Type.FullName;
+				
+				if (type == "System.IntPtr" || type == "System.UIntPtr")
+				{
+					MethodMirror method = value.Type.FindMethod("ToString", 1);
+					
+					Value format = thread.Domain.CreateString("X4");		// TODO: not 32-bit safe
+					Value v = value.InvokeMethod(thread, method, new Value[]{format}, InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+					StringMirror s = (StringMirror) v;
+					
+					result = "0x" + s.Value;
+				}
+				else if (type == "System.Nullable`1")
+				{
+					MethodMirror method = value.Type.FindMethod("ToString", 0);
+					
+					Value v = value.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+					StringMirror s = (StringMirror) v;
+					result = s.Value.Length > 0 ? s.Value : "null";
+				}
+				else if (type == "System.DateTime" || type == "System.TimeSpan")
+				{
+					MethodMirror method = value.Type.FindMethod("ToString", 0);
+					
+					Value v = value.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+					StringMirror s = (StringMirror) v;
+					result = s.Value;
+				}
+				else
+				{
+					MethodMirror method = value.Type.FindMethod("ToString", 0);
+					if (method.DeclaringType.FullName != "System.ValueType")
+					{
+						if (value.Type.IsPrimitive)
+						{
+							// Boxed primitive (we need this special case or InvokeMethod will hang).
+							if (value.Fields.Length > 0 && (value.Fields[0] is PrimitiveValue))
+								result = ((PrimitiveValue)value.Fields[0]).Value.Stringify();
+						}
+						else
+						{
+							Value v = new InvokeMethod().Invoke(thread, value, "ToString");
+//							Value v = value.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+							StringMirror s = (StringMirror) v;
+							result = s.Value;
+						}
+					}
+				}
+			}
+			else if (result.Length == 0 && theValue is ObjectMirror)
+			{
+				var value = theValue as ObjectMirror;
+				
+				result = DoGetDisplayText(thread, value, value.Type.GetAttribute<DebuggerDisplayAttribute>());
+				if (result == null)
+				{
+					if (value.Type.IsType("System.MulticastDelegate"))
+					{
+						Value mv = EvalMember.Evaluate(thread, value, "Method");
+						if (!mv.IsNull())
+						{
+							ObjectMirror mo = (ObjectMirror) mv;
+							MethodMirror method = mo.Type.FindMethod("ToString", 0);
+							
+							Value v = mo.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+							result = ((StringMirror) v).Value;
+						}
+						else
+						{
+							result = "null";
+						}
+					}
+					else
+					{
+						MethodMirror method = value.Type.FindMethod("ToString", 0);
+						if (method.DeclaringType.FullName != "System.Object")
+						{
+							Value v = value.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+							StringMirror s = (StringMirror) v;
+							result = s.Value;
+						}
+					}
+				}
+			}
+			
+			return result ?? string.Empty;
+		}
+		
 		[Pure]
 		public static string TypeName(this Value v)
 		{
@@ -486,5 +612,58 @@ namespace Debugger
 			
 			return result;
 		}
+		
+		#region Private Methods
+		private static string DoInterpolateDisplayText(ThreadMirror thread, Value target, Match match)
+		{
+			Value result = EvalMember.Evaluate(thread, target, match.Groups[1].Value);
+			return result.ToDisplayText(thread);
+		}
+		
+		// attr.Value will contain text to be displayed for the target. The text may contain a name
+		// enclosed in curly braces. The name should be that of a field, property, or method.
+		private static string DoGetDisplayText(ThreadMirror thread, Value target, DebuggerDisplayAttribute attr)
+		{
+			string text = null;
+			
+			if (attr != null && attr.Value != null)
+			{
+				text = ms_displayRe.Replace(attr.Value, m => DoInterpolateDisplayText(thread, target, m));
+			}
+			
+			return text;
+		}
+		
+		private static string DoStringToText(string str)
+		{
+			var builder = new System.Text.StringBuilder(str.Length + 2);
+			
+			builder.Append('"');
+			foreach (char ch in str)
+			{
+				if (ch > 0x7F && VariableController.ShowUnicode)
+					builder.Append(ch);
+				else if (ch == '\'')
+					builder.Append(ch);
+				else if (ch == '"')
+					builder.Append("\\\"");
+				else
+					builder.Append(CharHelpers.ToText(ch));
+					
+				if (builder.Length > 256)
+				{
+					builder.Append(Shared.Constants.Ellipsis);
+					break;
+				}
+			}
+			builder.Append('"');
+			
+			return builder.ToString();
+		}
+		#endregion
+		
+		#region Fields 
+		private static Regex ms_displayRe = new Regex(@"\{([a-zA-Z_][a-zA-Z0-9_]*)\}");
+		#endregion
 	}
 }

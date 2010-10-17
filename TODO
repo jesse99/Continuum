@@ -63,8 +63,17 @@ http://progit.org/
 	- merge into master
 	- email		
 	
+* Work on DebuggerDisplayAttribute:
+	 AttributeTargets.Struct |
+	 AttributeTargets.Enum |
+	 AttributeTargets.Field |
+	 AttributeTargets.Delegate |
+	 AttributeTargets.Property |
+	 AttributeTargets.Assembly, AllowMultiple=true)]	
+	- make sure fields work
+	- make sure methods work
+	- make sure multiple interpolations work
 * Use the debugging attributes:
-	- DebuggerHiddenAttribute and DebuggerNonUserCodeAttribute
 	- DebuggerDisplayAttribute (System.Collections.Generic.KeyValuePair uses this)
 	- DebuggerVisualizerAttribute
 	- special case System.Collections.Generic.KeyValuePair (don't show the fields)

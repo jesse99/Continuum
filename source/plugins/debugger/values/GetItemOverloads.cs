@@ -25,6 +25,7 @@ using Mono.Debugger.Soft;
 using Shared;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 using Debug = Debugger;
@@ -42,8 +43,8 @@ namespace Debugger
 			}
 			else
 			{
-				string type = DoGetFullerName(parent, key, value.Type);
-				return new Item(value.Length, string.Empty, type);
+				string type = DoGetFullerTypeName(parent, key, value.Type);
+				return new Item(value.Length, value.ToDisplayText(thread, type), type);
 			}
 		}
 		
@@ -102,15 +103,7 @@ namespace Debugger
 		[GetItem.Overload]
 		public static Item GetItem(ThreadMirror thread, object parent, object key, EnumMirror value)
 		{
-			if (value.Type.Assembly.Metadata == null)
-				value.Type.Assembly.Metadata = AssemblyCache.Load(value.Type.Assembly.Location, false);
-			
-			string text;
-			if (value.Type.Metadata != null)
-				text = CecilExtensions.ArgToString(value.Type.Metadata, value.Value, false, false);
-			else
-				text = value.StringValue;
-			return new Item(0, text, value.Type.FullName);
+			return new Item(0, value.ToDisplayText(thread), value.Type.FullName);
 		}
 		
 		[GetItem.Overload]
@@ -178,20 +171,8 @@ namespace Debugger
 					numChildren += value.Type.GetAllProperties().Count(p => p.ShouldDisplay());
 					numChildren += value.Type.GetAllFields().Count(f => f.ShouldDisplay());
 					
-					string text = string.Empty;
-					MethodMirror method = value.Type.FindMethod("ToString", 0);
-					if (method.DeclaringType.FullName != "System.Object")
-					{
-						Value v = value.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
-						StringMirror s = (StringMirror) v;
-						text = s.Value;
-					}
-					
-//					if (value.Type.FullName.StartsWith("System.Collections") && value.Type.FindMethod("GetEnumerator", 0) != null)	// TODO: better to use Is(ICollection) but TypeMirror does not expose interfaces
-//						numChildren = 1;
-					
-					string type = DoGetFullerName(parent, key, value.Type);
-					item = new Item(numChildren, text, type);
+					string type = DoGetFullerTypeName(parent, key, value.Type);
+					item = new Item(numChildren, value.ToDisplayText(thread, type), type);
 				}
 			}
 			
@@ -209,7 +190,7 @@ namespace Debugger
 			}
 			else
 			{
-				string type = DoGetFullerName(parent, key, null);
+				string type = DoGetFullerTypeName(parent, key, null);
 				return new Item(0, "null", type);
 			}
 		}
@@ -238,7 +219,7 @@ namespace Debugger
 			if (value.IsCollected)
 				return new Item(0, "garbage collected", value.Type.FullName);
 			else
-				return new Item(value.Value.Length, DoStringToText(value.Value), "System.String");
+				return new Item(value.Value.Length, value.ToDisplayText(thread), "System.String");
 		}
 		
 		[GetItem.Overload]
@@ -246,33 +227,13 @@ namespace Debugger
 		{
 			Item item = new Item();
 			
-			string type = DoGetFullerName(parent, key, value.Type);
+			string type = DoGetFullerTypeName(parent, key, value.Type);
 			if (!DoProcessSpecialStruct(thread, type, value, ref item))
 			{
-				string text = string.Empty;
-				
-				MethodMirror method = value.Type.FindMethod("ToString", 0);
-				if (method.DeclaringType.FullName != "System.ValueType")
-				{
-					if (value.Type.IsPrimitive)
-					{
-						// Boxed primitive (we need this special case or InvokeMethod will hang).
-						if (value.Fields.Length > 0 && (value.Fields[0] is PrimitiveValue))
-							text = ((PrimitiveValue)value.Fields[0]).Value.Stringify();
-					}
-					else
-					{
-						Value v = new InvokeMethod().Invoke(thread, value, "ToString");
-//						Value v = value.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
-						StringMirror s = (StringMirror) v;
-						text = s.Value;
-					}
-				}
-				
 				int numChildren = 0;
 				numChildren += value.Type.GetAllProperties().Count(p => p.ShouldDisplay());
 				numChildren += value.Type.GetAllFields().Count(f => f.ShouldDisplay());
-				item = new Item(numChildren, text, type);
+				item = new Item(numChildren, value.ToDisplayText(thread, type), type);
 			}
 			
 			return item;
@@ -322,18 +283,7 @@ namespace Debugger
 		{
 			if (value.Type.IsType("System.MulticastDelegate"))
 			{
-				string text = "null";
-				Value mv = EvalMember.Evaluate(thread, value, "Method");
-				if (!mv.IsNull())
-				{
-					ObjectMirror mo = (ObjectMirror) mv;
-					MethodMirror method = mo.Type.FindMethod("ToString", 0);
-					
-					Value v = mo.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
-					text = ((StringMirror) v).Value;
-				}
-				
-				item = new Item(4, text, value.TypeName());
+				item = new Item(4, value.ToDisplayText(thread, value.TypeName()), value.TypeName());
 				return true;
 			}
 			
@@ -344,41 +294,24 @@ namespace Debugger
 		{
 			if (type == "System.IntPtr" || type == "System.UIntPtr")
 			{
-				MethodMirror method = value.Type.FindMethod("ToString", 1);
-				
-				Value format = thread.Domain.CreateString("X4");		// TODO: not 32-bit safe
-				Value v = value.InvokeMethod(thread, method, new Value[]{format}, InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
-				StringMirror s = (StringMirror) v;
-				
-				item = new Item(0, "0x" + s.Value, type);
+				item = new Item(0, value.ToDisplayText(thread, type), type);
 				return true;
 			}
 			else if (type == "System.Nullable`1")
 			{
-				MethodMirror method = value.Type.FindMethod("ToString", 0);
-				
-				Value v = value.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
-				StringMirror s = (StringMirror) v;
-				string text = s.Value.Length > 0 ? s.Value : "null";
-				
-				item = new Item(0, text, type);
+				item = new Item(0, value.ToDisplayText(thread, type), type);
 				return true;
 			}
 			else if (type == "System.DateTime" || type == "System.TimeSpan")
 			{
-				MethodMirror method = value.Type.FindMethod("ToString", 0);
-				
-				Value v = value.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
-				StringMirror s = (StringMirror) v;
-				
-				item = new Item(0, s.Value, type);
+				item = new Item(0, value.ToDisplayText(thread, type), type);
 				return true;
 			}
 			
 			return false;
 		}
 		
-		private static string DoGetFullerName(object parent, object key, TypeMirror value)
+		private static string DoGetFullerTypeName(object parent, object key, TypeMirror value)
 		{
 			string type;
 			
@@ -406,33 +339,6 @@ namespace Debugger
 				type = value.FullName;
 			
 			return type;
-		}
-		
-		private static string DoStringToText(string str)
-		{
-			var builder = new System.Text.StringBuilder(str.Length + 2);
-			
-			builder.Append('"');
-			foreach (char ch in str)
-			{
-				if (ch > 0x7F && VariableController.ShowUnicode)
-					builder.Append(ch);
-				else if (ch == '\'')
-					builder.Append(ch);
-				else if (ch == '"')
-					builder.Append("\\\"");
-				else
-					builder.Append(CharHelpers.ToText(ch));
-					
-				if (builder.Length > 256)
-				{
-					builder.Append(Shared.Constants.Ellipsis);
-					break;
-				}
-			}
-			builder.Append('"');
-			
-			return builder.ToString();
 		}
 		#endregion
 	}
