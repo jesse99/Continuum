@@ -191,8 +191,19 @@ namespace Debugger
 			
 			if (HasSimpleGetter(prop))
 			{
-				var attr = prop.GetAttribute<DebuggerBrowsableAttribute>();
-				should = attr == null || attr.State != DebuggerBrowsableState.Never;
+				var attr1 = prop.GetAttribute<DebuggerBrowsableAttribute>();
+				if (attr1 == null || attr1.State != DebuggerBrowsableState.Never)
+				{
+					var attr2 = prop.GetAttribute<DebuggerHiddenAttribute>();
+					if (attr2 == null)
+					{
+						var attr3 = prop.GetAttribute<DebuggerNonUserCodeAttribute>();
+						if (attr3 == null)
+						{
+							should = true;
+						}
+					}
+				}
 			}
 			
 			return should;
