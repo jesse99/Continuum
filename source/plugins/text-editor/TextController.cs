@@ -364,9 +364,16 @@ namespace TextEditor
 		
 		public new NSString windowTitleForDocumentDisplayName(NSString displayName)
 		{
-//			NSString result = displayName;
-			string path = Path;
-			NSString result = path != null ? NSString.Create(path.ReversePath()) : displayName;
+			NSString result = displayName;
+			
+			if (Path != null)
+			{
+				var defaults = NSUserDefaults.standardUserDefaults();
+				if (defaults.boolForKey(NSString.Create("reverse window paths")))
+				{
+					result = NSString.Create(Path.ReversePath());
+				}
+			}
 			
 			if (m_boss.Has<IDocumentWindowTitle>())
 			{
