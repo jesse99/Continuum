@@ -29,7 +29,7 @@ namespace Debugger
 	internal static class EvalMember
 	{
 		// Target should be a ObjectMirror or a StructMirror. Name should be the name of a
-		// property (e.g. Count) or field (eg Empty). Returns an error string.
+		// property (e.g. Count), field (eg Empty), or nullary method. Returns an error string.
 		public static Value Evaluate(ThreadMirror thread, Value target, string name)
 		{
 			Contract.Requires(thread != null, "thread is null");
@@ -45,7 +45,7 @@ namespace Debugger
 			else if (target is StructMirror)
 				result = DoGetField((StructMirror) target, name);
 				
-			// and then properties.
+			// properties.
 			if (result == null)
 			{
 				if (target is ObjectMirror)
@@ -53,9 +53,24 @@ namespace Debugger
 					
 				else if (target is StructMirror)
 					result = DoEvaluateProperty(thread, (StructMirror) target, name);
+			}
+				
+			// and methods.
+			if (result == null)
+			{
+				if (target is ObjectMirror)
+					result = DoEvaluateMethod(thread, (ObjectMirror) target, name);
+					
+				else if (target is StructMirror)
+					result = DoEvaluateMethod(thread, (StructMirror) target, name);
 					
 				else
 					Contract.Assert(false, "Expected an ObjectMirror or StructMirror but got a " + target.GetType().FullName);
+			}
+			
+			if (result == null)
+			{
+				result = target.VirtualMachine.CreateValue("No member named " + name);
 			}
 			
 			return result;
@@ -105,10 +120,6 @@ namespace Debugger
 				{
 					result = obj.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
 				}
-				else
-				{
-					result = obj.Domain.CreateString("No getter");
-				}
 			}
 			catch (Exception e)
 			{
@@ -131,9 +142,42 @@ namespace Debugger
 				else
 					result = obj.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
 			}
-			else
+			
+			return result;
+		}
+		
+		private static Value DoEvaluateMethod(ThreadMirror thread, ObjectMirror obj, string name)
+		{
+			Value result = null;
+			
+			try
 			{
-				result = obj.VirtualMachine.CreateValue("No getter");
+				MethodMirror method = obj.Type.FindMethod(name, 0);
+				if (method != null)
+				{
+					result = obj.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+				}
+			}
+			catch (Exception e)
+			{
+				string mesg = string.Format("{0} calling {1}.{2}", e.Message, obj.TypeName(), name);
+				result = obj.Domain.CreateString(mesg);
+			}
+			
+			return result;
+		}
+		
+		private static Value DoEvaluateMethod(ThreadMirror thread, StructMirror obj, string name)
+		{
+			Value result = null;
+			
+			MethodMirror method = obj.Type.FindMethod(name, 0);
+			if (method != null)
+			{
+				if (method.IsStatic)
+					result = method.DeclaringType.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+				else
+					result = obj.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
 			}
 			
 			return result;

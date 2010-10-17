@@ -64,21 +64,10 @@ http://progit.org/
 	- email		
 	
 * Work on DebuggerDisplayAttribute:
-	 AttributeTargets.Struct |
-	 AttributeTargets.Enum |
-	 AttributeTargets.Field |
-	 AttributeTargets.Delegate |
-	 AttributeTargets.Property |
-	 AttributeTargets.Assembly, AllowMultiple=true)]	
-	- make sure fields work
 	- make sure methods work
 	- make sure multiple interpolations work
 * Use the debugging attributes:
-	- DebuggerDisplayAttribute (System.Collections.Generic.KeyValuePair uses this)
 	- DebuggerVisualizerAttribute
-	- special case System.Collections.Generic.KeyValuePair (don't show the fields)
-		may not need this once we support DebuggerDisplayAttribute
-	- for arrays may want to set the text to something like "5 elements"
 	- add visualizers for some cocoa classes?
 	- probably should mention these debugging attributes in the readme
 * May want to look at the MonoDevelop change logs.

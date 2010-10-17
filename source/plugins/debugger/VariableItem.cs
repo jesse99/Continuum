@@ -88,6 +88,30 @@ namespace Debugger
 				if (!string.IsNullOrEmpty(item.Text))
 					AttributedValue = NSAttributedString.Create(item.Text).Retain();
 			}
+			
+			// Special case for types or fields or properties that use DebuggerDisplayAttribute.
+			// TODO: We don't support DebuggerDisplayAttribute used at the assembly level.
+			string displayName, displayValue, displayType;
+			DoGetDisplayDetails(Key, Value, thread, out displayName, out displayValue, out displayType);
+			if (displayName != null)
+			{
+				AttributedName.release();
+				AttributedName = NSMutableAttributedString.Create(displayName).Retain();
+				
+				NumberOfChildren = 0;
+			}
+			
+			if (displayValue != null)
+			{
+				AttributedValue.release();
+				AttributedValue = NSMutableAttributedString.Create(displayValue).Retain();
+			}
+			
+			if (displayType != null)
+			{
+				AttributedType.release();
+				AttributedType = NSMutableAttributedString.Create(displayType).Retain();
+			}
 		}
 		
 		public NSMutableAttributedString AttributedName {get; private set;}
@@ -400,6 +424,76 @@ namespace Debugger
 			}
 			
 			return null;
+		}
+		
+		private void DoGetDisplayDetails(object key, object value, ThreadMirror thread, out string displayName, out string displayValue, out string displayType)
+		{
+			System.Diagnostics.DebuggerDisplayAttribute attr = null;
+			
+			// First try to get the attribute using the field or property.
+			if (key is FieldInfoMirror)
+			{
+				FieldInfoMirror ff = (FieldInfoMirror) key;
+				attr = ff.GetAttribute<System.Diagnostics.DebuggerDisplayAttribute>();
+			}
+			else if (key is PropertyInfoMirror)
+			{
+				PropertyInfoMirror pp = (PropertyInfoMirror) key;
+				attr = pp.GetAttribute<System.Diagnostics.DebuggerDisplayAttribute>();
+			}
+			
+			// Then try the value's type.
+			if (attr == null)
+			{
+				if (value is ObjectMirror)
+				{
+					ObjectMirror oo = (ObjectMirror) value;
+					attr = oo.Type.GetAttribute<System.Diagnostics.DebuggerDisplayAttribute>();
+				}
+				else if (value is StructMirror)
+				{
+					StructMirror ss = (StructMirror) value;
+					attr = ss.Type.GetAttribute<System.Diagnostics.DebuggerDisplayAttribute>();
+				}
+			}
+			
+			displayName = null;
+			displayValue = null;
+			displayType = null;
+			
+			if (attr != null)
+			{
+				if (!string.IsNullOrEmpty(attr.Name))
+					displayName = ValueExtensions.Interpolate(thread, (Value) value, attr.Name);
+				
+				if (!string.IsNullOrEmpty(attr.Value))
+					displayValue = ValueExtensions.Interpolate(thread, (Value) value, attr.Value);
+				
+				if (!string.IsNullOrEmpty(attr.Type))
+					displayType = ValueExtensions.Interpolate(thread, (Value) value, attr.Type);
+			}
+		}
+		
+		private string DoGetDisplayName(object value, ThreadMirror thread)
+		{
+			string result = null;
+			
+			System.Diagnostics.DebuggerDisplayAttribute attr = null;
+			if (value is ObjectMirror)
+			{
+				ObjectMirror oo = (ObjectMirror) value;
+				attr = oo.Type.GetAttribute<System.Diagnostics.DebuggerDisplayAttribute>();
+			}
+			else if (value is StructMirror)
+			{
+				StructMirror ss = (StructMirror) value;
+				attr = ss.Type.GetAttribute<System.Diagnostics.DebuggerDisplayAttribute>();
+			}
+			
+			if (attr != null && !string.IsNullOrEmpty(attr.Name))
+				result = ValueExtensions.Interpolate(thread, (Value) value, attr.Name);
+			
+			return result;
 		}
 		
 		// Types may declare a proxy type which debuggers are supposed to use when showing

@@ -213,6 +213,7 @@ namespace Debugger
 	
 	internal static class TypeMirrorExtensions
 	{
+		// numArgs does not include the this argument.
 		public static MethodMirror FindMethod(this TypeMirror type, string name, int numArgs)
 		{
 			MethodMirror method = type.GetMethods().FirstOrDefault(
@@ -462,13 +463,17 @@ namespace Debugger
 			{
 				var value = theValue as EnumMirror;
 				
-				if (value.Type.Assembly.Metadata == null)
-					value.Type.Assembly.Metadata = AssemblyCache.Load(value.Type.Assembly.Location, false);
-				
-				if (value.Type.Metadata != null)
-					result = CecilExtensions.ArgToString(value.Type.Metadata, value.Value, false, false);
-				else
-					result = value.StringValue;
+				result = DoGetDisplayText(thread, value, value.Type.GetAttribute<DebuggerDisplayAttribute>());
+				if (result == null)
+				{
+					if (value.Type.Assembly.Metadata == null)
+						value.Type.Assembly.Metadata = AssemblyCache.Load(value.Type.Assembly.Location, false);
+					
+					if (value.Type.Metadata != null)
+						result = CecilExtensions.ArgToString(value.Type.Metadata, value.Value, false, false);
+					else
+						result = value.StringValue;
+				}
 			}
 			else if (theValue is StringMirror)
 			{
@@ -512,21 +517,25 @@ namespace Debugger
 				}
 				else
 				{
-					MethodMirror method = value.Type.FindMethod("ToString", 0);
-					if (method.DeclaringType.FullName != "System.ValueType")
+					result = DoGetDisplayText(thread, value, value.Type.GetAttribute<DebuggerDisplayAttribute>());
+					if (result == null)
 					{
-						if (value.Type.IsPrimitive)
+						MethodMirror method = value.Type.FindMethod("ToString", 0);
+						if (method.DeclaringType.FullName != "System.ValueType")
 						{
-							// Boxed primitive (we need this special case or InvokeMethod will hang).
-							if (value.Fields.Length > 0 && (value.Fields[0] is PrimitiveValue))
-								result = ((PrimitiveValue)value.Fields[0]).Value.Stringify();
-						}
-						else
-						{
-							Value v = new InvokeMethod().Invoke(thread, value, "ToString");
-//							Value v = value.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
-							StringMirror s = (StringMirror) v;
-							result = s.Value;
+							if (value.Type.IsPrimitive)
+							{
+								// Boxed primitive (we need this special case or InvokeMethod will hang).
+								if (value.Fields.Length > 0 && (value.Fields[0] is PrimitiveValue))
+									result = ((PrimitiveValue)value.Fields[0]).Value.Stringify();
+							}
+							else
+							{
+								Value v = new InvokeMethod().Invoke(thread, value, "ToString");
+//								Value v = value.InvokeMethod(thread, method, new Value[0], InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+								StringMirror s = (StringMirror) v;
+								result = s.Value;
+							}
 						}
 					}
 				}
@@ -613,6 +622,11 @@ namespace Debugger
 			return result;
 		}
 		
+		public static string Interpolate(ThreadMirror thread, Value target, string text)
+		{
+			return ms_displayRe.Replace(text, m => DoInterpolateDisplayText(thread, target, m));
+		}
+		
 		#region Private Methods
 		private static string DoInterpolateDisplayText(ThreadMirror thread, Value target, Match match)
 		{
@@ -627,9 +641,7 @@ namespace Debugger
 			string text = null;
 			
 			if (attr != null && attr.Value != null)
-			{
 				text = ms_displayRe.Replace(attr.Value, m => DoInterpolateDisplayText(thread, target, m));
-			}
 			
 			return text;
 		}
