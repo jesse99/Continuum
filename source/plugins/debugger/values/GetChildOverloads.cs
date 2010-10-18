@@ -130,7 +130,7 @@ namespace Debugger
 		[GetChild.Overload]
 		public static VariableItem GetChild(ThreadMirror thread, VariableItem parentItem, StringMirror parent, int index)
 		{
-			string name = index.ToString();
+			string name = string.Format("[{0}]", index);
 			char child = parent.Value[index];
 			return new VariableItem(thread, name, parentItem, index, child, index);
 		}
@@ -221,6 +221,7 @@ namespace Debugger
 		{
 			var builder = new System.Text.StringBuilder();
 			
+			builder.Append('[');
 			for (int dim = 0; dim < parent.Rank; ++dim)
 			{
 				int length = DoGetArrayLength(parent, dim);
@@ -239,6 +240,7 @@ namespace Debugger
 				if (dim + 1 < parent.Rank)
 					builder.Append(", ");
 			}
+			builder.Append(']');
 			
 			return builder.ToString();
 		}
