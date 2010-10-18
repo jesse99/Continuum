@@ -66,7 +66,7 @@ http://progit.org/
 make sure copy works in debugger windows
 need user manual
 help menu should have Open Manual
-	
+
 * Use the debugging attributes:
 	- DebuggerVisualizerAttribute
 	- add visualizers for some cocoa classes?
