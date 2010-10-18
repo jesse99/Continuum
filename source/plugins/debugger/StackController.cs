@@ -113,6 +113,30 @@ namespace Debugger
 			Broadcaster.Invoke("changed stack frame", m_stack[row]);
 		}
 		
+		public void copy(NSObject sender)
+		{
+			var tab = NSAttributedString.Create("\t");
+			var newline = NSAttributedString.Create("\n");
+			var colIds = new NSString[]{NSString.Create("0"), NSString.Create("1"), NSString.Create("2")};
+			
+			NSMutableAttributedString text = NSMutableAttributedString.Create();
+			for (int row = 0; row < numberOfRowsInTableView(m_table); ++row)
+			{
+				foreach (NSString colId in colIds)
+				{
+					var id = m_table.tableColumnWithIdentifier(colId);
+					var s = tableView_objectValueForTableColumn_row(m_table, id, row).To<NSAttributedString>();
+					text.appendAttributedString(s);
+					text.appendAttributedString(tab);
+				}
+				text.appendAttributedString(newline);
+			}
+			
+			NSPasteboard pasteboard = NSPasteboard.generalPasteboard();
+			pasteboard.clearContents();
+			pasteboard.writeObjects(NSArray.Create(text));
+		}
+		
 		public int numberOfRowsInTableView(NSTableView table)
 		{
 			return m_stack != null ? m_stack.Length : 0;
@@ -160,7 +184,7 @@ namespace Debugger
 			}
 			else
 			{
-				str = NSString.Create(text);
+				str = NSAttributedString.Create(text);
 			}
 			
 			return str;

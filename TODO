@@ -58,19 +58,23 @@ http://progit.org/
 	- add a known issue for stepping over p/invokes
 	- add a known issue about viewing collections in the debugger
 	- back-port afab7b7899c8d14e61eacaf58a6de9771e6722c5
+	- back port daaca7dcd2ac11264e08ce96792b2ed4e1cc9887
 	- upload the new binary
 	- do something with the google code project	
 	- merge into master
 	- email		
 	
-make sure copy works in debugger windows
 need user manual
 help menu should have Open Manual
 
+* Get copying working in debugger windows:
+	- probably want to add an extension method somewhere
+	- probably want to copy only the selected rows if any are selected
+	- get copy working with the other debugger windows
+	- see if any other tables should be copied
 * Use the debugging attributes:
 	- DebuggerVisualizerAttribute
 	- add visualizers for some cocoa classes?
-	- would it be useful to support wiki style formatting in the display attribute?
 	- probably should mention these debugging attributes in the readme
 	- may want to add debugger attributes to some common cocoa classes
 		` maybe proxies for cocoa collections
