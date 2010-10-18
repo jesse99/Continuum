@@ -63,13 +63,19 @@ http://progit.org/
 	- merge into master
 	- email		
 	
-* Work on DebuggerDisplayAttribute:
-	- make sure methods work
-	- make sure multiple interpolations work
+subscripts need names like [0]
+make sure copy works in debugger windows
+need user manual
+help menu should have Open Manual
+	
 * Use the debugging attributes:
 	- DebuggerVisualizerAttribute
 	- add visualizers for some cocoa classes?
+	- would it be useful to support wiki style formatting in the display attribute?
 	- probably should mention these debugging attributes in the readme
+	- may want to add debugger attributes to some common cocoa classes
+		` maybe proxies for cocoa collections
+		` maybe gear classes too
 * May want to look at the MonoDevelop change logs.
 * Probably want some sort of advanced prefs panel:
 	- these should be for stuff that most people won't want to change

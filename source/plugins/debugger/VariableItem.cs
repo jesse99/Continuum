@@ -59,59 +59,16 @@ namespace Debugger
 			Key = key;
 			Value = value;
 			m_index = index;
+			m_actualName = name;
+			m_actualValue = value;
 			
-			Item item = GetItem.Invoke(thread, parent != null ? parent.Value : null, Key, Value);
-			AttributedName = NSMutableAttributedString.Create(name).Retain();
-			AttributedType = NSAttributedString.Create(item.Type).Retain();
-			AttributedValue = NSAttributedString.Create(item.Text).Retain();
-			NumberOfChildren = item.Count;
+			Details details = DoGetDetails(thread, name, parent, key, value);
 			
-			// If the value is decorated with DebuggerTypeProxyAttribute then we need to
-			// use a proxy value instead of the original value.
-			object replacement = DoGetProxyValue(value, thread);
-			
-			// If a property or field of the value is decorated with DebuggerBrowsableAttribute
-			// and RootHidden then we need to display just the value of that property or field.
-			replacement = DoGetRootValue(replacement ?? value, thread);
-			
-			// If we found a replacement for the original value then,
-			if (replacement != null)
-			{
-				// we need to use that value,
-				Value = replacement;
-				
-				// the children will be those of the replacement,
-				item = GetItem.Invoke(thread, parent != null ? parent.Value : null, Key, Value);
-				NumberOfChildren = item.Count;
-				
-				// and if the original value didn't provide a custom ToString see if the replacement does.
-				if (!string.IsNullOrEmpty(item.Text))
-					AttributedValue = NSAttributedString.Create(item.Text).Retain();
-			}
-			
-			// Special case for types or fields or properties that use DebuggerDisplayAttribute.
-			// TODO: We don't support DebuggerDisplayAttribute used at the assembly level.
-			string displayName, displayValue, displayType;
-			DoGetDisplayDetails(Key, Value, thread, out displayName, out displayValue, out displayType);
-			if (displayName != null)
-			{
-				AttributedName.release();
-				AttributedName = NSMutableAttributedString.Create(displayName).Retain();
-				
-				NumberOfChildren = 0;
-			}
-			
-			if (displayValue != null)
-			{
-				AttributedValue.release();
-				AttributedValue = NSMutableAttributedString.Create(displayValue).Retain();
-			}
-			
-			if (displayType != null)
-			{
-				AttributedType.release();
-				AttributedType = NSMutableAttributedString.Create(displayType).Retain();
-			}
+			Value = details.Value;
+			AttributedName = NSMutableAttributedString.Create(details.DisplayName).Retain();
+			AttributedType = NSAttributedString.Create(details.DisplayType).Retain();
+			AttributedValue = NSAttributedString.Create(details.DisplayValue).Retain();
+			NumberOfChildren = details.NumberOfChildren;
 		}
 		
 		public NSMutableAttributedString AttributedName {get; private set;}
@@ -147,6 +104,7 @@ namespace Debugger
 		{
 			Contract.Requires(value != null);
 			
+			m_actualValue = value;
 			Value = value;
 			Refresh(thread);
 		}
@@ -154,15 +112,19 @@ namespace Debugger
 		// Update the value and recursively all the children to reflect state changes in the debugee.
 		public void Refresh(ThreadMirror thread)
 		{
-			Item item = GetItem.Invoke(thread, Parent != null ? Parent.Value : null, Key, Value);
-			DoRefreshValueText(item.Text);
-			DoRefreshTypeText(item.Type);
+			Details details = DoGetDetails(thread, m_actualName, Parent, Key, m_actualValue);
 			
-			if (item.Count == NumberOfChildren)
+			Value = details.Value;
+			
+			DoRefreshNameText(details.DisplayName);
+			DoRefreshValueText(details.DisplayValue, Value);
+			DoRefreshTypeText(details.DisplayType);
+			
+			if (details.NumberOfChildren == NumberOfChildren)
 			{
 				if (m_children != null)
 				{
-					for (int i = 0; i < item.Count; ++i)
+					for (int i = 0; i < details.NumberOfChildren; ++i)
 					{
 						VariableItem child = m_children[i];
 						
@@ -172,7 +134,7 @@ namespace Debugger
 							newChild.autorelease();
 							Contract.Assert(child.AttributedName.ToString() == newChild.AttributedName.ToString(), string.Format("oldName: {0}, newName: {1}", child.AttributedName.ToString(), newChild.AttributedName.ToString()));
 							
-							child.RefreshValue(thread, newChild.Value);
+							child.RefreshValue(thread, newChild.m_actualValue);
 						}
 					}
 				}
@@ -180,7 +142,7 @@ namespace Debugger
 			else
 			{
 				DoDeleteChildren();
-				NumberOfChildren = item.Count;
+				NumberOfChildren = details.NumberOfChildren;
 			}
 		}
 		
@@ -231,6 +193,72 @@ namespace Debugger
 		#endregion
 		
 		#region Private Methods
+		private Details DoGetDetails(ThreadMirror thread, string name, VariableItem parent, object key, object value)
+		{
+			Item item = GetItem.Invoke(thread, parent != null ? parent.Value : null, key, value);
+			
+			var details = new Details();
+			details.Value = value;
+			details.NumberOfChildren = item.Count;
+			details.DisplayName = name;
+			details.DisplayValue = item.Text;
+			details.DisplayType = item.Type;
+			
+			DoAdjustDetails(details, thread, parent, key, value);
+			
+			return details;
+		}
+		
+		private void DoAdjustDetails(Details details, ThreadMirror thread, VariableItem parent, object key, object value)
+		{
+			// If the value is decorated with DebuggerTypeProxyAttribute then we need to
+			// use a proxy value instead of the original value.
+			object replacement = DoGetProxyValue(value, thread);
+			
+			// If a property or field of the value is decorated with DebuggerBrowsableAttribute
+			// and RootHidden then we need to display just the value of that property or field.
+			replacement = DoGetRootValue(replacement ?? value, thread);
+			
+			// If we found a replacement for the original value then,
+			if (replacement != null)
+			{
+				// we need to use that value,
+				details.Value = replacement;
+				
+				// the children will be those of the replacement,
+				Item item = GetItem.Invoke(thread, parent != null ? parent.Value : null, key, replacement);
+				details.NumberOfChildren = item.Count;
+				
+				// and if the replacement has a ToString or value attribute then use that.
+				if (!string.IsNullOrEmpty(item.Text))
+					details.DisplayValue = item.Text;
+			}
+			
+			// Special case for types or fields or properties that use DebuggerDisplayAttribute.
+			// TODO: We don't support DebuggerDisplayAttribute used at the assembly level.
+			string displayName, displayValue, displayType;
+			DoGetDisplayDetails(key, details.Value, thread, out displayName, out displayValue, out displayType);
+			if (displayName != null)
+			{
+				details.DisplayName = displayName;
+				
+				NumberOfChildren = 0;
+			}
+			
+			if (displayValue != null)
+				details.DisplayValue = displayValue;
+			
+			if (displayType != null)
+				details.DisplayType = displayType;
+			
+			if (details.DisplayValue.Length == 0 && value is ArrayMirror)
+			{
+				var aa = (ArrayMirror) value;
+				
+				details.DisplayValue = string.Format("Length = {0}", aa.Length);
+			}
+		}
+		
 		private void DoToString(System.Text.StringBuilder builder, string format, int depth)
 		{
 			switch (format)
@@ -309,12 +337,29 @@ namespace Debugger
 			}
 		}
 		
-		private void DoRefreshValueText(string newValue)
+		private void DoRefreshNameText(string newName)
+		{
+			NSMutableAttributedString str;
+			
+			string oldType = AttributedType.ToString();
+			if (newName != oldType)
+				if (newName.Length > 0)
+					str = DoCreateString(newName, NSColor.redColor());
+				else
+					str = NSMutableAttributedString.Create(oldType).Retain();	// this will happen if the value goes to null
+			else
+				str = NSMutableAttributedString.Create(newName).Retain();
+			
+			AttributedName.release();
+			AttributedName = str;
+		}
+		
+		private void DoRefreshValueText(string newValue, object value)
 		{
 			NSAttributedString str;
 			NSColor nameColor = NSColor.blackColor();
 			
-			ObjectMirror obj = Value as ObjectMirror;
+			ObjectMirror obj = value as ObjectMirror;
 			if (obj != null && obj.IsCollected)
 			{
 				str = DoCreateString("garbage collected", NSColor.disabledControlTextColor());
@@ -348,7 +393,7 @@ namespace Debugger
 			AttributedName.addAttribute_value_range(Externs.NSForegroundColorAttributeName, nameColor, range);
 		}
 		
-		// The declared type should not change but we show the actual type which may.
+		// The declared type should not change but the type we show may.
 		private void DoRefreshTypeText(string newType)
 		{
 			NSAttributedString str;
@@ -366,11 +411,11 @@ namespace Debugger
 			AttributedType = str;
 		}
 		
-		private NSAttributedString DoCreateString(string newValue, NSColor color)
+		private NSMutableAttributedString DoCreateString(string newValue, NSColor color)
 		{
 			var attrs = NSMutableDictionary.Create();
 			attrs.setObject_forKey(color, Externs.NSForegroundColorAttributeName);
-			NSAttributedString result = NSAttributedString.Create(newValue, attrs).Retain();
+			var result = NSMutableAttributedString.Create(newValue, attrs).Retain();
 			
 			return result;
 		}
@@ -579,7 +624,21 @@ namespace Debugger
 		}
 		#endregion
 		
+		#region Private Types
+		private sealed class Details
+		{
+			public object Value;
+			public int NumberOfChildren;
+			
+			public string DisplayName;
+			public string DisplayValue;
+			public string DisplayType;
+		}
+		#endregion
+		
 		#region Fields
+		private string m_actualName;
+		private object m_actualValue;
 		private VariableItem[] m_children;
 		private int m_index;						// cache the index (because we sort by name so the old indices become invalid when reloading)
 		#endregion
