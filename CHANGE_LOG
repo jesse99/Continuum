@@ -1,3 +1,45 @@
+commit eb899046311e6d863174fe5cd0fd0b71bc7a3cf8
+Author: Jesse Jones <jesjones@mindspring.com>
+Date:   Mon Oct 18 19:03:05 2010 -0700
+
+    Backported the fix to stack frame line number display
+
+commit d574599eae620947080d4b3164c560331720ec15
+Author: Jesse Jones <jesjones@mindspring.com>
+Date:   Mon Oct 18 18:52:48 2010 -0700
+
+    Updated
+
+commit 8f3c5c7498f56f326dc282fd6fcc59d5806af219
+Author: Jesse Jones <jesjones@mindspring.com>
+Date:   Mon Oct 18 18:52:33 2010 -0700
+
+    Backported disabling reverse paths in document windows
+
+commit c2dc482dba62d1a9ebca9601e4034da9d6aed148
+Author: Jesse Jones <jesjones@mindspring.com>
+Date:   Sat Oct 9 09:55:06 2010 -0700
+
+    Updated
+
+commit ca310703290280aeaa228c8b33cdb7d3b325d409
+Author: Jesse Jones <jesjones@mindspring.com>
+Date:   Sat Oct 9 09:51:04 2010 -0700
+
+    Updated
+
+commit b10d476cc0d40af82f64ce13621eed00fd8e4716
+Author: Jesse Jones <jesjones@mindspring.com>
+Date:   Sat Oct 9 09:50:58 2010 -0700
+
+    Replace all replaces within the entire file
+
+commit 2959317d6bfbf2d8dd2efed70f270ce310a7d24a
+Author: Jesse Jones <jesjones@mindspring.com>
+Date:   Fri Oct 8 20:17:43 2010 -0700
+
+    Updated
+
 commit 4e3366e45f37c382dd3c13e9de7f684c7a842b3a
 Author: Jesse Jones <jesjones@mindspring.com>
 Date:   Fri Oct 8 17:58:35 2010 -0700
