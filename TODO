@@ -52,11 +52,6 @@ include the percentage of samples that that method appeared in the stack trace
 	
 http://progit.org/
 
-* Release checklist:
-	- upload the new binary
-	- do something with the google code project	
-	- email		
-
 * Add support for custom plugins:
 	- would it be possible for custom plugins to define IB menus which are merged into the real menus?
 	- would be nice to have some sort of extras directory
