@@ -61,13 +61,16 @@ namespace Debugger
 				case "debugger break all":
 					var context = (Context) value;
 					var stack = new LiveStack(context.Thread);
-					if (stack != m_stack)
-					{
-						m_stack = stack;
-						m_selected = 0;
-						m_table.reloadData();
-						m_table.scrollRowToVisible(m_stack.Length - 1);
-					}
+					
+					// Note that the new stack should almost always be different than the cached
+					// stack so there isn't much point in comparing the two (and the equals operator
+					// doesn't compare IL offsets (if it did then stepping would cause stacks to compare
+					// different and the variables window would do a full refresh instead of a partial
+					// refresh and we'd lose the ability to draw changes in red)).
+					m_stack = stack;
+					m_selected = 0;
+					m_table.reloadData();
+					m_table.scrollRowToVisible(m_stack.Length - 1);
 					break;
 				
 				case "changed thread":
