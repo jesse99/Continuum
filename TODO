@@ -67,6 +67,8 @@ http://progit.org/
 need user manual
 help menu should have Open Manual
 
+* Allow exceptions to be suppressed in individual (or maybe globbed) files.
+	- maybe line number too
 * Get copying working in debugger windows:
 	- probably want to add an extension method somewhere
 	- probably want to copy only the selected rows if any are selected
