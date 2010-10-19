@@ -53,19 +53,14 @@ include the percentage of samples that that method appeared in the stack trace
 http://progit.org/
 
 * Release checklist:
+	- back-port afab7b7899c8d14e61eacaf58a6de9771e6722c5
+	- back port daaca7dcd2ac11264e08ce96792b2ed4e1cc9887
+	- rebuild the readme
 	- upload the new binary
-	- do something with the google code project
-	- email
-	- get a plan for the next version
+	- do something with the google code project	
+	- merge into master
+	- email		
 
-* Merge into master
-* Build a new foreshadow.
-* May want to try sgen (could measure perf)
-* Merge release branch into master.
-* Update version in readme.
-* Increment the master version number.
-* File debugger tickets.	
-* Git support.
 * Add support for custom plugins:
 	- would it be possible for custom plugins to define IB menus which are merged into the real menus?
 	- would be nice to have some sort of extras directory

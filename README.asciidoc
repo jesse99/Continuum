@@ -106,6 +106,8 @@ These scripts allow you to do more complex processing of C# source. They are wri
 
 == 5 Known Issues == 
 
+* The debugger does a poor job of displaying collections (this is fixed in master).
+
  * Auto-complete won't complete subscripted expressions (name[0].) or bound generic types (List<string> foo; foo.First().).
 
  * Auto-complete will attempt to deduce the type of local variables declared as var but this only works when the expression is a new expression, an as cast, a function call like Get<T>(), or a linq query.
