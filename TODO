@@ -52,23 +52,16 @@ include the percentage of samples that that method appeared in the stack trace
 	
 http://progit.org/
 
-* Release checklist:
-	- do a release monday
-	- may want to say only officially supports mono 2.8
-	- add a known issue for stepping over p/invokes
-	- add a known issue about viewing collections in the debugger
-	- back-port afab7b7899c8d14e61eacaf58a6de9771e6722c5
-	- back port daaca7dcd2ac11264e08ce96792b2ed4e1cc9887
-	- upload the new binary
-	- do something with the google code project	
-	- merge into master
-	- email		
-	
 need user manual
 help menu should have Open Manual
+find file/type/method could use text similarity algorithm
 
-* Allow exceptions to be suppressed in individual (or maybe globbed) files.
+System.ArgumentException:GetEncoding
+
+* Allow exceptions to be suppressed in individual (or maybe globbed) files:
+	- going to have to allow method names (or maybe method full names) as well
 	- maybe line number too
+	- default to suppressing that lame encoding exception
 * Get copying working in debugger windows:
 	- probably want to add an extension method somewhere
 	- probably want to copy only the selected rows if any are selected
@@ -82,6 +75,10 @@ help menu should have Open Manual
 		` maybe proxies for cocoa collections
 		` maybe gear classes too
 * May want to look at the MonoDevelop change logs.
+* May want a warning if mac os roman is used to open a file.
+* Make sure assembly databases purge assemblies:
+	- maybe every 30 mins could purge assemblies that no longer exist
+	- might want to also purge assemblies that have not been used in a long time
 * Probably want some sort of advanced prefs panel:
 	- these should be for stuff that most people won't want to change
 	- find wraps

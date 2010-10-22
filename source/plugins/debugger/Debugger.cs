@@ -278,7 +278,7 @@ namespace Debugger
 				
 			Boss boss = ObjectModel.Create("Application");
 			var exceptions = boss.Get<IExceptions>();
-			if (!DoTypeIsIn(e.Exception.Type, exceptions.Ignored))
+			if (!DoIsIgnoredException(e.Exception.Type, exceptions.Ignored, frame.Method.Name))
 			{
 				m_currentThread = e.Thread;
 				
@@ -459,12 +459,24 @@ namespace Debugger
 			}
 		}
 		
-		private bool DoTypeIsIn(TypeMirror type, string[] types)
+		private bool DoIsIgnoredException(TypeMirror type, string[] ignored, string method)
 		{
-			foreach (string candidate in types)
+			foreach (string candidate in ignored)
 			{
-				if (type.IsType(candidate))
-					return true;
+				int i = candidate.IndexOf(':');
+				if (i > 0)
+				{
+					string typeName = candidate.Substring(0, i);
+					string methodName = candidate.Substring(i + 1);
+					if (type.IsType(typeName))
+						if (method == methodName)
+							return true;
+				}
+				else
+				{
+					if (type.IsType(candidate))
+						return true;
+				}
 			}
 			
 			return false;

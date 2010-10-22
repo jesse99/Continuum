@@ -98,7 +98,7 @@ namespace App
 			// All characters must be letters, numbers, underscores, or periods.
 			foreach (char ch in type)
 			{
-				if (!char.IsLetterOrDigit(ch) && ch != '_' && ch != '.')
+				if (!char.IsLetterOrDigit(ch) && ch != '_' && ch != '.' && ch != ':')
 					return false;
 			}
 			
