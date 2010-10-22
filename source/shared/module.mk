@@ -8,7 +8,7 @@ nib-path3 := bin/get-item.nib
 
 smoke-files += $(lib-path)
 clean-files += $(lib-path) $(lib-path).mdb
-test-files += $(filter-out source/shared/AssemblyInfo.cs,$(wildcard source/shared/*.cs)) source/shared/interfaces/*.cs
+test-files += $(filter-out source/shared/AssemblyInfo.cs,$(wildcard source/shared/*.cs)) source/shared/extensions/*.cs source/shared/interfaces/*.cs
 
 source-files := bin/$(lib-name)-sources
 nib-files += $(nib-path1) $(nib-path2) $(nib-path3)
@@ -30,7 +30,7 @@ $(nib-path3): source/shared/get-item.nib
 	rm -rf $@
 	cp -R $^ $@
 
-$(source-files): source/AssemblyVersion.cs source/shared/*.cs  source/shared/interfaces/*.cs
+$(source-files): source/AssemblyVersion.cs source/shared/*.cs source/shared/extensions/*.cs source/shared/interfaces/*.cs
 	@echo "$^" > $@
 
 $(lib-path): $(source-files) bin/csc_flags $(gmcs-files)

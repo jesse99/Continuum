@@ -56,12 +56,13 @@ need user manual
 help menu should have Open Manual
 find file/type/method could use text similarity algorithm
 
-System.ArgumentException:GetEncoding
+StackController
+BreakpointsController
+ThreadsController
+VariablesController
+FindInFilesController
+DirectoryController?
 
-* Allow exceptions to be suppressed in individual (or maybe globbed) files:
-	- going to have to allow method names (or maybe method full names) as well
-	- maybe line number too
-	- default to suppressing that lame encoding exception
 * Get copying working in debugger windows:
 	- probably want to add an extension method somewhere
 	- probably want to copy only the selected rows if any are selected
