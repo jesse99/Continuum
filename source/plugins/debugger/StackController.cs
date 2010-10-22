@@ -117,15 +117,14 @@ namespace Debugger
 		{
 			var tab = NSAttributedString.Create("\t");
 			var newline = NSAttributedString.Create("\n");
-			var colIds = new NSString[]{NSString.Create("0"), NSString.Create("1"), NSString.Create("2")};
+			NSArray cols = m_table.tableColumns();
 			
 			NSMutableAttributedString text = NSMutableAttributedString.Create();
 			for (int row = 0; row < numberOfRowsInTableView(m_table); ++row)
 			{
-				foreach (NSString colId in colIds)
+				foreach (NSTableColumn col in cols)
 				{
-					var id = m_table.tableColumnWithIdentifier(colId);
-					var s = tableView_objectValueForTableColumn_row(m_table, id, row).To<NSAttributedString>();
+					var s = tableView_objectValueForTableColumn_row(m_table, col, row).To<NSAttributedString>();
 					text.appendAttributedString(s);
 					text.appendAttributedString(tab);
 				}
