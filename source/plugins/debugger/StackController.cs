@@ -115,25 +115,7 @@ namespace Debugger
 		
 		public void copy(NSObject sender)
 		{
-			var tab = NSAttributedString.Create("\t");
-			var newline = NSAttributedString.Create("\n");
-			NSArray cols = m_table.tableColumns();
-			
-			NSMutableAttributedString text = NSMutableAttributedString.Create();
-			for (int row = 0; row < numberOfRowsInTableView(m_table); ++row)
-			{
-				foreach (NSTableColumn col in cols)
-				{
-					var s = tableView_objectValueForTableColumn_row(m_table, col, row).To<NSAttributedString>();
-					text.appendAttributedString(s);
-					text.appendAttributedString(tab);
-				}
-				text.appendAttributedString(newline);
-			}
-			
-			NSPasteboard pasteboard = NSPasteboard.generalPasteboard();
-			pasteboard.clearContents();
-			pasteboard.writeObjects(NSArray.Create(text));
+			m_table.Copy();
 		}
 		
 		public int numberOfRowsInTableView(NSTableView table)
@@ -183,7 +165,7 @@ namespace Debugger
 			}
 			else
 			{
-				str = NSAttributedString.Create(text);
+				str = NSString.Create(text);
 			}
 			
 			return str;
