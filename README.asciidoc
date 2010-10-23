@@ -88,6 +88,14 @@ debug: app
 	
 The debugger's usage should be obvious but it does have one unusual feature: the ability to trace garbage collector roots. You can do this via the contextual menu in the Variables window and trace roots for either a type or a class instance. When the trace finishes a window will popup showing references from GC roots (e.g. locals and statics) to whatever you are tracing.
 
+There are a number of attributes in the System.Diagnostics namespace that customize the behavior of the debugger. The most useful ones Continuum are:
+
+http://msdn.microsoft.com/en-us/library/system.diagnostics.debuggerbrowsableattribute.aspx[DebuggerBrowsableAttribute] allows you to mark fields or properties which should not be displayed in the debugger. It also allows you to mark a field or property that should be used in place of the type it is within.
+
+http://msdn.microsoft.com/en-us/library/system.diagnostics.debuggertypeproxyattribute.aspx[DebuggerTypeProxyAttribute] allows you to name a proxy type which will be instantiated with the object the debugger is trying to display. The value of the proxy is then displayed instead of the original value. Mono for example uses System.Collections.Generic.CollectionDebuggerView as the proxy for generic collections which allows debuggers to display the collections as arrays. 
+
+http://msdn.microsoft.com/en-us/library/system.diagnostics.debuggerdisplayattribute.aspx[DebuggerDisplayAttribute] allows you to specify a string that is used when displaying an object's value. The string may contain field, property, or nullary method names enclosed in curly braces (+Count=\{Count\}+) that will be evaluated before displaying the string. Note that it's usually easier to do this sort of thing with a ToString override.
+
 == 4 Customization == 
 
 ==== 4.1 Languages ==== 

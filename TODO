@@ -57,9 +57,6 @@ help menu should have Open Manual
 find file/type/method could use text similarity algorithm
 
 * Use the debugging attributes:
-	- DebuggerVisualizerAttribute
-	- add visualizers for some cocoa classes?
-	- probably should mention these debugging attributes in the readme
 	- may want to add debugger attributes to some common cocoa classes
 		` maybe proxies for cocoa collections
 		` maybe gear classes too
@@ -85,6 +82,12 @@ find file/type/method could use text similarity algorithm
 	http://blogs.msdn.com/srivatsn/archive/2008/09/16/hosting-ironpython-made-easier.aspx
 	http://www.ironpython.info/index.php/Hosting_IronPython_2
 * Can we add an immediate (MPW style) window which uses Iron Python?
+* Work on highlighting:
+	- use a better format than xml? or just use source-highlight?
+	- can we support custom elements? maybe hard-code colors? or on startup build a list of installed elements
+	- would be nice to support more elements, e.g. file:///Users/jessejones/Downloads/source-highlight-3.1.4/doc/source-highlight.html#Output-format-style
+	- maybe source-highlight's syntax or one modeled after it
+	- can we convert the source-highlight lang files into our files?
 * Need a directory for custom plugins:
 	- debugger visualizer might be a good example
 	- google code search might be a good example
