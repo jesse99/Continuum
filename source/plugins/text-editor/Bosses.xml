@@ -12,6 +12,7 @@
 		<Implementation interfaces = "IOpenSelection" name = "OpenSelection"/>
 		<Implementation interfaces = "IUnicodeName" name = "UnicodeName"/>
 		<Implementation interfaces = "IInterface +ITextContextCommands" name = "ShowSpaces"/>
+		<Implementation interfaces = "IInterface +ITextContextCommands" name = "PathCommands"/>
 	</Extend>
 	
 	<Extend name = "TextEditor">

@@ -68,6 +68,7 @@ find file/type/method could use text similarity algorithm
 -rw-r--r--  1 jessejones  staff  10009600 Oct 20 18:12 peg-sharp.db
 
 
+* Why was "Finding old Files" presnt for a brand new file?
 * Work on styles:
 	- make sure that we can open the rtf file to get the attributes while Continuum has it open
 	- use an rtf file
