@@ -56,15 +56,26 @@ need user manual
 help menu should have Open Manual
 find file/type/method could use text similarity algorithm
 
-* Use the debugging attributes:
-	- may want to add debugger attributes to some common cocoa classes
-		` maybe proxies for cocoa collections
-		` maybe gear classes too
-* May want to look at the MonoDevelop change logs.
-* May want a warning if mac os roman is used to open a file.
 * Make sure assembly databases purge assemblies:
 	- maybe every 30 mins could purge assemblies that no longer exist
 	- might want to also purge assemblies that have not been used in a long time
+* Work on styles:
+	- make sure that we can open the rtf file to get the attributes while Continuum has it open
+	- use an rtf file
+		` lines starting with # are comments
+		` lines starting with a name and a colon are elements
+		` elements can have arbitrary text after the colon
+		` style is that of the element name (ie not the colon or following text)
+	- add some sort of Open Styles button to prefs
+	- don't overwrite the file if it exists
+	- if a missing element is used then write a warning to the transcript
+* Work on highlighting:
+	- use a better format than xml? or just use source-highlight?
+	- can we support custom elements? maybe hard-code colors? or on startup build a list of installed elements
+	- would be nice to support more elements, e.g. file:///Users/jessejones/Downloads/source-highlight-3.1.4/doc/source-highlight.html#Output-format-style
+	- should be live
+	- maybe source-highlight's syntax or one modeled after it
+	- can we convert the source-highlight lang files into our files?
 * Probably want some sort of advanced prefs panel:
 	- these should be for stuff that most people won't want to change
 	- find wraps
@@ -82,12 +93,6 @@ find file/type/method could use text similarity algorithm
 	http://blogs.msdn.com/srivatsn/archive/2008/09/16/hosting-ironpython-made-easier.aspx
 	http://www.ironpython.info/index.php/Hosting_IronPython_2
 * Can we add an immediate (MPW style) window which uses Iron Python?
-* Work on highlighting:
-	- use a better format than xml? or just use source-highlight?
-	- can we support custom elements? maybe hard-code colors? or on startup build a list of installed elements
-	- would be nice to support more elements, e.g. file:///Users/jessejones/Downloads/source-highlight-3.1.4/doc/source-highlight.html#Output-format-style
-	- maybe source-highlight's syntax or one modeled after it
-	- can we convert the source-highlight lang files into our files?
 * Need a directory for custom plugins:
 	- debugger visualizer might be a good example
 	- google code search might be a good example

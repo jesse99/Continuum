@@ -468,6 +468,9 @@ namespace TextEditor
 					NSString str = encoding.Decode(data, out m_encoding);
 					m_text = NSMutableAttributedString.Alloc().initWithString(str).To<NSMutableAttributedString>();
 					
+					if (m_encoding == Enums.NSMacOSRomanStringEncoding)
+						DoEncodingWarning();
+					
 					// If an html file is being edited in Continuum then ensure that it is saved
 					// as plain text. (To save a document as html the user needs to use save as
 					// and explicitly select html).
@@ -502,6 +505,13 @@ namespace TextEditor
 					Contract.Assert(false, "bad typeName: " + typeName.description());
 					break;
 			}
+		}
+		
+		private void DoEncodingWarning()
+		{
+			Boss boss = ObjectModel.Create("Application");
+			var transcript = boss.Get<ITranscript>();
+			transcript.WriteLine(Output.Error, "Read the file as Mac OS Roman (it isn't utf-8, utf-16, or utf-32).");
 		}
 		
 		private void DoSetEndian(string text)
