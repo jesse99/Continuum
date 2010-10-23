@@ -61,9 +61,9 @@ namespace ObjectModel
 			// space because a lot of assemblies will be shared across projects (especially
 			// the system assemblies). But there are also advantages:
 			// 1) It's much faster to do database lookups if the database doesn't contain
-			// lot's of assemblies which are not used by the current project.
+			// lots of assemblies which are not used by the current project.
 			// 2) Lookups automatically return only the results which pertain to the current
-			// project. With a single database we'd have to do this filtering manually to get.
+			// project. With a single database we'd have to do this filtering manually to get
 			// the best results which is a bit painful.
 			// 3) Assembly versioning is a bit nicer because the queries run against the
 			// assemblies which are being used instead of the latest version of the assembly.
@@ -187,6 +187,7 @@ namespace ObjectModel
 				try
 				{
 					DoDeleteAssemblies();
+					DoDeleteShadowAssemblies();
 					
 					var files = new List<string>();
 					lock (m_lock)
@@ -208,7 +209,7 @@ namespace ObjectModel
 					bool added = false;
 					foreach (string file in files)
 					{
-						if (!file.Contains(".app/") && !file.Contains("/.svn") && !m_blackList.Contains(file))
+						if (!file.Contains(".app/") && !file.Contains("/.svn") && !file.Contains("ShadowCopyCache/") && !m_blackList.Contains(file))
 						{
 							if (DoAddAssembly(file))
 								added = true;
@@ -381,6 +382,43 @@ namespace ObjectModel
 						if (row["in_use"] == "1")
 							++count;
 					}
+				}
+			});
+			
+			// If we deleted an assembly which was in use then we need to check to
+			// see if there's an older version of that assembly we can use.
+			if (count > 0)
+			{
+				Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "{0} in-use assemblies were deleted", count);
+				DoCheckAssemblyVersions();
+			}
+		}
+		
+		// TODO: delete this at some point
+		[ThreadModel(ThreadModel.SingleThread)]
+		private void DoDeleteShadowAssemblies()
+		{
+			int count = 0;
+			
+			m_database.Update("prune assemblies", () =>
+			{
+				// Remove every row in Assemblies where the path is no longer valid.
+				string sql = @"
+					SELECT version, assembly, path, name, culture, in_use
+						FROM Assemblies WHERE path LIKE '%ShadowCopyCache%'";
+				NamedRows rows = m_database.QueryNamedRows(sql);
+				
+				foreach (NamedRow row in rows)
+				{
+					Log.WriteLine(TraceLevel.Info, "ObjectModel", "removing shadow {0} {1} {2}", row["name"], row["culture"], row["version"]);
+					
+					m_database.Update(string.Format(@"
+						DELETE FROM Assemblies 
+							WHERE path = '{0}'", row["path"]));
+					DoDeleteAssemblyReferences(row["assembly"]);
+					
+					if (row["in_use"] == "1")
+						++count;
 				}
 			});
 			
