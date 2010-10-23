@@ -70,13 +70,13 @@ namespace App
 					if (DoCanOpen(editor.Path))
 					{
 						items.Add(new TextContextItem(0.1f));
-						
 						items.Add(new TextContextItem("Find in Time Machine", s => {DoOpen(); return s;}, 0.11f));
 					}
 					else
 					{
 						string tmPath = editor.Path;
 						var entries = new List<Backup>();
+						bool isNew;
 						
 						lock (m_mutex)
 						{
@@ -91,6 +91,8 @@ namespace App
 									entries.Add(backup);
 								}
 							}
+							
+							isNew = m_newFiles.Contains(editor.Path);	// if this is true we need to, or are in the middle of, finding time machine paths for this file
 						}
 						
 						if (entries.Count > 0)
@@ -126,7 +128,7 @@ namespace App
 							if (max < entries.Count)
 								items.Add(new TextContextItem(Constants.Ellipsis, sortOrder));
 						}
-						else
+						else if (isNew)
 						{
 							items.Add(new TextContextItem(0.9f));
 							items.Add(new TextContextItem("Finding old Files", null, 0.9f));
@@ -357,8 +359,7 @@ namespace App
 			{
 				while (true)
 				{
-					string realPath = null;
-					
+					int index;
 					lock (m_mutex)
 					{
 						while (m_newFiles.Count == 0)
@@ -366,11 +367,15 @@ namespace App
 							Unused.Value = Monitor.Wait(m_mutex);
 						}
 						
-						realPath = m_newFiles.Last();
-						m_newFiles.RemoveAt(m_newFiles.Count - 1);
+						index = m_newFiles.Count - 1;
 					}
 					
-					DoFindBackups(realPath);
+					DoFindBackups(m_newFiles[index]);
+					
+					lock (m_mutex)
+					{
+						m_newFiles.RemoveAt(index);
+					}
 				}
 			}
 			catch (Exception e)
