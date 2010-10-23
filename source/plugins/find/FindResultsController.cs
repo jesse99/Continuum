@@ -80,6 +80,11 @@ namespace Find
 			NSApplication.sharedApplication().BeginInvoke(this.DoRelease);
 		}
 		
+		public void copy(NSObject sender)
+		{
+			m_table.Value.Copy();
+		}
+		
 		// Note that we get nasty seg faults if we do this inside windowWillClose, but only
 		// after mucking with the disclosure arrows and double clicking on a file.
 		private void DoRelease()

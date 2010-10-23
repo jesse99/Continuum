@@ -130,6 +130,11 @@ namespace Debugger
 			}
 		}
 		
+		public void copy(NSObject sender)
+		{
+			m_table.Copy();
+		}
+		
 		public int numberOfRowsInTableView(NSTableView table)
 		{
 			return m_threads.Count;

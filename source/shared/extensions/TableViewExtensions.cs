@@ -53,5 +53,37 @@ namespace Shared
 			pasteboard.clearContents();
 			pasteboard.writeObjects(NSArray.Create(text));
 		}
+		
+		public static void Copy(this NSOutlineView table)
+		{
+			var tab = NSAttributedString.Create("\t");
+			var newline = NSAttributedString.Create("\n");
+			NSArray cols = table.tableColumns();
+			
+			var data = table.dataSource();
+			NSMutableAttributedString text = NSMutableAttributedString.Create();
+			for (int row = 0; row < table.numberOfRows(); ++row)
+			{
+				NSObject item = table.itemAtRow(row);
+				int level = table.levelForItem(item);
+				for (int i = 0; i < level; ++i)
+					text.appendAttributedString(tab);
+				
+				foreach (NSTableColumn col in cols)
+				{
+					var s = data.Call("outlineView:objectValueForTableColumn:byItem:", table, col, item).To<NSObject>();
+					if (s is NSAttributedString)
+						text.appendAttributedString((NSAttributedString) s);
+					else
+						text.appendAttributedString(NSAttributedString.Create(s.ToString()));
+					text.appendAttributedString(tab);
+				}
+				text.appendAttributedString(newline);
+			}
+			
+			NSPasteboard pasteboard = NSPasteboard.generalPasteboard();
+			pasteboard.clearContents();
+			pasteboard.writeObjects(NSArray.Create(text));
+		}
 	}
 }

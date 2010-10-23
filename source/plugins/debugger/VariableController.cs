@@ -262,6 +262,11 @@ namespace Debugger
 			return enabled;
 		}
 		
+		public void copy(NSObject sender)
+		{
+			m_table.Copy();
+		}
+		
 		public void outlineView_setObjectValue_forTableColumn_byItem(NSTableView table, NSObject value, NSTableColumn col, VariableItem item)
 		{
 			try

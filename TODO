@@ -56,18 +56,6 @@ need user manual
 help menu should have Open Manual
 find file/type/method could use text similarity algorithm
 
-StackController
-BreakpointsController
-ThreadsController
-VariablesController
-FindInFilesController
-DirectoryController?
-
-* Get copying working in debugger windows:
-	- probably want to add an extension method somewhere
-	- probably want to copy only the selected rows if any are selected
-	- get copy working with the other debugger windows
-	- see if any other tables should be copied
 * Use the debugging attributes:
 	- DebuggerVisualizerAttribute
 	- add visualizers for some cocoa classes?

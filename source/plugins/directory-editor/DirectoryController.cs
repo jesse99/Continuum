@@ -362,6 +362,11 @@ namespace DirectoryEditor
 				Unused.Value = SuperCall(NSWindowController.Class, "keyDown:", evt);
 		}
 		
+		public void copy(NSObject sender)
+		{
+			m_table.Copy();
+		}
+		
 		public int outlineView_numberOfChildrenOfItem(NSOutlineView table, TableItem item)
 		{
 			if (m_root == null)

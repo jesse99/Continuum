@@ -130,6 +130,11 @@ namespace Debugger
 			}
 		}
 		
+		public void copy(NSObject sender)
+		{
+			m_table.Copy();
+		}
+		
 		public void tableView_setObjectValue_forTableColumn_row(NSTableView table, NSObject value, NSTableColumn col, int row)
 		{
 			try
