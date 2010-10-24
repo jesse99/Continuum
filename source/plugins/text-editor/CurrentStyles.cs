@@ -26,6 +26,7 @@ using Shared;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 
 namespace TextEditor
@@ -37,14 +38,6 @@ namespace TextEditor
 		{
 			DoResetColor("text spaces color changed");
 			DoResetColor("text tabs color changed");
-			
-//			ms_styleObserver = new ObserverTrampoline(CurrentStyles.DoResetFont);
-//			foreach (string name in ms_names)
-//			{
-//				Broadcaster.Register(name + "-pre", ms_styleObserver);
-//				ms_attributes.Add(name, NSMutableDictionary.Create().Retain());
-//				DoResetFont(name + "-pre", null);
-//			}
 			
 			DoInstallStylesFile();
 			NSAttributedString text = DoLoadStyles();
@@ -62,7 +55,7 @@ namespace TextEditor
 			attrs.setObject_forKey(NSNumber.Create(0), Externs.NSStrikethroughStyleAttributeName);
 			attrs.setObject_forKey(NSNumber.Create(0), Externs.NSObliquenessAttributeName);
 			attrs.setObject_forKey(NSNumber.Create(0.0f), Externs.NSExpansionAttributeName);
-			ms_defaultAttrs = attrs.Retain();
+			ms_baseAttrs = attrs.Retain();
 			
 			ms_nullAttributes = new NSString[]		// we can't add null values to NSDictionary so we use this supplemental collection
 			{
@@ -92,10 +85,10 @@ namespace TextEditor
 			
 			Broadcaster.Register("text spaces color changed", this);
 			Broadcaster.Register("text tabs color changed", this);
-//			foreach (string name in ms_names)
-//			{
-//				Broadcaster.Register(name, this);
-//			}
+			
+			string path = Path.GetDirectoryName(ms_stylesPath);
+			m_watcher = new DirectoryWatcher(path, TimeSpan.FromMilliseconds(250));
+			m_watcher.Changed += this.DoFilesChanged;
 			
 			ActiveObjects.Add(this);
 		}
@@ -273,7 +266,7 @@ namespace TextEditor
 			
 			// Set all relevant attributes to their defaults.
 			var attrs = NSMutableDictionary.Create();
-			attrs.addEntriesFromDictionary(ms_defaultAttrs);
+			attrs.addEntriesFromDictionary(ms_baseAttrs);
 			
 			foreach (NSString name in ms_nullAttributes)
 			{
@@ -365,41 +358,6 @@ namespace TextEditor
 			var attrs = NSDictionary.dictionaryWithObject_forKey(color, Externs.NSBackgroundColorAttributeName);
 			DoChangeAttribute(name, attrs);
 		}
-
-#if OBSOLETE
-		private static void DoResetFont(string name, object value)
-		{
-			Contract.Assert(name.EndsWith("-pre"), name + " does not end with '-pre'");
-			name = name.Remove(name.Length - 4);
-			
-			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
-			string key = name.Substring(0, name.Length - "changed".Length);
-			
-			ms_attributes[name].removeAllObjects();
-			
-			// font
-			NSString fname = defaults.stringForKey(NSString.Create(key + "name"));
-			float ptSize = defaults.floatForKey(NSString.Create(key + "size"));
-			if (!NSObject.IsNullOrNil(fname))
-			{
-				NSFont font = NSFont.fontWithName_size(fname, ptSize);
-				ms_attributes[name].setObject_forKey(font, Externs.NSFontAttributeName);
-			}
-			
-			// attributes
-			string attrKey = key + "attributes";
-			
-			var data = defaults.objectForKey(NSString.Create(attrKey)).To<NSData>();
-			if (!NSObject.IsNullOrNil(data))
-			{
-				NSDictionary attributes = NSUnarchiver.unarchiveObjectWithData(data).To<NSDictionary>();
-				ms_attributes[name].addEntriesFromDictionary(attributes);
-			}
-			
-			// name
-			ms_attributes[name].setObject_forKey(NSString.Create(name), NSString.Create("style name"));
-		}
-#endif
 		
 		private void DoUpdateAttributes(string inName, object value)
 		{
@@ -420,8 +378,8 @@ namespace TextEditor
 							NSObject name = attrs.objectForKey(sname);
 							if (!NSObject.IsNullOrNil(name))
 							{
-								if (inName == name.description())
-									m_storage.setAttributes_range(ms_attributes[inName], range);
+								if (inName == "*" || inName == name.description())
+									m_storage.setAttributes_range(ms_attributes[name.description()], range);
 							}
 						}
 						
@@ -435,13 +393,31 @@ namespace TextEditor
 			}
 		}
 		
+		private void DoFilesChanged(object sender, DirectoryWatcherEventArgs e)
+		{
+			foreach (string path in e.Paths)
+			{
+				DateTime time = System.IO.File.GetLastWriteTime(ms_stylesPath);
+				if (time > ms_stylesWriteTime)
+				{
+					ms_stylesWriteTime = time;
+					
+					NSAttributedString text = DoLoadStyles();
+					if (!NSObject.IsNullOrNil(text))
+						DoSetAttributes(text);
+					
+					DoUpdateAttributes("*", true);
+				}
+			}
+		}
+		
 		private static void DoInstallStylesFile()
 		{
-			string dst = System.IO.Path.Combine(Paths.ScriptsPath, "Styles.rtf");
-			if (!System.IO.File.Exists(dst))
+			string dst = Path.Combine(Paths.ScriptsPath, "Styles.rtf");
+			if (!File.Exists(dst))
 			{
 				string src = NSBundle.mainBundle().resourcePath().description();
-				src = System.IO.Path.Combine(src, "Styles.rtf");
+				src = Path.Combine(src, "Styles.rtf");
 				
 				System.IO.File.Copy(src, dst);
 			}
@@ -463,6 +439,8 @@ namespace TextEditor
 				var data = wrapper.regularFileContents();
 				text = NSAttributedString.Alloc().initWithRTF_documentAttributes(data, IntPtr.Zero);
 				text.autorelease();
+				
+				ms_stylesWriteTime = System.IO.File.GetLastWriteTime(ms_stylesPath);
 			}
 			else
 			{
@@ -539,6 +517,7 @@ namespace TextEditor
 		#endregion
 		
 		#region Fields
+		private DirectoryWatcher m_watcher;
 		private TextController m_controller;
 		private NSTextStorage m_storage;
 		private int m_edit = -1;
@@ -550,11 +529,10 @@ namespace TextEditor
 			private bool m_applied;
 		
 		private static string ms_stylesPath;
-//		private static ObserverTrampoline ms_styleObserver;
+		private static DateTime ms_stylesWriteTime;
 		private static NSColor ms_errorColor = NSColor.redColor().Retain();
 		private static Dictionary<string, NSDictionary> ms_attributes = new Dictionary<string, NSDictionary>();
-//		private static string[] ms_names = new[]{"text preprocess font changed", "text type font changed", "text member font changed", "text spaces color changed", "text tabs color changed", "text default font changed", "text keyword font changed", "text string font changed", "text number font changed", "text comment font changed", "text other1 font changed", "text other2 font changed"};
-		private static NSDictionary ms_defaultAttrs;
+		private static NSDictionary ms_baseAttrs;
 		private static NSString[] ms_nullAttributes;
 		#endregion
 	}
