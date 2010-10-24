@@ -68,7 +68,7 @@ namespace Styler
 					string indent = string.Empty;
 					foreach (StyleRun run in styles.Runs)
 					{
-						if (run.Type == StyleType.Type)
+						if (run.Type == "Type")
 						{
 							decs.Add(new Declaration(
 								text.Substring(run.Offset, run.Length),
@@ -76,7 +76,7 @@ namespace Styler
 								true, false));
 							indent = "    ";
 						}
-						else if (run.Type == StyleType.Member)
+						else if (run.Type == "Member")
 						{
 							decs.Add(new Declaration(
 								indent + text.Substring(run.Offset, run.Length),

@@ -84,7 +84,7 @@ namespace Styler
 		}
 		
 		[ThreadModel(ThreadModel.Concurrent)]
-		public StyleType Style(int index)
+		public string Style(int index)
 		{
 			return m_indexTable[index];
 		}
@@ -134,7 +134,7 @@ namespace Styler
 			m_styleWhitespace = node.Attributes["ignore_whitespace"].Value == "false" || node.Attributes["ignore_whitespace"].Value == "0";
 			if (m_styleWhitespace)
 			{
-				m_indexTable.Add(index++, StyleType.Spaces);
+				m_indexTable.Add(index++, "text spaces color changed");
 				exprs.Add(@"((?: ^ [\t ]+) | (?: [\t ]+ $))");
 			}
 			
@@ -179,43 +179,43 @@ namespace Styler
 			return new Regex(re, ReOptions);
 		}
 		
-		private StyleType DoGetToken(string name)
+		private string DoGetToken(string name)
 		{
 			switch (name)
 			{
 				case "comment":
-					return StyleType.Comment;
+					return "Comment";
 				
 				case "keyword":
-					return StyleType.Keyword;
+					return "Keyword";
 				
 				case "number":
-					return StyleType.Number;
+					return "Number";
 				
 				case "other1":
-					return StyleType.Other1;
+					return "Other1";
 				
 				case "other2":
-					return StyleType.Other2;
+					return "Other2";
 				
 				case "preprocessor":
-					return StyleType.Preprocessor;
+					return "Preprocessor";
 				
 				case "string":
-					return StyleType.String;
+					return "String";
 				
 				case "member":
-					return StyleType.Member;
+					return "Member";
 				
 				case "type":
-					return StyleType.Type;
+					return "Type";
 				
 				default:
 					Contract.Assert(false, "Bad name: " + name);
 					break;
 			}
 			
-			return 0;
+			return "??";
 		}
 		#endregion
 		
@@ -229,7 +229,7 @@ namespace Styler
 		private Regex m_regex;
 		private Regex m_word;
 		private bool m_styleWhitespace;
-		private Dictionary<int, StyleType> m_indexTable = new Dictionary<int, StyleType>();
+		private Dictionary<int, string> m_indexTable = new Dictionary<int, string>();
 		#endregion
 	}
 }

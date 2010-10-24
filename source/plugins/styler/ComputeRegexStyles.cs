@@ -169,14 +169,14 @@ namespace Styler
 				if (text[i] == ' ')
 				{
 					if (language.StylesWhitespace && m_white.ShowSpaces)
-						runs.Add(new StyleRun(i, count, StyleType.Spaces));
+						runs.Add(new StyleRun(i, count, "text spaces color changed"));
 //					else
 //						runs.Add(new StyleRun(i, count, StyleType.Default));
 				}
 				else
 				{
 					if (language.StylesWhitespace && m_white.ShowTabs)
-						runs.Add(new StyleRun(i, count, StyleType.Tabs));
+						runs.Add(new StyleRun(i, count, "text tabs color changed"));
 //					else
 //						runs.Add(new StyleRun(i, count, StyleType.Default));
 				}

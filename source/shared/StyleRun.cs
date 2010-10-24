@@ -26,32 +26,13 @@ using System.Diagnostics;
 
 namespace Shared
 {
-	[Serializable]
-	public enum StyleType : ushort		// the StyleRun lists can get large so we'd like to keep the runs as small as possible to reduce memory pressure and increase locality
-	{
-		Spaces,			// leading or trailing spaces
-		Tabs,				// leading or trailing tabs
-		
-		Keyword,
-		String,			// usually includes character literals as well
-		Number,
-		Comment,
-		Preprocessor,
-		Other1,
-		Other2,
-		
-		Member,		// name in a member declaration 
-		Type,				// name in a type declaration 
-		Error,			// build or parse error
-	}
-	
 	public struct StyleRun : IComparable<StyleRun>, IEquatable<StyleRun>
 	{
-		public StyleRun(int offset, int length, StyleType type) : this()
+		public StyleRun(int offset, int length, string type) : this()
 		{
 #if DEBUG
 			Contract.Requires(offset >= 0, "offset is negative");
-			Contract.Requires(((type == StyleType.Error) && length >= 0) || length > 0, "length is not correct");
+			Contract.Requires(((type == "Error") && length >= 0) || length > 0, "length is not correct");
 #endif
 			
 			Offset = offset;
@@ -61,7 +42,7 @@ namespace Shared
 		
 		public int Offset {get; private set;}
 		public ushort Length {get; private set;}
-		public StyleType Type {get; private set;}
+		public string Type {get; private set;}
 		
 		public override string ToString()
 		{

@@ -1,4 +1,4 @@
-// Copyright (C) 2009 Jesse Jones
+// Copyright (C) 2009-2010 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -19,6 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear;
 using Gear.Helpers;
 using MCocoa;
 using MObjc;
@@ -36,6 +37,7 @@ namespace TextEditor
 	{
 		static CurrentStyles()
 		{
+			// note that we can't do something similiar for control characters because they are zero-width
 			DoResetColor("text spaces color changed");
 			DoResetColor("text tabs color changed");
 			
@@ -82,6 +84,7 @@ namespace TextEditor
 		{
 			m_controller = controller;
 			m_storage = storage;
+			m_stylesWriteTime = DateTime.Now;
 			
 			Broadcaster.Register("text spaces color changed", this);
 			Broadcaster.Register("text tabs color changed", this);
@@ -288,62 +291,30 @@ namespace TextEditor
 				return;
 			if (run.Length == 0)
 				return;
-			
-			switch (run.Type)
+				
+			if (run.Type == "Error")			// this is a parse error (HighlightError handles build errors)
 			{
-				case StyleType.Spaces:		// note that we can't do something similiar for control characters because they are zero-width
-					m_storage.addAttributes_range(ms_attributes["text spaces color changed"], range);
-					break;
+				range = AdjustRangeForZeroWidthChars(m_controller.Text, range);
+				m_storage.addAttribute_value_range(Externs.NSUnderlineStyleAttributeName, NSNumber.Create(2), range);
+				m_storage.addAttribute_value_range(Externs.NSUnderlineColorAttributeName, ms_errorColor, range);
+			}
+			else
+			{
+				if (!ms_attributes.ContainsKey(run.Type))
+				{
+					Boss boss = ObjectModel.Create("Application");
+					var transcript = boss.Get<ITranscript>();
+					transcript.Show();
+					transcript.WriteLine(Output.Error, "Styles.rtf does not have a {0} element.", run.Type);
+					
+					var dict = NSMutableDictionary.Create();
+					dict.addEntriesFromDictionary(ms_attributes["Default"]);
+					dict.setObject_forKey(NSString.Create(run.Type), NSString.Create("style name"));
+					
+					ms_attributes[run.Type] = dict.Retain();
+				}
 				
-				case StyleType.Tabs:
-					m_storage.addAttributes_range(ms_attributes["text tabs color changed"], range);
-					break;
-				
-				case StyleType.Keyword:
-					m_storage.addAttributes_range(ms_attributes["Keyword"], range);
-					break;
-				
-				case StyleType.String:
-					m_storage.addAttributes_range(ms_attributes["String"], range);
-					break;
-				
-				case StyleType.Number:
-					m_storage.addAttributes_range(ms_attributes["Number"], range);
-					break;
-				
-				case StyleType.Comment:
-					m_storage.addAttributes_range(ms_attributes["Comment"], range);
-					break;
-				
-				case StyleType.Other1:
-					m_storage.addAttributes_range(ms_attributes["Other1"], range);
-					break;
-				
-				case StyleType.Preprocessor:
-					m_storage.addAttributes_range(ms_attributes["Preprocess"], range);
-					break;
-				
-				case StyleType.Other2:
-					m_storage.addAttributes_range(ms_attributes["Other2"], range);
-					break;
-				
-				case StyleType.Member:
-					m_storage.addAttributes_range(ms_attributes["Member"], range);
-					break;
-				
-				case StyleType.Type:
-					m_storage.addAttributes_range(ms_attributes["Type"], range);
-					break;
-				
-				case StyleType.Error:				// this is a parse error (HighlightError handles build errors)
-					range = AdjustRangeForZeroWidthChars(m_controller.Text, range);
-					m_storage.addAttribute_value_range(Externs.NSUnderlineStyleAttributeName, NSNumber.Create(2), range);
-					m_storage.addAttribute_value_range(Externs.NSUnderlineColorAttributeName, ms_errorColor, range);
-					break;
-				
-				default:
-					Contract.Assert(false, "Bad style type: " + run.Type);
-					break;
+				m_storage.addAttributes_range(ms_attributes[run.Type], range);
 			}
 		}
 		
@@ -379,7 +350,9 @@ namespace TextEditor
 							if (!NSObject.IsNullOrNil(name))
 							{
 								if (inName == "*" || inName == name.description())
+								{
 									m_storage.setAttributes_range(ms_attributes[name.description()], range);
+								}
 							}
 						}
 						
@@ -395,17 +368,15 @@ namespace TextEditor
 		
 		private void DoFilesChanged(object sender, DirectoryWatcherEventArgs e)
 		{
-			foreach (string path in e.Paths)
+			DateTime time = System.IO.File.GetLastWriteTime(ms_stylesPath);
+			if (time > m_stylesWriteTime)
 			{
-				DateTime time = System.IO.File.GetLastWriteTime(path);
-				if (time > ms_stylesWriteTime)
+				m_stylesWriteTime = time;
+				
+				NSAttributedString text = DoLoadStyles();
+				if (!NSObject.IsNullOrNil(text))
 				{
-					ms_stylesWriteTime = time;
-					
-					NSAttributedString text = DoLoadStyles();
-					if (!NSObject.IsNullOrNil(text))
-						DoSetAttributes(text);
-					
+					DoSetAttributes(text);
 					DoUpdateAttributes("*", true);
 				}
 			}
@@ -439,8 +410,6 @@ namespace TextEditor
 				var data = wrapper.regularFileContents();
 				text = NSAttributedString.Alloc().initWithRTF_documentAttributes(data, IntPtr.Zero);
 				text.autorelease();
-				
-				ms_stylesWriteTime = System.IO.File.GetLastWriteTime(ms_stylesPath);
 			}
 			else
 			{
@@ -452,6 +421,15 @@ namespace TextEditor
 		
 		private static void DoSetAttributes(NSAttributedString text)
 		{
+			foreach (var key in ms_attributes.Keys.ToArray())
+			{
+				if (key != "text spaces color changed" && key != "text tabs color changed")
+				{
+					ms_attributes[key].release();
+					ms_attributes.Remove(key);
+				}
+			}
+			
 			string str = text.string_().ToString();
 			
 			int offset = 0, line = 1;
@@ -513,11 +491,7 @@ namespace TextEditor
 			dict.addEntriesFromDictionary(attrs);
 			dict.setObject_forKey(NSString.Create(name), NSString.Create("style name"));
 			
-			if (ms_attributes.ContainsKey(name))
-				ms_attributes[name].release();
-			dict.retain();
-			
-			ms_attributes[name] = dict;
+			ms_attributes[name] = dict.Retain();
 		}
 		#endregion
 		
@@ -530,11 +504,11 @@ namespace TextEditor
 		private List<StyleRun> m_currentRuns = new List<StyleRun>();
 		private bool m_queued;
 		private int m_editStart = int.MaxValue;
+		private DateTime m_stylesWriteTime;
 		private bool m_stopped;
 			private bool m_applied;
 		
 		private static string ms_stylesPath;
-		private static DateTime ms_stylesWriteTime;
 		private static NSColor ms_errorColor = NSColor.redColor().Retain();
 		private static Dictionary<string, NSDictionary> ms_attributes = new Dictionary<string, NSDictionary>();
 		private static NSDictionary ms_baseAttrs;

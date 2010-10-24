@@ -69,17 +69,20 @@ find file/type/method could use text similarity algorithm
 
 
 * Work on styles:
-	- add some sort of Open Styles button to prefs
-	- if a missing element is used then write a warning to the transcript
-	- make sure that we always have the Default style (but there is the base line style...)
+	- probably should add elements for types
+	- element defined twice
+	- make sure that we always have the Default style 
 	- make sure that the real styles file is up to date
+	- do a push
 * Work on highlighting:
+	- see if we can improve the cs styler
 	- use a better format than xml? or just use source-highlight?
 	- can we support custom elements? maybe hard-code colors? or on startup build a list of installed elements
 	- would be nice to support more elements, e.g. file:///Users/jessejones/Downloads/source-highlight-3.1.4/doc/source-highlight.html#Output-format-style
 	- should be live
 	- maybe source-highlight's syntax or one modeled after it
 	- can we convert the source-highlight lang files into our files?
+* Build a new foreshadow.
 * Probably want some sort of advanced prefs panel:
 	- these should be for stuff that most people won't want to change
 	- find wraps
@@ -108,9 +111,7 @@ find file/type/method could use text similarity algorithm
 	- could have a demo plugin that customizes menus, like 2010-10-manipulate-menus.diff
 	- maybe also support for overriding standard plugins
 * Some sort of dynamic find files thingy.
-* Can we improve syntax hilghting? Maybe with something other than regexen? Would be
-   nice to optionally style types, fields, methods, locals and arguments.
-   - also different colors for classes vs structs, static access vs instance access, etc
+* Default styles should probably use a monospaced font.
 * File a ticket (and investigate further) stepping over p/invokes.
 * Make sure assembly databases purge assemblies no longer in use.
 * Auto-complete speed is kind of poor:
