@@ -175,11 +175,14 @@ namespace Styler
 		{
 			foreach (CsType type in scope.Types)
 			{
-				runs.Add(new StyleRun(type.NameOffset, type.Name.Length, "Type"));
+				string name = type.GetType().Name;
+				name = name.Substring(2);
+				
+				runs.Add(new StyleRun(type.NameOffset, type.Name.Length, name));
 				
 				foreach (CsMember member in type.Members)
 				{
-					string name = member.GetType().Name;
+					name = member.GetType().Name;
 					name = name.Substring(2);
 					
 					if (member.Name != "<this>")
