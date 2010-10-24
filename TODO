@@ -69,7 +69,6 @@ find file/type/method could use text similarity algorithm
 
 
 * Work on styles:
-	- make sure styles.rtf error handling is ok
 	- add some sort of Open Styles button to prefs
 	- if a missing element is used then write a warning to the transcript
 	- make sure that we always have the Default style (but there is the base line style...)

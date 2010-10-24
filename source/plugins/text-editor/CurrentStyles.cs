@@ -361,7 +361,7 @@ namespace TextEditor
 		
 		private void DoUpdateAttributes(string inName, object value)
 		{
-			if ((bool) value)
+			if ((bool) value && !m_stopped)
 			{
 				m_storage.beginEditing();
 				
@@ -397,7 +397,7 @@ namespace TextEditor
 		{
 			foreach (string path in e.Paths)
 			{
-				DateTime time = System.IO.File.GetLastWriteTime(ms_stylesPath);
+				DateTime time = System.IO.File.GetLastWriteTime(path);
 				if (time > ms_stylesWriteTime)
 				{
 					ms_stylesWriteTime = time;
@@ -459,8 +459,8 @@ namespace TextEditor
 			{
 				if (char.IsLetter(str[offset]))
 				{
-					int i = str.IndexOf(':', offset + 1);
-					if (i > 0)
+					int i = str.IndexOfAny(new char[]{':', '\r', '\n'}, offset + 1);
+					if (i > 0 && str[i] == ':')
 						DoSetAttribute(text, str, offset, i - offset);
 					else
 						Console.Error.WriteLine("Expected a colon on line {0} in Styles.rtf", line);
@@ -478,9 +478,25 @@ namespace TextEditor
 					Console.Error.WriteLine("Expected an element, comment, or blank line on line {0} in Styles.rtf", line);
 				}
 				
-				offset = DoFindNextLine(str, offset);
+				offset = DoFindNextLine(str, offset, ref line);
+			}
+		}
+		
+		private static int DoFindNextLine(string str, int offset, ref int line)
+		{
+			while (offset < str.Length && str[offset] != '\n' && str[offset] != '\r')
+				++offset;
+			
+			while (offset < str.Length && (str[offset] == '\n' || str[offset] == '\r'))
+			{
+				if (offset + 1 < str.Length && str[0] == '\r' && str[1] == '\n')
+					offset += 2;
+				else
+					offset += 1;
 				++line;
 			}
+			
+			return offset;
 		}
 		
 		private static void DoSetAttribute(NSAttributedString text, string str, int begin, int length)
@@ -502,17 +518,6 @@ namespace TextEditor
 			dict.retain();
 			
 			ms_attributes[name] = dict;
-		}
-		
-		private static int DoFindNextLine(string str, int offset)
-		{
-			while (offset < str.Length && str[offset] != '\n' && str[offset] != '\r')
-				++offset;
-			
-			while (offset < str.Length && (str[offset] == '\n' || str[offset] == '\r'))
-				++offset;
-			
-			return offset;
 		}
 		#endregion
 		
