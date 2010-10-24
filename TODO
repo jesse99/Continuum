@@ -69,15 +69,13 @@ find file/type/method could use text similarity algorithm
 
 
 * Work on styles:
-	- make sure that we can open the rtf file to get the attributes while Continuum has it open
-	- use an rtf file
-		` lines starting with # are comments
-		` lines starting with a name and a colon are elements
-		` elements can have arbitrary text after the colon
-		` style is that of the element name (ie not the colon or following text)
+	- changes to Styles.rtf should not require restarts to take effect
+	- may want an Error element
+	- make sure styles.rtf error handling is ok
 	- add some sort of Open Styles button to prefs
-	- don't overwrite the file if it exists
 	- if a missing element is used then write a warning to the transcript
+	- make sure that we always have  Default style
+	- make sure that the real styles file is up to date
 * Work on highlighting:
 	- use a better format than xml? or just use source-highlight?
 	- can we support custom elements? maybe hard-code colors? or on startup build a list of installed elements

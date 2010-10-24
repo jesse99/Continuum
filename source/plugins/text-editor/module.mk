@@ -13,7 +13,7 @@ source-files := bin/$(lib-name)-sources
 plugin-targets += $(lib-path) $(xml-path)
 nib-files += $(nib-path1) $(nib-path2) $(nib-path3)
 smoke-files += $(lib-path)
-other-files += source/plugins/$(lib-name)/UnicodeNames.txt.gz
+other-files += source/plugins/$(lib-name)/UnicodeNames.txt.gz source/plugins/$(lib-name)/Styles.rtf
 test-files += source/plugins/$(lib-name)/*.cs
 
 # ------------------------------------------------------------------------

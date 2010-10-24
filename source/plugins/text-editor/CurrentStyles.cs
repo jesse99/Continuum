@@ -35,13 +35,21 @@ namespace TextEditor
 	{
 		static CurrentStyles()
 		{
-			ms_styleObserver = new ObserverTrampoline(CurrentStyles.DoResetFont);
-			foreach (string name in ms_names)
-			{
-				Broadcaster.Register(name + "-pre", ms_styleObserver);
-				ms_attributes.Add(name, NSMutableDictionary.Create().Retain());
-				DoResetFont(name + "-pre", null);
-			}
+			DoResetColor("text spaces color changed");
+			DoResetColor("text tabs color changed");
+			
+//			ms_styleObserver = new ObserverTrampoline(CurrentStyles.DoResetFont);
+//			foreach (string name in ms_names)
+//			{
+//				Broadcaster.Register(name + "-pre", ms_styleObserver);
+//				ms_attributes.Add(name, NSMutableDictionary.Create().Retain());
+//				DoResetFont(name + "-pre", null);
+//			}
+			
+			DoInstallStylesFile();
+			NSAttributedString text = DoLoadStyles();
+			if (!NSObject.IsNullOrNil(text))
+				DoSetAttributes(text);
 			
 			// This should include everything which might be applied from a style run.
 			var attrs = NSMutableDictionary.Create();
@@ -73,7 +81,8 @@ namespace TextEditor
 		
 		public static NSDictionary DefaultAttributes
 		{
-			get {return ms_attributes["text default font changed"];}
+			get {return ms_attributes["Default"];}
+//			get {return ms_attributes["text default font changed"];}
 		}
 		
 		public CurrentStyles(TextController controller, NSTextStorage storage)
@@ -81,10 +90,12 @@ namespace TextEditor
 			m_controller = controller;
 			m_storage = storage;
 			
-			foreach (string name in ms_names)
-			{
-				Broadcaster.Register(name, this);
-			}
+			Broadcaster.Register("text spaces color changed", this);
+			Broadcaster.Register("text tabs color changed", this);
+//			foreach (string name in ms_names)
+//			{
+//				Broadcaster.Register(name, this);
+//			}
 			
 			ActiveObjects.Add(this);
 		}
@@ -165,7 +176,10 @@ namespace TextEditor
 		public void OnBroadcast(string name, object value)
 		{
 			if (!m_stopped)
+			{
+				DoResetColor(name);
 				DoUpdateAttributes(name, value);
+			}
 		}
 		
 		// Attributes applied to zero-width characters don't show up so if something
@@ -267,7 +281,8 @@ namespace TextEditor
 			}
 			
 			// Override the defaults with the defaults the user has chosen.
-			attrs.addEntriesFromDictionary(ms_attributes["text default font changed"]);
+			attrs.addEntriesFromDictionary(ms_attributes["Default"]);
+//			attrs.addEntriesFromDictionary(ms_attributes["text default font changed"]);
 			
 			// Reset the attributes to the defaults (which will later be reset using the style runs).
 			m_storage.addAttributes_range(attrs, range);
@@ -292,39 +307,39 @@ namespace TextEditor
 					break;
 				
 				case StyleType.Keyword:
-					m_storage.addAttributes_range(ms_attributes["text keyword font changed"], range);
+					m_storage.addAttributes_range(ms_attributes["Keyword"], range);
 					break;
 				
 				case StyleType.String:
-					m_storage.addAttributes_range(ms_attributes["text string font changed"], range);
+					m_storage.addAttributes_range(ms_attributes["String"], range);
 					break;
 				
 				case StyleType.Number:
-					m_storage.addAttributes_range(ms_attributes["text number font changed"], range);
+					m_storage.addAttributes_range(ms_attributes["Number"], range);
 					break;
 				
 				case StyleType.Comment:
-					m_storage.addAttributes_range(ms_attributes["text comment font changed"], range);
+					m_storage.addAttributes_range(ms_attributes["Comment"], range);
 					break;
 				
 				case StyleType.Other1:
-					m_storage.addAttributes_range(ms_attributes["text other1 font changed"], range);
+					m_storage.addAttributes_range(ms_attributes["Other1"], range);
 					break;
 				
 				case StyleType.Preprocessor:
-					m_storage.addAttributes_range(ms_attributes["text preprocess font changed"], range);
+					m_storage.addAttributes_range(ms_attributes["Preprocess"], range);
 					break;
 				
 				case StyleType.Other2:
-					m_storage.addAttributes_range(ms_attributes["text other2 font changed"], range);
+					m_storage.addAttributes_range(ms_attributes["Other2"], range);
 					break;
 				
 				case StyleType.Member:
-					m_storage.addAttributes_range(ms_attributes["text member font changed"], range);
+					m_storage.addAttributes_range(ms_attributes["Member"], range);
 					break;
 				
 				case StyleType.Type:
-					m_storage.addAttributes_range(ms_attributes["text type font changed"], range);
+					m_storage.addAttributes_range(ms_attributes["Type"], range);
 					break;
 				
 				case StyleType.Error:				// this is a parse error (HighlightError handles build errors)
@@ -339,6 +354,19 @@ namespace TextEditor
 			}
 		}
 		
+		private static void DoResetColor(string name)
+		{
+			string key = name.Substring(0, name.Length - "color changed".Length);
+			
+			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
+			var data = defaults.objectForKey(NSString.Create(key + "color")).To<NSData>();
+			var color = NSUnarchiver.unarchiveObjectWithData(data).To<NSColor>();
+			
+			var attrs = NSDictionary.dictionaryWithObject_forKey(color, Externs.NSBackgroundColorAttributeName);
+			DoChangeAttribute(name, attrs);
+		}
+
+#if OBSOLETE
 		private static void DoResetFont(string name, object value)
 		{
 			Contract.Assert(name.EndsWith("-pre"), name + " does not end with '-pre'");
@@ -371,6 +399,7 @@ namespace TextEditor
 			// name
 			ms_attributes[name].setObject_forKey(NSString.Create(name), NSString.Create("style name"));
 		}
+#endif
 		
 		private void DoUpdateAttributes(string inName, object value)
 		{
@@ -405,6 +434,108 @@ namespace TextEditor
 				}
 			}
 		}
+		
+		private static void DoInstallStylesFile()
+		{
+			string dst = System.IO.Path.Combine(Paths.ScriptsPath, "Styles.rtf");
+			if (!System.IO.File.Exists(dst))
+			{
+				string src = NSBundle.mainBundle().resourcePath().description();
+				src = System.IO.Path.Combine(src, "Styles.rtf");
+				
+				System.IO.File.Copy(src, dst);
+			}
+			
+			ms_stylesPath = dst;
+		}
+		
+		private static NSAttributedString DoLoadStyles()
+		{
+			NSAttributedString text = null;
+			
+			NSError err;
+			var url = NSURL.fileURLWithPath(NSString.Create(ms_stylesPath));
+			var wrapper = NSFileWrapper.Alloc().initWithURL_options_error(url, Enums.NSFileWrapperReadingImmediate | Enums.NSFileWrapperReadingWithoutMapping, out err);
+			if (NSObject.IsNullOrNil(err))
+			{
+				wrapper.autorelease();
+				
+				var data = wrapper.regularFileContents();
+				text = NSAttributedString.Alloc().initWithRTF_documentAttributes(data, IntPtr.Zero);
+				text.autorelease();
+			}
+			else
+			{
+				Console.Error.WriteLine("Couldn't load '{0}': {1}", ms_stylesPath, err.localizedDescription().ToString());
+			}
+			
+			return text;
+		}
+		
+		private static void DoSetAttributes(NSAttributedString text)
+		{
+			string str = text.string_().ToString();
+			
+			int offset = 0, line = 1;
+			while (offset < str.Length)
+			{
+				if (char.IsLetter(str[offset]))
+				{
+					int i = str.IndexOf(':', offset + 1);
+					if (i > 0)
+						DoSetAttribute(text, str, offset, i - offset);
+					else
+						Console.Error.WriteLine("Expected a colon on line {0} in Styles.rtf", line);
+				}
+				else if (char.IsWhiteSpace(str[offset]))
+				{
+					while (offset < str.Length && (str[offset] == ' ' || str[offset] == '\t'))
+						++offset;
+						
+					if (offset < str.Length && str[offset] != '\n' && str[offset] != '\r')
+						Console.Error.WriteLine("Expected a blank line on line {0} in Styles.rtf", line);
+				}
+				else if (str[offset] != '#')
+				{
+					Console.Error.WriteLine("Expected an element, comment, or blank line on line {0} in Styles.rtf", line);
+				}
+				
+				offset = DoFindNextLine(str, offset);
+				++line;
+			}
+		}
+		
+		private static void DoSetAttribute(NSAttributedString text, string str, int begin, int length)
+		{
+			string name = str.Substring(begin, length);
+			
+			NSDictionary attrs = text.fontAttributesInRange(new NSRange(begin, length));
+			DoChangeAttribute(name, attrs);
+		}
+		
+		private static void DoChangeAttribute(string name, NSDictionary attrs)
+		{
+			var dict = NSMutableDictionary.Create();
+			dict.addEntriesFromDictionary(attrs);
+			dict.setObject_forKey(NSString.Create(name), NSString.Create("style name"));
+			
+			if (ms_attributes.ContainsKey(name))
+				ms_attributes[name].release();
+			dict.retain();
+			
+			ms_attributes[name] = dict;
+		}
+		
+		private static int DoFindNextLine(string str, int offset)
+		{
+			while (offset < str.Length && str[offset] != '\n' && str[offset] != '\r')
+				++offset;
+			
+			while (offset < str.Length && (str[offset] == '\n' || str[offset] == '\r'))
+				++offset;
+			
+			return offset;
+		}
 		#endregion
 		
 		#region Fields
@@ -418,10 +549,11 @@ namespace TextEditor
 		private bool m_stopped;
 			private bool m_applied;
 		
-		private static ObserverTrampoline ms_styleObserver;
+		private static string ms_stylesPath;
+//		private static ObserverTrampoline ms_styleObserver;
 		private static NSColor ms_errorColor = NSColor.redColor().Retain();
-		private static Dictionary<string, NSMutableDictionary> ms_attributes = new Dictionary<string, NSMutableDictionary>();
-		private static string[] ms_names = new[]{"text preprocess font changed", "text type font changed", "text member font changed", "text spaces color changed", "text tabs color changed", "text default font changed", "text keyword font changed", "text string font changed", "text number font changed", "text comment font changed", "text other1 font changed", "text other2 font changed"};
+		private static Dictionary<string, NSDictionary> ms_attributes = new Dictionary<string, NSDictionary>();
+//		private static string[] ms_names = new[]{"text preprocess font changed", "text type font changed", "text member font changed", "text spaces color changed", "text tabs color changed", "text default font changed", "text keyword font changed", "text string font changed", "text number font changed", "text comment font changed", "text other1 font changed", "text other2 font changed"};
 		private static NSDictionary ms_defaultAttrs;
 		private static NSString[] ms_nullAttributes;
 		#endregion
