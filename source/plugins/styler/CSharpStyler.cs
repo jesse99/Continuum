@@ -164,7 +164,7 @@ namespace Styler
 		private void DoParseMatch(Parse parse, List<StyleRun> runs)
 		{
 			if (parse.ErrorLength > 0)
-				runs.Add(new StyleRun(parse.ErrorIndex, parse.ErrorLength, StyleType.Error));
+				runs.Add(new StyleRun(parse.ErrorIndex, parse.ErrorLength, "Error"));
 			
 			if (parse.Globals != null)
 				DoMatchScope(parse.Globals, runs);
@@ -175,15 +175,17 @@ namespace Styler
 		{
 			foreach (CsType type in scope.Types)
 			{
-				runs.Add(new StyleRun(type.NameOffset, type.Name.Length, StyleType.Type));
+				runs.Add(new StyleRun(type.NameOffset, type.Name.Length, "Type"));
 				
 				foreach (CsMember member in type.Members)
 				{
-					if (!(member is CsField))
-						if (member.Name != "<this>")
-							runs.Add(new StyleRun(member.NameOffset, member.Name.Length, StyleType.Member));
-						else
-							runs.Add(new StyleRun(member.NameOffset, member.Name.Length - 2, StyleType.Member));
+					string name = member.GetType().Name;
+					name = name.Substring(2);
+					
+					if (member.Name != "<this>")
+						runs.Add(new StyleRun(member.NameOffset, member.Name.Length, name));
+					else
+						runs.Add(new StyleRun(member.NameOffset, member.Name.Length - 2, name));
 				}
 				
 				DoMatchScope(type, runs);
