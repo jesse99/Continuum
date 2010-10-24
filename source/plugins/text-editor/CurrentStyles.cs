@@ -302,10 +302,7 @@ namespace TextEditor
 			{
 				if (!ms_attributes.ContainsKey(run.Type))
 				{
-					Boss boss = ObjectModel.Create("Application");
-					var transcript = boss.Get<ITranscript>();
-					transcript.Show();
-					transcript.WriteLine(Output.Error, "Styles.rtf does not have a {0} element.", run.Type);
+					DoWriteError("Styles.rtf does not have a {0} element.", run.Type);
 					
 					var dict = NSMutableDictionary.Create();
 					dict.addEntriesFromDictionary(ms_attributes["Default"]);
@@ -413,7 +410,7 @@ namespace TextEditor
 			}
 			else
 			{
-				Console.Error.WriteLine("Couldn't load '{0}': {1}", ms_stylesPath, err.localizedDescription().ToString());
+				DoWriteError("Couldn't load '{0}': {1}", ms_stylesPath, err.localizedDescription().ToString());
 			}
 			
 			return text;
@@ -421,6 +418,7 @@ namespace TextEditor
 		
 		private static void DoSetAttributes(NSAttributedString text)
 		{
+			// Nuke the existing attributes (the user may have removed elements from the Styles file).
 			foreach (var key in ms_attributes.Keys.ToArray())
 			{
 				if (key != "text spaces color changed" && key != "text tabs color changed")
@@ -430,6 +428,7 @@ namespace TextEditor
 				}
 			}
 			
+			// Copy the attributes from Styles.rtf and put them into ms_attributes.
 			string str = text.string_().ToString();
 			
 			int offset = 0, line = 1;
@@ -441,7 +440,7 @@ namespace TextEditor
 					if (i > 0 && str[i] == ':')
 						DoSetAttribute(text, str, offset, i - offset);
 					else
-						Console.Error.WriteLine("Expected a colon on line {0} in Styles.rtf", line);
+						DoWriteError("Expected a colon on line {0} in Styles.rtf", line);
 				}
 				else if (char.IsWhiteSpace(str[offset]))
 				{
@@ -449,14 +448,22 @@ namespace TextEditor
 						++offset;
 						
 					if (offset < str.Length && str[offset] != '\n' && str[offset] != '\r')
-						Console.Error.WriteLine("Expected a blank line on line {0} in Styles.rtf", line);
+						DoWriteError("Expected a blank line on line {0} in Styles.rtf", line);
 				}
 				else if (str[offset] != '#')
 				{
-					Console.Error.WriteLine("Expected an element, comment, or blank line on line {0} in Styles.rtf", line);
+					DoWriteError("Expected an element, comment, or blank line on line {0} in Styles.rtf", line);
 				}
 				
 				offset = DoFindNextLine(str, offset, ref line);
+			}
+			
+			// We must have a Default style.
+			if (!ms_attributes.ContainsKey("Default"))
+			{
+				DoWriteError("Styles.rtf has no Default element");
+				
+				DoChangeAttribute("Default", ms_baseAttrs);
 			}
 		}
 		
@@ -480,6 +487,11 @@ namespace TextEditor
 		private static void DoSetAttribute(NSAttributedString text, string str, int begin, int length)
 		{
 			string name = str.Substring(begin, length);
+			if (name != "text spaces color changed" && name != "text tabs color changed")
+			{
+				if (ms_attributes.ContainsKey(name))
+					DoWriteError("Styles.rtf defines the {0} element more than once.", name);
+			}
 			
 			NSDictionary attrs = text.fontAttributesInRange(new NSRange(begin, length));
 			DoChangeAttribute(name, attrs);
@@ -492,6 +504,14 @@ namespace TextEditor
 			dict.setObject_forKey(NSString.Create(name), NSString.Create("style name"));
 			
 			ms_attributes[name] = dict.Retain();
+		}
+		
+		private static void DoWriteError(string format, params object[] args)
+		{
+			Boss boss = ObjectModel.Create("Application");
+			var transcript = boss.Get<ITranscript>();
+			transcript.Show();
+			transcript.WriteLine(Output.Error, format, args);
 		}
 		#endregion
 		

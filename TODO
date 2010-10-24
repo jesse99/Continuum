@@ -57,13 +57,7 @@ help menu should have Open Manual
 find file/type/method could use text similarity algorithm
 
 
-* Work on styles:
-	- element defined twice
-	- make sure that we always have the Default style 
-	- make sure that the real styles file is up to date
-	- do a push
 * Work on highlighting:
-	- see if we can improve the cs styler
 	- use a better format than xml? or just use source-highlight?
 	- can we support custom elements? maybe hard-code colors? or on startup build a list of installed elements
 	- would be nice to support more elements, e.g. file:///Users/jessejones/Downloads/source-highlight-3.1.4/doc/source-highlight.html#Output-format-style
