@@ -19,6 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear;
 using Gear.Helpers;
 using MCocoa;
 using MObjc;
@@ -32,7 +33,7 @@ using System.Diagnostics;
 
 namespace App
 {
-	[ExportClass("PreferencesController", "NSWindowController", Outlets = "globsTable text_memberButton text_typeButton text_preprocessButton monoRoot lineWell transcriptWell errorsWell pathsController defaultWell spacesWell argsWell tabsWell contents tabs transcript_commandButton transcript_stdoutButton transcript_stderrButton errorsButton globalIgnores text_defaultButton text_keywordButton text_identifierButton text_stringButton text_numberButton text_commentButton text_other1Button text_other2Button")]
+	[ExportClass("PreferencesController", "NSWindowController", Outlets = "globsTable text_memberButton text_typeButton text_preprocessButton monoRoot lineWell transcriptWell errorsWell pathsController defaultWell spacesWell argsWell tabsWell contents tabs transcript_commandButton transcript_stdoutButton transcript_stderrButton errorsButton globalIgnores")]
 	internal sealed class PreferencesController : NSWindowController
 	{
 		public PreferencesController() : base(NSObject.AllocAndInitInstance("PreferencesController"))
@@ -55,17 +56,6 @@ namespace App
 			DoInitFontButton("transcript command");
 			DoInitFontButton("transcript stdout");
 			DoInitFontButton("transcript stderr");
-			
-			DoInitFontButton("text default");
-			DoInitFontButton("text keyword");
-			DoInitFontButton("text member");
-			DoInitFontButton("text type");
-			DoInitFontButton("text preprocess");
-			DoInitFontButton("text string");
-			DoInitFontButton("text number");
-			DoInitFontButton("text comment");
-			DoInitFontButton("text other1");
-			DoInitFontButton("text other2");
 			
 			DoInitWell("text default");
 			DoInitWell("text spaces");
@@ -107,6 +97,15 @@ namespace App
 				
 				Broadcaster.Invoke("mono_root changed", null);
 			}
+		}
+		
+		public void openStyles(NSObject sender)
+		{
+			string path = System.IO.Path.Combine(Paths.ScriptsPath, "Styles.rtf");
+			
+			Boss boss = ObjectModel.Create("Application");
+			var launcher = boss.Get<ILaunch>();
+			launcher.Launch(path, -1, -1, 4);
 		}
 		
 		public void setSpacesColor(NSObject sender)
@@ -163,56 +162,6 @@ namespace App
 		public void setStderrFont(NSObject sender)
 		{
 			DoEditFont("transcript", "transcript stderr");
-		}
-		
-		public void setDefaultFont(NSObject sender)
-		{
-			DoEditFont("text", "text default");
-		}
-		
-		public void setKeywordFont(NSObject sender)
-		{
-			DoEditFont("text", "text keyword");
-		}
-		
-		public void setTypeFont(NSObject sender)
-		{
-			DoEditFont("text", "text type");
-		}
-		
-		public void setMemberFont(NSObject sender)
-		{
-			DoEditFont("text", "text member");
-		}
-		
-		public void setPreprocessFont(NSObject sender)
-		{
-			DoEditFont("text", "text preprocess");
-		}
-		
-		public void setStringFont(NSObject sender)
-		{
-			DoEditFont("text", "text string");
-		}
-		
-		public void setNumberFont(NSObject sender)
-		{
-			DoEditFont("text", "text number");
-		}
-		
-		public void setCommentFont(NSObject sender)
-		{
-			DoEditFont("text", "text comment");
-		}
-		
-		public void setOther1Font(NSObject sender)
-		{
-			DoEditFont("text", "text other1");
-		}
-		
-		public void setOther2Font(NSObject sender)
-		{
-			DoEditFont("text", "text other2");
 		}
 		
 		// Sent by NSFontManager up the responder chain when fonts are changed via the font panel.
