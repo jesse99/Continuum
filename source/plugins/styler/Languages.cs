@@ -161,26 +161,26 @@ namespace Styler
 					string[] lines = File.ReadAllLines(path);
 					string file = Path.GetFileName(path);
 					
-					string name = null;
+					var settings = new Settings();
 					var elements = new List<KeyValuePair<string, string>>();		// list because we need to preserve the ordering
 					for (int i = 0; i < lines.Length; ++ i)
 					{
 						string line = lines[i];
 						
 						if (line.Length > 0)
-							DoProcessLine(file, line, i + 1, elements, ref name);
+							DoProcessLine(file, line, i + 1, settings, elements);
 					}
 					
-					if (name != null)
+					if (settings.Name != null)
 					{
-						if (!ms_languages.ContainsKey(name))
-							ms_languages[name] = new Language(path, name, elements);
+						if (!ms_languages.ContainsKey(settings.Name))
+							ms_languages[settings.Name] = new Language(path, settings, elements);
 						else
-							DoWriteError("Language {0} was declared in both {0} and {1}", path, ms_languages[name].Path);
+							DoWriteError("Language {0} was declared in both {1} and {1}", settings.Name, path, ms_languages[settings.Name].Path);
 					}
 					else
 					{
-						DoWriteError("Missing Language in {0}", file);
+						DoWriteError("Missing Language setting in {0}", file);
 					}
 				}
 				catch (Exception e)
@@ -191,7 +191,7 @@ namespace Styler
 			}
 		}
 		
-		private static void DoProcessLine(string file, string line, int lineNumber, List<KeyValuePair<string, string>> elements, ref string name)
+		private static void DoProcessLine(string file, string line, int lineNumber, Settings settings, List<KeyValuePair<string, string>> elements)
 		{
 			if (line.StartsWith("#"))
 			{
@@ -214,7 +214,15 @@ namespace Styler
 						value = value.Substring(0, j);
 						
 					if (element == "Language")
-						name = value.Trim();
+						if (settings.Name == null)
+							settings.Name = value.Trim();
+						else
+							DoWriteError("{0} has more than one Language setting.", file);
+					else if (element == "TabStops")
+						if (settings.TabStops == null)
+							settings.TabStops = value.Trim();
+						else
+							DoWriteError("{0} has more than one TabStops setting.", file);
 					else
 						elements.Add(new KeyValuePair<string, string>(element, value.Trim()));
 				}

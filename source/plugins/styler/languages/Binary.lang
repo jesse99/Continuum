@@ -1,0 +1,5 @@
+Language: binary
+TabStops: 5
+
+Number: ^ \d [0-9a-fA-F]*
+Ascii: . . . . . . . . . . . . . . . . . . .[\r\n]

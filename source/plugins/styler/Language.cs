@@ -19,7 +19,9 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear;
 using Gear.Helpers;
+using MCocoa;
 using Shared;
 using System;
 using System.Diagnostics;
@@ -30,12 +32,19 @@ using System.Text.RegularExpressions;
 
 namespace Styler
 {
+	internal sealed class Settings
+	{
+		public string Name {get; set;}
+		
+		public string TabStops {get; set;}
+	}
+	
 	internal sealed class Language
 	{
-		public Language(string path, string name, List<KeyValuePair<string, string>> elements)
+		public Language(string path, Settings settings, List<KeyValuePair<string, string>> elements)
 		{
 			m_path = path;
-			m_name = name;
+			m_name = settings.Name;
 			m_expr = DoBuildExpr(elements);
 			
 //			XmlAttribute attr = node.Attributes["shebang"];
@@ -44,8 +53,7 @@ namespace Styler
 //			else
 				m_shebangs = new string[0];
 			
-//			string[] stops = node.Attributes["tab_stops"].Value.Split(new char[]{' '}, StringSplitOptions.RemoveEmptyEntries);
-			string[] stops = new string[0];
+			string[] stops = (settings.TabStops ?? string.Empty).Split(new char[]{' '}, StringSplitOptions.RemoveEmptyEntries);
 			m_tabStops = (from s in stops select int.Parse(s)).ToArray();
 			
 			ActiveObjects.Add(this);
@@ -128,8 +136,8 @@ namespace Styler
 			}
 			catch (Exception e)
 			{
-				Console.Error.WriteLine("failed to compile the regex for {0}:", m_name);
-				Console.Error.WriteLine(e.Message);
+				DoWriteError("failed to compile the regex for {0}:", m_name);
+				DoWriteError(e.Message);
 				m_expr = null;
 			}
 		}
@@ -195,8 +203,8 @@ namespace Styler
 					else
 					{
 						// TODO: use the transcript
-						Console.Error.WriteLine("{0} in {1} should use a non-capturing group, .e.g '(?: foo )' instead of '(foo)'.", m_path, m_name);
-						Console.Error.WriteLine("   {0}: {1}.", name, expr);
+						DoWriteError("{0} in {1} should use a non-capturing group, .e.g '(?: foo )' instead of '(foo)'.", m_path, m_name);
+						DoWriteError("   {0}: {1}.", name, expr);
 					}
 				}
 			}
@@ -206,6 +214,23 @@ namespace Styler
 		{
 			re = string.Format(@"{0} ([\u0000-\uFFFF]+? {0})*", re);
 			return new Regex(re, ReOptions);
+		}
+		
+		[ThreadModel(ThreadModel.Concurrent)]
+		private void DoWriteError(string format, params object[] args)
+		{
+			if (NSApplication.sharedApplication().InvokeRequired)
+				NSApplication.sharedApplication().BeginInvoke(() => DoNonThreadedError(string.Format(format, args)));
+			else
+				DoNonThreadedError(string.Format(format, args));
+		}
+		
+		private void DoNonThreadedError(string text)
+		{
+			Boss boss = ObjectModel.Create("Application");
+			var transcript = boss.Get<ITranscript>();
+			transcript.Show();
+			transcript.WriteLine(Output.Error, text);
 		}
 		
 #if OBSOLETE
