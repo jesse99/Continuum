@@ -1,0 +1,8 @@
+# Language for lang files.
+
+Language: language
+
+Comment: \x23 [^\r\n]* [\r\n]	# note that $ won't work quite right with windows line endings
+Target: ^[a-zA-Z0-9_]+ \s* :
+
+

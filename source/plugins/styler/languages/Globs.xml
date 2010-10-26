@@ -11,6 +11,7 @@
 	<Glob language = "html">*.html *.htm</Glob>
 	<Glob language = "info">*.info</Glob>
 	<Glob language = "ignore">*.ignore</Glob>		<!-- gendarme ignore file -->
+	<Glob language = "language">*.lang</Glob>
 	<Glob language = "makefile">Makefile Makefile.am *.make *.mk</Glob> <!-- may want a custom language for automake files -->
 	<Glob language = "m4">*.m4</Glob>
 	<Glob language = "objective-c">*.h *.m</Glob>
