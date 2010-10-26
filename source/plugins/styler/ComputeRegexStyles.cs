@@ -143,7 +143,7 @@ namespace Styler
 				foreach (Match match in matches)
 				{
 					GroupCollection groups = match.Groups;
-					for (int i = 1; i <= language.StyleCount; ++i)
+					for (int i = 1; i <= language.ElementCount; ++i)
 					{
 						Group g = groups[i];
 						if (g.Success)
@@ -151,7 +151,7 @@ namespace Styler
 							if (i == 1 && language.StylesWhitespace)
 								DoMatchWhitespace(text, g, language, runs);
 							else
-								runs.Add(new StyleRun(g.Index, g.Length, language.Style(i)));
+								runs.Add(new StyleRun(g.Index, g.Length, language.ElementName(i)));
 							break;
 						}
 					}

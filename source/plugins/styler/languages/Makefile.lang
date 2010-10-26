@@ -1,0 +1,18 @@
+# See http://www.opengroup.org/onlinepubs/009695399/utilities/make.html and
+# http://www.gnu.org/software/make/manual/html_node/index.html. Note that these
+# don't define make files very precisely so it's probable that this file isn't
+# quite right.
+
+Language: makefile
+
+Comment: \x23 [^\r\n]* [\r\n]	# note that $ won't work quite right with windows line endings
+Keyword: \b(?: (?<! -)define | ended | ifdef | ifndef | ifeq | ifneq | else | endif | include | sinclude | override | export | unexport | VPATH | vpath)\b
+Keyword: \b(?: DEFAULT | IGNORE | POSIX | PRECIOUS | SCCS_GET | SILENT | SUFFIXES)\b	# these should be prepended with \., but that doesn't seem to work
+Keyword: \$\^ | \$@ | \$% | \$\? | \$< | \$\* | \$@D | \$%D | \$\?D | \$<D | \$\*D | \$@F | \$%F | \$\?F | \$<F | \$\*F	# automatic variables
+Number: (?<= \W) \d+ (?= \W)
+Target: ^[-\w\.\(\)/\\$]+ \s* : (?! =)
+String: " (?: [^"\r\n\\] | \\. | \\\r | \\\n)* "
+String: ` (?: [^`\r\n\\] | \\. | \\\r | \\\n)* `
+String: ' (?: [^'\r\n\\] | \\. | \\\r | \\\n)* '
+
+

@@ -57,15 +57,42 @@ help menu should have Open Manual
 find file/type/method could use text similarity algorithm
 
 
-* Work on highlighting:
-	- use a better format than xml? or just use source-highlight?
-	- can we support custom elements? maybe hard-code colors? or on startup build a list of installed elements
-	- would be nice to support more elements, e.g. file:///Users/jessejones/Downloads/source-highlight-3.1.4/doc/source-highlight.html#Output-format-style
-	- should be live
-	- maybe source-highlight's syntax or one modeled after it
-	- can we convert the source-highlight lang files into our files?
+
+Language: c
+Globs: *.c *.h
+
+Comment: // [^\r\n]* [\r\n]	# note that $ won't work quite right with windows line endings
+Comment: /\* (?: . | \r | \n)*? \*/
+Keyword: \b(?:  auto | break | case | char | const | continue | default | do | double | else | enum | extern | float | for | goto | if | int | long | register | return | short | signed | sizeof | static | struct | switch | typedef | union | unsigned | void | volatile | while)\b</keyword>	<!-- ANSI -->
+Keyword: \b(?:  __asm | __based1 | __cdecl | __declspec | __except | __fastcall | __finally | __inline | __int16 | __int32 | __int64 | __int8 | __leave | __stdcall | __try | dllexport2 | dllimport2)\b</keyword>	# Microsoft
+Keyword: \b(?:  __asm__ | __inline__ | __typeof__ | __unix__ | __vax__ | asm | inline | typeof | unix | vax)\b	# gcc
+Keyword: \b(?:  NULL)\b
+Number: (<= \W) \d+ (?= \W)
+Preprocessor: \# \s* (?: ifdef | ifndef | if | else | elif | endif | define | undef | warning | error | line | pragma | include)
+String: " (?: [^"\r\n\\] | \\.)* "
+String: ' (?: [^'\r\n\\] | \\.)* '
+
+
+* Work on language files:
+	- get lang working
+	- make sure error checking is ok
+	- auto-convert
+	- support shebangs
+	- support tabstops
+	- support ignoring whitespace
+	- get rid of other1 and other2
+	- add include and region elements
+	- get the other languages working
+	- handle globs
+	- may want to have explicit checks for crap like &lt;
+	- need a doc file, point out that order is important, can repeat names, can have eol comments, mention styles.rtf
+	- make this live
+	- see if any languages can support more elements, see file:///Users/jessejones/Downloads/source-highlight-3.1.4/doc/source-highlight.html#Output-format-style
+	- why do we have a c# language file?
+	- get rid of the old xml files
 * Build a new foreshadow.
 * Probably want some sort of advanced prefs panel:
+	- or maybe a pref inspector?
 	- these should be for stuff that most people won't want to change
 	- find wraps
 	- reverse paths in find all

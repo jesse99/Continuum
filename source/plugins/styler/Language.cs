@@ -1,4 +1,4 @@
-// Copyright (C) 2009 Jesse Jones
+// Copyright (C) 2009-2010 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -26,27 +26,34 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Xml;
+//using System.Xml;
 
 namespace Styler
 {
 	internal sealed class Language
 	{
-		public Language(XmlNode node)
+		public Language(string path, string name, List<KeyValuePair<string, string>> elements)
 		{
-			m_name = node.Attributes["name"].Value;
-			m_expr = DoBuildExpr(node);
+			m_path = path;
+			m_name = name;
+			m_expr = DoBuildExpr(elements);
 			
-			XmlAttribute attr = node.Attributes["shebang"];
-			if (attr != null)
-				m_shebangs = attr.Value.Split(new char[]{' '}, StringSplitOptions.RemoveEmptyEntries);
-			else
+//			XmlAttribute attr = node.Attributes["shebang"];
+//			if (attr != null)
+//				m_shebangs = attr.Value.Split(new char[]{' '}, StringSplitOptions.RemoveEmptyEntries);
+//			else
 				m_shebangs = new string[0];
 			
-			string[] stops = node.Attributes["tab_stops"].Value.Split(new char[]{' '}, StringSplitOptions.RemoveEmptyEntries);
+//			string[] stops = node.Attributes["tab_stops"].Value.Split(new char[]{' '}, StringSplitOptions.RemoveEmptyEntries);
+			string[] stops = new string[0];
 			m_tabStops = (from s in stops select int.Parse(s)).ToArray();
 			
 			ActiveObjects.Add(this);
+		}
+		
+		public string Path
+		{
+			get {return m_path;}
 		}
 		
 		public string FriendlyName
@@ -77,14 +84,16 @@ namespace Styler
 			}
 		}
 		
+		// Note that elements may have alternatives so this will, in general, be larger than the
+		// number of element names.
 		[ThreadModel(ThreadModel.Concurrent)]
-		public int StyleCount
+		public int ElementCount
 		{
 			get {return m_indexTable.Count;}
 		}
 		
 		[ThreadModel(ThreadModel.Concurrent)]
-		public string Style(int index)
+		public string ElementName(int index)
 		{
 			return m_indexTable[index];
 		}
@@ -97,7 +106,7 @@ namespace Styler
 		
 		public Regex Word
 		{
-			get 
+			get
 			{
 				if (m_word == null)
 					m_word = DoMakeWordRe(@"[\w_] [\w_]*");
@@ -125,37 +134,36 @@ namespace Styler
 			}
 		}
 		
-		private string DoBuildExpr(XmlNode node)
+		private string DoBuildExpr(List<KeyValuePair<string, string>> elements)
 		{
 			var exprs = new List<string>();
 			
 			int index = 1;
 			
-			m_styleWhitespace = node.Attributes["ignore_whitespace"].Value == "false" || node.Attributes["ignore_whitespace"].Value == "0";
+			m_styleWhitespace = true;
+//			m_styleWhitespace = node.Attributes["ignore_whitespace"].Value == "false" || node.Attributes["ignore_whitespace"].Value == "0";
 			if (m_styleWhitespace)
 			{
 				m_indexTable.Add(index++, "text spaces color changed");
 				exprs.Add(@"((?: ^ [\t ]+) | (?: [\t ]+ $))");
 			}
-			
-			var word = new List<string>();
-			foreach (XmlNode child in node.ChildNodes)	
+
+			foreach (var element in elements)
 			{
-				for (int i = 0; i < child.InnerText.Length; ++i)
-				{
-					if (child.InnerText[i] == '(')
-					{
-						if ((i > 0 && child.InnerText[i - 1] == '\\') || child.InnerText[i + 1] == '?')
-						{
-							continue;
-						}
-						else
-						{
-							Console.Error.WriteLine("{0} should use a non-capturing group, .e.g '(?: foo )' instead of '(foo)'.", m_name);
-							Console.Error.WriteLine("   {0}: {1}.", child.Name, child.InnerText);
-						}
-					}
-				}
+				DoValidateRegex(element.Key, element.Value);
+				
+//				if (element.Key == "word")
+//					word.Add("( " + element.Value + " )");
+//				else
+					m_indexTable.Add(index++, element.Key);
+				exprs.Add("( " + element.Value + " )");
+			}
+
+#if OBSOLETE			
+			var word = new List<string>();
+			foreach (XmlNode child in node.ChildNodes)
+			{
+				DoValidateRegex(child.InnerText);
 				
 				if (child.Name == "word")
 					word.Add("( " + child.InnerText + " )");
@@ -169,8 +177,29 @@ namespace Styler
 				string re = "(" + string.Join(" | ", word.ToArray()) + ")";
 				m_word = DoMakeWordRe(re);
 			}
+#endif
 			
 			return string.Join(" | ", exprs.ToArray());
+		}
+		
+		private void DoValidateRegex(string name, string expr)
+		{
+			for (int i = 0; i < expr.Length; ++i)
+			{
+				if (expr[i] == '(')
+				{
+					if ((i > 0 && expr[i - 1] == '\\') || expr[i + 1] == '?')
+					{
+						continue;
+					}
+					else
+					{
+						// TODO: use the transcript
+						Console.Error.WriteLine("{0} in {1} should use a non-capturing group, .e.g '(?: foo )' instead of '(foo)'.", m_path, m_name);
+						Console.Error.WriteLine("   {0}: {1}.", name, expr);
+					}
+				}
+			}
 		}
 		
 		private Regex DoMakeWordRe(string re)
@@ -179,6 +208,7 @@ namespace Styler
 			return new Regex(re, ReOptions);
 		}
 		
+#if OBSOLETE
 		private string DoGetToken(string name)
 		{
 			switch (name)
@@ -217,12 +247,14 @@ namespace Styler
 			
 			return "??";
 		}
+#endif
 		#endregion
 		
 		#region Fields
 		private const RegexOptions ReOptions = RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled;
 		
 		private string m_expr;
+		private string m_path;
 		private string m_name;
 		private string[] m_shebangs;
 		private int[] m_tabStops;

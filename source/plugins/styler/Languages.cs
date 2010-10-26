@@ -1,4 +1,4 @@
-// Copyright (C) 2008-2009 Jesse Jones
+// Copyright (C) 2008-2010 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Xml;
 using System.Xml.Schema;
 
@@ -35,13 +36,15 @@ namespace Styler
 {
 	internal static class Languages
 	{
+		static Languages()
+		{
+			DoInit();
+		}
+		
 		public static Language FindByExtension(string fileName)
 		{
 			Contract.Requires(!string.IsNullOrEmpty(fileName), "fileName is null or empty");
 			
-			if (!ms_inited)
-				DoInit();
-				
 			foreach (KeyValuePair<string, string> entry in ms_globs)
 			{
 				if (Glob.Match(entry.Key, fileName))
@@ -59,9 +62,6 @@ namespace Styler
 		{
 			Contract.Requires(!string.IsNullOrEmpty(name), "name is null or empty");
 			
-			if (!ms_inited)
-				DoInit();
-				
 			Language result;
 			if (!ms_languages.TryGetValue(name, out result))
 				throw new ArgumentException("Couldn't find language " + name);
@@ -73,9 +73,6 @@ namespace Styler
 		{
 			Contract.Requires(!string.IsNullOrEmpty(bang), "bang is null or empty");
 			
-			if (!ms_inited)
-				DoInit();
-				
 			foreach (Language language in ms_languages.Values)
 			{
 				if (Array.IndexOf(language.Shebangs, bang) >= 0)
@@ -89,9 +86,6 @@ namespace Styler
 		
 		public static IEnumerable<string> GetFriendlyNames()
 		{
-			if (!ms_inited)
-				DoInit();
-				
 			foreach (string name in ms_languages.Keys)
 			{
 				yield return name;
@@ -110,6 +104,7 @@ namespace Styler
 				Broadcaster.Register("language globs changed", ms_observer);
 				DoLoadGlobs("language globs changed", null);
 				
+//				DoLoadOldLanguages();
 				DoLoadLanguages();
 				
 				// TODO: globs are saved in a pref but we never prune stale globs from the list...
@@ -131,8 +126,6 @@ namespace Styler
 				Console.Error.WriteLine(e);
 				throw;
 			}
-			
-			ms_inited = true;
 		}
 		
 		private static void DoLoadGlobs(string name, object v)
@@ -152,6 +145,97 @@ namespace Styler
 		
 		private static void DoLoadLanguages()
 		{
+			string standardPath = Path.Combine(ms_installedPath, "standard");
+			DoLoadLanguages(standardPath);
+			
+			string userPath = Path.Combine(ms_installedPath, "user");
+			DoLoadLanguages(userPath);
+		}
+		
+		private static void DoLoadLanguages(string languagesPath)
+		{
+			foreach (string path in Directory.GetFiles(languagesPath, "*.lang"))
+			{
+				try
+				{
+					string[] lines = File.ReadAllLines(path);
+					string file = Path.GetFileName(path);
+					
+					string name = null;
+					var elements = new List<KeyValuePair<string, string>>();		// list because we need to preserve the ordering
+					for (int i = 0; i < lines.Length; ++ i)
+					{
+						string line = lines[i];
+						
+						if (line.Length > 0)
+							DoProcessLine(file, line, i + 1, elements, ref name);
+					}
+					
+					if (name != null)
+					{
+						if (!ms_languages.ContainsKey(name))
+							ms_languages[name] = new Language(path, name, elements);
+						else
+							DoWriteError("Language {0} was declared in both {0} and {1}", path, ms_languages[name].Path);
+					}
+					else
+					{
+						DoWriteError("Missing Language in {0}", file);
+					}
+				}
+				catch (Exception e)
+				{
+					DoWriteError("Failed to parse '{0}':", path);
+					DoWriteError(e.Message);
+				}
+			}
+		}
+		
+		private static void DoProcessLine(string file, string line, int lineNumber, List<KeyValuePair<string, string>> elements, ref string name)
+		{
+			if (line.StartsWith("#"))
+			{
+				// do nothing
+			}
+			else if (char.IsWhiteSpace(line[0]))
+			{
+				if (!line.IsNullOrWhiteSpace())
+					DoWriteError("{0}:{1} starts with whitespace but is not a blank line.", file, lineNumber);
+			}
+			else
+			{
+				int i = line.IndexOf(':');
+				if (i > 0)
+				{
+					string element = line.Substring(0, i);			// note that element names can appear multiple times (for alternatives)
+					string value = line.Substring(i + 1);
+					int j = value.IndexOf('#');							// lines may have comments
+					if (j > 0)
+						value = value.Substring(0, j);
+						
+					if (element == "Language")
+						name = value.Trim();
+					else
+						elements.Add(new KeyValuePair<string, string>(element, value.Trim()));
+				}
+				else
+				{
+					DoWriteError("Expected a colon in {0}:{1}.", file, lineNumber);
+				}
+			}
+		}
+		
+		private static void DoWriteError(string format, params object[] args)
+		{
+			Boss boss = ObjectModel.Create("Application");
+			var transcript = boss.Get<ITranscript>();
+			transcript.Show();
+			transcript.WriteLine(Output.Error, format, args);
+		}
+
+#if OBSOLETE		
+		private static void DoLoadOldLanguages()
+		{
 			// Load the schema.
 			string standardPath = Path.Combine(ms_installedPath, "standard");
 			string globsSchemaPath = Path.Combine(standardPath, "Language.schema");
@@ -167,15 +251,15 @@ namespace Styler
 				settings.Schemas.Add(schema);
 				
 				// Load the xml files.
-				DoLoadLanguages(standardPath, settings);
+				DoLoadOldLanguages(standardPath, settings);
 				
 				string userPath = Path.Combine(ms_installedPath, "user");
-				DoLoadLanguages(userPath, settings);
+				DoLoadOldLanguages(userPath, settings);
 			}
 		}
 		
 		// TODO: Would be nice if this would dynamically update.
-		private static void DoLoadLanguages(string languagesPath, XmlReaderSettings settings)
+		private static void DoLoadOldLanguages(string languagesPath, XmlReaderSettings settings)
 		{
 			// Load the xml files.
 			foreach (string path in Directory.GetFiles(languagesPath, "*.xml"))
@@ -219,12 +303,12 @@ namespace Styler
 			else
 				throw e.Exception;
 		}
+#endif
 		#endregion
 		
 		#region Fields
 		private static string ms_dirName;
 		private static string ms_installedPath;
-		private static bool ms_inited;
 		private static ObserverTrampoline ms_observer;
 		private static Dictionary<string, string> ms_globs = new Dictionary<string, string>();					// glob => language name
 		private static Dictionary<string, Language> ms_languages = new Dictionary<string, Language>();	// language name => styler
