@@ -47,6 +47,7 @@ namespace Styler
 			
 			foreach (KeyValuePair<string, string> entry in ms_globs)
 			{
+			Console.WriteLine("glob: {0} = {1}", entry.Key, entry.Value);
 				if (Glob.Match(entry.Key, fileName))
 				{
 					Language result;
@@ -100,25 +101,25 @@ namespace Styler
 				ms_dirName = "languages";
 				ms_installedPath = Path.Combine(Paths.ScriptsPath, ms_dirName);
 				
-				ms_observer = new ObserverTrampoline(Languages.DoLoadGlobs);
-				Broadcaster.Register("language globs changed", ms_observer);
-				DoLoadGlobs("language globs changed", null);
+//				ms_observer = new ObserverTrampoline(Languages.DoLoadGlobs);
+//				Broadcaster.Register("language globs changed", ms_observer);
+//				DoLoadGlobs("language globs changed", null);
 				
 //				DoLoadOldLanguages();
 				DoLoadLanguages();
 				
 				// TODO: globs are saved in a pref but we never prune stale globs from the list...
-				foreach (KeyValuePair<string, string> entry in ms_globs)
-				{
-					if (!ms_languages.ContainsKey(entry.Value))
-						Log.WriteLine(TraceLevel.Info, "Startup", "glob {0} is associated with language {1}, but there is no xml file for that language", entry.Key, entry.Value);
-				}
+//				foreach (KeyValuePair<string, string> entry in ms_globs)
+//				{
+//					if (!ms_languages.ContainsKey(entry.Value))
+//						Log.WriteLine(TraceLevel.Info, "Startup", "glob {0} is associated with language {1}, but there is no xml file for that language", entry.Key, entry.Value);
+//				}
 				
-				foreach (string name in ms_languages.Keys)
-				{
-					if (!ms_globs.ContainsValue(name))
-						Console.Error.WriteLine("language '{0}' is not associated with a glob", name);
-				}
+//				foreach (string name in ms_languages.Keys)
+//				{
+//					if (!ms_globs.ContainsValue(name))
+//						DoError("language '{0}' is not associated with a glob", name);
+//				}
 			}
 			catch (Exception e)
 			{
@@ -128,20 +129,20 @@ namespace Styler
 			}
 		}
 		
-		private static void DoLoadGlobs(string name, object v)
-		{
-			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
-			var dict = defaults.objectForKey(NSString.Create("language globs")).To<NSDictionary>();
-			
-			ms_globs.Clear();
-			foreach (var entry in dict)
-			{
-				string key = entry.Key.description();
-				string value = entry.Value.description();
-				if (!ms_globs.ContainsKey(key))
-					ms_globs.Add(key, value);
-			}
-		}
+//		private static void DoLoadGlobs(string name, object v)
+//		{
+//			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
+//			var dict = defaults.objectForKey(NSString.Create("language globs")).To<NSDictionary>();
+//			
+//			ms_globs.Clear();
+//			foreach (var entry in dict)
+//			{
+//				string key = entry.Key.description();
+//				string value = entry.Value.description();
+//				if (!ms_globs.ContainsKey(key))
+//					ms_globs.Add(key, value);
+//			}
+//		}
 		
 		private static void DoLoadLanguages()
 		{
@@ -174,9 +175,14 @@ namespace Styler
 					if (settings.Name != null)
 					{
 						if (!ms_languages.ContainsKey(settings.Name))
+						{
 							ms_languages[settings.Name] = new Language(path, settings, elements);
+							DoSetGlobs(settings);
+						}
 						else
+						{
 							DoWriteError("Language {0} was declared in both {1} and {1}", settings.Name, path, ms_languages[settings.Name].Path);
+						}
 					}
 					else
 					{
@@ -188,6 +194,20 @@ namespace Styler
 					DoWriteError("Failed to parse '{0}':", path);
 					DoWriteError(e.Message);
 				}
+			}
+		}
+		
+		private static void DoSetGlobs(Settings settings)
+		{
+			foreach (string glob in settings.Globs)
+			{
+				if (!ms_globs.ContainsKey(glob))
+				{
+					ms_globs[glob] = settings.Name;
+			Console.WriteLine("setting {0} to {1}", glob, settings.Name);
+				}
+				else
+					DoWriteError("Both {0} and {1} use glob {2}.", settings.Name, ms_globs[glob], glob);
 			}
 		}
 		
@@ -209,15 +229,24 @@ namespace Styler
 				{
 					string element = line.Substring(0, i);			// note that element names can appear multiple times (for alternatives)
 					string value = line.Substring(i + 1);
+					value = value.Replace("\\#", Constants.Replacement);
 					int j = value.IndexOf('#');							// lines may have comments
 					if (j > 0)
 						value = value.Substring(0, j);
-						
+					value = value.Replace(Constants.Replacement, "#");
+					
 					if (element == "Language")
 						if (settings.Name == null)
 							settings.Name = value.Trim();
 						else
 							DoWriteError("{0} has more than one Language setting.", file);
+							
+					else if (element == "Globs")
+						if (settings.Globs.Length == 0)
+							settings.Globs = value.Split(new char[]{' '}, StringSplitOptions.RemoveEmptyEntries);
+						else
+							DoWriteError("{0} has more than one Globs setting.", file);
+							
 					else if (element == "TabStops")
 						if (settings.TabStops == null)
 							settings.TabStops = value.Trim();
@@ -317,7 +346,7 @@ namespace Styler
 		#region Fields
 		private static string ms_dirName;
 		private static string ms_installedPath;
-		private static ObserverTrampoline ms_observer;
+//		private static ObserverTrampoline ms_observer;
 		private static Dictionary<string, string> ms_globs = new Dictionary<string, string>();					// glob => language name
 		private static Dictionary<string, Language> ms_languages = new Dictionary<string, Language>();	// language name => styler
 		#endregion

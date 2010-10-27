@@ -1,4 +1,5 @@
 Language: binary
+Globs: *.bin
 TabStops: 5
 
 Number: ^ \d [0-9a-fA-F]*

@@ -34,7 +34,14 @@ namespace Styler
 {
 	internal sealed class Settings
 	{
+		public Settings()
+		{
+			Globs = new string[0];
+		}
+		
 		public string Name {get; set;}
+		
+		public string[] Globs {get; set;}
 		
 		public string TabStops {get; set;}
 	}

@@ -33,12 +33,12 @@ using System.Xml.Schema;
 
 namespace Styler
 {
-	internal sealed class FactoryPrefs : IFactoryPrefs, IObserver
+	internal sealed class FactoryPrefs : IFactoryPrefs
 	{
 		public void Instantiated(Boss boss)
 		{
 			m_boss = boss;
-			Broadcaster.Register("starting event loop", this);
+//			Broadcaster.Register("starting event loop", this);
 		}
 		
 		public Boss Boss
@@ -52,32 +52,32 @@ namespace Styler
 			DoCopyMissingFiles();
 			DoOverwriteFiles();
 			
-			var globs = NSDictionary.Create();
-			dict.setObject_forKey(globs, NSString.Create("language globs"));
+//			var globs = NSDictionary.Create();
+//			dict.setObject_forKey(globs, NSString.Create("language globs"));
 			
-			List<string> languages = new List<string>();
-			XmlNode xml = DoLoadXml("standard");
-			DoReadLanguages(xml, languages);
+//			List<string> languages = new List<string>();
+//			XmlNode xml = DoLoadXml("standard");
+//			DoReadLanguages(xml, languages);
 			
-			xml = DoLoadXml("user");
-			DoReadLanguages(xml, languages);
+//			xml = DoLoadXml("user");
+//			DoReadLanguages(xml, languages);
 			
-			dict.setObject_forKey(NSArray.Create(languages.ToArray()), NSString.Create("languages"));
+//			dict.setObject_forKey(NSArray.Create(languages.ToArray()), NSString.Create("languages"));
 		}
 		
-		public void OnBroadcast(string name, object value)
-		{
-			switch (name)
-			{
-				case "starting event loop":
-					DoUpdateGlobs();
-					break;
-					
-				default:
-					Contract.Assert(false, "bad name: " + name);
-					break;
-			}
-		}
+//		public void OnBroadcast(string name, object value)
+//		{
+//			switch (name)
+//			{
+//				case "starting event loop":
+//					DoUpdateGlobs();
+//					break;
+//					
+//				default:
+//					Contract.Assert(false, "bad name: " + name);
+//					break;
+//			}
+//		}
 		
 		#region Private Methods
 		private void DoCreateDirectories()
@@ -176,7 +176,8 @@ namespace Styler
 				Log.WriteLine(TraceLevel.Warning, "Errors", e.Message);
 			}
 		}
-		
+
+#if OBSOLETE
 		// Note that we don't want to use IFactoryPrefs for globs because new ones
 		// added by Continuum need to show up.
 		private void DoUpdateGlobs()
@@ -287,6 +288,7 @@ namespace Styler
 			else
 				throw e.Exception;
 		}
+#endif
 		#endregion
 		
 		#region Fields

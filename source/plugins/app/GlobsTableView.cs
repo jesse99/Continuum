@@ -62,7 +62,7 @@ namespace App
 		public void reload()
 		{
 			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
-			var dict = defaults.objectForKey(NSString.Create("language globs")).To<NSDictionary>();
+			var dict = defaults.objectForKey(NSString.Create("language globs2")).To<NSDictionary>();
 			
 			m_globs.Clear();
 			foreach (var entry in dict)
@@ -196,7 +196,7 @@ namespace App
 			}
 			
 			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
-			defaults.setObject_forKey(dict, NSString.Create("language globs"));
+			defaults.setObject_forKey(dict, NSString.Create("language globs2"));
 			
 			Broadcaster.Invoke("language globs changed", null);
 		}
