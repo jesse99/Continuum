@@ -1,3 +1,0 @@
-<Language name = "git-log" ignore_whitespace="true">
-	<keyword>^(?: (?: commit .+) | (?: Author: .+) | (?: Date: .+))$</keyword>
-</Language>

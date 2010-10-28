@@ -56,6 +56,7 @@ need user manual
 help menu should have Open Manual
 find file/type/method could use text similarity algorithm
 
+
 * Work on language files:
 	- support ignoring whitespace
 	- get rid of other1 and other2

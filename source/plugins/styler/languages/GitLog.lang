@@ -1,0 +1,5 @@
+Language: git-log
+Globs: *.git-log
+IgnoreWhitespace: true
+
+Keyword: ^(?: (?: commit .+) | (?: Author: .+) | (?: Date: .+))$

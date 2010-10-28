@@ -242,6 +242,9 @@ namespace Styler
 					else if (element == "Shebangs")
 						settings.Shebangs += value.Trim() + " ";
 							
+					else if (element == "IgnoreWhitespace")
+						settings.IgnoreWhitespace = value.Trim();
+							
 					else if (element == "TabStops")
 						if (settings.TabStops == null)
 							settings.TabStops = value.Trim();

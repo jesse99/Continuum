@@ -39,6 +39,7 @@ namespace Styler
 			Globs = new string[0];
 			Word = string.Empty;
 			Shebangs = string.Empty;
+			IgnoreWhitespace = "false";
 		}
 		
 		public string Name {get; set;}
@@ -50,6 +51,8 @@ namespace Styler
 		public string Word {get; set;}
 		
 		public string Shebangs {get; set;}
+		
+		public string IgnoreWhitespace {get; set;}
 	}
 	
 	internal sealed class Language
@@ -58,13 +61,14 @@ namespace Styler
 		{
 			m_path = path;
 			m_name = settings.Name;
-			m_expr = DoBuildExpr(elements);
 			
+			m_styleWhitespace = settings.IgnoreWhitespace == "false";
 			m_shebangs = settings.Shebangs.Split(new char[]{' '}, StringSplitOptions.RemoveEmptyEntries);
 			
 			string[] stops = (settings.TabStops ?? string.Empty).Split(new char[]{' '}, StringSplitOptions.RemoveEmptyEntries);
 			m_tabStops = (from s in stops select int.Parse(s)).ToArray();
 			
+			m_expr = DoBuildExpr(elements);
 			if (settings.Word.Length > 0)
 				DoBuildWordRe(settings.Word);
 			
@@ -160,8 +164,6 @@ namespace Styler
 			
 			int index = 1;
 			
-			m_styleWhitespace = true;
-//			m_styleWhitespace = node.Attributes["ignore_whitespace"].Value == "false" || node.Attributes["ignore_whitespace"].Value == "0";
 			if (m_styleWhitespace)
 			{
 				m_indexTable.Add(index++, "text spaces color changed");
