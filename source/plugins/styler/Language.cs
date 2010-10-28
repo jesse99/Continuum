@@ -37,6 +37,7 @@ namespace Styler
 		public Settings()
 		{
 			Globs = new string[0];
+			Word = string.Empty;
 		}
 		
 		public string Name {get; set;}
@@ -44,6 +45,8 @@ namespace Styler
 		public string[] Globs {get; set;}
 		
 		public string TabStops {get; set;}
+		
+		public string Word {get; set;}
 	}
 	
 	internal sealed class Language
@@ -62,6 +65,9 @@ namespace Styler
 			
 			string[] stops = (settings.TabStops ?? string.Empty).Split(new char[]{' '}, StringSplitOptions.RemoveEmptyEntries);
 			m_tabStops = (from s in stops select int.Parse(s)).ToArray();
+			
+			if (settings.Word.Length > 0)
+				DoBuildWordRe(settings.Word);
 			
 			ActiveObjects.Add(this);
 		}
@@ -195,6 +201,23 @@ namespace Styler
 #endif
 			
 			return string.Join(" | ", exprs.ToArray());
+		}
+		
+		private void DoBuildWordRe(string words)
+		{
+			var word = new List<string>();
+			foreach (string w in words.Split(new char[]{'\t'}, StringSplitOptions.RemoveEmptyEntries))
+			{
+				DoValidateRegex("Word", w);
+				
+				word.Add("( " + w + " )");
+			}
+			
+			if (word.Count > 0)
+			{
+				string re = "(" + string.Join(" | ", word.ToArray()) + ")";
+				m_word = DoMakeWordRe(re);
+			}
 		}
 		
 		private void DoValidateRegex(string name, string expr)

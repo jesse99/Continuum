@@ -1,6 +1,7 @@
 # This is used in conjunction with CSharpStyler.cs.
 Language: c\#
 Globs: *.cs
+Word: [\w\p{Lm}\p{Nl}\p{Mn}_~] [\w\p{Lm}\p{Nl}\p{Mn}_]*
 
 Comment: // [^\r\n]* [\r\n]			#note that $ won't work quite right with windows line endings
 Comment: /\* (?: . | \r | \n)*? \*/		# note that comments do not nest

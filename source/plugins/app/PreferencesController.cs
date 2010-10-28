@@ -303,7 +303,7 @@ namespace App
 					return NSString.Create("Environment");
 				
 				case 7:
-					return NSString.Create("Language Globs");
+					return NSString.Create("Custom Globs");
 				
 				default:
 					Contract.Assert(false, "bad tag");

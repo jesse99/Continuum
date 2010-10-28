@@ -236,6 +236,9 @@ namespace Styler
 						else
 							DoWriteError("{0} has more than one Globs setting.", file);
 							
+					else if (element == "Word")
+						settings.Word += value.Trim() + "\t";
+							
 					else if (element == "TabStops")
 						if (settings.TabStops == null)
 							settings.TabStops = value.Trim();

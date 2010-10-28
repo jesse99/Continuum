@@ -56,14 +56,8 @@ need user manual
 help menu should have Open Manual
 find file/type/method could use text similarity algorithm
 
-Word: [\w\p{Lm}\p{Nl}\p{Mn}_~] [\w\p{Lm}\p{Nl}\p{Mn}_]*
-
-
 * Work on language files:
-	- c# needs to have a word setting
-	- auto-convert
 	- support shebangs
-	- support tabstops
 	- support ignoring whitespace
 	- get rid of other1 and other2
 	- add include and region elements
