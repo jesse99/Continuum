@@ -19,6 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+using Gear;
 using Gear.Helpers;
 using MCocoa;
 using MObjc;
@@ -26,6 +27,7 @@ using Shared;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace App
 {
@@ -39,15 +41,15 @@ namespace App
 			m_popup.retain();
 			
 			// Initialize the menu.
-			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
-			m_languages = defaults.objectForKey(NSString.Create("languages")).To<NSArray>();
-			m_languages = m_languages.sortedArrayUsingSelector("caseInsensitiveCompare:");
-			m_languages.retain();
+			Boss boss = ObjectModel.Create("Stylers");
+			var finder = boss.Get<IFindLanguage>();
+			m_languages = finder.GetFriendlyNames().ToArray();
+			Array.Sort(m_languages);
 			
 			m_popup.removeAllItems();
-			foreach (NSString language in m_languages)
+			foreach (string language in m_languages)
 			{
-				m_popup.addItemWithTitle(language);
+				m_popup.addItemWithTitle(NSString.Create(language));
 			}
 			
 			// Hookup the table.
@@ -70,9 +72,9 @@ namespace App
 				string glob = entry.Key.description();
 				NSString lang = entry.Value.To<NSString>();
 				
-				uint index = m_languages.indexOfObject(lang);
-				if (index < m_languages.count())
-					m_globs.Add(Tuple.Make(glob, (int) index));
+				int index = Array.IndexOf(m_languages, lang.ToString());
+				if (index < m_languages.Length)
+					m_globs.Add(Tuple.Make(glob, index));
 				else
 					Console.Error.WriteLine("Couldn't find a language for glob: {0}, lang: {1:D}", glob, lang);
 			}
@@ -246,7 +248,7 @@ namespace App
 		#region Fields
 		private List<Tuple2<string, int>> m_globs = new List<Tuple2<string, int>>();
 		private NSPopUpButtonCell m_popup;
-		private NSArray m_languages;
+		private string[] m_languages;
 		#endregion
 	}
 }

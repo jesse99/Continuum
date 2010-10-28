@@ -52,8 +52,8 @@ namespace Styler
 			DoCopyMissingFiles();
 			DoOverwriteFiles();
 			
-//			var globs = NSDictionary.Create();
-//			dict.setObject_forKey(globs, NSString.Create("language globs"));
+			var globs = NSDictionary.Create();
+			dict.setObject_forKey(globs, NSString.Create("language globs2"));
 			
 //			List<string> languages = new List<string>();
 //			XmlNode xml = DoLoadXml("standard");

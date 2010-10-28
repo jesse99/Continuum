@@ -60,9 +60,6 @@ Word: [\w\p{Lm}\p{Nl}\p{Mn}_~] [\w\p{Lm}\p{Nl}\p{Mn}_]*
 
 
 * Work on language files:
-	- cs files aren't being opened with continuum, may need to change up the globs
-		` only brand new globs and overriden globs should be in prefs
-		` probably need to rename prefs
 	- c# needs to have a word setting
 	- auto-convert
 	- support shebangs
@@ -76,10 +73,11 @@ Word: [\w\p{Lm}\p{Nl}\p{Mn}_~] [\w\p{Lm}\p{Nl}\p{Mn}_]*
 	- get rid of the old code in Languages.cs and Language.cs
 	- need a doc file, point out that order is important, can repeat names, can have eol comments, mention styles.rtf
 	- make this live
+	- languages in GlobsTable will need to be live too
 	- see if any languages can support more elements, see file:///Users/jessejones/Downloads/source-highlight-3.1.4/doc/source-highlight.html#Output-format-style
-	- why do we have a c# language file?
 	- get rid of the old xml files
 	- make sure that the real Styles.rtf is up to date
+	- gt rid of commented out code
 * Build a new foreshadow.
 * Probably want some sort of advanced prefs panel:
 	- or maybe a pref inspector?

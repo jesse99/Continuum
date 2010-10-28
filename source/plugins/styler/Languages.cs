@@ -45,18 +45,11 @@ namespace Styler
 		{
 			Contract.Requires(!string.IsNullOrEmpty(fileName), "fileName is null or empty");
 			
-			foreach (KeyValuePair<string, string> entry in ms_globs)
-			{
-			Console.WriteLine("glob: {0} = {1}", entry.Key, entry.Value);
-				if (Glob.Match(entry.Key, fileName))
-				{
-					Language result;
-					Gear.Helpers.Unused.Value = ms_languages.TryGetValue(entry.Value, out result);
-					return result;		// this may be null if the xml files aren't in sync
-				}
-			}
+			Language lang = DoFindByExtension(fileName, ms_userGlobs);		// these override standard globs so we need to check them first
+			if (lang == null)
+				lang = DoFindByExtension(fileName, ms_stdGlobs);
 			
-			return null;
+			return lang;
 		}
 		
 		public static Language FindByFriendlyName(string name)
@@ -101,9 +94,9 @@ namespace Styler
 				ms_dirName = "languages";
 				ms_installedPath = Path.Combine(Paths.ScriptsPath, ms_dirName);
 				
-//				ms_observer = new ObserverTrampoline(Languages.DoLoadGlobs);
-//				Broadcaster.Register("language globs changed", ms_observer);
-//				DoLoadGlobs("language globs changed", null);
+				ms_observer = new ObserverTrampoline(Languages.DoLoadUserGlobs);
+				Broadcaster.Register("language globs changed", ms_observer);
+				DoLoadUserGlobs("language globs changed", null);
 				
 //				DoLoadOldLanguages();
 				DoLoadLanguages();
@@ -129,20 +122,19 @@ namespace Styler
 			}
 		}
 		
-//		private static void DoLoadGlobs(string name, object v)
-//		{
-//			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
-//			var dict = defaults.objectForKey(NSString.Create("language globs")).To<NSDictionary>();
-//			
-//			ms_globs.Clear();
-//			foreach (var entry in dict)
-//			{
-//				string key = entry.Key.description();
-//				string value = entry.Value.description();
-//				if (!ms_globs.ContainsKey(key))
-//					ms_globs.Add(key, value);
-//			}
-//		}
+		private static void DoLoadUserGlobs(string name, object v)
+		{
+			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
+			var dict = defaults.objectForKey(NSString.Create("language globs2")).To<NSDictionary>();
+			
+			ms_userGlobs.Clear();
+			foreach (var entry in dict)
+			{
+				string key = entry.Key.description();
+				string value = entry.Value.description();
+				ms_userGlobs.Add(key, value);
+			}
+		}
 		
 		private static void DoLoadLanguages()
 		{
@@ -177,7 +169,7 @@ namespace Styler
 						if (!ms_languages.ContainsKey(settings.Name))
 						{
 							ms_languages[settings.Name] = new Language(path, settings, elements);
-							DoSetGlobs(settings);
+							DoSetStdGlobs(settings);
 						}
 						else
 						{
@@ -197,17 +189,14 @@ namespace Styler
 			}
 		}
 		
-		private static void DoSetGlobs(Settings settings)
+		private static void DoSetStdGlobs(Settings settings)
 		{
 			foreach (string glob in settings.Globs)
 			{
-				if (!ms_globs.ContainsKey(glob))
-				{
-					ms_globs[glob] = settings.Name;
-			Console.WriteLine("setting {0} to {1}", glob, settings.Name);
-				}
+				if (!ms_stdGlobs.ContainsKey(glob))
+					ms_stdGlobs[glob] = settings.Name;
 				else
-					DoWriteError("Both {0} and {1} use glob {2}.", settings.Name, ms_globs[glob], glob);
+					DoWriteError("Both {0} and {1} use glob {2}.", settings.Name, ms_stdGlobs[glob], glob);
 			}
 		}
 		
@@ -270,6 +259,21 @@ namespace Styler
 			transcript.WriteLine(Output.Error, format, args);
 		}
 
+		private static Language DoFindByExtension(string fileName, Dictionary<string, string> globs)
+		{
+			foreach (KeyValuePair<string, string> entry in globs)
+			{
+				if (Glob.Match(entry.Key, fileName))
+				{
+					Language result;
+					Gear.Helpers.Unused.Value = ms_languages.TryGetValue(entry.Value, out result);
+					return result;		// this may be null if there is a bogus user pref
+				}
+			}
+			
+			return null;
+		}
+		
 #if OBSOLETE		
 		private static void DoLoadOldLanguages()
 		{
@@ -346,8 +350,9 @@ namespace Styler
 		#region Fields
 		private static string ms_dirName;
 		private static string ms_installedPath;
-//		private static ObserverTrampoline ms_observer;
-		private static Dictionary<string, string> ms_globs = new Dictionary<string, string>();					// glob => language name
+		private static ObserverTrampoline ms_observer;
+		private static Dictionary<string, string> ms_stdGlobs = new Dictionary<string, string>();				// glob => language name
+		private static Dictionary<string, string> ms_userGlobs = new Dictionary<string, string>();			// std globs are from language files, user globs are from the prefs panel
 		private static Dictionary<string, Language> ms_languages = new Dictionary<string, Language>();	// language name => styler
 		#endregion
 	}
