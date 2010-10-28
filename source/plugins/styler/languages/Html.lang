@@ -1,0 +1,12 @@
+Language: html
+Globs: *.html *.htm
+
+Comment: <!-- (?: . | \r | \n)*? -->
+XmlElement: (?:< \s*) [\w:.]+			# <element
+XmlElement: (?:< \s*) /[\w:.]+ \s* >		# </element>
+XmlDec: (?:< \s*) ! [\w:.]+				# <!name
+XmlAttribute: [\w:.-]+ (?= \s* = \s* ["'])		# attribute = "
+String: " [^"\r\n]* "
+String: ' [^'\r\n]* '
+
+

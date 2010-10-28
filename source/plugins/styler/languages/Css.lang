@@ -1,0 +1,10 @@
+Language: css
+Globs: *.css
+
+Comment: \/\*[^*]*\*+(?:[^/*][^*]*\*+)*\/
+CssSelector: ^ \s* \w [^\{\r\n]*  \s* (?= \{)
+CssProperty: \w [^:\{\r\n\ ]* : \s
+String: " [^"\r\n]* "
+String: ' [^'\r\n]* '
+
+

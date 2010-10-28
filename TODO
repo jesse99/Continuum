@@ -56,22 +56,23 @@ need user manual
 help menu should have Open Manual
 find file/type/method could use text similarity algorithm
 
+Language: binary
+Globs: *.bin
+TabStops: 5
+Shebangs: sh ksh csh bash dash zsh
+IgnoreWhitespace: true
+
 
 * Work on language files:
-	- support ignoring whitespace
-	- get rid of other1 and other2
-	- add include and region elements
 	- get the other languages working
-	- handle globs
-	- may want to have explicit checks for crap like &lt;
-	- get rid of the old code in Languages.cs and Language.cs
-	- need a doc file, point out that order is important, can repeat names, can have eol comments, mention styles.rtf
+	- get rid of other1 and other2
 	- make this live
 	- languages in GlobsTable will need to be live too
+	- get rid of the old code in Languages.cs and Language.cs
+	- need a doc file, point out that order is important, can repeat names, can have eol comments, mention styles.rtf
 	- see if any languages can support more elements, see file:///Users/jessejones/Downloads/source-highlight-3.1.4/doc/source-highlight.html#Output-format-style
 	- get rid of the old xml files
 	- make sure that the real Styles.rtf is up to date
-	- gt rid of commented out code
 * Build a new foreshadow.
 * Probably want some sort of advanced prefs panel:
 	- or maybe a pref inspector?

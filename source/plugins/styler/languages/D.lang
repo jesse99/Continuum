@@ -1,0 +1,39 @@
+# This is for D2
+Language: d
+Globs: *.d *.di
+Shebangs: rdmd
+
+Comment: // [^\r\n]* [\r\n]		# note that $ won't work quite right with windows line endings
+Comment: /\* (?: . | \r | \n)*? \*/
+Comment: /\+ (?: . | \r | \n)*? \+/	# TODO: need to be able to nest these
+
+Keyword: \b(?:  abstract | alias | align | asm | assert | auto | body | bool | break | byte | case | cast | catch | cdouble | cent | cfloat | char | class | const | continue | creal | dchar | debug | default | delegate | delete | deprecated | do | double | else | enum | export | extern | false | final | finally | float | for | foreach | foreach_reverse | function | goto | idouble | if | ifloat | immutable | import | in | inout | int | interface | invariant | ireal | is | lazy | long | macro | mixin | module | new | nothrow | null | out | override | package | pragma | private | protected | public | pure | real | ref | return | scope | shared | short | static | struct | super | switch | synchronized | template | this | throw | true | try | typedef | typeid | typeof | ubyte | ucent | uint | ulong | union | unittest | ushort | version | void | volatile | wchar | while | with | __FILE__ | __LINE__ | __gshared | __thread | __traits)\b # keywords
+Keyword: \b(?:  __DATE__ | __EOF__ | __TIME__ | __TIMESTAMP__ | __VENDOR__ | __VERSION__)\b # special tokens
+Keyword: \b(?:  string | @property)\b 								# other keyword like names
+
+Number: (?<= \W) 0[bB] [01_]+ (?= \W)			# TODO: support hex floats
+Number: (?<= \W) 0[xX] [0-9A-Fa-f_]+ (?= \W)
+Number: (?<= \W) \d+ \. [\d_]+ (?: [eE] [\+-]? \d+)? [FfLi]? (?= \W)
+Number: (?<= \W) \. [\d_]+ (?: [eE] [\+-]? \d+)? [FfLi]? (?= \W)
+Number: (?<= \W) [\d_]+ [eE] [\+-]? \d+ [FfLi]? (?= \W)
+Number: (?<= \W) [\d_]+ [FfLi] (?= \W)
+Number: (?<= \W) [\d_]+ (?: Lu|LU|uL|UL|L|u|U)? (?= \W)
+
+DVersion: \b(?:  DigitalMars | X86 | X86_64 | Windows | Win32 | Win64 | linux | Posix | LittleEndian | BigEndian | D_Coverage | D_Ddoc | D_InlineAsm_X86 | D_InlineAsm_X86_64 | D_LP64 | D_PIC | unittest | D_Version2 | none | all)\b # predefined version identifiers
+
+String: r" (?: [^"])* "
+String: ` (?: [^`])* `
+String: x" (?: [0-9A-Fa-f])+ "
+String: q" \[ (?: [^"\\] | \\.)*? \] "		# TODO: should also support delimited identifiers
+String: q" \( (?: [^"\\] | \\.)*? \) "		# and token strings
+String: q" < (?: [^"\\] | \\.)*? > "
+String: q" \{ (?: [^"\\] | \\.)*? \} "
+String: " (?: [^"\\] | \\.)* "
+String: ' (?: [^'\r\n\\] | \\.)* '
+
+Type: (?<=\b enum \s+) \w+
+Type: (?<=\b struct \s+) \w+
+Type: (?<=\b union \s+) \w+
+Type: (?<=\b class \s+) \w+
+Type: (?<=\b interface \s+) \w+
+

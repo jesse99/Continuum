@@ -1,9 +1,0 @@
-<Language name = "css">
-	<comment>\/\*[^*]*\*+(?:[^/*][^*]*\*+)*\/</comment>
-	<keyword>^ \s* \w [^\{\r\n]*  \s* (?= \{)</keyword>	<!-- selector -->
-	<other1>\w [^:\{\r\n\ ]* : \s</other1>								<!-- property -->
-	<string>&quot; [^&quot;\r\n]* &quot;</string>
-	<string>&apos; [^&apos;\r\n]* &apos;</string>
-</Language>
-
-
