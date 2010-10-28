@@ -38,6 +38,7 @@ namespace Styler
 		{
 			Globs = new string[0];
 			Word = string.Empty;
+			Shebangs = string.Empty;
 		}
 		
 		public string Name {get; set;}
@@ -47,6 +48,8 @@ namespace Styler
 		public string TabStops {get; set;}
 		
 		public string Word {get; set;}
+		
+		public string Shebangs {get; set;}
 	}
 	
 	internal sealed class Language
@@ -57,11 +60,7 @@ namespace Styler
 			m_name = settings.Name;
 			m_expr = DoBuildExpr(elements);
 			
-//			XmlAttribute attr = node.Attributes["shebang"];
-//			if (attr != null)
-//				m_shebangs = attr.Value.Split(new char[]{' '}, StringSplitOptions.RemoveEmptyEntries);
-//			else
-				m_shebangs = new string[0];
+			m_shebangs = settings.Shebangs.Split(new char[]{' '}, StringSplitOptions.RemoveEmptyEntries);
 			
 			string[] stops = (settings.TabStops ?? string.Empty).Split(new char[]{' '}, StringSplitOptions.RemoveEmptyEntries);
 			m_tabStops = (from s in stops select int.Parse(s)).ToArray();
