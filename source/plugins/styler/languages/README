@@ -16,3 +16,11 @@ Continuum.
 Note that changes to language files are not dynamic: you need to restart
 Continuum for them to take effect. Changes the language globs are also
 not dynamic unless you do them via the preferences panel.
+
+
+
+Language: binary
+Globs: *.bin
+TabStops: 5
+Shebangs: sh ksh csh bash dash zsh
+IgnoreWhitespace: true

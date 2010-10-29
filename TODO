@@ -56,24 +56,14 @@ need user manual
 help menu should have Open Manual
 find file/type/method could use text similarity algorithm
 
-Language: binary
-Globs: *.bin
-TabStops: 5
-Shebangs: sh ksh csh bash dash zsh
-IgnoreWhitespace: true
-
 
 * Work on language files:
-	- get the other languages working
-	- make sure we get a warning if two lang files use the same glob
-	- get rid of other1 and other2
 	- make this live
 	- languages in GlobsTable will need to be live too
-	- get rid of the old code in Languages.cs and Language.cs
 	- need a doc file, point out that order is important, can repeat names, can have eol comments, mention styles.rtf
+	- get rid of globs.xml and the schema files
 	- see if any languages can support more elements, see file:///Users/jessejones/Downloads/source-highlight-3.1.4/doc/source-highlight.html#Output-format-style
 	- get rid of the old xml files
-	- make sure that the real Styles.rtf is up to date
 * Got a crash:
 	objc[52084]: FREED(id): message class sent to freed object=0x14870c90
 	Managed exception: MObjc.NSObject outlineView_objectValueForTableColumn_byItem(MCocoa.NSOutlineView, MCocoa.NSTableColumn, DirectoryEditor.TableItem)

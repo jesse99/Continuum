@@ -28,7 +28,6 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-//using System.Xml;
 
 namespace Styler
 {
@@ -169,37 +168,14 @@ namespace Styler
 				m_indexTable.Add(index++, "text spaces color changed");
 				exprs.Add(@"((?: ^ [\t ]+) | (?: [\t ]+ $))");
 			}
-
+			
 			foreach (var element in elements)
 			{
 				DoValidateRegex(element.Key, element.Value);
 				
-//				if (element.Key == "word")
-//					word.Add("( " + element.Value + " )");
-//				else
-					m_indexTable.Add(index++, element.Key);
+				m_indexTable.Add(index++, element.Key);
 				exprs.Add("( " + element.Value + " )");
 			}
-
-#if OBSOLETE			
-			var word = new List<string>();
-			foreach (XmlNode child in node.ChildNodes)
-			{
-				DoValidateRegex(child.InnerText);
-				
-				if (child.Name == "word")
-					word.Add("( " + child.InnerText + " )");
-				else
-					m_indexTable.Add(index++, DoGetToken(child.Name));
-				exprs.Add("( " + child.InnerText + " )");
-			}
-			
-			if (word.Count > 0)
-			{
-				string re = "(" + string.Join(" | ", word.ToArray()) + ")";
-				m_word = DoMakeWordRe(re);
-			}
-#endif
 			
 			return string.Join(" | ", exprs.ToArray());
 		}
@@ -263,47 +239,6 @@ namespace Styler
 			transcript.Show();
 			transcript.WriteLine(Output.Error, text);
 		}
-		
-#if OBSOLETE
-		private string DoGetToken(string name)
-		{
-			switch (name)
-			{
-				case "comment":
-					return "Comment";
-				
-				case "keyword":
-					return "Keyword";
-				
-				case "number":
-					return "Number";
-				
-				case "other1":
-					return "Other1";
-				
-				case "other2":
-					return "Other2";
-				
-				case "preprocessor":
-					return "Preprocessor";
-				
-				case "string":
-					return "String";
-				
-				case "member":
-					return "Member";
-				
-				case "type":
-					return "Type";
-				
-				default:
-					Contract.Assert(false, "Bad name: " + name);
-					break;
-			}
-			
-			return "??";
-		}
-#endif
 		#endregion
 		
 		#region Fields

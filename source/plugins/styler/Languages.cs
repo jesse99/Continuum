@@ -98,21 +98,7 @@ namespace Styler
 				Broadcaster.Register("language globs changed", ms_observer);
 				DoLoadUserGlobs("language globs changed", null);
 				
-//				DoLoadOldLanguages();
 				DoLoadLanguages();
-				
-				// TODO: globs are saved in a pref but we never prune stale globs from the list...
-//				foreach (KeyValuePair<string, string> entry in ms_globs)
-//				{
-//					if (!ms_languages.ContainsKey(entry.Value))
-//						Log.WriteLine(TraceLevel.Info, "Startup", "glob {0} is associated with language {1}, but there is no xml file for that language", entry.Key, entry.Value);
-//				}
-				
-//				foreach (string name in ms_languages.Keys)
-//				{
-//					if (!ms_globs.ContainsValue(name))
-//						DoError("language '{0}' is not associated with a glob", name);
-//				}
 			}
 			catch (Exception e)
 			{
@@ -282,79 +268,6 @@ namespace Styler
 			
 			return null;
 		}
-		
-#if OBSOLETE		
-		private static void DoLoadOldLanguages()
-		{
-			// Load the schema.
-			string standardPath = Path.Combine(ms_installedPath, "standard");
-			string globsSchemaPath = Path.Combine(standardPath, "Language.schema");
-			using (Stream stream = new FileStream(globsSchemaPath, FileMode.Open, FileAccess.Read))
-			{
-				XmlSchema schema = XmlSchema.Read(stream, DoValidationEvent);
-				
-				// Setup the xml parsing options.
-				XmlReaderSettings settings = new XmlReaderSettings();
-				settings.ValidationEventHandler += DoValidationEvent;
-				settings.ValidationType = ValidationType.Schema;
-				settings.IgnoreComments = true;
-				settings.Schemas.Add(schema);
-				
-				// Load the xml files.
-				DoLoadOldLanguages(standardPath, settings);
-				
-				string userPath = Path.Combine(ms_installedPath, "user");
-				DoLoadOldLanguages(userPath, settings);
-			}
-		}
-		
-		// TODO: Would be nice if this would dynamically update.
-		private static void DoLoadOldLanguages(string languagesPath, XmlReaderSettings settings)
-		{
-			// Load the xml files.
-			foreach (string path in Directory.GetFiles(languagesPath, "*.xml"))
-			{
-				if (!path.Contains(".schema.") && !path.EndsWith("Globs.xml"))
-				{
-					try
-					{
-						using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read))
-						{
-							using (XmlReader reader = XmlReader.Create(stream, settings))
-							{
-								XmlDocument xml = new XmlDocument();
-								xml.Load(reader);
-								
-								// Process the xml file.
-								XmlNode node = xml.ChildNodes[0];
-								string name = node.Attributes["name"].Value;
-								
-								if (!ms_languages.ContainsKey(name))
-									ms_languages.Add(name, new Language(node));
-								else
-									Console.Error.WriteLine("language '{0}' was declared twice.", name);
-							}
-						}
-					}
-					catch (Exception e)
-					{
-						Console.Error.WriteLine("failed to parse '{0}'", path);
-						Console.Error.WriteLine(e.Message);
-						Console.Error.WriteLine();
-					}
-				}
-			}
-		}
-		
-		private static void DoValidationEvent(object sender, ValidationEventArgs e)
-		{
-			if (e.Severity == XmlSeverityType.Warning)
-				Console.WriteLine("{0}", e.Message);
-			else
-				throw e.Exception;
-		}
-#endif
-		#endregion
 		
 		#region Fields
 		private static string ms_dirName;
