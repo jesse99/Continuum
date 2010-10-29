@@ -1,0 +1,12 @@
+Language: xml
+Globs: *.xml *.xsd *.xsdl *.xsl *.schema *.config *.plist *.sdef *.dtd *.csproj *.build *.resx
+
+Comment: <!-- (?: . | \r | \n)*? -->
+XmlElement: (?:< \s*) [\w:.-]+
+XmlElement: (?:< \s*) /[\w:.-]+ \s* >
+XmlDec: (?:< \s*) (?: \? | !) [\w:.]+
+XmlAttribute: [\w:.-]+ (?= \s* = \s* ["'])
+String: " [^"\r\n]* "
+String: ' [^'\r\n]* '
+
+

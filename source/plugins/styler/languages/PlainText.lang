@@ -1,0 +1,5 @@
+Language: plain-text
+Globs: BUILDING README AUTHORS CHANGES ChangeLog *.txt *.text *.svn-blame *.svn-log *.log *.sln
+IgnoreWhitespace: true
+
+

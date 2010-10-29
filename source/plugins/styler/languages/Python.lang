@@ -1,0 +1,13 @@
+Language: python
+Globs: *.py SConstruct wscript_build
+Shebangs: python
+
+Comment: \x23 [^\r\n]* [\r\n]	# note that $ won't work quite right with windows line endings
+Keyword: \b(?:  and | del | for | is | raise | assert | elif | from | lambda | return | break | else | global | not | try | class | except | if | or | while | continue | exec | import | pass | yield | def | finally | in | print | as | None)\b
+Keyword: \b(?: self | property | True | False)\b | \@property
+Number: (?<= \W) (?: 0[xX])? \d+ [lL]? (?= \W)
+String: """ (?: [^\\] | \\.)*? """
+String: r? " (?: [^"\r\n\\] | \\.)* "
+String: r? ' (?: [^'\r\n\\] | \\.)* '
+Type: (?<=\b class \s+) \w+
+Member: (?<=\b def \s+) \w+

@@ -1,0 +1,11 @@
+Language: patch
+Globs: diff *.patch *.diff
+IgnoreWhitespace: true
+
+DiffFile: ^Index: \ .*
+DiffFile: ^ =+ $
+DiffOldFile: ^ --- .*
+DiffNewFile: ^ \+\+\+ .*
+DiffLineNum: ^ @@ .*
+DiffNew: ^\+ .*
+DiffOld: ^- .*
