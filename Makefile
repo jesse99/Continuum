@@ -192,7 +192,7 @@ bin/continuum.exe.config:
 	@echo "		<trace autoflush = \"true\" indentsize = \"4\">" >> bin/continuum.exe.config
 	@echo "			<listeners>" >> bin/continuum.exe.config
 	@echo "				<remove name = \"Default\"/>" >> bin/continuum.exe.config
-	@echo "				<add name = \"logger\" type = \"Continuum.PrettyTraceListener,continuum\" initializeData = \"/tmp/continuum.log\"/>" >> bin/continuum.exe.config
+	@echo "				<add name = \"logger\" type = \"Continuum.PrettyTraceListener,continuum\" initializeData = \"/tmp/continuum.log\"/>	<!-- path may be stdout -->" >> bin/continuum.exe.config
 	@echo "			</listeners>" >> bin/continuum.exe.config
 	@echo "		</trace>" >> bin/continuum.exe.config
 	@echo "	</system.diagnostics>" >> bin/continuum.exe.config
