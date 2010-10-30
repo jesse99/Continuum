@@ -58,12 +58,12 @@ find file/type/method could use text similarity algorithm
 
 
 * Work on language files:
-	- need a doc file, point out that order is important, can repeat names, can have eol comments, mention styles.rtf
+	- make sure strings are appearing early
 	  may want to mention that can paste the regex into find window to test
-	- get rid of globs.xml and the schema files
-	- fixup the custom languages
+	- get rid of globs.xml and the schema files from the project
 	- see if any languages can support more elements, see file:///Users/jessejones/Downloads/source-highlight-3.1.4/doc/source-highlight.html#Output-format-style
-	- get rid of the old xml files
+	- build a new foreshadow
+	- get rid of globs.xml and the schema files from the application support
 * Got a crash:
 	objc[52084]: FREED(id): message class sent to freed object=0x14870c90
 	Managed exception: MObjc.NSObject outlineView_objectValueForTableColumn_byItem(MCocoa.NSOutlineView, MCocoa.NSTableColumn, DirectoryEditor.TableItem)

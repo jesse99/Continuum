@@ -1,26 +1,20 @@
-The language files are used to do syntax hilighting for text files and to control
-what qualifies as a word for operations like double-clicking. Language globs
-are patterns used to associate a file with a language. Typically they are the 
-exact name of a file ('Makefile') or based on the file's extension ('*.cs').
+The language files are used to do syntax hilighting for text files and to control what qualifies as a word for operations like double-clicking. Language globs are patterns used to associate a file with a language. Typically they are the exact name of a file ('Makefile') or based on the file's extension ('*.cs').
 
-New languages can be added to the user directory. The languages are
-defined in terms of .NET regular expressions, see the Language.schema
-file for more details. When adding a new language the globs file should
-be updated to add a glob for that language.
+New languages can be added to the user directory. Languages are defined using a simple line-based file format consisting of settings and elements. The settings configure various aspects of the language and the elements affect highlighting.
 
-The standard languages may be modified, but it's best to do this by copying
-the language file into the user directory and modifying it there. If you don't
-do this then your changes will be lost when upgrading to a new version of
-Continuum.
+The settings are:
+Language: is the name of the language. By convention this is lower case. This is the only required setting.
 
-Note that changes to language files are not dynamic: you need to restart
-Continuum for them to take effect. Changes the language globs are also
-not dynamic unless you do them via the preferences panel.
+Globs: is a space separated list of file name globs associated with the language. This is not technically required, but almost all language files should have this setting.
 
+IgnoreWhitespace: if this is true then leading and trailing whitespace is not highlighted. Defaults to false.
 
+Shebangs: space separated list of shebangs associated with the language, eg sh ksh csh bash. This allows files written in the language to be highlighted even if they don't have a matching glob.
 
-Language: binary
-Globs: *.bin
-TabStops: 5
-Shebangs: sh ksh csh bash dash zsh
-IgnoreWhitespace: true
+TabStops: space separated list of integral tab stops. This overrides the normal tab stops set in the preferences panel and is useful for languages that have fixed columns (like disassembled code).
+
+Word: a regex that indicates what a word (aka identifier) means in the language. Generally this only needs to be used if the language which allow Unicode or unusual characters (like '-' or ':') in identifiers.
+
+Elements may have arbitrary names and use .NET regular expressions. If the element matches source code then that source code is styled using the font attributes from the associated element in Styles.rtf. Note that the order of elements is important: in general the elements which match more text (e.g. comments and strings) should appear before the elements that match less (e.g. keywords).
+
+Changes to the lang files are dynamic: the prefs panel and text documents will both update when a lang file is saved. 
