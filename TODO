@@ -58,10 +58,10 @@ find file/type/method could use text similarity algorithm
 
 
 * Work on language files:
-	- make this live
-	- languages in GlobsTable will need to be live too
 	- need a doc file, point out that order is important, can repeat names, can have eol comments, mention styles.rtf
+	  may want to mention that can paste the regex into find window to test
 	- get rid of globs.xml and the schema files
+	- fixup the custom languages
 	- see if any languages can support more elements, see file:///Users/jessejones/Downloads/source-highlight-3.1.4/doc/source-highlight.html#Output-format-style
 	- get rid of the old xml files
 * Got a crash:

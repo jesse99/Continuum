@@ -1,4 +1,4 @@
-// Copyright (C) 2009 Jesse Jones
+// Copyright (C) 2009-2010 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -32,7 +32,7 @@ using System.Linq;
 namespace App
 {
 	[ExportClass("GlobsTableView", "NSTableView", Outlets = "col2")]
-	internal sealed class GlobsTableView : NSTableView
+	internal sealed class GlobsTableView : NSTableView, IObserver
 	{
 		private GlobsTableView(IntPtr instance) : base(instance)
 		{
@@ -41,16 +41,7 @@ namespace App
 			m_popup.retain();
 			
 			// Initialize the menu.
-			Boss boss = ObjectModel.Create("Stylers");
-			var finder = boss.Get<IFindLanguage>();
-			m_languages = finder.GetFriendlyNames().ToArray();
-			Array.Sort(m_languages);
-			
-			m_popup.removeAllItems();
-			foreach (string language in m_languages)
-			{
-				m_popup.addItemWithTitle(NSString.Create(language));
-			}
+			DoPopulateMenu();
 			
 			// Hookup the table.
 			setDataSource(this);
@@ -58,7 +49,23 @@ namespace App
 			setTarget(this);
 			setAction("clicked:");
 			
+			Broadcaster.Register("languages changed", this);
 			ActiveObjects.Add(this);
+		}
+		
+		public void OnBroadcast(string name, object value)
+		{
+			switch (name)
+			{
+				case "languages changed":
+					DoPopulateMenu();
+					reload();
+					break;
+					
+				default:
+					Contract.Assert(false, "bad name: " + name);
+					break;
+			}
 		}
 		
 		public void reload()
@@ -186,6 +193,20 @@ namespace App
 		}
 		
 		#region Private Methods
+		private void DoPopulateMenu()
+		{
+			Boss boss = ObjectModel.Create("Stylers");
+			var finder = boss.Get<IFindLanguage>();
+			m_languages = finder.GetFriendlyNames().ToArray();
+			Array.Sort(m_languages);
+			
+			m_popup.removeAllItems();
+			foreach (string language in m_languages)
+			{
+				m_popup.addItemWithTitle(NSString.Create(language));
+			}
+		}
+		
 		private void DoSyncPref()
 		{
 			NSMutableDictionary dict = NSMutableDictionary.Create();

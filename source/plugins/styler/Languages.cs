@@ -39,6 +39,9 @@ namespace Styler
 		static Languages()
 		{
 			DoInit();
+			
+			ms_watcher = new DirectoryWatcher(ms_installedPath, TimeSpan.FromMilliseconds(250));
+			ms_watcher.Changed += Languages.DoFilesChanged;
 		}
 		
 		public static Language FindByExtension(string fileName)
@@ -87,6 +90,15 @@ namespace Styler
 		}
 		
 		#region Private Methods
+		private static void DoFilesChanged(object sender, DirectoryWatcherEventArgs e)
+		{
+			Log.WriteLine(TraceLevel.Info, "App", "Updating languages");
+			
+			DoLoadLanguages();
+			
+			Broadcaster.Invoke("languages changed", null);
+		}
+		
 		private static void DoInit()
 		{
 			try
@@ -124,6 +136,9 @@ namespace Styler
 		
 		private static void DoLoadLanguages()
 		{
+			ms_languages.Clear();
+			ms_stdGlobs.Clear();
+			
 			string standardPath = Path.Combine(ms_installedPath, "standard");
 			DoLoadLanguages(standardPath);
 			
@@ -268,11 +283,13 @@ namespace Styler
 			
 			return null;
 		}
+		#endregion
 		
 		#region Fields
 		private static string ms_dirName;
 		private static string ms_installedPath;
 		private static ObserverTrampoline ms_observer;
+		private static DirectoryWatcher ms_watcher;
 		private static Dictionary<string, string> ms_stdGlobs = new Dictionary<string, string>();				// glob => language name
 		private static Dictionary<string, string> ms_userGlobs = new Dictionary<string, string>();			// std globs are from language files, user globs are from the prefs panel
 		private static Dictionary<string, Language> ms_languages = new Dictionary<string, Language>();	// language name => styler

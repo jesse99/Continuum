@@ -53,6 +53,7 @@ namespace TextEditor
 			DoSetTextOptions();
 			
 			Broadcaster.Register("text default color changed", this);
+			Broadcaster.Register("languages changed", this);
 			DoUpdateDefaultColor(string.Empty, null);
 			
 			m_textView.Value.Call("onOpened:", this);
@@ -66,6 +67,21 @@ namespace TextEditor
 			{
 				case "text default color changed":
 					DoUpdateDefaultColor(name, value);
+					break;
+					
+				case "languages changed":
+					if (Path != null || m_boss.Has<IDocumentExtension>())
+						Language = DoFindLanguage();
+					
+					var edit = new TextEdit{
+						Boss = m_boss,
+						Language = m_language,
+						UserEdit = true,
+						EditedRange = NSRange.Empty,
+						ChangeInLength = 0,
+						ChangeInLines = 0,
+						StartLine = 1};
+					Broadcaster.Invoke("text changed", edit);
 					break;
 					
 				default:
