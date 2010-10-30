@@ -1,0 +1,26 @@
+# By convention AsciiDoc files use the *.txt extension which makes them a little hard
+# to highlight, but you can set a custom glob using the preferences panel for things like
+# your README.txt files.
+Language: asciidoc
+Globs: *.asciidoc
+IgnoreWhitespace: true
+
+Comment: ^// .* $
+Keyword: \b(?<!-)(?: asciidocToDo | TODO | FIXME | CHECK | TEST | XXX | ZZZ | DEPRECATED)(?!-)\b
+Header1: ^== [^=] .* $
+Header2: ^=== [^=]  .* $
+Header3: ^==== [^=]  .* $
+Header4: ^===== [^=]  .* $
+Markup: ^\. [a-zA-Z] .* $
+Markup: ^\[ \s* \w+ \s* , \s* \w+ \s* \]
+Markup: ^\[ \s* \w+ \s* \]
+Markup: ^(?: TIP: | IMPORTANT: | WARNING: | CAUTION:)
+Markup: ^\[\[ [^\]]+ \]\]
+Markup: << [^>]+ >>
+Markup: ^---- [^\-]
+Preprocess: (?: ifdef | ifndef | endif) :: .+? $
+String: \{ [^}\r\n]+? \}
+Bold: (?<! \*) \* [^*\r\n]+ \* (?! \*)
+Italic: (?<! \\) _ [^_\r\n]+ _ (?! \\)
+MonoSpaced: (?<! \+) \+ [^+\r\n]+ \+ (?! \+)
+Command: (?<! `) ` [^`\r\n]+ ` (?! `)
