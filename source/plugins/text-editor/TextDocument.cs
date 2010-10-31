@@ -673,8 +673,11 @@ namespace TextEditor
 			int i = 0;
 			foreach (var entry in chars)
 			{
-				strs[i++] = string.Format("{0} '\\x{1:X2}' ({2})", entry.Value, (int) entry.Key, ms_controlNames[entry.Key]);
-			
+				if (ms_controlNames.ContainsKey(entry.Key))
+					strs[i++] = string.Format("{0} '\\x{1:X2}' ({2})", entry.Value, (int) entry.Key, ms_controlNames[entry.Key]);
+				else
+					strs[i++] = string.Format("{0} '\\x{1:X2}' (?)", entry.Value, (int) entry.Key);
+					
 				if (entry.Value > 1)
 					plural = true;
 			}
@@ -699,7 +702,7 @@ namespace TextEditor
 					break;
 					
 				char ch = str.characterAtIndex((uint) temp.location);
-				if (ch != '\r' && ch != '\n' && ch != '\t')
+				if (ch != '\r' && ch != '\n' && ch != '\t' && ch != Constants.BOM[0])
 				{
 					if (chars.ContainsKey(ch))
 						chars[ch] = chars[ch] + 1;

@@ -57,6 +57,15 @@ help menu should have Open Manual
 find file/type/method could use text similarity algorithm
 
 
+* Why does the refactor language have a * beside it?
+* Got an error stepping with the debugger:
+Unhandled Exception: MObjc.CocoaException: NSInvalidArgumentException. -[NSCFString countByEnumeratingWithState:objects:count:]: unrecognized selector sent to instance 0xa01f1c68
+  at MObjc.CocoaException.Raise (IntPtr instance) [0x00162] in /Users/jessejones/Source/mobjc/source/CocoaException.cs:122 
+  at MObjc.Ffi.Call (IntPtr cif, IntPtr imp, IntPtr result, MObjc.Helpers.PtrArray args) [0x00026] in /Users/jessejones/Source/mobjc/source/Ffi.cs:94 
+  at MObjc.Native.Invoke () [0x00020] in /Users/jessejones/Source/mobjc/source/Native.cs:106 
+  at MCocoa.NSApplication.run () [0x00000] in /Users/jessejones/Source/mcocoa/source/appkit/NSApplication.cs:122 
+  at App.Application.Run (System.String[] args) [0x0014a] in /Users/jessejones/Source/Continuum/source/plugins/app/Application.cs:76 
+  at Continuum.Program.Main (System.String[] args) [0x0005f] in /Users/jessejones/Source/Continuum/source/continuum/Program.cs:50 
 * Probably want some sort of advanced prefs panel:
 	- or maybe a pref inspector?
 	- these should be for stuff that most people won't want to change

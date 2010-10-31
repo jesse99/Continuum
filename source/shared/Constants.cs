@@ -43,8 +43,9 @@ namespace Shared
 		public static readonly string RightDoubleQuote = "\x201D";
 		
 		// Control characters.
+		public static readonly string BOM = "\xFEFF";			// Cocoa considers this a control character
 		public static readonly string Escape = "\x001B";
-		public static readonly string Delete = "\x007F";	
+		public static readonly string Delete = "\x007F";
 		
 		// Key codes.
 		public static readonly int DeleteKey = 0x33;
