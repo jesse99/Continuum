@@ -87,7 +87,7 @@ namespace TextEditor
 						if (m_selected != NSRange.Empty)
 							m_controller.TextView.setSelectedRange(m_selected);
 					}
-					else if (m_selected != NSRange.Empty)
+					else if (m_selected != NSRange.Empty && m_selected.location + m_selected.length <= m_controller.TextView.textStorage().string_().length())
 					{
 						m_controller.TextView.setSelectedRange(m_selected);
 						m_controller.TextView.scrollRangeToVisible(m_visible);
