@@ -294,14 +294,16 @@ namespace ObjectModel
 			{
 				string[] argTypeParts = parts[4].Split(new char[]{';'}, StringSplitOptions.RemoveEmptyEntries);
 				string[] argNameParts = parts[5].Split(new char[]{';'}, StringSplitOptions.RemoveEmptyEntries);
-				Contract.Assert(argTypeParts.Length == argNameParts.Length);
 				
 				var args = new StringBuilder();
 				for (int i = 0; i < argTypeParts.Length; ++i)
 				{
 					args.Append(CsHelpers.TrimNamespace(argTypeParts[i]));
-					args.Append(' ');
-					args.Append(argNameParts[i]);
+					if (i < argNameParts.Length)
+					{
+						args.Append(' ');
+						args.Append(argNameParts[i]);
+					}
 					
 					if (i + 1 < argTypeParts.Length)
 						args.Append(", ");
