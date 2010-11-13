@@ -1,6 +1,6 @@
 Language: objective-c
 Globs: *.h *.m
-Word: [\w_] [\w_:]*
+Word: [\w_:]+
 
 Comment: // [^\r\n]* [\r\n]	# note that $ won't work quite right with windows line endings
 Comment: /\* (?: . | \r | \n)*? \*/

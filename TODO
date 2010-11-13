@@ -52,16 +52,14 @@ include the percentage of samples that that method appeared in the stack trace
 	
 http://progit.org/
 
-need user manual
-help menu should have Open Manual
-find file/type/method could use text similarity algorithm
-
-* Word is not working for peg.lang
 * Add the yaml lang.
-* Update styles.rtf
-* Why does the refactor language have a * beside it?
 * Pasting styled text doesn't work quite right.
-* Color used for old diffs seems to bright.
+* Build a new foreshadow.
+* Update styles.rtf
+* Probably should add a bom to utf-16 and 32 encodings.
+* Why does the refactor language have a * beside it?
+* Using tab to indent works a little too much.
+* Color used for old diffs seems too bright.
 * Got an error stepping with the debugger:
 Unhandled Exception: MObjc.CocoaException: NSInvalidArgumentException. -[NSCFString countByEnumeratingWithState:objects:count:]: unrecognized selector sent to instance 0xa01f1c68
   at MObjc.CocoaException.Raise (IntPtr instance) [0x00162] in /Users/jessejones/Source/mobjc/source/CocoaException.cs:122 
@@ -70,6 +68,41 @@ Unhandled Exception: MObjc.CocoaException: NSInvalidArgumentException. -[NSCFStr
   at MCocoa.NSApplication.run () [0x00000] in /Users/jessejones/Source/mcocoa/source/appkit/NSApplication.cs:122 
   at App.Application.Run (System.String[] args) [0x0014a] in /Users/jessejones/Source/Continuum/source/plugins/app/Application.cs:76 
   at Continuum.Program.Main (System.String[] args) [0x0005f] in /Users/jessejones/Source/Continuum/source/continuum/Program.cs:50 
+* Some sort of dynamic find files thingy.
+	- should use the selection as the default (if its not too crazy)
+	- use soundex?
+* Look at the new error bubbles in snow leopard's XCode.	
+* Shouldn't we warn if two language files use the same language?
+* Should deduce type of typeof(xxx).
+* Doesn't the create thread refactor need to use a field for the thread object?
+* Mention useful to download mono source (and set the associated pref):
+	- dont need to compile
+	- allows source level debugging, context menus allow you to go to definitions for mono methods
+* Add a way to switch between *.m/*.c/*.cpp and *.h files. Command-option-up arrow.
+* Command-option-left arrow to go backwards through open files (see how xcode really does this).
+* Command-option-right arrow to go backwards through open files (see how xcode really does this).
+* Command-/ toggle commenting a block of code.
+	- probably need to add some sort of language option for line comments
+* Control-1 show file history list.
+* Control-2 show types and methods for the current file.
+* Add a show command:
+	- should be a context menu for selected types
+	- not live, but when resuming disable the text
+	- support ints, char, string, IntPtr, UIntPtr
+	- should be live, how do we do this? struct mirrors at least need to be re-generated, maybe
+	  store a path to the field being watched?
+* Confirmation if the user really wants to open a bunch of files
+	- open files
+	- return in dir editor
+	- return in find in files result
+* Might want a why continuum discussion somewhere.
+* Create a mailing list. Could use google groups or yahoo.
+* Add a wiki link, see http://en.wikipedia.org/wiki/Cobra_(programming_language_from_Cobra_Language_LLC)
+   for example.
+* Do a new release.
+
+* Zooming navigation interface?
+* Get auto-complete working better.
 * Probably want some sort of advanced prefs panel:
 	- or maybe a pref inspector?
 	- these should be for stuff that most people won't want to change
@@ -98,9 +131,7 @@ Unhandled Exception: MObjc.CocoaException: NSInvalidArgumentException. -[NSCFStr
 	- would be nice to have some sort of extras directory
 	- could have a demo plugin that customizes menus, like 2010-10-manipulate-menus.diff
 	- maybe also support for overriding standard plugins
-* Some sort of dynamic find files thingy.
 * Default styles should probably use a monospaced font.
-* File a ticket (and investigate further) stepping over p/invokes.
 * Make sure assembly databases purge assemblies no longer in use.
 * Auto-complete speed is kind of poor:
    ResolveName::ctor                             00.141    00
@@ -129,30 +160,11 @@ Unhandled Exception: MObjc.CocoaException: NSInvalidArgumentException. -[NSCFStr
 	- database is only about 0.013
 	- so the bulk of the time seems to be logic and such
 	- maybe it would help if we restricted searches by leveraging the using declarations in the file
-* Look at the new error bubbles in snow leopard's XCode.	
 * Look at using a replacement for sqlite. Maybe a custom database or some nosql sort of thing.
 * Are old assemblies being left behind in the database?
 * Use the new StackFrame.GetVisibleVariables method?
-* Shouldn't we warn if two language files use the same language?
-* Should deduce type of typeof(xxx).
 * Would be nice not to highlight the linq query keywords (from, which, etc) if System.Linq is not
    being used.
-* Doesn't the create thread refactor need to use a field for the thread object?
-* Mention useful to download mono source (and set the associated pref):
-	- dont need to compile
-	- allows source level debugging, context menus allow you to go to definitions for mono methods
-* Add a show command:
-	- should be a context menu for selected types
-	- not live, but when resuming disable the text
-	- support ints, char, string, IntPtr, UIntPtr
-	- should be live, how do we do this? struct mirrors at least need to be re-generated, maybe
-	  store a path to the field being watched?
-* Confirmation if the user really wants to open a bunch of files
-	- open files
-	- return in dir editor
-	- return in find in files result
-* Do a new release.
-
 * Outlining.
 * Get rid of glob files? Would be easier (and less confusing) if the default globs were part of the language.
 * Work on a debugger:
@@ -161,6 +173,8 @@ Unhandled Exception: MObjc.CocoaException: NSInvalidArgumentException. -[NSCFStr
 	ObjectModel Error bad operator: op_UnaryNegation_Int32
 	maybe tweak the warning?
 * Genie effect with auto-complete is distracting?
+* Probably should have a user manual
+	- need an open user manual help menu item
 * Period should work like return in auto-complete window.
 * Should make font bigger (or smaller) change the defaults for source code windows? It would probably
    have to change all the defaults?
