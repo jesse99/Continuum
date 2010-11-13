@@ -52,11 +52,6 @@ include the percentage of samples that that method appeared in the stack trace
 	
 http://progit.org/
 
-* Pasting is kind of hosed
-	- probably need to preserve paragraph styles
-	- can test this by pasting an entire line of code
-* Build a new foreshadow.
-* Why does the refactor language have a * beside it?
 * Using tab to indent works a little too much.
 * Color used for old diffs seems too bright.
 * Got an error stepping with the debugger:

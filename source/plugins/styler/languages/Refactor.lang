@@ -1,5 +1,5 @@
 # This is the little language Continuum refactor scripts are written in.
-Language: refactor"
+Language: refactor
 Globs: *.ref
 
 Comment: \x23 [^\r\n]* [\r\n]	# note that $ won't work quite right with windows line endings
