@@ -52,7 +52,6 @@ include the percentage of samples that that method appeared in the stack trace
 	
 http://progit.org/
 
-* Add the yaml lang.
 * Pasting styled text doesn't work quite right.
 * Build a new foreshadow.
 * Update styles.rtf

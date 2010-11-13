@@ -145,7 +145,8 @@ namespace TextEditor
 				NSObject text = items.objectAtIndex(0);
 				text = DoNormalizeString(text);
 				
-				this.insertText(text);
+				setTypingAttributes(NSDictionary.Create());
+				insertText(text);
 			}
 			else
 			{
