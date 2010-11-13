@@ -130,6 +130,7 @@ namespace TextEditor
 			else
 			{
 				classes = NSArray.Create(NSAttributedString.Class, NSString.Class);
+				setTypingAttributes(NSDictionary.Create());
 			}
 			
 			var options = NSDictionary.Create();
@@ -145,7 +146,6 @@ namespace TextEditor
 				NSObject text = items.objectAtIndex(0);
 				text = DoNormalizeString(text);
 				
-				setTypingAttributes(NSDictionary.Create());
 				insertText(text);
 			}
 			else
