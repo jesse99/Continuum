@@ -52,7 +52,6 @@ include the percentage of samples that that method appeared in the stack trace
 	
 http://progit.org/
 
-* Using tab to indent works a little too much.
 * Color used for old diffs seems too bright.
 * Got an error stepping with the debugger:
 Unhandled Exception: MObjc.CocoaException: NSInvalidArgumentException. -[NSCFString countByEnumeratingWithState:objects:count:]: unrecognized selector sent to instance 0xa01f1c68

@@ -166,8 +166,9 @@ namespace TextEditor
 						break;
 				}
 				
-				// Option-tab selects the next identifier.
-				if (evt.keyCode() == Constants.TabKey) {
+				if (evt.keyCode() == Constants.TabKey)
+				{
+					// Option-[shift]-tab selects the next/prev identifier.
 					if ((evt.modifierFlags() & Enums.NSAlternateKeyMask) != 0)
 					{
 						if ((evt.modifierFlags() & Enums.NSShiftKeyMask) == 0)
@@ -189,21 +190,29 @@ namespace TextEditor
 					}
 					else if ((evt.modifierFlags() & Enums.NSShiftKeyMask) != 0)
 					{
-						// unindent the code / shift left
-						controller.shiftLeft(this);
-						break;
+						// Shift-tab with at least one line selected unindents lines
+						var selRange = selectedRange();
+						if (DoSelectionCrossesLines(selRange))
+						{
+							controller.shiftLeft(this);
+							break;
+						}
 					}
 					else
 					{
 						var selRange = selectedRange();
 						if (selRange.location > 0 && selRange.length > 1)
 						{
-							// indent the code / shift right
-							controller.shiftRight(this);
-							break;
+							// Tab with at least one line selected indents lines
+							if (DoSelectionCrossesLines(selRange))
+							{
+								controller.shiftRight(this);
+								break;
+							}
 						}
 						else if (selRange.location > 0 && selRange.length == 0)
 						{
+							// Tab with no selection at the end of a blank line indents like the previous line.
 							if (DoMatchPriorLineTabs(selRange.location))
 								break;
 						}
@@ -918,6 +927,16 @@ namespace TextEditor
 					}
 				}
 			}
+		}
+		
+		private bool DoSelectionCrossesLines(NSRange selection)
+		{
+			var text = string_();
+			
+			int first = DoGetLineStart(text, selection.location);
+			int last = DoGetLineStart(text, selection.location + selection.length);
+			
+			return first != last;
 		}
 		
 		// Returns a new index >= 0 and <= text.length()
