@@ -53,7 +53,6 @@ include the percentage of samples that that method appeared in the stack trace
 http://progit.org/
 
 
-* Option-arrow is skipping over periods.
 * Why doesn't stuff like var thread = (ThreadMirror) value auto-complete?
 * Mention useful to download mono source (and set the associated pref):
 	- dont need to compile

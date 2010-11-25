@@ -219,18 +219,38 @@ namespace TextEditor
 					}
 				}
 				
-				// Special case option-shift-arrow because Apple is too lame to call selectionRangeForProposedRange_granularity
-				// for us.
-				int shiftOption = Enums.NSShiftKeyMask | Enums.NSAlternateKeyMask;
-				if (evt.keyCode() == Constants.LeftArrowKey && (evt.modifierFlags() & shiftOption) == shiftOption)
+				if ((evt.modifierFlags() & Enums.NSAlternateKeyMask) == Enums.NSAlternateKeyMask)
 				{
-					if (DoExtendSelectionLeft())
-						break;
-				}
-				else if (evt.keyCode() == Constants.RightArrowKey && (evt.modifierFlags() & shiftOption) == shiftOption)
-				{
-					if (DoExtendSelectionRight())
-						break;
+					// Special case option-shift-arrow because Apple is too lame to call 
+					// selectionRangeForProposedRange_granularity for us.
+					if ((evt.modifierFlags() & Enums.NSShiftKeyMask) == Enums.NSShiftKeyMask)
+					{
+						if (evt.keyCode() == Constants.LeftArrowKey)
+						{
+							if (DoExtendSelectionLeft())
+								break;
+						}
+						else if (evt.keyCode() == Constants.RightArrowKey)
+						{
+							if (DoExtendSelectionRight())
+								break;
+						}
+					}
+					else
+					{
+						// Special case option-arrow because in Snow Leopard it defaults to skiping
+						// over periods.
+						if (evt.keyCode() == Constants.LeftArrowKey)
+						{
+							if (DoMoveSelectionLeft())
+								break;
+						}
+						else if (evt.keyCode() == Constants.RightArrowKey)
+						{
+							if (DoMoveSelectionRight())
+								break;
+						}
+					}
 				}
 				
 				// Special case for deleting the new line at the start of a blank line
@@ -273,7 +293,7 @@ namespace TextEditor
 			}
 			while (false);
 		}
-
+		
 #if false
 		public new void mouseDown(NSEvent evt)
 		{
@@ -301,7 +321,7 @@ namespace TextEditor
 				SuperCall(NSTextView.Class, "mouseDown:", evt);
 		}
 #endif
-	
+		
 		public NSRange selectionRangeForProposedRange_granularity(NSRange proposedSelRange, int granularity)
 		{
 			NSRange result;
@@ -726,17 +746,17 @@ namespace TextEditor
 			return matches;
 		}
 		
-		private bool DoExtendSelectionLeft()
+		private NSRange DoGetLeftSelection()
 		{
-			bool extended = false;
+			NSRange range = NSRange.Empty;
 			
 			TextController controller = (TextController) window().windowController();
 			if (controller.Language != null)
 			{
 				NSString text = string_();
-				NSRange range = selectedRange();
+				NSRange candidate = selectedRange();
 				
-				int i = range.location;
+				int i = candidate.location;
 				while (i > 0 && char.IsWhiteSpace(text.characterAtIndex((uint) (i - 1))))
 				{
 					--i;
@@ -748,29 +768,24 @@ namespace TextEditor
 					
 					NSRange temp = new NSRange(i, 1);
 					temp = selectionRangeForProposedRange_granularity(temp, Enums.NSSelectByWord);
-					
-					range = new NSRange(temp.location, range.location + range.length - temp.location);
-					setSelectedRange(range);
-					scrollRangeToVisible(new NSRange(range.location, 1));
-					
-					extended = true;
+					range = new NSRange(temp.location, candidate.location + candidate.length - temp.location);
 				}
 			}
 			
-			return extended;
+			return range;
 		}
 		
-		private bool DoExtendSelectionRight()
+		private NSRange DoGetRightSelection()
 		{
-			bool extended = false;
+			NSRange range = NSRange.Empty;
 			
 			TextController controller = (TextController) window().windowController();
 			if (controller.Language != null)
 			{
 				NSString text = string_();
-				NSRange range = selectedRange();
+				NSRange candidate = selectedRange();
 				
-				int j = range.location + range.length;
+				int j = candidate.location + candidate.length;
 				while (j + 1 < text.length() &&
 					char.IsWhiteSpace(text.characterAtIndex((uint) (j + 1))))
 				{
@@ -783,13 +798,73 @@ namespace TextEditor
 					
 					NSRange temp = new NSRange(j, 1);
 					temp = selectionRangeForProposedRange_granularity(temp, Enums.NSSelectByWord);
-					
-					range = new NSRange(range.location, temp.location + temp.length - range.location);
-					setSelectedRange(range);
-					scrollRangeToVisible(new NSRange(range.location + range.length - 1, 1));
-					
-					extended = true;
+					range = new NSRange(candidate.location, temp.location + temp.length - candidate.location);
 				}
+			}
+			
+			return range;
+		}
+		
+		private bool DoMoveSelectionLeft()
+		{
+			bool moved = false;
+			
+			NSRange range = DoGetLeftSelection();
+			if (range.length > 0)
+			{
+				range.length = 0;
+				
+				setSelectedRange(range);
+				scrollRangeToVisible(new NSRange(range.location, 1));
+				moved = true;
+			}
+			
+			return moved;
+		}
+		
+		private bool DoMoveSelectionRight()
+		{
+			bool moved = false;
+			
+			NSRange range = DoGetRightSelection();
+			if (range.length > 0)
+			{
+				range.location += range.length;
+				range.length = 0;
+				
+				setSelectedRange(range);
+				scrollRangeToVisible(new NSRange(range.location + range.length - 1, 1));
+				moved = true;
+			}
+			
+			return moved;
+		}
+		
+		private bool DoExtendSelectionLeft()
+		{
+			bool extended = false;
+			
+			NSRange range = DoGetLeftSelection();
+			if (range.length > 0)
+			{
+				setSelectedRange(range);
+				scrollRangeToVisible(new NSRange(range.location, 1));
+				extended = true;
+			}
+			
+			return extended;
+		}
+		
+		private bool DoExtendSelectionRight()
+		{
+			bool extended = false;
+			
+			NSRange range = DoGetRightSelection();
+			if (range.length > 0)
+			{
+				setSelectedRange(range);
+				scrollRangeToVisible(new NSRange(range.location + range.length - 1, 1));
+				extended = true;
 			}
 			
 			return extended;
@@ -886,7 +961,7 @@ namespace TextEditor
 			return true;
 		}
 		
-		private int DoSkip(int start, int delta, Predicate<char> predicate)	
+		private int DoSkip(int start, int delta, Predicate<char> predicate)
 		{
 			NSString text = string_();
 			
