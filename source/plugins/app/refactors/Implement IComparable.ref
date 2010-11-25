@@ -3,10 +3,10 @@
 define Run()
 	if Scope is TypeDeclaration then
 		Process(Scope)
-			
+		
 	elif Scope is Member then
 		Process(Scope.DeclaringType)
-			
+		
 	else
 		Raise("Selection is not within a type or member.")
 	end
@@ -20,7 +20,7 @@ define Process(type)
 	Globals.AddUsing("System")
 	type.AddBase("IComparable<#{type.Name}>")
 	type.AddBase("IEquatable<#{type.Name}>")
-
+	
 	if type is Class then
 		ProcessClass(type)
 	elif type is Struct then
@@ -40,7 +40,7 @@ define ProcessClass(type)
 	return Compare•(this, rhs) == 0;
 }")
 	end
-
+	
 	if not type.HasMember("Equals", [type.Name]) then
 		type.AddMember(
 "public bool Equals•(#{type.Name} rhs)
@@ -56,7 +56,7 @@ define ProcessClass(type)
 	return Compare•(this, rhs);
 }")
 	end
-
+	
 	if not type.HasMember("==", [type.Name, type.Name]) then
 		type.AddMember(
 "public static bool operator==•(#{type.Name} lhs, #{type.Name} rhs)
@@ -64,7 +64,7 @@ define ProcessClass(type)
 	return Compare•(lhs, rhs) == 0;
 }")
 	end
-
+	
 	if not type.HasMember("!=", [type.Name, type.Name]) then
 		type.AddMember(
 "public static bool operator!=•(#{type.Name} lhs, #{type.Name} rhs)
@@ -72,7 +72,7 @@ define ProcessClass(type)
 	return Compare•(lhs, rhs) != 0;
 }")
 	end
-
+	
 	if not type.HasMember(">=", [type.Name, type.Name]) then
 		type.AddMember(
 "public static bool operator>=•(#{type.Name} lhs, #{type.Name} rhs)
@@ -80,7 +80,7 @@ define ProcessClass(type)
 	return Compare•(lhs, rhs) >= 0;
 }")
 	end
-
+	
 	if not type.HasMember(">", [type.Name, type.Name]) then
 		type.AddMember(
 "public static bool operator>•(#{type.Name} lhs, #{type.Name} rhs)
@@ -88,7 +88,7 @@ define ProcessClass(type)
 	return Compare•(lhs, rhs) > 0;
 }")
 	end
-
+	
 	if not type.HasMember("<=", [type.Name, type.Name]) then
 		type.AddMember(
 "public static bool operator<=•(#{type.Name} lhs, #{type.Name} rhs)
@@ -96,7 +96,7 @@ define ProcessClass(type)
 	return Compare•(lhs, rhs) <= 0;
 }")
 	end
-
+	
 	if not type.HasMember("<", [type.Name, type.Name]) then
 		type.AddMember(
 "public static bool operator<•(#{type.Name} lhs, #{type.Name} rhs)
@@ -104,7 +104,7 @@ define ProcessClass(type)
 	return Compare•(lhs, rhs) < 0;
 }")
 	end
-
+	
 	if not type.HasMember("Compare", [type.Name]) then
 		type.AddMember(
 "public static int Compare•(#{type.Name} lhs, #{type.Name} rhs)
@@ -126,7 +126,7 @@ define ProcessClass(type)
 	return result;
 }")
 	end
-
+	
 	if not type.HasMember("GetHashCode", []) then
 		type.AddMember(
 "public override int GetHashCode•()
@@ -157,7 +157,7 @@ define ProcessStruct(type)
 	return CompareTo•(rhs) == 0;
 }")
 	end
-
+	
 	if not type.HasMember("Equals", [type.Name]) then
 		type.AddMember(
 "public bool Equals•(#{type.Name} rhs)
@@ -165,7 +165,7 @@ define ProcessStruct(type)
 	return CompareTo•(rhs) == 0;
 }")
 	end
-
+	
 	if not type.HasMember("==", [type.Name, type.Name]) then
 		type.AddMember(
 "public static bool operator==•(#{type.Name} lhs, #{type.Name} rhs)
@@ -173,7 +173,7 @@ define ProcessStruct(type)
 	return lhs.CompareTo•(rhs) == 0;
 }")
 	end
-
+	
 	if not type.HasMember("!=", [type.Name, type.Name]) then
 		type.AddMember(
 "public static bool operator!=•(#{type.Name} lhs, #{type.Name} rhs)
@@ -181,7 +181,7 @@ define ProcessStruct(type)
 	return lhs.CompareTo•(rhs) != 0;
 }")
 	end
-
+	
 	if not type.HasMember(">=", [type.Name, type.Name]) then
 		type.AddMember(
 "public static bool operator>=•(#{type.Name} lhs, #{type.Name} rhs)
@@ -189,7 +189,7 @@ define ProcessStruct(type)
 	return lhs.CompareTo•(rhs) >= 0;
 }")
 	end
-
+	
 	if not type.HasMember(">", [type.Name, type.Name]) then
 		type.AddMember(
 "public static bool operator>•(#{type.Name} lhs, #{type.Name} rhs)
@@ -197,7 +197,7 @@ define ProcessStruct(type)
 	return lhs.CompareTo•(rhs) > 0;
 }")
 	end
-
+	
 	if not type.HasMember("<=", [type.Name, type.Name]) then
 		type.AddMember(
 "public static bool operator<=•(#{type.Name} lhs, #{type.Name} rhs)
@@ -205,7 +205,7 @@ define ProcessStruct(type)
 	return lhs.CompareTo•(rhs) <= 0;
 }")
 	end
-
+	
 	if not type.HasMember("<", [type.Name, type.Name]) then
 		type.AddMember(
 "public static bool operator<•(#{type.Name} lhs, #{type.Name} rhs)
@@ -213,7 +213,7 @@ define ProcessStruct(type)
 	return lhs.CompareTo•(rhs) < 0;
 }")
 	end
-
+	
 	if not type.HasMember("CompareTo", [type.Name]) then
 		type.AddMember(
 "public int CompareTo•(#{type.Name} rhs)
@@ -224,7 +224,7 @@ define ProcessStruct(type)
 	return result;
 }")
 	end
-
+	
 	if not type.HasMember("GetHashCode", []) then
 		type.AddMember(
 "public override int GetHashCode•()
