@@ -52,42 +52,46 @@ include the percentage of samples that that method appeared in the stack trace
 	
 http://progit.org/
 
-* Color used for old diffs seems too bright.
-* Got an error stepping with the debugger:
-Unhandled Exception: MObjc.CocoaException: NSInvalidArgumentException. -[NSCFString countByEnumeratingWithState:objects:count:]: unrecognized selector sent to instance 0xa01f1c68
-  at MObjc.CocoaException.Raise (IntPtr instance) [0x00162] in /Users/jessejones/Source/mobjc/source/CocoaException.cs:122 
-  at MObjc.Ffi.Call (IntPtr cif, IntPtr imp, IntPtr result, MObjc.Helpers.PtrArray args) [0x00026] in /Users/jessejones/Source/mobjc/source/Ffi.cs:94 
-  at MObjc.Native.Invoke () [0x00020] in /Users/jessejones/Source/mobjc/source/Native.cs:106 
-  at MCocoa.NSApplication.run () [0x00000] in /Users/jessejones/Source/mcocoa/source/appkit/NSApplication.cs:122 
-  at App.Application.Run (System.String[] args) [0x0014a] in /Users/jessejones/Source/Continuum/source/plugins/app/Application.cs:76 
-  at Continuum.Program.Main (System.String[] args) [0x0005f] in /Users/jessejones/Source/Continuum/source/continuum/Program.cs:50 
-* Some sort of dynamic find files thingy.
-	- should use the selection as the default (if its not too crazy)
-	- use soundex?
-* Look at the new error bubbles in snow leopard's XCode.	
-* Shouldn't we warn if two language files use the same language?
-* Should deduce type of typeof(xxx).
+
+* Add Comparable refactor needs to implement the non-generic IComparable
+	- maybe equality and some others too
 * Doesn't the create thread refactor need to use a field for the thread object?
+* Option-arrow is skipping over periods.
+* Why doesn't stuff like var thread = (ThreadMirror) value auto-complete?
 * Mention useful to download mono source (and set the associated pref):
 	- dont need to compile
 	- allows source level debugging, context menus allow you to go to definitions for mono methods
-* Add a way to switch between *.m/*.c/*.cpp and *.h files. Command-option-up arrow.
-* Command-option-left arrow to go backwards through open files (see how xcode really does this).
-* Command-option-right arrow to go backwards through open files (see how xcode really does this).
-* Command-/ toggle commenting a block of code.
-	- probably need to add some sort of language option for line comments
-* Control-1 show file history list.
-* Control-2 show types and methods for the current file.
 * Add a show command:
 	- should be a context menu for selected types
 	- not live, but when resuming disable the text
 	- support ints, char, string, IntPtr, UIntPtr
 	- should be live, how do we do this? struct mirrors at least need to be re-generated, maybe
 	  store a path to the field being watched?
+* Add a way to switch between *.m/*.c/*.cpp and *.h files. Command-option-up arrow.
+* Command-option-left arrow to go backwards through open files (see how xcode really does this).
+* Command-option-right arrow to go backwards through open files (see how xcode really does this).
+* Command-/ toggle commenting a block of code.
+	- probably need to add some sort of language option for line comments
+* Control-1 show file history list.
+* Control-2 show types and methods for the current file (or maybe methods for the current type).
+* Look at the new error bubbles in snow leopard's XCode
+* Some sort of dynamic find files thingy.
+	- should use the selection as the default (if its not too crazy)
+	- use soundex?
 * Confirmation if the user really wants to open a bunch of files
 	- open files
 	- return in dir editor
 	- return in find in files result
+* Do some more work on the debugger:
+	- add an immediate window
+	- breakpoint conditions should be persisted
+	- watchpoint windows
+		` drag and drop to add new variables
+		` draw in gray if the current context does not have the variable in any stack frame
+* Add a generate stub refactor
+	- should this be automatic?
+* Add a ToString refactror, should default to returning fields and auto-props
+* Do the same for implement IFormatable.
 * Might want a why continuum discussion somewhere.
 * Create a mailing list. Could use google groups or yahoo.
 * Add a wiki link, see http://en.wikipedia.org/wiki/Cobra_(programming_language_from_Cobra_Language_LLC)
@@ -159,7 +163,6 @@ Unhandled Exception: MObjc.CocoaException: NSInvalidArgumentException. -[NSCFStr
 * Would be nice not to highlight the linq query keywords (from, which, etc) if System.Linq is not
    being used.
 * Outlining.
-* Get rid of glob files? Would be easier (and less confusing) if the default globs were part of the language.
 * Work on a debugger:
 	- context breakpoint menu should have close do a broadcast so the breakpoint can be toggled
 * Should DoGetOperatorName handle names like:
@@ -173,22 +176,15 @@ Unhandled Exception: MObjc.CocoaException: NSInvalidArgumentException. -[NSCFStr
    have to change all the defaults?
 * Do some more work on the debugger:
 	- would be nice if could add breakpoints to IL views
-	- add an immediate window
 	- allow richer expressions in conditional breakpoints
 	- might be cool to keep a fixed window of variable histories
 	- allow users to set the ToString format specifier?
 	- can't set values for types like IntPtr, Nullable`1
 	- support remote debugging
-	- breakpoint conditions should be persisted
 	- would be nice if conditional expressions worked with types, eg int.MaxValue
 	- allow more complex expressions (and properties) to be used with conditional breakpoints
-	- might want to, at least optionally, show properties in the variables window
-	- watchpoint windows
-		` drag and drop to add new variables
-		` draw in gray if the current context does not have the variable in any stack frame
 	- moving the instruction pointer
 	- custom viewer dlls
-* Why doesn't stuff like var thread = (ThreadMirror) value auto-complete?
 * Show short form on Action didn't show the Delegate members.
 * Dot should complete auto-complete text.
 * Auto-complete window should have context menu for showing only properties.
@@ -198,17 +194,10 @@ Unhandled Exception: MObjc.CocoaException: NSInvalidArgumentException. -[NSCFStr
 * Mention can right click on completion window.
 * Attributes and base classes need to handle global::
 * global should be a c# keyword?
-* Does setting the text color still work in prefs?
-* Option-arrow is skipping over periods.
 * Would be nice to support hyperlinks in rich text files
 	http://developer.apple.com/qa/qa2006/qa1487.html
 * NSWorkspace has new methods to duplicate and trash files.
 * NSError has a helpAnchor method.
-* Generate stub seems fairly nifty.
-* Work on collection support:
-	- classes that implement ICollection should use EnumerableValue
-	- may want to also support arbitrary IEnumerable types
-	- may want a context menu to show more than the first 200 items
 * Stagger windows, especially find results and assembly browser.
 * Need to do a better job with Refactor Language.rtf (prose and the grammar)
 * http://cx4a.org/software/gccsense/
@@ -219,8 +208,6 @@ Unhandled Exception: MObjc.CocoaException: NSInvalidArgumentException. -[NSCFStr
    allowing user to pick which methods he wants to forward.
 * Allow auto-completion via "CamelHumps"?
 	- ie for "WriteLine" can type "WL"
-* Add a ToString refactror, should default to returning fields and auto-props
-* Do the same for implement IFormatable.
 * MonoDevelop has an interesting Dynamic Abbrev Command: http://monodevelop.com/Download/What%27s_new_in_MonoDevelop_2.2
 * Get refactors enabling and disabling.
 * Add refactors to context menu.

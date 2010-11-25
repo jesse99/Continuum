@@ -18,6 +18,7 @@ define Process(type)
 	end
 	
 	Globals.AddUsing("System")
+	type.AddBase("IComparable")
 	type.AddBase("IComparable<#{type.Name}>")
 	type.AddBase("IEquatable<#{type.Name}>")
 	
@@ -46,6 +47,18 @@ define ProcessClass(type)
 "public bool Equals•(#{type.Name} rhs)
 {
 	return Compare•(this, rhs) == 0;
+}")
+	end
+	
+	if not type.HasMember("CompareTo", ["object"]) then
+		type.AddMember(
+"public int CompareTo•(object obj)
+{
+	if (obj == null)
+		return +1;
+	
+	#{type.Name} rhs = obj as #{type.Name};
+	return Compare•(this, rhs);
 }")
 	end
 	
@@ -211,6 +224,21 @@ define ProcessStruct(type)
 "public static bool operator<•(#{type.Name} lhs, #{type.Name} rhs)
 {
 	return lhs.CompareTo•(rhs) < 0;
+}")
+	end
+	
+	if not type.HasMember("CompareTo", ["object"]) then
+		type.AddMember(
+"public int CompareTo•(object obj)
+{
+	if (obj == null)
+		return +1;
+	
+	if (GetType•() != obj.GetType•())
+		return GetType•().FullName.CompareTo(obj.GetType•().FullName);
+	
+	#{type.Name} rhs = (#{type.Name}) obj;
+	return CompareTo•(rhs);
 }")
 	end
 	
