@@ -53,9 +53,6 @@ include the percentage of samples that that method appeared in the stack trace
 http://progit.org/
 
 
-* Add Comparable refactor needs to implement the non-generic IComparable
-	- maybe equality and some others too
-* Doesn't the create thread refactor need to use a field for the thread object?
 * Option-arrow is skipping over periods.
 * Why doesn't stuff like var thread = (ThreadMirror) value auto-complete?
 * Mention useful to download mono source (and set the associated pref):

@@ -18,10 +18,9 @@ define Run()
 	end
 end
 
-# Note that it is not neccesary to retain a reference to the thread object.
 define NormalClass(type, method, name)
 	InsertAfterSelection(
-"Thread thread = new Thread•(this.#{name});
+"Thread thread = new Thread•(this.#{name});	// note that according to the System.Threading.Thread page on MSDN thread objects are not GCed if the thread is running
 thread.Name = ""#{type.Name}.#{name}"";
 thread.IsBackground = true;		// allow the app to quit even if the thread is still running
 thread.Start•();")
