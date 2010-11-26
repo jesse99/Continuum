@@ -64,9 +64,12 @@ namespace TextEditor
 			var paths = new List<string>();
 			foreach (Boss b in windows.All())
 			{
-				var editor = b.Get<ITextEditor>();
-				if (editor.Path != null)
-					paths.Add(editor.Path);
+				if (b.Name == "TextEditor")
+				{
+					var editor = b.Get<ITextEditor>();
+					if (editor.Path != null)
+						paths.Add(editor.Path);
+				}
 			}
 			
 			var array = NSArray.Create(paths.ToArray());

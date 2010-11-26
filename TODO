@@ -52,9 +52,6 @@ include the percentage of samples that that method appeared in the stack trace
 	
 http://progit.org/
 
-* Don't think GetChild of a StructMirror is handling index correctly.
-* When shutting down with the debugger open the exe is opened on restart.
-	- also show details windows are opened
 * Add a way to switch between *.m/*.c/*.cpp and *.h files. Command-option-up arrow.
 * Command-option-left arrow to go backwards through open files (see how xcode really does this).
 * Command-option-right arrow to go backwards through open files (see how xcode really does this).
