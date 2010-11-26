@@ -3,6 +3,7 @@
 		<Implementation interfaces = "IInterface +IFactoryPrefs" name = "FactoryPrefs"/>
 		<Implementation interfaces = "IInterface +IDisplayBuildError" name = "DisplayError"/>
 		<Implementation interfaces = "IInterface +ICanOpen" name = "CanOpen"/>
+		<Implementation interfaces = "IInterface +IShutdown +IStartup" name = "RestoreOpenFiles"/>
 	</Extend>
 	
 	<Extend name = "TextEditorPlugin">

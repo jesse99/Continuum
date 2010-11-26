@@ -53,8 +53,6 @@ include the percentage of samples that that method appeared in the stack trace
 http://progit.org/
 
 
-* Tabbing still isn't quite right: eg if have the first word in a line selected.
-* Persist which files were open.
 * Mention useful to download mono source (and set the associated pref):
 	- dont need to compile
 	- allows source level debugging, context menus allow you to go to definitions for mono methods
