@@ -85,6 +85,12 @@ namespace Debugger
 		}
 		
 		[GetItem.Overload]
+		public static Item GetItem(ThreadMirror thread, object parent, object key, Decimal value)
+		{
+			return new Item(0, value.ToString("C"), value.GetType().FullName);
+		}
+		
+		[GetItem.Overload]
 		public static Item GetItem(ThreadMirror thread, object parent, object key, Double value)
 		{
 			if (VariableController.ShowThousands)

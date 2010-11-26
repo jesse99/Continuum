@@ -31,10 +31,13 @@ namespace Debugger
 	// Used with the Show Details contextual menu command.
 	internal static class Details
 	{
-		public static void Write(TextWriter writer, object obj, string decimalFormat)
+		public static void Write(TextWriter writer, ThreadMirror thread, object obj, bool useThousands)
 		{
 			if (obj is PrimitiveValue)
 			{
+				string decimalFormat = useThousands ? "N0" : "G";
+				string floatFormat = useThousands ? "N" : "G";
+				
 				var pv = (PrimitiveValue) obj;
 				if (pv.Value == null)
 					writer.WriteLine("null");
@@ -57,8 +60,48 @@ namespace Debugger
 				else if (pv.Value is System.Int64)
 					DoWrite(writer, (System.Int64) pv.Value, decimalFormat);
 				
+				else if (pv.Value is char)
+					DoWrite(writer, (char) pv.Value);
+				
+				else if (pv.Value is float)									// note that Decimal is a StructMirror
+					DoWrite(writer, (float) pv.Value, floatFormat);
+				else if (pv.Value is double)
+					DoWrite(writer, (double) pv.Value, floatFormat);
+				
 				else
 					writer.WriteLine(pv.Value);
+			}
+			else if (obj is StringMirror)
+			{
+				DoWrite(writer, (StringMirror) obj);
+			}
+			else if (obj is ArrayMirror)
+			{
+				DoWrite(writer, thread, (ArrayMirror) obj);
+			}
+			else if (obj is EnumMirror)
+			{
+				writer.WriteLine(((Value) obj).ToDisplayText(thread));
+			}
+			else if (obj is StructMirror)
+			{
+				// TODO: It would be nice to special case IntPtr and show the memory that it points to.
+				// But the soft debugger doesn't give us a way to get at the memory in the debuggee's
+				// process.
+				var struct_ = (StructMirror) obj;
+				string type = struct_.Type.FullName;
+				if (type == "System.DateTime")
+					DoWriteStruct(writer, thread, struct_, useThousands, "f", "r");
+				else
+					writer.WriteLine(struct_.ToDisplayText(thread));
+			}
+			else if (obj is ObjectMirror)
+			{
+				DoWrite(writer, thread, (ObjectMirror) obj);
+			}
+			else if (obj is Value)
+			{
+				writer.WriteLine(((Value) obj).ToDisplayText(thread));
 			}
 			else
 			{
@@ -67,43 +110,20 @@ namespace Debugger
 		}
 		
 		#region Private Methods
-		private static void DoWrite(TextWriter writer, System.SByte value, string decimalFormat)
+		private static void DoWrite(TextWriter writer, ThreadMirror thread, ArrayMirror value)
 		{
-			writer.WriteLine(value.ToString(decimalFormat));
-			writer.WriteLine("0x{0:X}", value);
-			writer.WriteLine("0b{0}", DoHexToBinary(value.ToString("X")));
-		}
-		
-		private static void DoWrite(TextWriter writer, System.Int16 value, string decimalFormat)
-		{
-			writer.WriteLine(value.ToString(decimalFormat));
-			writer.WriteLine("0x{0:X}", value);
-			writer.WriteLine("0b{0}", DoHexToBinary(value.ToString("X")));
-		}
-		
-		private static void DoWrite(TextWriter writer, System.Int32 value, string decimalFormat)
-		{
-			writer.WriteLine(value.ToString(decimalFormat));
-			writer.WriteLine("0x{0:X}", value);
-			writer.WriteLine("0b{0}", DoHexToBinary(value.ToString("X")));
+			writer.WriteLine("Domain: {0}", value.Domain.FriendlyName);
+			writer.WriteLine("IsCollected: {0}", value.IsCollected);
+			writer.WriteLine("Length: {0}", value.Length);
+			writer.WriteLine("Rank: {0}", value.Rank);
+			writer.WriteLine();
 			
-			var boss = ObjectModel.Create("TextEditorPlugin");
-			var name = boss.Get<IUnicodeName>();
-			string text = name.GetName((char) value);
-			if (text != "invalid code point")
+			for (int i = 0; i < value.Length; ++i)
 			{
-				int i = text.IndexOf(' ');	// get rid of the hex version of the code point
-				text = text.Substring(i + 1);
+				writer.Write("{0}: ", GetChildOverloads.GetArrayName(value, i));
 				
-				writer.WriteLine(text);
+				writer.WriteLine(value[i].ToDisplayText(thread));
 			}
-		}
-		
-		private static void DoWrite(TextWriter writer, System.Int64 value, string decimalFormat)
-		{
-			writer.WriteLine(value.ToString(decimalFormat));
-			writer.WriteLine("0x{0:X}", value);
-			writer.WriteLine("0b{0}", DoHexToBinary(value.ToString("X")));
 		}
 		
 		private static void DoWrite(TextWriter writer, System.Byte value, string decimalFormat)
@@ -113,11 +133,113 @@ namespace Debugger
 			writer.WriteLine("0b{0}", DoHexToBinary(value.ToString("X")));
 		}
 		
+		private static void DoWrite(TextWriter writer, char value)
+		{
+			if (!char.IsControl(value) && !char.IsWhiteSpace(value))
+				writer.WriteLine("'{0}'", value);
+			writer.WriteLine("'\\x{0:X4}", (int) value);
+			DoWriteUnicode(writer, (long) value);
+		}
+		
+		private static void DoWrite(TextWriter writer, double value, string floatFormat)
+		{
+			writer.WriteLine(value.ToString(floatFormat));
+			writer.WriteLine("{0:R}", value);
+		}
+		
+		private static void DoWrite(TextWriter writer, float value, string floatFormat)
+		{
+			writer.WriteLine(value.ToString(floatFormat));
+			writer.WriteLine("{0:R}", value);
+		}
+		
+		private static void DoWrite(TextWriter writer, System.Int16 value, string decimalFormat)
+		{
+			writer.WriteLine(value.ToString(decimalFormat));
+			writer.WriteLine("0x{0:X}", value);
+			writer.WriteLine("0b{0}", DoHexToBinary(value.ToString("X")));
+			
+			DoWriteUnicode(writer, (long) value);
+		}
+		
+		private static void DoWrite(TextWriter writer, System.Int32 value, string decimalFormat)
+		{
+			writer.WriteLine(value.ToString(decimalFormat));
+			writer.WriteLine("0x{0:X}", value);
+			writer.WriteLine("0b{0}", DoHexToBinary(value.ToString("X")));
+			
+			DoWriteUnicode(writer, (long) value);
+		}
+		
+		private static void DoWrite(TextWriter writer, System.Int64 value, string decimalFormat)
+		{
+			writer.WriteLine(value.ToString(decimalFormat));
+			writer.WriteLine("0x{0:X}", value);
+			writer.WriteLine("0b{0}", DoHexToBinary(value.ToString("X")));
+		}
+		
+		private static void DoWrite(TextWriter writer, ThreadMirror thread, ObjectMirror value)
+		{
+			writer.WriteLine("Domain: {0}", value.Domain.FriendlyName);
+			writer.WriteLine("IsCollected: {0}", value.IsCollected);
+			writer.WriteLine(value.ToDisplayText(thread));
+		}
+		
+		private static void DoWrite(TextWriter writer, System.SByte value, string decimalFormat)
+		{
+			writer.WriteLine(value.ToString(decimalFormat));
+			writer.WriteLine("0x{0:X}", value);
+			writer.WriteLine("0b{0}", DoHexToBinary(value.ToString("X")));
+		}
+		
+		private static void DoWrite(TextWriter writer, StringMirror value)
+		{
+			writer.WriteLine("Domain: {0}", value.Domain.FriendlyName);
+			writer.WriteLine("IsCollected: {0}", value.IsCollected);
+			writer.WriteLine();
+			foreach (char ch in value.Value)
+			{
+				if (char.IsControl(ch))
+				{
+					if (ch == '\r' || ch == '\n' || ch == '\t')
+						writer.Write(ch);
+					else
+						writer.Write(CharHelpers.ToText(ch));
+				}
+				else
+				{
+					writer.Write(ch);
+				}
+			}
+			writer.WriteLine();
+			writer.WriteLine();
+			
+			var boss = ObjectModel.Create("TextEditorPlugin");
+			var name = boss.Get<IUnicodeName>();
+			for (int i = 0; i < value.Value.Length; ++i)
+			{
+				writer.Write("{0}: ", i);
+				
+				char ch = value.Value[i];
+				if (char.IsControl(ch) || (int) ch >= 0x80)
+				{
+					string text = name.GetName(ch);
+					writer.WriteLine(text);
+				}
+				else
+				{
+					writer.WriteLine("0x{0:X4} '{1}'", (int) ch, ch);
+				}
+			}
+		}
+		
 		private static void DoWrite(TextWriter writer, System.UInt16 value, string decimalFormat)
 		{
 			writer.WriteLine(value.ToString(decimalFormat));
 			writer.WriteLine("0x{0:X}", value);
 			writer.WriteLine("0b{0}", DoHexToBinary(value.ToString("X")));
+			
+			DoWriteUnicode(writer, value);
 		}
 		
 		private static void DoWrite(TextWriter writer, System.UInt32 value, string decimalFormat)
@@ -126,16 +248,7 @@ namespace Debugger
 			writer.WriteLine("0x{0:X}", value);
 			writer.WriteLine("0b{0}", DoHexToBinary(value.ToString("X")));
 			
-			var boss = ObjectModel.Create("TextEditorPlugin");
-			var name = boss.Get<IUnicodeName>();
-			string text = name.GetName((char) value);
-			if (text != "invalid code point")
-			{
-				int i = text.IndexOf(' ');	// get rid of the hex version of the code point
-				text = text.Substring(i + 1);
-				
-				writer.WriteLine(text);
-			}
+			DoWriteUnicode(writer, value);
 		}
 		
 		private static void DoWrite(TextWriter writer, System.UInt64 value, string decimalFormat)
@@ -143,6 +256,43 @@ namespace Debugger
 			writer.WriteLine(value.ToString(decimalFormat));
 			writer.WriteLine("0x{0:X}", value);
 			writer.WriteLine("0b{0}", DoHexToBinary(value.ToString("X")));
+		}
+		
+		private static void DoWriteStruct(TextWriter writer, ThreadMirror thread, StructMirror value, bool useThousands, params string[] formats)
+		{
+			try
+			{
+				MethodMirror method = value.Type.FindMethod("ToString", 2);
+				var nv = thread.VirtualMachine.CreateValue(null);
+				foreach (string format in formats)
+				{
+					var arg = thread.Domain.CreateString(format);
+					Value v = value.InvokeMethod(thread, method, new Value[]{arg, nv}, InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+					StringMirror s = (StringMirror) v;
+					writer.WriteLine(s.Value);
+				}
+			}
+			catch (Exception e)
+			{
+				writer.WriteLine(e.Message);
+			}
+		}
+		
+		private static void DoWriteUnicode(TextWriter writer, long value)
+		{
+			if (value >= 0 && value <= 65535)
+			{
+				var boss = ObjectModel.Create("TextEditorPlugin");
+				var name = boss.Get<IUnicodeName>();
+				string text = name.GetName((char) value);
+				if (text != "invalid code point")
+				{
+					int i = text.IndexOf(' ');	// get rid of the hex version of the code point
+					text = text.Substring(i + 1);
+					
+					writer.WriteLine(text);
+				}
+			}
 		}
 		
 		private static string DoHexToBinary(string hex)

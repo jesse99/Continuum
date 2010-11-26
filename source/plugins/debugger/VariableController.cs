@@ -522,9 +522,7 @@ namespace Debugger
 			{
 				writer.WriteLine(type);
 				writer.WriteLine();
-				
-				string decimalFormat = ShowThousands ? "N0" : "G";
-				Details.Write(writer, obj, decimalFormat);
+				Details.Write(writer, m_frame.Thread, obj, ShowThousands);
 			}
 			
 			boss = Gear.ObjectModel.Create("Application");

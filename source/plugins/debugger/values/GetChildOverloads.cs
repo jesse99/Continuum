@@ -31,7 +31,7 @@ namespace Debugger
 		[GetChild.Overload]
 		public static VariableItem GetChild(ThreadMirror thread, VariableItem parentItem, ArrayMirror parent, int index)
 		{
-			string name = DoGetArrayName(parent, index);
+			string name = GetArrayName(parent, index);
 			Value child = parent[index];
 			return new VariableItem(thread, name, parentItem, index, child, index);
 		}
@@ -184,6 +184,34 @@ namespace Debugger
 			return parent.GetChild(thread, parentItem, index);
 		}
 		
+		internal static string GetArrayName(ArrayMirror parent, int i)
+		{
+			var builder = new System.Text.StringBuilder();
+			
+			builder.Append('[');
+			for (int dim = 0; dim < parent.Rank; ++dim)
+			{
+				int length = DoGetArrayLength(parent, dim);
+				int index;
+				if (dim < parent.Rank - 1)
+				{
+					index = i/length;
+					i = i - length*index;
+				}
+				else
+				{
+					index = i;
+				}
+				
+				builder.Append((index + parent.GetLowerBound(dim)).ToString());
+				if (dim + 1 < parent.Rank)
+					builder.Append(", ");
+			}
+			builder.Append(']');
+			
+			return builder.ToString();
+		}
+		
 		#region Private Methods
 		private static VariableItem DoGetMulticastDelegateChild(ThreadMirror thread, VariableItem parentItem, ObjectMirror target, int index)
 		{
@@ -215,34 +243,6 @@ namespace Debugger
 					Contract.Assert(false);
 					return null;
 			}
-		}
-		
-		private static string DoGetArrayName(ArrayMirror parent, int i)
-		{
-			var builder = new System.Text.StringBuilder();
-			
-			builder.Append('[');
-			for (int dim = 0; dim < parent.Rank; ++dim)
-			{
-				int length = DoGetArrayLength(parent, dim);
-				int index;
-				if (dim < parent.Rank - 1)
-				{
-					index = i/length;
-					i = i - length*index;
-				}
-				else
-				{
-					index = i;
-				}
-				
-				builder.Append((index + parent.GetLowerBound(dim)).ToString());
-				if (dim + 1 < parent.Rank)
-					builder.Append(", ");
-			}
-			builder.Append(']');
-			
-			return builder.ToString();
 		}
 		
 		private static int DoGetArrayLength(ArrayMirror parent, int dimension)

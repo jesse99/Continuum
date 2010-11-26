@@ -52,11 +52,13 @@ include the percentage of samples that that method appeared in the stack trace
 	
 http://progit.org/
 
+StructMirror
+ObjectMirror, maybe show base types too
 
 * Add a show details command:
 	- not live, but when resuming disable the text
-	- support ints, char, string, IntPtr, UIntPtr
 * When shutting down with the debugger open the exe is opened on restart.
+	- also show details windows are opened
 * Add a way to switch between *.m/*.c/*.cpp and *.h files. Command-option-up arrow.
 * Command-option-left arrow to go backwards through open files (see how xcode really does this).
 * Command-option-right arrow to go backwards through open files (see how xcode really does this).
