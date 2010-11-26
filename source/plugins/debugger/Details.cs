@@ -31,7 +31,7 @@ namespace Debugger
 	// Used with the Show Details contextual menu command.
 	internal static class Details
 	{
-		public static void Write(TextWriter writer, object obj)
+		public static void Write(TextWriter writer, object obj, string decimalFormat)
 		{
 			if (obj is PrimitiveValue)
 			{
@@ -40,22 +40,22 @@ namespace Debugger
 					writer.WriteLine("null");
 					
 				else if (pv.Value is System.Byte)
-					DoWrite(writer, (System.Byte) pv.Value);
+					DoWrite(writer, (System.Byte) pv.Value, decimalFormat);
 				else if (pv.Value is System.UInt16)
-					DoWrite(writer, (System.UInt16) pv.Value);
+					DoWrite(writer, (System.UInt16) pv.Value, decimalFormat);
 				else if (pv.Value is System.UInt32)
-					DoWrite(writer, (System.UInt32) pv.Value);
+					DoWrite(writer, (System.UInt32) pv.Value, decimalFormat);
 				else if (pv.Value is System.UInt64)
-					DoWrite(writer, (System.UInt64) pv.Value);
+					DoWrite(writer, (System.UInt64) pv.Value, decimalFormat);
 				
 				else if (pv.Value is System.SByte)
-					DoWrite(writer, (System.SByte) pv.Value);
+					DoWrite(writer, (System.SByte) pv.Value, decimalFormat);
 				else if (pv.Value is System.Int16)
-					DoWrite(writer, (System.Int16) pv.Value);
+					DoWrite(writer, (System.Int16) pv.Value, decimalFormat);
 				else if (pv.Value is System.Int32)
-					DoWrite(writer, (System.Int32) pv.Value);
+					DoWrite(writer, (System.Int32) pv.Value, decimalFormat);
 				else if (pv.Value is System.Int64)
-					DoWrite(writer, (System.Int64) pv.Value);
+					DoWrite(writer, (System.Int64) pv.Value, decimalFormat);
 				
 				else
 					writer.WriteLine(pv.Value);
@@ -67,62 +67,23 @@ namespace Debugger
 		}
 		
 		#region Private Methods
-		private static void DoWrite(TextWriter writer, System.SByte value)
+		private static void DoWrite(TextWriter writer, System.SByte value, string decimalFormat)
 		{
-			writer.WriteLine(value);
+			writer.WriteLine(value.ToString(decimalFormat));
 			writer.WriteLine("0x{0:X}", value);
 			writer.WriteLine("0b{0}", DoHexToBinary(value.ToString("X")));
 		}
 		
-		private static void DoWrite(TextWriter writer, System.Int16 value)
+		private static void DoWrite(TextWriter writer, System.Int16 value, string decimalFormat)
 		{
-			writer.WriteLine(value);
+			writer.WriteLine(value.ToString(decimalFormat));
 			writer.WriteLine("0x{0:X}", value);
 			writer.WriteLine("0b{0}", DoHexToBinary(value.ToString("X")));
 		}
 		
-		private static void DoWrite(TextWriter writer, System.Int32 value)
+		private static void DoWrite(TextWriter writer, System.Int32 value, string decimalFormat)
 		{
-			writer.WriteLine(value);
-			writer.WriteLine("0x{0:X}", value);
-			writer.WriteLine("0b{0}", DoHexToBinary(value.ToString("X")));
-			
-			var boss = ObjectModel.Create("TextEditorPlugin");
-			var name = boss.Get<IUnicodeName>();
-			string text = name.GetName((char) value);
-			if (text != "invalid code point")
-			{
-				int i = text.IndexOf(' ');	// get rid of the hex version of the code point
-				text = text.Substring(i + 1);
-				
-				writer.WriteLine(text);
-			}
-		}
-		
-		private static void DoWrite(TextWriter writer, System.Int64 value)
-		{
-			writer.WriteLine(value);
-			writer.WriteLine("0x{0:X}", value);
-			writer.WriteLine("0b{0}", DoHexToBinary(value.ToString("X")));
-		}
-		
-		private static void DoWrite(TextWriter writer, System.Byte value)
-		{
-			writer.WriteLine(value);
-			writer.WriteLine("0x{0:X}", value);
-			writer.WriteLine("0b{0}", DoHexToBinary(value.ToString("X")));
-		}
-		
-		private static void DoWrite(TextWriter writer, System.UInt16 value)
-		{
-			writer.WriteLine(value);
-			writer.WriteLine("0x{0:X}", value);
-			writer.WriteLine("0b{0}", DoHexToBinary(value.ToString("X")));
-		}
-		
-		private static void DoWrite(TextWriter writer, System.UInt32 value)
-		{
-			writer.WriteLine(value);
+			writer.WriteLine(value.ToString(decimalFormat));
 			writer.WriteLine("0x{0:X}", value);
 			writer.WriteLine("0b{0}", DoHexToBinary(value.ToString("X")));
 			
@@ -138,9 +99,48 @@ namespace Debugger
 			}
 		}
 		
-		private static void DoWrite(TextWriter writer, System.UInt64 value)
+		private static void DoWrite(TextWriter writer, System.Int64 value, string decimalFormat)
 		{
-			writer.WriteLine(value);
+			writer.WriteLine(value.ToString(decimalFormat));
+			writer.WriteLine("0x{0:X}", value);
+			writer.WriteLine("0b{0}", DoHexToBinary(value.ToString("X")));
+		}
+		
+		private static void DoWrite(TextWriter writer, System.Byte value, string decimalFormat)
+		{
+			writer.WriteLine(value.ToString(decimalFormat));
+			writer.WriteLine("0x{0:X}", value);
+			writer.WriteLine("0b{0}", DoHexToBinary(value.ToString("X")));
+		}
+		
+		private static void DoWrite(TextWriter writer, System.UInt16 value, string decimalFormat)
+		{
+			writer.WriteLine(value.ToString(decimalFormat));
+			writer.WriteLine("0x{0:X}", value);
+			writer.WriteLine("0b{0}", DoHexToBinary(value.ToString("X")));
+		}
+		
+		private static void DoWrite(TextWriter writer, System.UInt32 value, string decimalFormat)
+		{
+			writer.WriteLine(value.ToString(decimalFormat));
+			writer.WriteLine("0x{0:X}", value);
+			writer.WriteLine("0b{0}", DoHexToBinary(value.ToString("X")));
+			
+			var boss = ObjectModel.Create("TextEditorPlugin");
+			var name = boss.Get<IUnicodeName>();
+			string text = name.GetName((char) value);
+			if (text != "invalid code point")
+			{
+				int i = text.IndexOf(' ');	// get rid of the hex version of the code point
+				text = text.Substring(i + 1);
+				
+				writer.WriteLine(text);
+			}
+		}
+		
+		private static void DoWrite(TextWriter writer, System.UInt64 value, string decimalFormat)
+		{
+			writer.WriteLine(value.ToString(decimalFormat));
 			writer.WriteLine("0x{0:X}", value);
 			writer.WriteLine("0b{0}", DoHexToBinary(value.ToString("X")));
 		}

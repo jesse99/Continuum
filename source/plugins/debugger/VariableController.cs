@@ -170,24 +170,6 @@ namespace Debugger
 			}
 		}
 		
-		private void DoShowDetails(string name, string type, object obj)
-		{
-			Boss boss = ObjectModel.Create("FileSystem");
-			var fs = boss.Get<IFileSystem>();
-			
-			string file = fs.GetTempFile(name, ".txt");
-			using (var writer = new System.IO.StreamWriter(file))
-			{
-				writer.WriteLine(type);
-				writer.WriteLine();
-				Details.Write(writer, obj);
-			}
-			
-			boss = Gear.ObjectModel.Create("Application");
-			var launcher = boss.Get<ILaunch>();
-			launcher.Launch(file, -1, -1, 1);
-		}
-		
 		public void showLiveObjects(NSObject sender)
 		{
 			var getter = new GetString{Title = "Show Live Objects", Label = "Type:", Text = "[\\w.]+"};
@@ -528,6 +510,26 @@ namespace Debugger
 					}
 				}
 			}
+		}
+		
+		private void DoShowDetails(string name, string type, object obj)
+		{
+			Boss boss = ObjectModel.Create("FileSystem");
+			var fs = boss.Get<IFileSystem>();
+			
+			string file = fs.GetTempFile(name, ".txt");
+			using (var writer = new System.IO.StreamWriter(file))
+			{
+				writer.WriteLine(type);
+				writer.WriteLine();
+				
+				string decimalFormat = ShowThousands ? "N0" : "G";
+				Details.Write(writer, obj, decimalFormat);
+			}
+			
+			boss = Gear.ObjectModel.Create("Application");
+			var launcher = boss.Get<ILaunch>();
+			launcher.Launch(file, -1, -1, 1);
 		}
 		
 		private void DoLoadPrefs()
