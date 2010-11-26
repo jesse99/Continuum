@@ -161,6 +161,33 @@ namespace Debugger
 			}
 		}
 		
+		public void showDetails(NSObject sender)
+		{
+			foreach (uint row in m_table.selectedRowIndexes())
+			{
+				var item = (VariableItem) (m_table.itemAtRow((int) row));
+				DoShowDetails(item.AttributedName.ToString(), item.AttributedType.ToString(), item.Value);
+			}
+		}
+		
+		private void DoShowDetails(string name, string type, object obj)
+		{
+			Boss boss = ObjectModel.Create("FileSystem");
+			var fs = boss.Get<IFileSystem>();
+			
+			string file = fs.GetTempFile(name, ".txt");
+			using (var writer = new System.IO.StreamWriter(file))
+			{
+				writer.WriteLine(type);
+				writer.WriteLine();
+				Details.Write(writer, obj);
+			}
+			
+			boss = Gear.ObjectModel.Create("Application");
+			var launcher = boss.Get<ILaunch>();
+			launcher.Launch(file, -1, -1, 1);
+		}
+		
 		public void showLiveObjects(NSObject sender)
 		{
 			var getter = new GetString{Title = "Show Live Objects", Label = "Type:", Text = "[\\w.]+"};

@@ -1,4 +1,4 @@
-// Copyright (C) 2009 Jesse Jones
+// Copyright (C) 2009-2010 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -21,10 +21,11 @@
 
 using Gear;
 
-namespace TextEditor
-{	
+namespace Shared
+{
 	public interface IUnicodeName : IInterface
 	{
+		// Returns "invalid code point" if the character is not a valid Unicode character.
 		string GetName(char ch);
-	} 
+	}
 }
