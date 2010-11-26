@@ -38,8 +38,25 @@ namespace Debugger
 				var pv = (PrimitiveValue) obj;
 				if (pv.Value == null)
 					writer.WriteLine("null");
+					
+				else if (pv.Value is System.Byte)
+					DoWrite(writer, (System.Byte) pv.Value);
+				else if (pv.Value is System.UInt16)
+					DoWrite(writer, (System.UInt16) pv.Value);
+				else if (pv.Value is System.UInt32)
+					DoWrite(writer, (System.UInt32) pv.Value);
+				else if (pv.Value is System.UInt64)
+					DoWrite(writer, (System.UInt64) pv.Value);
+				
+				else if (pv.Value is System.SByte)
+					DoWrite(writer, (System.SByte) pv.Value);
+				else if (pv.Value is System.Int16)
+					DoWrite(writer, (System.Int16) pv.Value);
 				else if (pv.Value is System.Int32)
 					DoWrite(writer, (System.Int32) pv.Value);
+				else if (pv.Value is System.Int64)
+					DoWrite(writer, (System.Int64) pv.Value);
+				
 				else
 					writer.WriteLine(pv.Value);
 			}
@@ -50,6 +67,20 @@ namespace Debugger
 		}
 		
 		#region Private Methods
+		private static void DoWrite(TextWriter writer, System.SByte value)
+		{
+			writer.WriteLine(value);
+			writer.WriteLine("0x{0:X}", value);
+			writer.WriteLine("0b{0}", DoHexToBinary(value.ToString("X")));
+		}
+		
+		private static void DoWrite(TextWriter writer, System.Int16 value)
+		{
+			writer.WriteLine(value);
+			writer.WriteLine("0x{0:X}", value);
+			writer.WriteLine("0b{0}", DoHexToBinary(value.ToString("X")));
+		}
+		
 		private static void DoWrite(TextWriter writer, System.Int32 value)
 		{
 			writer.WriteLine(value);
@@ -66,6 +97,52 @@ namespace Debugger
 				
 				writer.WriteLine(text);
 			}
+		}
+		
+		private static void DoWrite(TextWriter writer, System.Int64 value)
+		{
+			writer.WriteLine(value);
+			writer.WriteLine("0x{0:X}", value);
+			writer.WriteLine("0b{0}", DoHexToBinary(value.ToString("X")));
+		}
+		
+		private static void DoWrite(TextWriter writer, System.Byte value)
+		{
+			writer.WriteLine(value);
+			writer.WriteLine("0x{0:X}", value);
+			writer.WriteLine("0b{0}", DoHexToBinary(value.ToString("X")));
+		}
+		
+		private static void DoWrite(TextWriter writer, System.UInt16 value)
+		{
+			writer.WriteLine(value);
+			writer.WriteLine("0x{0:X}", value);
+			writer.WriteLine("0b{0}", DoHexToBinary(value.ToString("X")));
+		}
+		
+		private static void DoWrite(TextWriter writer, System.UInt32 value)
+		{
+			writer.WriteLine(value);
+			writer.WriteLine("0x{0:X}", value);
+			writer.WriteLine("0b{0}", DoHexToBinary(value.ToString("X")));
+			
+			var boss = ObjectModel.Create("TextEditorPlugin");
+			var name = boss.Get<IUnicodeName>();
+			string text = name.GetName((char) value);
+			if (text != "invalid code point")
+			{
+				int i = text.IndexOf(' ');	// get rid of the hex version of the code point
+				text = text.Substring(i + 1);
+				
+				writer.WriteLine(text);
+			}
+		}
+		
+		private static void DoWrite(TextWriter writer, System.UInt64 value)
+		{
+			writer.WriteLine(value);
+			writer.WriteLine("0x{0:X}", value);
+			writer.WriteLine("0b{0}", DoHexToBinary(value.ToString("X")));
 		}
 		
 		private static string DoHexToBinary(string hex)
