@@ -22,6 +22,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Gear;
 using Mono.Debugger.Soft;
 using Shared;
@@ -93,7 +94,7 @@ namespace Debugger
 				if (type == "System.DateTime")
 					DoWriteStruct(writer, thread, struct_, useThousands, "f", "r");
 				else
-					writer.WriteLine(struct_.ToDisplayText(thread));
+					DoWriteStruct(writer, thread, struct_, useThousands);
 			}
 			else if (obj is ObjectMirror)
 			{
@@ -182,7 +183,33 @@ namespace Debugger
 		{
 			writer.WriteLine("Domain: {0}", value.Domain.FriendlyName);
 			writer.WriteLine("IsCollected: {0}", value.IsCollected);
-			writer.WriteLine(value.ToDisplayText(thread));
+			
+			string text = value.ToDisplayText(thread);
+			if (!string.IsNullOrEmpty(text))
+			{
+				writer.WriteLine(text);
+				writer.WriteLine();
+			}
+			
+			PropertyInfoMirror[] props = (from p in value.Type.GetAllProperties() where p.ShouldDisplay() orderby p.Name ascending select p).ToArray();
+			if (props.Length > 0)
+			{
+				foreach (PropertyInfoMirror prop in props)
+				{
+					writer.Write("{0}: ", prop.Name);
+					Value v = EvalMember.Evaluate(thread, value, prop.Name);
+					writer.WriteLine(v.ToDisplayText(thread));
+				}
+				writer.WriteLine();
+			}
+			
+			FieldInfoMirror[] fields = (from f in value.Type.GetAllFields() where f.ShouldDisplay() orderby f.Name ascending select f).ToArray();
+			foreach (FieldInfoMirror field in fields)
+			{
+				writer.Write("{0}: ", field.Name);
+				Value v = EvalMember.Evaluate(thread, value, field.Name);
+				writer.WriteLine(v.ToDisplayText(thread));
+			}
 		}
 		
 		private static void DoWrite(TextWriter writer, System.SByte value, string decimalFormat)
@@ -262,14 +289,48 @@ namespace Debugger
 		{
 			try
 			{
-				MethodMirror method = value.Type.FindMethod("ToString", 2);
-				var nv = thread.VirtualMachine.CreateValue(null);
-				foreach (string format in formats)
+				string text = null;
+				if (formats.Length > 0)
 				{
-					var arg = thread.Domain.CreateString(format);
-					Value v = value.InvokeMethod(thread, method, new Value[]{arg, nv}, InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
-					StringMirror s = (StringMirror) v;
-					writer.WriteLine(s.Value);
+					MethodMirror method = value.Type.FindMethod("ToString", 2);
+					var nv = thread.VirtualMachine.CreateValue(null);
+					foreach (string format in formats)
+					{
+						var arg = thread.Domain.CreateString(format);
+						Value v = value.InvokeMethod(thread, method, new Value[]{arg, nv}, InvokeOptions.DisableBreakpoints | InvokeOptions.SingleThreaded);
+						text = ((StringMirror) v).Value;
+					}
+				}
+				else
+				{
+					text = value.ToDisplayText(thread);
+				}
+				if (!string.IsNullOrEmpty(text))
+				{
+					writer.WriteLine(text);
+					writer.WriteLine();
+				}
+				
+				PropertyInfoMirror[] props = (from p in value.Type.GetAllProperties() where p.ShouldDisplay() orderby p.Name ascending select p).ToArray();
+				if (props.Length > 0)
+				{
+					foreach (PropertyInfoMirror prop in props)
+					{
+						writer.Write("{0}: ", prop.Name);
+						Value v = EvalMember.Evaluate(thread, value, prop.Name);
+						writer.WriteLine(v.ToDisplayText(thread));
+					}
+					writer.WriteLine();
+				}
+				
+				FieldInfoMirror[] fields = (from f in value.Type.GetAllFields() where f.ShouldDisplay() orderby f.Name ascending select f).ToArray();
+				foreach (FieldInfoMirror field in fields)
+				{
+					writer.Write("{0}: ", field.Name);
+					if (field.IsStatic)
+						writer.WriteLine(value.Type.GetValue(field).ToDisplayText(thread));
+					else
+						writer.WriteLine(value[field.Name].ToDisplayText(thread));
 				}
 			}
 			catch (Exception e)

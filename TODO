@@ -52,11 +52,7 @@ include the percentage of samples that that method appeared in the stack trace
 	
 http://progit.org/
 
-StructMirror
-ObjectMirror, maybe show base types too
-
-* Add a show details command:
-	- not live, but when resuming disable the text
+* Don't think GetChild of a StructMirror is handling index correctly.
 * When shutting down with the debugger open the exe is opened on restart.
 	- also show details windows are opened
 * Add a way to switch between *.m/*.c/*.cpp and *.h files. Command-option-up arrow.

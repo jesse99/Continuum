@@ -75,7 +75,7 @@ namespace Debugger
 		public NSAttributedString AttributedType {get; private set;}
 		public NSAttributedString AttributedValue {get; private set;}
 		
-		public VariableItem Parent {get; private set;}
+		public VariableItem Parent {get; private set;}		// need this when setting values
 		public object Key {get; private set;}
 		public object Value {get; private set;}
 		
