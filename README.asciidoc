@@ -32,7 +32,9 @@ You don't have to do any sort of installation to run Continuum, but there are a 
 • There is a command line tool that can be used within a terminal to open files or directories using Continuum. To install the tool open Continuum and select the `Install Command Line Tool` item 
 from the Continuum menu. 
 
-• It's helpful to install the mono sources when using Continuum. This allows you to step into the mono source code when debugging and lets you open the source file associated with System or Mono types using a contextual menu. If you have one copy of the source code Continuum can figure out where it is using the locate command. But if you have multiple copies you may want to go to the Environment panel in Continuum's preferences and double-check that it is set correctly.
+• It's helpful to install the mono sources when using Continuum. This lets you open the source file associated with System or Mono types using a contextual menu. If you have one copy of the source code Continuum can figure out where it is using the locate command. But if you have multiple copies you may want to go to the Environment panel in Continuum's preferences and double-check that it is set correctly.
+
+• The mono installer no longer installs mdb files so if you want to step into System code while debugging you'll need to build Mono yourself.
 
 In order to do things like auto-complete Continuum has to parse the assemblies you build as well as all of the assemblies that they reference. This information is cached in sqlite databases stored in `~/Library/Caches/Continuum`. These files can be quite large so you may want to delete them if you uninstall Continuum.
 

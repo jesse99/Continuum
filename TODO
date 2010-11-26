@@ -53,10 +53,7 @@ include the percentage of samples that that method appeared in the stack trace
 http://progit.org/
 
 
-* Mention useful to download mono source (and set the associated pref):
-	- dont need to compile
-	- allows source level debugging, context menus allow you to go to definitions for mono methods
-* Add a show command:
+* Add a show details command:
 	- should be a context menu for selected types
 	- not live, but when resuming disable the text
 	- support ints, char, string, IntPtr, UIntPtr
