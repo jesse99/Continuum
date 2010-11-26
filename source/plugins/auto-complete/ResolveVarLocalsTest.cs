@@ -322,6 +322,34 @@ internal sealed class MyClass
 		}
 		
 		[Test]
+		public void Cast()
+		{
+			string text = @"
+using System;
+using System.Collections.Generic;
+
+internal sealed class MyClass
+{
+	public void Work(object o)
+	{
+		var x = (string) o;
+		xxx.
+	}
+}
+";
+			bool found = DoGetTarget(text, "x", text.IndexOf("xxx"), new MockTargetDatabase
+			{
+				Types = new List<string>
+				{
+					"System.String",
+				}
+			});
+			Assert.IsTrue(found);
+			Assert.AreEqual("System.String", m_target.TypeName);
+			Assert.IsNull(m_target.Type);
+		}
+		
+		[Test]
 		public void AsCast1()
 		{
 			string text = @"

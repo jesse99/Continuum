@@ -1,4 +1,4 @@
-// Copyright (C) 2009 Jesse Jones
+// Copyright (C) 2009-2010 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -33,6 +33,32 @@ namespace AutoComplete
 	// Used to resolve a simple name (e.g. locals in scope, arguments, etc).
 	internal sealed class ResolveName
 	{
+		static ResolveName()
+		{
+			// These aren't perfect regexen but they are only used to match the rhs
+			// of a 'var x = rhs' expression and a bad match just means that we will
+			// try to auto-complete using a bad type.
+			string[] expressions = new string[]{
+				@"new \s+ TYPE \s* \(",										// new TYPE(
+				@"as \s+ TYPE \s* $",											// as TYPE;
+				@"\( \s* TYPE \s* \) \s* .+? $",								// (TYPE) xxx;
+				@"[\w._]+? \s* \. \s* Get \s* < \s* TYPE \s* > \s* \(",	// xxx.Get<Type>(
+			};
+			
+			string type = @"(\w+[\w._, <>\[\]?*]*)";
+			
+			string pattern = string.Empty;
+			for (int i = 0; i < expressions.Length; ++i)
+			{
+				pattern += string.Format("(?: {0})", expressions[i]).Replace("TYPE", type);
+				
+				if (i + 1 < expressions.Length)
+					pattern += " | ";
+			}
+			
+			ms_re = new Regex(pattern, RegexOptions.IgnorePatternWhitespace);
+		}
+		
 		public ResolveName(CsMember context, ITargetDatabase database, ICsLocalsParser locals, string text, int offset, CsGlobalNamespace globals)
 		{
 			Profile.Start("ResolveName::ctor");
@@ -41,13 +67,6 @@ namespace AutoComplete
 			m_globals = globals;
 			m_offset = offset;
 			m_context = context;
-			
-#if TEST
-			m_locals = new CsParser.LocalsParser();
-#else
-			Boss boss = ObjectModel.Create("CsParser");
-			m_locals = boss.Get<ICsLocalsParser>();
-#endif
 			
 			Profile.Start("DoFindMember");
 			m_member = DoFindMember(m_globals);
@@ -288,12 +307,7 @@ namespace AutoComplete
 					if (type == "var" && m_variables[i].Value != null)
 					{
 						string value = m_variables[i].Value;
-						if (value.StartsWith("new"))
-						{
-							// var result = new Type(...);
-							value = DoGetNewValue(value);
-						}
-						else if (value.StartsWith("from "))
+						if (value.StartsWith("from "))		// these two don't have an explicit TYPE so we don't use ms_re for them
 						{
 							// var result = from ...;
 							value = "System.Collections.Generic.IEnumerable`1";
@@ -303,20 +317,10 @@ namespace AutoComplete
 							// var result = typeof(...);
 							value = DoGetTypeofValue(value);
 						}
-						else if (value.Contains(" as "))
-						{
-							// var result = ... as type;
-							value = DoGetAsValue(value);
-						}
 						else
 						{
-							// var result = xxx.Get<Type>();
-							// TODO: need something more general here 
-							Match m = ms_getRE.Match(value);
-							if (m.Success)
-							{
-								value = m.Groups[1].Value;
-							}
+							// var result = xxx TYPE yyy
+							value = DoGetReValue(value);
 						}
 						
 						if (result == null && !string.IsNullOrEmpty(value))
@@ -337,16 +341,22 @@ namespace AutoComplete
 			return result;
 		}
 		
-		private string DoGetNewValue(string value)
+		private string DoGetReValue(string value)
 		{
-			Token next = new Token(0);
-			string type = m_locals.ParseType(value, 4, value.Length, ref next);
-	Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "new type: {0}, next: '{1}'", type, next);
+			string type = value;
 			
-			if (type != null && !next.IsPunct("(") && !next.IsPunct("{"))	// new foo() or new int[]{1, 2}
+			Match m = ms_re.Match(value);
+			if (m.Success)
 			{
-				Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "type {0} was followed by '{1}', but '(' was expected", type, next);
-				type = null;
+				for (int i = 1; i < m.Groups.Count; ++i)
+				{
+					Group g = m.Groups[i];
+					if (g.Success)
+					{
+						type = g.Value.Replace(" ", string.Empty);		// the value string has extra spaces inserted...
+						break;
+					}
+				}
 			}
 			
 			if (type != null)
@@ -372,33 +382,6 @@ namespace AutoComplete
 			if (m.Success)
 			{
 				type = "System.Type";
-			}
-			
-			return type;
-		}
-		
-		private string DoGetAsValue(string value)
-		{
-			string type = null;
-			
-			int i = value.LastIndexOf(" as ");
-			if (i > 0)
-			{
-				Token next = new Token(0);
-				type = m_locals.ParseType(value, i + 4, value.Length, ref next);
-		Log.WriteLine(TraceLevel.Verbose, "AutoComplete", "as cast type: {0}, next: '{1}'", type, next);
-				
-				if (type != null)
-				{
-					if (type.EndsWith("[ ]"))
-						type = "array-type";
-					
-					else if (type.EndsWith("?"))
-						type = "nullable-type";
-					
-					else if (type.EndsWith("*"))
-						type = "pointer-type";
-				}
 			}
 			
 			return type;
@@ -485,7 +468,6 @@ namespace AutoComplete
 		
 		#region Fields
 		private ITargetDatabase m_database;
-		private ICsLocalsParser m_locals;
 		private ResolveType m_typeResolver;
 		private Variable[] m_variables;
 		private int m_offset;
@@ -493,7 +475,7 @@ namespace AutoComplete
 		private CsGlobalNamespace m_globals;
 		private CsMember m_context;
 		
-		private Regex ms_getRE = new Regex(@"[\w._]+ \s* \. \s* Get \s* < \s* ([\w._]+) \s* > \s* \( \s* \)", RegexOptions.IgnorePatternWhitespace);
+		private static Regex ms_re;
 		private Regex ms_typeofRE = new Regex(@"typeof \s* \( \s* [\w._]+ \s* \) \s* $", RegexOptions.IgnorePatternWhitespace);
 		#endregion
 	}
