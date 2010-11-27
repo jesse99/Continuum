@@ -39,7 +39,7 @@ namespace AutoComplete
 			// of a 'var x = rhs' expression and a bad match just means that we will
 			// try to auto-complete using a bad type.
 			string[] expressions = new string[]{
-				@"new \s+ TYPE \s* \(",										// new TYPE(
+				@"new \s+ TYPE \s* [({]",										// new TYPE( or new TYPE{
 				@"as \s+ TYPE \s* $",											// as TYPE;
 				@"\( \s* TYPE \s* \) \s* .+? $",								// (TYPE) xxx;
 				@"[\w._]+? \s* \. \s* Get \s* < \s* TYPE \s* > \s* \(",	// xxx.Get<Type>(
