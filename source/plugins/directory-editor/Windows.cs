@@ -53,7 +53,7 @@ namespace DirectoryEditor
 		{
 			List<Boss> bosses = new List<Boss>();
 			
-			foreach (NSWindow window in NSApplication.sharedApplication().windows())
+			foreach (NSWindow window in NSApplication.sharedApplication().orderedWindows())
 			{
 				if (window.isVisible())
 				{

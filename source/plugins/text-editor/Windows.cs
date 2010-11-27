@@ -46,14 +46,14 @@ namespace TextEditor
 			if (controller == null)
 				controller = NSApplication.sharedApplication().keyWindow().windowController() as TextController;
 			
-			return controller != null ? controller.Boss : null;			
+			return controller != null ? controller.Boss : null;
 		}
-	
+		
 		public Boss[] All()
 		{
 			List<Boss> bosses = new List<Boss>();
 			
-			foreach (NSWindow window in NSApplication.sharedApplication().windows())
+			foreach (NSWindow window in NSApplication.sharedApplication().orderedWindows())
 			{
 				if (window.isVisible())
 				{
@@ -65,9 +65,9 @@ namespace TextEditor
 			
 			return bosses.ToArray();
 		}
- 		
+		
 		#region Fields 
-		private Boss m_boss; 
+		private Boss m_boss;
 		#endregion
-	} 
-}	
+	}
+}

@@ -31,6 +31,7 @@ namespace Shared
 		Boss Main();
 		
 		// Returns the plugin bosses asscociated with each visible window.
+		// Note that these are returned in z-order with the topmost window first.
 		Boss[] All();
 	}
 }

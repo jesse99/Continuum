@@ -545,34 +545,43 @@ namespace TextEditor
 			
 			if (evt.keyCode() == Constants.LeftArrowKey)
 			{
-				if (option && shift)
+				if (command && option)
 				{
-					// Special case option-shift-left-arrow because Apple is too lame to call 
-					// selectionRangeForProposedRange_granularity for us.
+					// Cycle down through document windows.
+					DoActivateLowerWindow();
+					return true;
+				}
+				else if (option && shift)
+				{
+					// Extend the selection to the left using the previous word (for some reason Cocoa
+					// does not call selectionRangeForProposedRange_granularity for this).
 					if (DoExtendSelectionLeft())
 						return true;
 				}
 				else if (option)
 				{
-					// Special case option-left-arrow because in Snow Leopard it defaults to skiping
-					// over periods.
+					// Move the insertion point to the start of the previous word.
 					if (DoMoveSelectionLeft())
 						return true;
 				}
 			}
 			else if (evt.keyCode() == Constants.RightArrowKey)
 			{
-				if (option && shift)
+				if (command && option)
 				{
-					// Special case option-shift-right-arrow because Apple is too lame to call 
-					// selectionRangeForProposedRange_granularity for us.
+					// Cycle up through document windows.
+					DoActivateHigherWindow();
+					return true;
+				}
+				else if (option && shift)
+				{
+					// Extend the selection to the right of the next word.
 					if (DoExtendSelectionRight())
 						return true;
 				}
 				else if (option)
 				{
-					// Special case option-right-arrow because in Snow Leopard it defaults to skiping
-					// over periods.
+					// Move the insertion point after the end of the next word.
 					if (DoMoveSelectionRight())
 						return true;
 				}
@@ -581,9 +590,9 @@ namespace TextEditor
 			{
 				if (command && option)
 				{
-					// Toggle between *.cpp/*.c and *.hpp/*.h files.
-					if (DoToggleHeader())
-						return true;
+					// Toggle between *.cpp/*.c/*.m and *.hpp/*.h files.
+					DoToggleHeader();
+					return true;
 				}
 			}
 			
@@ -650,7 +659,76 @@ namespace TextEditor
 			return false;
 		}
 		
-		private bool DoToggleHeader()
+		private void DoActivateLowerWindow()
+		{
+			DoCacheWindows();
+			
+			if (ms_windows.Length > 1)
+			{
+				ms_windowIndex = (ms_windowIndex + 1) % ms_windows.Length;
+				
+				WeakReference wr = ms_windows[ms_windowIndex];
+				Contract.Assert(wr.Target != null);			// if a window went away the cache should have been rebuilt
+				Boss boss = (Boss) wr.Target;
+				
+				var window = boss.Get<IWindow>();
+				window.Window.makeKeyAndOrderFront(this);
+				return;
+			}
+			
+			Functions.NSBeep();
+		}
+		
+		private void DoActivateHigherWindow()
+		{
+			DoCacheWindows();
+			
+			if (ms_windows.Length > 1)
+			{
+				if (ms_windowIndex > 0)
+					--ms_windowIndex;
+				else
+					ms_windowIndex = ms_windows.Length - 1;
+				
+				WeakReference wr = ms_windows[ms_windowIndex];
+				Contract.Assert(wr.Target != null);			// if a window went away the cache should have been rebuilt
+				Boss boss = (Boss) wr.Target;
+				
+				var window = boss.Get<IWindow>();
+				window.Window.makeKeyAndOrderFront(this);
+				return;
+			}
+			
+			Functions.NSBeep();
+		}
+		
+		private void DoCacheWindows()
+		{
+			Boss boss = ObjectModel.Create("TextEditorPlugin");
+			var w = boss.Get<IWindows>();
+			Boss[] windows = w.All();
+			if (ms_windows == null || !DoCacheIsValid(windows))
+			{
+				ms_windows = (from b in windows select new WeakReference(b)).ToArray();
+				ms_windowIndex = 0;
+			}
+		}
+		
+		private bool DoCacheIsValid(Boss[] windows)
+		{
+			if (windows.Length != ms_windows.Length)
+				return false;
+			
+			for (int i = 0; i < ms_windows.Length; ++i)		// O(N^2) but that should be OK for windows
+			{
+				if (Array.IndexOf(windows, ms_windows[i].Target) < 0)
+					return false;
+			}
+			
+			return true;
+		}
+		
+		private void DoToggleHeader()
 		{
 			var code = new string[]{".cpp", ".cxx", ".cc", ".c", ".m"};
 			var header = new string[]{".hpp", ".hxx", ".h"};
@@ -661,20 +739,21 @@ namespace TextEditor
 				if (code.Any(s => editor.Path.EndsWith(s)))
 				{
 					if (DoSelect(Path.GetFileNameWithoutExtension(editor.Path), header))
-						return true;
+						return;
 					else if (DoOpen(editor.Path, header))
-						return true;
+						return;
 				}
 				else if (header.Any(s => editor.Path.EndsWith(s)))
 				{
 					if (DoSelect(Path.GetFileNameWithoutExtension(editor.Path), code))
-						return true;
+						return;
 					else if (DoOpen(editor.Path, code))
-						return true;
+						return;
 				}
 			}
 			
-			return false;
+			Functions.NSBeep();
+			return;
 		}
 		
 		private bool DoSelect(string fileName, string[] extensions)
@@ -1242,6 +1321,9 @@ namespace TextEditor
 		private NSRect m_overlayRect;
 		private NSSize m_overlaySize;
 		private NSAttributedString m_overlay;
+		
+		private static WeakReference[] ms_windows;
+		private static int ms_windowIndex;
 		#endregion
 	}
 }
