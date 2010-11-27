@@ -539,6 +539,7 @@ namespace TextEditor
 		#region Private Methods
 		private bool DoArrowKeys(NSEvent evt)
 		{
+			bool command = (evt.modifierFlags() & Enums.NSCommandKeyMask) == Enums.NSCommandKeyMask;
 			bool option = (evt.modifierFlags() & Enums.NSAlternateKeyMask) == Enums.NSAlternateKeyMask;
 			bool shift = (evt.modifierFlags() & Enums.NSShiftKeyMask) == Enums.NSShiftKeyMask;
 			
@@ -578,7 +579,7 @@ namespace TextEditor
 			}
 			else if (evt.keyCode() == Constants.UpArrowKey)
 			{
-				if (option)
+				if (command && option)
 				{
 					// Toggle between *.cpp/*.c and *.hpp/*.h files.
 					if (DoToggleHeader())

@@ -52,7 +52,7 @@ include the percentage of samples that that method appeared in the stack trace
 	
 http://progit.org/
 
-* Didn't auto-complete: var code = new string[]{".cpp", ".cxx", ".cc", ".c", ".m"};
+* Togle should be command-option-left-arrow
 * Command-option-left arrow to go backwards through open files (see how xcode really does this).
 * Command-option-right arrow to go backwards through open files (see how xcode really does this).
 * Command-/ toggle commenting a block of code.
