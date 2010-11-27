@@ -27,6 +27,7 @@ using Shared;
 using System;
 using System.Diagnostics;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -166,93 +167,12 @@ namespace TextEditor
 						break;
 				}
 				
-				if (evt.keyCode() == Constants.TabKey)
-				{
-					// Option-[shift]-tab selects the next/prev identifier.
-					if ((evt.modifierFlags() & Enums.NSAlternateKeyMask) != 0)
-					{
-						if ((evt.modifierFlags() & Enums.NSShiftKeyMask) == 0)
-						{
-							if (DoSelectNextIdentifier(controller))
-								break;
-						}
-						else
-						{
-							if (DoSelectPreviousIdentifier(controller))
-								break;
-						}
-					}
-					else if ((evt.modifierFlags() & Enums.NSCommandKeyMask) != 0)
-					{
-					}
-					else if ((evt.modifierFlags() & Enums.NSControlKeyMask) != 0)
-					{
-					}
-					else if ((evt.modifierFlags() & Enums.NSShiftKeyMask) != 0)
-					{
-						// Shift-tab with at least one line selected unindents lines
-						var selRange = selectedRange();
-						if (DoSelectionCrossesLines(selRange))
-						{
-							controller.shiftLeft(this);
-							break;
-						}
-					}
-					else
-					{
-						var selRange = selectedRange();
-						if (selRange.location > 0 && selRange.length > 1)
-						{
-							// Tab with at least one line selected indents lines
-							if (DoSelectionCrossesLines(selRange))
-							{
-								controller.shiftRight(this);
-								break;
-							}
-						}
-						else if (selRange.location > 0 && selRange.length == 0)
-						{
-							// Tab with no selection at the end of a blank line indents like the previous line.
-							if (DoMatchPriorLineTabs(selRange.location))
-								break;
-						}
-					}
-				}
-				
-				if ((evt.modifierFlags() & Enums.NSAlternateKeyMask) == Enums.NSAlternateKeyMask)
-				{
-					// Special case option-shift-arrow because Apple is too lame to call 
-					// selectionRangeForProposedRange_granularity for us.
-					if ((evt.modifierFlags() & Enums.NSShiftKeyMask) == Enums.NSShiftKeyMask)
-					{
-						if (evt.keyCode() == Constants.LeftArrowKey)
-						{
-							if (DoExtendSelectionLeft())
-								break;
-						}
-						else if (evt.keyCode() == Constants.RightArrowKey)
-						{
-							if (DoExtendSelectionRight())
-								break;
-						}
-					}
-					else
-					{
-						// Special case option-arrow because in Snow Leopard it defaults to skiping
-						// over periods.
-						if (evt.keyCode() == Constants.LeftArrowKey)
-						{
-							if (DoMoveSelectionLeft())
-								break;
-						}
-						else if (evt.keyCode() == Constants.RightArrowKey)
-						{
-							if (DoMoveSelectionRight())
-								break;
-						}
-					}
-				}
-				
+				if (DoTabKey(evt))
+					break;
+					
+				if (DoArrowKeys(evt))
+					break;
+					
 				// Special case for deleting the new line at the start of a blank line
 				// (users don't normally want the whitespace to be appended to the
 				// previous line).
@@ -617,6 +537,211 @@ namespace TextEditor
 		#endregion
 		
 		#region Private Methods
+		private bool DoArrowKeys(NSEvent evt)
+		{
+			bool option = (evt.modifierFlags() & Enums.NSAlternateKeyMask) == Enums.NSAlternateKeyMask;
+			bool shift = (evt.modifierFlags() & Enums.NSShiftKeyMask) == Enums.NSShiftKeyMask;
+			
+			if (evt.keyCode() == Constants.LeftArrowKey)
+			{
+				if (option && shift)
+				{
+					// Special case option-shift-left-arrow because Apple is too lame to call 
+					// selectionRangeForProposedRange_granularity for us.
+					if (DoExtendSelectionLeft())
+						return true;
+				}
+				else if (option)
+				{
+					// Special case option-left-arrow because in Snow Leopard it defaults to skiping
+					// over periods.
+					if (DoMoveSelectionLeft())
+						return true;
+				}
+			}
+			else if (evt.keyCode() == Constants.RightArrowKey)
+			{
+				if (option && shift)
+				{
+					// Special case option-shift-right-arrow because Apple is too lame to call 
+					// selectionRangeForProposedRange_granularity for us.
+					if (DoExtendSelectionRight())
+						return true;
+				}
+				else if (option)
+				{
+					// Special case option-right-arrow because in Snow Leopard it defaults to skiping
+					// over periods.
+					if (DoMoveSelectionRight())
+						return true;
+				}
+			}
+			else if (evt.keyCode() == Constants.UpArrowKey)
+			{
+				if (option)
+				{
+					// Toggle between *.cpp/*.c and *.hpp/*.h files.
+					if (DoToggleHeader())
+						return true;
+				}
+			}
+			
+			return false;
+		}
+		
+		private bool DoTabKey(NSEvent evt)
+		{
+			if (evt.keyCode() == Constants.TabKey)
+			{
+				TextController controller = (TextController) window().windowController();
+				if ((evt.modifierFlags() & Enums.NSAlternateKeyMask) != 0)
+				{
+					if ((evt.modifierFlags() & Enums.NSShiftKeyMask) == 0)
+					{
+						// Option-tab selects the prev identifier.
+						if (DoSelectNextIdentifier(controller))
+							return true;
+					}
+					else
+					{
+						// Option-shift-tab selects the prev identifier.
+						if (DoSelectPreviousIdentifier(controller))
+							return true;
+					}
+				}
+				else if ((evt.modifierFlags() & Enums.NSCommandKeyMask) != 0)
+				{
+				}
+				else if ((evt.modifierFlags() & Enums.NSControlKeyMask) != 0)
+				{
+				}
+				else if ((evt.modifierFlags() & Enums.NSShiftKeyMask) != 0)
+				{
+					// Shift-tab with at least one line selected unindents lines
+					var selRange = selectedRange();
+					if (DoSelectionCrossesLines(selRange))
+					{
+						controller.shiftLeft(this);
+						return true;
+					}
+				}
+				else
+				{
+					var selRange = selectedRange();
+					if (selRange.location > 0 && selRange.length > 1)
+					{
+						// Tab with at least one line selected indents lines
+						if (DoSelectionCrossesLines(selRange))
+						{
+							controller.shiftRight(this);
+							return true;
+						}
+					}
+					else if (selRange.location > 0 && selRange.length == 0)
+					{
+						// Tab with no selection at the end of a blank line indents like the previous line.
+						if (DoMatchPriorLineTabs(selRange.location))
+							return true;
+					}
+				}
+			}
+			
+			return false;
+		}
+		
+		private bool DoToggleHeader()
+		{
+			var code = new string[]{".cpp", ".cxx", ".cc", ".c", ".m"};
+			var header = new string[]{".hpp", ".hxx", ".h"};
+			
+			var editor = m_boss.Get<ITextEditor>();
+			if (editor.Path != null)
+			{
+				if (code.Any(s => editor.Path.EndsWith(s)))
+				{
+					if (DoSelect(Path.GetFileNameWithoutExtension(editor.Path), header))
+						return true;
+					else if (DoOpen(editor.Path, header))
+						return true;
+				}
+				else if (header.Any(s => editor.Path.EndsWith(s)))
+				{
+					if (DoSelect(Path.GetFileNameWithoutExtension(editor.Path), code))
+						return true;
+					else if (DoOpen(editor.Path, code))
+						return true;
+				}
+			}
+			
+			return false;
+		}
+		
+		private bool DoSelect(string fileName, string[] extensions)
+		{
+			fileName += ".";
+			Boss boss = ObjectModel.Create("TextEditorPlugin");
+			var windows = boss.Get<IWindows>();
+			foreach (Boss b in windows.All())
+			{
+				if (b.Has<ITextEditor>())
+				{
+					var editor = b.Get<ITextEditor>();
+					if (editor.Path != null)
+					{
+						string path = Path.GetFileName(editor.Path);
+						if (path.StartsWith(fileName) && extensions.Any(s => path.EndsWith(s)))
+						{
+							var window = b.Get<IWindow>();
+							window.Window.makeKeyAndOrderFront(this);
+							return true;
+						}
+					}
+				}
+			}
+			
+			return false;
+		}
+		
+		private bool DoOpen(string path, string[] extensions)
+		{
+			string dir = Path.GetDirectoryName(path);
+			string fileName = Path.GetFileNameWithoutExtension(path);
+			
+			// First look for a match in the same directory as the original file.
+			Boss boss = Gear.ObjectModel.Create("Application");
+			var launcher = boss.Get<ILaunch>();
+			foreach (string ext in extensions)
+			{
+				string file = Path.Combine(dir, fileName + ext);
+				if (File.Exists(file))
+				{
+					launcher.Launch(file, -1, -1, 1);
+					return true;
+				}
+			}
+			
+			// If that failed open all matching files under the file's root directory.
+			boss = ObjectModel.Create("DirectoryEditorPlugin");
+			var finder = boss.Get<IFindDirectoryEditor>();
+			boss = finder.GetDirectoryEditor(m_boss);
+			bool found = false;
+			if (boss != null)
+			{
+				var editor = boss.Get<IDirectoryEditor>();
+				fileName += ".";
+				foreach (string candidate in Directory.GetFiles(editor.Path, "*.*", SearchOption.AllDirectories))
+				{
+					if (Path.GetFileName(candidate).StartsWith(fileName) && extensions.Any(s => candidate.EndsWith(s)))
+					{
+						launcher.Launch(candidate, -1, -1, 1);
+						found = true;
+					}
+				}
+			}
+			
+			return found;
+		}
+		
 		// Convert an NSString or an NSAttributedString to our internal (unix) endian.
 		private NSObject DoNormalizeString(NSObject str)
 		{
