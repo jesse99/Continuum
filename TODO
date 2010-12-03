@@ -52,13 +52,6 @@ include the percentage of samples that that method appeared in the stack trace
 	
 http://progit.org/
 
-* Add toggle comment command:
-	- command-/
-	- comment or uncomment based on the first line
-	- add a LineComment language option
-	- probably want to disable the command if their is no LineComment for the active document
-* Control-1 show file history list. Simulate-click
-* Control-2 show types and methods for the current file (or maybe methods for the current type).
 * Use a table or something to document these special keys.
 * Build a new foreshadow.
 * Some sort of dynamic find files thingy.
@@ -68,6 +61,7 @@ http://progit.org/
 	- open files
 	- return in dir editor
 	- return in find in files result
+* May want to add scheme support. See http://coderchrome.org/browse/greatest/0 for example.
 * Do some more work on the debugger:
 	- add an immediate window
 	- breakpoint conditions should be persisted

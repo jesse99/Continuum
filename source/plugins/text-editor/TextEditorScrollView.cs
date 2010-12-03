@@ -39,7 +39,12 @@ namespace TextEditor
 			m_lineLabel.Value.setFont(font);
 			m_decPopup.Value.setFont(font);
 			
-			ActiveObjects.Add(this);	
+			ActiveObjects.Add(this);
+		}
+		
+		public void showDeclarations()
+		{
+			m_decPopup.Value.performClick(this);
 		}
 		
 		// This is where the subviews of the scroll view are laid out. We override it

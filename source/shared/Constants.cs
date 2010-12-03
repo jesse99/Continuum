@@ -56,5 +56,16 @@ namespace Shared
 		public static readonly int RightArrowKey = 0x7C;
 		public static readonly int TabKey = 0x30;
 		public static readonly int UpArrowKey = 0x7E;
+
+		public static readonly int Number0Key = 29;
+		public static readonly int Number1Key = 18;
+		public static readonly int Number2Key = 19;
+		public static readonly int Number3Key = 20;
+		public static readonly int Number4Key = 21;
+		public static readonly int Number5Key = 23;
+		public static readonly int Number6Key = 22;
+		public static readonly int Number7Key = 26;
+		public static readonly int Number8Key = 28;
+		public static readonly int Number9Key = 25;
 	}
 }
