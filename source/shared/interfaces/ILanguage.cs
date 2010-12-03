@@ -1,4 +1,4 @@
-// Copyright (C) 2009 Jesse Jones
+// Copyright (C) 2009-2010 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -51,5 +51,8 @@ namespace Shared
 		// Returns a regex used to define what the language considers a word (for
 		// things like double clicking).
 		Regex Word {get;}
+		
+		// Used by toggle comment command. May be null.
+		string LineComment {get;}
 	}
 }

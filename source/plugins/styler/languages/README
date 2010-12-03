@@ -9,6 +9,8 @@ Globs: is a space separated list of file name globs associated with the language
 
 IgnoreWhitespace: if this is true then leading and trailing whitespace is not highlighted. Defaults to false.
 
+LineComment: is used with the toggle comments command.
+
 Shebangs: space separated list of shebangs associated with the language, eg sh ksh csh bash. This allows files written in the language to be highlighted even if they don't have a matching glob.
 
 TabStops: space separated list of integral tab stops. This overrides the normal tab stops set in the preferences panel and is useful for languages that have fixed columns (like disassembled code).

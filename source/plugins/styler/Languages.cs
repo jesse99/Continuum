@@ -240,6 +240,9 @@ namespace Styler
 					else if (element == "Word")
 						settings.Word += value.Trim() + "\t";
 							
+					else if (element == "LineComment")
+						settings.LineComment = value.Trim().Replace("\\x23", "#");
+							
 					else if (element == "Shebangs")
 						settings.Shebangs += value.Trim() + " ";
 							

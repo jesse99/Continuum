@@ -49,6 +49,8 @@ namespace Styler
 		
 		public string Word {get; set;}
 		
+		public string LineComment {get; set;}
+
 		public string Shebangs {get; set;}
 		
 		public string IgnoreWhitespace {get; set;}
@@ -70,6 +72,8 @@ namespace Styler
 			m_expr = DoBuildExpr(elements);
 			if (settings.Word.Length > 0)
 				DoBuildWordRe(settings.Word);
+				
+			m_lineComment = settings.LineComment;
 			
 			ActiveObjects.Add(this);
 		}
@@ -105,6 +109,11 @@ namespace Styler
 					
 				return m_regex;
 			}
+		}
+		
+		public string LineComment
+		{
+			get {return m_lineComment;}
 		}
 		
 		// Note that elements may have alternatives so this will, in general, be larger than the
@@ -252,6 +261,7 @@ namespace Styler
 		private Regex m_regex;
 		private Regex m_word;
 		private bool m_styleWhitespace;
+		private string m_lineComment;
 		private Dictionary<int, string> m_indexTable = new Dictionary<int, string>();
 		#endregion
 	}

@@ -1,6 +1,7 @@
 # This is the little language Continuum refactor scripts are written in.
 Language: refactor
 Globs: *.ref
+LineComment: \x23
 
 Comment: \x23 [^\r\n]* [\r\n]	# note that $ won't work quite right with windows line endings
 Keyword: \b(?: and | define | do | elif | else | end | false | for | from | if | in | is | let | not | null | or | property | return | select | self | then | true | when | where)\b

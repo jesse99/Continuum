@@ -69,6 +69,11 @@ namespace Styler
 			get {return m_language.Word;}
 		}
 		
+		public string LineComment
+		{
+			get {return m_language.LineComment;}
+		}
+		
 		[ThreadModel(ThreadModel.Concurrent)]
 		public Language Language
 		{

@@ -52,11 +52,15 @@ include the percentage of samples that that method appeared in the stack trace
 	
 http://progit.org/
 
-* Command-/ toggle commenting a block of code.
-	- probably need to add some sort of language option for line comments
-* Control-1 show file history list.
+* Add toggle comment command:
+	- command-/
+	- comment or uncomment based on the first line
+	- add a LineComment language option
+	- probably want to disable the command if their is no LineComment for the active document
+* Control-1 show file history list. Simulate-click
 * Control-2 show types and methods for the current file (or maybe methods for the current type).
 * Use a table or something to document these special keys.
+* Build a new foreshadow.
 * Some sort of dynamic find files thingy.
 	- should use the selection as the default (if its not too crazy)
 	- use soundex? Levenshtein distance?

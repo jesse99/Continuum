@@ -653,6 +653,68 @@ namespace TextEditor
 			window().windowController().document().undoManager().setActionName(NSString.Create("Shift"));
 		}
 		
+		public void toggleComment(NSObject sender)
+		{
+			Unused.Value = Text;		// make sure m_metrics is up to date
+			
+			NSRange range = m_textView.Value.selectedRange();
+			int firstLine = m_metrics.GetLine(range.location);
+			int lastLine = m_metrics.GetLine(range.location + range.length - 1);
+			NSString comment = NSString.Create(m_language.LineComment);
+			
+			int offset = m_metrics.GetLineOffset(firstLine);
+			bool add = !DoLineStartsWith(offset, comment);
+			
+			var args = NSArray.Create(
+				NSNumber.Create(firstLine),
+				NSNumber.Create(lastLine),
+				comment,
+				NSNumber.Create(add));
+			toggleComments(args);
+		}
+		
+		public void toggleComments(NSArray args)
+		{
+			int firstLine = args.objectAtIndex(0).To<NSNumber>().intValue();
+			int lastLine = args.objectAtIndex(1).To<NSNumber>().intValue();
+			NSString comment = args.objectAtIndex(2).To<NSString>();
+			bool add = args.objectAtIndex(3).To<NSNumber>().boolValue();
+			
+			NSTextStorage storage = m_textView.Value.textStorage();
+			storage.beginEditing();
+			try
+			{
+				Unused.Value = Text;		// make sure m_metrics is up to date
+				
+				for (int line = lastLine; line >= firstLine; --line)			// backwards so metrics doesn't get confused by our edits (it won't sync up until we call endEditing)
+				{
+					int offset = m_metrics.GetLineOffset(line);
+					if (add)
+					{
+						if (!DoLineStartsWith(offset, comment))
+							storage.replaceCharactersInRange_withString(new NSRange(offset, 0), comment);
+					}
+					else
+					{
+						if (DoLineStartsWith(offset, comment))
+							storage.deleteCharactersInRange(new NSRange(offset, (int) comment.length()));
+					}
+				}
+			}
+			finally
+			{
+				storage.endEditing();
+			}
+			
+			int firstOffset = m_metrics.GetLineOffset(firstLine);
+			int lastOffset = m_metrics.GetLineOffset(lastLine + 1);
+			m_textView.Value.setSelectedRange(new NSRange(firstOffset, lastOffset - firstOffset));
+			
+			NSArray oldArgs = NSArray.Create(args.objectAtIndex(0), args.objectAtIndex(1), args.objectAtIndex(2), NSNumber.Create(!add));
+			window().windowController().document().undoManager().registerUndoWithTarget_selector_object(this, "toggleComments:", oldArgs);
+			window().windowController().document().undoManager().setActionName(NSString.Create("Toggle Comment"));
+		}
+		
 		public void showSpaces(NSObject sender)
 		{
 			Boss boss = ObjectModel.Create("Stylers");
@@ -804,6 +866,10 @@ namespace TextEditor
 					Unused.Value = item.Call("setTitle:", white.ShowTabs ? NSString.Create("Hide Tabs") : NSString.Create("Show Tabs"));
 					valid = true;
 				}
+			}
+			else if (sel.Name == "toggleComment:")
+			{
+				valid = m_language != null && m_language.LineComment != null;
 			}
 			else if (sel.Name == "toggleWordWrap:")
 			{
@@ -1171,6 +1237,21 @@ namespace TextEditor
 				if (range == null)
 					m_ranges.RemoveAt(i);
 			}
+		}
+		
+		private bool DoLineStartsWith(int offset, NSString text)
+		{
+			bool match = false;
+			
+			NSString buffer =  m_textView.Value.textStorage().string_();
+			if (offset + text.length() <= buffer.length())
+			{
+				int result = buffer.compare_options_range(text, 0, new NSRange(offset, (int) text.length()));
+				match = result == Enums.NSOrderedSame;
+//				Console.WriteLine("'{0}...' == '{1}' = {2}", buffer.ToString().Substring(offset, 12).EscapeAll(), text.ToString(), match);
+			}
+			
+			return match;
 		}
 		
 		private void DoDirChanged(object sender, DirectoryWatcherEventArgs e)

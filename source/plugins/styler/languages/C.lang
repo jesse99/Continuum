@@ -1,5 +1,6 @@
 Language: c
 Globs: *.c
+LineComment: //
 
 Comment: // [^\r\n]* [\r\n]	# note that $ won't work quite right with windows line endings
 Comment: /\* (?: . | \r | \n)*? \*/

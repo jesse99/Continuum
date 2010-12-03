@@ -2,6 +2,7 @@
 Language: d
 Globs: *.d *.di
 Shebangs: rdmd
+LineComment: //
 
 Comment: // [^\r\n]* [\r\n]		# note that $ won't work quite right with windows line endings
 Comment: /\* (?: . | \r | \n)*? \*/

@@ -6,6 +6,7 @@
 # May want a custom language for automake files.
 Language: makefile
 Globs: Makefile Makefile.am *.make *.mk
+LineComment: \x23
 
 Comment: \x23 [^\r\n]* [\r\n]	# note that $ won't work quite right with windows line endings
 Keyword: \b(?: (?<! -)define | ended | ifdef | ifndef | ifeq | ifneq | else | endif | include | sinclude | override | export | unexport | VPATH | vpath)\b
