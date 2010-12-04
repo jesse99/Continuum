@@ -68,7 +68,19 @@ The argument completion window which pops up after auto-completion may be dragge
 
 ==== 2.5 Special Keys ==== 
 
-Option-tab allows you to select the identifier after the insertion point. Shift-option-tab allows you to select the identifier before the insertion point. Command-~ allows you to cycle between open windows.
+|==================================
+|command-option-left arrow | cycles down the document window stack
+|command-option-right arrow | cycles up the document window stack
+|command-option-up arrow | cycles between C/C++/Obj-C headers and source
+|command-~ | cycles between open windows
+|control-1 | opens a recent files dialog
+|control-2 | opens the declarations popup menu
+|option-tab | selects the next identifier
+|option-shift-tab | selects the previous identifier
+|tab | indents lines (if one or more lines is selected)
+|shift-tab | unindents lines (if one or more lines is selected)
+|tab-tab | when done quickly auto-completes
+|==================================
 
 == 3 Debugging == 
 

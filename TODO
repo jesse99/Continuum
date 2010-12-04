@@ -52,8 +52,6 @@ include the percentage of samples that that method appeared in the stack trace
 	
 http://progit.org/
 
-* Use a table or something to document these special keys.
-* Build a new foreshadow.
 * Some sort of dynamic find files thingy.
 	- should use the selection as the default (if its not too crazy)
 	- use soundex? Levenshtein distance?
