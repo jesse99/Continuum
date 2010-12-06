@@ -9,6 +9,8 @@ Keyword: \b(?:  auto | break | case | char | const | continue | default | do | d
 Keyword: \b(?: id | self | super | _cmd | Class | SEL | IMP | bycopy | byref | in | out | inline | inout | oneway | nil | Nil | BOOL | YES | NO )\b
 Keyword: (?: @class | @property | @synthesize | @public | @private | @protected | @contained | @interface | @implementation | @protocol | @contained | @try | @catch | @finally | @throw | @contained | @end | @defs | @contained | @encode | @protocol | @selector | @contained | @synchronized | @contained )\b
 Number: (?<= \W) \d+ (?= \W)
-Preprocess: \x23 \s* (?: ifdef | ifndef | if | else | elif | endif | define | undef | warning | error | line | pragma | include | import)
+Preprocess: \x23 \s* (?: ifdef | ifndef | if | else | elif | endif | define | undef | warning | error | line | pragma)
+Header4: \x23 \s* (?: include | import)
 String: " (?: [^"\r\n\\] | \\.)* "
 String: ' (?: [^'\r\n\\] | \\.)* '
+String: (?<= \x23include \s+) < (?: [^>\r\n\\] | \\.)* >

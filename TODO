@@ -52,13 +52,23 @@ include the percentage of samples that that method appeared in the stack trace
 	
 http://progit.org/
 
-* Some sort of dynamic find files thingy.
+* Some sort of dynamic find files thingy (or open local file).
 	- should use the selection as the default (if its not too crazy)
 	- use soundex? Levenshtein distance?
+	- probably want to look at TextMate: MRU, CompoundName
+	- filter out files already open? or color code them?
+	- (optionally) use MRU? order using MRU? color code using mru?
+	- do we need control-1 still? or maybe reuse the find files thingy with a hard-coded filter?
+	- ask chuck to review it
 * Confirmation if the user really wants to open a bunch of files
 	- open files
 	- return in dir editor
 	- return in find in files result
+* Work on F#:
+	- need a language file
+	- work on an auto-complete framework (check out PySmell)
+	- may want to email chuck about this
+	- add F# auto-complete (the compiler has at least some stuff which may make this easier)
 * May want to add scheme support. See http://coderchrome.org/browse/greatest/0 for example.
 * Do some more work on the debugger:
 	- add an immediate window

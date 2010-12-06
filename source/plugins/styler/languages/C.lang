@@ -9,6 +9,8 @@ Keyword: \b(?:  __asm | __based1 | __cdecl | __declspec | __except | __fastcall 
 Keyword: \b(?:  __asm__ | __inline__ | __typeof__ | __unix__ | __vax__ | asm | inline | typeof | unix | vax)\b	# gcc
 Keyword: \b(?:  NULL)\b
 Number: (?<= \W) \d+ (?= \W)
-Preprocess: \x23 \s* (?: ifdef | ifndef | if | else | elif | endif | define | undef | warning | error | line | pragma | include)
+Preprocess: \x23 \s* (?: ifdef | ifndef | if | else | elif | endif | define | undef | warning | error | line | pragma)
+Header4: \x23 \s* (?: include)
 String: " (?: [^"\r\n\\] | \\.)* "
 String: ' (?: [^'\r\n\\] | \\.)* '
+String: (?<= \x23include \s+) < (?: [^>\r\n\\] | \\.)* >
