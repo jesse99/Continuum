@@ -42,11 +42,6 @@ namespace TextEditor
 			ActiveObjects.Add(this);
 		}
 		
-		public void showDeclarations()
-		{
-			m_decPopup.Value.performClick(this);
-		}
-		
 		// This is where the subviews of the scroll view are laid out. We override it
 		// to make room for some widgets next to the horz scroller.
 		public new void tile()

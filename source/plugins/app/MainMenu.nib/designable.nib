@@ -12,7 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="384"/>
+			<integer value="435"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1096,6 +1096,44 @@
 									<reference key="NSMixedImage" ref="851651225"/>
 								</object>
 								<object class="NSMenuItem" id="528257209">
+									<reference key="NSMenu" ref="852513665"/>
+									<bool key="NSIsDisabled">YES</bool>
+									<bool key="NSIsSeparator">YES</bool>
+									<string key="NSTitle"/>
+									<string key="NSKeyEquiv"/>
+									<int key="NSKeyEquivModMask">1048576</int>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="357837154"/>
+									<reference key="NSMixedImage" ref="851651225"/>
+								</object>
+								<object class="NSMenuItem" id="298394400">
+									<reference key="NSMenu" ref="852513665"/>
+									<string key="NSTitle">Browse Recent Files</string>
+									<string key="NSKeyEquiv">1</string>
+									<int key="NSKeyEquivModMask">262144</int>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="357837154"/>
+									<reference key="NSMixedImage" ref="851651225"/>
+								</object>
+								<object class="NSMenuItem" id="16273300">
+									<reference key="NSMenu" ref="852513665"/>
+									<string key="NSTitle">Browse Classes</string>
+									<string key="NSKeyEquiv">2</string>
+									<int key="NSKeyEquivModMask">262144</int>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="357837154"/>
+									<reference key="NSMixedImage" ref="851651225"/>
+								</object>
+								<object class="NSMenuItem" id="836652176">
+									<reference key="NSMenu" ref="852513665"/>
+									<string key="NSTitle">Browse Local Files</string>
+									<string key="NSKeyEquiv">3</string>
+									<int key="NSKeyEquivModMask">262144</int>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="357837154"/>
+									<reference key="NSMixedImage" ref="851651225"/>
+								</object>
+								<object class="NSMenuItem" id="862591876">
 									<reference key="NSMenu" ref="852513665"/>
 									<bool key="NSIsDisabled">YES</bool>
 									<bool key="NSIsSeparator">YES</bool>
@@ -2496,6 +2534,30 @@
 					</object>
 					<int key="connectionID">731</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">browseRecentFiles:</string>
+						<reference key="source" ref="1014"/>
+						<reference key="destination" ref="298394400"/>
+					</object>
+					<int key="connectionID">740</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">browseClasses:</string>
+						<reference key="source" ref="1014"/>
+						<reference key="destination" ref="16273300"/>
+					</object>
+					<int key="connectionID">741</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">browseLocalFiles:</string>
+						<reference key="source" ref="1014"/>
+						<reference key="destination" ref="836652176"/>
+					</object>
+					<int key="connectionID">742</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -3117,6 +3179,10 @@
 							<reference ref="574873569"/>
 							<reference ref="380865855"/>
 							<reference ref="696576632"/>
+							<reference ref="862591876"/>
+							<reference ref="298394400"/>
+							<reference ref="16273300"/>
+							<reference ref="836652176"/>
 						</object>
 						<reference key="parent" ref="599779568"/>
 					</object>
@@ -3687,6 +3753,26 @@
 						<reference key="object" ref="848779966"/>
 						<reference key="parent" ref="175853472"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">733</int>
+						<reference key="object" ref="862591876"/>
+						<reference key="parent" ref="852513665"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">734</int>
+						<reference key="object" ref="298394400"/>
+						<reference key="parent" ref="852513665"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">736</int>
+						<reference key="object" ref="16273300"/>
+						<reference key="parent" ref="852513665"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">738</int>
+						<reference key="object" ref="836652176"/>
+						<reference key="parent" ref="852513665"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -3939,6 +4025,10 @@
 					<string>729.IBPluginDependency</string>
 					<string>73.IBPluginDependency</string>
 					<string>73.ImportedFromIB2</string>
+					<string>733.IBPluginDependency</string>
+					<string>734.IBPluginDependency</string>
+					<string>736.IBPluginDependency</string>
+					<string>738.IBPluginDependency</string>
 					<string>74.IBPluginDependency</string>
 					<string>74.ImportedFromIB2</string>
 					<string>75.IBPluginDependency</string>
@@ -4116,7 +4206,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{856, 569}, {262, 353}}</string>
+					<string>{{856, 499}, {262, 423}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{765, 111}, {265, 293}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -4239,7 +4329,9 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<integer value="1"/>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -4250,7 +4342,9 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{672, 589}, {211, 333}}</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<integer value="1"/>
+					<string>{{672, 589}, {208, 333}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{683, 101}, {211, 263}}</string>
@@ -4278,7 +4372,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">731</int>
+			<int key="maxID">742</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -4527,6 +4621,9 @@
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>balance:</string>
+							<string>browseClasses:</string>
+							<string>browseLocalFiles:</string>
+							<string>browseRecentFiles:</string>
 							<string>clearTranscript:</string>
 							<string>debugAssembly:</string>
 							<string>dirHandler:</string>
@@ -4555,6 +4652,9 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -4588,6 +4688,9 @@
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>balance:</string>
+							<string>browseClasses:</string>
+							<string>browseLocalFiles:</string>
+							<string>browseRecentFiles:</string>
 							<string>clearTranscript:</string>
 							<string>debugAssembly:</string>
 							<string>dirHandler:</string>
@@ -4618,6 +4721,18 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<object class="IBActionInfo">
 								<string key="name">balance:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">browseClasses:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">browseLocalFiles:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">browseRecentFiles:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">

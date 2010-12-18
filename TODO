@@ -52,6 +52,26 @@ include the percentage of samples that that method appeared in the stack trace
 	
 http://progit.org/
 
+* Work on recent files browser:
+	- color code
+	- context menu to sort by name or date?
+	- also clearRecentDocuments
+* Work on class browser:
+	- should be a normal window
+	- use a tree view?
+	- default to showing public members for current context
+	- sort by member type and then name
+	- update when the insertion point changes
+	- update when the assembly changes
+	- update when the current type is edited
+	- if the insertion point changes scroll the current method into view?
+	- render protected and private using a different color?
+	- method being edited in bold?
+	- checkboxes to toggle showing protected and private?
+	- checkbox to show members in order? are they saved in the assembly in order?
+	- if searchbox is not empty then show those types (combo-box?)
+	- make sure position is saved
+	- make sure can re-open
 * Some sort of dynamic find files thingy (or open local file).
 	- should use the selection as the default (if its not too crazy)
 	- use soundex? Levenshtein distance?
@@ -60,20 +80,19 @@ http://progit.org/
 	- (optionally) use MRU? order using MRU? color code using mru?
 	- do we need control-1 still? or maybe reuse the find files thingy with a hard-coded filter?
 	- ask chuck to review it
+	- make sure position is saved
+	- make sure can re-open
+* Shift-delete should delete lines (when there is no selection).
+* May want to put some of the spcial key handlers inside interfaces so that they can be customized.
 * Confirmation if the user really wants to open a bunch of files
 	- open files
 	- return in dir editor
 	- return in find in files result
-* Work on F#:
-	- need a language file
-	- work on an auto-complete framework (check out PySmell)
-	- may want to email chuck about this
-	- add F# auto-complete (the compiler has at least some stuff which may make this easier)
 * May want to add scheme support. See http://coderchrome.org/browse/greatest/0 for example.
 * Do some more work on the debugger:
 	- add an immediate window
 	- breakpoint conditions should be persisted
-	- watchpoint windows
+	- watchpoint windows Thread
 		` drag and drop to add new variables
 		` draw in gray if the current context does not have the variable in any stack frame
 * Add a generate stub refactor
@@ -86,6 +105,11 @@ http://progit.org/
    for example.
 * Do a new release.
 
+* Work on F#:
+	- need a language file
+	- work on an auto-complete framework (check out PySmell)
+	- may want to email chuck about this
+	- add F# auto-complete (the compiler has at least some stuff which may make this easier)
 * Zooming navigation interface?
 * Get auto-complete working better.
 * Probably want some sort of advanced prefs panel:

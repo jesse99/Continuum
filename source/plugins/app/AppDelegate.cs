@@ -190,6 +190,12 @@ namespace App
 			opener.Open();
 		}
 		
+		public void browseRecentFiles(NSObject sender)
+		{
+			var browser = m_boss.Get<IBrowseRecentFiles>();
+			browser.Open();
+		}
+		
 		private const string Script = @"#!/bin/sh
 # Takes a list of files and opens them within {0}.
 app={1}

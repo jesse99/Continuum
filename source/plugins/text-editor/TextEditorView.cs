@@ -173,9 +173,6 @@ namespace TextEditor
 				if (DoArrowKeys(evt))
 					break;
 					
-				if (DoControlNumberKey(evt))
-					break;
-					
 				// Special case for deleting the new line at the start of a blank line
 				// (users don't normally want the whitespace to be appended to the
 				// previous line).
@@ -540,87 +537,6 @@ namespace TextEditor
 		#endregion
 		
 		#region Private Methods
-		private bool DoControlNumberKey(NSEvent evt)
-		{
-			bool handled = false;
-			
-			if ((evt.modifierFlags() & Enums.NSControlKeyMask) == Enums.NSControlKeyMask)
-			{
-				if (evt.keyCode() == Constants.Number1Key)
-				{
-					DoOpenRecentFiles();
-					handled = true;
-				}
-				else if (evt.keyCode() == Constants.Number2Key)
-				{
-					DoShowDeclaration();
-					handled = true;
-				}
-			}
-			
-			return handled;
-		}
-		
-		private void DoShowDeclaration()
-		{
-			TextController controller = (TextController) window().windowController();
-			controller.ScrollView.Call("showDeclarations");
-		}
-		
-		private sealed class RecentFile
-		{
-			public RecentFile(string path)
-			{
-				Name = System.IO.Path.GetFileName(path);
-				Path = path;
-			}
-			
-			public string Name {get; set;}
-			
-			public string Path {get; set;}
-		}
-		
-		private void DoOpenRecentFiles()
-		{
-			// Get all the recent files.
-			NSArray array = NSDocumentController.sharedDocumentController().recentDocumentURLs();
-			RecentFile[] candidates = (from a in array let p = a.To<NSURL>().path().ToString() where File.Exists(p) select new RecentFile(p)).ToArray();
-			
-			// Sort them by name and then by path.
-			Array.Sort(candidates, (lhs, rhs) =>
-			{
-				int result = lhs.Name.CompareTo(rhs.Name);
-				if (result == 0)
-					result = lhs.Path.CompareTo(rhs.Path);
-				return result;
-			});
-			
-			// Use a reversed path for the name for any entries with duplicate names.
-			for (int i = 0; i < candidates.Length - 1; ++i)
-			{
-				string name = candidates[i].Name;
-				if (candidates[i + 1].Name == name)
-				{
-					for (int j = i; j < candidates.Length && candidates[j].Name == name; ++j)
-					{
-						candidates[j].Name = candidates[j].Path.ReversePath();
-					}
-				}
-			}
-			
-			// Let the user pick which ones he wants to open.
-			var getter = new GetItem<RecentFile>{Title = "Recent Files", Items = candidates, AllowsMultiple = true};
-			RecentFile[] files = getter.Run(r => r.Name);
-			
-			// And open any he picked.
-			Boss boss = Gear.ObjectModel.Create("Application");
-			var launcher = boss.Get<ILaunch>();
-			foreach (RecentFile file in files)
-			{
-				launcher.Launch(file.Path, -1, -1, 1);
-			}
-		}
-		
 		private bool DoArrowKeys(NSEvent evt)
 		{
 			bool command = (evt.modifierFlags() & Enums.NSCommandKeyMask) == Enums.NSCommandKeyMask;

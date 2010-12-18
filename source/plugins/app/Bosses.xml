@@ -12,6 +12,7 @@
 		<Implementation interfaces = "IRegisterRefactor +IStartup" name = "Refactors"/>
 		<Implementation interfaces = "IInterface +IStartup" name = "MoveSelectionToFile"/>
 		<Implementation interfaces = "IInterface +IStartup" name = "ResolveNamespace"/>
+		<Implementation interfaces = "IBrowseRecentFiles" name = "BrowseRecentFiles"/>
 	</Boss>
 	
 	<Boss name = "Builders" singleton = "true">
