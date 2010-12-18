@@ -175,6 +175,11 @@ namespace DirectoryEditor
 			}
 		}
 		
+		public NSColor GetFileColor(string fileName)
+		{
+			return m_dirStyler.GetFileColor(fileName);
+		}
+		
 		public string Path
 		{
 			get

@@ -45,13 +45,15 @@ namespace App
 			m_table.setTarget(this);
 			
 			Broadcaster.Register("opening document window", this);
+			Broadcaster.Register("opening directory", this);
 		}
 		
 		public void OnBroadcast(string name, object value)
 		{
 			switch (name)
 			{
-				case "opening document window":
+				case "opening document window":	// this will change the items we show
+				case "opened directory":				// this may change the colors used by the items
 					DoReload();
 					m_table.reloadData();
 					break;
@@ -84,30 +86,51 @@ namespace App
 		
 		public NSObject tableView_objectValueForTableColumn_row(NSTableView table, NSObject col, int row)
 		{
-			return NSString.Create(m_files[row].Name);
+			RecentFile file = m_files[row];
+			if (file.Color != null)
+			{
+				NSColor color = file.Color.GetColor(Path.GetFileName(file.Path));
+				var attrs = NSDictionary.dictionaryWithObject_forKey(color, Externs.NSForegroundColorAttributeName);
+				return NSAttributedString.Create(file.Name, attrs);
+			}
+			else
+			{
+				return NSString.Create(file.Name);
+			}
 		}
 		
 		#region Private Types
 		private sealed class RecentFile
 		{
-			public RecentFile(string path)
+			public RecentFile(string path, IFindDirectoryEditor finder)
 			{
 				Name = System.IO.Path.GetFileName(path);
 				Path = path;
+				
+				// File name colors are associated with directory editors so coloring will only
+				// happen if the appropiate directory is being edited.
+				Boss editor = finder.GetDirectoryEditor(path);
+				if (editor != null)
+					Color = editor.Get<IFileColor>();
 			}
 			
 			public string Name {get; set;}
 			
 			public string Path {get; set;}
+			
+			public IFileColor Color {get; set;}
 		}
 		#endregion
 		
 		#region Private Methods
 		private void DoReload()
 		{
+			Boss editor = ObjectModel.Create("DirectoryEditorPlugin");
+			var finder = editor.Get<IFindDirectoryEditor>();
+			
 			// Get all the recent files.
 			NSArray array = NSDocumentController.sharedDocumentController().recentDocumentURLs();
-			m_files = (from a in array let p = a.To<NSURL>().path().ToString() where File.Exists(p) select new RecentFile(p)).ToArray();
+			m_files = (from a in array let p = a.To<NSURL>().path().ToString() where File.Exists(p) select new RecentFile(p, finder)).ToArray();
 			
 			// Sort them by name and then by path.
 			Array.Sort(m_files, (lhs, rhs) =>

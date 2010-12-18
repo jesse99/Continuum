@@ -53,13 +53,30 @@ namespace DirectoryEditor
 					result = DoFindAssociatedBoss(window.Get<ITextEditor>());
 				}
 			}
-						
+			
 			if (result == null)
 			{
 				result = DoFindDefaultBoss();
 			}
-					
+			
 			return result;
+		}
+		
+		public Boss GetDirectoryEditor(string path)
+		{
+			if (!path.EndsWith("/"))
+				path += "/";
+				
+			Boss plugin = ObjectModel.Create("DirectoryEditorPlugin");
+			var windows = plugin.Get<IWindows>();
+			foreach (Boss candidate in windows.All())
+			{
+				var editor = candidate.Get<IDirectoryEditor>();
+				if (path.StartsWith(editor.Path))
+					return candidate;
+			}
+			
+			return null;
 		}
 		
 		#region Private Methods
@@ -68,7 +85,7 @@ namespace DirectoryEditor
 			if (text.Path != null)			// will be null if it is not on disk
 			{
 				var windows = m_boss.Get<IWindows>();
-	
+				
 				foreach (Boss boss in windows.All())
 				{
 					var candidate = boss.Get<IDirectoryEditor>();
@@ -76,7 +93,7 @@ namespace DirectoryEditor
 						return boss;
 				}
 			}
-						
+			
 			return null;
 		}
 		
@@ -88,7 +105,7 @@ namespace DirectoryEditor
 			if (candidates.Length > 0)
 			{
 				DateTime time = DateTime.MinValue;
-	
+				
 				foreach (Boss boss in candidates)
 				{
 					var candidate = boss.Get<IDirectoryEditor>();
@@ -103,13 +120,13 @@ namespace DirectoryEditor
 			{
 				result = candidates[0];
 			}
-							
+			
 			return result;
 		}
 		#endregion
-
+		
 		#region Fields 
-		private Boss m_boss; 
+		private Boss m_boss;
 		#endregion
-	} 
-}	
+	}
+}

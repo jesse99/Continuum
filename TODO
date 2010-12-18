@@ -53,7 +53,6 @@ include the percentage of samples that that method appeared in the stack trace
 http://progit.org/
 
 * Work on recent files browser:
-	- color code
 	- context menu to sort by name or date?
 	- also clearRecentDocuments
 * Work on class browser:

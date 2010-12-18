@@ -166,7 +166,7 @@ namespace Transcript
 			Boss boss = ObjectModel.Create("DirectoryEditorPlugin");
 			
 			var find = boss.Get<IFindDirectoryEditor>();
-			boss = find.GetDirectoryEditor(null);
+			boss = find.GetDirectoryEditor((Boss) null);
 			
 			if (boss != null)
 			{

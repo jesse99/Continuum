@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Jesse Jones
+// Copyright (C) 2010 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -20,22 +20,41 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+//using Gear.Helpers;
+using MCocoa;
+using Shared;
 using System;
+//using System.Collections.Generic;
+//using System.Diagnostics;
 
-namespace Shared
+namespace DirectoryEditor
 {
-	// Used to find the DirectoryEditor boss associated with a window or the default
-	// directory editor if there is no such association.
-	public interface IFindDirectoryEditor : IInterface
+	internal sealed class FileColor : IFileColor
 	{
-		// If the window is not directly associated with a directory (e.g. an untitled 
-		// window, the transcript window, or a short form window) then one is chosen 
-		// based on criteria such as which was built last. Will return null iff no directory
-		// windows are open. Window may be null.
-		Boss GetDirectoryEditor(Boss window);
+		public void Instantiated(Boss boss)
+		{
+			m_boss = boss;
+		}
 		
-		// Returns the first directory editor whose Path is a prefix of path. Will return
-		// null if no match was found.
-		Boss GetDirectoryEditor(string path);
+		public Boss Boss
+		{
+			get {return m_boss;}
+		}
+		
+		public NSColor GetColor(string fileName)
+		{
+			if (m_controller == null)
+			{
+				var window = m_boss.Get<IWindow>();
+				m_controller = (DirectoryController) window.Window.windowController();
+			}
+			
+			return m_controller.GetFileColor(fileName);
+		}
+		
+		#region Fields 
+		private Boss m_boss;
+		private DirectoryController m_controller;
+		#endregion
 	}
 }
