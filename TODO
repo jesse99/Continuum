@@ -52,9 +52,6 @@ include the percentage of samples that that method appeared in the stack trace
 	
 http://progit.org/
 
-* Work on recent files browser:
-	- context menu to sort by name or date?
-	- also clearRecentDocuments
 * Work on class browser:
 	- should be a normal window
 	- use a tree view?
@@ -82,6 +79,7 @@ http://progit.org/
 	- make sure position is saved
 	- make sure can re-open
 * Shift-delete should delete lines (when there is no selection).
+* Transcript stdout should default to monospace.
 * May want to put some of the spcial key handlers inside interfaces so that they can be customized.
 * Confirmation if the user really wants to open a bunch of files
 	- open files

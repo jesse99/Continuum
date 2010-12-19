@@ -38,14 +38,14 @@ namespace App
 		{
 			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("BrowseRecentFiles"), this);
 			
-			DoReload();
 			m_table = new IBOutlet<NSTableView>(this, "table").Value;
-			
 			m_table.setDoubleAction("doubleClicked:");
 			m_table.setTarget(this);
 			
 			Broadcaster.Register("opening document window", this);
 			Broadcaster.Register("opening directory", this);
+			
+			DoLoadPrefs();
 		}
 		
 		public void OnBroadcast(string name, object value)
@@ -55,7 +55,6 @@ namespace App
 				case "opening document window":	// this will change the items we show
 				case "opened directory":				// this may change the colors used by the items
 					DoReload();
-					m_table.reloadData();
 					break;
 					
 				default:
@@ -66,7 +65,34 @@ namespace App
 		
 		public void Show()
 		{
+			DoReload();
 			window().makeKeyAndOrderFront(this);
+		}
+		
+		public void sortByName(NSObject sender)
+		{
+			m_sortByDate = false;
+			DoSavePrefs();
+			
+			DoSort();
+			m_table.reloadData();
+		}
+		
+		public void sortByDate(NSObject sender)
+		{
+			m_sortByDate = true;
+			DoSavePrefs();
+			
+			DoSort();
+			m_table.reloadData();
+		}
+		
+		public void clear(NSObject sender)
+		{
+			NSDocumentController.sharedDocumentController().clearRecentDocuments(this);
+			
+			DoReload();
+			m_table.reloadData();
 		}
 		
 		public void doubleClicked(NSObject sender)
@@ -89,36 +115,69 @@ namespace App
 			RecentFile file = m_files[row];
 			if (file.Color != null)
 			{
-				NSColor color = file.Color.GetColor(Path.GetFileName(file.Path));
+				NSColor color = file.Color.GetColor(file.FileName);
 				var attrs = NSDictionary.dictionaryWithObject_forKey(color, Externs.NSForegroundColorAttributeName);
-				return NSAttributedString.Create(file.Name, attrs);
+				return NSAttributedString.Create(file.DisplayName, attrs);
 			}
 			else
 			{
-				return NSString.Create(file.Name);
+				return NSString.Create(file.DisplayName);
 			}
+		}
+		
+		public bool validateUserInterfaceItem(NSObject sender)
+		{
+			bool enabled = false;
+			
+			Selector sel = (Selector) sender.Call("action");
+			if (sel.Name == "sortByName:")
+			{
+				enabled = true;
+				if (sender.respondsToSelector("setState:"))
+					sender.Call("setState:", m_sortByDate ? 0 : 1);
+			}
+			else if (sel.Name == "sortByDate:")
+			{
+				enabled = true;
+				if (sender.respondsToSelector("setState:"))
+					sender.Call("setState:", m_sortByDate ? 1 : 0);
+			}
+			else if (respondsToSelector(sel))
+			{
+				enabled = true;
+			}
+			else if (SuperCall(NSWindowController.Class, "respondsToSelector:", new Selector("validateUserInterfaceItem:")).To<bool>())
+			{
+				enabled = SuperCall(NSWindowController.Class, "validateUserInterfaceItem:", sender).To<bool>();
+			}
+			
+			return enabled;
 		}
 		
 		#region Private Types
 		private sealed class RecentFile
 		{
-			public RecentFile(string path, IFindDirectoryEditor finder)
+			public RecentFile(string path, IFindDirectoryEditor finder, int index)
 			{
-				Name = System.IO.Path.GetFileName(path);
 				Path = path;
+				FileName = System.IO.Path.GetFileName(path);
+				DisplayName = FileName;
+				Index = index;
 				
 				// File name colors are associated with directory editors so coloring will only
-				// happen if the appropiate directory is being edited.
+				// happen if the appropriate directory is being edited.
 				Boss editor = finder.GetDirectoryEditor(path);
 				if (editor != null)
 					Color = editor.Get<IFileColor>();
 			}
 			
-			public string Name {get; set;}
+			public string DisplayName {get; set;}
+			public int Index {get; private set;}
 			
-			public string Path {get; set;}
+			public string FileName {get; private set;}
+			public string Path {get; private set;}
 			
-			public IFileColor Color {get; set;}
+			public IFileColor Color {get; private set;}
 		}
 		#endregion
 		
@@ -129,36 +188,67 @@ namespace App
 			var finder = editor.Get<IFindDirectoryEditor>();
 			
 			// Get all the recent files.
+			int index = 0;
 			NSArray array = NSDocumentController.sharedDocumentController().recentDocumentURLs();
-			m_files = (from a in array let p = a.To<NSURL>().path().ToString() where File.Exists(p) select new RecentFile(p, finder)).ToArray();
-			
-			// Sort them by name and then by path.
-			Array.Sort(m_files, (lhs, rhs) =>
-			{
-				int result = lhs.Name.CompareTo(rhs.Name);
-				if (result == 0)
-					result = lhs.Path.CompareTo(rhs.Path);
-				return result;
-			});
+			m_files = (from a in array let p = a.To<NSURL>().path().ToString() where File.Exists(p) select new RecentFile(p, finder, ++index)).ToArray();
 			
 			// Use a reversed path for the name for any entries with duplicate names.
 			for (int i = 0; i < m_files.Length - 1; ++i)
 			{
-				string name = m_files[i].Name;
-				if (m_files[i + 1].Name == name)
+				string name = m_files[i].DisplayName;
+				if (m_files[i + 1].DisplayName == name)
 				{
-					for (int j = i; j < m_files.Length && m_files[j].Name == name; ++j)
+					for (int j = i; j < m_files.Length && m_files[j].DisplayName == name; ++j)
 					{
-						m_files[j].Name = m_files[j].Path.ReversePath();
+						m_files[j].DisplayName = m_files[j].Path.ReversePath();
 					}
 				}
 			}
+			
+			// Sort them and refresh the view.
+			DoSort();
+			m_table.reloadData();
+		}
+		
+		// Note that sorting by date is tricky: what we really want to do is use the time the file was last opened
+		// but there is no easy way to do that. The File.GetLastAccessTime method and the stat function can
+		// be used as a proxy for this but they are kind of iffy because Spotlight and (I think) TimeMachine will
+		// affect the access time.
+		// 
+		// So what we do when we want to sort by date is use the order the files were returned by 
+		// recentDocumentURLs. What exactly this returns is poorly documented but it seems to be the
+		// files in the order in which they were last opened.
+		private void DoSort()
+		{
+			Array.Sort(m_files, (lhs, rhs) =>
+			{
+				int result;
+				if (m_sortByDate)
+					result = lhs.Index.CompareTo(rhs.Index);
+				else
+					result = lhs.DisplayName.CompareTo(rhs.DisplayName);
+				return result;
+			});
+		}
+		
+		private void DoSavePrefs()
+		{
+			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
+			defaults.setBool_forKey(m_sortByDate, NSString.Create("recentFilesBrowserSortByDate"));
+		}
+		
+		private void DoLoadPrefs()
+		{
+			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
+			
+			m_sortByDate = defaults.boolForKey(NSString.Create("recentFilesBrowserSortByDate"));
 		}
 		#endregion
 		
 		#region Fields
 		private NSTableView m_table;
 		private RecentFile[] m_files;
+		private bool m_sortByDate;
 		#endregion
 	}
 }
