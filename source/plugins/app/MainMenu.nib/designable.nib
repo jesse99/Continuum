@@ -1115,18 +1115,18 @@
 									<reference key="NSOnImage" ref="357837154"/>
 									<reference key="NSMixedImage" ref="851651225"/>
 								</object>
-								<object class="NSMenuItem" id="16273300">
+								<object class="NSMenuItem" id="836652176">
 									<reference key="NSMenu" ref="852513665"/>
-									<string key="NSTitle">Browse Classes</string>
+									<string key="NSTitle">Browse Local Files</string>
 									<string key="NSKeyEquiv">2</string>
 									<int key="NSKeyEquivModMask">262144</int>
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="357837154"/>
 									<reference key="NSMixedImage" ref="851651225"/>
 								</object>
-								<object class="NSMenuItem" id="836652176">
+								<object class="NSMenuItem" id="16273300">
 									<reference key="NSMenu" ref="852513665"/>
-									<string key="NSTitle">Browse Local Files</string>
+									<string key="NSTitle">Open Declarations Menu</string>
 									<string key="NSKeyEquiv">3</string>
 									<int key="NSKeyEquivModMask">262144</int>
 									<int key="NSMnemonicLoc">2147483647</int>
@@ -2544,19 +2544,19 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBActionConnection" key="connection">
-						<string key="label">browseClasses:</string>
-						<reference key="source" ref="1014"/>
-						<reference key="destination" ref="16273300"/>
-					</object>
-					<int key="connectionID">741</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
 						<string key="label">browseLocalFiles:</string>
 						<reference key="source" ref="1014"/>
 						<reference key="destination" ref="836652176"/>
 					</object>
 					<int key="connectionID">742</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">openDeclarationsMenu:</string>
+						<reference key="source" ref="1014"/>
+						<reference key="destination" ref="16273300"/>
+					</object>
+					<int key="connectionID">743</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -4372,7 +4372,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">742</int>
+			<int key="maxID">743</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -4621,7 +4621,6 @@
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>balance:</string>
-							<string>browseClasses:</string>
 							<string>browseLocalFiles:</string>
 							<string>browseRecentFiles:</string>
 							<string>clearTranscript:</string>
@@ -4636,6 +4635,7 @@
 							<string>getInfo:</string>
 							<string>ignoreExceptions:</string>
 							<string>lookUpInDict:</string>
+							<string>openDeclarationsMenu:</string>
 							<string>openSelection:</string>
 							<string>orderFrontFontPanel:</string>
 							<string>renameItem:</string>
@@ -4688,7 +4688,6 @@
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>balance:</string>
-							<string>browseClasses:</string>
 							<string>browseLocalFiles:</string>
 							<string>browseRecentFiles:</string>
 							<string>clearTranscript:</string>
@@ -4703,6 +4702,7 @@
 							<string>getInfo:</string>
 							<string>ignoreExceptions:</string>
 							<string>lookUpInDict:</string>
+							<string>openDeclarationsMenu:</string>
 							<string>openSelection:</string>
 							<string>orderFrontFontPanel:</string>
 							<string>renameItem:</string>
@@ -4721,10 +4721,6 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<object class="IBActionInfo">
 								<string key="name">balance:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">browseClasses:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
@@ -4781,6 +4777,10 @@
 							</object>
 							<object class="IBActionInfo">
 								<string key="name">lookUpInDict:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">openDeclarationsMenu:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">

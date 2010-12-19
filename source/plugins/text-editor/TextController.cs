@@ -486,6 +486,11 @@ namespace TextEditor
 				opener.Open();
 		}
 		
+		public void openDeclarationsMenu(NSObject sender)
+		{
+			m_decPopup.Value.performClick(this);
+		}
+
 		public void findGremlins(NSObject sender)
 		{
 			NSRange range = m_textView.Value.selectedRange();
