@@ -43,7 +43,7 @@ namespace App
 			m_table.setTarget(this);
 			
 			Broadcaster.Register("opening document window", this);
-			Broadcaster.Register("opening directory", this);
+			Broadcaster.Register("opened directory", this);
 			
 			DoLoadPrefs();
 		}
