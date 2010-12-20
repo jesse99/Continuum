@@ -193,7 +193,13 @@ namespace App
 		public void browseRecentFiles(NSObject sender)
 		{
 			var browser = m_boss.Get<IBrowseRecentFiles>();
-			browser.Open();
+			browser.OpenRecent();
+		}
+		
+		public void browseLocalFiles(NSObject sender)
+		{
+			var browser = m_boss.Get<IBrowseLocalFiles>();
+			browser.OpenLocal();
 		}
 		
 		private const string Script = @"#!/bin/sh

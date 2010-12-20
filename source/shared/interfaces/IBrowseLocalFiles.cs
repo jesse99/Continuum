@@ -20,35 +20,12 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
-using Shared;
-using System;
-//using System.Collections.Generic;
 
-namespace App
-{
-	internal sealed class BrowseRecentFiles : IBrowseRecentFiles
+namespace Shared
+{	
+	// Pops up a window allowing users to view files within the directories being edited.
+	public interface IBrowseLocalFiles : IInterface
 	{
-		public void Instantiated(Boss boss)
-		{
-			m_boss = boss;
-		}
-		
-		public Boss Boss
-		{
-			get {return m_boss;}
-		}
-		
-		public void Open()
-		{
-			if (m_controller == null)
-				m_controller = new BrowseRecentFilesController();
-				
-			m_controller.Show();
-		}
-		
-		#region Fields
-		private Boss m_boss;
-		private BrowseRecentFilesController m_controller;
-		#endregion
+		void OpenLocal();
 	}
 }

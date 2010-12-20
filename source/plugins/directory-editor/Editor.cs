@@ -77,6 +77,12 @@ namespace DirectoryEditor
 			return paths.ToArray();
 		}
 		
+		public bool IsIgnored(string name)
+		{
+			DirectoryController controller = (DirectoryController) m_window.windowController();
+			return controller.IsIgnored(name);
+		}
+		
 		public DateTime BuildStartTime
 		{
 			get

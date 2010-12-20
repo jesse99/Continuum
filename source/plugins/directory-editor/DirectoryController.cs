@@ -204,6 +204,20 @@ namespace DirectoryEditor
 			}
 		}
 		
+		public bool IsIgnored(string name)
+		{
+			if (IgnoredItems != null)
+			{
+				foreach (string glob in IgnoredItems)
+				{
+					if (Glob.Match(glob, name))
+						return true;
+				}
+			}
+			
+			return false;
+		}
+		
 		public string[] IgnoredItems
 		{
 			get {return m_ignoredItems;}

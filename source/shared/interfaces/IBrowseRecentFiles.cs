@@ -26,6 +26,6 @@ namespace Shared
 	// Pops up a window allowing users to open a file from the recent file list.
 	public interface IBrowseRecentFiles : IInterface
 	{
-		void Open();
+		void OpenRecent();
 	}
 }

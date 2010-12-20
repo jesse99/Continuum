@@ -192,7 +192,7 @@ namespace DirectoryEditor
 			{
 				foreach (string entry in System.IO.Directory.GetFileSystemEntries(Path))
 				{
-					if (!DoIsIgnored(System.IO.Path.GetFileName(entry)))
+					if (!m_controller.IsIgnored(System.IO.Path.GetFileName(entry)))
 					{
 						string path = UnixPath.GetCanonicalPath(entry);
 						children.AddIfMissing(path);
@@ -205,20 +205,6 @@ namespace DirectoryEditor
 			}
 			
 			return children.ToArray();
-		}
-		
-		private bool DoIsIgnored(string name)
-		{
-			if (m_controller.IgnoredItems != null)
-			{
-				foreach (string glob in m_controller.IgnoredItems)
-				{
-					if (Glob.Match(glob, name))
-						return true;
-				}
-			}
-			
-			return false;
 		}
 		#endregion
 		

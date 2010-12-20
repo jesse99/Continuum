@@ -53,10 +53,9 @@ include the percentage of samples that that method appeared in the stack trace
 http://progit.org/
 
 * Add a local files browser:
-	- need something like an NSSearchField to prune the list
-	- use a dropdown like find in files to select the directory
-	- color code the files
-	- show partial paths?
+	- listen for open and close directory broadcasts
+	- remember previous searches?
+	- persist previous searches?
 	- match partial paths? ie interfaces
 	- may want a progress indicator when rebuilding the list
 	- need to watch the dir and rebuild the list on changes
@@ -68,6 +67,10 @@ http://progit.org/
 	- make sure can re-open
 	- make sure frame is persistent
 	- ask chuck to review it
+* Return and enter keys should open files in the browser.
+* Might want show in finder context menu item.
+* Also open with finder.
+* Open recent needs to exclude tmp files.
 * Shift-delete should delete lines (when there is no selection).
 * Transcript stdout should default to monospace.
 * May want to put some of the spcial key handlers behind interfaces so that they can be customized.

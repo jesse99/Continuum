@@ -1,4 +1,4 @@
-// Copyright (C) 2008-2010 Jesse Jones
+// Copyright (C) 2010 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -20,35 +20,43 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using Shared;
 using System;
 
-namespace Shared
+namespace App
 {
-	// This is the primary interface for the plugin which pops up a window
-	// showing a directory and allowing files to be added or deleted. Note
-	// that when a directory editor is opened it will broadcast "opened directory"
-	// with the boss of the new directory editor.
-	public interface IDirectoryEditor : IInterface
+	internal sealed class Browsers : IBrowseRecentFiles, IBrowseLocalFiles
 	{
-		// Returns the full path to the directory being edited.
-		string Path {get;}
+		public void Instantiated(Boss boss)
+		{
+			m_boss = boss;
+		}
 		
-		// Returns the full paths of the selected items.
-		string[] SelectedPaths();
+		public Boss Boss
+		{
+			get {return m_boss;}
+		}
 		
-		// Returns true if the directory or file name (not path) should
-		// not be displayed.
-		bool IsIgnored(string name);
+		public void OpenRecent()
+		{
+			if (m_recent == null)
+				m_recent = new BrowseRecentFilesController();
+				
+			m_recent.Show();
+		}
 		
-		// Returns the time at which the the last build started (for this
-		// session). If the directory was not built DateTime.MinValue is
-		// returned.
-		DateTime BuildStartTime {get;}
+		public void OpenLocal()
+		{
+			if (m_local == null)
+				m_local = new BrowseLocalFilesController();
+				
+			m_local.Show();
+		}
 		
-		// True if spaces should be added before method arguments.
-		bool AddSpace {get;}
-		
-		// True if curly braces should be placed on their own lines.
-		bool AddBraceLine {get;}
+		#region Fields
+		private Boss m_boss;
+		private BrowseRecentFilesController m_recent;
+		private BrowseLocalFilesController m_local;
+		#endregion
 	}
 }
