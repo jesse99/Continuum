@@ -73,8 +73,12 @@ The argument completion window which pops up after auto-completion may be dragge
 |command-option-right arrow | cycles up the document window stack
 |command-option-up arrow | cycles between C/C++/Obj-C headers and source
 |command-~ | cycles between open windows
-|control-1 | opens a recent files dialog
-|control-2 | opens the declarations popup menu
+|control-1 | browse recent files
+|control-2 | browse local files
+|control-3 | opens the declarations popup menu
+|control-K | deletes the rest of the line
+|control-L | centers the current line in the window
+|shift-delete | deletes the current line (if there is no selection)
 |option-tab | selects the next identifier
 |option-shift-tab | selects the previous identifier
 |tab | indents lines (if one or more lines is selected)

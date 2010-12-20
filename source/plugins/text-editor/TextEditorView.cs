@@ -173,6 +173,9 @@ namespace TextEditor
 				if (DoArrowKeys(evt))
 					break;
 					
+				if (DoDeleteKey(evt))
+					break;
+					
 				// Special case for deleting the new line at the start of a blank line
 				// (users don't normally want the whitespace to be appended to the
 				// previous line).
@@ -657,6 +660,36 @@ namespace TextEditor
 			}
 			
 			return false;
+		}
+		
+		private bool DoDeleteKey(NSEvent evt)
+		{
+			if (evt.keyCode() == Constants.DeleteKey)
+			{
+				if ((evt.modifierFlags() & Enums.NSShiftKeyMask) == Enums.NSShiftKeyMask)
+				{
+					var selRange = selectedRange();
+					if (selRange.length == 0)
+					{
+						// Shift-delete deletes the current line
+						DoDeleteLine(selRange.location);
+						return true;
+					}
+				}
+			}
+			
+			return false;
+		}
+		
+		private void DoDeleteLine(int index)
+		{
+			TextController controller = (TextController) window().windowController();
+			int line = controller.Metrics.GetLine(index);
+			
+			int i = controller.Metrics.GetLineOffset(line);
+			int j = controller.Metrics.GetLineOffset(line + 1);
+			this.setSelectedRange(new NSRange(i, j - i));
+			delete(this);
 		}
 		
 		private void DoActivateLowerWindow()
