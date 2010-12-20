@@ -122,6 +122,15 @@ namespace DirectoryEditor
 			}
 		}
 		
+		protected override void OnDealloc()
+		{
+			Broadcaster.Invoke("closed directory", m_boss);
+//			m_boss.Free();
+			m_boss = null;
+			
+			base.OnDealloc();
+		}
+		
 		public void windowWillClose(NSObject notification)
 		{	
 			var handler = m_boss.Get<IMenuHandler>();
@@ -147,8 +156,6 @@ namespace DirectoryEditor
 			}
 			
 			m_builder = null;
-//			m_boss.Free();
-			m_boss = null;
 			
 			window().autorelease();
 			autorelease();
@@ -519,6 +526,8 @@ namespace DirectoryEditor
 					if (newSelections.count() == 1)
 						m_table.scrollRowToVisible((int) newSelections.First());
 				}
+				
+				Broadcaster.Invoke("directory changed", m_boss);
 			}
 		}
 		
