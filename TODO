@@ -53,11 +53,16 @@ include the percentage of samples that that method appeared in the stack trace
 http://progit.org/
 
 
-* Open recent needs to exclude tmp files.
 * Shift-delete should delete lines (when there is no selection).
+	- mention this in the readme
+	- also make sure that the browser keys are up to date in the readme
+* Option-delete deletes word to the left.
+* Contol-K deletes the rest of the line.
+* Control-L center the current line in the window.
+* Push.
 * Build a new foreshadow.
 * Transcript stdout should default to monospace.
-* May want to put some of the spcial key handlers behind interfaces so that they can be customized.
+* May want to put some of the special key handlers behind interfaces so that they can be customized.
 * Confirmation if the user really wants to open a bunch of files
 	- open files
 	- return in dir editor

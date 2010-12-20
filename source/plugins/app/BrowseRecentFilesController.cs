@@ -241,7 +241,10 @@ namespace App
 			// Get all the recent files.
 			int index = 0;
 			NSArray array = NSDocumentController.sharedDocumentController().recentDocumentURLs();
-			m_files = (from a in array let p = a.To<NSURL>().path().ToString() where File.Exists(p) select new RecentFile(p, finder, ++index)).ToArray();
+			m_files = (from a in array
+				let p = a.To<NSURL>().path().ToString()
+				where File.Exists(p) && !p.Contains("/-Tmp-/")
+			select new RecentFile(p, finder, ++index)).ToArray();
 			
 			// Use a reversed path for the name for any entries with duplicate names.
 			Array.Sort(m_files, (lhs, rhs) => lhs.DisplayName.CompareTo(rhs.DisplayName));
