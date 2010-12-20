@@ -269,7 +269,7 @@
 							<object class="NSPSMatrix" key="NSDrawMatrix"/>
 							<string key="NSFrame">{{390, 372}, {16, 16}}</string>
 							<reference key="NSSuperview" ref="1006"/>
-							<int key="NSpiFlags">28938</int>
+							<int key="NSpiFlags">20746</int>
 							<double key="NSMaxValue">100</double>
 						</object>
 					</object>

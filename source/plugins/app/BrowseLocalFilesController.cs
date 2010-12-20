@@ -46,7 +46,9 @@ namespace App
 			m_search =  new IBOutlet<NSSearchFieldCell>(this, "search").Value;
 			m_spinner =  new IBOutlet<NSProgressIndicator>(this, "progress").Value;
 			
-			Broadcaster.Register("opening directory", this);
+			Broadcaster.Register("opened directory", this);
+			Broadcaster.Register("closed directory", this);
+			Broadcaster.Register("directory changed", this);
 			
 //			DoLoadPrefs();
 		}
@@ -56,6 +58,8 @@ namespace App
 			switch (name)
 			{
 				case "opened directory":
+				case "closed directory":
+				case "directory changed":
 					DoReload();
 					break;
 					

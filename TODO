@@ -53,17 +53,6 @@ include the percentage of samples that that method appeared in the stack trace
 http://progit.org/
 
 * Add a local files browser:
-	- listen for open and close directory broadcasts
-	- remember previous searches?
-	- persist previous searches?
-	- match partial paths? ie interfaces
-	- may want a progress indicator when rebuilding the list
-	- need to watch the dir and rebuild the list on changes
-	- use soundex? Levenshtein distance?
-	- probably want to look at TextMate: MRU, CompoundName
-	- context menu to sort by date or name
-	- may want an option in the context menu to show partial paths
-	- maybe use write time if we don't have an access time?
 	- make sure can re-open
 	- make sure frame is persistent
 	- ask chuck to review it
