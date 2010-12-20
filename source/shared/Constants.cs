@@ -50,6 +50,7 @@ namespace Shared
 		// Key codes.
 		public static readonly int DeleteKey = 0x33;
 		public static readonly int DownArrowKey = 0x7D;
+		public static readonly int ReturnKey = 0x24;
 		public static readonly int EnterKey = 0x4C;
 		public static readonly int EscapeKey = 0x35;
 		public static readonly int LeftArrowKey = 0x7B;

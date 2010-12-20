@@ -75,6 +75,24 @@ namespace App
 			window().makeKeyAndOrderFront(this);
 		}
 		
+		public new void keyDown(NSEvent evt)
+		{
+			bool handled = false;
+			
+			ushort key = evt.keyCode();
+			if (key == Constants.ReturnKey || key == Constants.EnterKey)
+			{
+				if (m_table.numberOfRows() > 0)
+				{
+					doubleClicked(this);
+					handled = true;
+				}
+			}
+			
+			if (!handled)
+				Unused.Value = SuperCall(NSWindowController.Class, "keyDown:", evt);
+		}
+		
 //		public void sortByName(NSObject sender)
 //		{
 //			m_sortByDate = false;

@@ -52,11 +52,6 @@ include the percentage of samples that that method appeared in the stack trace
 	
 http://progit.org/
 
-* Add a local files browser:
-	- make sure can re-open
-	- make sure frame is persistent
-	- ask chuck to review it
-* Return and enter keys should open files in the browser.
 * Might want show in finder context menu item.
 * Also open with finder.
 * Open recent needs to exclude tmp files.
@@ -66,7 +61,7 @@ http://progit.org/
 * Confirmation if the user really wants to open a bunch of files
 	- open files
 	- return in dir editor
-	- return in find in files result
+	- return in find in files result	36
 * May want to add scheme support. See http://coderchrome.org/browse/greatest/0 for example.
 * Do some more work on the debugger:
 	- add an immediate window
