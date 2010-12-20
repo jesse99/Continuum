@@ -75,6 +75,31 @@ namespace App
 			window().makeKeyAndOrderFront(this);
 		}
 		
+		public void onSearch(NSObject sender)
+		{
+			m_filter = m_search.stringValue().ToString().Trim();
+			DoFilter();
+		}
+		
+		public void openWithFinder(NSObject sender)
+		{
+			foreach (uint row in m_table.selectedRowIndexes())
+			{
+				string path = m_files[(int) row].FullPath;
+				NSWorkspace.sharedWorkspace().openFile(NSString.Create(path));
+			}
+		}
+		
+		public void showInFinder(NSObject sender)
+		{
+			foreach (uint row in m_table.selectedRowIndexes())
+			{
+				string path = m_files[(int) row].FullPath;
+				NSWorkspace.sharedWorkspace().selectFile_inFileViewerRootedAtPath(
+					NSString.Create(path), NSString.Empty);
+			}
+		}
+		
 		public new void keyDown(NSEvent evt)
 		{
 			bool handled = false;
@@ -91,38 +116,6 @@ namespace App
 			
 			if (!handled)
 				Unused.Value = SuperCall(NSWindowController.Class, "keyDown:", evt);
-		}
-		
-//		public void sortByName(NSObject sender)
-//		{
-//			m_sortByDate = false;
-//			DoSavePrefs();
-//			
-//			DoSort();
-//			m_table.reloadData();
-//		}
-//		
-//		public void sortByDate(NSObject sender)
-//		{
-//			m_sortByDate = true;
-//			DoSavePrefs();
-//			
-//			DoSort();
-//			m_table.reloadData();
-//		}
-//		
-//		public void clear(NSObject sender)
-//		{
-//			NSDocumentController.sharedDocumentController().clearRecentDocuments(this);
-//			
-//			DoReload();
-//			m_table.reloadData();
-//		}
-		
-		public void onSearch(NSObject sender)
-		{
-			m_filter = m_search.stringValue().ToString().Trim();
-			DoFilter();
 		}
 		
 		public void doubleClicked(NSObject sender)
@@ -154,34 +147,36 @@ namespace App
 			}
 		}
 		
-//		public bool validateUserInterfaceItem(NSObject sender)
-//		{
-//			bool enabled = false;
-//			
-//			Selector sel = (Selector) sender.Call("action");
-//			if (sel.Name == "sortByName:")
-//			{
-//				enabled = true;
-//				if (sender.respondsToSelector("setState:"))
-//					sender.Call("setState:", m_sortByDate ? 0 : 1);
-//			}
-//			else if (sel.Name == "sortByDate:")
-//			{
-//				enabled = true;
-//				if (sender.respondsToSelector("setState:"))
-//					sender.Call("setState:", m_sortByDate ? 1 : 0);
-//			}
-//			else if (respondsToSelector(sel))
-//			{
-//				enabled = true;
-//			}
-//			else if (SuperCall(NSWindowController.Class, "respondsToSelector:", new Selector("validateUserInterfaceItem:")).To<bool>())
-//			{
-//				enabled = SuperCall(NSWindowController.Class, "validateUserInterfaceItem:", sender).To<bool>();
-//			}
-//			
-//			return enabled;
-//		}
+		public void menuNeedsUpdate(NSMenu menu)
+		{
+			int row = m_table.clickedRow();
+			if (!m_table.isRowSelected(row))
+			{
+				var indexes = NSIndexSet.indexSetWithIndex((uint) row);
+				m_table.selectRowIndexes_byExtendingSelection(indexes, false);
+			}
+		}
+		
+		public bool validateUserInterfaceItem(NSObject sender)
+		{
+			bool enabled = false;
+			
+			Selector sel = (Selector) sender.Call("action");
+			if (sel.Name == "openWithFinder:" || sel.Name == "showInFinder:")
+			{
+				enabled = m_table.numberOfSelectedRows() > 0;
+			}
+			else if (respondsToSelector(sel))
+			{
+				enabled = true;
+			}
+			else if (SuperCall(NSWindowController.Class, "respondsToSelector:", new Selector("validateUserInterfaceItem:")).To<bool>())
+			{
+				enabled = SuperCall(NSWindowController.Class, "validateUserInterfaceItem:", sender).To<bool>();
+			}
+			
+			return enabled;
+		}
 		
 		#region Private Types
 		private sealed class LocalFile
@@ -308,68 +303,6 @@ namespace App
 			transcript.Show();
 			transcript.WriteLine(Output.Error, err);
 		}
-		
-//		private void DoXXX()
-//		{
-//			Boss editor = ObjectModel.Create("DirectoryEditorPlugin");
-//			var finder = editor.Get<IFindDirectoryEditor>();
-//			
-//			// Get all the recent files.
-//			int index = 0;
-//			NSArray array = NSDocumentController.sharedDocumentController().recentDocumentURLs();
-//			m_files = (from a in array let p = a.To<NSURL>().path().ToString() where File.Exists(p) select new LocalFile(p, finder, ++index)).ToArray();
-//			
-//			// Use a reversed path for the name for any entries with duplicate names.
-//			for (int i = 0; i < m_files.Length - 1; ++i)
-//			{
-//				string name = m_files[i].DisplayName;
-//				if (m_files[i + 1].DisplayName == name)
-//				{
-//					for (int j = i; j < m_files.Length && m_files[j].DisplayName == name; ++j)
-//					{
-//						m_files[j].DisplayName = m_files[j].Path.ReversePath();
-//					}
-//				}
-//			}
-//			
-//			// Sort them and refresh the view.
-//			DoSort();
-//			m_table.reloadData();
-//		}
-		
-		// Note that sorting by date is tricky: what we really want to do is use the time the file was last opened
-		// but there is no easy way to do that. The File.GetLastAccessTime method and the stat function can
-		// be used as a proxy for this but they are kind of iffy because Spotlight and (I think) TimeMachine will
-		// affect the access time.
-		// 
-		// So what we do when we want to sort by date is use the order the files were returned by 
-		// recentDocumentURLs. What exactly this returns is poorly documented but it seems to be the
-		// files in the order in which they were last opened.
-//		private void DoSort()
-//		{
-//			Array.Sort(m_files, (lhs, rhs) =>
-//			{
-//				int result;
-//				if (m_sortByDate)
-//					result = lhs.Index.CompareTo(rhs.Index);
-//				else
-//					result = lhs.DisplayName.CompareTo(rhs.DisplayName);
-//				return result;
-//			});
-//		}
-		
-//		private void DoSavePrefs()
-//		{
-//			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
-//			defaults.setBool_forKey(m_sortByDate, NSString.Create("localFilesBrowserSortByDate"));
-//		}
-//		
-//		private void DoLoadPrefs()
-//		{
-//			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
-//			
-//			m_sortByDate = defaults.boolForKey(NSString.Create("localFilesBrowserSortByDate"));
-//		}
 		#endregion
 		
 		#region Fields
@@ -380,7 +313,6 @@ namespace App
 		private List<LocalFile> m_files;						// the files matching the current search pattern
 		private int m_queued;
 		private string m_filter;
-//		private bool m_sortByDate;
 		#endregion
 	}
 }

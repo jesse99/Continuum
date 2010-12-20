@@ -52,10 +52,10 @@ include the percentage of samples that that method appeared in the stack trace
 	
 http://progit.org/
 
-* Might want show in finder context menu item.
-* Also open with finder.
+
 * Open recent needs to exclude tmp files.
 * Shift-delete should delete lines (when there is no selection).
+* Build a new foreshadow.
 * Transcript stdout should default to monospace.
 * May want to put some of the spcial key handlers behind interfaces so that they can be customized.
 * Confirmation if the user really wants to open a bunch of files
@@ -71,6 +71,7 @@ http://progit.org/
 		` draw in gray if the current context does not have the variable in any stack frame
 * Add a generate stub refactor
 	- should this be automatic?
+* Project option for inserting spaces for tabs.
 * Add a ToString refactor, should default to returning fields and auto-props
 * Do the same for implement IFormatable.
 * Might want a why continuum discussion somewhere.

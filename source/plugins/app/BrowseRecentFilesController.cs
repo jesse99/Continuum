@@ -95,6 +95,25 @@ namespace App
 			m_table.reloadData();
 		}
 		
+		public void openWithFinder(NSObject sender)
+		{
+			foreach (uint row in m_table.selectedRowIndexes())
+			{
+				string path = m_files[(int) row].Path;
+				NSWorkspace.sharedWorkspace().openFile(NSString.Create(path));
+			}
+		}
+		
+		public void showInFinder(NSObject sender)
+		{
+			foreach (uint row in m_table.selectedRowIndexes())
+			{
+				string path = m_files[(int) row].Path;
+				NSWorkspace.sharedWorkspace().selectFile_inFileViewerRootedAtPath(
+					NSString.Create(path), NSString.Empty);
+			}
+		}
+		
 		public new void keyDown(NSEvent evt)
 		{
 			bool handled = false;
@@ -143,6 +162,16 @@ namespace App
 			}
 		}
 		
+		public void menuNeedsUpdate(NSMenu menu)
+		{
+			int row = m_table.clickedRow();
+			if (!m_table.isRowSelected(row))
+			{
+				var indexes = NSIndexSet.indexSetWithIndex((uint) row);
+				m_table.selectRowIndexes_byExtendingSelection(indexes, false);
+			}
+		}
+		
 		public bool validateUserInterfaceItem(NSObject sender)
 		{
 			bool enabled = false;
@@ -159,6 +188,10 @@ namespace App
 				enabled = true;
 				if (sender.respondsToSelector("setState:"))
 					sender.Call("setState:", m_sortByDate ? 1 : 0);
+			}
+			else if (sel.Name == "openWithFinder:" || sel.Name == "showInFinder:")
+			{
+				enabled = m_table.numberOfSelectedRows() > 0;
 			}
 			else if (respondsToSelector(sel))
 			{

@@ -62,6 +62,10 @@ namespace DirectoryEditor
 			ActiveObjects.Add(this);
 		}
 		
+		// Note that the preferred way to do this (as of 10.5) is to attach a menu to the
+		// table and bind the menu delegate to a controller. Then the controller can
+		// define menuNeedsUpdate and use that to adjust the selection or change the
+		// menu items based on the selection. 
 		public new NSMenu menuForEvent(NSEvent evt)
 		{
 			NSMenu menu = NSMenu.Alloc().initWithTitle(NSString.Empty);
@@ -79,7 +83,7 @@ namespace DirectoryEditor
 			{
 				if (!isRowSelected(row))
 				{
-					var indexes = NSIndexSet.indexSetWithIndex((uint) row);	
+					var indexes = NSIndexSet.indexSetWithIndex((uint) row);
 					selectRowIndexes_byExtendingSelection(indexes, false);
 				}
 			}
