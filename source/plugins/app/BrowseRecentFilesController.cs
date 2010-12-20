@@ -193,6 +193,7 @@ namespace App
 			m_files = (from a in array let p = a.To<NSURL>().path().ToString() where File.Exists(p) select new RecentFile(p, finder, ++index)).ToArray();
 			
 			// Use a reversed path for the name for any entries with duplicate names.
+			Array.Sort(m_files, (lhs, rhs) => lhs.DisplayName.CompareTo(rhs.DisplayName));
 			for (int i = 0; i < m_files.Length - 1; ++i)
 			{
 				string name = m_files[i].DisplayName;
@@ -248,7 +249,7 @@ namespace App
 		#region Fields
 		private NSTableView m_table;
 		private RecentFile[] m_files;
-		private bool m_sortByDate;
+		private bool m_sortByDate = true;
 		#endregion
 	}
 }
