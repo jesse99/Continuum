@@ -54,10 +54,10 @@ http://progit.org/
 
 
 * Work some more on local files browser:
-	- instead of matching start, match within the candidate names
-	- also match each char in the string to (possible spaced out) capital letters in the candidate
+	- review the code
+	- push it
+	- make a new foreshadow
 	- email chuck
-* Build a new foreshadow
 * Transcript stdout should default to monospace.
 * May want to put some of the special key handlers behind interfaces so that they can be customized.
 * Confirmation if the user really wants to open a bunch of files

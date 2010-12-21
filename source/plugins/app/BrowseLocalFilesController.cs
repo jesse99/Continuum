@@ -49,8 +49,6 @@ namespace App
 			Broadcaster.Register("opened directory", this);
 			Broadcaster.Register("closed directory", this);
 			Broadcaster.Register("directory changed", this);
-			
-//			DoLoadPrefs();
 		}
 		
 		public void OnBroadcast(string name, object value)
@@ -60,7 +58,8 @@ namespace App
 				case "opened directory":
 				case "closed directory":
 				case "directory changed":
-					DoReload();
+					if (window().isVisible())
+						DoReload();
 					break;
 					
 				default:
@@ -136,15 +135,9 @@ namespace App
 		public NSObject tableView_objectValueForTableColumn_row(NSTableView table, NSObject col, int row)
 		{
 			LocalFile file = m_files[row];
-			if (file.Color != null)
-			{
-				var attrs = NSDictionary.dictionaryWithObject_forKey(file.Color, Externs.NSForegroundColorAttributeName);
-				return NSAttributedString.Create(file.DisplayName, attrs);
-			}
-			else
-			{
-				return NSString.Create(file.DisplayName);
-			}
+			Contract.Assert(file.Text != null);
+			
+			return file.Text;
 		}
 		
 		public void menuNeedsUpdate(NSMenu menu)
@@ -197,7 +190,7 @@ namespace App
 			public string FullPath {get; private set;}
 			
 			public IDirectoryEditor Editor {get; private set;}
-			public NSColor Color {get; set;}
+			public NSAttributedString Text {get; set;}
 		}
 		#endregion
 		
@@ -232,36 +225,103 @@ namespace App
 		
 		private void DoRefresh(List<LocalFile> candidates)
 		{
-			m_candidates = candidates.Where(c => !DoIsIgnored(c.Editor, c.RelativePath));
-			foreach (LocalFile file in m_candidates)
+			if (m_candidates != null)
 			{
-				file.Color = file.Editor.Boss.Get<IFileColor>().GetColor(file.FileName);
+				foreach (LocalFile file in m_candidates)
+				{
+					if (file.Text != null)
+						file.Text.release();
+				}
 			}
+			
+			m_candidates = candidates.Where(c => !DoIsIgnored(c.Editor, c.RelativePath));
 			
 			if (--m_queued == 0)
 				m_spinner.stopAnimation(this);
 			DoFilter();
 		}
 		
-		private bool DoShouldDisplay(string fileName)
+		private void DoSetFileText(LocalFile file, List<NSRange> matches)
 		{
-			if (fileName.IndexOf(m_filter, StringComparison.OrdinalIgnoreCase) >= 0)
-				return true;
-				
-			string upper = new string((from c in fileName where char.IsUpper(c) select c).ToArray());
-			if (upper.IndexOf(m_filter, StringComparison.OrdinalIgnoreCase) >= 0)
-				return true;
-				
-			return false;
+			if (file.Text != null)
+			{
+				file.Text.release();
+				file.Text = null;
+			}
+			
+			NSColor color = file.Editor.Boss.Get<IFileColor>().GetColor(file.FileName);
+			NSMutableAttributedString text = NSMutableAttributedString.Create(file.DisplayName, Externs.NSForegroundColorAttributeName, color);
+			
+			if (matches != null)
+			{
+				foreach (NSRange range in matches)
+				{
+					text.addAttribute_value_range(Externs.NSForegroundColorAttributeName, NSColor.blueColor(), range);
+//					text.setAttributes_range(attrs, range);
+				}
+			}
+			
+			file.Text = text;
+			file.Text.retain();
 		}
 		
 		private void DoFilter()
 		{
-			if (!string.IsNullOrEmpty(m_filter))
-				m_files = (from c in m_candidates where DoShouldDisplay(c.FileName) select c).ToList();
-			else
-				m_files = m_candidates.ToList();
+			m_files.Clear();
+			
+			foreach (LocalFile file in m_candidates)
+			{
+				if (!string.IsNullOrEmpty(m_filter))
+				{
+					List<NSRange> matches = DoGetMatches(file.FileName);
+					if (matches != null)
+					{
+						DoSetFileText(file, matches);
+						m_files.Add(file);
+					}
+				}
+				else
+				{
+					DoSetFileText(file, null);
+					m_files.Add(file);
+				}
+			}
+			
 			m_table.reloadData();
+		}
+		
+		private List<NSRange> DoGetMatches(string fileName)
+		{
+			Contract.Requires(m_filter != null && m_filter.Length > 0);
+			
+			// We have a match if the search string is within the file name,
+			int index = fileName.IndexOf(m_filter, StringComparison.OrdinalIgnoreCase);
+			if (index >= 0)
+				return new List<NSRange>{new NSRange(index, m_filter.Length)};
+			
+			// or each character in the search string matches consecutive upper
+			// case letters in the file name (e.g. "tv" will match "NSTextView").
+			var matches = new List<NSRange>();
+			index = fileName.IndexOf(char.ToUpper(m_filter[0]));
+			if (index >= 0)
+			{
+				int i = 0;
+				int j = index - 1;
+				while (j < fileName.Length)
+				{
+					j = fileName.IndexOf(char.ToUpper(m_filter[i]), j + 1);
+					if (j >= 0)
+					{
+						matches.Add(new NSRange(j, 1));
+						if (++i == m_filter.Length)
+							return matches;
+					}
+					else
+						break;
+				}
+			}
+			
+			return null;
 		}
 		
 		// Instead of using a thread to get the files we could ask the directory editor for them. This
@@ -321,8 +381,8 @@ namespace App
 		private NSTableView m_table;
 		private NSSearchFieldCell m_search;
 		private NSProgressIndicator m_spinner;
-		private IEnumerable<LocalFile> m_candidates;	// all the files under the directories being edited
-		private List<LocalFile> m_files;						// the files matching the current search pattern
+		private IEnumerable<LocalFile> m_candidates;				// all the files under the directories being edited
+		private List<LocalFile> m_files = new List<LocalFile>();	// the files matching the current search pattern
 		private int m_queued;
 		private string m_filter;
 		#endregion
