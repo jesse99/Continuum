@@ -46,19 +46,24 @@ include the percentage of samples that that method appeared in the stack trace
 
 [0] http://mono.ximian.com/monobuild/preview/download-preview/
 [1] http://www.mono-project.com/Release_Notes_Mono_2.8
-[2] http://www.mono-project.com/Compacting_GC	System.ArgumentException
+[2] http://www.mono-project.com/Compacting_GC
 [3] http://www.mono-project.com/Mono_LLVM
 
 	
 http://progit.org/
 
 
+* Work some more on local files browser:
+	- instead of matching start, match within the candidate names
+	- also match each char in the string to (possible spaced out) capital letters in the candidate
+	- email chuck
+* Build a new foreshadow
 * Transcript stdout should default to monospace.
 * May want to put some of the special key handlers behind interfaces so that they can be customized.
 * Confirmation if the user really wants to open a bunch of files
 	- open files
 	- return in dir editor
-	- return in find in files result	36
+	- return in find in files result
 * May want to add scheme support. See http://coderchrome.org/browse/greatest/0 for example.
 * Do some more work on the debugger:
 	- add an immediate window
@@ -82,6 +87,8 @@ http://progit.org/
 	- work on an auto-complete framework (check out PySmell)
 	- may want to email chuck about this
 	- add F# auto-complete (the compiler has at least some stuff which may make this easier)
+	- declarations popup
+	- refactors
 * Zooming navigation interface?
 * Get auto-complete working better.
 * Probably want some sort of advanced prefs panel:

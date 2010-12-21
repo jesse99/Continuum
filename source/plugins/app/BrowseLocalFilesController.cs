@@ -243,10 +243,22 @@ namespace App
 			DoFilter();
 		}
 		
+		private bool DoShouldDisplay(string fileName)
+		{
+			if (fileName.IndexOf(m_filter, StringComparison.OrdinalIgnoreCase) >= 0)
+				return true;
+				
+			string upper = new string((from c in fileName where char.IsUpper(c) select c).ToArray());
+			if (upper.IndexOf(m_filter, StringComparison.OrdinalIgnoreCase) >= 0)
+				return true;
+				
+			return false;
+		}
+		
 		private void DoFilter()
 		{
 			if (!string.IsNullOrEmpty(m_filter))
-				m_files = (from c in m_candidates where c.FileName.StartsWith(m_filter, true, null) select c).ToList();
+				m_files = (from c in m_candidates where DoShouldDisplay(c.FileName) select c).ToList();
 			else
 				m_files = m_candidates.ToList();
 			m_table.reloadData();
