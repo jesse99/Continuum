@@ -74,6 +74,11 @@ namespace Styler
 			get {return "//";}
 		}
 		
+		public bool UseTabs
+		{
+			get {return m_language != null ? m_language.UseTabs : false;}
+		}
+		
 		[ThreadModel(ThreadModel.Concurrent)]
 		public Language Language
 		{

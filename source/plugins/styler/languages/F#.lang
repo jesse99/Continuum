@@ -3,7 +3,7 @@ Language: f\#
 Globs: *.fs *.fsi *.fsx *.fsscript
 Word: [_\p{Lu}\p{Ll}\p{Lt}\p{Lm}\p{Lo}\p{Nl}][_\p{Lu}\p{Ll}\p{Lt}\p{Lm}\p{Lo}\p{Nl}0-9\p{Pc}\p{Mn}\p{Mc}\p{Cf}]*
 LineComment: //
-IgnoreWhitespace: true
+SpacesNotTabs: true
 
 Comment: // [^\r\n]* [\r\n]				# note that $ won't work quite right with windows line endings
 Comment: \(\* (?: . | \r | \n)*? \*\)		# TODO: these comments nest
@@ -13,7 +13,7 @@ Keyword: \b(?: atomic | break | checked | component | const | constraint | const
 Keyword: \b(?: __SOURCE_DIRECTORY__ | __SOURCE_FILE__ | __LINE__ )\b	# identifier replacements 
 Keyword: \b(?: sbyte | int16 | int32 | int64 | byte | uint16 | uint32 | int | uint64 | ieee32 | ieee64 | bignum | char | string | verbatim-string | bytestring | verbatim-bytearray | bytechar )\b	# constants 
 Keyword: \b(?: obj | exn | nativeint | unativeint | float32 | single | float | double | sbyte | int8 | uint8 | bool | decimal )\b	# basic types
-Keyword: \b(?: async | box | failwith | fst | hash | ignore | invalidArg | None | not | raise | ref | reraise | sizeof | snd | Some | stderr | stdin | stdout | typeof | typedefof | unbox | unit )\b	# misc 
+Keyword2: \b(?: async | box | failwith | fst | hash | ignore | invalidArg | None | not | raise | ref | reraise | sizeof | snd | Some | stderr | stdin | stdout | typeof | typedefof | unbox | unit )\b	# misc 
 String: " (?: [^"\\] | \\.)* " B?
 String: @" (?: [^"\\] | \\. | (?: " "))* " B?
 String: ' (?: [^'\r\n\\] | \\.)* ' B?

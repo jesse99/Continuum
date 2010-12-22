@@ -656,6 +656,12 @@ namespace TextEditor
 						if (DoMatchPriorLineTabs(selRange.location))
 							return true;
 					}
+					
+					if (controller.Language != null && !controller.Language.UseTabs)
+					{
+						this.insertText(NSString.Create("    "));
+						return true;
+					}
 				}
 			}
 			

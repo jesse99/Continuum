@@ -52,7 +52,9 @@ include the percentage of samples that that method appeared in the stack trace
 	
 http://progit.org/
 
-
+* Work on tabs:
+	- add a project option for using spaces (setting should override this)
+	- update the languages readme
 * Maybe local files should have these cases:
 	- "foo"	matches the start of file names
 	- " foo" matches the end of file names
@@ -74,7 +76,6 @@ http://progit.org/
 		` draw in gray if the current context does not have the variable in any stack frame
 * Add a generate stub refactor
 	- should this be automatic?
-* Project option for inserting spaces for tabs.
 * Add a ToString refactor, should default to returning fields and auto-props
 * Do the same for implement IFormatable.
 * Might want a why continuum discussion somewhere.

@@ -249,11 +249,15 @@ namespace Styler
 					else if (element == "IgnoreWhitespace")
 						settings.IgnoreWhitespace = value.Trim();
 							
+					else if (element == "SpacesNotTabs")
+						settings.SpacesNotTabs = value.Trim();
+							
 					else if (element == "TabStops")
 						if (settings.TabStops == null)
 							settings.TabStops = value.Trim();
 						else
 							DoWriteError("{0} has more than one TabStops setting.", file);
+						
 					else
 						elements.Add(new KeyValuePair<string, string>(element, value.Trim()));
 				}

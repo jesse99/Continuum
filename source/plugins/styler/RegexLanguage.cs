@@ -64,6 +64,11 @@ namespace Styler
 			get {return m_language != null ? m_language.StylesWhitespace : false;}
 		}
 		
+		public bool UseTabs
+		{
+			get {return m_language != null ? m_language.UseTabs : false;}
+		}
+		
 		public Regex Word
 		{
 			get {return m_language.Word;}
