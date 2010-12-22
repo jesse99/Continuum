@@ -134,7 +134,7 @@ namespace App
 		
 		public NSObject tableView_objectValueForTableColumn_row(NSTableView table, NSObject col, int row)
 		{
-			LocalFile file = m_files[row];
+			DisplayFile file = m_files[row];
 			Contract.Assert(file.Text != null);
 			
 			return file.Text;
@@ -172,25 +172,35 @@ namespace App
 		}
 		
 		#region Private Types
-		private sealed class LocalFile
+		private struct DisplayFile
 		{
-			public LocalFile(string fullPath, string relativePath, IDirectoryEditor editor)
+			public DisplayFile(string fullPath, NSAttributedString text) : this()
+			{
+				FullPath = fullPath;
+				Text = text;
+			}
+			
+			public string FullPath {get; private set;}
+			public NSAttributedString Text {get; set;}
+		}
+		
+		private struct LocalFile
+		{
+			public LocalFile(string fullPath, string relativePath, IDirectoryEditor editor, string displayName = null) : this()
 			{
 				FullPath = fullPath;
 				RelativePath = relativePath;
 				FileName = System.IO.Path.GetFileName(relativePath);
-				DisplayName = FileName;
 				Editor = editor;
+				DisplayName = displayName ?? FileName;
 			}
-			
-			public string DisplayName {get; set;}
 			
 			public string FileName {get; private set;}
 			public string RelativePath {get; private set;}
 			public string FullPath {get; private set;}
 			
+			public string DisplayName {get; private set;}
 			public IDirectoryEditor Editor {get; private set;}
-			public NSAttributedString Text {get; set;}
 		}
 		#endregion
 		
@@ -225,15 +235,6 @@ namespace App
 		
 		private void DoRefresh(List<LocalFile> candidates)
 		{
-			if (m_candidates != null)
-			{
-				foreach (LocalFile file in m_candidates)
-				{
-					if (file.Text != null)
-						file.Text.release();
-				}
-			}
-			
 			m_candidates = candidates.Where(c => !DoIsIgnored(c.Editor, c.RelativePath));
 			
 			if (--m_queued == 0)
@@ -241,14 +242,8 @@ namespace App
 			DoFilter();
 		}
 		
-		private void DoSetFileText(LocalFile file, List<NSRange> matches)
+		private NSAttributedString DoCreateText(LocalFile file, List<NSRange> matches)
 		{
-			if (file.Text != null)
-			{
-				file.Text.release();
-				file.Text = null;
-			}
-			
 			NSColor color = file.Editor.Boss.Get<IFileColor>().GetColor(file.FileName);
 			NSMutableAttributedString text = NSMutableAttributedString.Create(file.DisplayName, Externs.NSForegroundColorAttributeName, color);
 			
@@ -257,16 +252,20 @@ namespace App
 				foreach (NSRange range in matches)
 				{
 					text.addAttribute_value_range(Externs.NSForegroundColorAttributeName, NSColor.blueColor(), range);
-//					text.setAttributes_range(attrs, range);
 				}
 			}
 			
-			file.Text = text;
-			file.Text.retain();
+			text.retain();
+			return text;
 		}
 		
 		private void DoFilter()
 		{
+			foreach (DisplayFile file in m_files)
+			{
+				if (file.Text != null)
+					file.Text.release();
+			}
 			m_files.Clear();
 			
 			foreach (LocalFile file in m_candidates)
@@ -275,15 +274,11 @@ namespace App
 				{
 					List<NSRange> matches = DoGetMatches(file.FileName);
 					if (matches != null)
-					{
-						DoSetFileText(file, matches);
-						m_files.Add(file);
-					}
+						m_files.Add(new DisplayFile(file.FullPath, DoCreateText(file, matches)));
 				}
 				else
 				{
-					DoSetFileText(file, null);
-					m_files.Add(file);
+					m_files.Add(new DisplayFile(file.FullPath, DoCreateText(file, null)));
 				}
 			}
 			
@@ -353,7 +348,8 @@ namespace App
 					{
 						for (int j = i; j < candidates.Count && candidates[j].DisplayName == name; ++j)
 						{
-							candidates[j].DisplayName = candidates[j].RelativePath.ReversePath();
+							LocalFile f = candidates[j];
+							candidates[j] = new LocalFile(f.FullPath, f.RelativePath, f.Editor, f.RelativePath.ReversePath());
 						}
 					}
 				}
@@ -381,8 +377,8 @@ namespace App
 		private NSTableView m_table;
 		private NSSearchFieldCell m_search;
 		private NSProgressIndicator m_spinner;
-		private IEnumerable<LocalFile> m_candidates;				// all the files under the directories being edited
-		private List<LocalFile> m_files = new List<LocalFile>();	// the files matching the current search pattern
+		private IEnumerable<LocalFile> m_candidates;					// all the files under the directories being edited
+		private List<DisplayFile> m_files = new List<DisplayFile>();	// the files matching the current search pattern
 		private int m_queued;
 		private string m_filter;
 		#endregion
