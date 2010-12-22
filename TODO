@@ -53,6 +53,12 @@ include the percentage of samples that that method appeared in the stack trace
 http://progit.org/
 
 
+* Maybe local files should have these cases:
+	- "foo"	matches the start of file names
+	- " foo" matches the end of file names
+	- " foo " matches within file names
+	- "FOO" matches consecutive upper case letters in file names
+	- or have a context menu?
 * Transcript stdout should default to monospace.
 * May want to put some of the special key handlers behind interfaces so that they can be customized.
 * Confirmation if the user really wants to open a bunch of files

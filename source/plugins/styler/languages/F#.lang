@@ -1,0 +1,28 @@
+# f# 2.0 
+Language: f\#
+Globs: *.fs *.fsi *.fsx *.fsscript
+Word: [_\p{Lu}\p{Ll}\p{Lt}\p{Lm}\p{Lo}\p{Nl}][_\p{Lu}\p{Ll}\p{Lt}\p{Lm}\p{Lo}\p{Nl}0-9\p{Pc}\p{Mn}\p{Mc}\p{Cf}]*
+LineComment: //
+IgnoreWhitespace: true
+
+Comment: // [^\r\n]* [\r\n]				# note that $ won't work quite right with windows line endings
+Comment: \(\* (?: . | \r | \n)*? \*\)		# TODO: these comments nest
+Preprocess: (?: \x23if | \x23else | \x23endif | \x23int | \x23line | \x23nowarn | \x23r | \x23reference | \x23I | \x23Include | \x23load | \x23time | \x23help | \x23q | \x23quit) .* $
+Keyword: \b(?: abstract | and | as | assert | base | begin | class | default | delegate | do(?: !?) | done | downcast | downto | elif | else | end | exception | extern | false | finally | for | fun | function | global | if | in | inherit | inline | interface | internal | lazy | let(?: !?) | match | member | module | mutable | namespace | new | null | of | open | or | override | private | public | rec | return(?: !?) | sig | static | struct | then | to | true | try | type | upcast | use(?: !?) | val | void | when | while | with | yield(?: !?))\b	# keywords
+Keyword: \b(?: atomic | break | checked | component | const | constraint | constructor | continue | eager | fixed | fori | functor | include | measure | method | mixin | object | parallel | params | process | protected | pure | recursive | sealed | tailcall | trait | virtual | volatile )\b	# reserved for future use 
+Keyword: \b(?: __SOURCE_DIRECTORY__ | __SOURCE_FILE__ | __LINE__ )\b	# identifier replacements 
+Keyword: \b(?: sbyte | int16 | int32 | int64 | byte | uint16 | uint32 | int | uint64 | ieee32 | ieee64 | bignum | char | string | verbatim-string | bytestring | verbatim-bytearray | bytechar )\b	# constants 
+Keyword: \b(?: obj | exn | nativeint | unativeint | float32 | single | float | double | sbyte | int8 | uint8 | bool | decimal )\b	# basic types
+Keyword: \b(?: async | box | failwith | fst | hash | ignore | invalidArg | None | not | raise | ref | reraise | sizeof | snd | Some | stderr | stdin | stdout | typeof | typedefof | unbox | unit )\b	# misc 
+String: " (?: [^"\\] | \\.)* " B?
+String: @" (?: [^"\\] | \\. | (?: " "))* " B?
+String: ' (?: [^'\r\n\\] | \\.)* ' B?
+Number: (?<= \W) \d+ (?: \. \d+)? [eE] [\+-]? \d+ [fFmM]? (?: < [ \(\)\w^/-]+ >)? (?= \W)
+Number: (?<= \W) \d+ \. \d+ [fFmM]? (?: < [ \(\)\w^/-]+ >)? (?= \W)
+Number: (?<= \W) 0[xX] [0-9A-Fa-f]+ (?: y | uy | s | us | l | ul | u | n | un | L | UL | uL | m | M)? (?: < [ \(\)\w^/-]+ >)? (?= \W)
+Number: (?<= \W) 0[oO] [0-7]+ (?: y | uy | s | us | l | ul | u | n | un | L | UL | uL | m | M)? (?: < [ \(\)\w^/-]+ >)? (?= \W)
+Number: (?<= \W) 0[bB] [0-1]+ (?: y | uy | s | us | l | ul | u | n | un | L | UL | uL | m | M)? (?: < [ \(\)\w^/-]+ >)? (?= \W)
+Number: (?<= \W) \d+ (?: y | uy | s | us | l | ul | u | n | un | L | UL | uL | m | M)? (?: < [ \(\)\w^/-]+ >)? (?= \W)
+Attribute: (?<= ^ \s* \[< (?: \w+ \s* :)? \s*) [\w\.]+ \s* (?= >\]|\()
+Type: (?<=\b (?: type | module | interface) \s+) \w+
+Member: (?<=\b member \s+) \w+ \. \w+
