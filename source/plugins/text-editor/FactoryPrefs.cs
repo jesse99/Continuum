@@ -72,7 +72,7 @@ namespace TextEditor
 			DoInitStyle(dict, "text other1", new Attributes{Font = "Verdana-Bold", Size = 14.0f, Color = new int[]{44, 96, 67}});
 			DoInitStyle(dict, "text other2", new Attributes{Font = "Verdana-BoldItalic", Size = 18.0f, Color = new int[]{131, 11, 253}});
 			
-			DoInitStyle(dict, "text spaces", new Attributes{BackColor = new int[]{255, 227, 227}});
+			DoInitStyle(dict, "text spaces", new Attributes{BackColor = new int[]{117, 10, 100}});
 			DoInitStyle(dict, "text tabs", new Attributes{BackColor = new int[]{227, 255, 255}});
 			
 			NSColor color = NSColor.colorWithDeviceRed_green_blue_alpha(239/255.0f, 255/255.0f, 252/255.0f, 1.0f);
