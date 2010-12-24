@@ -32,7 +32,7 @@ using System.Threading;
 
 namespace App
 {
-	[ExportClass("BrowseLocalFilesController", "NSWindowController", Outlets = "table search progress")]
+	[ExportClass("BrowseLocalFilesController", "NSWindowController", Outlets = "table searchField search progress")]
 	internal sealed class BrowseLocalFilesController : NSWindowController, IObserver
 	{
 		public BrowseLocalFilesController() : base(NSObject.AllocAndInitInstance("BrowseLocalFilesController"))
@@ -43,6 +43,7 @@ namespace App
 			m_table.setDoubleAction("doubleClicked:");
 			m_table.setTarget(this);
 			
+			m_searchField =  new IBOutlet<NSSearchField>(this, "searchField").Value;
 			m_search =  new IBOutlet<NSSearchFieldCell>(this, "search").Value;
 			m_spinner =  new IBOutlet<NSProgressIndicator>(this, "progress").Value;
 			
@@ -72,6 +73,7 @@ namespace App
 		{
 			DoReload();
 			window().makeKeyAndOrderFront(this);
+			window().makeFirstResponder(m_searchField);
 		}
 		
 		public void onSearch(NSObject sender)
@@ -247,13 +249,13 @@ namespace App
 			NSColor color = file.Editor.Boss.Get<IFileColor>().GetColor(file.FileName);
 			NSMutableAttributedString text = NSMutableAttributedString.Create(file.DisplayName, Externs.NSForegroundColorAttributeName, color);
 			
-			if (matches != null)
-			{
-				foreach (NSRange range in matches)
-				{
-					text.addAttribute_value_range(Externs.NSForegroundColorAttributeName, NSColor.blueColor(), range);
-				}
-			}
+//			if (matches != null)
+//			{
+//				foreach (NSRange range in matches)
+//				{
+//					text.addAttribute_value_range(Externs.NSForegroundColorAttributeName, NSColor.blueColor(), range);
+//				}
+//			}
 			
 			text.retain();
 			return text;
@@ -375,6 +377,7 @@ namespace App
 		
 		#region Fields
 		private NSTableView m_table;
+		private NSSearchField m_searchField;
 		private NSSearchFieldCell m_search;
 		private NSProgressIndicator m_spinner;
 		private IEnumerable<LocalFile> m_candidates;					// all the files under the directories being edited
