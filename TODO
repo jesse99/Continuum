@@ -52,9 +52,8 @@ include the percentage of samples that that method appeared in the stack trace
 	
 http://progit.org/
 
-* Work on tabs:
-	- add a project option for using spaces (setting should override this)
-	- update the languages readme
+* Control-2 should make the search box the target.
+* Look into hiding (or somehow collapsing) document windows associated with a collapsed directory window.
 * Maybe local files should have these cases:
 	- "foo"	matches the start of file names
 	- " foo" matches the end of file names
@@ -85,7 +84,6 @@ http://progit.org/
 * Do a new release.
 
 * Work on F#:
-	- need a language file
 	- work on an auto-complete framework (check out PySmell)
 	- may want to email chuck about this
 	- add F# auto-complete (the compiler has at least some stuff which may make this easier)

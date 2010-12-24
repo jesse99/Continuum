@@ -49,7 +49,7 @@ namespace Shared
 		bool StylesWhitespace {get;}
 		
 		// If false spaces are inserted instead of tabs.
-		bool UseTabs {get;}
+		bool? UseTabs {get;}
 		
 		// Returns a regex used to define what the language considers a word (for
 		// things like double clicking).

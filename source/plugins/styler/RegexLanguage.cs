@@ -64,9 +64,9 @@ namespace Styler
 			get {return m_language != null ? m_language.StylesWhitespace : false;}
 		}
 		
-		public bool UseTabs
+		public bool? UseTabs
 		{
-			get {return m_language != null ? m_language.UseTabs : false;}
+			get {return m_language != null ? m_language.UseTabs : null;}
 		}
 		
 		public Regex Word

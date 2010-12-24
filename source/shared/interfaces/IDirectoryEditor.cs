@@ -50,5 +50,11 @@ namespace Shared
 		
 		// True if curly braces should be placed on their own lines.
 		bool AddBraceLine {get;}
+		
+		// True if tabs hould be inserted as tabs (instead of spaces).
+		bool UseTabs {get;}
+		
+		// Number of spaces to use if UseTabs is false.
+		int NumSpaces {get;}
 	}
 }

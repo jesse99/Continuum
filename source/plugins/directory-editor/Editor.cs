@@ -119,6 +119,30 @@ namespace DirectoryEditor
 			}
 		}
 		
+		public bool UseTabs
+		{
+			get
+			{
+				Contract.Requires(m_window != null, "window isn't set");
+				Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
+				
+				DirectoryController controller = (DirectoryController) m_window.windowController();
+				return controller.UseTabs;
+			}
+		}
+		
+		public int NumSpaces
+		{
+			get
+			{
+				Contract.Requires(m_window != null, "window isn't set");
+				Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
+				
+				DirectoryController controller = (DirectoryController) m_window.windowController();
+				return controller.NumSpaces;
+			}
+		}
+		
 		#region Fields 
 		private Boss m_boss;
 		private NSWindow m_window;

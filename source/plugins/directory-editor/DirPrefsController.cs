@@ -1,4 +1,4 @@
-// Copyright (C) 2008-2009 Jesse Jones
+// Copyright (C) 2008-2010 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -29,7 +29,7 @@ using System.Diagnostics;
 
 namespace DirectoryEditor
 {
-	[ExportClass("DirPrefsController", "NSWindowController", Outlets = "addBraceLine addSpace sheet ignoredItems ignoredTargets pathColor files1Color files2Color files3Color files4Color files5Color files6Color files7Color files1Globs files2Globs files3Globs files4Globs files5Globs files6Globs files7Globs")]
+	[ExportClass("DirPrefsController", "NSWindowController", Outlets = "useTabs numSpaces addBraceLine addSpace sheet ignoredItems ignoredTargets pathColor files1Color files2Color files3Color files4Color files5Color files6Color files7Color files1Globs files2Globs files3Globs files4Globs files5Globs files6Globs files7Globs")]
 	internal sealed class DirPrefsController : NSWindowController
 	{
 		private DirPrefsController(IntPtr instance) : base(instance)
@@ -39,6 +39,8 @@ namespace DirectoryEditor
 			m_ignoredItems = new IBOutlet<NSTextField>(this, "ignoredItems");
 			m_addSpace = new IBOutlet<NSButton>(this, "addSpace");
 			m_addBraceLine = new IBOutlet<NSButton>(this, "addBraceLine");
+			m_useTabs = new IBOutlet<NSButton>(this, "useTabs");
+			m_numSpaces = new IBOutlet<NSTextField>(this, "numSpaces");
 			
 			ActiveObjects.Add(this);
 		}
@@ -60,6 +62,13 @@ namespace DirectoryEditor
 			
 			// set add brace line
 			m_addBraceLine.Value.setState(m_dir.AddBraceLine ? 1 : 0);
+			
+			// use tabs
+			m_useTabs.Value.setState(m_dir.UseTabs ? 0 : 1);
+			
+			// number of spaces
+			s = m_dir.NumSpaces.ToString();
+			m_numSpaces.Value.setStringValue(NSString.Create(s));
 			
 			// set path color
 			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
@@ -106,6 +115,13 @@ namespace DirectoryEditor
 			// save add brace line
 			m_dir.AddBraceLine = m_addBraceLine.Value.state() == 1;
 			
+			// use tabs
+			m_dir.UseTabs = m_useTabs.Value.state() == 0;
+			
+			// number of spaces
+			s = m_numSpaces.Value.stringValue().description();
+			m_dir.NumSpaces = int.Parse(s);
+			
 			// save path color
 			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
 			string path = m_dir.Path;
@@ -148,6 +164,8 @@ namespace DirectoryEditor
 		private IBOutlet<NSButton> m_addSpace;
 		private IBOutlet<NSButton> m_addBraceLine;
 		private DirectoryController m_dir;
+		private IBOutlet<NSButton> m_useTabs;
+		private IBOutlet<NSTextField> m_numSpaces;
 		#endregion
 	}
 }

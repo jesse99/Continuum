@@ -39,7 +39,6 @@ namespace Styler
 			Word = string.Empty;
 			Shebangs = string.Empty;
 			IgnoreWhitespace = "false";
-			SpacesNotTabs = "false";
 		}
 		
 		public string Name {get; set;}
@@ -56,6 +55,7 @@ namespace Styler
 		
 		public string IgnoreWhitespace {get; set;}
 		
+		// May be null.
 		public string SpacesNotTabs {get; set;}
 	}
 	
@@ -67,7 +67,8 @@ namespace Styler
 			m_name = settings.Name;
 			
 			m_styleWhitespace = settings.IgnoreWhitespace == "false";
-			m_useTabs = settings.SpacesNotTabs == "false";
+			if (settings.SpacesNotTabs != null)
+				m_useTabs = settings.SpacesNotTabs == "false";
 			m_shebangs = settings.Shebangs.Split(new char[]{' '}, StringSplitOptions.RemoveEmptyEntries);
 			
 			string[] stops = (settings.TabStops ?? string.Empty).Split(new char[]{' '}, StringSplitOptions.RemoveEmptyEntries);
@@ -141,7 +142,7 @@ namespace Styler
 		}
 		
 		[ThreadModel(ThreadModel.Concurrent)]
-		public bool UseTabs
+		public bool? UseTabs
 		{
 			get {return m_useTabs;}
 		}
@@ -271,7 +272,7 @@ namespace Styler
 		private Regex m_regex;
 		private Regex m_word;
 		private bool m_styleWhitespace;
-		private bool m_useTabs = true;
+		private bool? m_useTabs;
 		private string m_lineComment;
 		private Dictionary<int, string> m_indexTable = new Dictionary<int, string>();
 		#endregion

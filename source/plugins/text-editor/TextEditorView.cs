@@ -657,9 +657,9 @@ namespace TextEditor
 							return true;
 					}
 					
-					if (controller.Language != null && !controller.Language.UseTabs)
+					if (controller.Language != null && !controller.UsesTabs)
 					{
-						this.insertText(NSString.Create("    "));
+						this.insertText(controller.SpacesText);
 						return true;
 					}
 				}

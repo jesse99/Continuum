@@ -1,4 +1,4 @@
-// Copyright (C) 2008-2009 Jesse Jones
+// Copyright (C) 2008-2010 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -260,6 +260,32 @@ namespace DirectoryEditor
 				if (value != m_addBraceLine)
 				{
 					m_addBraceLine = value;
+					DoSavePrefs();
+				}
+			}
+		}
+		
+		public bool UseTabs
+		{
+			get {return m_useTabs;}
+			set
+			{
+				if (value != m_useTabs)
+				{
+					m_useTabs = value;
+					DoSavePrefs();
+				}
+			}
+		}
+		
+		public int NumSpaces
+		{
+			get {return m_numSpaces;}
+			set
+			{
+				if (value != m_numSpaces)
+				{
+					m_numSpaces = value;
 					DoSavePrefs();
 				}
 			}
@@ -638,6 +664,16 @@ namespace DirectoryEditor
 			value = m_addBraceLine ? "1" : "0";
 			defaults.setObject_forKey(NSString.Create(value), NSString.Create(key));
 			
+			// use tabs
+			key = Path + "-use tabs";
+			value = m_useTabs ? "1" : "0";
+			defaults.setObject_forKey(NSString.Create(value), NSString.Create(key));
+			
+			// number of spaces
+			key = Path + "-number of spaces";
+			value = m_numSpaces.ToString();
+			defaults.setObject_forKey(NSString.Create(value), NSString.Create(key));
+			
 			// ignored targets
 			key = Path + "-ignored items";
 			value = Glob.Join(m_ignoredItems);
@@ -686,6 +722,22 @@ namespace DirectoryEditor
 			else
 				m_addBraceLine = true;
 			
+			// use tabs
+			key = path + "-use tabs";
+			value = defaults.stringForKey(NSString.Create(key)).To<NSString>();
+			if (!NSObject.IsNullOrNil(value))
+				m_useTabs = value.description() == "1";
+			else
+				m_useTabs = true;
+			
+			// number of spaces
+			key = path + "-number of spaces";
+			value = defaults.stringForKey(NSString.Create(key)).To<NSString>();
+			if (!NSObject.IsNullOrNil(value))
+				m_numSpaces = int.Parse(value.description());
+			else
+				m_numSpaces = 4;
+			
 			// default target
 			key = path + "-defaultTarget";
 			value = defaults.stringForKey(NSString.Create(key)).To<NSString>();
@@ -707,6 +759,8 @@ namespace DirectoryEditor
 		private string[] m_ignoredItems = new string[0];
 		private bool m_addSpace;
 		private bool m_addBraceLine = true;
+		private int m_numSpaces = 4;
+		private bool m_useTabs = true;
 		private Boss m_boss;
 		private DirectoryItemStyler m_dirStyler;
 		private DirectoryWatcher m_watcher;

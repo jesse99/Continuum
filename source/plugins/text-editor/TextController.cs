@@ -54,6 +54,7 @@ namespace TextEditor
 			
 			Broadcaster.Register("text default color changed", this);
 			Broadcaster.Register("languages changed", this);
+			Broadcaster.Register("directory prefs changed", this);
 			DoUpdateDefaultColor(string.Empty, null);
 			
 			m_textView.Value.Call("onOpened:", this);
@@ -81,7 +82,12 @@ namespace TextEditor
 						ChangeInLength = 0,
 						ChangeInLines = 0,
 						StartLine = 1};
+					DoSetTabSettings();
 					Broadcaster.Invoke("text changed", edit);
+					break;
+					
+				case "directory prefs changed":
+					DoSetTabSettings();
 					break;
 					
 				default:
@@ -233,6 +239,8 @@ namespace TextEditor
 			
 			Broadcaster.Invoke("opened document window", m_boss);
 			synchronizeWindowTitleWithDocumentName();		// bit of a hack, but we need something like this for IDocumentWindowTitle to work
+			
+			DoSetTabSettings();
 		}
 		
 		public NSTextView TextView
@@ -285,6 +293,10 @@ namespace TextEditor
 		{
 			get {return m_language != null ? m_language.TabStops : new int[0];}
 		}
+		
+		public bool UsesTabs {get; private set;}
+		
+		public NSString SpacesText {get; private set;}
 		
 		internal NSScrollView ScrollView
 		{
@@ -1103,6 +1115,31 @@ namespace TextEditor
 			}
 			
 			return null;
+		}
+		
+		private void DoSetTabSettings()
+		{
+			UsesTabs = true;
+			int numSpaces = 4;
+			
+			Boss boss = GetDirEditorBoss();
+			if (boss != null)
+			{
+				var editor = boss.Get<IDirectoryEditor>();
+				UsesTabs = editor.UseTabs;
+				numSpaces = editor.NumSpaces;
+			}
+			
+			// Language setting overrides the directory pref.
+			if (m_language != null && m_language.UseTabs.HasValue)
+			{
+				UsesTabs = m_language.UseTabs.Value;
+			}
+			
+			if (SpacesText != null)
+				SpacesText.release();
+			SpacesText = NSString.Create(new string(' ', numSpaces));
+			SpacesText.retain();
 		}
 		
 		// This is retarded, but showFindIndicatorForRange only works if the window is
