@@ -52,7 +52,8 @@ include the percentage of samples that that method appeared in the stack trace
 	
 http://progit.org/
 
-* Look into hiding (or somehow collapsing) document windows associated with a collapsed directory window.
+
+* Review other isVisible usages.
 * Maybe local files should have these cases:
 	- "foo"	matches the start of file names
 	- " foo" matches the end of file names

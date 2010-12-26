@@ -308,6 +308,26 @@ namespace DirectoryEditor
 			DoSavePrefs();
 		}
 		
+		public void windowWillMiniaturize(NSNotification notification)
+		{
+			foreach (Boss boss in DoGetTextWindows())
+			{
+				var window = boss.Get<IWindow>();
+				if (!window.Window.isMiniaturized())
+					window.Window.miniaturize(this);
+			}
+		}
+		
+		public void windowDidDeminiaturize(NSNotification notification)
+		{
+			foreach (Boss boss in DoGetTextWindows())
+			{
+				var window = boss.Get<IWindow>();
+				if (window.Window.isMiniaturized())
+					window.Window.deminiaturize(this);
+			}
+		}
+		
 		public void renameItem(NSObject sender)
 		{
 			NSIndexSet selections = m_table.selectedRowIndexes();
@@ -601,6 +621,22 @@ namespace DirectoryEditor
 			Boss boss = ObjectModel.Create("Application");
 			var launcher = boss.Get<ILaunch>();
 			launcher.Launch(path, -1, -1, 1);
+		}
+		
+		private IEnumerable<Boss> DoGetTextWindows()
+		{
+			string root = Path;
+			if (!root.EndsWith("/"))
+				root += "/";
+				
+			Boss boss = ObjectModel.Create("TextEditorPlugin");
+			var windows = boss.Get<IWindows>();
+			foreach (Boss candidate in windows.All())
+			{
+				var editor = candidate.Get<ITextEditor>();
+				if (editor.Path.StartsWith(root))
+					yield return candidate;
+			}
 		}
 		
 		private void DoUpdateTargets(string name, object inValue)
