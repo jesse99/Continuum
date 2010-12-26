@@ -55,7 +55,7 @@ namespace TextEditor
 			
 			foreach (NSWindow window in NSApplication.sharedApplication().orderedWindows())
 			{
-				if (window.isVisible())
+				if (window.isVisible() || window.isMiniaturized())
 				{
 					TextController controller = window.windowController() as TextController;
 					if (controller != null)
