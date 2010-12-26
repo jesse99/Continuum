@@ -54,7 +54,7 @@ namespace App
 			{
 				case "opening document window":	// this will change the items we show
 				case "opened directory":				// this may change the colors used by the items
-					if (window().isVisible())
+					if (window().isVisible() || window().isMiniaturized())
 						DoReload();
 					break;
 					

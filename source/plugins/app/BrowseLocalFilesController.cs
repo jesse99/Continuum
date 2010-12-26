@@ -59,7 +59,7 @@ namespace App
 				case "opened directory":
 				case "closed directory":
 				case "directory changed":
-					if (window().isVisible())
+					if (window().isVisible() || window().isMiniaturized())
 						DoReload();
 					break;
 					

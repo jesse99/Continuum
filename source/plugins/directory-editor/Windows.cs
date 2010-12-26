@@ -55,7 +55,7 @@ namespace DirectoryEditor
 			
 			foreach (NSWindow window in NSApplication.sharedApplication().orderedWindows())
 			{
-				if (window.isVisible())
+				if (window.isVisible() || window.isMiniaturized())
 				{
 					DirectoryController controller = window.windowController() as DirectoryController;
 					if (controller != null)
