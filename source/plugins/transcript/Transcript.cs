@@ -54,7 +54,7 @@ namespace Transcript
 			dict.setObject_forKey(data, NSString.Create("transcript command font attributes"));	// need to explicitly add this so that revert has something to revert to
 			
 			// stdout
-			dict.setObject_forKey(NSString.Create("Verdana"), NSString.Create("transcript stdout font name"));
+			dict.setObject_forKey(NSString.Create("Courier"), NSString.Create("transcript stdout font name"));
 			dict.setObject_forKey(NSNumber.Create(12.0f), NSString.Create("transcript stdout font size"));
 			
 			attrs = NSDictionary.dictionaryWithObject_forKey(NSColor.blackColor(), Externs.NSForegroundColorAttributeName);
