@@ -99,7 +99,63 @@ namespace App
 		
 		public bool applicationShouldOpenUntitledFile(NSObject app)
 		{
+			// Don't open an untitled document on startup.
 			return false;
+		} 
+		
+		public bool shouldOpenFiles(uint count)
+		{
+			const uint MaxFiles = 20;
+			
+			bool open = true;
+			
+			if (count > MaxFiles)
+			{
+				NSString title = NSString.Create("{0} files are being opened", count);
+				NSString message = NSString.Create("Do you really want to open all of these files?");
+				
+				int button = Functions.NSRunAlertPanel(
+					title,							// title
+					message, 						// message
+					NSString.Create("No"),		// default button
+					NSString.Create("Yes"),	// alt button
+					null);							// other button
+					
+				open = button == Enums.NSAlertAlternateReturn;
+			}
+			
+			return open;
+		}
+		
+		// This is called when files are dropped onto the app icon or the dock tile.
+		public void application_openFiles(NSApplication app, NSArray files)
+		{
+			uint result = Enums.NSApplicationDelegateReplySuccess;
+			
+			uint count = files.count();
+			if (!shouldOpenFiles(count))
+				result = Enums.NSApplicationDelegateReplyCancel;
+				
+			try
+			{
+				NSDocumentController controller = NSDocumentController.sharedDocumentController();
+				for (uint i = 0; i < count && result == Enums.NSApplicationDelegateReplySuccess; ++i)
+				{
+					NSError err;
+					NSURL url = NSURL.fileURLWithPath(files.objectAtIndex(i).To<NSString>());
+					Unused.Value = controller.openDocumentWithContentsOfURL_display_error(
+						url, true, out err);
+					
+					if (err != null)
+						err.Raise();
+				}
+			}
+			catch
+			{
+				result = Enums.NSApplicationDelegateReplyFailure;
+			}
+			
+			app.replyToOpenOrPrint(result);
 		}
 		
 		public void applicationWillTerminate(NSObject notification)

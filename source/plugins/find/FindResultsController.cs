@@ -95,7 +95,7 @@ namespace Find
 		public void doubleClicked(NSOutlineView sender)
 		{
 			DoOpenSelection();
-		}		
+		}
 		
 		public new void keyDown(NSEvent evt)	
 		{
@@ -153,10 +153,10 @@ namespace Find
 				
 			return item;
 		}
-			
+		
 		#region Private Methods
 		private void DoDocChanged(TextEdit edit)
-		{	
+		{
 			var editor = edit.Boss.Get<ITextEditor>();
 			string path = editor.Path;
 			
@@ -184,24 +184,29 @@ namespace Find
 		
 		private void DoOpenSelection()
 		{
-			Boss boss = ObjectModel.Create("Application");
-			var launcher = boss.Get<ILaunch>();
-			
 			NSIndexSet selections = m_table.Value.selectedRowIndexes();
-			uint row = selections.firstIndex();
-			while (row != Enums.NSNotFound)
+			
+			uint count = selections.count();
+			if (NSApplication.sharedApplication().delegate_().Call("shouldOpenFiles:", count).To<bool>())
 			{
-				NSObject item = m_table.Value.itemAtRow((int) row);
-
-				FindsForFile finds = item as FindsForFile;
-				if (finds != null)
-					launcher.Launch(finds.Path.description(), 1, 1, 1);
+				Boss boss = ObjectModel.Create("Application");
+				var launcher = boss.Get<ILaunch>();
 				
-				FindInstance instance = item as FindInstance;
-				if (instance != null)
-					launcher.Launch(instance.Path, instance.Range);
-				
-				row = selections.indexGreaterThanIndex(row);
+				uint row = selections.firstIndex();
+				while (row != Enums.NSNotFound)
+				{
+					NSObject item = m_table.Value.itemAtRow((int) row);
+					
+					FindsForFile finds = item as FindsForFile;
+					if (finds != null)
+						launcher.Launch(finds.Path.description(), 1, 1, 1);
+					
+					FindInstance instance = item as FindInstance;
+					if (instance != null)
+						launcher.Launch(instance.Path, instance.Range);
+					
+					row = selections.indexGreaterThanIndex(row);
+				}
 			}
 		}
 		

@@ -53,19 +53,28 @@ include the percentage of samples that that method appeared in the stack trace
 http://progit.org/
 
 
+* Got a crash:
+	LocalFile.Editor probably points to a cocoa window which has gone away
+  at (wrapper managed-to-native) MObjc.DirectCalls.Callp (intptr,intptr,intptr&) <0x00003>
+  at (wrapper managed-to-native) MObjc.DirectCalls.Callp (intptr,intptr,intptr&) <0x00003>
+  at MCocoa.NSWindow.windowController () [0x00006] in /Users/jessejones/Source/mcocoa/source/appkit/generated/NSWindow.cs:2047
+  at DirectoryEditor.Editor.IsIgnored (string) [0x00000] in /Users/jessejones/Source/Continuum/source/plugins/directory-editor/Editor.cs:82
+  at App.BrowseLocalFilesController/<DoIsIgnored>c__AnonStorey5.<>m__8 (string) [0x00000] in /Users/jessejones/Source/Continuum/source/plugins/app/BrowseLocalFilesController.cs:235
+  at System.Linq.Enumerable.Any<TSource> (System.Collections.Generic.IEnumerable`1<TSource>,System.Func`2<TSource, bool>) [0x0001a] in /private/tmp/monobuild/build/BUILD/mono-2.8/mcs/class/System.Core/System.Linq/Enumerable.cs:144
+  at App.BrowseLocalFilesController.DoIsIgnored (Shared.IDirectoryEditor,string) [0x00020] in /Users/jessejones/Source/Continuum/source/plugins/app/BrowseLocalFilesController.cs:235
+  at App.BrowseLocalFilesController.<DoRefresh>m__9 (App.BrowseLocalFilesController/LocalFile) [0x00000] in /Users/jessejones/Source/Continuum/source/plugins/app/BrowseLocalFilesController.cs:240
+  at System.Linq.Enumerable/<CreateWhereIterator>c__Iterator1D`1<App.BrowseLocalFilesController/LocalFile>.MoveNext () [0x00059] in /private/tmp/monobuild/build/BUILD/mono-2.8/mcs/class/System.Core/System.Linq/Enumerable.cs:3014
+  at App.BrowseLocalFilesController.DoFilter () [0x000e3] in /Users/jessejones/Source/Continuum/source/plugins/app/BrowseLocalFilesController.cs:273
+  at App.BrowseLocalFilesController.onSearch (MObjc.NSObject) [0x0001b] in /Users/jessejones/Source/Continuum/source/plugins/app/BrowseLocalFilesController.cs:82
+* Do a push.
 * Maybe local files should have these cases:
 	- "foo"	matches the start of file names
 	- " foo" matches the end of file names
 	- " foo " matches within file names
 	- "FOO" matches consecutive upper case letters in file names
 	- or have a context menu?
-* Transcript stdout should default to monospace.
 * If backspacing a space at the start of a line and UseTabs is false then delete NumSpaces of them?
 * May want to put some of the special key handlers behind interfaces so that they can be customized.
-* Confirmation if the user really wants to open a bunch of files
-	- open files
-	- return in dir editor
-	- return in find in files result
 * May want to add scheme support. See http://coderchrome.org/browse/greatest/0 for example.
 * Do some more work on the debugger:
 	- add an immediate window

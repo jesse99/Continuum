@@ -73,11 +73,21 @@ namespace App
 			return result;
 		}
 		
+		// This is called when the user select open from the file menu.
 		public new int runModalOpenPanel_forTypes(NSOpenPanel openPanel, NSArray types)
 		{
 			openPanel.setTreatsFilePackagesAsDirectories(true);
 			
-			return SuperCall(NSDocumentController.Class, "runModalOpenPanel:forTypes:", openPanel, types).To<int>();
+			int result = SuperCall(NSDocumentController.Class, "runModalOpenPanel:forTypes:", openPanel, types).To<int>();
+			
+			if (result == Enums.NSOKButton)
+			{
+				uint count = openPanel.URLs().count();
+				if (!NSApplication.sharedApplication().delegate_().Call("shouldOpenFiles:", count).To<bool>())
+					result = Enums.NSCancelButton;
+			}
+			
+			return result;
 		}
 	}
 }

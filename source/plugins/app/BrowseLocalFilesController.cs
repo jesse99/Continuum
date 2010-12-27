@@ -84,10 +84,14 @@ namespace App
 		
 		public void openWithFinder(NSObject sender)
 		{
-			foreach (uint row in m_table.selectedRowIndexes())
+			uint count = m_table.selectedRowIndexes().count();
+			if (NSApplication.sharedApplication().delegate_().Call("shouldOpenFiles:", count).To<bool>())
 			{
-				string path = m_files[(int) row].FullPath;
-				NSWorkspace.sharedWorkspace().openFile(NSString.Create(path));
+				foreach (uint row in m_table.selectedRowIndexes())
+				{
+					string path = m_files[(int) row].FullPath;
+					NSWorkspace.sharedWorkspace().openFile(NSString.Create(path));
+				}
 			}
 		}
 		
@@ -121,11 +125,15 @@ namespace App
 		
 		public void doubleClicked(NSObject sender)
 		{
-			Boss boss = Gear.ObjectModel.Create("Application");
-			var launcher = boss.Get<ILaunch>();
-			foreach (uint row in m_table.selectedRowIndexes())
+			uint count = m_table.selectedRowIndexes().count();
+			if (NSApplication.sharedApplication().delegate_().Call("shouldOpenFiles:", count).To<bool>())
 			{
-				launcher.Launch(m_files[(int) row].FullPath, -1, -1, 1);
+				Boss boss = Gear.ObjectModel.Create("Application");
+				var launcher = boss.Get<ILaunch>();
+				foreach (uint row in m_table.selectedRowIndexes())
+				{
+					launcher.Launch(m_files[(int) row].FullPath, -1, -1, 1);
+				}
 			}
 		}
 		

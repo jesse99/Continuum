@@ -610,9 +610,15 @@ namespace DirectoryEditor
 		
 		private void DoOpenSelection()
 		{
-			foreach (TableItem item in DoGetSelectedItems())
+			TableItem[] items = DoGetSelectedItems().ToArray();
+			
+			uint count = (uint) items.Length;
+			if (NSApplication.sharedApplication().delegate_().Call("shouldOpenFiles:", count).To<bool>())
 			{
-				DoOpen(item.Path);
+				foreach (TableItem item in items)
+				{
+					DoOpen(item.Path);
+				}
 			}
 		}
 		
