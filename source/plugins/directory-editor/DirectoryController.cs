@@ -213,9 +213,17 @@ namespace DirectoryEditor
 		
 		public bool IsIgnored(string name)
 		{
-			if (IgnoredItems != null)
+			return IsIgnored(name, IgnoredItems);
+		}
+		
+		internal DirectoryItemStyler Styler {get {return m_dirStyler;}}
+		
+		[ThreadModel(ThreadModel.Concurrent)]
+		internal static bool IsIgnored(string name, IEnumerable<string> ignored)
+		{
+			if (ignored != null)
 			{
-				foreach (string glob in IgnoredItems)
+				foreach (string glob in ignored)
 				{
 					if (Glob.Match(glob, name))
 						return true;

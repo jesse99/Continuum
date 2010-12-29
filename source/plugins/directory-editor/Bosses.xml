@@ -16,5 +16,6 @@
 		<Implementation interfaces = "IWindow IDirectoryEditor" name = "Editor"/>
 		<Implementation interfaces = "IMenuHandler" name = "MenuHandler"/>
 		<Implementation interfaces = "IFileColor" name = "FileColor"/>
+		<Implementation interfaces = "IGetFiles +IOpened" name = "GetLocalFiles"/>
 	</Boss>
 </Bosses>

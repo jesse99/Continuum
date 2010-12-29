@@ -144,10 +144,7 @@ namespace App
 		
 		public NSObject tableView_objectValueForTableColumn_row(NSTableView table, NSObject col, int row)
 		{
-			DisplayFile file = m_files[row];
-			Contract.Assert(file.Text != null);
-			
-			return file.Text;
+			return m_files[row].DisplayText;
 		}
 		
 		public void menuNeedsUpdate(NSMenu menu)
@@ -182,35 +179,49 @@ namespace App
 		}
 		
 		#region Private Types
-		private struct DisplayFile
-		{
-			public DisplayFile(string fullPath, NSAttributedString text) : this()
-			{
-				FullPath = fullPath;
-				Text = text;
-			}
-			
-			public string FullPath {get; private set;}
-			public NSAttributedString Text {get; set;}
-		}
-		
 		private struct LocalFile
 		{
-			public LocalFile(string fullPath, string relativePath, IDirectoryEditor editor, string displayName = null) : this()
+			public LocalFile(ThreadedFile file) : this()
 			{
-				FullPath = fullPath;
-				RelativePath = relativePath;
-				FileName = System.IO.Path.GetFileName(relativePath);
-				Editor = editor;
-				DisplayName = displayName ?? FileName;
+				FullPath = file.FullPath;
+				RelativePath = file.RelativePath;
+				FileName = file.FileName;
+				
+				DisplayText = NSMutableAttributedString.Create(FileName, Externs.NSForegroundColorAttributeName, file.Color);
+				DisplayText.retain();
+			}
+			
+			public LocalFile(LocalFile file, string displayName) : this()
+			{
+				FullPath = file.FullPath;
+				RelativePath = file.RelativePath;
+				FileName = file.FileName;
+				
+				NSDictionary attrs = file.DisplayText.fontAttributesInRange(new NSRange(0, 1));
+				DisplayText = NSMutableAttributedString.Create(displayName, attrs);
+				DisplayText.retain();
 			}
 			
 			public string FileName {get; private set;}
 			public string RelativePath {get; private set;}
 			public string FullPath {get; private set;}
+			public NSAttributedString DisplayText {get; private set;}
+		}
+		
+		private struct ThreadedFile
+		{
+			public ThreadedFile(string fullPath, string relativePath, NSColor color) : this()
+			{
+				FullPath = fullPath;
+				RelativePath = relativePath;
+				FileName = System.IO.Path.GetFileName(relativePath);
+				Color = color;
+			}
 			
-			public string DisplayName {get; private set;}
-			public IDirectoryEditor Editor {get; private set;}
+			public string FileName {get; private set;}
+			public string RelativePath {get; private set;}
+			public string FullPath {get; private set;}
+			public NSColor Color {get; private set;}
 		}
 		#endregion
 		
@@ -220,11 +231,11 @@ namespace App
 			Boss plugin = ObjectModel.Create("DirectoryEditorPlugin");
 			var windows = plugin.Get<IWindows>();
 			
-			var roots = new List<KeyValuePair<string, IDirectoryEditor>>();
+			var roots = new List<IGetFiles>();
 			foreach (Boss dir in windows.All())
 			{
-				var editor = dir.Get<IDirectoryEditor>();
-				roots.Add(new KeyValuePair<string, IDirectoryEditor>(editor.Path, editor));	// we pass the path in because the editor is not thread safe
+				var getter = dir.Get<IGetFiles>();
+				roots.Add(getter);
 			}
 			
 			// For now we'll queue up a second thread even if one is already queued.
@@ -234,62 +245,35 @@ namespace App
 			ThreadPool.QueueUserWorkItem(o => DoGetCandidates(roots));
 		}
 		
-		// We have to check each component to catch things like .svn directories.
-		// TODO: might be better to make IDirectoryEditor.IsIgnored thead safe
-		// so that we can avoid recursing into ignored directories.
-		private bool DoIsIgnored(IDirectoryEditor editor, string path)
-		{
-			string[] components = path.Split(new char[]{'/'}, StringSplitOptions.RemoveEmptyEntries);
-			return components.Any(c => editor.IsIgnored(c) || c == "bin");
-		}
-		
 		private void DoRefresh(List<LocalFile> candidates)
 		{
-			m_candidates = candidates.Where(c => !DoIsIgnored(c.Editor, c.RelativePath));
+			foreach (LocalFile file in m_candidates)
+			{
+				file.DisplayText.release();
+			}
+			m_candidates = candidates;
 			
 			if (--m_queued == 0)
 				m_spinner.stopAnimation(this);
 			DoFilter();
 		}
 		
-		private NSAttributedString DoCreateText(LocalFile file, List<NSRange> matches)
-		{
-			NSColor color = file.Editor.Boss.Get<IFileColor>().GetColor(file.FileName);
-			NSMutableAttributedString text = NSMutableAttributedString.Create(file.DisplayName, Externs.NSForegroundColorAttributeName, color);
-			
-//			if (matches != null)
-//			{
-//				foreach (NSRange range in matches)
-//				{
-//					text.addAttribute_value_range(Externs.NSForegroundColorAttributeName, NSColor.blueColor(), range);
-//				}
-//			}
-			
-			text.retain();
-			return text;
-		}
-		
 		private void DoFilter()
 		{
-			foreach (DisplayFile file in m_files)
-			{
-				if (file.Text != null)
-					file.Text.release();
-			}
 			m_files.Clear();
 			
-			foreach (LocalFile file in m_candidates)
+			if (!string.IsNullOrEmpty(m_filter))
 			{
-				if (!string.IsNullOrEmpty(m_filter))
+				foreach (LocalFile file in m_candidates)
 				{
 					List<NSRange> matches = DoGetMatches(file.FileName);
 					if (matches != null)
-						m_files.Add(new DisplayFile(file.FullPath, DoCreateText(file, matches)));
+						m_files.Add(file);
 				}
-				else
-				{
-					m_files.Add(new DisplayFile(file.FullPath, DoCreateText(file, null)));
-				}
+			}
+			else
+			{
+				m_files.AddRange(m_candidates);
 			}
 			
 			m_table.reloadData();
@@ -329,37 +313,45 @@ namespace App
 			return null;
 		}
 		
-		// Instead of using a thread to get the files we could ask the directory editor for them. This
-		// isn't so good though because the directory editor lazily loads files to minimize the number
-		// of table entries and to avoid blocking the main thread.
 		[ThreadModel(ThreadModel.SingleThread)]
-		private void DoGetCandidates(IEnumerable<KeyValuePair<string, IDirectoryEditor>> roots)
+		private void DoGetCandidates(IEnumerable<IGetFiles> roots)
 		{
 			var candidates = new List<LocalFile>();
+			var pool = NSAutoreleasePool.Create();
 			
 			try
 			{
 				// Get all the files within the directories being edited.
-				foreach (var entry in roots)
+				var threaded = new List<ThreadedFile>();
+				
+				var files = new List<string>();
+				var colors = new List<NSColor>();
+				foreach (IGetFiles getter in roots)
 				{
-					foreach (string file in Directory.GetFiles(entry.Key, "*", SearchOption.AllDirectories))
+					files.Clear();
+					colors.Clear();
+					getter.GetFiles(files, colors);
+					
+					for (int i = 0; i < files.Count; ++i)
 					{
-						string path = file.Substring(Path.GetDirectoryName(entry.Key).Length);	// use the path up to, and including, the directory being edited
-						candidates.Add(new LocalFile(file, path, entry.Value));
+						string relativePath = files[i].Substring(Path.GetDirectoryName(getter.Path).Length);	// use the path up to, and including, the directory being edited
+						threaded.Add(new ThreadedFile(files[i], relativePath, colors[i]));
 					}
 				}
 				
 				// Use a reversed path for the name for any entries with duplicate names.
-				candidates.Sort((lhs, rhs) => lhs.DisplayName.CompareTo(rhs.DisplayName));
+				candidates = (from t in threaded select new LocalFile(t)).ToList();
+				candidates.Sort((lhs, rhs) => lhs.FileName.CompareTo(rhs.FileName));
 				for (int i = 0; i < candidates.Count - 1; ++i)
 				{
-					string name = candidates[i].DisplayName;
-					if (candidates[i + 1].DisplayName == name)
+					string name = candidates[i].FileName;
+					if (candidates[i + 1].FileName == name)
 					{
-						for (int j = i; j < candidates.Count && candidates[j].DisplayName == name; ++j)
+						for (int j = i; j < candidates.Count && candidates[j].FileName == name; ++j)
 						{
 							LocalFile f = candidates[j];
-							candidates[j] = new LocalFile(f.FullPath, f.RelativePath, f.Editor, f.RelativePath.ReversePath());
+							candidates[j] = new LocalFile(f, f.RelativePath.ReversePath());
+							f.DisplayText.release();
 						}
 					}
 				}
@@ -371,6 +363,7 @@ namespace App
 			}
 			
 			NSApplication.sharedApplication().BeginInvoke(() => DoRefresh(candidates));
+			pool.release();
 		}
 		
 		private void DoShowError(string err)
@@ -388,8 +381,8 @@ namespace App
 		private NSSearchField m_searchField;
 		private NSSearchFieldCell m_search;
 		private NSProgressIndicator m_spinner;
-		private IEnumerable<LocalFile> m_candidates;					// all the files under the directories being edited
-		private List<DisplayFile> m_files = new List<DisplayFile>();	// the files matching the current search pattern
+		private List<LocalFile> m_candidates = new List<LocalFile>();	// all the files under the directories being edited
+		private List<LocalFile> m_files = new List<LocalFile>();			// the files matching the current search pattern
 		private int m_queued;
 		private string m_filter;
 		#endregion

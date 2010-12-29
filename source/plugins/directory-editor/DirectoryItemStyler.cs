@@ -21,6 +21,7 @@
 
 using MCocoa;
 using MObjc;
+using MObjc.Helpers;
 using Shared;
 using System;
 
@@ -46,15 +47,24 @@ namespace DirectoryEditor
 		// Used for files and bundles.
 		public NSColor GetFileColor(string fileName)
 		{
+			return GetFileColor(fileName, m_fileGlobs, m_fileColors);
+		}
+		
+		internal string[][] FileGlobs {get {return m_fileGlobs;}}
+		internal NSColor[] FileColors {get {return m_fileColors;}}
+		
+		[ThreadModel(ThreadModel.Concurrent)]
+		internal static NSColor GetFileColor(string fileName, string[][] fileGlobs, NSColor[] fileColors)
+		{
 			for (int i = 0; i < FilesCount; ++i)
 			{
-				if (m_fileGlobs[i] != null)
+				if (fileGlobs[i] != null)
 				{
-					foreach (string glob in m_fileGlobs[i])
+					foreach (string glob in fileGlobs[i])
 					{
 						if (Glob.Match(glob, fileName))
 						{
-							return m_fileColors[i] ?? NSColor.blackColor();
+							return fileColors[i] ?? NSColor.blackColor();
 						}
 					}
 				}
