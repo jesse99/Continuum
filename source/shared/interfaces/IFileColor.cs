@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using Gear.Helpers;
 using MCocoa;
 
 namespace Shared
@@ -27,6 +28,7 @@ namespace Shared
 	// Returns the color associated with a file (e.g. as set via directory editor pref).
 	public interface IFileColor : IInterface
 	{
+		[ThreadModel(ThreadModel.Concurrent)]
 		NSColor GetColor(string fileName);
 	}
 }

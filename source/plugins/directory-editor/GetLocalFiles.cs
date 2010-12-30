@@ -29,7 +29,7 @@ using System.IO;
 
 namespace DirectoryEditor
 {
-	internal sealed class GetLocalFiles : IGetFiles, IOpened, IObserver
+	internal sealed class GetLocalFiles : IGetFiles, IFileColor, IOpened, IObserver
 	{
 		public void Instantiated(Boss boss)
 		{
@@ -64,6 +64,19 @@ namespace DirectoryEditor
 		public Boss Boss
 		{
 			get {return m_boss;}
+		}
+		
+		[ThreadModel(ThreadModel.Concurrent)]
+		public NSColor GetColor(string fileName)
+		{
+			NSColor color;
+			
+			lock (m_mutex)
+			{
+				color = DirectoryItemStyler.GetFileColor(fileName, m_fileGlobs, m_fileColors);
+			}
+			
+			return color;
 		}
 		
 		[ThreadModel(ThreadModel.Concurrent)]
