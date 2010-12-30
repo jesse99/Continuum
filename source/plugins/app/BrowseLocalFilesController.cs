@@ -187,7 +187,7 @@ namespace App
 				RelativePath = file.RelativePath;
 				FileName = file.FileName;
 				
-				DisplayText = NSMutableAttributedString.Create(FileName, Externs.NSForegroundColorAttributeName, file.Color);
+				DisplayText = NSAttributedString.Create(FileName, Externs.NSForegroundColorAttributeName, file.Color);
 				DisplayText.retain();
 			}
 			
@@ -198,7 +198,7 @@ namespace App
 				FileName = file.FileName;
 				
 				NSDictionary attrs = file.DisplayText.fontAttributesInRange(new NSRange(0, 1));
-				DisplayText = NSMutableAttributedString.Create(displayName, attrs);
+				DisplayText = NSAttributedString.Create(displayName, attrs);
 				DisplayText.retain();
 			}
 			
