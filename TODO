@@ -53,9 +53,6 @@ include the percentage of samples that that method appeared in the stack trace
 http://progit.org/
 
 
-* RecentFiles browser has a similar problem.
-* Build a new foreshadow.
-* Do a push.
 * Would be cool if could (re)debug using recent files browser.
 	- can we change the title too?
 * Maybe local files should have these cases:

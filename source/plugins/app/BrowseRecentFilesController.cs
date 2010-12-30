@@ -158,17 +158,7 @@ namespace App
 		
 		public NSObject tableView_objectValueForTableColumn_row(NSTableView table, NSObject col, int row)
 		{
-			RecentFile file = m_files[row];
-			if (file.Color != null)
-			{
-				NSColor color = file.Color.GetColor(file.FileName);
-				var attrs = NSDictionary.dictionaryWithObject_forKey(color, Externs.NSForegroundColorAttributeName);
-				return NSAttributedString.Create(file.DisplayName, attrs);
-			}
-			else
-			{
-				return NSString.Create(file.DisplayName);
-			}
+			return m_files[row].DisplayText;
 		}
 		
 		public void menuNeedsUpdate(NSMenu menu)
@@ -215,9 +205,9 @@ namespace App
 		}
 		
 		#region Private Types
-		private sealed class RecentFile
+		private struct RecentFile
 		{
-			public RecentFile(string path, IFindDirectoryEditor finder, int index)
+			public RecentFile(string path, IFindDirectoryEditor finder, int index) : this()
 			{
 				Path = path;
 				FileName = System.IO.Path.GetFileName(path);
@@ -226,18 +216,34 @@ namespace App
 				
 				// File name colors are associated with directory editors so coloring will only
 				// happen if the appropriate directory is being edited.
+				NSColor color = NSColor.blackColor();
 				Boss editor = finder.GetDirectoryEditor(path);
 				if (editor != null)
-					Color = editor.Get<IFileColor>();
+					color = editor.Get<IFileColor>().GetColor(FileName);
+				
+				DisplayText = NSAttributedString.Create(FileName, Externs.NSForegroundColorAttributeName, color);
+				DisplayText.retain();
 			}
 			
-			public string DisplayName {get; set;}
+			public RecentFile(RecentFile file, string displayName) : this()
+			{
+				Path = file.Path;
+				FileName = file.FileName;
+				DisplayName = displayName;
+				Index = file.Index;
+				
+				NSDictionary attrs = file.DisplayText.fontAttributesInRange(new NSRange(0, 1));
+				DisplayText = NSAttributedString.Create(displayName, attrs);
+				DisplayText.retain();
+			}
+			
+			public string DisplayName {get; private set;}
 			public int Index {get; private set;}
 			
 			public string FileName {get; private set;}
 			public string Path {get; private set;}
 			
-			public IFileColor Color {get; private set;}
+			public NSAttributedString DisplayText {get; private set;}
 		}
 		#endregion
 		
@@ -247,13 +253,18 @@ namespace App
 			Boss editor = ObjectModel.Create("DirectoryEditorPlugin");
 			var finder = editor.Get<IFindDirectoryEditor>();
 			
+			foreach (RecentFile file in m_files)
+			{
+				file.DisplayText.release();
+			}
+			
 			// Get all the recent files.
 			int index = 0;
 			NSArray array = NSDocumentController.sharedDocumentController().recentDocumentURLs();
 			m_files = (from a in array
 				let p = a.To<NSURL>().path().ToString()
-				where File.Exists(p) && !p.Contains("/-Tmp-/")
-			select new RecentFile(p, finder, ++index)).ToArray();
+					where File.Exists(p) && !p.Contains("/-Tmp-/")
+				select new RecentFile(p, finder, ++index)).ToArray();
 			
 			// Use a reversed path for the name for any entries with duplicate names.
 			Array.Sort(m_files, (lhs, rhs) => lhs.DisplayName.CompareTo(rhs.DisplayName));
@@ -264,7 +275,9 @@ namespace App
 				{
 					for (int j = i; j < m_files.Length && m_files[j].DisplayName == name; ++j)
 					{
-						m_files[j].DisplayName = m_files[j].Path.ReversePath();
+						RecentFile f = m_files[j];
+						m_files[j] = new RecentFile(f, f.Path.ReversePath());
+						f.DisplayText.release();
 					}
 				}
 			}
@@ -311,7 +324,7 @@ namespace App
 		
 		#region Fields
 		private NSTableView m_table;
-		private RecentFile[] m_files;
+		private RecentFile[] m_files = new RecentFile[0];
 		private bool m_sortByDate = true;
 		#endregion
 	}
