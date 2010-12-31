@@ -1,0 +1,75 @@
+# Adds code to create and use a Regex.
+define Run()
+	if Scope is Method then
+		Globals.AddUsing("System")				# need this for Exception
+		Globals.AddUsing("System.Text.RegularExpressions")
+		
+		AddCode()
+	else
+		Raise("Selection is not within a method.")
+	end
+end
+
+define AddCode()
+	InsertAfterSelection(
+"
+// These are the most commonly used options. See http://msdn.microsoft.com/en-us/library/system.text.regularexpressions.regexoptions.aspx
+// for more details.
+RegexOptions options =
+	// RegexOptions.Compiled |				// compile the regex into a dynamically generated assembly
+	// RegexOptions.CultureInvariant |	// cultural differences in language are ignored
+	// RegexOptions.IgnoreCase |
+	RegexOptions.IgnorePatternWhitespace |	// ignore pattern whitespace (outside of character classes), also enables # comments
+	RegexOptions.Multiline; 					// ^ and $ match any line (instead of the start and end of text)
+	// RegexOptions.Singleline; 			// . matches every char (instead of every char except \n)
+
+// Common patterns (see http://msdn.microsoft.com/en-us/library/az24scfc.aspx for more details).
+// Escapes:
+//    \n			new line (unix is \n, windows is \r\n)
+//    \r			carriage return
+//    \t			tab
+//    \xNN		2-digit hex char
+//    \uNNNN	4-digit unicode hex char
+//    \d			decimal digit (all of the below have an upper-case negated version)
+//    \s			whitespace
+//    \w			word character
+//    \p{Lu}	Unicode character class (see http://www.fileformat.info/info/unicode/category/index.htm)
+//
+// Character classes:
+//    [^abc]	negate
+//    [a-c]		range
+//    [.]			match every char (except, by default, \n)
+//    [\n]		can use all of the escapes
+//
+// Anchors (atomic zero-width assertions):
+//    ^			beginning of the string or line
+//    $			end of the string or line
+//    \b			boundary between alphanumeric and non-alphanumeric
+//
+// Grouping:
+//    (pattern)			capture the pattern and assign it to Match.Groups
+//    (?:pattern)		non-capturing group
+//    (?=pattern)		zero-width positive look-ahead assertion
+//    (?!pattern)		zero-width negative look-ahead assertion
+//    (?<=pattern)	zero-width positive look-behind assertion
+//    (?<!pattern)		zero-width negative look-behind assertion
+//    (?>pattern)		non-backtracking (greedy) sub-expression
+//
+// There is also a tester at: http://regexhero.net/tester/
+var re = new Regex•(@""def \s+ (\w+) \s* \("", options);
+
+// test whether the re matches anything within text
+if (re.IsMatch•(text))
+{
+}
+
+// find all matches within text
+foreach (Match match in ms_re.Matches•(text))
+{
+	string name = match.Groups[1].ToString•();
+}
+
+string newText = re.Replace•(text, ""def __$1("");		// $1 refers to the first capture
+string[] sections = re.Split•();
+")
+end
