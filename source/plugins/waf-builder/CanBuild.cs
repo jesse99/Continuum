@@ -1,4 +1,4 @@
-// Copyright (C) 2008-2010 Jesse Jones
+// Copyright (C) 2010 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -20,31 +20,39 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
-using System.Diagnostics;
+using Shared;
+using System;
+using System.IO;
 
-namespace Shared
-{	
-	// Interface used by the directory-editor to build targets.
-	public interface IBuilder : IInterface
+namespace WafBuilder
+{
+	internal sealed class CanBuild : ICanBuild
 	{
-		// Path will be to the build file (e.g. a makefile).
-		void Init(string path);
+		public void Instantiated(Boss boss)
+		{
+			m_boss = boss;
+		}
 		
-		// May be null.
-		string DefaultTarget {get;}
+		public Boss Boss
+		{
+			get {return m_boss;}
+		}
 		
-		string[] Targets {get;}
+		public IBuilder GetBuilder(string path)
+		{
+			IBuilder builder = null;
+			
+			if (Path.GetFileName(path).ToLower() == "wscript")
+			{
+				Boss boss = ObjectModel.Create("WafBuilder");
+				builder = boss.Get<IBuilder>();
+			}
+			
+			return builder;
+		}
 		
-		// If true the builder writes to stderr even for successful builds.
-		bool StderrIsExpected {get;}
-		
-		// The string used by the Build method to build the target.
-		string Command {get;}
-		
-		Process Build(string target);
-		
-		void SetBuildFlags();
-		
-		void SetBuildVariables();
+		#region Fields 
+		private Boss m_boss; 
+		#endregion
 	} 
 }

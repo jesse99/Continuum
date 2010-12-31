@@ -1,5 +1,5 @@
 Language: python
-Globs: *.py SConstruct wscript_build
+Globs: *.py SConstruct wscript wscript_build
 Shebangs: python
 LineComment: \x23
 

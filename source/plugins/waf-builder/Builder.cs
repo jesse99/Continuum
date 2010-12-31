@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Jesse Jones
+// Copyright (C) 2010 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -29,7 +29,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 
-namespace MakeBuilder
+namespace WafBuilder
 {
 	internal sealed class Builder : IBuilder
 	{
@@ -47,15 +47,8 @@ namespace MakeBuilder
 		{
 			m_path = path;
 			
-			uint encoding;
-			NSError error;
-			NSString contents = NSString.stringWithContentsOfFile_usedEncoding_error(
-				NSString.Create(path), out encoding, out error);
-				
-			if (error != null)	
-				error.Raise();
-			
-			m_parser = new MakeParser(contents);
+			string contents = File.ReadAllText(path, System.Text.Encoding.UTF8);
+			m_parser = new WafParser(contents);
 			m_variables = new List<Variable>(m_parser.Variables);
 			
 			DoLoadPrefs();
@@ -63,7 +56,7 @@ namespace MakeBuilder
 		
 		public string DefaultTarget
 		{
-			get {return m_parser.Targets.Length > 0 ? m_parser.Targets[0] : null;}	// TODO: use a pref somewhere
+			get {return "build";}
 		}
 		
 		public string[] Targets
@@ -73,7 +66,7 @@ namespace MakeBuilder
 		
 		public bool StderrIsExpected
 		{
-			get {return false;}
+			get {return true;}		// all of the waf output goes to stderr...
 		}
 		
 		public string Command
@@ -88,9 +81,9 @@ namespace MakeBuilder
 		
 		public void SetBuildFlags()
 		{
-			var controller = new FlagsController(m_flags);
-			Unused.Value = NSApplication.sharedApplication().runModalForWindow(controller.window());
-			controller.release();
+//			var controller = new FlagsController(m_flags);
+//			Unused.Value = NSApplication.sharedApplication().runModalForWindow(controller.window());
+//			controller.release();
 		}
 		
 		public void SetBuildVariables()
@@ -107,7 +100,7 @@ namespace MakeBuilder
 			// environment variables
 			string key = m_path + "-variables";		// this will break if the project is moved, but that should be rather rare
 			
-			NSMutableDictionary dict = NSMutableDictionary.Create();
+			var dict = NSMutableDictionary.Create();
 			foreach (var entry in m_variables)
 			{
 				if (entry.Value.Length > 0 && entry.Value != entry.DefaultValue)
@@ -158,7 +151,7 @@ namespace MakeBuilder
 		#region Fields
 		private Boss m_boss;
 		private string m_path;
-		private MakeParser m_parser;
+		private WafParser m_parser;
 		
 		private List<Variable> m_variables;
 		private Dictionary<string, int> m_flags = new Dictionary<string, int>();

@@ -1,4 +1,4 @@
-// Copyright (C) 2008-2010 Jesse Jones
+// Copyright (C) 2010 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -20,31 +20,30 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
-using System.Diagnostics;
+using System;
+using System.IO;
+using System.Reflection;
 
-namespace Shared
-{	
-	// Interface used by the directory-editor to build targets.
-	public interface IBuilder : IInterface
+namespace WafBuilder
+{
+	[Plugin]
+	public static class Plugin
 	{
-		// Path will be to the build file (e.g. a makefile).
-		void Init(string path);
-		
-		// May be null.
-		string DefaultTarget {get;}
-		
-		string[] Targets {get;}
-		
-		// If true the builder writes to stderr even for successful builds.
-		bool StderrIsExpected {get;}
-		
-		// The string used by the Build method to build the target.
-		string Command {get;}
-		
-		Process Build(string target);
-		
-		void SetBuildFlags();
-		
-		void SetBuildVariables();
-	} 
+		public static void OnLoaded()
+ 		{
+			DoInitObjectModel();
+ 		}
+	  
+		private static void DoInitObjectModel()
+ 		{
+			string loc = Assembly.GetExecutingAssembly().Location;
+			string root = Path.GetDirectoryName(loc);
+			string path = Path.Combine(root, "Bosses.xml");
+ 			
+			using (StreamReader reader = new StreamReader(path))
+			{
+				XmlModel.Read(reader.BaseStream); 
+			}
+ 		}
+	}
 }

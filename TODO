@@ -52,9 +52,24 @@ include the percentage of samples that that method appeared in the stack trace
 	
 http://progit.org/
 
+http://waf.googlecode.com/svn/docs/wafbook/single.html
+http://code.google.com/p/waf/w/list
+http://www.freehackers.org/~tnagy/wafdoc160/index.html
 
+	opt.add_option('--foo', action='store', default=False, help='Silly test')
+	also add_option_group
+
+* Get waf working:
+	- need to add some sort of StdErrorIsError flag to GenericBuilder
+	- make sure non-standard targets build
+	- handle colored output, may have to set TERM env var
+	- variables (add_option and add_option_group)
+	- flags, may want a flag for no color
+	- waf should be default excluded from directory items
 * Would be cool if could (re)debug using recent files browser.
 	- can we change the title too?
+* Add syntax highlighting for python decorators (also to Linguist).
+	- maybe use attribute style
 * Maybe local files should have these cases:
 	- "foo"	matches the start of file names
 	- " foo" matches the end of file names

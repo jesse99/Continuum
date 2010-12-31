@@ -216,10 +216,17 @@ namespace DirectoryEditor
 			
 			if (e.Data != null)
 			{
-				m_results.WriteError(e.Data);
-				m_results.WriteError(Environment.NewLine);
-				
-				m_errors.AppendLine(e.Data);
+				if (m_builder.StderrIsExpected)
+				{
+					DoNonThreadedGotStdoutData(sender, e);
+				}
+				else
+				{
+					m_results.WriteError(e.Data);
+					m_results.WriteError(Environment.NewLine);
+					
+					m_errors.AppendLine(e.Data);
+				}
 			}
 		}
 		

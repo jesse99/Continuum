@@ -1,0 +1,9 @@
+<Bosses namespaces = "Gear Shared WafBuilder">
+	<Extend name = "Builders">
+		<Implementation interfaces = "IInterface +ICanBuild" name = "CanBuild"/>
+	</Extend>
+	
+	<Boss name = "WafBuilder">
+		<Implementation interfaces = "IBuilder" name = "Builder"/>
+	</Boss>
+</Bosses>

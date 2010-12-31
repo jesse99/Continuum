@@ -65,6 +65,11 @@ namespace NantBuilder
 			get {return m_targets;}
 		}
 		
+		public bool StderrIsExpected
+		{
+			get {return false;}
+		}
+		
 		public string Command
 		{
 			get {return m_command;}
