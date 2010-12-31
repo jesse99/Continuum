@@ -61,9 +61,9 @@ namespace WafBuilder
 			foreach (Variable v in vars)
 				if (v.Value.Length > 0 && v.Value != v.DefaultValue)
 					if (v.Value.IndexOf(' ') >= 0)
-						args += string.Format("--{0}=\"{1}\" ", v.Name, v.Value);
+						args += string.Format("{0}=\"{1}\" ", v.Name, v.Value);
 					else
-						args += string.Format("--{0}={1} ", v.Name, v.Value);
+						args += string.Format("{0}={1} ", v.Name, v.Value);
 			args += target;
 			
 			m_command = "python " + args + Environment.NewLine;
@@ -100,8 +100,6 @@ namespace WafBuilder
 		{
 			// Find the targets. These will be top-level functions with a single argument
 			// which are not preceded by a decoration.
-			m_targets.Clear();
-			
 			foreach (Match match in ms_targetsRe.Matches(contents))
 			{
 				string target = match.Groups[1].ToString();
@@ -110,6 +108,20 @@ namespace WafBuilder
 						m_targets.Add(target);
 			}
 			m_targets.AddRange(ms_stdTargets);
+			
+			// Find the variables. Waf uses custom command-line switches instead of 
+			// environment variables so we need to look for add_option and add_option_group.
+			// TODO: tools often define their own switches, but figuring out what they are
+			// seems to require either parsing the waf --help output or parsing the tools in
+			// the hidden waf directory (plus any tools the wscript explicitly loads).
+			foreach (Match match in ms_optionsRe.Matches(contents))
+			{
+				string name = match.Groups[1].ToString();
+				string value = match.Groups[2].ToString();
+				if (value.StartsWith("\"") || value.StartsWith("'"))
+					value = value.Substring(1, value.Length - 2);
+				m_variables.Add(new Variable(name, value));
+			}
 		}
 		#endregion
 		
@@ -119,6 +131,7 @@ namespace WafBuilder
 		private string m_command;
 		
 		private static Regex ms_targetsRe = new Regex(@"(?<! @[^\r\n]+[\r\n]+) ^def \s+ (\w[_\w]*) \s* \( \s* \w[_\w]* \s* \)", RegexOptions.IgnorePatternWhitespace | RegexOptions.Multiline);
+		private static Regex ms_optionsRe = new Regex(@"^ \s+ \w[_\w]* \s* \. \s* add_option \s* \( \s* ['""] ([^'""]+) ['""] (?: .+? default \s* = \s* ([^,)\s]+))?", RegexOptions.IgnorePatternWhitespace | RegexOptions.Multiline);
 		private string[] ms_stdTargets = new string[]{"build", "clean", "configure", "dist", "distcheck", "distclean", "install", "list", "step", "uninstall"};
 		#endregion
 	}

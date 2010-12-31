@@ -56,20 +56,20 @@ http://waf.googlecode.com/svn/docs/wafbook/single.html
 http://code.google.com/p/waf/w/list
 http://www.freehackers.org/~tnagy/wafdoc160/index.html
 
-	opt.add_option('--foo', action='store', default=False, help='Silly test')
-	also add_option_group
 
 * Get waf working:
-	- need to add some sort of StdErrorIsError flag to GenericBuilder
-	- make sure non-standard targets build
-	- handle colored output, may have to set TERM env var
-	- variables (add_option and add_option_group)
-	- flags, may want a flag for no color
+	- flags
 	- waf should be default excluded from directory items
-* Would be cool if could (re)debug using recent files browser.
-	- can we change the title too?
+* Get fsc error reporting working.
+	error FS0225: Source file '/Users/jessejones/Source/CrippledGod/bin/source/Program.fs' could not be found
+* Recent files isn't updated when creating a new window and then closing it.
 * Add syntax highlighting for python decorators (also to Linguist).
 	- maybe use attribute style
+* Got a crash canceling build vars dialog.
+	- but only when a no-name row was selected                  
+* Would be cool if could (re)debug using recent files browser.
+	- can we change the title too?
+* Build variables with no value don't work so well.
 * Maybe local files should have these cases:
 	- "foo"	matches the start of file names
 	- " foo" matches the end of file names
@@ -87,6 +87,10 @@ http://www.freehackers.org/~tnagy/wafdoc160/index.html
 		` draw in gray if the current context does not have the variable in any stack frame
 * Add a generate stub refactor
 	- should this be automatic?
+* Add support for waf colored output?
+	- might have to set the TERM environment variable
+	- would have to extend ITranscript
+	- might want some sort of no-colors option in waf flags nib
 * Add a ToString refactor, should default to returning fields and auto-props
 * Do the same for implement IFormatable.
 * Might want a why continuum discussion somewhere.
