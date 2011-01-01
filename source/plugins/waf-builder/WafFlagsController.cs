@@ -26,17 +26,19 @@ using Shared;
 using System;
 using System.Collections.Generic;
 
-#if UNUSED
 namespace WafBuilder
 {
-	[ExportClass("FlagsController", "NSWindowController")]
-	internal sealed class FlagsController : NSWindowController
+	[ExportClass("WafFlagsController", "NSWindowController", Outlets = "verbosity jobs")]
+	internal sealed class WafFlagsController : NSWindowController
 	{
-		public FlagsController(Dictionary<string, int> flags) : base(NSObject.AllocAndInitInstance("FlagsController"))
+		public WafFlagsController(Dictionary<string, int> flags) : base(NSObject.AllocAndInitInstance("WafFlagsController"))
 		{
-			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("make-flags"), this);	
+			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("waf-flags"), this);	
 			
-			Unused.Value = window().setFrameAutosaveName(NSString.Create("make-flags window"));
+			m_verbosity = new IBOutlet<NSTextField>(this, "verbosity").Value;
+			m_jobs = new IBOutlet<NSTextField>(this, "jobs").Value;
+			
+//			Unused.Value = window().setFrameAutosaveName(NSString.Create("waf-flags window"));
 			window().makeKeyAndOrderFront(this);
 			
 			m_docFlags = flags;
@@ -53,12 +55,32 @@ namespace WafBuilder
 				}
 			}
 			
+			if (m_flags.ContainsKey("verbosity"))
+				m_verbosity.setIntegerValue(m_flags["verbosity"]);
+			else
+				m_verbosity.setIntegerValue(0);
+			if (m_flags.ContainsKey("jobs"))
+				m_jobs.setIntegerValue(m_flags["jobs"]);
+			else
+				m_jobs.setIntegerValue(8);
+				
 			ActiveObjects.Add(this);
 		}
 		
 		public void toggle(NSButton sender)
 		{
 			m_flags[sender.title().ToString()] = sender.state();
+		}
+		
+		public void changeVerbosity(NSTextField sender)
+		{
+			m_flags["verbosity"] = sender.intValue();
+		}
+		
+		public void changeJobs(NSTextField sender)
+		{
+			m_flags["jobs"] = sender.intValue();
+		Console.WriteLine("changeJobs: {0}", sender.intValue()); Console.Out.Flush();
 		}
 		
 		public void flagsOK(NSObject sender)
@@ -83,9 +105,10 @@ namespace WafBuilder
 		}
 		
 		#region Fields
+		private NSTextField m_verbosity;
+		private NSTextField m_jobs;
 		private Dictionary<string, int> m_docFlags;
 		private Dictionary<string, int> m_flags;
 		#endregion
 	}
 }
-#endif

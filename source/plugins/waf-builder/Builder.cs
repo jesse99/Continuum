@@ -81,9 +81,9 @@ namespace WafBuilder
 		
 		public void SetBuildFlags()
 		{
-//			var controller = new FlagsController(m_flags);
-//			Unused.Value = NSApplication.sharedApplication().runModalForWindow(controller.window());
-//			controller.release();
+			var controller = new WafFlagsController(m_flags);
+			Unused.Value = NSApplication.sharedApplication().runModalForWindow(controller.window());
+			controller.release();
 		}
 		
 		public void SetBuildVariables()
@@ -97,7 +97,7 @@ namespace WafBuilder
 		#region Private Methods
 		private void DoSavePrefs()
 		{
-			// environment variables
+			// custom flags
 			string key = m_path + "-variables";		// this will break if the project is moved, but that should be rather rare
 			
 			var dict = NSMutableDictionary.Create();
@@ -113,7 +113,7 @@ namespace WafBuilder
 		
 		private void DoLoadPrefs()
 		{
-			// environment variables
+			// custom flags
 			string key = m_path + "-variables";
 			string value;
 			

@@ -55,7 +55,11 @@ namespace WafBuilder
 				args += "build ";
 				
 			foreach (KeyValuePair<string, int> f in flags)
-				if (f.Value == 1)
+				if (f.Key == "verbosity" && f.Value > 0)
+					args += string.Format("-{0} ", new string('v', f.Value));
+				else if (f.Key == "jobs" && f.Value != 8)
+					args += string.Format("--jobs={0} ", f.Value);
+				else if (f.Value == 1)
 					args += string.Format("--{0} ", f.Key);
 			
 			foreach (Variable v in vars)
