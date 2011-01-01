@@ -224,9 +224,9 @@ namespace DirectoryEditor
 				{
 					m_results.WriteError(e.Data);
 					m_results.WriteError(Environment.NewLine);
-					
-					m_errors.AppendLine(e.Data);
 				}
+				
+				m_errors.AppendLine(e.Data);
 			}
 		}
 		
