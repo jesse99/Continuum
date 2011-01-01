@@ -57,7 +57,7 @@ namespace Find
 			
 			dict.setObject_forKey(NSString.Create(AlwaysExclude), NSString.Create("always exclude globs"));
 			
-			NSUserDefaults.standardUserDefaults().registerDefaults(dict);	
+			NSUserDefaults.standardUserDefaults().registerDefaults(dict);
 		}
 		
 		internal static readonly string[] DefaultDirs = new string[]
@@ -67,8 +67,8 @@ namespace Find
 			"/System/Library/Frameworks/CoreFoundation.framework/Versions/Current/Headers/",
 		};
 		
-		internal const string DefaultInclude = "*.cs *.h *.m";
-			
+		internal const string DefaultInclude = "*.cs *.fs *.h *.m";
+		
 		internal const string AlwaysExclude = ".* *.app *.dll *.dylib *.exe *.gif *.icns *.jpeg *.jpg *.mdb *.nib *.pdb *.X11";
 		
 		#region Fields
