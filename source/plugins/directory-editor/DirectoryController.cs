@@ -754,7 +754,7 @@ namespace DirectoryEditor
 			if (!NSObject.IsNullOrNil(value))
 				m_ignoredItems = Glob.Split(value.description());
 			else
-				m_ignoredItems = new string[]{".*", "*.o", "*.pyc", "MIT.X11", "CVS", "*.sln", "*.csproj"};
+				m_ignoredItems = new string[]{".*", "*.o", "*.pyc", "MIT.X11", "CVS", "waf", "*.sln", "*.csproj"};
 			
 			// add space
 			key = path + "-add space";
