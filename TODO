@@ -53,10 +53,6 @@ include the percentage of samples that that method appeared in the stack trace
 http://progit.org/
 
 
-* Got a crash canceling build vars dialog.
-	- but only when a no-name row was selected       
-* Rebuild foreshadow.
-* Do a push.
 * Would be cool if could (re)debug using recent files browser.
 	- can we change the title too?
 * Build variables with no value don't work so well.

@@ -56,14 +56,15 @@ namespace DirectoryEditor
 			m_docVariables.Clear();
 			m_docVariables.AddRange(m_newVariables);
 		}
-	
+		
 		public void envCancel(NSObject sender)
 		{
 			NSApplication.sharedApplication().stopModalWithCode(Enums.NSCancelButton);
+			m_table.Value.setDataSource(null);				// need this or the table sometimes calls back into us after we go away (the table isn't sticking around so this seems to be some sort of teardown order issue)
 			window().orderOut(this);
 			window().release();
 		}
-	
+		
 		public void restoreDefaults(NSObject sender)
 		{
 			for (int i = 0; i < m_newVariables.Count; ++i)
