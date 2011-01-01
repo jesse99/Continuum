@@ -58,7 +58,6 @@ http://www.freehackers.org/~tnagy/wafdoc160/index.html
 
 
 * Get waf working:
-	- probably want to save at least the jobs flag
 	- waf should be default excluded from directory items
 * Get fsc error reporting working.
 	error FS0225: Source file '/Users/jessejones/Source/CrippledGod/bin/source/Program.fs' could not be found

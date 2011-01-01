@@ -84,6 +84,8 @@ namespace WafBuilder
 			var controller = new WafFlagsController(m_flags);
 			Unused.Value = NSApplication.sharedApplication().runModalForWindow(controller.window());
 			controller.release();
+			
+			DoSavePrefs();
 		}
 		
 		public void SetBuildVariables()
@@ -108,6 +110,17 @@ namespace WafBuilder
 			}
 			
 			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
+			defaults.setObject_forKey(dict, NSString.Create(key));
+			
+			// standard flags
+			key = m_path + "-flags";
+			
+			dict = NSMutableDictionary.Create();
+			foreach (var entry in m_flags)
+			{
+				dict.setObject_forKey(NSString.Create(entry.Value.ToString()), NSString.Create(entry.Key));
+			}
+			
 			defaults.setObject_forKey(dict, NSString.Create(key));
 		}
 		
@@ -143,6 +156,22 @@ namespace WafBuilder
 						else
 							m_variables.Add(v);
 					}
+				}
+			}
+			
+			// standard flags
+			key = m_path + "-flags";
+			pref = defaults.objectForKey(NSString.Create(key));
+			if (!NSObject.IsNullOrNil(pref))
+			{
+				NSMutableDictionary dict = pref.To<NSMutableDictionary>();
+				
+				foreach (var entry in dict)
+				{
+					string name = entry.Key.ToString();
+					value = entry.Value.ToString();
+					
+					m_flags[name] = int.Parse(value);
 				}
 			}
 		}

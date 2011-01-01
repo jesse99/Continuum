@@ -80,7 +80,6 @@ namespace WafBuilder
 		public void changeJobs(NSTextField sender)
 		{
 			m_flags["jobs"] = sender.intValue();
-		Console.WriteLine("changeJobs: {0}", sender.intValue()); Console.Out.Flush();
 		}
 		
 		public void flagsOK(NSObject sender)

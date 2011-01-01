@@ -53,7 +53,7 @@ namespace WafBuilder
 			
 			if (Array.IndexOf(ms_stdTargets, target) < 0)
 				args += "build ";
-				
+	
 			foreach (KeyValuePair<string, int> f in flags)
 				if (f.Key == "verbosity" && f.Value > 0)
 					args += string.Format("-{0} ", new string('v', f.Value));
