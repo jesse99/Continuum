@@ -52,21 +52,13 @@ include the percentage of samples that that method appeared in the stack trace
 	
 http://progit.org/
 
-http://waf.googlecode.com/svn/docs/wafbook/single.html
-http://code.google.com/p/waf/w/list
-http://www.freehackers.org/~tnagy/wafdoc160/index.html
 
-
-* Get waf working:
-	- waf should be default excluded from directory items
-* Get fsc error reporting working.
-	error FS0225: Source file '/Users/jessejones/Source/CrippledGod/bin/source/Program.fs' could not be found
-* Default find in files should include *.fs
-* Recent files isn't updated when creating a new window and then closing it.
 * Add syntax highlighting for python decorators (also to Linguist).
 	- maybe use attribute style
 * Got a crash canceling build vars dialog.
-	- but only when a no-name row was selected                  
+	- but only when a no-name row was selected       
+* Rebuild foreshadow.
+* Do a push.
 * Would be cool if could (re)debug using recent files browser.
 	- can we change the title too?
 * Build variables with no value don't work so well.
@@ -122,6 +114,7 @@ http://www.freehackers.org/~tnagy/wafdoc160/index.html
 	tell application "Continuum" to save document 1 in "/tmp/foo.html" as "HTML"
 	- introspection
 	- can scripts add new implemenations? or replace old ones?
+* Would be nice to be able to add compiler error parsers using some sort of data file.
 * Can use IronPython for scripting:
 	http://blogs.msdn.com/srivatsn/archive/2008/09/16/hosting-ironpython-made-easier.aspx
 	http://www.ironpython.info/index.php/Hosting_IronPython_2

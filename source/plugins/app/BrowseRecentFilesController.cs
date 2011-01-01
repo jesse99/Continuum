@@ -43,6 +43,7 @@ namespace App
 			m_table.setTarget(this);
 			
 			Broadcaster.Register("opening document window", this);
+			Broadcaster.Register("saved new document window", this);
 			Broadcaster.Register("opened directory", this);
 			
 			DoLoadPrefs();
@@ -52,8 +53,9 @@ namespace App
 		{
 			switch (name)
 			{
-				case "opening document window":	// this will change the items we show
-				case "opened directory":				// this may change the colors used by the items
+				case "opening document window":		// this will change the items we show
+				case "saved new document window":		// need this to handle new documents
+				case "opened directory":					// this may change the colors used by the items
 					if (window().isVisible() || window().isMiniaturized())
 						DoReload();
 					break;

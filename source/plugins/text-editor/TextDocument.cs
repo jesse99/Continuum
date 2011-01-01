@@ -337,6 +337,16 @@ namespace TextEditor
 			return read;
 		}
 		
+		public new void saveDocument(NSObject sender)
+		{
+			bool saveAs = NSObject.IsNullOrNil(fileURL());
+			Unused.Value = SuperCall(NSDocument.Class, "saveDocument:", sender);
+			if (saveAs)
+				Broadcaster.Invoke("saved new document window", m_controller.Boss);
+			else
+				Broadcaster.Invoke("saved document window", m_controller.Boss);
+		}
+		
 		// Used to write the document.
 		public NSData dataOfType_error(NSString typeName, IntPtr outError)
 		{
@@ -354,12 +364,12 @@ namespace TextEditor
 				
 				switch (typeName.description())
 				{
-				case "Plain Text, UTF8 Encoded":
-					// This is more like the default plain text type: when loading a document that is not
-					// rtf or word or whatever this typename will be chosen via the plist. However the actual
-					// encoding is inferred from the contents of the file (or set via the Get Info panel).
-					data = str.dataUsingEncoding_allowLossyConversion(m_encoding, true);
-					break;
+					case "Plain Text, UTF8 Encoded":
+						// This is more like the default plain text type: when loading a document that is not
+						// rtf or word or whatever this typename will be chosen via the plist. However the actual
+						// encoding is inferred from the contents of the file (or set via the Get Info panel).
+						data = str.dataUsingEncoding_allowLossyConversion(m_encoding, true);
+						break;
 					
 					case "Plain Text, UTF16 Encoded":
 						// This case is only used when the user selects save as and then the utf16 encoding.
