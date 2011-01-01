@@ -12,3 +12,4 @@ String: r? " (?: [^"\r\n\\] | \\.)* "
 String: r? ' (?: [^'\r\n\\] | \\.)* '
 Type: (?<=\b class \s+) \w+
 Member: (?<=\b def \s+) \w+
+Attribute: (?<= ^ \s*) @ [\w]+ [^\x23\n\r]*

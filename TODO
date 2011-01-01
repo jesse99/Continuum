@@ -53,8 +53,6 @@ include the percentage of samples that that method appeared in the stack trace
 http://progit.org/
 
 
-* Add syntax highlighting for python decorators (also to Linguist).
-	- maybe use attribute style
 * Got a crash canceling build vars dialog.
 	- but only when a no-name row was selected       
 * Rebuild foreshadow.
