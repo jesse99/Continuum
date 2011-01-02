@@ -60,7 +60,7 @@ namespace App
 			get {return m_boss;}
 		}
 		
-		public void Get(Boss boss, string selection, bool editable, List<TextContextItem> items)
+		public void Get(string selection, bool editable, List<TextContextItem> items)
 		{
 			if (selection == null && m_timeMachineDir != null)
 			{

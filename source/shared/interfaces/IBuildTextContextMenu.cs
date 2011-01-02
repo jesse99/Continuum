@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Jesse Jones
+// Copyright (C) 2011 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -20,44 +20,27 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
-using Shared;
-using System;
-using System.Collections.Generic;
+using MCocoa;
+using MObjc;
 
-namespace App
+namespace Shared
 {
-	internal sealed class ScriptsMenu : ITextContextCommands
+	// Populates a context menu for an NSTextView using ITextContextCommands
+	// interfaces.
+	public interface IBuildTextContextMenu : IInterface
 	{
-		public void Instantiated(Boss boss)
-		{
-			m_boss = boss;
-		}
+		// Optional method that selects the entire word the user right-clicked on.
+		void ExtendSelection(NSTextView view, NSEvent evt);
 		
-		public Boss Boss
-		{
-			get {return m_boss;}
-		}
+		// Populates the menu using ITextContextCommands from the window boss
+		// and then the TextView boss. In the case of a Name conflict the window 
+		// boss wins.
+		void Populate(NSMenu menu, NSTextView view, Boss window);
 		
-		public void Get(string selection, bool editable, List<TextContextItem> items)
-		{
-			if (selection != null && editable)
-			{
-				Boss boss = ObjectModel.Create("Application");
-				var scripts = boss.Get<IScripts>();
-				
-				items.Add(new TextContextItem(0.8f));
-				
-				string[] names = scripts.Names();
-				for (int i = 0; i < names.Length; ++i)
-				{
-					string name = names[i];
-					items.Add(new TextContextItem(name, s => scripts.Execute(name, s), 0.8f));
-				}
-			}
-		}
+		// AppDelegate will call this when a menu item is selected.
+		void Dispatch(NSObject sender);
 		
-		#region Fields
-		private Boss m_boss;
-		#endregion
+		// AppDelegate will call this to enable menu items.
+		bool Validate(NSObject sender);
 	}
 }

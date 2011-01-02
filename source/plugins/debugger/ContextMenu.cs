@@ -38,9 +38,9 @@ namespace Debugger
 			get {return m_boss;}
 		}
 		
-		public void Get(Boss boss, string selection, bool editable, List<TextContextItem> items)
+		public void Get(string selection, bool editable, List<TextContextItem> items)
 		{
-			boss = DoGetWindowBoss();
+			Boss boss = DoGetWindowBoss();
 			if (boss != null)
 			{
 				var viewer = boss.Get<ICodeViewer>();

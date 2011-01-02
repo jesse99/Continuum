@@ -519,6 +519,13 @@ fi
 			find.ReplaceAndFind();
 		}
 		
+		public void dispatchTextContextMenu(NSObject sender)
+		{
+			Boss boss = ObjectModel.Create("TextView");
+			var builder = boss.Get<IBuildTextContextMenu>();
+			builder.Dispatch(sender);
+		}
+		
 		public bool validateUserInterfaceItem(NSObject sender)
 		{
 			bool enabled = false;
@@ -533,6 +540,12 @@ fi
 				MenuState state = handler.GetState(tag);
 				enabled = (state & MenuState.Enabled) == MenuState.Enabled;
 				sender.Call("setState:", (state & MenuState.Checked) == MenuState.Checked ? 1 : 0);
+			}
+			else if (sel.Name == "dispatchTextContextMenu:")
+			{
+				Boss boss = ObjectModel.Create("TextView");
+				var builder = boss.Get<IBuildTextContextMenu>();
+				enabled = builder.Validate(sender);
 			}
 			else if (sel.Name == "debugAssembly:")
 			{

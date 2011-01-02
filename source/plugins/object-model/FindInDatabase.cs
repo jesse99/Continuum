@@ -46,8 +46,12 @@ namespace ObjectModel
 			get {return m_boss;}
 		}
 		
-		public void Get(Boss boss, string selection, bool editable, List<TextContextItem> items)
+		public void Get(string selection, bool editable, List<TextContextItem> items)
 		{
+			Boss editor = Gear.ObjectModel.Create("DirectoryEditorPlugin");
+			var finder = editor.Get<IFindDirectoryEditor>();
+			Boss boss = finder.GetDirectoryEditor(m_boss);
+			
 			if (boss != null)
 			{
 				// This will happen when clicking on the method in disassembled generic types.

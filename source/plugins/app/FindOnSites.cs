@@ -48,7 +48,7 @@ namespace App
 			get {return m_boss;}
 		}
 		
-		public void Get(Boss boss, string selection, bool editable, List<TextContextItem> items)
+		public void Get(string selection, bool editable, List<TextContextItem> items)
 		{
 			if (selection != null && selection.Length < 100 && !selection.Any(c => char.IsWhiteSpace(c)))
 			{
@@ -123,10 +123,17 @@ namespace App
 			return selection;
 		}
 		
-		// // TODO: if we can figure out that the selection is a class or method then we should add that to our url
+		// TODO: if we can figure out that the selection is a class or method then we should add that to our url
 		private string DoFindOnMSDN(string selection)
 		{
-			NSURL url = NSURL.URLWithString(NSString.Create("http://www.google.com/search?q=" + selection + "%20site:msdn.microsoft.com/en-us/library"));
+			string str;
+			if (selection.StartsWith("FS") && Contract.ForAll(2, selection.Length, i => char.IsDigit(selection[i])))
+				str = string.Format("http://www.google.com/search?q=compiler%20error%20{0}", selection);	// TODO: as of Jan 2011 msdn does not document F# errors so we'll search the entire internet
+			else if (selection.StartsWith("CS") && Contract.ForAll(2, selection.Length, i => char.IsDigit(selection[i])))
+				str = string.Format("http://www.google.com/search?q=compiler%20error%20{0}%20site:msdn.microsoft.com/en-us/library", selection);
+			else
+				str = string.Format("http://www.google.com/search?q={0}%20site:msdn.microsoft.com/en-us/library", selection);
+			NSURL url = NSURL.URLWithString(NSString.Create(str));
 			Unused.Value = NSWorkspace.sharedWorkspace().openURL(url);
 			
 			return selection;

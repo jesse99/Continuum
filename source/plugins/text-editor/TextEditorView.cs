@@ -1,4 +1,4 @@
-// Copyright (C) 2008-2010 Jesse Jones
+// Copyright (C) 2008-2011 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -245,7 +245,7 @@ namespace TextEditor
 		}
 #endif
 		
-		public NSRange selectionRangeForProposedRange_granularity(NSRange proposedSelRange, int granularity)
+		public new NSRange selectionRangeForProposedRange_granularity(NSRange proposedSelRange, uint granularity)
 		{
 			NSRange result;
 			
@@ -274,35 +274,36 @@ namespace TextEditor
 			return result;
 		}
 		
-		public void processHandler(NSObject sender)
-		{
-			int i = sender.Call("tag").To<int>();
-			string result = m_entries[i].Handler(m_selection);
-			if (result != m_selection)
-			{
-				NSArray args = NSArray.Create(NSValue.valueWithRange(m_range), NSString.Create(result), NSString.Create(m_entries[i].UndoText));
-				replaceSelection(args);
-			}
-		}
+//		public void processHandler(NSObject sender)
+//		{
+//			int i = sender.Call("tag").To<int>();
+//			string result = m_entries[i].Handler(m_selection);
+//			if (result != m_selection)
+//			{
+//				NSArray args = NSArray.Create(NSValue.valueWithRange(m_range), NSString.Create(result), NSString.Create(m_entries[i].UndoText));
+//				replaceSelection(args);
+//			}
+//		}
 		
-		public new bool validateUserInterfaceItem(NSObject item)
-		{
-			Selector sel = (Selector) item.Call("action");
-			
-			bool valid = false;
-			if (sel.Name == "processHandler:")
-			{
-				int i = item.Call("tag").To<int>();
-				item.Call("setState:", m_entries[i].State);
-				valid = m_entries[i].Handler != null;
-			}
-			else if (SuperCall(NSTextView.Class, "respondsToSelector:", new Selector("validateUserInterfaceItem:")).To<bool>())
-			{
-				valid = SuperCall(NSTextView.Class, "validateUserInterfaceItem:", item).To<bool>();
-			}
-			
-			return valid;
-		}
+//		public new bool validateUserInterfaceItem(NSObject item)
+//		{
+//			Selector sel = (Selector) item.Call("action");
+//			
+//			bool valid = false;
+//			if (sel.Name == "processHandler:")
+//			{
+//				int i = item.Call("tag").To<int>();
+//				item.Call("setState:", m_entries[i].State);
+//				valid = m_entries[i].Handler != null;
+//			}
+//			else 
+//			if (SuperCall(NSTextView.Class, "respondsToSelector:", new Selector("validateUserInterfaceItem:")).To<bool>())
+//			{
+//				valid = SuperCall(NSTextView.Class, "validateUserInterfaceItem:", item).To<bool>();
+//			}
+//			
+//			return valid;
+//		}
 		
 		// args[0] = text range, args[1] = text which will replace the range, args[2] = undo text
 		public void replaceSelection(NSArray args)
@@ -329,215 +330,14 @@ namespace TextEditor
 			NSMenu menu = NSMenu.Alloc().initWithTitle(NSString.Empty);
 			menu.autorelease();
 			
-			// ITextContextCommands expect that the main window is the one the user
-			// is working with.
-			window().makeKeyAndOrderFront(this);
+			Boss boss = ObjectModel.Create("TextView");
+			var builder = boss.Get<IBuildTextContextMenu>();
 			
-			// We don't extend the default menu because it has tons of stuff that we
-			// don't really want. But we should add the services...
-//			NSMenu menu = SuperCall("menuForEvent:", evt).To<NSMenu>();
-//			menu.addItem(NSMenuItem.separatorItem());
-			
-			try
-			{
-				// Get the selection.
-				int index = DoMouseEventToIndex(evt);
-				
-				m_range = selectedRange();
-				if (m_range.length == 0 && index < string_().length() && string_()[index] == '\n')
-				{
-					m_selection = null;		// don't extend the selection if the user clicked off to the right side of a line
-				}
-				else if (index >= string_().length())
-				{
-					m_selection = null;		// don't extend the selection if the user clicked below the last line of text
-				}
-				else
-				{
-					// Extend the selection so that it contains the entire word the user right-clicked on.
-					if (m_range.length == 0 || !m_range.Intersects(index))
-					{
-						m_range = new NSRange(index, 1);
-						m_range = selectionRangeForProposedRange_granularity(m_range, Enums.NSSelectByWord);
-						setSelectedRange(m_range);
-					}
-					
-					m_selection = null;
-					if (m_range.length > 0 && m_range.location + m_range.length <= string_().length())
-						string_().getCharacters_range(m_range, out m_selection);
-				}
-				
-				// Get the commands.
-				var watch = new Stopwatch();
-				watch.Start();
-				DoGetEntries(m_selection);
-				
-				if (m_entries.Count == 0)
-					DoGetEntries(null);
-				Log.WriteLine("ContextMenu", "took {0:0.000} secs to open the menu", watch.ElapsedMilliseconds/1000.0);
-				
-				m_entries.Sort();
-				
-				// Remove duplicate separators and any at the start or end.
-				for (int i = m_entries.Count - 1; i > 0; --i)
-				{
-					if (m_entries[i].Name == null && m_entries[i - 1].Name == null)
-						m_entries.RemoveAt(i);
-				}
-				while (m_entries.Count > 0 && m_entries[0].Name == null)
-					m_entries.RemoveAt(0);
-				while (m_entries.Count > 0 && m_entries[m_entries.Count - 1].Name == null)
-					m_entries.RemoveAt(m_entries.Count - 1);
-				
-				// Build the menu.
-				for (int i = 0; i < m_entries.Count; ++i)
-				{
-					NSMenuItem item = null;
-					
-					if (m_entries[i].Name != null)
-					{
-						if (m_entries[i].Name != Constants.Ellipsis)
-						{
-							item = NSMenuItem.Create(m_entries[i].Name, "processHandler:");
-							
-							if (m_entries[i].Title != null)
-								item.setAttributedTitle(m_entries[i].Title);
-						}
-						else
-							item = NSMenuItem.Create(Constants.Ellipsis);
-						item.setTag(i);
-					}
-					else
-					{
-						Contract.Assert(m_entries[i].Handler == null, "names is null, but handlers is not");
-						item = NSMenuItem.separatorItem();
-					}
-					
-					if (item != null)
-						menu.addItem(item);
-				}
-			}
-			catch (DatabaseLockedException)
-			{
-				NSString title = NSString.Create("Database was locked.");
-				NSString message = NSString.Create("Try again.");
-				Unused.Value = Functions.NSRunAlertPanel(title, message);
-			}
-			catch (Exception e)
-			{
-				Log.WriteLine(TraceLevel.Error, "App", "Error building context menu:");
-				Log.WriteLine(TraceLevel.Error, "App", "{0}", e);
-				
-				NSString title = NSString.Create("Error building the menu.");
-				NSString message = NSString.Create(e.Message);
-				Unused.Value = Functions.NSRunAlertPanel(title, message);
-			}
+			builder.ExtendSelection(this, evt);
+			builder.Populate(menu, this, m_boss);
 			
 			return menu;
 		}
-		
-		#region Private Types
-		private struct Entry : IComparable<Entry>, IEquatable<Entry>
-		{
-			public Entry(TextContextItem item, int group)
-			{
-				m_item = item;
-				m_group = group;
-			}
-			
-			public string Name
-			{
-				get {return m_item.Name;}
-			}
-			
-			public string UndoText
-			{
-				get {return m_item.UndoText ?? m_item.Name;}
-			}
-			
-			public NSAttributedString Title
-			{
-				get {return m_item.Title;}
-			}
-			
-			public Func<string, string> Handler
-			{
-				get {return m_item.Handler;}
-			}
-			
-			public int State
-			{
-				get {return m_item.State;}
-			}
-			
-			public override bool Equals(object obj)
-			{
-				if (obj == null)
-					return false;
-				
-				if (GetType() != obj.GetType())
-					return false;
-				
-				Entry rhs = (Entry) obj;
-				return CompareTo(rhs) == 0;
-			}
-			
-			public bool Equals(Entry rhs)
-			{
-				return CompareTo(rhs) == 0;
-			}
-			
-			public int CompareTo(Entry rhs)
-			{
-				int result = m_item.SortOrder.CompareTo(rhs.m_item.SortOrder);
-				
-				if (result == 0)
-					result = m_group.CompareTo(rhs.m_group);
-				
-				if (result == 0)
-				{
-					if (Name == null)
-						result = rhs.Name == null ? 0 : -1;
-					
-					else if (rhs.Name == null)
-						result = +1;
-						
-					else if (Name == Constants.Ellipsis)
-						result = rhs.Name == Constants.Ellipsis ? 0 : +1;
-						
-					else if (rhs.Name == Constants.Ellipsis)
-						result = -1;
-						
-					else
-						result = Name.CompareTo(rhs.Name);
-				}
-				
-				return result;
-			}
-			
-			public override int GetHashCode()
-			{
-				int hash = 0;
-				
-				unchecked
-				{
-					hash += m_item.SortOrder.GetHashCode();
-					hash += Name.GetHashCode();
-					hash += m_group.GetHashCode();
-				}
-				
-				return hash;
-			}
-			
-			public override string ToString()
-			{
-				return (Name ?? "separator") + " " + m_group;
-			}
-			
-			private readonly TextContextItem m_item;
-			private readonly int m_group;
-		}
-		#endregion
 		
 		#region Private Methods
 		private bool DoArrowKeys(NSEvent evt)
@@ -1218,36 +1018,6 @@ namespace TextEditor
 			return Math.Abs(i - start);
 		}
 		
-		private void DoGetEntries(string selection)
-		{
-			int group = 0;
-			
-			m_entries.Clear();
-			
-			Boss dirBoss = ((TextController) window().windowController()).GetDirEditorBoss();
-			
-			Boss boss = ObjectModel.Create("TextEditorPlugin");
-			bool editable = isEditable();
-			foreach (ITextContextCommands i in boss.GetRepeated<ITextContextCommands>())
-			{
-				var items = new List<TextContextItem>();
-				i.Get(dirBoss, selection, editable, items);
-				
-				if (items.Count > 0)
-				{
-					if (!items.All(item => item.Name == null))
-					{
-						for (int j = 0; j < items.Count; ++j)
-						{
-							m_entries.Add(new Entry(items[j], group));
-						}
-						
-						++group;
-					}
-				}
-			}
-		}
-		
 		private bool DoSelectionCrossesLines(NSRange selection)
 		{
 			var text = string_();
@@ -1347,9 +1117,6 @@ namespace TextEditor
 		
 		#region Fields
 		private Boss m_boss;
-		private NSRange m_range;
-		private string m_selection;
-		private List<Entry> m_entries = new List<Entry>();
 		private IAutoComplete m_autoComplete;
 		private ITooltip m_tooltip;
 		private int m_moveIndex;

@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Jesse Jones
+// Copyright (C) 2011 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -20,44 +20,30 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
-using Shared;
 using System;
-using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
 
-namespace App
+namespace TextView
 {
-	internal sealed class ScriptsMenu : ITextContextCommands
+	[Plugin]
+	public static class Plugin
 	{
-		public void Instantiated(Boss boss)
-		{
-			m_boss = boss;
-		}
-		
-		public Boss Boss
-		{
-			get {return m_boss;}
-		}
-		
-		public void Get(string selection, bool editable, List<TextContextItem> items)
-		{
-			if (selection != null && editable)
+		public static void OnLoaded() 
+ 		{
+			DoInitObjectModel();
+ 		}
+  		
+		private static void DoInitObjectModel()
+ 		{
+			string loc = Assembly.GetExecutingAssembly().Location;
+			string root = Path.GetDirectoryName(loc);
+			string path = Path.Combine(root, "Bosses.xml");
+ 			
+			using (StreamReader reader = new StreamReader(path))
 			{
-				Boss boss = ObjectModel.Create("Application");
-				var scripts = boss.Get<IScripts>();
-				
-				items.Add(new TextContextItem(0.8f));
-				
-				string[] names = scripts.Names();
-				for (int i = 0; i < names.Length; ++i)
-				{
-					string name = names[i];
-					items.Add(new TextContextItem(name, s => scripts.Execute(name, s), 0.8f));
-				}
+				XmlModel.Read(reader.BaseStream); 
 			}
-		}
-		
-		#region Fields
-		private Boss m_boss;
-		#endregion
-	}
+ 		}
+	} 
 }

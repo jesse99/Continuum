@@ -1,0 +1,5 @@
+<Bosses namespaces = "Gear Shared TextView">
+	<Boss name = "TextView" singleton = "true">
+		<Implementation interfaces = "IBuildTextContextMenu" name = "BuildTextContextMenu"/>
+	</Boss>
+</Bosses>

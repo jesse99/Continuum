@@ -52,9 +52,53 @@ include the percentage of samples that that method appeared in the stack trace
 	
 http://progit.org/
 
+http://www.google.com/search?q=compiler%20error%20FS0058
 
-* Would be cool if could (re)debug using recent files browser.
-	- can we change the title too?
+http://www.google.com/search?q=compiler%20error%20CS1519%20site:msdn.microsoft.com/en-us/library
+
+
+FS0058	CS0116
+
+public interface Shared.ITextContextCommands
+	internal sealed class Debugger.ContextMenu
+	internal sealed class Disassembler.ContextMenu
+	internal sealed class Git.GitTextCommands
+	internal sealed class ObjectModel.FindInDatabase
+	internal sealed class Subversion.SvnTextCommands
+	internal sealed class TextEditor.PathCommands
+	internal sealed class TextEditor.ShowSpaces
+	
+	internal sealed class App.FindOnSites
+	internal sealed class App.ScriptsMenu
+	internal sealed class App.Spelling
+	internal sealed class App.TimeMachine
+
+TextEditor
+TextView
+
+* Work on text context menus:
+	- move ITextContextCommands into the new plugin
+	- search for ITextContextCommands on both a singleton boss and the window boss
+	- FindInDatabase needs to be on the text editor
+	- do a commit
+	- get the context menu working with the transcript
+* Make sure monomac works ok:
+	- Continuum needs to treat *.md as text
+	- Continuum should build with mdtool if there is no build file and the project contains a xib or nib
+	  (or maybe build with mdtool if there is no build file but there are cs files?)
+	- make sure monomac apps can be debugged (see MonoMacDebuggerSession)
+	- make sure monomac can be built using Continuum
+* Add Search for Error:
+	- get this working from the transcript
+	- word in f# doesn't seem to work for stuff like FS1000
+	- c++
+	- obj-c
+* Work on recent files:
+	- may want a IOpenRecentFile interface
+	- should have an Open method and a DisplayName method
+	- debugger would have to remember debug settings keyed by assembly path
+	- debugging via apple script shouldn't populate recent files
+	- make sure assemblies can be opened and re-opened normally
 * Build variables with no value don't work so well.
 * Maybe local files should have these cases:
 	- "foo"	matches the start of file names
@@ -109,6 +153,7 @@ http://progit.org/
 	- introspection
 	- can scripts add new implemenations? or replace old ones?
 * Would be nice to be able to add compiler error parsers using some sort of data file.
+* Search sites should be done via a data file as well.
 * Can use IronPython for scripting:
 	http://blogs.msdn.com/srivatsn/archive/2008/09/16/hosting-ironpython-made-easier.aspx
 	http://www.ironpython.info/index.php/Hosting_IronPython_2
