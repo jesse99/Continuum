@@ -58,6 +58,7 @@ namespace App
 			panel.setTitle(NSString.Create("Choose Assembly"));
 			panel.setCanChooseDirectories(false);
 			panel.setCanChooseFiles(true);
+//			panel.setTreatsFilePackagesAsDirectories(true);	// don't want to enable this because it prevents us from debugging app bundles by selecting the bundle
 			panel.setAllowsMultipleSelection(false);
 			
 			int button = panel.runModal();

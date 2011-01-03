@@ -88,7 +88,12 @@ The argument completion window which pops up after auto-completion may be dragge
 
 == 3 Debugging == 
 
-You can debug an assembly by dropping an mdb file onto the Continuum icon in the dock, by using the Debug item in the Debug menu, or via apple script. The AppleScript command is named debug and has a direct parameter naming the exe or mdb file to open and the following optional parameters:
+Continuum can be used to debug command-line Mono applications, Monomac applications,
+or mcocoa applications. For a command-line app the Debug menu item or an Apple Script can
+be used to directly debug the app. For a Cocoa app point the Debug menu item or Apple
+Script at the application bundle to be debugged.
+
+The AppleScript command is named debug and has a direct parameter naming the exe or app bundle to open and the following optional parameters:
 
  * *with* lists command line arguments to pass to the assembly.
  * *vars* contains a space separated list of environment variables formatted as NAME=value.
@@ -100,13 +105,17 @@ It is often convenient to use make files or build scripts to debug an assembly. 
 
 ----
 bin := $(abspath bin)	# use a full path to specify the assembly
-debug: app
-	osascript -e 'tell application "Continuum" to debug "$(bin)/my-app.exe" with "--arg=value --arg2"'
+
+debug-cli: cli
+	osascript -e 'tell application "Continuum" to debug "$(bin)/cli.exe" with "--arg=value --arg2"'
+
+debug-app: app
+	osascript -e 'tell application "Continuum" to debug "$(bin)/MyApp.app"'
 ----
 	
 The debugger's usage should be obvious but it does have one unusual feature: the ability to trace garbage collector roots. You can do this via the contextual menu in the Variables window and trace roots for either a type or a class instance. When the trace finishes a window will popup showing references from GC roots (e.g. locals and statics) to whatever you are tracing.
 
-There are a number of attributes in the System.Diagnostics namespace that customize the behavior of the debugger. The most useful ones Continuum are:
+There are a number of attributes in the System.Diagnostics namespace that customize the behavior of the debugger. The most useful ones for Continuum are:
 
 http://msdn.microsoft.com/en-us/library/system.diagnostics.debuggerbrowsableattribute.aspx[DebuggerBrowsableAttribute] allows you to mark fields or properties which should not be displayed in the debugger. It also allows you to mark a field or property that should be used in place of the type it is within.
 

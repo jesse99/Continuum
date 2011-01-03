@@ -53,9 +53,21 @@ include the percentage of samples that that method appeared in the stack trace
 http://progit.org/
 
 
+* Make sure mcocoa app can be debugged by opening the app bundle.
+* Got some (harmless) exception when source file was newer than assembly:
+	Ignoring BeginInvoke exception:
+	MObjc.Helpers.ContractException: oldName: [null], newName: ["MANPATH"]
+	  at MObjc.Helpers.Contract.Assert (Boolean predicate, System.String mesg) [0x0000d] in /Users/jessejones/Source/mobjc/source/helpers/Contract.cs:160 
+	  at Debugger.VariableItem.Refresh (Mono.Debugger.Soft.ThreadMirror thread) [0x000a8] in /Users/jessejones/Source/Continuum/source/plugins/debugger/VariableItem.cs:135 
+	  at Debugger.VariableItem.RefreshValue (Mono.Debugger.Soft.ThreadMirror thread, System.Object value) [0x0001a] in /Users/jessejones/Source/Continuum/source/plugins/debugger/VariableItem.cs:109 
+	  at Debugger.VariableController.DoReset (Debugger.LiveStackFrame frame) [0x0004a] in /Users/jessejones/Source/Continuum/source/plugins/debugger/VariableController.cs:448 
+	  at Debugger.VariableController.OnBroadcast (System.String name, System.Object value) [0x000f5] in /Users/jessejones/Source/Continuum/source/plugins/debugger/VariableController.cs:74 
+	  at Shared.Broadcaster.Invoke (System.String name, System.Object value) [0x00062] in /Users/jessejones/Source/Continuum/source/shared/Broadcaster.cs:100 
+	  at Debugger.Debugger.OnBreakpoint (Mono.Debugger.Soft.BreakpointEvent e, ResolvedBreakpoint bp) [0x000b8] in /Users/jessejones/Source/Continuum/source/plugins/debugger/Debugger.cs:254 
+	  at Debugger.DebuggerThread+<DoBreakpointEvent>c__AnonStorey14.<>m__34 () [0x00000] in /Users/jessejones/Source/Continuum/source/plugins/debugger/DebuggerThread.cs:239 
+	  at MCocoa.AppHelper.execute (MObjc.NSObject arg) [0x0004b] in /Users/jessejones/Source/mcocoa/source/appkit/AppHelper.cs:190 
+	exited with code 0
 * Make sure monomac works ok:
-	- Continuum needs to treat *.md as text
-	- make sure monomac apps can be debugged (see MonoMacDebuggerSession)
 	- make sure monomac can be built using Continuum
 * Add a simple builder:
 	- kicks in if there are no build files
@@ -63,29 +75,19 @@ http://progit.org/
 	- should be able to build c++, cs, fs, or monomac (if the project contains a xib or nib)
 	- auto-run the result? could have an option for this
 * Work on recent files:
+	- generalize recent files to recent commands? make it per project?
 	- may want a IOpenRecentFile interface
 	- should have an Open method and a DisplayName method
 	- debugger would have to remember debug settings keyed by assembly path
 	- debugging via apple script shouldn't populate recent files
 	- make sure assemblies can be opened and re-opened normally
+	- make sure executable scripts can be opened
 * Build variables with no value don't work so well.
 * Searching for stuff like "\p{Nl}" doesn't work.
 * Make sure none of the language files use patterns like xy* for the word setting.
-* Maybe local files should have these cases:
-	- "foo"	matches the start of file names
-	- " foo" matches the end of file names
-	- " foo " matches within file names
-	- "FOO" matches consecutive upper case letters in file names
-	- or have a context menu?
 * If backspacing a space at the start of a line and UseTabs is false then delete NumSpaces of them?
 * May want to put some of the special key handlers behind interfaces so that they can be customized.
 * May want to add scheme support. See http://coderchrome.org/browse/greatest/0 for example.
-* Do some more work on the debugger:
-	- add an immediate window
-	- breakpoint conditions should be persisted
-	- watchpoint windows Thread
-		` drag and drop to add new variables
-		` draw in gray if the current context does not have the variable in any stack frame
 * Add a generate stub refactor
 	- should this be automatic?
 * Add support for waf colored output?
@@ -179,6 +181,12 @@ http://progit.org/
 * Should DoGetOperatorName handle names like:
 	ObjectModel Error bad operator: op_UnaryNegation_Int32
 	maybe tweak the warning?
+* Do some more work on the debugger:
+	- add an immediate window
+	- breakpoint conditions should be persisted
+	- watchpoint windows Thread
+		` drag and drop to add new variables
+		` draw in gray if the current context does not have the variable in any stack frame
 * Genie effect with auto-complete is distracting?
 * Probably should have a user manual
 	- need an open user manual help menu item

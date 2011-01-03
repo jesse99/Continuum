@@ -29,6 +29,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace Debugger
@@ -104,50 +105,26 @@ namespace Debugger
 		// Used when opening mdb files or exe files (via AppleScript).
 		public void makeWindowControllersNoUI(NSString uses, NSString args, NSString env, NSString workingDir, bool breakInMain)
 		{
-			string path = fileURL().path().ToString();
-			string dir = Path.GetDirectoryName(path);
+			var info = new ProcessStartInfo();
 			
-			if (path.EndsWith(".mdb"))
-				m_executable = Path.Combine(dir, Path.GetFileNameWithoutExtension(path));
+			m_exeDir = DoGetExeDir();
+			m_exe = DoGetExePath();
+			
+			if (DoIsMonomac())
+				DoSetMonomacOptions(info, uses, args, env, workingDir);
 			else
-				m_executable = Path.Combine(dir, path);
+				DoSetCliOptions(info, uses, args, env, workingDir);
 			
 			// The soft debugger returns a VM in EndInvoke even when you pass
 			// it a completely bogus path so we need to do this check. 
-			if (!File.Exists(m_executable))
-				throw new FileNotFoundException(m_executable + " was not found.");
-			
-			ProcessStartInfo info = new ProcessStartInfo();
-			if (!NSObject.IsNullOrNil(args))
-				info.Arguments = string.Format("--debug {0} {1:D}", m_executable, args);
-			else
-				info.Arguments = string.Format("--debug {0}", m_executable);
-			info.FileName = NSObject.IsNullOrNil(uses) ? "mono" : uses.ToString();
-			info.RedirectStandardInput = false;
-			info.RedirectStandardOutput = true;
-			info.RedirectStandardError = true;
-			info.UseShellExecute = false;
-			if (!NSObject.IsNullOrNil(workingDir))
-				info.WorkingDirectory = workingDir.ToString();
-			else
-				info.WorkingDirectory = dir;
+			if (!File.Exists(m_exe))
+				throw new FileNotFoundException(m_exe + " was not found.");
 			
 			Log.WriteLine(TraceLevel.Verbose, "Debugger", "Launching debugger with:");
 			Log.WriteLine(TraceLevel.Verbose, "Debugger", "file: {0}", info.FileName);
 			Log.WriteLine(TraceLevel.Verbose, "Debugger", "working dir: {0}", info.WorkingDirectory);
 			Log.WriteLine(TraceLevel.Verbose, "Debugger", "args: {0}", info.Arguments);
-			if (!NSObject.IsNullOrNil(env))
-			{
-				foreach (string entry in env.ToString().Split(new char[]{' '}, StringSplitOptions.RemoveEmptyEntries))
-				{
-					int i = entry.IndexOf('=');
-					if (i < 0)
-						throw new Exception("Expected an '=' in " + entry);
-						
-					info.EnvironmentVariables.Add(entry.Substring(0, i), entry.Substring(i + 1));
-					Log.WriteLine(TraceLevel.Verbose, "Debugger", "variable: {0}", entry);
-				}
-			}
+			Log.WriteLine(TraceLevel.Verbose, "Debugger", "vars: {0}", DoStringDictToStr(info.EnvironmentVariables));
 			
 			m_debugger = new Debugger(info, breakInMain);
 			
@@ -176,26 +153,15 @@ namespace Debugger
 			get {return m_debugger;}
 		}
 		
+		public bool readFromFileWrapper_ofType_error(NSFileWrapper data, NSString typeName, IntPtr outError)
+		{
+			// fileURL() isn't set in these methods so there isn't much we can do.
+			return true;
+		}
+		
 		public bool readFromData_ofType_error(NSData data, NSString typeName, IntPtr outError)
 		{
-			bool read = false;
-			
-			try
-			{
-				// Don't think fileURL is available here so its hard to do anything too useful.
-				read = true;
-			}
-			catch (Exception e)
-			{
-				NSMutableDictionary userInfo = NSMutableDictionary.Create();
-				userInfo.setObject_forKey(NSString.Create("Couldn't start up the debugger."), Externs.NSLocalizedDescriptionKey);
-				userInfo.setObject_forKey(NSString.Create(e.Message), Externs.NSLocalizedFailureReasonErrorKey);
-				
-				NSObject error = NSError.errorWithDomain_code_userInfo(Externs.Cocoa3Domain, 1, userInfo);
-				Marshal.WriteIntPtr(outError, error);
-			}
-			
-			return read;
+			return true;
 		}
 		
 		#region Protected Methods
@@ -213,6 +179,123 @@ namespace Debugger
 		#endregion
 		
 		#region Private Methods
+		private string DoGetExeDir()
+		{
+			string path = fileURL().path().ToString();
+			if (path.EndsWith(".app"))
+			{
+				path = Path.Combine(path, "Contents");
+				path = Path.Combine(path, "Resources");
+			}
+			else
+			{
+				path = Path.GetDirectoryName(path);	// if we didn't open the app bundle assume we are opening the exe or mdb
+			}
+			
+			return path;
+		}
+		
+		private string DoGetExePath()
+		{
+			string exe = null;
+			
+			string path = fileURL().path().ToString();
+			if (path.EndsWith(".app"))
+			{
+				string candidate = Path.GetFileName(path);
+				candidate = Path.ChangeExtension(candidate, ".exe");
+				candidate = Path.Combine(m_exeDir, candidate);
+				if (File.Exists(candidate))
+				{
+					exe = candidate;
+				}
+				else
+				{
+					string[] candidates = Directory.GetFiles(m_exeDir, "*.exe");
+					if (candidates.Length == 1)
+						exe = candidates[0];
+					else
+						Log.WriteLine(TraceLevel.Error, "Debugger", "Found {0} exe's in {1}", candidates.Length, m_exeDir);
+				}
+			}
+			else if (path.EndsWith(".exe"))
+			{
+				exe = path;
+			}
+			else if (path.EndsWith(".mdb"))
+			{
+				exe = Path.ChangeExtension(path, ".exe");
+			}
+			
+			return exe;
+		}
+		
+		private bool DoIsMonomac()
+		{
+			string dll = Path.Combine(m_exeDir, "MonoMac.dll");
+			return File.Exists(dll);
+		}
+		
+		private void DoSetCommonOptions(ProcessStartInfo info, NSString uses, NSString args, NSString env, NSString workingDir)
+		{
+			if (!NSObject.IsNullOrNil(args))
+				info.Arguments = string.Format("--debug {0} {1:D}", m_exe, args);	// note that the exe should not be the first arg (NSApplication can get confused if so)
+			else
+				info.Arguments = string.Format("--debug {0}", m_exe);
+			
+			info.FileName = NSObject.IsNullOrNil(uses) ? "mono" : uses.ToString();
+			info.RedirectStandardInput = false;
+			info.RedirectStandardOutput = true;
+			info.RedirectStandardError = true;
+			info.UseShellExecute = false;
+			if (!NSObject.IsNullOrNil(workingDir))
+				info.WorkingDirectory = workingDir.ToString();
+			else
+				info.WorkingDirectory = m_exeDir;	// this case is used only when debugging via AppleScript with no using parameter
+			
+			if (!NSObject.IsNullOrNil(env))
+			{
+				// When running an app via a shell the app will get all the environment variables exported
+				// from that shell (e.g. those set in .bash_profile). When running via the Finder only a few
+				// variables are exported (and none from .bash_profile). 
+				//
+				// When running an app via Continuum (with or without the debugger) the app will default
+				// to the variables Continnuum was started up with, which depends upon whether Continuum
+				// was started via the Finder.
+				foreach (string entry in env.ToString().Split(new char[]{' '}, StringSplitOptions.RemoveEmptyEntries))
+				{
+					int i = entry.IndexOf('=');
+					if (i < 0)
+						throw new Exception("Expected an '=' in " + entry);
+					
+					// Environment variables set by the user override existing variables.
+					info.EnvironmentVariables[entry.Substring(0, i)] = entry.Substring(i + 1);
+				}
+			}
+		}
+		
+		private void DoSetCliOptions(ProcessStartInfo info, NSString uses, NSString args, NSString env, NSString workingDir)
+		{
+			DoSetCommonOptions(info, uses, args, env, workingDir);
+		}
+		
+		private void DoSetMonomacOptions(ProcessStartInfo info, NSString uses, NSString args, NSString env, NSString workingDir)
+		{
+			DoSetCommonOptions(info, uses, args, env, workingDir);
+			
+			DoAppendEnvVar(info, "PATH", "/Library/Frameworks/Mono.framework/Versions/Current/bin", ":");
+			DoAppendEnvVar(info, "DYLD_FALLBACK_LIBRARY_PATH", "/Library/Frameworks/Mono.framework/Versions/Current/lib", ":");
+//			DoAppendEnvVar(info, "MONO_ENV_OPTIONS", m_exe, " ");		// debugger hanged on startup when using this
+		}
+		
+		private void DoAppendEnvVar(ProcessStartInfo info, string key, string value, string sep)
+		{
+			if (info.EnvironmentVariables.ContainsKey(key))
+				info.EnvironmentVariables[key] += sep + value;
+			else
+				info.EnvironmentVariables.Add(key, value);
+		}
+		
 		private NSWindow DoCreateCodeWindow()
 		{
 			Boss pluginBoss = ObjectModel.Create("TextWindow");
@@ -307,10 +390,29 @@ namespace Debugger
 				Unused.Value = Functions.NSRunAlertPanel(title, message);
 			}
 		}
+		
+		private string DoStringDictToStr(System.Collections.Specialized.StringDictionary dict)
+		{
+			var builder = new System.Text.StringBuilder();
+			foreach (string key in dict.Keys)
+			{
+				builder.Append(key);
+				string value = dict[key];
+				if (!string.IsNullOrEmpty(value))
+				{
+					builder.Append('=');
+					builder.Append(value);
+				}
+				builder.Append(' ');
+			}
+			
+			return builder.ToString();
+		}
 		#endregion
 		
 		#region Fields
-		private string m_executable;
+		private string m_exeDir;
+		private string m_exe;
 		private Debugger m_debugger;
 		
 		private HashSet<AssemblyMirror> m_assemblies = new HashSet<AssemblyMirror>();
