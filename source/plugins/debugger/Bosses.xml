@@ -9,7 +9,7 @@
 		<Implementation interfaces = "ICodeViewer IDocumentWindowTitle IDocumentExtension ITooltip" name = "CodeViewer"/>
 	</Boss>
 	
-	<Extend name = "TextEditorPlugin">
+	<Extend name = "TextEditor">
 		<Implementation interfaces = "IInterface +ITextContextCommands" name = "ContextMenu"/>
 	</Extend>
 </Bosses>

@@ -25,7 +25,7 @@ using Shared;
 using System;
 using System.IO;
 
-namespace App
+namespace TextView
 {
 	internal sealed class TimeMachineWindowTitle : IDocumentWindowTitle
 	{

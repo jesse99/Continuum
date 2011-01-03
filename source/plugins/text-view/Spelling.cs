@@ -30,7 +30,7 @@ using System.Linq;
 // Allow deprecated methods so that we can continue to run on leopard.
 #pragma warning disable 618
 
-namespace App
+namespace TextView
 {
 	internal sealed class Spelling : ITextContextCommands
 	{

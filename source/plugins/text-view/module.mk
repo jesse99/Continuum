@@ -19,4 +19,4 @@ $(source-files): source/AssemblyVersion.cs source/plugins/$(lib-name)/*.cs
 	@echo "$^" > $@
 
 $(lib-path): $(source-files) $(ui-files)
-	$(CSC) -out:$@ $(CSC_FLAGS) -r:$(ui-resources) -target:library @$<
+	$(CSC) -out:$@ $(CSC_FLAGS) -r:$(ui-resources),Mono.Posix.dll -target:library @$<

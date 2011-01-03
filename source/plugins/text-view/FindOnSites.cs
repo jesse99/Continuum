@@ -28,7 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace App
+namespace TextView
 {
 	internal sealed class FindOnSites : ITextContextCommands
 	{

@@ -7,7 +7,7 @@
 		<Implementation interfaces = "IDisassembler" name = "Disassembler"/>
 	</Boss>
 	
-	<Extend name = "TextEditorPlugin">
+	<Extend name = "TextEditor">
 		<Implementation interfaces = "IInterface +ITextContextCommands" name = "ContextMenu"/>
 	</Extend>
 </Bosses>

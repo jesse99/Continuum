@@ -12,8 +12,6 @@
 		<Implementation interfaces = "ITextEncoding" name = "TextEncoding"/>
 		<Implementation interfaces = "IOpenSelection" name = "OpenSelection"/>
 		<Implementation interfaces = "IUnicodeName" name = "UnicodeName"/>
-		<Implementation interfaces = "IInterface +ITextContextCommands" name = "ShowSpaces"/>
-		<Implementation interfaces = "IInterface +ITextContextCommands" name = "PathCommands"/>
 	</Extend>
 	
 	<Extend name = "TextEditor">
@@ -21,6 +19,8 @@
 		<Implementation interfaces = "ISearchTokens" name = "SearchTokens"/>
 		<Implementation interfaces = "ITextOverlay" name = "TextOverlay"/>
 		<Implementation interfaces = "IMenuHandler" name = "MenuHandler"/>
+		<Implementation interfaces = "IInterface +ITextContextCommands" name = "ShowSpaces"/>
+		<Implementation interfaces = "IInterface +ITextContextCommands" name = "PathCommands"/>
 	</Extend>
 	
 	<Boss name = "TextWindow" singleton = "true">

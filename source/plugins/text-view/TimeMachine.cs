@@ -32,7 +32,7 @@ using System.IO;
 using System.Threading;
 using System.Linq;
 
-namespace App
+namespace TextView
 {
 	internal sealed class TimeMachine : ITextContextCommands, IObserver
 	{

@@ -28,8 +28,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-//using System.Text;
-//using System.Threading;
 
 namespace TextView
 {
@@ -94,10 +92,15 @@ namespace TextView
 				// Get the commands.
 				var watch = new Stopwatch();
 				watch.Start();
-				DoGetEntries(view, m_selection);
+				m_entries.Clear();
+				DoGetEntries(view, m_selection, window);
+				DoGetEntries(view, m_selection, m_boss);
 				
 				if (m_entries.Count == 0)
-					DoGetEntries(view, null);
+				{
+					DoGetEntries(view, null, window);
+					DoGetEntries(view, null, m_boss);
+				}
 				Log.WriteLine("ContextMenu", "took {0:0.000} secs to open the menu", watch.ElapsedMilliseconds/1000.0);
 				
 				m_entries.Sort(this.DoCompareEntry);
@@ -222,17 +225,10 @@ namespace TextView
 			return result;
 		}
 		
-		// TODO:
-		// need to get the commands from the TextView boss
-		// but first need to get commands from the window boss
-		// probably will need to pass a boss into here (it's called twice)
-		private void DoGetEntries(NSTextView view, string selection)
+		private void DoGetEntries(NSTextView view, string selection, Boss boss)
 		{
 			int group = 0;
 			
-			m_entries.Clear();
-			
-			Boss boss = ObjectModel.Create("TextEditorPlugin");	// TODO: move these into TextView
 			bool editable = view.isEditable();
 			if (editable)
 				Contract.Assert(view.respondsToSelector("replaceSelection:"));	// this is fairly lame

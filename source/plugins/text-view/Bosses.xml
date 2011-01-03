@@ -1,5 +1,11 @@
 <Bosses namespaces = "Gear Shared TextView">
-	<Boss name = "TextView" singleton = "true">
+	<Extend name = "TextView">
 		<Implementation interfaces = "IBuildTextContextMenu" name = "BuildTextContextMenu"/>
-	</Boss>
+		<Implementation interfaces = "IInterface +ITextContextCommands" name = "FindOnSites"/>
+		<Implementation interfaces = "IInterface +ITextContextCommands" name = "TimeMachine"/>
+	</Extend>
+	
+	<Extend name = "TextEditor">
+		<Implementation interfaces = "IInterface +ITextContextCommands" name = "Spelling"/>
+	</Extend>
 </Bosses>

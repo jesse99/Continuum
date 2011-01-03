@@ -9,7 +9,7 @@
 		<Implementation interfaces = "IInterface +IOpened +IParseAssembly" name = "ParseAssembly"/>
 	</Extend>
 	
-	<Extend name = "TextEditorPlugin">
+	<Extend name = "TextView">
 		<Implementation interfaces = "IInterface +ITextContextCommands" name = "FindInDatabase"/>
 	</Extend>
 </Bosses>

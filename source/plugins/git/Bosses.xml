@@ -3,7 +3,7 @@
 		<Implementation interfaces = "IInterface +ISccs" name = "Git"/>
 	</Extend>
 	
-	<Extend name = "TextEditorPlugin">
+	<Extend name = "TextEditor">
 		<Implementation interfaces = "IInterface +ITextContextCommands" name = "GitTextCommands"/>
 	</Extend>
 </Bosses>

@@ -63,31 +63,29 @@ public interface Shared.ITextContextCommands
 	internal sealed class Debugger.ContextMenu
 	internal sealed class Disassembler.ContextMenu
 	internal sealed class Git.GitTextCommands
-	internal sealed class ObjectModel.FindInDatabase
 	internal sealed class Subversion.SvnTextCommands
 	internal sealed class TextEditor.PathCommands
 	internal sealed class TextEditor.ShowSpaces
-	
-	internal sealed class App.FindOnSites
+	internal sealed class App.TimeMachine
 	internal sealed class App.ScriptsMenu
 	internal sealed class App.Spelling
-	internal sealed class App.TimeMachine
+	
+	internal sealed class ObjectModel.FindInDatabase
+	internal sealed class App.FindOnSites
 
-TextEditor
-TextView
 
 * Work on text context menus:
-	- move ITextContextCommands into the new plugin
-	- search for ITextContextCommands on both a singleton boss and the window boss
-	- FindInDatabase needs to be on the text editor
-	- do a commit
 	- get the context menu working with the transcript
+	- make sure FindInDatabase and FindOnSites work in transcript
 * Make sure monomac works ok:
 	- Continuum needs to treat *.md as text
-	- Continuum should build with mdtool if there is no build file and the project contains a xib or nib
-	  (or maybe build with mdtool if there is no build file but there are cs files?)
 	- make sure monomac apps can be debugged (see MonoMacDebuggerSession)
 	- make sure monomac can be built using Continuum
+* Add a simple builder:
+	- kicks in if there are no build files
+	- minimal configuration (and none required)
+	- should be able to build c++, cs, fs, or monomac (if the project contains a xib or nib)
+	- auto-run the result? could have an option for this
 * Add Search for Error:
 	- get this working from the transcript
 	- word in f# doesn't seem to work for stuff like FS1000
