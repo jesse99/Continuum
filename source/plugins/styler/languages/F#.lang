@@ -1,7 +1,7 @@
 # f# 2.0 
 Language: f\#
 Globs: *.fs *.fsi *.fsx *.fsscript
-Word: [_\p{Lu}\p{Ll}\p{Lt}\p{Lm}\p{Lo}\p{Nl}][_\p{Lu}\p{Ll}\p{Lt}\p{Lm}\p{Lo}\p{Nl}0-9\p{Pc}\p{Mn}\p{Mc}\p{Cf}]*
+Word: [_\p{Lu}\p{Ll}\p{Lt}\p{Lm}\p{Lo}\p{Nl}0-9\p{Pc}\p{Mn}\p{Mc}\p{Cf}]+
 LineComment: //
 SpacesNotTabs: true
 

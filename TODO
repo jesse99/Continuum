@@ -53,8 +53,6 @@ include the percentage of samples that that method appeared in the stack trace
 http://progit.org/
 
 
-* Word setting in f#.lang doesn't seem to work for stuff like FS1000
-* Do a push.
 * Make sure monomac works ok:
 	- Continuum needs to treat *.md as text
 	- make sure monomac apps can be debugged (see MonoMacDebuggerSession)
@@ -71,6 +69,8 @@ http://progit.org/
 	- debugging via apple script shouldn't populate recent files
 	- make sure assemblies can be opened and re-opened normally
 * Build variables with no value don't work so well.
+* Searching for stuff like "\p{Nl}" doesn't work.
+* Make sure none of the language files use patterns like xy* for the word setting.
 * Maybe local files should have these cases:
 	- "foo"	matches the start of file names
 	- " foo" matches the end of file names
