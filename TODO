@@ -52,19 +52,9 @@ include the percentage of samples that that method appeared in the stack trace
 	
 http://progit.org/
 
-http://www.google.com/search?q=compiler%20error%20FS0058
 
-http://www.google.com/search?q=compiler%20error%20CS1519%20site:msdn.microsoft.com/en-us/library
-
-
-FS0058	CS0116
-
-
-* Add Search for Error:
-	- should be in the TextView boss
-	- word in f# doesn't seem to work for stuff like FS1000
-	- c++
-	- obj-c
+* Word setting in f#.lang doesn't seem to work for stuff like FS1000
+* Do a push.
 * Make sure monomac works ok:
 	- Continuum needs to treat *.md as text
 	- make sure monomac apps can be debugged (see MonoMacDebuggerSession)

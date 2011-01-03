@@ -87,6 +87,23 @@ namespace Shared
 			return builder.ToString();
 		}
 		
+		// Return the str with characters in chars replaced by value.
+		[Pure]
+		public static string ReplaceChars(this string str, string chars, string value)
+		{
+			var builder = new System.Text.StringBuilder(str.Length);
+			
+			for (int i = 0; i < str.Length; ++i)
+			{
+				if (chars.Contains(str[i]))
+					builder.Append(value);
+				else
+					builder.Append(str[i]);
+			}
+			
+			return builder.ToString();
+		}
+		
 		[Pure]
 		public static string ReversePath(this string path)
 		{

@@ -50,18 +50,27 @@ namespace TextView
 		
 		public void Get(string selection, bool editable, List<TextContextItem> items)
 		{
+			var commands = new List<TextContextItem>();
+			
 			if (selection != null && selection.Length < 100 && !selection.Any(c => char.IsWhiteSpace(c)))
 			{
-				items.Add(new TextContextItem(0.1f));
-				
 				if (DoNeedsFindOnApple(selection))
-					items.Add(new TextContextItem("Search in Apple", this.DoFindOnApple, 0.1f));
+					commands.Add(new TextContextItem("Search in Apple", this.DoFindOnApple, 0.1f));
 				
 				if (DoNeedsFindOnMSDN(selection))
-					items.Add(new TextContextItem("Search in MSDN", this.DoFindOnMSDN, 0.1f));
+					commands.Add(new TextContextItem("Search in MSDN", this.DoFindOnMSDN, 0.1f));
+			}
+			
+			if (commands.Count == 0 && selection != null && selection.Length < 2048)
+				items.Add(new TextContextItem("Search in Google", this.DoFindOnGoogle, 0.1f));
+			
+			if (commands.Count > 0)
+			{
+				items.Add(new TextContextItem(0.1f));
+				items.AddRange(commands);
 			}
 		}
-				
+		
 		#region Private Methods
 		private string DoGetWindowSelection()
 		{
@@ -77,7 +86,7 @@ namespace TextView
 				NSRange sel = text.Selection;
 				selection = text.Text.Substring(sel.location, sel.length);
 			}
-
+			
 			return selection;
 		}
 		
@@ -91,6 +100,13 @@ namespace TextView
 		{
 			string selection = DoGetWindowSelection();
 			return selection != null && DoNeedsFindOnMSDN(selection);
+		}
+		
+		private void DoFindOnGoogle()
+		{
+			string selection = DoGetWindowSelection();
+			if (selection != null)
+				DoFindOnGoogle(selection);
 		}
 		
 		private void DoFindOnApple()
@@ -107,15 +123,30 @@ namespace TextView
 				DoFindOnMSDN(selection);
 		}
 		
+		private string DoSanitize(string url)
+		{
+			string result = url.ReplaceChars("*{}\\:<>/+.() %?&", "%20");	// http://www.google.com/support/forum/p/Google%20Analytics/thread?tid=7d92c1d4cd30a285&hl=en
+			result = result.Replace("#", "%23");		// we want to be able to google for c# and f#
+			
+			return result;
+		}
+		
+		private string DoFindOnGoogle(string selection)
+		{
+			string name = DoSanitize(selection);
+			
+			NSURL url = NSURL.URLWithString(NSString.Create("http://www.google.com/search?q={0}", name));
+			Unused.Value = NSWorkspace.sharedWorkspace().openURL(url);
+			
+			return selection;
+		}
+		
 		private string DoFindOnApple(string selection)
 		{
 			// We get better results if Objective-C method names are split into words.
-			string name = selection;
+			string name = DoSanitize(selection);
 			if (name.Length > 2 && char.IsLower(name[0]) && name[1] != '_')
-			{
 				name = name.Replace("_", "%20");
-				name = name.Replace(":", "%20");
-			}
 			
 			NSURL url = NSURL.URLWithString(NSString.Create("http://developer.apple.com/library/mac/search/?q=" + name));			// TODO: probably should use a pref for the sites
 			Unused.Value = NSWorkspace.sharedWorkspace().openURL(url);
@@ -124,15 +155,19 @@ namespace TextView
 		}
 		
 		// TODO: if we can figure out that the selection is a class or method then we should add that to our url
+		// Note that we don't try to special case gcc errors because they don't have a handy identifier like
+		// CS1525 to search for (and the gcc docs don't seem to have a reference section for them).
 		private string DoFindOnMSDN(string selection)
 		{
+			string name = DoSanitize(selection);
+			
 			string str;
 			if (selection.StartsWith("FS") && Contract.ForAll(2, selection.Length, i => char.IsDigit(selection[i])))
-				str = string.Format("http://www.google.com/search?q=compiler%20error%20{0}", selection);	// TODO: as of Jan 2011 msdn does not document F# errors so we'll search the entire internet
+				str = string.Format("http://www.google.com/search?q=compiler%20error%20{0}", name);	// TODO: as of Jan 2011 msdn does not document F# errors so we'll search the entire internet
 			else if (selection.StartsWith("CS") && Contract.ForAll(2, selection.Length, i => char.IsDigit(selection[i])))
-				str = string.Format("http://www.google.com/search?q=compiler%20error%20{0}%20site:msdn.microsoft.com/en-us/library", selection);
+				str = string.Format("http://www.google.com/search?q=compiler%20error%20{0}%20site:msdn.microsoft.com/en-us/library", name);
 			else
-				str = string.Format("http://www.google.com/search?q={0}%20site:msdn.microsoft.com/en-us/library", selection);
+				str = string.Format("http://www.google.com/search?q={0}%20site:msdn.microsoft.com/en-us/library", name);
 			NSURL url = NSURL.URLWithString(NSString.Create(str));
 			Unused.Value = NSWorkspace.sharedWorkspace().openURL(url);
 			
