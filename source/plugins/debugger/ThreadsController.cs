@@ -194,10 +194,17 @@ namespace Debugger
 		private void DoRefreshThreads()
 		{
 			m_threads.Clear();
-			if (m_debugger != null)
+			
+			try
 			{
-				m_threads.AddRange(m_debugger.VM.GetThreads());
-				m_threads.Sort((lhs, rhs) => GetThreadName(lhs).CompareTo(GetThreadName(rhs)));
+				if (m_debugger != null)
+				{
+					m_threads.AddRange(m_debugger.VM.GetThreads());
+					m_threads.Sort((lhs, rhs) => GetThreadName(lhs).CompareTo(GetThreadName(rhs)));
+				}
+			}
+			catch (VMDisconnectedException)
+			{
 			}
 			
 			m_selected = -1;
@@ -216,19 +223,26 @@ namespace Debugger
 				color = NSColor.disabledControlTextColor();
 			}
 			
-			if (m_threads[row].IsCollected)
-				color = NSColor.disabledControlTextColor();
-			
 			NSObject str;
-			if (color != null)
+			try
 			{
-				var attrs = NSMutableDictionary.Create();
-				attrs.setObject_forKey(color, Externs.NSForegroundColorAttributeName);
-				str = NSAttributedString.Create(text, attrs);
+				if (m_threads[row].IsCollected)
+					color = NSColor.disabledControlTextColor();
+				
+				if (color != null)
+				{
+					var attrs = NSMutableDictionary.Create();
+					attrs.setObject_forKey(color, Externs.NSForegroundColorAttributeName);
+					str = NSAttributedString.Create(text, attrs);
+				}
+				else
+				{
+					str = NSString.Create(text);
+				}
 			}
-			else
+			catch (Exception e)
 			{
-				str = NSString.Create(text);
+				str = NSString.Create(e.Message);
 			}
 			
 			return str;
