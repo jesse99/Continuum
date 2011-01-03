@@ -59,24 +59,12 @@ http://www.google.com/search?q=compiler%20error%20CS1519%20site:msdn.microsoft.c
 
 FS0058	CS0116
 
-public interface Shared.ITextContextCommands
-	internal sealed class Debugger.ContextMenu
-	internal sealed class Disassembler.ContextMenu
-	internal sealed class Git.GitTextCommands
-	internal sealed class Subversion.SvnTextCommands
-	internal sealed class TextEditor.PathCommands
-	internal sealed class TextEditor.ShowSpaces
-	internal sealed class App.TimeMachine
-	internal sealed class App.ScriptsMenu
-	internal sealed class App.Spelling
-	
-	internal sealed class ObjectModel.FindInDatabase
-	internal sealed class App.FindOnSites
 
-
-* Work on text context menus:
-	- get the context menu working with the transcript
-	- make sure FindInDatabase and FindOnSites work in transcript
+* Add Search for Error:
+	- should be in the TextView boss
+	- word in f# doesn't seem to work for stuff like FS1000
+	- c++
+	- obj-c
 * Make sure monomac works ok:
 	- Continuum needs to treat *.md as text
 	- make sure monomac apps can be debugged (see MonoMacDebuggerSession)
@@ -86,11 +74,6 @@ public interface Shared.ITextContextCommands
 	- minimal configuration (and none required)
 	- should be able to build c++, cs, fs, or monomac (if the project contains a xib or nib)
 	- auto-run the result? could have an option for this
-* Add Search for Error:
-	- get this working from the transcript
-	- word in f# doesn't seem to work for stuff like FS1000
-	- c++
-	- obj-c
 * Work on recent files:
 	- may want a IOpenRecentFile interface
 	- should have an Open method and a DisplayName method

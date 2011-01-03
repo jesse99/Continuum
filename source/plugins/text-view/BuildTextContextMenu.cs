@@ -93,12 +93,14 @@ namespace TextView
 				var watch = new Stopwatch();
 				watch.Start();
 				m_entries.Clear();
-				DoGetEntries(view, m_selection, window);
+				if (window != null)
+					DoGetEntries(view, m_selection, window);
 				DoGetEntries(view, m_selection, m_boss);
 				
 				if (m_entries.Count == 0)
 				{
-					DoGetEntries(view, null, window);
+					if (window != null)
+						DoGetEntries(view, null, window);
 					DoGetEntries(view, null, m_boss);
 				}
 				Log.WriteLine("ContextMenu", "took {0:0.000} secs to open the menu", watch.ElapsedMilliseconds/1000.0);
@@ -230,8 +232,6 @@ namespace TextView
 			int group = 0;
 			
 			bool editable = view.isEditable();
-			if (editable)
-				Contract.Assert(view.respondsToSelector("replaceSelection:"));	// this is fairly lame
 			foreach (ITextContextCommands i in boss.GetRepeated<ITextContextCommands>())
 			{
 				var items = new List<TextContextItem>();

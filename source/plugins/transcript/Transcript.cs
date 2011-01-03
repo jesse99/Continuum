@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Jesse Jones
+// Copyright (C) 2008-2011 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -25,12 +25,13 @@ using MCocoa;
 using MObjc;
 using Shared;
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 
 namespace Transcript
 {
-	internal sealed class Transcript : ITranscript, IText, IWindow, IFactoryPrefs
+	internal sealed class Transcript : ITranscript, IText, IWindow, ITextContextCommands, IFactoryPrefs
 	{
 		public Boss Boss
 		{
@@ -84,7 +85,7 @@ namespace Transcript
 		{
 			if (m_controller == null)
 			{
-				m_controller = new TranscriptController();
+				m_controller = new TranscriptController(m_boss);
 				Unused.Value = m_controller.Retain();
 			}
 			
@@ -222,6 +223,15 @@ namespace Transcript
 			thread.Start();
 		}
 		
+		public void Get(string selection, bool editable, List<TextContextItem> items)
+		{
+			if (m_controller != null)
+			{
+				items.Add(new TextContextItem(0.9f));
+				items.Add(new TextContextItem("Clear", this.DoClearCommand, 0.91f));
+			}
+		}
+		
 		// This is retarded, but showFindIndicatorForRange only works if the window is aleady visible
 		// and the indicator doesn't always show up if we simply use BeginInvoke.
 		[ThreadModel(ThreadModel.Concurrent)]
@@ -233,6 +243,12 @@ namespace Transcript
 		}
 		
 		#region Private Methods
+		private string DoClearCommand(string selection)
+		{
+			m_controller.clearTranscript(null);
+			return selection;
+		}
+		
 		[ThreadModel(ThreadModel.SingleThread)]
 		private void DoFlush()
 		{
@@ -266,7 +282,7 @@ namespace Transcript
 			
 			if (m_controller == null)
 			{
-				m_controller = new TranscriptController();
+				m_controller = new TranscriptController(m_boss);
 				Unused.Value = m_controller.Retain();
 			}
 			

@@ -1,5 +1,5 @@
 <Bosses namespaces = "Gear Shared Transcript">
 	<Extend name = "Application">
-		<Implementation interfaces = "ITranscript IText IWindow +IFactoryPrefs" name = "Transcript"/>
+		<Implementation interfaces = "ITranscript IText IWindow +IFactoryPrefs +ITextContextCommands" name = "Transcript"/>
 	</Extend>
 </Bosses>

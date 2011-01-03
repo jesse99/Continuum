@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Jesse Jones
+// Copyright (C) 2008-2011 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -33,10 +33,11 @@ namespace Transcript
 	[ExportClass("TranscriptController", "NSWindowController", Outlets = "output")]
 	internal sealed class TranscriptController : NSWindowController, IObserver
 	{
-		public TranscriptController() : base(NSObject.AllocAndInitInstance("TranscriptController"))
+		public TranscriptController(Boss boss) : base(NSObject.AllocAndInitInstance("TranscriptController"))
 		{
 			Unused.Value = NSBundle.loadNibNamed_owner(NSString.Create("transcript"), this);
 			
+			m_boss = boss;
 			m_output = new IBOutlet<NSTextView>(this, "output");
 			
 			Unused.Value = window().setFrameAutosaveName(NSString.Create("transcript window"));
@@ -61,6 +62,11 @@ namespace Transcript
 				DoUpdateBackgroundColor(name, value);
 			else
 				DoUpdateFont(name, value);
+		}
+		
+		public Boss Boss
+		{
+			get {return m_boss;}
 		}
 		
 		public NSTextView TextView
@@ -96,23 +102,23 @@ namespace Transcript
 			
 			return false;
 		}
-
+		
 		public void dirHandler(NSObject sender)
-		{			
+		{
 			NSWindow window = DoGetDirEditor();
 			if (window != null)
 				Unused.Value = window.windowController().Call("dirHandler:", sender);
 		}
-
+		
 		public void clearTranscript(NSObject sender)
-		{			
+		{
 			Unused.Value = sender;
 			
 			m_output.Value.textStorage().mutableString().setString(NSString.Empty);
 		}
-
+		
 		public void openSelection(NSObject sender)
-		{			
+		{
 			Unused.Value = sender;
 			
 			NSRange range = m_output.Value.selectedRange();
@@ -128,7 +134,7 @@ namespace Transcript
 					m_output.Value.setSelectedRange(new NSRange(loc, len));
 			}
 		}
-
+		
 		public void Write(Output type, string text)
 		{
 			switch (type)
@@ -263,6 +269,7 @@ namespace Transcript
 //		private const int MaxCharacters = 1024*1024;
 //		private const int ShrinkBy = 8*1024;
 		
+		private Boss m_boss;
 		private IBOutlet<NSTextView> m_output;
 		private Dictionary<string, NSMutableDictionary> m_attributes = new Dictionary<string, NSMutableDictionary>();
 		#endregion
