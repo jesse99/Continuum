@@ -132,7 +132,6 @@ namespace Debugger
 						{
 							VariableItem newChild = Debug::GetChild.Invoke(thread, this, Value, child.m_index);
 							newChild.autorelease();
-							Contract.Assert(child.AttributedName.ToString() == newChild.AttributedName.ToString(), string.Format("oldName: {0}, newName: {1}", child.AttributedName.ToString(), newChild.AttributedName.ToString()));
 							
 							child.RefreshValue(thread, newChild.m_actualValue);
 						}
@@ -341,12 +340,12 @@ namespace Debugger
 		{
 			NSMutableAttributedString str;
 			
-			string oldType = AttributedType.ToString();
-			if (newName != oldType)
+			string oldName = AttributedName.ToString();
+			if (newName != oldName)
 				if (newName.Length > 0)
 					str = DoCreateString(newName, NSColor.redColor());
 				else
-					str = NSMutableAttributedString.Create(oldType).Retain();	// this will happen if the value goes to null
+					str = NSMutableAttributedString.Create(oldName).Retain();	// this will happen if the value goes to null
 			else
 				str = NSMutableAttributedString.Create(newName).Retain();
 			
