@@ -327,7 +327,7 @@ namespace Debugger
 			// If the value is null then we have to use the declaration type. If the declared type
 			// is the same as the actual type then we also want to use the declaration type
 			// because it will be the one with template arguments filled in. TODO: the later
-			// deosn't work because we always get a TypeDefinition from the declaration (as
+			// doesn't work because we always get a TypeDefinition from the declaration (as
 			// opposed to a GenericInstanceType. However MD has this working somehow...)
 			if (!(parent == null && key == null))
 			{
@@ -349,3 +349,4 @@ namespace Debugger
 		#endregion
 	}
 }
+

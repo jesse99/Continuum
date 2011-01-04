@@ -53,20 +53,6 @@ include the percentage of samples that that method appeared in the stack trace
 http://progit.org/
 
 
-* Make sure mcocoa app can be debugged by opening the app bundle.
-* Got some (harmless) exception when source file was newer than assembly:
-	Ignoring BeginInvoke exception:
-	MObjc.Helpers.ContractException: oldName: [null], newName: ["MANPATH"]
-	  at MObjc.Helpers.Contract.Assert (Boolean predicate, System.String mesg) [0x0000d] in /Users/jessejones/Source/mobjc/source/helpers/Contract.cs:160 
-	  at Debugger.VariableItem.Refresh (Mono.Debugger.Soft.ThreadMirror thread) [0x000a8] in /Users/jessejones/Source/Continuum/source/plugins/debugger/VariableItem.cs:135 
-	  at Debugger.VariableItem.RefreshValue (Mono.Debugger.Soft.ThreadMirror thread, System.Object value) [0x0001a] in /Users/jessejones/Source/Continuum/source/plugins/debugger/VariableItem.cs:109 
-	  at Debugger.VariableController.DoReset (Debugger.LiveStackFrame frame) [0x0004a] in /Users/jessejones/Source/Continuum/source/plugins/debugger/VariableController.cs:448 
-	  at Debugger.VariableController.OnBroadcast (System.String name, System.Object value) [0x000f5] in /Users/jessejones/Source/Continuum/source/plugins/debugger/VariableController.cs:74 
-	  at Shared.Broadcaster.Invoke (System.String name, System.Object value) [0x00062] in /Users/jessejones/Source/Continuum/source/shared/Broadcaster.cs:100 
-	  at Debugger.Debugger.OnBreakpoint (Mono.Debugger.Soft.BreakpointEvent e, ResolvedBreakpoint bp) [0x000b8] in /Users/jessejones/Source/Continuum/source/plugins/debugger/Debugger.cs:254 
-	  at Debugger.DebuggerThread+<DoBreakpointEvent>c__AnonStorey14.<>m__34 () [0x00000] in /Users/jessejones/Source/Continuum/source/plugins/debugger/DebuggerThread.cs:239 
-	  at MCocoa.AppHelper.execute (MObjc.NSObject arg) [0x0004b] in /Users/jessejones/Source/mcocoa/source/appkit/AppHelper.cs:190 
-	exited with code 0
 * Make sure monomac works ok:
 	- make sure monomac can be built using Continuum
 * Add a simple builder:
