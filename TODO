@@ -53,9 +53,7 @@ include the percentage of samples that that method appeared in the stack trace
 http://progit.org/
 
 
-* Make sure monomac works ok:
-	- make sure monomac can be built using Continuum
-* Add a simple builder:
+* Add a default builder:
 	- kicks in if there are no build files
 	- minimal configuration (and none required)
 	- should be able to build c++, cs, fs, or monomac (if the project contains a xib or nib)
