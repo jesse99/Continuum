@@ -208,6 +208,8 @@ namespace Debugger
 			get {return m_path;}
 		}
 		
+		public bool SourceIsUpToDate {get; private set;}
+
 		public string GetTitle(string displayName)
 		{
 			return "[debugging " + m_title + "]";
@@ -286,6 +288,8 @@ namespace Debugger
 		
 		private void DoShowSource()
 		{
+			SourceIsUpToDate = true;
+			
 			if (m_currentView != m_context.SourceFile)
 			{
 				Broadcaster.Invoke("swapping code view", m_boss);
@@ -300,6 +304,7 @@ namespace Debugger
 				{
 					overlay.Text = "Source is newer than the assembly.";
 					overlay.Color = NSColor.colorWithDeviceRed_green_blue_alpha(1.0f, 0.0f, 0.0f, 0.2f);
+					SourceIsUpToDate = false;
 				}
 				else
 				{
@@ -322,6 +327,8 @@ namespace Debugger
 		
 		private void DoShowIL(Context context)
 		{
+			SourceIsUpToDate = true;
+			
 			string name = context.Method.FullName;
 			if (m_currentView != name)
 			{
@@ -363,6 +370,8 @@ namespace Debugger
 		
 		private void DoShowNothing(Context context)
 		{
+			SourceIsUpToDate = true;
+			
 			string name = context.Method.FullName;
 			if (m_currentView != name)
 			{

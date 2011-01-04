@@ -30,16 +30,16 @@ namespace Debugger
 		void Init(DebuggerDocument doc);
 		
 		bool IsShowingSource();
+		bool SourceIsUpToDate {get;}
 		
 		bool CanDisplaySource();
-		
 		bool CanDisplayIL();
 		
 		void ShowSource();
 		void ShowIL();
 		
 		void OpenSource();
-
+		
 		// Full path to the file currently being viewed.
 		// May be null.
 		string Path {get;}
