@@ -78,8 +78,18 @@ namespace Debugger
 		[DeclaredType.Overload]
 		public static TypeMirror GetType(StructMirror parent, int key)
 		{
-			FieldInfoMirror[] fields = parent.Type.GetFields();
-			return fields[key].DeclaringType;
+			PropertyInfoMirror[] props = (from p in parent.Type.GetAllProperties() where p.ShouldDisplay() select p).ToArray();
+			if (key < props.Length)
+			{
+				PropertyInfoMirror prop = props[key];
+				return prop.PropertyType;
+			}
+			else
+			{
+				FieldInfoMirror[] fields = (from f in parent.Type.GetAllFields() where f.ShouldDisplay() select f).ToArray();
+				FieldInfoMirror field = fields[key - props.Length];
+				return field.FieldType;
+			}
 		}
 		
 		[DeclaredType.Overload]
