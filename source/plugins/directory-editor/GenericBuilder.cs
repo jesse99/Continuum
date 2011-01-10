@@ -318,6 +318,16 @@ namespace DirectoryEditor
 				builder.Init(path2);
 			}
 			
+			if (builder == null)
+			{
+				boss = ObjectModel.Create("DefaultBuilder");
+				var can = boss.Get<ICanBuild>();
+				builder = can.GetBuilder(dir);
+				
+				if (builder != null)
+					builder.Init(dir);
+			}
+			
 			return builder;
 		}
 		

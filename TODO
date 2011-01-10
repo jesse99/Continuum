@@ -53,11 +53,21 @@ include the percentage of samples that that method appeared in the stack trace
 http://progit.org/
 
 
-* Add a default builder:
-	- kicks in if there are no build files
-	- minimal configuration (and none required)
-	- should be able to build c++, cs, fs, or monomac (if the project contains a xib or nib)
-	- auto-run the result? could have an option for this
+* Add a default c++ builder:
+	- make sure the targets all work
+		` clean with bin
+		` clean without bin
+	- add build flags (eg -ggdb and -Wall -Wextra -Werror)
+	- add support for variables (these would be extra args?)
+* Add a default c# builder:
+	- should work with monomac (if the project contains a xib or nib and all the source files are cs)
+	- have a build flag to run result
+	- need a build flag for extra references
+* Add a default f# builder:
+	- should work with monomac (if the project contains a xib or nib and all the source files are fs)
+	- have a build flag to run result
+* Make sure mixed projects don't build.
+* Update the readme.
 * Work on recent files:
 	- generalize recent files to recent commands? make it per project?
 	- may want a IOpenRecentFile interface

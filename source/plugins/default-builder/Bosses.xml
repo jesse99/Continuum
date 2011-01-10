@@ -1,0 +1,9 @@
+<Bosses namespaces = "Gear Shared DefaultBuilder">
+	<Boss name = "DefaultBuilder">
+		<Implementation interfaces = "IInterface +ICanBuild" name = "CanBuild"/>
+	</Boss>
+	
+	<Boss name = "CppBuilder">
+		<Implementation interfaces = "IBuilder" name = "CppBuilder"/>
+	</Boss>
+</Bosses>
