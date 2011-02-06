@@ -50,9 +50,6 @@ include the percentage of samples that that method appeared in the stack trace
 [3] http://www.mono-project.com/Mono_LLVM
 
 	
-* Add a default c++ builder:
-	- use gcc if all the files are *.c
-	- add -Wmissing-prototypes if gcc
 * Use .* in lang files.
 * Add a default c# builder:
 	- should work with monomac (if the project contains a xib or nib and all the source files are cs)

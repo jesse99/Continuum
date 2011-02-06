@@ -3,6 +3,10 @@
 		<Implementation interfaces = "IInterface +ICanBuild" name = "CanBuild"/>
 	</Boss>
 	
+	<Boss name = "CBuilder">
+		<Implementation interfaces = "IBuilder" name = "CBuilder"/>
+	</Boss>
+	
 	<Boss name = "CppBuilder">
 		<Implementation interfaces = "IBuilder" name = "CppBuilder"/>
 	</Boss>

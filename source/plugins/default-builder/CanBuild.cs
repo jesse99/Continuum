@@ -33,6 +33,11 @@ namespace DefaultBuilder
 	{
 		public CanBuild()
 		{
+			foreach (string glob in CBuilder.Globs)
+			{
+				m_builders.Add(glob.Substring(1), "CBuilder");
+			}
+
 			foreach (string glob in CppBuilder.Globs)
 			{
 				m_builders.Add(glob.Substring(1), "CppBuilder");

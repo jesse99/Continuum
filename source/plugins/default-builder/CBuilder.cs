@@ -28,7 +28,7 @@ using System.IO;
 
 namespace DefaultBuilder
 {
-	internal sealed class CppBuilder : IBuilder
+	internal sealed class CBuilder : IBuilder
 	{
 		public void Instantiated(Boss boss)
 		{	
@@ -94,22 +94,6 @@ namespace DefaultBuilder
 			m_make.SetBuildVariables();
 		}
 		
-		internal static string GetFiles(string dir, string[] globs)
-		{
-			var builder = new System.Text.StringBuilder();
-			
-			foreach (string glob in globs)
-			{
-				foreach (string path in Directory.GetFiles(dir, glob, SearchOption.AllDirectories))
-				{
-					builder.Append(DoGetRelativePath(dir, path));
-					builder.Append(' ');
-				}
-			}
-			
-			return builder.ToString();
-		}
-		
 		#region Private Methods
 		private void DoCreateMakefile(string makefile)
 		{
@@ -121,14 +105,14 @@ include default.mk
  
 # ------------------------------------------------------------------------
 # Public variables
-GCC ?= g++
+GCC ?= gcc
 DEBUG ?= 1
 
 # See http://developer.apple.com/library/mac/#documentation/DeveloperTools/gcc-4.2.1/gcc/Invoking-GCC.html#Invoking-GCC
 ifeq ($(DEBUG),1)
-	GCC-FLAGS ?= -g -Wall -Wextra -Werror
+	GCC-FLAGS ?= -g -Wall -Wextra -Wmissing-prototypes -Werror
 else
-	GCC-FLAGS ?= -g -Wall -Wextra -O3 -D NDEBUG
+	GCC-FLAGS ?= -g -Wall -Wextra -Wmissing-prototypes -O3 -D NDEBUG
 endif
 
 # ------------------------------------------------------------------------
@@ -167,23 +151,10 @@ dist-clean:
 			string contents = string.Format(@"# Machine generated - DO NOT EDIT
 HEADER-FILES := {0}
 SRC-FILES := {1}
-", GetFiles(m_path, ms_hdrGlobs), GetFiles(m_path, ms_srcGlobs));
+", CppBuilder.GetFiles(m_path, ms_hdrGlobs), CppBuilder.GetFiles(m_path, ms_srcGlobs));
 			
 			string path = Path.Combine(m_path, "default.mk");
 			File.WriteAllText(path, contents);
-		}
-		
-		private static string DoGetRelativePath(string dir, string path)
-		{
-			Contract.Requires(!path.EndsWith("/"));
-			
-			if (path.StartsWith(dir + "/"))
-				path = path.Substring(dir.Length + 1);
-			
-			if (path.Contains(" "))
-				path = string.Format("'{0}'", path);
-				
-			return path;
 		}
 		#endregion
 		
@@ -192,8 +163,8 @@ SRC-FILES := {1}
 		private string m_path;
 		private IBuilder m_make;
 		
-		private static string[] ms_srcGlobs = new string[]{"*.cpp", "*.cxx", "*.cc"};
-		private static string[] ms_hdrGlobs = new string[]{"*.h", "*.hpp", "*.hxx"};
+		private static string[] ms_srcGlobs = new string[]{"*.c"};
+		private static string[] ms_hdrGlobs = new string[]{"*.h"};
 		#endregion
 	}
 }
