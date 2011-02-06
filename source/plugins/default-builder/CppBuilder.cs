@@ -106,19 +106,30 @@ include default.mk
 # ------------------------------------------------------------------------
 # Public variables
 GCC ?= g++
-GCC-FLAGS ?= -g -Wall -Wextra -Werror
+DEBUG ?= 1
+
+# See http://developer.apple.com/library/mac/#documentation/DeveloperTools/gcc-4.2.1/gcc/Invoking-GCC.html#Invoking-GCC
+ifeq ($(DEBUG),1)
+	GCC-FLAGS ?= -g -Wall -Wextra -Werror
+else
+	GCC-FLAGS ?= -g -Wall -Wextra -O3 -D NDEBUG
+endif
 
 # ------------------------------------------------------------------------
 # Internal variables
 dummy := $(shell mkdir bin 2> /dev/null)
 exe-name := {0}
 
+# If there are files you do not want to compile append them to excluded-srcs.
+excluded-srcs := 
+src-files := $(filter-out $(excluded-srcs),$(SRC-FILES))
+
 # ------------------------------------------------------------------------
 # Primary targets
 all: build
 
-build: $(SRC-FILES) $(HEADER-FILES)
-	$(GCC) -o bin/$(exe-name) $(GCC-FLAGS) $(SRC-FILES)
+build: $(src-files) $(HEADER-FILES)
+	$(GCC) -o bin/$(exe-name) $(GCC-FLAGS) $(src-files)
 
 run: build
 	./bin/$(exe-name)

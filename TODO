@@ -50,32 +50,12 @@ include the percentage of samples that that method appeared in the stack trace
 [3] http://www.mono-project.com/Mono_LLVM
 
 	
-http://developer.apple.com/library/mac/#documentation/DeveloperTools/gcc-4.2.1/gcc/Invoking-GCC.html#Invoking-GCC
--g
--v
--framework
--Wall -Wextra -Werror
--Wmissing-prototypes (C only)
--O3
--D foo
--I foo
--lfoo
--Ldir
-
-* Use a makefile:
-	- need a way to exclude files (probably stick these in default.mk too)
-		` maybe could add hooks to the makefile for this
 * Add a default c++ builder:
-	- probably want to use gcc if all the source files are *.c (g++ adds c++ runtime)
-	- make sure c files can be built (and that gcc is used)
-	- add build flags (eg -ggdb and -Wall -Wextra -Werror)
-	- add support for variables (these would be extra args?)
-	- probably want an exclude from build option
-* Use .*
+	- use gcc if all the files are *.c
+	- add -Wmissing-prototypes if gcc
+* Use .* in lang files.
 * Add a default c# builder:
 	- should work with monomac (if the project contains a xib or nib and all the source files are cs)
-	- have a build flag to run result
-	- need a build flag for extra references
 * Add a default f# builder:
 	- should work with monomac (if the project contains a xib or nib and all the source files are fs)
 	- have a build flag to run result
@@ -91,6 +71,7 @@ http://developer.apple.com/library/mac/#documentation/DeveloperTools/gcc-4.2.1/g
 	- make sure executable scripts can be opened
 * Build variables with no value don't work so well.
 * Searching for stuff like "\p{Nl}" doesn't work.
+* Couldn't use command-d to open http://developer.apple.com/library/mac/#documentation/DeveloperTools/gcc-4.2.1/gcc/Invoking-GCC.html#Invoking-GCC
 * Make sure none of the language files use patterns like xy* for the word setting.
 * If backspacing a space at the start of a line and UseTabs is false then delete NumSpaces of them?
 * May want to put some of the special key handlers behind interfaces so that they can be customized.
