@@ -44,8 +44,13 @@ namespace MakeBuilder
 			
 			if (Path.GetFileName(path).ToLower() == "makefile")
 			{
-				Boss boss = ObjectModel.Create("MakeBuilder");
-				builder = boss.Get<IBuilder>();
+				string dir = Path.GetDirectoryName(path);
+				string tmp = Path.Combine(dir, "default.mk");		// if this is present need to use the default builder
+				if (!File.Exists(tmp))
+				{
+					Boss boss = ObjectModel.Create("MakeBuilder");
+					builder = boss.Get<IBuilder>();
+				}
 			}
 			
 			return builder;
@@ -55,4 +60,4 @@ namespace MakeBuilder
 		private Boss m_boss; 
 		#endregion
 	} 
-}	
+}

@@ -50,15 +50,28 @@ include the percentage of samples that that method appeared in the stack trace
 [3] http://www.mono-project.com/Mono_LLVM
 
 	
-http://progit.org/
+http://developer.apple.com/library/mac/#documentation/DeveloperTools/gcc-4.2.1/gcc/Invoking-GCC.html#Invoking-GCC
+-g
+-v
+-framework
+-Wall -Wextra -Werror
+-Wmissing-prototypes (C only)
+-O3
+-D foo
+-I foo
+-lfoo
+-Ldir
 
-
+* Use a makefile:
+	- need a way to exclude files (probably stick these in default.mk too)
+		` maybe could add hooks to the makefile for this
 * Add a default c++ builder:
-	- make sure the targets all work
-		` clean with bin
-		` clean without bin
+	- probably want to use gcc if all the source files are *.c (g++ adds c++ runtime)
+	- make sure c files can be built (and that gcc is used)
 	- add build flags (eg -ggdb and -Wall -Wextra -Werror)
 	- add support for variables (these would be extra args?)
+	- probably want an exclude from build option
+* Use .*
 * Add a default c# builder:
 	- should work with monomac (if the project contains a xib or nib and all the source files are cs)
 	- have a build flag to run result
