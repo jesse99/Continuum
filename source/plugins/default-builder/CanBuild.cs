@@ -37,10 +37,15 @@ namespace DefaultBuilder
 			{
 				m_builders.Add(glob.Substring(1), "CBuilder");
 			}
-
+			
 			foreach (string glob in CppBuilder.Globs)
 			{
 				m_builders.Add(glob.Substring(1), "CppBuilder");
+			}
+			
+			foreach (string glob in CSharpBuilder.Globs)
+			{
+				m_builders.Add(glob.Substring(1), "CSharpBuilder");
 			}
 		}
 		
@@ -90,7 +95,6 @@ namespace DefaultBuilder
 		private Boss m_boss; 
 		private Dictionary<string, string> m_builders = new Dictionary<string, string>
 		{
-			{".cs", null},
 			{".fs", null},
 			
 			{".m", null},		// we need these in our table to ensure that we don't try to build a project which requires multiple compilers

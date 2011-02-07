@@ -10,4 +10,8 @@
 	<Boss name = "CppBuilder">
 		<Implementation interfaces = "IBuilder" name = "CppBuilder"/>
 	</Boss>
+	
+	<Boss name = "CSharpBuilder">
+		<Implementation interfaces = "IBuilder" name = "CSharpBuilder"/>
+	</Boss>
 </Bosses>
