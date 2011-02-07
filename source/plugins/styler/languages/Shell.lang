@@ -4,7 +4,7 @@ Globs: *.sh
 Shebangs: sh ksh csh bash dash zsh
 LineComment: \x23
 
-Comment: \x23 [^\r\n]* [\r\n]	# note that $ won't work quite right with windows line endings
+Comment: \x23 .* $
 Keyword: \b(?:  bind | break | builtin | caller | case | command | continue | declare | dirs | do | done | elif | else | enable | esac | eval | exec | exit | export | fi | for | getopts | hash | if | in | let | local | popd | pushd | read | readonly | return | select | set | shift | shopt | then | times | trap | type | typeset | unalias | unmask | until | while)\b
 Keyword: \b(?: from | get | group | into | join | let | orderby | partial | partial | select | set | value | var | where | where | yield)\b
 Number: (?<= \W) (?: 0[xX])? \d+ (?= \W)

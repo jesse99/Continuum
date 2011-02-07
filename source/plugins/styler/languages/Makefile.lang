@@ -8,7 +8,7 @@ Language: makefile
 Globs: Makefile Makefile.am Make.shared *.make *.mk
 LineComment: \x23
 
-Comment: \x23 [^\r\n]* [\r\n]	# note that $ won't work quite right with windows line endings
+Comment: \x23 .* $
 Keyword: \b(?: (?<! -)define | ended | ifdef | ifndef | ifeq | ifneq | else | endif | include | sinclude | override | export | unexport | VPATH | vpath)\b
 Keyword: \b(?: DEFAULT | IGNORE | POSIX | PRECIOUS | SCCS_GET | SILENT | SUFFIXES)\b	# these should be prepended with \., but that doesn't seem to work
 Keyword: \$\^ | \$@ | \$% | \$\? | \$< | \$\* | \$@D | \$%D | \$\?D | \$<D | \$\*D | \$@F | \$%F | \$\?F | \$<F | \$\*F	# automatic variables

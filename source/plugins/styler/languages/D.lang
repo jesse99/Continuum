@@ -4,7 +4,7 @@ Globs: *.d *.di
 Shebangs: rdmd
 LineComment: //
 
-Comment: // [^\r\n]* [\r\n]		# note that $ won't work quite right with windows line endings
+Comment: // .* $
 Comment: /\* (?: . | \r | \n)*? \*/
 Comment: /\+ (?: . | \r | \n)*? \+/	# TODO: need to be able to nest these
 

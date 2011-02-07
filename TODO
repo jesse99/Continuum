@@ -50,8 +50,8 @@ include the percentage of samples that that method appeared in the stack trace
 [3] http://www.mono-project.com/Mono_LLVM
 
 	
-* Use .* in lang files.
 * Add a default c# builder:
+	- makefile should have an option for embedded resources?
 	- should work with monomac (if the project contains a xib or nib and all the source files are cs)
 * Add a default f# builder:
 	- should work with monomac (if the project contains a xib or nib and all the source files are fs)

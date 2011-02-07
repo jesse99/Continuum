@@ -3,5 +3,5 @@ Language: ignore
 Globs: *.ignore
 IgnoreWhitespace: true
 
-Comment: \x23 [^\r\n]* [\r\n]		# note that $ won't work quite right with windows line endings
+Comment: \x23 .* $
 GendarmeRule: ^R:.+[\r\n]

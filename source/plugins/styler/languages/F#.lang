@@ -5,7 +5,7 @@ Word: [_\p{Lu}\p{Ll}\p{Lt}\p{Lm}\p{Lo}\p{Nl}0-9\p{Pc}\p{Mn}\p{Mc}\p{Cf}]+
 LineComment: //
 SpacesNotTabs: true
 
-Comment: // [^\r\n]* [\r\n]				# note that $ won't work quite right with windows line endings
+Comment: // .* $
 Comment: \(\* (?: . | \r | \n)*? \*\)		# TODO: these comments nest
 Preprocess: (?: \x23if | \x23else | \x23endif | \x23int | \x23line | \x23nowarn | \x23r | \x23reference | \x23I | \x23Include | \x23load | \x23time | \x23help | \x23q | \x23quit) .* $
 Keyword: \b(?: abstract | and | as | assert | base | begin | class | default | delegate | do(?: !?) | done | downcast | downto | elif | else | end | exception | extern | false | finally | for | fun | function | global | if | in | inherit | inline | interface | internal | lazy | let(?: !?) | match | member | module | mutable | namespace | new | null | of | open | or | override | private | public | rec | return(?: !?) | sig | static | struct | then | to | true | try | type | upcast | use(?: !?) | val | void | when | while | with | yield(?: !?))\b	# keywords

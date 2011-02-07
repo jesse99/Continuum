@@ -1,8 +1,8 @@
 Language: m4
 Globs: *.m4
 
-Comment: dnl \s [^\r\n]* [\r\n]	# note that $ won't work quite right with windows line endings
-Comment: \x23 [^\r\n]* [\r\n]
+Comment: dnl \s .* $
+Comment: \x23 .* $
 Keyword: \b(?:  argn | builtin | capitalize | changecom | changequote | changeword | cleardivert | cond | copy | curry | debugfile | debugmode | decr | define | define_blind | defn | divert | divnum | dquote | dquote_elt | downcase | dumpdef | errprint | esyscmd | eval | fatal_error | foreach | foreachq | forloop | format | ifdef | ifelse | include | incr | index | indir | join | joinall | len | m4exit | m4wrap | maketemp | mkstemp | patsubst | popdef | pushdef | quote | rename | regexp | reverse | shift | sinclude | stack_foreach | stack_foreach_lifo | substr | syscmd | sysval | traceoff | traceon | translit | undefine | undivert | upcase)\b
 Keyword: \b(?:  break | case | do | done | else | esac | fi | for | if | in | then)\b
 Number: (?<! [\w\-$?\*\.]) (?: 0[xX])? \d+ (?! [\w\.])
