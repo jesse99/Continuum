@@ -51,6 +51,7 @@ other-resources := $(shell echo $(strip $(other-files)) | sed "s/ /,/g")
 $(app-path): $(exe-path) source/plugins/app/Info.plist $(other-files) $(nib-files) $(plugin-targets)
 	@echo "building $(app-path)"
 	@$(PACK) --app=$(app-path) --exe=$(exe-path) --mono-flags='$(MONO_FLAGS)' --plist=source/plugins/app/Info.plist           \
-	--resources=$(ui-resources),$(other-resources) --resources=English.lproj:$(nib-resources) \
+	--resources=$(ui-resources),$(other-resources),cocoa-pack --resources=English.lproj:$(nib-resources) \
 	--vars=APPNAME:$(app-name),VERSION:$(version),BUILDNUM:$(build-num) \
-	--append-var=PATH:/usr/local/bin --append-var=PKG_CONFIG_PATH:/usr/lib/pkgconfig:/usr/local/lib/pkgconfig
+	--append-var=PATH:/usr/local/bin --append-var=PKG_CONFIG_PATH:/usr/lib/pkgconfig:/usr/local/lib/pkgconfig \
+	--require-mono=2.8
