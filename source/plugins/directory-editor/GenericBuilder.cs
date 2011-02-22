@@ -118,7 +118,8 @@ namespace DirectoryEditor
 			}
 			catch (Exception e)		// started getting "Error creating standard error pipe" with mono 2.6.1 (which is usually wrapped within a TargetInvocationException)
 			{
-				m_process.Dispose();
+				if (m_process != null)
+					m_process.Dispose();
 				AssemblyCache.ReleaseLock();
 				m_process = null;
 				m_state = State.Canceled;
