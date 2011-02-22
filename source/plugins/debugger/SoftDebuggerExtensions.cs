@@ -106,17 +106,54 @@ namespace Debugger
 		{
 			bool should = false;
 			
-			if (!field.HasCustomAttribute("System.ThreadStaticAttribute"))	// TODO: soft debugger crashes if we try to display these
+			if (!field.HasCustomAttribute("System.Runtime.CompilerServices.CompilerGeneratedAttribute"))
 			{
-				if (!field.HasCustomAttribute("System.Runtime.CompilerServices.CompilerGeneratedAttribute"))
+				// All MonoMac objects have a bunch of static selectors that we don't want to display.
+				if (!DoIsMonoMacSelector(field))
 				{
-					var attr = field.GetAttribute<DebuggerBrowsableAttribute>();
-					should = attr == null || attr.State != DebuggerBrowsableState.Never;
+					// They also have a bunch of fields for exports.
+					if (!(field.Name.StartsWith("__mt_") && field.Name.EndsWith("_var")))
+					{
+						// And some annoying fields repeated in base classes.
+						if (!(field.Name == "class_ptr"))
+						{
+							var attr = field.GetAttribute<DebuggerBrowsableAttribute>();
+							should = attr == null || attr.State != DebuggerBrowsableState.Never;
+						}
+					}
 				}
 			}
 			
 			return should;
 		}
+		
+		public static bool ShouldEvaluate(this FieldInfoMirror field)
+		{
+			bool should = true;
+			
+			if (field.HasCustomAttribute("System.ThreadStaticAttribute"))	// TODO: soft debugger crashes if we try to display these
+			{
+				should = false;
+			}
+			
+			return should;
+		}
+		
+		#region Private Methods
+		private static bool DoIsMonoMacSelector(FieldInfoMirror field)
+		{
+			if (field.IsStatic)
+			{
+				if (field.Name.Length >= 3 && field.Name.StartsWith("sel") && char.IsUpper(field.Name[3]))
+				{
+					if (field.FieldType.FullName == "System.IntPtr")
+						return true;
+				}
+			}
+			
+			return false;
+		}
+		#endregion
 	}
 	
 	internal static class MethodMirrorExtensions
@@ -201,10 +238,29 @@ namespace Debugger
 						var attr3 = prop.GetAttribute<DebuggerNonUserCodeAttribute>();
 						if (attr3 == null)
 						{
-							should = true;
+							if (prop.Name != "ClassHandle")	// MonoMac repeated prop
+							{
+								should = true;
+							}
 						}
 					}
 				}
+			}
+			
+			return should;
+		}
+		
+		public static bool ShouldEvaluate(this PropertyInfoMirror prop)
+		{
+			bool should = true;
+			
+			// What we should do here is check for MonoMac.Foundation.ExportAttribute on
+			// the getter, but MethodMirror doesn't provide a way to get the custom attributes...
+			string name = "__mt_" + prop.Name + "_var";
+			FieldInfoMirror field = prop.DeclaringType.GetField(name);
+			if (field != null)
+			{
+				should = false;
 			}
 			
 			return should;
@@ -268,10 +324,13 @@ namespace Debugger
 		{
 			string fullName = typeof(T).FullName;
 			
-			foreach (CustomAttributeDataMirror attr in type.GetCustomAttributes(inherit))
+			if (type.FullName != "MonoMac.Foundation.NSObject+MonoMac_Disposer")
 			{
-				if (attr.Constructor.DeclaringType.FullName == fullName)
-					return attr.Instantiate<T>();
+				foreach (CustomAttributeDataMirror attr in type.GetCustomAttributes(inherit))
+				{
+					if (attr.Constructor.DeclaringType.FullName == fullName)
+						return attr.Instantiate<T>();
+				}
 			}
 			
 			return null;
@@ -316,6 +375,9 @@ namespace Debugger
 			MethodMirror result = null;
 			
 			PropertyInfoMirror prop = type.GetProperty(propName);
+			if (prop != null && !prop.ShouldEvaluate())
+				return null;
+			
 			if (prop != null)
 				result = prop.GetGetMethod(true);
 			

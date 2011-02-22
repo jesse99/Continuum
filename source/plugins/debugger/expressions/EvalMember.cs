@@ -21,7 +21,9 @@
 
 using Mono.Debugger.Soft;
 using MObjc.Helpers;
+using Shared;
 using System;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Debugger
@@ -69,9 +71,7 @@ namespace Debugger
 			}
 			
 			if (result == null)
-			{
-				result = target.VirtualMachine.CreateValue("No member named " + name);
-			}
+				result = target.VirtualMachine.RootDomain.CreateString(string.Empty);	// usually ShouldEvaluate was false
 			
 			return result;
 		}
@@ -82,7 +82,7 @@ namespace Debugger
 			Value result = null;
 			
 			FieldInfoMirror field = mirror.Type.ResolveField(name);
-			if (field != null)
+			if (field != null && field.ShouldEvaluate())
 			{
 				if (field.IsStatic)
 					result = field.DeclaringType.GetValue(field);
@@ -98,7 +98,7 @@ namespace Debugger
 			Value result = null;
 			
 			FieldInfoMirror field = mirror.Type.ResolveField(name);
-			if (field != null)
+			if (field != null && field.ShouldEvaluate())
 			{
 				if (field.IsStatic)
 					result = mirror.Type.GetValue(field);

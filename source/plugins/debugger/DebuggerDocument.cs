@@ -110,8 +110,8 @@ namespace Debugger
 			m_exeDir = DoGetExeDir();
 			m_exe = DoGetExePath();
 			
-			if (DoIsMonomac())
-				DoSetMonomacOptions(info, uses, args, env, workingDir);
+			if (DoIsCocoa())
+				DoSetCocoaOptions(info, uses, args, env, workingDir);
 			else
 				DoSetCliOptions(info, uses, args, env, workingDir);
 			
@@ -179,6 +179,33 @@ namespace Debugger
 		#endregion
 		
 		#region Private Methods
+		private string DoGetCocoaExe()
+		{
+			string exe = null;
+			
+			string path = fileURL().path().ToString();
+			if (path.EndsWith(".app"))
+			{
+				string name = Path.GetFileNameWithoutExtension(path);
+				
+				string candidate = Path.Combine(path, name);
+				if (File.Exists(candidate))
+				{
+					exe = candidate;			// monomac app built with MonoDevelop
+				}
+				else
+				{
+					candidate = Path.Combine(path, "Contents");
+					candidate = Path.Combine(candidate, "MacOS");
+					candidate = Path.Combine(candidate, name);
+					if (File.Exists(candidate))
+						exe = candidate;		// monomac app built with Continnum (or an mcocoa app)
+				}
+			}
+			
+			return exe;
+		}
+		
 		private string DoGetExeDir()
 		{
 			string path = fileURL().path().ToString();
@@ -230,10 +257,17 @@ namespace Debugger
 			return exe;
 		}
 		
-		private bool DoIsMonomac()
+		private bool DoIsCocoa()
 		{
 			string dll = Path.Combine(m_exeDir, "MonoMac.dll");
-			return File.Exists(dll);
+			if (File.Exists(dll))
+				return true;
+			
+			dll = Path.Combine(m_exeDir, "mcocoa.dll");
+			if (File.Exists(dll))
+				return true;
+			
+			return false;
 		}
 		
 		private void DoSetCommonOptions(ProcessStartInfo info, NSString uses, NSString args, NSString env, NSString workingDir)
@@ -279,19 +313,26 @@ namespace Debugger
 			DoSetCommonOptions(info, uses, args, env, workingDir);
 		}
 		
-		private void DoSetMonomacOptions(ProcessStartInfo info, NSString uses, NSString args, NSString env, NSString workingDir)
+		private void DoSetCocoaOptions(ProcessStartInfo info, NSString uses, NSString args, NSString env, NSString workingDir)
 		{
 			DoSetCommonOptions(info, uses, args, env, workingDir);
 			
-			DoAppendEnvVar(info, "PATH", "/Library/Frameworks/Mono.framework/Versions/Current/bin", ":");
-			DoAppendEnvVar(info, "DYLD_FALLBACK_LIBRARY_PATH", "/Library/Frameworks/Mono.framework/Versions/Current/lib", ":");
-//			DoAppendEnvVar(info, "MONO_ENV_OPTIONS", m_exe, " ");		// debugger hanged on startup when using this
+			if (info.FileName == "mono")
+				info.FileName = DoGetCocoaExe() ?? info.FileName;
+			
+			DoPrependEnvVar(info, "DYLD_FALLBACK_LIBRARY_PATH", "/Library/Frameworks/Mono.framework/Versions/Current/lib", ":");
+			DoPrependEnvVar(info, "DYLD_FALLBACK_LIBRARY_PATH", m_exeDir, ":");
+			
+			DoPrependEnvVar(info, "PATH", "/Library/Frameworks/Mono.framework/Versions/Current/bin", ":");
+			DoPrependEnvVar(info, "PATH", m_exeDir, ":");
+			
+//			DoPrependEnvVar(info, "MONO_ENV_OPTIONS", "--debug " + m_exe, " ");		// debugger hanged on startup when using this
 		}
 		
-		private void DoAppendEnvVar(ProcessStartInfo info, string key, string value, string sep)
+		private void DoPrependEnvVar(ProcessStartInfo info, string key, string value, string sep)
 		{
 			if (info.EnvironmentVariables.ContainsKey(key))
-				info.EnvironmentVariables[key] += sep + value;
+				info.EnvironmentVariables[key] = value + sep + info.EnvironmentVariables[key];
 			else
 				info.EnvironmentVariables.Add(key, value);
 		}
