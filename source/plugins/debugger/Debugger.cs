@@ -205,10 +205,17 @@ namespace Debugger
 		{
 			if (DebuggerWindows.WriteEvents)
 				m_transcript.WriteLine(Output.Normal, "Loaded assembly '{0}'", e.Assembly.GetName().Name);
-				
-			e.Assembly.Metadata = AssemblyCache.Load(e.Assembly.Location, false);
 			
-			Broadcaster.Invoke("debugger loaded assembly", e.Assembly);
+			try
+			{
+				e.Assembly.Metadata = AssemblyCache.Load(e.Assembly.Location, false);
+				
+				Broadcaster.Invoke("debugger loaded assembly", e.Assembly);
+			}
+			catch (Exception ee)
+			{
+				m_transcript.WriteLine(Output.Error, "Couldn't load {0} ({1})", e.Assembly.Location, ee.Message);
+			}
 		}
 		
 		internal void OnAssemblyUnload(AssemblyUnloadEvent e)
@@ -437,7 +444,8 @@ namespace Debugger
 				NSString message = NSString.Create(e.Message);
 				NSApplication.sharedApplication().BeginInvoke(() => Functions.NSRunAlertPanel(title, message));
 				
-				ms_debugger.m_vm.Exit(1);
+				if (ms_debugger.m_vm != null)
+					ms_debugger.m_vm.Exit(1);
 			}
 			ms_debugger = null;
 		}
