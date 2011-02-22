@@ -64,6 +64,12 @@ namespace DefaultBuilder
 			IBuilder builder = null;
 			
 			List<string> candidates = DoFindBuilder(dir);
+			if (candidates.Count == 1 && candidates[0] == "CSharpBuilder")
+			{
+				if (DoHasNib(dir))
+					candidates[0] = "MonoMacBuilder";
+			}
+			
 			if (candidates.Count == 1 && candidates[0] != null)
 			{
 				Boss boss = ObjectModel.Create(candidates[0]);
@@ -88,6 +94,21 @@ namespace DefaultBuilder
 			}
 			
 			return candidates;
+		}
+		
+		private bool DoHasNib(string dir)
+		{
+		Console.WriteLine("dir: {0}", dir); Console.Out.Flush();
+			string[] dirs = Directory.GetDirectories(dir, "*.nib", SearchOption.AllDirectories);
+			if (dirs.Length > 0)
+				return true;
+			
+			dirs = Directory.GetFiles(dir, "*.xib", SearchOption.AllDirectories);
+			if (dirs.Length > 0)
+				return true;
+			
+		Console.WriteLine("no nibs");
+			return false;
 		}
 		#endregion
 		

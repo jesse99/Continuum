@@ -14,4 +14,8 @@
 	<Boss name = "CSharpBuilder">
 		<Implementation interfaces = "IBuilder" name = "CSharpBuilder"/>
 	</Boss>
+	
+	<Boss name = "MonoMacBuilder">
+		<Implementation interfaces = "IBuilder" name = "MonoMacBuilder"/>
+	</Boss>
 </Bosses>

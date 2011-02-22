@@ -49,11 +49,28 @@ include the percentage of samples that that method appeared in the stack trace
 [2] http://www.mono-project.com/Compacting_GC
 [3] http://www.mono-project.com/Mono_LLVM
 
-	
-* Add a default c# builder:
-	- should work with monomac (if the project contains a xib or nib and all the source files are cs)
+
+
+* Don't write default.mk if it hasn't changed.
 * Add a default f# builder.
 * Make sure mixed projects don't build.
+* Setting a breakpint didn't work when the window was closed before resuming?
+	- also seem to be problems adding breakpoints when the window was open before debugging started
+* Got a crash closing an assembly?
+* Recent files needs to open scripts instead of running them. Also double-click in dir editor.
+* Get the new mono:
+	- use dmcs
+	- mono --profile=log:report program.exe
+	- --debug-casts works now
+	- review debugger changes (runtime too)
+	- GetValue (FieldMirror, ThreadMirror) (can be used for ThreadStaticAttr fields)
+	- public API for accessing the GC
+	- runtime will no longer load assemblies from the current directory
+	- Monitor.TryEnter (4.0)
+	- new cecil
+	- continuum should require mono 2.10?
+	- f#, fsc and fsi
+* ''' python string didn't work quite right.
 * Update the readme.
 * Work on recent files:
 	- generalize recent files to recent commands? make it per project?

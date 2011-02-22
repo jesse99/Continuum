@@ -1,0 +1,213 @@
+#!/usr/bin/python
+# Used to build Mac OS-X application bundles for mono applications.
+from optparse import OptionParser
+import os
+import shutil
+import stat
+import string
+import sys
+
+def copyDebugFile(file, dst):
+	if os.path.exists(file):
+		shutil.copy(file, dst)
+		
+def copyXib(xib, dstPath):
+	dst = os.path.basename(xib)
+	dst = os.path.splitext(dst)[0] + ".nib"
+	dst = os.path.join(dstPath, dst)
+	os.system("ibtool %s --compile %s" % (xib, dst))
+
+# There is a shutil.copytree, but it copies the .svn directories inside
+# nib bundles.
+def copyTree(src, dst):
+	if os.path.exists(src) and os.path.basename(src)[0] != '.':
+		dstPath = os.path.join(dst, os.path.basename(src))
+		os.mkdir(dstPath)
+		
+		for root, dirs, files in os.walk(src):
+			for file in files:
+				shutil.copy(os.path.join(root, file), dstPath)
+			for dir in dirs:
+				copyTree(os.path.join(root, dir), dstPath)
+			break
+			
+def checkVersion(version):
+	parts = version.split('.')
+	return '"../MacOS/mono-version-check" "$NAME" %s %s || exit 1' % (parts[0], parts[1])
+	
+def getVersionScript():
+	return r'''#/bin/bash
+# This is the same script MonoDevelop generates for monomac.
+APPNAME=$1
+REQUIRED_MAJOR=$2
+REQUIRED_MINOR=$3
+REQUIRED_POINT=0
+if [ $# -gt 3 ]; then
+	REQUIRED_POINT=$4
+fi
+
+VERSION_TITLE="Cannot launch $APPNAME"
+VERSION_NAME=$REQUIRED_MAJOR.$REQUIRED_MINOR
+if [ "x" != "x$REQUIRED_POINT" ]; then
+	VERSION_NAME=$VERSION_NAME.$REQUIRED_POINT
+fi
+VERSION_MSG="$APPNAME requires the Mono Framework version $VERSION_NAME or later."
+DOWNLOAD_URL="http://www.go-mono.com/mono-downloads/download.html"
+
+MONO_VERSION="$(mono --version | grep "Mono JIT compiler version " |  cut -f5 -d\ )"
+MONO_VERSION_MAJOR="$(echo $MONO_VERSION | cut -f1 -d.)"
+MONO_VERSION_MINOR="$(echo $MONO_VERSION | cut -f2 -d.)"
+MONO_VERSION_POINT="$(echo $MONO_VERSION | cut -f3 -d.)"
+if [ -z "$MONO_VERSION_POINT" ]; then MONO_VERSION_POINT=0; fi
+if [ -z "$MONO_VERSION" ] \
+	|| [ $MONO_VERSION_MAJOR -lt $REQUIRED_MAJOR ] \
+	|| [ $MONO_VERSION_MAJOR -eq $REQUIRED_MAJOR -a $MONO_VERSION_MINOR -lt $REQUIRED_MINOR ] \
+	|| [ $MONO_VERSION_MAJOR -eq $REQUIRED_MAJOR -a $MONO_VERSION_MINOR -eq $REQUIRED_MINOR \
+		-a $REQUIRED_POINT -gt 0 -a $MONO_VERSION_POINT -lt $REQUIRED_POINT ] 
+then
+	osascript \
+	-e "set question to display dialog \"$VERSION_MSG\" with title \"$VERSION_TITLE\" buttons {\"Cancel\", \"Download...\"} default button 2" \
+	-e "if button returned of question is equal to \"Download...\" then open location \"$DOWNLOAD_URL\""
+	echo "$VERSION_TITLE"
+	echo "$VERSION_MSG"
+	exit 1
+fi
+'''
+
+parser = OptionParser()
+parser.add_option("--app", 											help="path to the bundle which will be created")
+parser.add_option("--append-var",	action="append", 			help="appends a value onto an environment variable")
+parser.add_option("--exe", 			 								help="path to the executable assembly")
+parser.add_option("--mono-flags",	default="", 					help="flags to use with mono")
+parser.add_option("--plist", 		 									help="path to the Info.plist to copy")
+parser.add_option("--require-mono",	default="2.6", 				help="required mono version")
+parser.add_option("--resources", 		action="append", 			help="files to copy into the resources dir")
+parser.add_option("--vars", 		 									help="{name}s to expand in the plist")
+parser.add_option("--usage", 			action="store_true", default=False,	help="prints usage info and exit")
+
+(options, args) = parser.parse_args()
+
+if options.usage:
+	print "Typical usage looks like this:"
+	print "python cocoa-pack --app=bin/CoolApp.app --mono-flags=--debug --exe=bin/cool-app.exe --plist=Info.plist --resources=English.lproj:MainMenu.nib,Document.nib --vars=VERSION:0.1,APP_NAME:CoolApp"
+	print "--resources may appear multiple times and the localization dir is optional"
+	print "--append-var may appear multiple times and should be written like --append-var=PATH:/some/path"
+	
+else:
+	appName = os.path.splitext(os.path.basename(options.app))[0]	# doesn't include .nib
+	exeName = os.path.splitext(os.path.basename(options.exe))[0]	# doesn't include .exe
+	
+	contentsPath = options.app + "/Contents"
+	macOSPath = contentsPath + "/MacOS"
+	resourcesPath = contentsPath + "/Resources"
+	
+	# Remove the old bundle.
+	if os.path.exists(options.app):
+		shutil.rmtree(options.app)
+	
+	# Create the directories for the new bundle.
+	os.mkdir(options.app)
+	os.mkdir(contentsPath)
+	os.mkdir(macOSPath)
+	os.mkdir(resourcesPath)
+	
+	# Copy the exe into the bundle.
+	shutil.copy(options.exe, resourcesPath)
+	if "--debug" in options.mono_flags:
+		copyDebugFile(options.exe + ".mdb", resourcesPath)
+		copyDebugFile(options.exe + ".xxx", resourcesPath)
+		
+	# Add a PkgInfo file. 
+	file = open(contentsPath + "/PkgInfo", "w")
+	file.write("APPL????")
+	file.close()
+	
+	# Add a mono version check script.
+	path = macOSPath + "/mono-version-check"
+	file = open(path, "w")
+	file.write(getVersionScript())
+	file.close()
+	os.chmod(path, 0x1ED)
+	
+	# Copy the resources into the bundle. 
+	for resources in options.resources:
+		dstPath = resourcesPath
+		parts = resources.split(':')
+		if len(parts) == 2:
+			dstPath = resourcesPath + "/" + parts[0]
+			resources = parts[1]
+			
+			if not os.path.exists(dstPath):
+				os.mkdir(dstPath)
+		
+		for resource in resources.split(','):
+			if os.path.isfile(resource):
+				if resource.endswith(".xib"):
+					copyXib(resource, dstPath)
+				else:
+					shutil.copy(resource, dstPath)
+					if "--debug" in options.mono_flags:
+						copyDebugFile(resource + ".mdb", dstPath)
+						copyTree(resource + ".dSYM", dstPath)
+			else:
+				copyTree(resource, dstPath)
+	
+	# Expand variables in the Info.plist file and write the new plist into the bundle.
+	file = open(options.plist, "r")
+	text = file.read()
+	
+	for entry in options.vars.split(','):
+		name = entry.split(':')[0]
+		value = entry.split(':')[1]
+		text = text.replace("${" + name + "}", value)
+	
+	file = open(contentsPath + "/Info.plist", "w")
+	file.write(text)
+	file.close()
+	
+	# Create a little script to run our assembly using mono. Note that we can't simply
+	# run mono from its normal location or nibs won't load. Also we want to use a hard
+	# link if possible because it means that our process name will be something
+	# reasonable instead of "mono".
+	vars = ""
+	if options.append_var:
+		for entry in options.append_var:
+			i = entry.find(':')
+			name = entry[0:i]
+			value = entry[i+1:]
+			vars += 'export %s="$%s:%s"\n' % (name, name, value)
+	
+	script = """#!/bin/sh
+APP_PATH=`echo \x240 | awk '{split(\x240,patharr,\"/\"); idx=1; while(patharr[idx+3] != \"\") { if (patharr[idx] != \"/\") {printf(\"%s/\", patharr[idx]); idx++ }} }'`
+NAME=`basename \"$APP_PATH\" .app`
+cd \"${APP_PATH}/Contents/MacOS\"
+
+if [ -f \"$NAME\" ]; then rm -f \"$NAME\" ; fi
+if !(ln \x60which mono\x60 \"$NAME\"); then
+	ln -s \x60which mono\x60 \"$NAME\"
+fi
+
+MONO_FRAMEWORK_PATH=/Library/Frameworks/Mono.framework/Versions/Current
+export DYLD_FALLBACK_LIBRARY_PATH="$MONO_FRAMEWORK_PATH/lib:$DYLD_FALLBACK_LIBRARY_PATH:/usr/lib:/usr/local/lib"
+export PATH="$MONO_FRAMEWORK_PATH/bin:$PATH"
+
+cd ../Resources
+$(version-check)
+
+$(vars)
+\"../MacOS/$NAME\" $(mono-flags) $(exe-name).exe $@
+"""
+	script = script.replace("$(app-name)", appName)
+	script = script.replace("$(mono-flags)", options.mono_flags)
+	script = script.replace("$(exe-name)", exeName)
+	script = script.replace("$(vars)", vars)
+	script = script.replace("$(version-check)", checkVersion(options.require_mono))
+	
+	file = open(macOSPath + "/launcher", "w")
+	file.write(script)
+	file.close()
+	
+	# Make the script executable/readable by everyone and writeable
+	# by the current user.
+	os.chmod(macOSPath + "/launcher", 0x1ED)
+	
