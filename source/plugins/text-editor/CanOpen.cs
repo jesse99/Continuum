@@ -22,6 +22,7 @@
 using Gear;
 using Shared;
 using System;
+using System.IO;
 using System.Linq;
 
 namespace TextEditor
@@ -38,25 +39,53 @@ namespace TextEditor
 			get {return m_boss;}
 		}
 		
-		public bool Can(string fileName)
+		public bool Can(string path)
 		{
 			// See if the extension is one we want to handle.
 			// TODO: might want a rich-text language so users can have more
 			// control over this.
-			string ext = System.IO.Path.GetExtension(fileName);
+			string ext = Path.GetExtension(path);
 			if (ext == ".rtf")
 				return true;
 			
 			// See if the extension matches one of our languages.
 			Boss boss = ObjectModel.Create("Stylers");
+			string fileName = Path.GetFileName(path);
 			foreach (IFindLanguage find in boss.GetRepeated<IFindLanguage>())
 			{
 				if (find.FindByExtension(fileName) != null)
 					return true;
 			}
 			
+			// If the file starts with a shebang then it is a script and we want
+			// to open it as a text file.
+			if (ext.Length == 0)
+				if (DoHasShebang(path))
+					return true;
+			
 			return false;
 		}
+		
+		#region Private Methods
+		private bool DoHasShebang(string path)
+		{
+			bool has = false;
+			
+			try
+			{
+				using (var reader = new StreamReader(path))
+				{
+					string line = reader.ReadLine();
+					has = line != null && line.StartsWith("#!");
+				}
+			}
+			catch
+			{
+			}
+			
+			return has;
+		}
+		#endregion
 		
 		#region Fields 
 		private Boss m_boss;
