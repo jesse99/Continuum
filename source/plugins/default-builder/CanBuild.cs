@@ -47,6 +47,11 @@ namespace DefaultBuilder
 			{
 				m_builders.Add(glob.Substring(1), "CSharpBuilder");
 			}
+			
+			foreach (string glob in FSharpBuilder.Globs)
+			{
+				m_builders.Add(glob.Substring(1), "FSharpBuilder");
+			}
 		}
 		
 		public void Instantiated(Boss boss)
@@ -116,8 +121,6 @@ namespace DefaultBuilder
 		private Boss m_boss; 
 		private Dictionary<string, string> m_builders = new Dictionary<string, string>
 		{
-			{".fs", null},
-			
 			{".m", null},		// we need these in our table to ensure that we don't try to build a project which requires multiple compilers
 			{".d", null},
 		};

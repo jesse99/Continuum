@@ -50,12 +50,32 @@ include the percentage of samples that that method appeared in the stack trace
 [3] http://www.mono-project.com/Mono_LLVM
 
 
-* Add a default f# builder.
 * Make sure mixed projects don't build.
 * Setting a breakpint didn't work when the window was closed before resuming?
 	- also seem to be problems adding breakpoints when the window was open before debugging started
 * Got a crash closing an assembly?
 * Recent files needs to open scripts instead of running them. Also double-click in dir editor.
+* Need to handle f# ops:
+	ObjectModel Error  bad operator: op_ColonEquals
+	ObjectModel Error  bad operator: op_Dereference
+	ObjectModel Error  bad operator: op_PipeRight
+	ObjectModel Error  bad operator: op_PipeRight2
+	ObjectModel Error  bad operator: op_PipeRight3
+	ObjectModel Error  bad operator: op_PipeLeft
+	ObjectModel Error  bad operator: op_PipeLeft2
+	ObjectModel Error  bad operator: op_PipeLeft3
+	ObjectModel Error  bad operator: op_ComposeRight
+	ObjectModel Error  bad operator: op_ComposeLeft
+	ObjectModel Error  bad operator: op_Concatenate
+	ObjectModel Error  bad operator: op_Append
+	ObjectModel Error  bad operator: op_Range
+	ObjectModel Error  bad operator: op_RangeStep
+	ObjectModel Error  bad operator: op_Exponentiation
+	ObjectModel Error  bad operator: op_Amp
+	ObjectModel Error  bad operator: op_BooleanAnd
+	ObjectModel Error  bad operator: op_BooleanOr
+	ObjectModel Error  bad operator: op_AddressOf
+	ObjectModel Error  bad operator: op_IntegerAddressOf
 * Get the new mono:
 	- use dmcs
 	- mono --profile=log:report program.exe
