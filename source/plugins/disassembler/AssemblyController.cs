@@ -54,6 +54,7 @@ namespace Disassembler
 		{
 			m_table.setDelegate(null);
 			m_table.setTarget(null);
+			m_table.setDataSource(null);
 			
 			window().release();
 		}
