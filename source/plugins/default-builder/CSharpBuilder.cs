@@ -156,7 +156,7 @@ dist-clean:
 		{
 			string contents = string.Format(@"# Machine generated - DO NOT EDIT
 SRC-FILES := {0}
-", CppBuilder.GetFiles(m_path, ms_srcGlobs));
+", Helpers.GetFiles(m_path, ms_srcGlobs));
 			
 			string path = Path.Combine(m_path, "default.mk");
 			Helpers.WriteFile(path, contents);

@@ -94,22 +94,6 @@ namespace DefaultBuilder
 			m_make.SetBuildVariables();
 		}
 		
-		internal static string GetFiles(string dir, string[] globs)
-		{
-			var builder = new System.Text.StringBuilder();
-			
-			foreach (string glob in globs)
-			{
-				foreach (string path in Directory.GetFiles(dir, glob, SearchOption.AllDirectories))
-				{
-					builder.Append(Helpers.GetRelativePath(dir, path));
-					builder.Append(' ');
-				}
-			}
-			
-			return builder.ToString();
-		}
-		
 		#region Private Methods
 		private void DoCreateMakefile(string makefile)
 		{
@@ -167,7 +151,7 @@ dist-clean:
 			string contents = string.Format(@"# Machine generated - DO NOT EDIT
 HEADER-FILES := {0}
 SRC-FILES := {1}
-", GetFiles(m_path, ms_hdrGlobs), GetFiles(m_path, ms_srcGlobs));
+", Helpers.GetFiles(m_path, ms_hdrGlobs), Helpers.GetFiles(m_path, ms_srcGlobs));
 			
 			string path = Path.Combine(m_path, "default.mk");
 			Helpers.WriteFile(path, contents);

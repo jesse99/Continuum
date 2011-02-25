@@ -41,6 +41,22 @@ namespace DefaultBuilder
 			}
 		}
 		
+		public static string GetFiles(string dir, string[] globs)
+		{
+			var builder = new System.Text.StringBuilder();
+			
+			foreach (string glob in globs)
+			{
+				foreach (string path in Directory.GetFiles(dir, glob, SearchOption.AllDirectories))
+				{
+					builder.Append(Helpers.GetRelativePath(dir, path));
+					builder.Append(' ');
+				}
+			}
+			
+			return builder.ToString();
+		}
+		
 		public static string GetRelativePath(string dir, string path)
 		{
 			Contract.Requires(!path.EndsWith("/"));

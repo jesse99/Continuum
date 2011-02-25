@@ -263,7 +263,7 @@ SRC-FILES := {1}
 RSRC-FILES := {2}
 ", 
 	DoGetCocoaPackPath(),
-	CppBuilder.GetFiles(m_path, ms_srcGlobs), 
+	Helpers.GetFiles(m_path, ms_srcGlobs), 
 	DoGetResourceFiles());
 			
 			string path = Path.Combine(m_path, "default.mk");
