@@ -53,6 +53,7 @@ namespace Disassembler
 		public void windowWillClose(NSObject notification)
 		{
 			m_table.setDelegate(null);
+			m_table.setTarget(null);
 			
 			window().release();
 		}
