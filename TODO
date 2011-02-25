@@ -51,6 +51,8 @@ include the percentage of samples that that method appeared in the stack trace
 
 
 * Recent files needs to open scripts instead of running them. Also double-click in dir editor.
+	- open the file as text if it has a shebang
+	- make sure a weird shebang does something reasonable
 * Need to handle f# ops:
 	ObjectModel Error  bad operator: op_ColonEquals
 	ObjectModel Error  bad operator: op_Dereference

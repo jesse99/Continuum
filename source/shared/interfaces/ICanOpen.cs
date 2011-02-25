@@ -27,6 +27,6 @@ namespace Shared
 	// file can be opened as a Continuum document.
 	public interface ICanOpen : IInterface
 	{
-		bool Can(string fileName);
+		bool Can(string path);
 	}
 }

@@ -38,9 +38,9 @@ namespace Disassembler
 			get {return m_boss;}
 		}
 		
-		public bool Can(string fileName)
+		public bool Can(string path)
 		{
-			string ext = System.IO.Path.GetExtension(fileName);
+			string ext = System.IO.Path.GetExtension(path);
 			
 			return ext == ".exe" || ext == ".dll";
 		}

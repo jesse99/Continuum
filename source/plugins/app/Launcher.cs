@@ -129,12 +129,10 @@ namespace App
 		#region Private Methods
 		private bool DoCanOpen(string path)
 		{
-			string fileName = Path.GetFileName(path);
-			
 			Boss boss = ObjectModel.Create("Application");
 			foreach (var can in boss.GetRepeated<ICanOpen>())
 			{
-				if (can.Can(fileName))
+				if (can.Can(path))
 					return true;
 			}
 			
