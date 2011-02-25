@@ -102,7 +102,7 @@ namespace DefaultBuilder
 			{
 				foreach (string path in Directory.GetFiles(dir, glob, SearchOption.AllDirectories))
 				{
-					builder.Append(DoGetRelativePath(dir, path));
+					builder.Append(Helpers.GetRelativePath(dir, path));
 					builder.Append(' ');
 				}
 			}
@@ -170,20 +170,7 @@ SRC-FILES := {1}
 ", GetFiles(m_path, ms_hdrGlobs), GetFiles(m_path, ms_srcGlobs));
 			
 			string path = Path.Combine(m_path, "default.mk");
-			File.WriteAllText(path, contents);
-		}
-		
-		private static string DoGetRelativePath(string dir, string path)
-		{
-			Contract.Requires(!path.EndsWith("/"));
-			
-			if (path.StartsWith(dir + "/"))
-				path = path.Substring(dir.Length + 1);
-			
-			if (path.Contains(" "))
-				path = string.Format("'{0}'", path);
-				
-			return path;
+			Helpers.WriteFile(path, contents);
 		}
 		#endregion
 		

@@ -154,7 +154,7 @@ SRC-FILES := {1}
 ", CppBuilder.GetFiles(m_path, ms_hdrGlobs), CppBuilder.GetFiles(m_path, ms_srcGlobs));
 			
 			string path = Path.Combine(m_path, "default.mk");
-			File.WriteAllText(path, contents);
+			Helpers.WriteFile(path, contents);
 		}
 		#endregion
 		

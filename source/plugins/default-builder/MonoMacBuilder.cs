@@ -267,7 +267,7 @@ RSRC-FILES := {2}
 	DoGetResourceFiles());
 			
 			string path = Path.Combine(m_path, "default.mk");
-			File.WriteAllText(path, contents);
+			Helpers.WriteFile(path, contents);
 		}
 		
 		private string DoGetResourceFiles()
@@ -282,18 +282,7 @@ RSRC-FILES := {2}
 		
 		private void DoAddFiles(List<string> files, IEnumerable<string> paths)
 		{
-			files.AddRange(from p in paths where !p.Contains("/bin/") select DoGetRelativePath(m_path, p));
-		}
-		
-		private static string DoGetRelativePath(string dir, string path)
-		{
-			if (path.StartsWith(dir + "/"))
-				path = path.Substring(dir.Length + 1);
-			
-			if (path.Contains(" "))
-				path = string.Format("'{0}'", path);
-				
-			return path;
+			files.AddRange(from p in paths where !p.Contains("/bin/") select Helpers.GetRelativePath(m_path, p));
 		}
 		#endregion
 		
