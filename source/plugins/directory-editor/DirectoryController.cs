@@ -151,7 +151,7 @@ namespace DirectoryEditor
 				m_root = null;
 				
 				m_table.setDelegate(null);
-				m_table.reloadData();
+				m_table.setTarget(null);
 				root.release();
 			}
 			

@@ -50,10 +50,6 @@ include the percentage of samples that that method appeared in the stack trace
 [3] http://www.mono-project.com/Mono_LLVM
 
 
-* Make sure mixed projects don't build.
-* Setting a breakpint didn't work when the window was closed before resuming?
-	- also seem to be problems adding breakpoints when the window was open before debugging started
-* Got a crash closing an assembly?
 * Recent files needs to open scripts instead of running them. Also double-click in dir editor.
 * Need to handle f# ops:
 	ObjectModel Error  bad operator: op_ColonEquals
