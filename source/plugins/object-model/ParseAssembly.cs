@@ -657,7 +657,24 @@ namespace ObjectModel
 		[ThreadModel(ThreadModel.SingleThread)]
 		private string DoGetOperatorName(MethodDefinition method)
 		{
-			string name;
+			string name = DoGetNetOperatorName(method);
+			
+			if (name == null)
+				name = DoGetFSharpOperatorName(method);
+				
+			if (name == null)
+			{
+				Log.WriteLine(TraceLevel.Error, "ObjectModel", "bad operator: {0}", method.Name);
+				name = method.Name;
+			}
+			
+			return name;
+		}
+		
+		[ThreadModel(ThreadModel.SingleThread)]
+		private string DoGetNetOperatorName(MethodDefinition method)
+		{
+			string name = null;
 			
 			switch (method.Name)
 			{
@@ -783,10 +800,212 @@ namespace ObjectModel
 				case "op_True":
 					name = "operator true";
 					break;
+			}
+			
+			return name;
+		}
+		
+		[ThreadModel(ThreadModel.SingleThread)]
+		private string DoGetFSharpOperatorName(MethodDefinition method)
+		{
+			string name = null;
+			
+			switch (method.Name)
+			{
+				case "op_Nil":
+					name = "operator []";
+					break;
 					
-				default:
-					Log.WriteLine(TraceLevel.Error, "ObjectModel", "bad operator: {0}", method.Name);
-					name = method.Name;
+				case "op_ColonColon":
+					name = "operator ::";
+					break;
+					
+				case "op_Addition":
+					name = "operator +";
+					break;
+					
+				case "op_Subtraction":
+					name = "operator -";
+					break;
+					
+				case "op_Multiply":
+					name = "operator *";
+					break;
+					
+				case "op_Division":
+					name = "operator /";
+					break;
+					
+				case "op_Exponentiation":
+					name = "operator **";
+					break;
+					
+				case "op_Append":
+					name = "operator @";
+					break;
+					
+				case "op_Concatenate":
+					name = "operator ^";
+					break;
+					
+				case "op_Modulus":
+					name = "operator %";
+					break;
+					
+				case "op_BitwiseAnd":
+					name = "operator &&&";
+					break;
+					
+				case "op_BitwiseOr":
+					name = "operator |||";
+					break;
+					
+				case "op_ExclusiveOr":
+					name = "operator ^^^";
+					break;
+					
+				case "op_LeftShift":
+					name = "operator <<<";
+					break;
+					
+				case "op_LogicalNot":
+					name = "operator ~~~";
+					break;
+					
+				case "op_RightShift":
+					name = "operator >>>";
+					break;
+					
+				case "op_UnaryPlus":
+					name = "operator ~+";
+					break;
+					
+				case "op_UnaryNegation":
+					name = "operator ~-";
+					break;
+					
+				case "op_Equality":
+					name = "operator =";
+					break;
+					
+				case "op_Inequality":
+					name = "operator <>";
+					break;
+					
+				case "op_LessThanOrEqual":
+					name = "operator <=";
+					break;
+					
+				case "op_GreaterThanOrEqual":
+					name = "operator >=";
+					break;
+					
+				case "op_LessThan":
+					name = "operator <";
+					break;
+					
+				case "op_GreaterThan":
+					name = "operator >";
+					break;
+					
+				case "op_Dynamic":
+					name = "operator ?";
+					break;
+					
+				case "op_DynamicAssignment":
+					name = "operator ?<-";
+					break;
+					
+				case "op_PipeRight":
+					name = "operator |>";
+					break;
+					
+				case "op_PipeRight2":
+					name = "operator ||>";
+					break;
+					
+				case "op_PipeRight3":
+					name = "operator |||>";
+					break;
+					
+				case "op_PipeLeft":
+					name = "operator <|";
+					break;
+					
+				case "op_PipeLeft2":
+					name = "operator <||";
+					break;
+					
+				case "op_PipeLeft3":
+					name = "operator <|||";
+					break;
+					
+				case "op_Dereference":
+					name = "operator !";
+					break;
+					
+				case "op_ComposeRight":
+					name = "operator >>";
+					break;
+					
+				case "op_ComposeLeft":
+					name = "operator <<";
+					break;
+					
+ 				case "op_Quotation":
+					name = "operator <@ @>";
+					break;
+					
+ 				case "op_QuotationUntyped":
+					name = "operator <@@ @@>";
+					break;
+					
+				case "op_Splice":
+					name = "operator ~%";
+					break;
+					
+				case "op_SpliceUntyped":
+					name = "operator ~%%";
+					break;
+					
+				case "op_AddressOf":
+					name = "operator ~&";
+					break;
+					
+				case "op_IntegerAddressOf":
+					name = "operator ~&&";
+					break;
+					
+				case "op_BooleanOr":
+					name = "operator ||";
+					break;
+					
+				case "op_BooleanAnd":
+					name = "operator &&";
+					break;
+					
+				case "op_AdditionAssignment":
+					name = "operator +=";
+					break;
+					
+				case "op_SubtractionAssignment":
+					name = "operator -=";
+					break;
+					
+				case "op_MultiplyAssignment":
+					name = "operator *=";
+					break;
+					
+				case "op_DivisionAssignment":
+					name = "operator /=";
+					break;
+					
+				case "op_Range":
+					name = "operator ..";
+					break;
+					
+ 				case "op_RangeStep":
+					name = "operator .. ..";
 					break;
 			}
 			
