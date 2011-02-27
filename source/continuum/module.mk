@@ -54,4 +54,4 @@ $(app-path): $(exe-path) source/plugins/app/Info.plist $(other-files) $(nib-file
 	--resources=$(ui-resources),$(other-resources),cocoa-pack --resources=English.lproj:$(nib-resources) \
 	--vars=APPNAME:$(app-name),VERSION:$(version),BUILDNUM:$(build-num) \
 	--append-var=PATH:/usr/local/bin --append-var=PKG_CONFIG_PATH:/usr/lib/pkgconfig:/usr/local/lib/pkgconfig \
-	--require-mono=2.8
+	--require-mono=2.10
