@@ -50,22 +50,6 @@ include the percentage of samples that that method appeared in the stack trace
 [3] http://www.mono-project.com/Mono_LLVM
 
 
-* Does debugging f# work?
-* Build a new foreshadow
-* Push.
-* Get mono 2.10.1 (may want to get the CSDK package because it contains mdb files).
-* Throw away old continuum caches.
-* Get the new mono:
-	- use dmcs
-	- build all the projects (with --debug-casts), push changes
-	- mono --profile=log:report program.exe
-	- review debugger changes (runtime too)
-	- GetValue (FieldMirror, ThreadMirror) (can be used for ThreadStaticAttr fields)
-	- continuum should require mono 2.10
-	- check in everything
-* Update diassembler:
-	- TargetArchitecture
-	- ModuleAttributes
 * Do code contracts work now? There is an assembly for them...
 * Mono.Collections.Generic.Collection didn't parse quite right.
 * @keyword should not be highlighted (in c#)
@@ -76,7 +60,7 @@ include the percentage of samples that that method appeared in the stack trace
 * Update the readme.
 * Work on the debugger:
 	- ThreadMirror has a TID field which returns the system thread id
-	- can now get values for ThreadStatic fields
+	- GetValue (FieldMirror, ThreadMirror) (can be used for ThreadStaticAttr fields)
 	- StackFrame has GetVisibleVariables
 * Work on recent files:
 	- generalize recent files to recent commands? make it per project?

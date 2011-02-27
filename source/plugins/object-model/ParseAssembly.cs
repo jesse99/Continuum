@@ -369,6 +369,7 @@ namespace ObjectModel
 							break;
 							
 						case MethodAttributes.Private:
+						case MethodAttributes.CompilerControlled:
 							access = 3;
 							break;
 							

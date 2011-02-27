@@ -103,7 +103,6 @@ namespace DefaultBuilder
 		
 		private bool DoHasNib(string dir)
 		{
-		Console.WriteLine("dir: {0}", dir); Console.Out.Flush();
 			string[] dirs = Directory.GetDirectories(dir, "*.nib", SearchOption.AllDirectories);
 			if (dirs.Length > 0)
 				return true;
@@ -112,7 +111,6 @@ namespace DefaultBuilder
 			if (dirs.Length > 0)
 				return true;
 			
-		Console.WriteLine("no nibs");
 			return false;
 		}
 		#endregion
