@@ -50,7 +50,6 @@ include the percentage of samples that that method appeared in the stack trace
 [3] http://www.mono-project.com/Mono_LLVM
 
 
-* @keyword should not be highlighted (in c#)
 * May want to update cecil (and soft debugger?) using update-libraries:
 	$ cp `pkg-config --variable=Libraries cecil` .
 	$ gmcs program.cs -r:Mono.Cecil.dll
