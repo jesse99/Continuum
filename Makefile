@@ -13,7 +13,7 @@ ifdef RELEASE
 	MONO_FLAGS += --desktop --gc=sgen
 else
 	CSC_FLAGS += -checked+ -debug+ -warnaserror+ -warn:4 -nowarn:1591 -d:DEBUG -d:TRACE -d:CONTRACTS_FULL
-	MONO_FLAGS += --desktop --debug --gc=sgen
+	MONO_FLAGS += --desktop --debug=casts --gc=sgen
 endif
 
 ifeq ($(PROFILE),1)
