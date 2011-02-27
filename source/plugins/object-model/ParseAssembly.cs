@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2008 Jesse Jones
+// Copyright (C) 2007-2011 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -23,6 +23,7 @@ using Gear;
 using Gear.Helpers;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Mono.Collections.Generic;
 using Shared;
 using System;
 using System.Collections.Generic;
@@ -54,7 +55,7 @@ namespace ObjectModel
 		// too long a period of time to keep the database locked so our transaction
 		// is around the types, not the assembly.
 		[ThreadModel(ThreadModel.SingleThread)]
-		public void Parse(string path, AssemblyDefinition assembly, string id, bool fullParse)		// threaded
+		public void Parse(string path, AssemblyDefinition assembly, string id, bool fullParse)
 		{
 			if (m_database == null)
 				m_database = new Database(m_path, "ParseAssembly-" + Path.GetFileNameWithoutExtension(m_path));
@@ -65,7 +66,7 @@ namespace ObjectModel
 			{
 				foreach (TypeDefinition type in module.Types)
 				{
-					if (fullParse || type.IsPublic || type.IsNestedPublic || type.IsNestedFamily || type.IsNestedFamilyOrAssembly)
+					if (fullParse || type.IsPublic)
 					{
 						if (!namespaces.Contains(type.Namespace))
 							namespaces.Add(type.Namespace);
@@ -81,6 +82,18 @@ namespace ObjectModel
 		
 		// System.Collections.Generic
 		#region Private Methods
+		[ThreadModel(ThreadModel.SingleThread)]
+		private void DoParseTypes(TypeDefinition type, string id, bool fullParse)
+		{
+			DoParseType(type, id, fullParse);			// max time here is 0.8 secs on a fast machine for type System.Xml.Serialization.XmlSerializationReader (with the old schema)
+			
+			foreach (TypeDefinition nested in type.NestedTypes)
+			{
+				if (fullParse || nested.IsNestedPublic || nested.IsNestedFamily || nested.IsNestedFamilyOrAssembly)
+					DoParseTypes(nested, id, fullParse);
+			}
+		}
+		
 		[ThreadModel(ThreadModel.SingleThread)]
 		private void DoAddNamespaces(HashSet<string> namespaces, string id)
 		{
@@ -168,7 +181,7 @@ namespace ObjectModel
 		}
 		
 		[ThreadModel(ThreadModel.SingleThread)]
-		private void DoParseType(TypeDefinition type, string id, bool fullParse)		// threaded
+		private void DoParseType(TypeDefinition type, string id, bool fullParse)
 		{
 			if (!DoIsGeneratedCode(type))
 			{
@@ -253,10 +266,6 @@ namespace ObjectModel
 						visibility.ToString(),
 						attributes.ToString());
 						
-					if (type.HasConstructors)
-						foreach (MethodDefinition method in type.Constructors)
-							DoParseMethod(type, method, id, fullParse);
-					
 					if (type.HasMethods)
 						foreach (MethodDefinition method in type.Methods)
 							DoParseMethod(type, method, id, fullParse);
@@ -269,7 +278,7 @@ namespace ObjectModel
 		}
 		
 		[ThreadModel(ThreadModel.SingleThread)]
-		private void DoAddSpecialType(TypeReference type)		// threaded
+		private void DoAddSpecialType(TypeReference type)
 		{
 			TypeSpecification spec = type as TypeSpecification;
 			if (spec != null)
@@ -321,7 +330,7 @@ namespace ObjectModel
 		}
 		
 		[ThreadModel(ThreadModel.SingleThread)]
-		private void DoParseMethod(TypeDefinition type, MethodDefinition method, string id, bool fullParse)		// threaded
+		private void DoParseMethod(TypeDefinition type, MethodDefinition method, string id, bool fullParse)
 		{
 			// Note that auto-prop methods count as generated code.
 			if (method.IsGetter || method.IsSetter || !DoIsGeneratedCode(method))
@@ -354,7 +363,7 @@ namespace ObjectModel
 							access = 1;
 							break;
 							
-						case MethodAttributes.Assem:
+						case MethodAttributes.Assembly:
 						case MethodAttributes.FamANDAssem:
 							access = 2;
 							break;
@@ -399,13 +408,13 @@ namespace ObjectModel
 					DoValidateRoot("root_name", method.DeclaringType);
 					
 					string returnName;
-					if (method.ReturnType.ReturnType.IsSpecial())
+					if (method.ReturnType.IsSpecial())
 					{
-						DoAddSpecialType(method.ReturnType.ReturnType);
-						returnName = method.ReturnType.ReturnType.FullName;
+						DoAddSpecialType(method.ReturnType);
+						returnName = method.ReturnType.FullName;
 					}
 					else
-						returnName = DoGetRootName(method.ReturnType.ReturnType);
+						returnName = DoGetRootName(method.ReturnType);
 					
 					m_database.InsertOrReplace("Methods",
 						DoGetDisplayText(method),
@@ -418,15 +427,15 @@ namespace ObjectModel
 						extendName,
 						access.ToString(),
 						method.IsStatic ? "1" : "0",
-						location.First,
-						location.Second.ToString(),
+						location.Item1,
+						location.Item2.ToString(),
 						kind.ToString());
 				}
 			}
 		}
 		
 		[ThreadModel(ThreadModel.SingleThread)]
-		private void DoParseField(TypeDefinition type, FieldDefinition field, string id, bool fullParse)		// threaded
+		private void DoParseField(TypeDefinition type, FieldDefinition field, string id, bool fullParse)
 		{
 			if (!DoIsGeneratedCode(field))
 			{
@@ -486,7 +495,7 @@ namespace ObjectModel
 			var text = new StringBuilder();
 			
 			// return-type
-			text.Append(DoGetDisplayType(method.ReturnType.ReturnType.FullName));
+			text.Append(DoGetDisplayType(method.ReturnType.FullName));
 			text.Append(':');
 			
 			// declaring-type
@@ -558,7 +567,7 @@ namespace ObjectModel
 		}
 		
 		[ThreadModel(ThreadModel.SingleThread)]
-		private string DoGetDisplayGargs(GenericParameterCollection parms)
+		private string DoGetDisplayGargs(Collection<GenericParameter> parms)
 		{
 			var builder = new StringBuilder();
 			
@@ -622,7 +631,7 @@ namespace ObjectModel
 			
 			var fp = type as FunctionPointerType;
 			if (fp != null)
-				DoRemoveGenerics(generics, fp.ReturnType.ReturnType);
+				DoRemoveGenerics(generics, fp.ReturnType);
 			
 			var ts = type as TypeSpecification;
 			if (ts != null)
@@ -1007,6 +1016,10 @@ namespace ObjectModel
  				case "op_RangeStep":
 					name = "operator .. ..";
 					break;
+					
+				case "op_ColonEquals":			// this one wasn't listed in the language reference
+					name = "operator :=";
+					break;
 			}
 			
 			return name;
@@ -1040,7 +1053,7 @@ namespace ObjectModel
 		}
 		
 		[ThreadModel(ThreadModel.Concurrent)]
-		private static string DoGetNameWithoutTick(string name)	// theaded
+		private static string DoGetNameWithoutTick(string name)
 		{
 			return CsHelpers.TrimGeneric(name);
 		}
@@ -1052,7 +1065,7 @@ namespace ObjectModel
 		// bodies or we could perhaps somehow change assembly parsing so that it's done 
 		// with one thread.
 		[ThreadModel(ThreadModel.SingleThread)]
-		private Tuple2<string, int> DoGetSourceAndLine(MethodDefinition method)	// theaded
+		private Tuple<string, int> DoGetSourceAndLine(MethodDefinition method)
 		{
 			string source = string.Empty;
 			int line = -1;
@@ -1078,15 +1091,15 @@ namespace ObjectModel
 				Log.WriteLine(TraceLevel.Error, "Errors", "{0}", e);
 			}
 			
-			return Tuple.Make(source, line);
+			return Tuple.Create(source, line);
 		}
 		
 		// Based on the gendarme code.
 		[ThreadModel(ThreadModel.SingleThread)]
-		private bool DoIsGeneratedCode(TypeReference type)	// theaded
+		private bool DoIsGeneratedCode(TypeDefinition type)
 		{
 			if (type.HasCustomAttributes)
-				if (type.Module.Assembly.Runtime >= TargetRuntime.NET_2_0)
+				if (type.Module.Assembly.MainModule.Runtime >= TargetRuntime.Net_2_0)
 					if (DoHasGeneratedAtribute(type.CustomAttributes))
 						return true;
 			
@@ -1104,7 +1117,7 @@ namespace ObjectModel
 		}
 		
 		[ThreadModel(ThreadModel.SingleThread)]
-		private bool DoIsGeneratedCode(MethodDefinition method)	// theaded
+		private bool DoIsGeneratedCode(MethodDefinition method)
 		{
 			if (method.HasCustomAttributes)
 				if (DoHasGeneratedAtribute(method.CustomAttributes))
@@ -1114,7 +1127,7 @@ namespace ObjectModel
 		}
 		
 		[ThreadModel(ThreadModel.SingleThread)]
-		private bool DoIsGeneratedCode(FieldDefinition field)	// theaded
+		private bool DoIsGeneratedCode(FieldDefinition field)
 		{
 			if (field.HasCustomAttributes)
 				if (DoHasGeneratedAtribute(field.CustomAttributes))
@@ -1124,7 +1137,7 @@ namespace ObjectModel
 		}
 		
 		[ThreadModel(ThreadModel.SingleThread)]
-		private bool DoHasGeneratedAtribute(CustomAttributeCollection attrs)	// theaded
+		private bool DoHasGeneratedAtribute(Collection<CustomAttribute> attrs)
 		{
 			foreach (CustomAttribute attr in attrs)
 			{

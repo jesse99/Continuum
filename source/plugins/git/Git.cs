@@ -40,7 +40,7 @@ namespace Git
 			try
 			{
 				var result = DoCommand(null, "help");
-				if (result.First.Contains("usage") && string.IsNullOrEmpty(result.Second) && result.Third == 0)
+				if (result.Item1.Contains("usage") && string.IsNullOrEmpty(result.Item2) && result.Item3 == 0)
 					m_installled = true;
 			}
 			catch
@@ -76,7 +76,7 @@ namespace Git
 			if (m_installled && DoIsControlled(oldPath))
 			{
 				var result = DoCommand(oldPath, "mv '{0}' '{1}'", oldPath, newPath);
-				if (string.IsNullOrEmpty(result.Second) && result.Third == 0)
+				if (string.IsNullOrEmpty(result.Item2) && result.Item3 == 0)
 					renamed = true;
 			}
 			
@@ -143,7 +143,7 @@ namespace Git
 				try
 				{
 					var result = DoCommand(path, "status '{0}'", path);
-					if (string.IsNullOrEmpty(result.Second) && result.Third == 0)
+					if (string.IsNullOrEmpty(result.Item2) && result.Item3 == 0)
 						controlled = true;
 				}
 				catch (Exception e)
@@ -165,8 +165,8 @@ namespace Git
 				try
 				{
 					var result = DoCommand(path, "status -s '{0}'", path);
-					if (string.IsNullOrEmpty(result.Second) && result.Third == 0)
-						if (result.First.Trim().StartsWith("M "))
+					if (string.IsNullOrEmpty(result.Item2) && result.Item3 == 0)
+						if (result.Item1.Trim().StartsWith("M "))
 							modified = true;
 				}
 				catch (Exception e)
@@ -179,12 +179,12 @@ namespace Git
 			return modified;
 		}
 		
-		private Tuple3<string, string, int> DoCommand(string path, string format, params object[] args)
+		private Tuple<string, string, int> DoCommand(string path, string format, params object[] args)
 		{
 			return DoCommand(path, string.Format(format, args));
 		}
 		
-		private Tuple3<string, string, int> DoCommand(string path, string command)
+		private Tuple<string, string, int> DoCommand(string path, string command)
 		{
 			string stdout, stderr;
 			int err;
@@ -213,16 +213,16 @@ namespace Git
 				err = process.ExitCode;
 			}
 			
-			return Tuple.Make(stdout, stderr, err);
+			return Tuple.Create(stdout, stderr, err);
 		}
 		
 		private void DoBlame(string path)
 		{
 			var result = DoCommand(path, "blame --date=relative '{0}'", path);
-			if (!string.IsNullOrEmpty(result.Second))
-				throw new InvalidOperationException(result.Second);
-			else if (result.Third != 0)
-				throw new InvalidOperationException(string.Format("git result code was {0}", result.Third));
+			if (!string.IsNullOrEmpty(result.Item2))
+				throw new InvalidOperationException(result.Item2);
+			else if (result.Item3 != 0)
+				throw new InvalidOperationException(string.Format("git result code was {0}", result.Item3));
 			
 			Boss boss = ObjectModel.Create("FileSystem");
 			var fs = boss.Get<IFileSystem>();
@@ -232,7 +232,7 @@ namespace Git
 			{
 				using (StreamWriter writer = new StreamWriter(file))
 				{
-					writer.WriteLine("{0}", result.First);
+					writer.WriteLine("{0}", result.Item1);
 				}
 				
 				boss = ObjectModel.Create("Application");
@@ -250,19 +250,19 @@ namespace Git
 		private void DoCheckout(string path)
 		{
 			var result = DoCommand(path, "checkout '{0}'", path);
-			if (!string.IsNullOrEmpty(result.Second))
-				throw new InvalidOperationException(result.Second);
-			else if (result.Third != 0)
-				throw new InvalidOperationException(string.Format("git result code was {0}", result.Third));
+			if (!string.IsNullOrEmpty(result.Item2))
+				throw new InvalidOperationException(result.Item2);
+			else if (result.Item3 != 0)
+				throw new InvalidOperationException(string.Format("git result code was {0}", result.Item3));
 		}
 		
 		private void DoDiff(string path)
 		{
 			var result = DoCommand(path, "diff --no-color --ignore-all-space '{0}'", path);
-			if (!string.IsNullOrEmpty(result.Second))
-				throw new InvalidOperationException(result.Second);
-			else if (result.Third != 0)
-				throw new InvalidOperationException(string.Format("git result code was {0}", result.Third));
+			if (!string.IsNullOrEmpty(result.Item2))
+				throw new InvalidOperationException(result.Item2);
+			else if (result.Item3 != 0)
+				throw new InvalidOperationException(string.Format("git result code was {0}", result.Item3));
 			
 			Boss boss = ObjectModel.Create("FileSystem");
 			var fs = boss.Get<IFileSystem>();
@@ -272,7 +272,7 @@ namespace Git
 			{
 				using (StreamWriter writer = new StreamWriter(file))
 				{
-					writer.WriteLine("{0}", result.First);
+					writer.WriteLine("{0}", result.Item1);
 				}
 				
 				boss = ObjectModel.Create("Application");
@@ -311,10 +311,10 @@ namespace Git
 		private void DoLog(string path)
 		{
 			var result = DoCommand(path, "log --no-color --relative-date '{0}'", path);
-			if (!string.IsNullOrEmpty(result.Second))
-				throw new InvalidOperationException(result.Second);
-			else if (result.Third != 0)
-				throw new InvalidOperationException(string.Format("git result code was {0}", result.Third));
+			if (!string.IsNullOrEmpty(result.Item2))
+				throw new InvalidOperationException(result.Item2);
+			else if (result.Item3 != 0)
+				throw new InvalidOperationException(string.Format("git result code was {0}", result.Item3));
 			
 			Boss boss = ObjectModel.Create("FileSystem");
 			var fs = boss.Get<IFileSystem>();
@@ -324,7 +324,7 @@ namespace Git
 			{
 				using (StreamWriter writer = new StreamWriter(file))
 				{
-					writer.WriteLine("{0}", result.First);
+					writer.WriteLine("{0}", result.Item1);
 				}
 				
 				boss = ObjectModel.Create("Application");

@@ -179,7 +179,7 @@ namespace Disassembler
 				if (type.GenericArguments != null)
 					name += "`" + (name.Count(c => c == ',') + 1);
 				
-				TypeDefinition td = entry.Value.MainModule.Types[name];
+				TypeDefinition td = entry.Value.MainModule.GetType(name);
 				if (td != null)
 				{
 					string text = td.Disassemble(entry.Key);
@@ -197,12 +197,12 @@ namespace Disassembler
 		{
 			foreach (KeyValuePair<string, AssemblyDefinition> entry in DoGetLocalAssemblies())
 			{
-				TypeDefinition td = entry.Value.MainModule.Types[method.DeclaringType.FullName];
+				TypeDefinition td = entry.Value.MainModule.GetType(method.DeclaringType.FullName);
 				if (td != null)
 				{
 					bool found = false;
 			
-					foreach (MethodDefinition candidate in td.Methods.GetMethod(method.Name))
+					foreach (MethodDefinition candidate in td.Methods.Where(m => m.Name == method.Name))
 					{
 						if (candidate.Parameters.Count == method.Parameters.Length)
 						{

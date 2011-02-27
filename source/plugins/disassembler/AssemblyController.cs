@@ -24,7 +24,8 @@ using Gear.Helpers;
 using MCocoa;
 using MObjc;
 using Mono.Cecil;
-using Mono.Cecil.Binary;
+//using Mono.Cecil.Binary;
+using Mono.Collections.Generic;
 using Shared;
 using System;
 using System.Collections.Generic;
@@ -144,14 +145,11 @@ namespace Disassembler
 			DoAppendList(builder, "Attributes:", assembly.CustomAttributes, i => assembly.CustomAttributes[i].ToText(true));
 			builder.AppendLine("Culture: " + (assembly.Name.Culture.Length > 0 ? assembly.Name.Culture: "neutral"));
 			builder.AppendLine("Entry Point: " + (assembly.EntryPoint != null ? assembly.EntryPoint.ToString() : "none"));
-			builder.AppendLine("Flags: " + assembly.Name.Flags);
 			builder.AppendLine("Hash: " + (assembly.Name.Hash != null && assembly.Name.Hash.Length > 0 ? BitConverter.ToString(assembly.Name.Hash) : "none"));
 			builder.AppendLine("Hash Algorithm: " + assembly.Name.HashAlgorithm);
-			builder.AppendLine("Kind: " + assembly.Kind);
 			builder.AppendLine("MetadataToken: " + assembly.MetadataToken);
 			builder.AppendLine("Name: " + assembly.Name.Name);
 			builder.AppendLine("PublicKeyToken: " + (assembly.Name.PublicKeyToken != null ? BitConverter.ToString(assembly.Name.PublicKeyToken) : "none"));
-			builder.AppendLine("Runtime: " + assembly.Runtime);
 			DoAppendList(builder, "Security:", assembly.SecurityDeclarations);
 			builder.AppendLine("Version: " + assembly.Name.Version);
 			
@@ -159,24 +157,26 @@ namespace Disassembler
 			{
 				builder.AppendLine();
 				
+				builder.AppendLine("Architecture: " + module.Architecture);
 				DoAppendList(builder, "Assembly References:", module.AssemblyReferences, i => module.AssemblyReferences[i].FullName);
 				DoAppendList(builder, "Attributes:", module.CustomAttributes, i => module.CustomAttributes[i].ToText(true));
-				DoAppendList(builder, "Extern Types:", module.ExternTypes, i => module.ExternTypes[i].FullName);
-				builder.AppendLine("Image Characteristics: " + (module.Image != null ? module.Image.PEFileHeader.Characteristics.ToString() : "no image"));
-				builder.AppendLine("Is Main: " + (module.Main ? "true" : "false"));
-				DoAppendList(builder, "Member References:", module.MemberReferences, i => module.MemberReferences[i].ToString());
+				DoAppendList(builder, "Exported Types:", module.ExportedTypes, i => module.ExportedTypes[i].FullName);
+				builder.AppendLine("Is Main: " + (module.IsMain ? "true" : "false"));
+				builder.AppendLine("Kind: " + module.Kind);
 				builder.AppendLine("MetadataToken: " + module.MetadataToken);
 				builder.AppendLine("Module Name: " + module.Name);
-				builder.AppendLine("Path: " + (module.Image != null && module.Image.FileInformation != null ? module.Image.FileInformation.FullName : "none"));
-				builder.AppendLine("Runtime Flags: " + (module.Image != null ? module.Image.CLIHeader.Flags.ToString() : "no image"));
-				DoAppendList(builder, "Type References:", module.TypeReferences, i => module.TypeReferences[i].FullName);
+				DoAppendList(builder, "Module References:", module.ModuleReferences, i => module.ModuleReferences[i].Name);
+				builder.AppendLine(string.Format("Qualified Name: {0}", assembly.MainModule.FullyQualifiedName));
+				DoAppendList(builder, "Resources:", module.ModuleReferences, i => module.Resources[i].Name);
+				builder.AppendLine("Runtime: " + module.Runtime);
 			}
 			
 			DoShowInfo(builder.ToString(), assembly.Name.Name);
 		}
 		
 		// SecurityDeclarationCollection isn't an IList or even an ICollection.
-		private void DoAppendList(System.Text.StringBuilder builder, string name, SecurityDeclarationCollection c)
+		// (tho it is now, so presumbably we could clean this code up a bit).
+		private void DoAppendList(System.Text.StringBuilder builder, string name, Collection<SecurityDeclaration> c)
 		{
 			var l = new List<SecurityDeclaration>();
 			

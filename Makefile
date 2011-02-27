@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------
 # Public variables
-CSC ?= gmcs
+CSC ?= dmcs
 MONO ?= mono
 PACK ?= cocoa-pack
 SMOKE ?= smoke

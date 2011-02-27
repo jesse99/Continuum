@@ -81,7 +81,7 @@ namespace App
 				
 				int index = Array.IndexOf(m_languages, lang.ToString());
 				if (index < m_languages.Length)
-					m_globs.Add(Tuple.Make(glob, index));
+					m_globs.Add(Tuple.Create(glob, index));
 				else
 					Console.Error.WriteLine("Couldn't find a language for glob: {0}, lang: {1:D}", glob, lang);
 			}
@@ -96,9 +96,9 @@ namespace App
 			string glob = getter.Run();
 			if (!string.IsNullOrEmpty(glob))
 			{
-				if (!m_globs.Exists(g => g.First == glob))
+				if (!m_globs.Exists(g => g.Item1 == glob))
 				{
-					m_globs.Add(Tuple.Make(glob, 0));
+					m_globs.Add(Tuple.Create(glob, 0));
 					reloadData();
 					
 					int row = m_globs.Count - 1;
@@ -153,10 +153,10 @@ namespace App
 			switch (col.identifier().description())
 			{
 				case "1":
-					return NSString.Create(m_globs[row].First);
+					return NSString.Create(m_globs[row].Item1);
 				
 				case "2":
-					return NSNumber.Create(m_globs[row].Second);
+					return NSNumber.Create(m_globs[row].Item2);
 				
 				default:
 					Contract.Assert(false, "bad col: " + col.identifier());
@@ -172,11 +172,11 @@ namespace App
 			switch (col.identifier().description())
 			{
 				case "1":
-					m_globs[row] = m_globs[row].SetFirst(value.description());
+					m_globs[row] = Tuple.Create(value.description(), m_globs[row].Item2);
 					break;
 				
 				case "2":
-					m_globs[row] = m_globs[row].SetSecond(value.Call("intValue").To<int>());
+					m_globs[row] = Tuple.Create(m_globs[row].Item1, value.Call("intValue").To<int>());
 					break;
 				
 				default:
@@ -213,9 +213,9 @@ namespace App
 			
 			foreach (var entry in m_globs)
 			{
-				string language = DoGetLanguage(entry.Second);
-				if (entry.First.Length > 0)
-					dict.setObject_forKey(NSString.Create(language), NSString.Create(entry.First));
+				string language = DoGetLanguage(entry.Item2);
+				if (entry.Item1.Length > 0)
+					dict.setObject_forKey(NSString.Create(language), NSString.Create(entry.Item1));
 			}
 			
 			NSUserDefaults defaults = NSUserDefaults.standardUserDefaults();
@@ -234,10 +234,10 @@ namespace App
 				int result = 0;
 				
 				if (result == 0)
-					result = lhs.First.CompareTo(rhs.First);
+					result = lhs.Item1.CompareTo(rhs.Item1);
 				
 				if (result == 0)
-					result = DoGetLanguage(lhs.Second).CompareTo(DoGetLanguage(rhs.Second));
+					result = DoGetLanguage(lhs.Item2).CompareTo(DoGetLanguage(rhs.Item2));
 					
 				return result;
 			});
@@ -250,10 +250,10 @@ namespace App
 				int result = 0;
 				
 				if (result == 0)
-					result = DoGetLanguage(lhs.Second).CompareTo(DoGetLanguage(rhs.Second));
+					result = DoGetLanguage(lhs.Item2).CompareTo(DoGetLanguage(rhs.Item2));
 					
 				if (result == 0)
-					result = lhs.First.CompareTo(rhs.First);
+					result = lhs.Item1.CompareTo(rhs.Item1);
 				
 				return result;
 			});
@@ -267,7 +267,7 @@ namespace App
 		#endregion
 		
 		#region Fields
-		private List<Tuple2<string, int>> m_globs = new List<Tuple2<string, int>>();
+		private List<Tuple<string, int>> m_globs = new List<Tuple<string, int>>();
 		private NSPopUpButtonCell m_popup;
 		private string[] m_languages;
 		#endregion

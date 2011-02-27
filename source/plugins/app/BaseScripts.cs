@@ -75,7 +75,7 @@ namespace App
 		
 		protected abstract void RemoveScriptsFromMenu();
 		
-		protected abstract Tuple2<NSMenu, int> GetScriptsLocation();
+		protected abstract Tuple<NSMenu, int> GetScriptsLocation();
 		
 		protected abstract void Execute(int index);
 		
@@ -246,7 +246,7 @@ namespace App
 		
 		private void DoUpdateMenu()
 		{
-			Tuple2<NSMenu, int> loc = GetScriptsLocation();
+			Tuple<NSMenu, int> loc = GetScriptsLocation();
 			
 			Boss boss = ObjectModel.Create("Application");
 			var handler = boss.Get<IMenuHandler>();
@@ -265,7 +265,7 @@ namespace App
 				
 				var item = NSMenuItem.Create(name, "appHandler:", app.delegate_());
 				item.setTag(tag);
-				loc.First.insertItem_atIndex(item, loc.Second);
+				loc.Item1.insertItem_atIndex(item, loc.Item2);
 				
 				int k = i;
 				handler.Register(this, tag, () => Execute(k), this.IsEnabled);

@@ -459,8 +459,11 @@ namespace TextEditor
 					
 					if (controller.Language != null && !controller.UsesTabs)
 					{
-						this.insertText(controller.SpacesText);
-						return true;
+						if (! NSObject.IsNullOrNil(controller.SpacesText))
+						{
+							this.insertText(controller.SpacesText);
+							return true;
+						}
 					}
 				}
 			}

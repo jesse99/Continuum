@@ -139,6 +139,7 @@ build: $(src-files)
 run: build
 	$(MONO) $(MONO-FLAGS) bin/$(exe-name)
 
+# Note that this doesn't work (with mono 2.10)
 exe-path := $(abspath bin/$(exe-name))
 debug: build
 	osascript -e 'tell application ""Continuum"" to debug ""$(exe-path)""'

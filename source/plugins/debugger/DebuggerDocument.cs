@@ -387,16 +387,18 @@ namespace Debugger
 			
 			if (assembly.Metadata != null)
 			{
+				builder.AppendLine(string.Format("Architecture: {0}", assembly.Metadata.MainModule.Architecture));
 				builder.AppendLine(string.Format("Assembly: {0}", assembly.Metadata.Name.Name));
+				builder.AppendLine(string.Format("Attributes: {0}", assembly.Metadata.Name.Attributes));
 				builder.AppendLine(string.Format("Culture: {0}", !string.IsNullOrEmpty(assembly.Metadata.Name.Culture) ? assembly.Metadata.Name.Culture : "neutral"));
-				builder.AppendLine(string.Format("Version: {0}", assembly.Metadata.Name.Version));
-				builder.AppendLine(string.Format("Kind: {0}", assembly.Metadata.Kind));
-				builder.AppendLine(string.Format("Runtime: {0}", assembly.Metadata.Runtime));
-				builder.AppendLine(string.Format("Flags: {0}", assembly.Metadata.Name.Flags));
-				builder.AppendLine(string.Format("HashAlgorithm: {0}", assembly.Metadata.Name.HashAlgorithm));
 				builder.AppendLine(string.Format("Hash: {0}", assembly.Metadata.Name.Hash != null && assembly.Metadata.Name.Hash.Length > 0 ? BitConverter.ToString(assembly.Metadata.Name.Hash) : "none"));
+				builder.AppendLine(string.Format("HashAlgorithm: {0}", assembly.Metadata.Name.HashAlgorithm));
+				builder.AppendLine(string.Format("Kind: {0}", assembly.Metadata.MainModule.Kind));
 				builder.AppendLine(string.Format("PublicKey: {0}", assembly.Metadata.Name.PublicKey != null && assembly.Metadata.Name.PublicKey.Length > 0 ? BitConverter.ToString(assembly.Metadata.Name.PublicKey) : "none"));
 				builder.AppendLine(string.Format("PublicKeyToken: {0}", assembly.Metadata.Name.PublicKeyToken != null ? BitConverter.ToString(assembly.Metadata.Name.PublicKeyToken) : "none"));
+				builder.AppendLine(string.Format("Qualified Name: {0}", assembly.Metadata.MainModule.FullyQualifiedName));
+				builder.AppendLine(string.Format("Runtime: {0}", assembly.Metadata.MainModule.Runtime));
+				builder.AppendLine(string.Format("Version: {0}", assembly.Metadata.Name.Version));
 			}
 			
 			builder.AppendLine(string.Format("Location: {0}", assembly.Location));

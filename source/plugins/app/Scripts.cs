@@ -70,13 +70,13 @@ namespace App
 			}
 		}
 		
-		protected override Tuple2<NSMenu, int> GetScriptsLocation()
+		protected override Tuple<NSMenu, int> GetScriptsLocation()
 		{
 			NSApplication app = NSApplication.sharedApplication();
 			NSMenu menu = app.Call("textMenu").To<NSMenu>();
 			int at = menu.indexOfItemWithTarget_andAction(app.delegate_(), "openScripts:") - 1;
 			
-			return Tuple.Make(menu, at);
+			return Tuple.Create(menu, at);
 		}
 		
 		protected override void Execute(int index)

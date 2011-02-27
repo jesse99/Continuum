@@ -47,7 +47,7 @@ namespace Shared
 				DateTime time = File.GetLastWriteTime(path);
 				if (assembly == null || time > entry.Time)
 				{
-					assembly = AssemblyFactory.GetAssembly(path);
+					assembly = AssemblyDefinition.ReadAssembly(path);
 					entry = new Entry(assembly, time);
 					ms_entries[path] = entry;
 				}
@@ -102,12 +102,12 @@ namespace Shared
 				{
 					// For some reason we have to force the Mdb assembly to load. 
 					// If we don't it isn't found.
-					Unused.Value = typeof(Mono.Cecil.Mdb.MdbFactory);
+					Unused.Value = typeof(Mono.Cecil.Mdb.MdbReader);
 					try
 					{
 						foreach (ModuleDefinition module in assembly.Modules)
 						{
-							module.LoadSymbols();		// required if we want to access source and line info
+							module.ReadSymbols();		// required if we want to access source and line info
 						}
 					}
 					catch (FileNotFoundException)
@@ -117,6 +117,13 @@ namespace Shared
 					catch (FormatException)
 					{
 						// mdb file is invalid or doesn't match the assembly
+					}
+					catch (ArgumentOutOfRangeException e)
+					{
+						// TODO: we hit this when trying to parse f# assemblies
+						// Afaict this is a bug in cecil and/or fsc (MonoDevelop won't
+						// debug F# assemblies for example).
+						Console.Error.WriteLine("Failed to read symbols for {0}: {1}", assembly.Name.Name, e.Message);
 					}
 					
 					m_loadedSymbols = true;

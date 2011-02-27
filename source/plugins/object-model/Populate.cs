@@ -22,7 +22,7 @@
 using Gear;
 using Gear.Helpers;
 using Mono.Cecil;
-using Mono.Cecil.Binary;
+//using Mono.Cecil.Binary;
 using Shared;
 using System;
 using System.Collections.Generic;
@@ -513,11 +513,6 @@ namespace ObjectModel
 				// not an assembly
 				m_blackList.Add(path);
 			}
-			catch (ImageFormatException)
-			{
-				// not an assembly
-				m_blackList.Add(path);
-			}
 			catch (FormatException)
 			{
 				// mdb doesn't match assembly
@@ -697,7 +692,7 @@ namespace ObjectModel
 		[ThreadModel(ThreadModel.SingleThread)]
 		private void DoQueueReferencedAssemblies(AssemblyDefinition assembly, string path)
 		{
-			var resolver = (BaseAssemblyResolver) assembly.Resolver;
+			var resolver = new DefaultAssemblyResolver();
 			resolver.AddSearchDirectory(Path.GetDirectoryName(path));
 			
 			foreach (ModuleDefinition module in assembly.Modules)
@@ -711,13 +706,11 @@ namespace ObjectModel
 							AssemblyDefinition ad = resolver.Resolve(nr);	// this is a little inefficient because we load the assembly twice, but the load is not the bottleneck...
 							m_resolvedAssemblies.Add(nr.FullName);
 							
-							Image image = ad.MainModule.Image;
 							Log.WriteLine(TraceLevel.Verbose, "ObjectModel", "queuing referenced {0} {1} {2}", nr.Name, nr.Culture, nr.Version);
-							
 							lock (m_lock)
 							{
 //		Console.WriteLine("adding referenced file {0} for thread {1}", image.FileInformation.FullName, Thread.CurrentThread.ManagedThreadId);
-								m_files.Add(image.FileInformation.FullName);	// note that we don't need to pulse because we execute within the thread
+								m_files.Add(ad.MainModule.FullyQualifiedName);	// note that we don't need to pulse because we execute within the thread
 							}
 						}
 					}

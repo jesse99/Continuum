@@ -22,6 +22,7 @@
 using Gear;
 using Gear.Helpers;
 using Mono.Cecil;
+using Mono.Collections.Generic;
 using Shared;
 using System;
 using System.Collections.Generic;
@@ -170,7 +171,7 @@ namespace ObjectModel
 			if (path != null)
 			{
 				AssemblyDefinition asm = AssemblyCache.Load(path, false);
-				type = asm.MainModule.Types[fullName];
+				type = asm.MainModule.GetType(fullName);
 				if (type != null)
 				{
 					if (m_assembly == null)
@@ -443,7 +444,7 @@ namespace ObjectModel
 			m_writer.Write(DoGetQualifiedTypeName(type, false));
 			if (type.IsEnum)
 			{
-				FieldDefinition field = type.Fields.GetField("value__");
+				FieldDefinition field = type.Fields.SingleOrDefault(f => f.Name == "value__");
 				if (field != null && field.FieldType.FullName != "System.Int32")
 				{
 					m_writer.Write(" : ");
@@ -475,7 +476,7 @@ namespace ObjectModel
 			m_writer.WriteLine();
 		}
 		
-		private void DoAppendCustomAttributes(string indent, CustomAttributeCollection attrs)
+		private void DoAppendCustomAttributes(string indent, Collection<CustomAttribute> attrs)
 		{
 			foreach (CustomAttribute attr in attrs)
 			{
@@ -484,7 +485,7 @@ namespace ObjectModel
 			}
 		}
 		
-		private void DoAppendSecurity(string indent, SecurityDeclarationCollection secs)
+		private void DoAppendSecurity(string indent, Collection<SecurityDeclaration> secs)
 		{
 			foreach (SecurityDeclaration sec in secs)
 			{
@@ -498,9 +499,9 @@ namespace ObjectModel
 			// constructors
 			if (includeCtors)
 			{
-				foreach (MethodDefinition method in type.Constructors)
+				foreach (MethodDefinition method in type.Methods)
 				{
-					if (!method.IsPrivate)
+					if (!method.IsPrivate && method.IsConstructor)
 						DoGetCtor(type, method);
 				}
 			}
@@ -526,7 +527,7 @@ namespace ObjectModel
 			// methods
 			foreach (MethodDefinition method in type.Methods)
 			{
-				if (!method.IsPrivate)
+				if (!method.IsPrivate && !method.IsConstructor)
 				{
 					if (!method.IsGetter && !method.IsSetter && !method.IsAddOn && !method.IsRemoveOn && !method.IsFire)
 					{
@@ -735,7 +736,7 @@ namespace ObjectModel
 				string name;
 				if (method.Name != "op_Implicit" && method.Name != "op_Explicit")
 				{
-					builder.Append(DoGetQualifiedTypeName(method.ReturnType.ReturnType, true));
+					builder.Append(DoGetQualifiedTypeName(method.ReturnType, true));
 					name = DoGetMethodName(method);
 					builder.AppendFormat(" {0}", name);
 				}
@@ -896,10 +897,10 @@ namespace ObjectModel
 					return "operator/=";
 				
 				case "op_Implicit":
-					return "implicit operator " + DoGetQualifiedTypeName(method.ReturnType.ReturnType, true);
+					return "implicit operator " + DoGetQualifiedTypeName(method.ReturnType, true);
 				
 				case "op_Explicit":
-					return "explicit operator " + DoGetQualifiedTypeName(method.ReturnType.ReturnType, true);
+					return "explicit operator " + DoGetQualifiedTypeName(method.ReturnType, true);
 				
 				default:
 					return method.Name;
@@ -931,7 +932,7 @@ namespace ObjectModel
 			builder.Append(");");
 		}
 		
-		private void DoGetGenericParams(StringBuilder builder, GenericParameterCollection pc)
+		private void DoGetGenericParams(StringBuilder builder, Collection<GenericParameter> pc)
 		{
 			builder.Append("<");
 			for (int i = 0; i < pc.Count; ++i)
@@ -944,7 +945,7 @@ namespace ObjectModel
 			builder.Append(">");
 		}
 		
-		private void DoGetGenericArgs(StringBuilder builder, GenericArgumentCollection gc)
+		private void DoGetGenericArgs(StringBuilder builder, Collection<TypeReference> gc)
 		{
 			builder.Append("<");
 			for (int i = 0; i < gc.Count; ++i)
@@ -972,7 +973,7 @@ namespace ObjectModel
 			{
 				switch (attrs & MethodAttributes.MemberAccessMask)
 				{
-					case MethodAttributes.Compilercontrolled:
+					case MethodAttributes.CompilerControlled:
 						builder.Append("compiler ");
 						break;
 					
@@ -984,7 +985,7 @@ namespace ObjectModel
 						builder.Append("protected&internal ");
 						break;
 					
-					case MethodAttributes.Assem:
+					case MethodAttributes.Assembly:
 						builder.Append("internal ");
 						break;
 					
@@ -1028,7 +1029,7 @@ namespace ObjectModel
 		{
 			switch (attrs & FieldAttributes.FieldAccessMask)
 			{
-				case FieldAttributes.Compilercontrolled:
+				case FieldAttributes.CompilerControlled:
 					builder.Append("compiler ");
 					break;
 					

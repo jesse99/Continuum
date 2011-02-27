@@ -21,8 +21,10 @@
 
 using Gear.Helpers;
 using Mono.Cecil;
+using Mono.Collections.Generic;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security;
 using System.Security.Permissions;
 
@@ -35,11 +37,10 @@ namespace Shared
 		{
 			var args = new List<string>();
 			
-			attr.Resolve ();						// we need to do this so things like the enums used within arguments show up correctly
-			for (int i = 0; i < attr.ConstructorParameters.Count; ++i)
+			for (int i = 0; i < attr.ConstructorArguments.Count; ++i)
 			{
-				TypeReference ptype = attr.Constructor.Parameters[i].ParameterType;
-				object pvalue = attr.ConstructorParameters[i];
+				TypeReference ptype = attr.ConstructorArguments[i].Type;
+				object pvalue = attr.ConstructorArguments[i].Value;
 				
 				args.Add(ArgToString(ptype, pvalue, includeNamespace, true));
 			}
@@ -47,40 +48,37 @@ namespace Shared
 			TypeDefinition type = attr.Constructor.DeclaringType.Resolve();
 			if (type != null)
 			{
-				foreach (System.Collections.DictionaryEntry d in attr.Properties)
+				foreach (CustomAttributeNamedArgument d in attr.Properties)
 				{
-					PropertyDefinition[] props = type.Properties.GetProperties((string) d.Key);
-					if (props.Length == 1)
+					if (type.Properties.Count(p => p.Name == d.Name) == 1)
 					{
-						TypeReference ptype = props[0].PropertyType;
-						object pvalue = d.Value;
+						TypeReference ptype = d.Argument.Type;
+						object pvalue = d.Argument.Value;
 						
-						args.Add(string.Format("{0} = {1}", d.Key, ArgToString(ptype, pvalue, includeNamespace, true)));
+						args.Add(string.Format("{0} = {1}", d.Name, ArgToString(ptype, pvalue, includeNamespace, true)));
 					}
 					else
-						args.Add(string.Format("{0} = {1}", d.Key, ArgToString(d.Value)));
+						args.Add(string.Format("{0} = {1}", d.Name, ArgToString(d.Argument.Value)));
 				}
 				
-				foreach (System.Collections.DictionaryEntry d in attr.Fields)
+				foreach (CustomAttributeNamedArgument d in attr.Fields)
 				{
-					FieldDefinition field = type.Fields.GetField((string) d.Key);
+					TypeReference ptype = d.Argument.Type;
+					object pvalue = d.Argument.Value;
 					
-					TypeReference ptype = field.FieldType;
-					object pvalue = d.Value;
-					
-					args.Add(string.Format("{0} = {1}", d.Key, ArgToString(ptype, pvalue, includeNamespace, true)));
+					args.Add(string.Format("{0} = {1}", d.Name, ArgToString(ptype, pvalue, includeNamespace, true)));
 				}
 			}
 			else
 			{
-				foreach (System.Collections.DictionaryEntry d in attr.Properties)
+				foreach (CustomAttributeNamedArgument d in attr.Properties)
 				{
-					args.Add(string.Format("{0} = {1}", d.Key, ArgToString(d.Value)));
+					args.Add(string.Format("{0} = {1}", d.Name, ArgToString(d.Argument.Value)));
 				}
 				
-				foreach (System.Collections.DictionaryEntry d in attr.Fields)
+				foreach (CustomAttributeNamedArgument d in attr.Fields)
 				{
-					args.Add(string.Format("{0} = {1}", d.Key, ArgToString(d.Value)));
+					args.Add(string.Format("{0} = {1}", d.Name, ArgToString(d.Argument.Value)));
 				}
 			}
 			
@@ -98,7 +96,7 @@ namespace Shared
 				return string.Format("[{0}({1})]", name, string.Join(", ", args.ToArray()));
 		}
 		
-		public static bool HasAttribute(this CustomAttributeCollection attrs, string name)
+		public static bool HasAttribute(this Collection<CustomAttribute> attrs, string name)
 		{
 			foreach (CustomAttribute attr in attrs)
 			{
@@ -142,6 +140,45 @@ namespace Shared
 		
 		public static string ToText(this SecurityDeclaration sec, bool includeNamespace)
 		{
+			var builder = new System.Text.StringBuilder();
+			
+			if (includeNamespace)
+				builder.AppendFormat("[System.Security.Permissions.SecurityPermission(System.Security.Permissions.SecurityAction.{0}]", sec.Action);
+			else
+				builder.AppendFormat("[SecurityPermission(SecurityAction.{0}]", sec.Action);
+			builder.AppendLine();
+				
+			foreach (Mono.Cecil.SecurityAttribute sattr in sec.SecurityAttributes)
+			{
+				if (includeNamespace)
+					builder.AppendFormat("[{0}.{1}(", sattr.AttributeType.Namespace, sattr.AttributeType.Name);
+				else
+					builder.AppendFormat("[{0}(", sattr.AttributeType.Name);
+				
+				for (int i = 0; i < sattr.Properties.Count; ++i)
+				{
+					CustomAttributeNamedArgument d = sattr.Properties[i];
+					builder.AppendFormat(string.Format("{0} = {1}", d.Name, ArgToString(d.Argument.Type, d.Argument.Value, includeNamespace, true)));
+					
+					if (i + 1 < sattr.Properties.Count || sattr.Fields.Count > 0)
+						builder.Append(", ");
+				}
+				
+				for (int i = 0; i < sattr.Fields.Count; ++i)
+				{
+					CustomAttributeNamedArgument d = sattr.Fields[i];
+					builder.AppendFormat(string.Format("{0} = {1}", d.Name, ArgToString(d.Argument.Type, d.Argument.Value, includeNamespace, true)));
+					
+					if (i + 1 < sattr.Fields.Count)
+						builder.Append(", ");
+				}
+				builder.Append("]");
+				builder.AppendLine();
+			}
+			
+			return builder.ToString();
+			
+#if OLD_CECIL
 			if (sec.PermissionSet.IsUnrestricted())
 			{
 				if (includeNamespace)
@@ -191,6 +228,7 @@ namespace Shared
 				
 				return builder.ToString();
 			}
+#endif
 		}
 		
 		public static string LayoutToText(this TypeDefinition type, bool includeNamespace)

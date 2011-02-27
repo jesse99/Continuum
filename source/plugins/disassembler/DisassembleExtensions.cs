@@ -22,9 +22,11 @@
 using Gear.Helpers;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Mono.Collections.Generic;
 using Shared;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security;
 using System.Security.Permissions;
 using System.Text;
@@ -41,25 +43,31 @@ namespace Disassembler
 			builder.AppendLine();
 			
 			DateTime atime = assemblyPath != null && System.IO.File.Exists(assemblyPath) ? System.IO.File.GetLastWriteTime(assemblyPath) : DateTime.MaxValue;
-			for (int i = 0; i < type.Constructors.Count; ++i)
+			for (int i = 0; i < type.Methods.Count; ++i)
 			{
-				DoAppendMethod(builder, type.Constructors[i], atime);
-				
-				if (i + 1 < type.Constructors.Count || type.Methods.Count > 0 || type.Fields.Count > 0)
+				if (type.Methods[i].IsConstructor)
 				{
-					builder.AppendLine();
-					builder.AppendLine();
+					DoAppendMethod(builder, type.Methods[i], atime);
+					
+					if (i + 1 < type.Methods.Count || type.Fields.Count > 0)
+					{
+						builder.AppendLine();
+						builder.AppendLine();
+					}
 				}
 			}
 			
 			for (int i = 0; i < type.Methods.Count; ++i)
 			{
-				DoAppendMethod(builder, type.Methods[i], atime);
-				
-				if (i + 1 < type.Methods.Count || type.Fields.Count > 0)
+				if (!type.Methods[i].IsConstructor)
 				{
-					builder.AppendLine();
-					builder.AppendLine();
+					DoAppendMethod(builder, type.Methods[i], atime);
+					
+					if (i + 1 < type.Methods.Count || type.Fields.Count > 0)
+					{
+						builder.AppendLine();
+						builder.AppendLine();
+					}
 				}
 			}
 			
@@ -354,7 +362,7 @@ namespace Disassembler
 				ExceptionHandler handler = DoMatchHandler(body, ins, h => h.HandlerStart);
 				if (handler != null)
 				{
-					text = handler.Type.ToString().ToLower();
+					text = handler.HandlerType.ToString().ToLower();
 					if (handler.CatchType != null)
 						text += ' ' + handler.CatchType.FullName;
 					--oldIndent;
@@ -397,7 +405,7 @@ namespace Disassembler
 			
 			if (!method.IsConstructor)
 			{
-				builder.Append(method.ReturnType.ReturnType.FullName);
+				builder.Append(method.ReturnType.FullName);
 				builder.Append(' ');
 			}
 			
@@ -421,7 +429,7 @@ namespace Disassembler
 			builder.AppendLine("\")]");
 		}
 		
-		private static void DoAppendSecurity(StringBuilder builder, SecurityDeclarationCollection secs)
+		private static void DoAppendSecurity(StringBuilder builder, Collection<SecurityDeclaration> secs)
 		{
 			foreach (SecurityDeclaration sec in secs)
 			{
@@ -429,7 +437,7 @@ namespace Disassembler
 			}
 		}
 		
-		private static void DoAppendCustomAttributes(StringBuilder builder, CustomAttributeCollection attrs)
+		private static void DoAppendCustomAttributes(StringBuilder builder, Collection<CustomAttribute> attrs)
 		{
 			foreach (CustomAttribute attr in attrs)
 			{
@@ -489,7 +497,7 @@ namespace Disassembler
 		{
 			switch (attrs & FieldAttributes.FieldAccessMask)
 			{
-				case FieldAttributes.Compilercontrolled:
+				case FieldAttributes.CompilerControlled:
 					builder.Append("compiler-controlled ");
 					break;
 					
@@ -533,7 +541,7 @@ namespace Disassembler
 		{
 			switch (attrs & MethodAttributes.MemberAccessMask)
 			{
-				case MethodAttributes.Compilercontrolled:
+				case MethodAttributes.CompilerControlled:
 					builder.Append("compiler-controlled ");
 					break;
 					
@@ -545,7 +553,7 @@ namespace Disassembler
 					builder.Append("family-and-assembly ");
 					break;
 					
-				case MethodAttributes.Assem:
+				case MethodAttributes.Assembly:
 					builder.Append("assembly ");
 					break;
 					
@@ -582,7 +590,7 @@ namespace Disassembler
 				builder.Append("final ");
 		}
 		
-		private static void DoAppendGenericParams(StringBuilder builder, GenericParameterCollection parms)
+		private static void DoAppendGenericParams(StringBuilder builder, Collection<GenericParameter> parms)
 		{
 			builder.Append("<");
 			for (int i = 0; i < parms.Count; ++i)

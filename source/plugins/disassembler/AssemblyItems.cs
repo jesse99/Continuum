@@ -121,16 +121,22 @@ namespace Disassembler
 			m_type = type;
 			m_assemblyPath = assemblyPath;
 			
-			foreach (MethodDefinition method in type.Constructors)
+			foreach (MethodDefinition method in type.Methods)
 			{
-				var item = new MethodItem(method, m_assemblyPath);
-				m_methods.Add(item);
+				if (method.IsConstructor)
+				{
+					var item = new MethodItem(method, m_assemblyPath);
+					m_methods.Add(item);
+				}
 			}
 			
 			foreach (MethodDefinition method in type.Methods)
 			{
-				var item = new MethodItem(method, m_assemblyPath);
-				m_methods.Add(item);
+				if (!method.IsConstructor)
+				{
+					var item = new MethodItem(method, m_assemblyPath);
+					m_methods.Add(item);
+				}
 			}
 		}
 		
@@ -295,7 +301,7 @@ namespace Disassembler
 			builder.AppendLine("HideBySig: " + ((attrs & MethodAttributes.HideBySig) == MethodAttributes.HideBySig));
 			builder.AppendLine("ImplAttributes: " + DoImplToText(m_method.ImplAttributes));
 			builder.AppendLine("InitLocals: " + (m_method.Body != null ? m_method.Body.InitLocals : false));
-			builder.AppendLine("MaxStack: " + (m_method.Body != null ? m_method.Body.MaxStack : 0));
+			builder.AppendLine("MaxStack: " + (m_method.Body != null ? m_method.Body.MaxStackSize : 0));
 			builder.AppendLine("MetadataToken: " + m_method.MetadataToken);
 			builder.AppendLine("RequireSecObject: " + ((attrs & MethodAttributes.RequireSecObject) == MethodAttributes.RequireSecObject));
 			builder.AppendLine("SemanticsAttributes: " + m_method.SemanticsAttributes);
@@ -526,7 +532,7 @@ namespace Disassembler
 			var builder = new System.Text.StringBuilder();
 			
 			builder.AppendLine("Assembly: " + m_resource.Assembly.FullName);
-			builder.AppendLine("Flags: " + m_resource.Flags);
+			builder.AppendLine("Flags: " + (m_resource.IsPublic ? "public " : " ") + (m_resource.IsPrivate ? "private " : " "));
 			
 			return builder.ToString();
 		}
@@ -553,15 +559,15 @@ namespace Disassembler
 		{
 			var builder = new System.Text.StringBuilder();
 			
-			builder.AppendLine("Flags: " + m_resource.Flags);
-			builder.AppendLine("Size: " + m_resource.Data.Length + " bytes");
+			builder.AppendLine("Flags: " + (m_resource.IsPublic ? "public " : " ") + (m_resource.IsPrivate ? "private " : " "));
+			builder.AppendLine("Size: " + m_resource.GetResourceData().Length + " bytes");
 			
 			return builder.ToString();
 		}
 		
 		public override string GetText()
 		{
-			return m_resource.Data.ToText();
+			return m_resource.GetResourceData().ToText();
 		}
 		
 		#region Fields
@@ -582,7 +588,7 @@ namespace Disassembler
 			var builder = new System.Text.StringBuilder();
 			
 			builder.AppendLine("File: " + m_resource.File);
-			builder.AppendLine("Flags: " + m_resource.Flags);
+			builder.AppendLine("Flags: " + (m_resource.IsPublic ? "public " : " ") + (m_resource.IsPrivate ? "private " : " "));
 			builder.AppendLine("Hash: " + (m_resource.Hash != null && m_resource.Hash.Length > 0 ? BitConverter.ToString(m_resource.Hash) : "none"));
 			
 			return builder.ToString();

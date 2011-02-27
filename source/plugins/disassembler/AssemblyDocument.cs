@@ -23,7 +23,7 @@ using Gear.Helpers;
 using MCocoa;
 using MObjc;
 using Mono.Cecil;
-using Mono.Cecil.Binary;
+//using Mono.Cecil.Binary;
 using Shared;
 using System;
 using System.Collections.Generic;
@@ -66,7 +66,7 @@ namespace Disassembler
 				// where to look for the mdb file.
 				m_assemblyPath = fileURL().path().description();
 				
-				m_assembly = AssemblyFactory.GetAssembly(m_assemblyPath);
+				m_assembly = AssemblyDefinition.ReadAssembly(m_assemblyPath);
 				DoLoadSymbols(m_assembly);
 				DoGetNamespaces(m_assembly);
 				
@@ -111,12 +111,12 @@ namespace Disassembler
 		{
 			// For some reason we have to force the Mdb assembly to load. 
 			// If we don't it isn't found.
-			Unused.Value = typeof(Mono.Cecil.Mdb.MdbFactory);
+			Unused.Value = typeof(Mono.Cecil.Mdb.MdbReader);
 			try
 			{
 				foreach (ModuleDefinition module in assembly.Modules)
 				{
-					module.LoadSymbols();
+					module.ReadSymbols();
 				}
 			}
 			catch (System.IO.FileNotFoundException)

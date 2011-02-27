@@ -59,12 +59,12 @@ namespace App
 			}
 		}
 		
-		protected override Tuple2<NSMenu, int> GetScriptsLocation()
+		protected override Tuple<NSMenu, int> GetScriptsLocation()
 		{
 			NSApplication app = NSApplication.sharedApplication();
 			NSMenu menu = app.Call("refactorMenu").To<NSMenu>();
 			
-			return Tuple.Make(menu, 0);
+			return Tuple.Create(menu, 0);
 		}
 		
 		protected override bool IsEnabled()

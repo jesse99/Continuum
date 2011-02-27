@@ -10,4 +10,3 @@ using System.Security.Permissions;
 
 [assembly: CLSCompliant(false)]
 [assembly: ComVisible(false)]
-[assembly: PermissionSet(SecurityAction.RequestMinimum, Unrestricted = true)]

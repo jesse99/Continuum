@@ -40,7 +40,7 @@ namespace Subversion
 			try
 			{
 				var result = DoCommand("help");
-				if (result.First.Contains("usage") && string.IsNullOrEmpty(result.Second))
+				if (result.Item1.Contains("usage") && string.IsNullOrEmpty(result.Item2))
 					m_installled = true;
 			}
 			catch
@@ -85,7 +85,7 @@ namespace Subversion
 			if (m_installled && DoIsControlled(oldPath))
 			{
 				var result = DoCommand("move '{0}' '{1}'", oldPath, newPath);
-				if (string.IsNullOrEmpty(result.Second))
+				if (string.IsNullOrEmpty(result.Item2))
 					renamed = true;
 			}
 			
@@ -175,8 +175,8 @@ namespace Subversion
 				foreach (string path in paths)
 				{
 					var result = DoCommand("stat '{0}'", path);
-					if (string.IsNullOrEmpty(result.Second) && result.First.Length > 0)
-						status[i++] = result.First[0];
+					if (string.IsNullOrEmpty(result.Item2) && result.Item1.Length > 0)
+						status[i++] = result.Item1[0];
 					else
 						status[i++] = ' ';
 				}
@@ -199,8 +199,8 @@ namespace Subversion
 				try
 				{
 					var result = DoCommand("info '{0}'", path);
-					if (string.IsNullOrEmpty(result.Second))
-						controlled = result.First.StartsWith("Path:");	// unfortunately svn's return code is always zero so we need to parse the output...
+					if (string.IsNullOrEmpty(result.Item2))
+						controlled = result.Item1.StartsWith("Path:");	// unfortunately svn's return code is always zero so we need to parse the output...
 				}
 				catch (Exception e)
 				{
@@ -212,12 +212,12 @@ namespace Subversion
 			return controlled;
 		}
 		
-		private Tuple2<string, string> DoCommand(string format, params object[] args)
+		private Tuple<string, string> DoCommand(string format, params object[] args)
 		{
 			return DoCommand(string.Format(format, args));
 		}
 		
-		private Tuple2<string, string> DoCommand(string command)
+		private Tuple<string, string> DoCommand(string command)
 		{
 			string stdout, stderr;
 			
@@ -236,21 +236,21 @@ namespace Subversion
 				process.WaitForExit();
 			}
 			
-			return Tuple.Make(stdout, stderr);
+			return Tuple.Create(stdout, stderr);
 		}
 		
 		private void DoAdd(string path)
 		{
 			var result = DoCommand("add '{0}'", path);
-			if (!string.IsNullOrEmpty(result.Second))
-				throw new InvalidOperationException(result.Second);
+			if (!string.IsNullOrEmpty(result.Item2))
+				throw new InvalidOperationException(result.Item2);
 		}
 		
 		private void DoBlame(string path)
 		{
 			var result = DoCommand("blame '{0}'", path);
-			if (!string.IsNullOrEmpty(result.Second))
-				throw new InvalidOperationException(result.Second);
+			if (!string.IsNullOrEmpty(result.Item2))
+				throw new InvalidOperationException(result.Item2);
 			
 			Boss boss = ObjectModel.Create("FileSystem");
 			var fs = boss.Get<IFileSystem>();
@@ -260,7 +260,7 @@ namespace Subversion
 			{
 				using (StreamWriter writer = new StreamWriter(file))
 				{
-					writer.WriteLine("{0}", result.First);
+					writer.WriteLine("{0}", result.Item1);
 				}
 				
 				boss = ObjectModel.Create("Application");
@@ -278,8 +278,8 @@ namespace Subversion
 		private void DoCat(string path)
 		{
 			var result = DoCommand("cat '{0}'", path);
-			if (!string.IsNullOrEmpty(result.Second))
-				throw new InvalidOperationException(result.Second);
+			if (!string.IsNullOrEmpty(result.Item2))
+				throw new InvalidOperationException(result.Item2);
 			
 			Boss boss = ObjectModel.Create("FileSystem");
 			var fs = boss.Get<IFileSystem>();
@@ -289,7 +289,7 @@ namespace Subversion
 			{
 				using (StreamWriter writer = new StreamWriter(file))
 				{
-					writer.WriteLine("{0}", result.First);
+					writer.WriteLine("{0}", result.Item1);
 				}
 				
 				boss = ObjectModel.Create("Application");
@@ -313,16 +313,16 @@ namespace Subversion
 			if (message != null)
 			{
 				var result = DoCommand("commit -m '{0}' '{1}'", message, path);
-				if (!string.IsNullOrEmpty(result.Second))
-					throw new InvalidOperationException(result.Second);
+				if (!string.IsNullOrEmpty(result.Item2))
+					throw new InvalidOperationException(result.Item2);
 			}
 		}
 		
 		private void DoDiff(string path)
 		{
 			var result = DoCommand("diff '{0}'", path);
-			if (!string.IsNullOrEmpty(result.Second))
-				throw new InvalidOperationException(result.Second);
+			if (!string.IsNullOrEmpty(result.Item2))
+				throw new InvalidOperationException(result.Item2);
 			
 			Boss boss = ObjectModel.Create("FileSystem");
 			var fs = boss.Get<IFileSystem>();
@@ -332,7 +332,7 @@ namespace Subversion
 			{
 				using (StreamWriter writer = new StreamWriter(file))
 				{
-					writer.WriteLine("{0}", result.First);
+					writer.WriteLine("{0}", result.Item1);
 				}
 				
 				boss = ObjectModel.Create("Application");
@@ -353,38 +353,38 @@ namespace Subversion
 				path = Path.GetDirectoryName(path);
 			
 			var result = DoCommand("propget svn:ignore '{0}'", path);
-			if (!string.IsNullOrEmpty(result.Second))
-				throw new InvalidOperationException(result.Second);
+			if (!string.IsNullOrEmpty(result.Item2))
+				throw new InvalidOperationException(result.Item2);
 			
-			var getter = new GetText{Title = "Ignore List", Text = result.First};
+			var getter = new GetText{Title = "Ignore List", Text = result.Item1};
 			string text = getter.Run();
 			if (text != null)
 			{
 				result = DoCommand("propset svn:ignore '{0}' '{1}'", text, path);
-				if (!string.IsNullOrEmpty(result.Second))
-					throw new InvalidOperationException(result.Second);
+				if (!string.IsNullOrEmpty(result.Item2))
+					throw new InvalidOperationException(result.Item2);
 			}
 		}
 		
 		private void DoInfo(string path)
 		{
 			var result = DoCommand("info '{0}'", path);
-			if (!string.IsNullOrEmpty(result.Second))
-				throw new InvalidOperationException(result.Second);
+			if (!string.IsNullOrEmpty(result.Item2))
+				throw new InvalidOperationException(result.Item2);
 			
 			Boss boss = ObjectModel.Create("Application");
 			var transcript = boss.Get<ITranscript>();
 			
 			transcript.Show();
 			transcript.WriteLine(Output.Command, "Svn info " + path);
-			transcript.WriteLine(Output.Normal, "{0}", result.First);
+			transcript.WriteLine(Output.Normal, "{0}", result.Item1);
 		}
 		
 		private void DoLog(string path)
 		{
 			var result = DoCommand("log '{0}'", path);
-			if (!string.IsNullOrEmpty(result.Second))
-				throw new InvalidOperationException(result.Second);
+			if (!string.IsNullOrEmpty(result.Item2))
+				throw new InvalidOperationException(result.Item2);
 			
 			Boss boss = ObjectModel.Create("FileSystem");
 			var fs = boss.Get<IFileSystem>();
@@ -394,7 +394,7 @@ namespace Subversion
 			{
 				using (StreamWriter writer = new StreamWriter(file))
 				{
-					writer.WriteLine("{0}", result.First);
+					writer.WriteLine("{0}", result.Item1);
 				}
 				
 				boss = ObjectModel.Create("Application");
@@ -421,51 +421,51 @@ namespace Subversion
 				string newPath = Path.Combine(oldDir, newName);
 				
 				var result = DoCommand("move '{0}' '{1}'", path, newPath);
-				if (!string.IsNullOrEmpty(result.Second))
-					throw new InvalidOperationException(result.Second);
+				if (!string.IsNullOrEmpty(result.Item2))
+					throw new InvalidOperationException(result.Item2);
 			}
 		}
 		
 		private void DoRemove(string path)
 		{
 			var result = DoCommand("remove '{0}'", path);
-			if (!string.IsNullOrEmpty(result.Second))
-				throw new InvalidOperationException(result.Second);
+			if (!string.IsNullOrEmpty(result.Item2))
+				throw new InvalidOperationException(result.Item2);
 		}
 		
 		private void DoResolved(string path)
 		{
 			var result = DoCommand("resolved '{0}'", path);
-			if (!string.IsNullOrEmpty(result.Second))
-				throw new InvalidOperationException(result.Second);
+			if (!string.IsNullOrEmpty(result.Item2))
+				throw new InvalidOperationException(result.Item2);
 		}
 		
 		private void DoRevert(string path)
 		{
 			var result = DoCommand("revert '{0}'", path);
-			if (!string.IsNullOrEmpty(result.Second))
-				throw new InvalidOperationException(result.Second);
+			if (!string.IsNullOrEmpty(result.Item2))
+				throw new InvalidOperationException(result.Item2);
 		}
 		
 		private void DoStatus(string path)
 		{
 			var result = DoCommand("status '{0}'", path);
-			if (!string.IsNullOrEmpty(result.Second))
-				throw new InvalidOperationException(result.Second);
+			if (!string.IsNullOrEmpty(result.Item2))
+				throw new InvalidOperationException(result.Item2);
 			
 			Boss boss = ObjectModel.Create("Application");
 			var transcript = boss.Get<ITranscript>();
 			
 			transcript.Show();
 			transcript.WriteLine(Output.Command, "Svn status " + path);
-			transcript.WriteLine(Output.Normal, "{0}", result.First);
+			transcript.WriteLine(Output.Normal, "{0}", result.Item1);
 		}
 		
 		private void DoUpdate(string path)
 		{
 			var result = DoCommand("update '{0}'", path);
-			if (!string.IsNullOrEmpty(result.Second))
-				throw new InvalidOperationException(result.Second);
+			if (!string.IsNullOrEmpty(result.Item2))
+				throw new InvalidOperationException(result.Item2);
 		}
 		#endregion
 		
