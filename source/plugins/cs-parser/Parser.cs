@@ -1,4 +1,4 @@
-// Copyright (C) 2009 Jesse Jones
+// Copyright (C) 2009-2011 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -1595,7 +1595,11 @@ namespace CsParser
 		private string DoParseNamespaceOrTypeName(ref Token last)
 		{
 			string name = DoParseIdentifier(ref last);
-
+			if (m_scanner.Token.IsPunct("<"))
+			{
+				name += "<" + DoScanBody("<", ">", ref last) + ">";
+			}
+			
 			while (m_scanner.Token.IsPunct("."))
 			{
 				m_scanner.Advance();

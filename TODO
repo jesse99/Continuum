@@ -50,14 +50,11 @@ include the percentage of samples that that method appeared in the stack trace
 [3] http://www.mono-project.com/Mono_LLVM
 
 
-* Do code contracts work now? There is an assembly for them...
-* Mono.Collections.Generic.Collection didn't parse quite right.
 * @keyword should not be highlighted (in c#)
 * May want to update cecil (and soft debugger?) using update-libraries:
 	$ cp `pkg-config --variable=Libraries cecil` .
 	$ gmcs program.cs -r:Mono.Cecil.dll
 * ''' python string didn't work quite right.
-* Update the readme.
 * Work on the debugger:
 	- ThreadMirror has a TID field which returns the system thread id
 	- GetValue (FieldMirror, ThreadMirror) (can be used for ThreadStaticAttr fields)
@@ -79,6 +76,7 @@ include the percentage of samples that that method appeared in the stack trace
 * May want to add scheme support. See http://coderchrome.org/browse/greatest/0 for example.
 * Add a generate stub refactor
 	- should this be automatic?
+* Getting crashing on exit after upgrading to mono 2.10
 * Add support for waf colored output?
 	- might have to set the TERM environment variable
 	- would have to extend ITranscript
