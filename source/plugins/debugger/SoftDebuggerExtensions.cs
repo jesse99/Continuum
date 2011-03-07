@@ -131,11 +131,6 @@ namespace Debugger
 		{
 			bool should = true;
 			
-			if (field.HasCustomAttribute("System.ThreadStaticAttribute"))	// TODO: soft debugger crashes if we try to display these
-			{
-				should = false;
-			}
-			
 			return should;
 		}
 		

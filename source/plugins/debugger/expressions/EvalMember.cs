@@ -42,10 +42,10 @@ namespace Debugger
 			
 			// Try fields,
 			if (target is ObjectMirror)
-				result = DoGetField((ObjectMirror) target, name);
+				result = DoGetField((ObjectMirror) target, name, thread);
 				
 			else if (target is StructMirror)
-				result = DoGetField((StructMirror) target, name);
+				result = DoGetField((StructMirror) target, name, thread);
 				
 			// properties.
 			if (result == null)
@@ -77,7 +77,7 @@ namespace Debugger
 		}
 		
 		#region Private Methods
-		private static Value DoGetField(ObjectMirror mirror, string name)
+		private static Value DoGetField(ObjectMirror mirror, string name, ThreadMirror thread)
 		{
 			Value result = null;
 			
@@ -85,7 +85,10 @@ namespace Debugger
 			if (field != null && field.ShouldEvaluate())
 			{
 				if (field.IsStatic)
-					result = field.DeclaringType.GetValue(field);
+					if (field.HasCustomAttribute("System.ThreadStaticAttribute"))
+						result = field.DeclaringType.GetValue(field, thread);
+					else
+						result = field.DeclaringType.GetValue(field);
 				else
 					result = mirror.GetValue(field);
 			}
@@ -93,7 +96,7 @@ namespace Debugger
 			return result;
 		}
 		
-		private static Value DoGetField(StructMirror mirror, string name)
+		private static Value DoGetField(StructMirror mirror, string name, ThreadMirror thread)
 		{
 			Value result = null;
 			
@@ -101,7 +104,10 @@ namespace Debugger
 			if (field != null && field.ShouldEvaluate())
 			{
 				if (field.IsStatic)
-					result = mirror.Type.GetValue(field);
+					if (field.HasCustomAttribute("System.ThreadStaticAttribute"))
+						result = mirror.Type.GetValue(field, thread);
+					else
+						result = mirror.Type.GetValue(field);
 				else
 					result = mirror[name];
 			}

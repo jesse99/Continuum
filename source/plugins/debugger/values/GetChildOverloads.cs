@@ -151,7 +151,10 @@ namespace Debugger
 				FieldInfoMirror field = fields[index - props.Length];
 				Value child;
 				if (field.IsStatic)
-					child = parent.Type.GetValue(field);
+					if (field.HasCustomAttribute("System.ThreadStaticAttribute"))
+						child = parent.Type.GetValue(field, thread);
+					else
+						child = parent.Type.GetValue(field);
 				else
 					child = parent.Fields[index - props.Length];
 				return new VariableItem(thread, field.Name, parentItem, index, child, index);
@@ -171,9 +174,14 @@ namespace Debugger
 			}
 			else
 			{
-				var fields = from f in parent.GetAllFields() where f.IsStatic && !f.HasCustomAttribute("System.ThreadStaticAttribute") select f;
+				var fields = from f in parent.GetAllFields() where f.IsStatic select f;
 				FieldInfoMirror field = fields.ElementAt(index - props.Length);
-				Value child = field.DeclaringType.GetValue(field);
+				
+				Value child;
+				if (field.HasCustomAttribute("System.ThreadStaticAttribute"))
+					child = field.DeclaringType.GetValue(field, thread);
+				else
+					child = field.DeclaringType.GetValue(field);
 				return new VariableItem(thread, field.Name, parentItem, index, child, index);
 			}
 		}
