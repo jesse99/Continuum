@@ -50,9 +50,6 @@ include the percentage of samples that that method appeared in the stack trace
 [3] http://www.mono-project.com/Mono_LLVM
 
 
-* Work on the debugger:
-	- GetValue (FieldMirror, ThreadMirror) (can be used for ThreadStaticAttr fields)
-	- StackFrame has GetVisibleVariables
 * Work on recent files:
 	- generalize recent files to recent commands? make it per project?
 	- may want a IOpenRecentFile interface

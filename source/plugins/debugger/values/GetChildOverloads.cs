@@ -22,6 +22,7 @@
 using Mono.Debugger.Soft;
 using MObjc.Helpers;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Debugger
@@ -47,8 +48,8 @@ namespace Debugger
 		{
 			VariableItem child;
 			
-			LocalVariable[] locals = parent.Method.GetLocals();
-			if (index < locals.Length)
+			IList<LocalVariable> locals = parent.GetVisibleVariables();
+			if (index < locals.Count)
 			{
 				LocalVariable local = locals[index];
 				

@@ -75,6 +75,23 @@ namespace Debugger
 		
 		public Value ThisPtr {get; private set;}
 		
+		public IList<LocalVariable> GetVisibleVariables()
+		{
+			IList<LocalVariable> result;
+			
+			try
+			{
+				result = m_frame.GetVisibleVariables();
+			}
+			catch (InvalidStackFrameException)
+			{
+				m_frame = m_thread.GetFrames()[m_index];
+				result = m_frame.GetVisibleVariables();
+			}
+			
+			return result;
+		}
+		
 		public Value GetValue(ParameterInfoMirror param)
 		{
 			Value result;

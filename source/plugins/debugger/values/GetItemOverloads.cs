@@ -71,8 +71,8 @@ namespace Debugger
 		{
 			IEnumerable<FieldInfoMirror> fields = value.Method.DeclaringType.GetAllFields();
 			int delta = fields.Any() ?  1 : 0;
-			LocalVariable[] locals = value.Method.GetLocals();
-			return new Item(locals.Length + delta, string.Empty, "LiveStackFrame");
+			IList<LocalVariable> locals = value.GetVisibleVariables();
+			return new Item(locals.Count + delta, string.Empty, "LiveStackFrame");
 		}
 		
 		[GetItem.Overload]

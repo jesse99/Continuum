@@ -70,7 +70,7 @@ namespace Debugger
 		[SetValue.Overload]
 		public static void Set(ThreadMirror thread, VariableItem item, LiveStackFrame parent, int key, Value newValue)
 		{
-			LocalVariable local = parent.Method.GetLocals()[key];
+			LocalVariable local = parent.GetVisibleVariables()[key];
 			parent.SetValue(local, newValue);
 		}
 		
