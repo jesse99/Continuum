@@ -112,6 +112,7 @@ update-libraries:
 	cp `pkg-config --variable=Libraries mobjc` bin
 	cp `pkg-config --variable=Libraries mcocoa` bin
 	cp `pkg-config --variable=Libraries gear` bin
+	cp `pkg-config --variable=Libraries cecil` bin
 
 clean:
 	-rm -f bin/csc_flags
