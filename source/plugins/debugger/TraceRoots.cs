@@ -136,27 +136,42 @@ namespace Debugger
 		{
 			foreach (FieldInfoMirror field in m_staticFields)
 			{
-				// TODO: need to somehow get thread statics working (presumably the
-				// runtime uses TLS to store these but there doesn't appear to be a way
-				// to iterate over the thread local items and the soft debugger throws
-				// if you try to get their values using the code below).
-				if (!field.GetCustomAttributes(false).Any(c => c.Constructor.FullName.Contains("System.ThreadStaticAttribute:.ctor")))
+				if (DoShouldWalkType(field.FieldType))
 				{
-					if (DoShouldWalkType(field.FieldType))
-					{
-						Log.WriteLine(TraceLevel.Info, "TraceRoots", "static root {0}.{1} [{2}]", field.DeclaringType.FullName, field.Name, field.FieldType.FullName);
-						Log.Indent();
+					Log.WriteLine(TraceLevel.Info, "TraceRoots", "static root {0}.{1} [{2}]", field.DeclaringType.FullName, field.Name, field.FieldType.FullName);
+					Log.Indent();
+					
+					if (field.HasCustomAttribute("System.ThreadStaticAttribute"))
+						DoWalkThreadStaticRoot(field, roots, filter);
+					else
+						DoWalkStaticRoot(field, roots, filter);
 						
-						var root = new Trace("static " + field.Name, field.FieldType.FullName, field);
-						Value v = field.DeclaringType.GetValue(field);
-						DoWalkValue(v, root, field.Name);
-						if (DoFilter(root, filter, 0))
-							roots.Add(root);
-							
-						Log.Unindent();
-					}
+					Log.Unindent();
 				}
 			}
+		}
+		
+		private void DoWalkThreadStaticRoot(FieldInfoMirror field, List<Trace> roots, Func<string, object, bool> filter)
+		{
+			foreach (ThreadMirror thread in m_threads)
+			{
+				string name = string.Format("static {0} [thread {1}]", field.Name, ThreadsController.GetThreadName(thread));
+				
+				var root = new Trace(name, field.FieldType.FullName, field);
+				Value v = field.DeclaringType.GetValue(field, thread);
+				DoWalkValue(v, root, field.Name);
+				if (DoFilter(root, filter, 0))
+					roots.Add(root);
+			}
+		}
+		
+		private void DoWalkStaticRoot(FieldInfoMirror field, List<Trace> roots, Func<string, object, bool> filter)
+		{
+			var root = new Trace("static " + field.Name, field.FieldType.FullName, field);
+			Value v = field.DeclaringType.GetValue(field);
+			DoWalkValue(v, root, field.Name);
+			if (DoFilter(root, filter, 0))
+				roots.Add(root);
 		}
 		
 		// Returns true if parent or a child satisfies the filter.
