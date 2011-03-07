@@ -50,12 +50,7 @@ include the percentage of samples that that method appeared in the stack trace
 [3] http://www.mono-project.com/Mono_LLVM
 
 
-* May want to update cecil (and soft debugger?) using update-libraries:
-	$ cp `pkg-config --variable=Libraries cecil` .
-	$ gmcs program.cs -r:Mono.Cecil.dll
-* ''' python string didn't work quite right.
 * Work on the debugger:
-	- ThreadMirror has a TID field which returns the system thread id
 	- GetValue (FieldMirror, ThreadMirror) (can be used for ThreadStaticAttr fields)
 	- StackFrame has GetVisibleVariables
 * Work on recent files:
@@ -71,10 +66,7 @@ include the percentage of samples that that method appeared in the stack trace
 * Couldn't use command-d to open http://developer.apple.com/library/mac/#documentation/DeveloperTools/gcc-4.2.1/gcc/Invoking-GCC.html#Invoking-GCC
 * Make sure none of the language files use patterns like xy* for the word setting.
 * If backspacing a space at the start of a line and UseTabs is false then delete NumSpaces of them?
-* May want to put some of the special key handlers behind interfaces so that they can be customized.
-* May want to add scheme support. See http://coderchrome.org/browse/greatest/0 for example.
-* Add a generate stub refactor
-	- should this be automatic?
+* Build a new foreshadow.
 * Getting crashing on exit after upgrading to mono 2.10
 * Add support for waf colored output?
 	- might have to set the TERM environment variable
@@ -82,12 +74,15 @@ include the percentage of samples that that method appeared in the stack trace
 	- might want some sort of no-colors option in waf flags nib
 * Add a ToString refactor, should default to returning fields and auto-props
 * Do the same for implement IFormatable.
-* Might want a why continuum discussion somewhere.
 * Create a mailing list. Could use google groups or yahoo.
 * Add a wiki link, see http://en.wikipedia.org/wiki/Cobra_(programming_language_from_Cobra_Language_LLC)
    for example.
 * Do a new release.
 
+* May want to put some of the special key handlers behind interfaces so that they can be customized.
+* May want to add scheme support. See http://coderchrome.org/browse/greatest/0 for example.
+* Add a generate stub refactor
+	- should this be automatic?
 * Work on F#:
 	- work on an auto-complete framework (check out PySmell)
 	- may want to email chuck about this
