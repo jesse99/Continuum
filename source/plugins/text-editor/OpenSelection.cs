@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2008 Jesse Jones
+// Copyright (C) 2007-2011 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -38,6 +38,7 @@ namespace TextEditor
 	// <AppKit/NSResponder.h>																non-local relative path
 	// /Users/jessejones/Source/Continuum/source/plugins/find/AssemblyInfo.cs		absolute path
 	// http://dev.mysql.com/tech-resources/articles/why-data-modeling.html			url
+	// http://developer.apple.com/library/mac/#documentation/MacOSX/Conceptual/OSX_Technology_Overview/About/About.html relative url
 	// NSWindow.h																				file in preferred directory																
 	// c#.cs																						file not in preferred directory
 	internal sealed class OpenSelection : IOpenSelection
@@ -202,7 +203,7 @@ namespace TextEditor
 			
 			try
 			{
-				NSURL url = NSURL.URLWithString(NSString.Create(name));
+				NSURL url = DoGetURL(name);
 				if (!NSObject.IsNullOrNil(url))		// URLWithString returns nil on failures...
 				{
 					Log.WriteLine(TraceLevel.Verbose, "Open Selection", "it seems to be an url");
@@ -214,11 +215,27 @@ namespace TextEditor
 					}
 				}
 			}
-			catch (Exception)
+			catch (Exception e)
 			{
+				Log.WriteLine(TraceLevel.Verbose, "Open Selection", "DoOpenURL failed with: {0}", e.Message);
 			}
 			
 			return opened;
+		}
+		
+		// NSURL.URLWithString doesn't handle relative URLs so if there are hash-marks we
+		// have to build the relative URL ourself.
+		private NSURL DoGetURL(string path)
+		{
+			string[] parts = path.Split('#');
+			NSURL url = NSURL.URLWithString(NSString.Create(parts[0]));
+			
+			for (int i = 1; i < parts.Length; ++i)
+			{
+				url = NSURL.URLWithString_relativeToURL(NSString.Create(parts[i]), url);
+			}
+			
+			return url;
 		}
 		
 		// If the name is an absolute path then we can open it with Continuum if it's
