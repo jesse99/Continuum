@@ -54,6 +54,12 @@ namespace App
 			switch (name)
 			{
 				case "opening document window":		// this will change the items we show
+					var boss = (Boss) value;
+					if (boss.Name != "CodeViewer")
+						if (window().isVisible() || window().isMiniaturized())
+							DoReload();
+					break;
+					
 				case "saved new document window":		// need this to handle new documents
 				case "opened directory":					// this may change the colors used by the items
 					if (window().isVisible() || window().isMiniaturized())

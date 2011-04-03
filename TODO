@@ -31,39 +31,17 @@ The Algorithm Design Manual
 
 http://research.microsoft.com/en-us/projects/pex/	
 
-http://www.eqatec.com/tools/profiler
-http://code.google.com/p/nprof/
-ms (but team version)
-http://www.wikihow.com/Optimize-Your-Program%27s-Performance
-http://stackoverflow.com/questions/375913/what-can-i-use-to-profile-c-code-in-linux/378024#378024
-
-every N seconds, for main thread
-	record methods in the stack trace
-	if a method appears more than M times then record the entire stack trace
-	
-print traces for the top O methods (where O >= M)
-include the percentage of samples that that method appeared in the stack trace
 
 [0] http://mono.ximian.com/monobuild/preview/download-preview/
 [1] http://www.mono-project.com/Release_Notes_Mono_2.8
 [2] http://www.mono-project.com/Compacting_GC
 [3] http://www.mono-project.com/Mono_LLVM
 
+	
 
-* Work on recent files:
-	- generalize recent files to recent commands? make it per project?
-	- may want a IOpenRecentFile interface
-	- should have an Open method and a DisplayName method
-	- debugger would have to remember debug settings keyed by assembly path
-	- debugging via apple script shouldn't populate recent files
-	- make sure assemblies can be opened and re-opened normally
-	- make sure executable scripts can be opened
-* Build variables with no value don't work so well.
-* Searching for stuff like "\p{Nl}" doesn't work.
-* Couldn't use command-d to open http://developer.apple.com/library/mac/#documentation/DeveloperTools/gcc-4.2.1/gcc/Invoking-GCC.html#Invoking-GCC
-* Make sure none of the language files use patterns like xy* for the word setting.
-* If backspacing a space at the start of a line and UseTabs is false then delete NumSpaces of them?
 * Build a new foreshadow.
+* mcocoa and Continuum make files need to do something like:
+	export PKG_CONFIG_PATH="/usr/lib/pkgconfig:/usr/local/lib/pkgconfig"
 * Getting crashing on exit after upgrading to mono 2.10
 * Add support for waf colored output?
 	- might have to set the TERM environment variable
@@ -75,14 +53,17 @@ include the percentage of samples that that method appeared in the stack trace
 * Add a wiki link, see http://en.wikipedia.org/wiki/Cobra_(programming_language_from_Cobra_Language_LLC)
    for example.
 * Do a new release.
+* peg-sharp fixes:
+	- SHELL := /bin/bash
+	- has issues building under 2010
 
+* If backspacing a space at the start of a line and UseTabs is false then delete NumSpaces of them?
 * May want to put some of the special key handlers behind interfaces so that they can be customized.
 * May want to add scheme support. See http://coderchrome.org/browse/greatest/0 for example.
 * Add a generate stub refactor
 	- should this be automatic?
 * Work on F#:
 	- work on an auto-complete framework (check out PySmell)
-	- may want to email chuck about this
 	- add F# auto-complete (the compiler has at least some stuff which may make this easier)
 	- declarations popup
 	- can inferred types be shown when hovering over variables?
