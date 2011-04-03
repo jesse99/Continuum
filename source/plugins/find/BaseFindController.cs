@@ -101,7 +101,6 @@ namespace Find
 			get {return !NSObject.IsNullOrNil(m_findText.Value) ? m_findText.Value.description() : string.Empty;}
 			set
 			{
-				value = value.Replace(@"\", @"\\");
 				if (UseRegex)
 				{
 					value = Re.Escape(value);
