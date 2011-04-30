@@ -27,6 +27,11 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.Remoting;
 
+// TODO: We're using the 4.0 version of .NET in mono, but nunit is targeting
+// the 2.0 version which is leading to all kinds of problems. Afaict the more 
+// recent versions of nunit still don't support 4.0 in mono.
+//#pragma warning disable 612
+
 namespace Shared
 {
 	[ThreadModel(ThreadModel.Concurrent)]
@@ -41,15 +46,15 @@ namespace Shared
 				ms_defaultLevel = TraceLevel.Info;
 				
 				ObjectHandle handle = Activator.CreateInstance(
-					"continuum",									// assemblyName
+					"continuum",								// assemblyName
 					"Continuum.PrettyTraceListener",		// typeName
-					false,											// ignoreCase
+					false,										// ignoreCase
 					BindingFlags.CreateInstance,			// bindingAttr,
-					null,												// binder
+					null,										// binder
 					new object[]{"/tmp/test.log"},		// args (note that we can't rely on the working directory if we're running the tests via Continuum)
-					null,												// culture
-					null,												// activationAttributes
-					null);											// securityInfo
+					null,										// culture
+					null,										// activationAttributes
+					null);										// securityInfo
 				TextWriterTraceListener listener = (TextWriterTraceListener) (handle.Unwrap());
 				Trace.Listeners.Add(listener);
 				
