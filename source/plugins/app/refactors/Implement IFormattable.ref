@@ -47,11 +47,35 @@ define Process(type)
 		case null:
 		case ""g"":
 		case ""G"":
-			return string.Empty;
+			var elements = new string[]•{
+			#{GetEqualProps(type)}
+			#{GetEqualFields(type)}
+			};
+			return string.Join•("", "", elements);
 		
 		default:
 			string message = string.Format•(""{0} isn't a valid {1} format string"", format, GetType•());
 			throw new FormatException•(message);
 	}
 }")
+end
+
+define GetEqualProps(type)
+	let props = (from prop in type.Properties
+	where not prop.IsStatic and prop.HasGetter and prop.GetterBody == null # null body means it is an auto-property
+	select "	string.Format•(""#{prop.Name} = {0}"", #{prop.Name}),"
+	) in
+		return "
+			".Join(props)
+	end
+end
+
+define GetEqualFields(type)
+	let fields = (from field in type.Fields
+	where not field.IsStatic and not field.IsConst
+	select "	string.Format•(""#{field.Name} = {0}"", #{field.Name}),"
+	) in
+		return "
+			".Join(fields)
+	end
 end
