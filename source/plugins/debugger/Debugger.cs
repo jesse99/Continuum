@@ -142,6 +142,7 @@ namespace Debugger
 			get {return m_thread.GetState() == State.Paused;}
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		public static bool IsShuttingDown(Exception e)
 		{
 			if (e is System.Reflection.TargetInvocationException)

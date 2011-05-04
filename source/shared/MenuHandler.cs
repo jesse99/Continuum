@@ -44,32 +44,42 @@ namespace Shared
 		{
 			Handlers handlers;
 			
-			if (m_handlers.TryGetValue(tag, out handlers))
-				handlers.Handler();
-			else
-				throw new InvalidOperationException(string.Format("Couldn't find a handler for tag {0}", tag));
+			lock (m_mutex)
+			{
+				if (!m_handlers.TryGetValue(tag, out handlers))
+					throw new InvalidOperationException(string.Format("Couldn't find a handler for tag {0}", tag));
+			}
+			
+			handlers.Handler();
 		}
 		
 		public MenuState GetState(int tag)
 		{
 			Handlers handlers;
 			
-			if (m_handlers.TryGetValue(tag, out handlers))
-				return handlers.State();
+			lock (m_mutex)
+			{
+				if (m_handlers.TryGetValue(tag, out handlers))
+					return handlers.State();
+			}
 			
 			return 0;
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		public void Deregister(object owner)
 		{
 			Contract.Requires(owner != null, "owner is null");
 			
-			var deathRow = from entry in m_handlers
-				where entry.Value.Owner == owner
-				select entry.Key;
-			
-			foreach (int tag in deathRow.ToArray())	// can't use the lazy enumerable if we're deleting
-				Unused.Value = m_handlers.Remove(tag);
+			lock (m_mutex)
+			{
+				var deathRow = from entry in m_handlers
+					where entry.Value.Owner == owner
+					select entry.Key;
+				
+				foreach (int tag in deathRow.ToArray())	// can't use the lazy enumerable if we're deleting
+					Unused.Value = m_handlers.Remove(tag);
+			}
 		}
 		
 		public void Register(object owner, int tag, Action handler)
@@ -79,17 +89,23 @@ namespace Shared
 		
 		public void Register(object owner, int tag, Action handler, Func<bool> enabler)
 		{
-			Contract.Requires(!m_handlers.ContainsKey(tag), string.Format("a handler for tag {0} already exists", tag));
-			
-			Func<MenuState> state = () => enabler() ? MenuState.Enabled : MenuState.Disabled;
-			m_handlers.Add(tag, new Handlers(owner, handler, state));
+			lock (m_mutex)
+			{
+				Contract.Requires(!m_handlers.ContainsKey(tag), string.Format("a handler for tag {0} already exists", tag));
+				
+				Func<MenuState> state = () => enabler() ? MenuState.Enabled : MenuState.Disabled;
+				m_handlers.Add(tag, new Handlers(owner, handler, state));
+			}
 		}
 		
 		public void Register2(object owner, int tag, Action handler, Func<MenuState> state)
 		{
-			Contract.Requires(!m_handlers.ContainsKey(tag), string.Format("a handler for tag {0} already exists", tag));
-			
-			m_handlers.Add(tag, new Handlers(owner, handler, state));
+			lock (m_mutex)
+			{
+				Contract.Requires(!m_handlers.ContainsKey(tag), string.Format("a handler for tag {0} already exists", tag));
+				
+				m_handlers.Add(tag, new Handlers(owner, handler, state));
+			}
 		}
 		
 		#region Private Types
@@ -114,7 +130,8 @@ namespace Shared
 	
 		#region Fields
 		private Boss m_boss;
-		private Dictionary<int, Handlers> m_handlers = new Dictionary<int, Handlers>();
+		private object m_mutex = new object();
+			private Dictionary<int, Handlers> m_handlers = new Dictionary<int, Handlers>();
 		#endregion
 	}
 }

@@ -95,6 +95,7 @@ namespace Debugger
 			}
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		public static bool BreakOnExceptions// might want to move this into Exceptions
 		{
 			get {return !ms_ignoreExceptions;}
@@ -188,7 +189,7 @@ namespace Debugger
 			new WindowInfo("stack", 663),
 			new WindowInfo("threads", 664),
 		};
-		private static bool ms_ignoreExceptions;
+		private static volatile bool ms_ignoreExceptions;
 		private static bool ms_writeEvents;
 		private static bool ms_running;
 		#endregion

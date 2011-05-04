@@ -172,7 +172,8 @@ namespace Debugger
 			var handler = boss.Get<IMenuHandler>();
 			handler.Deregister(this);
 			
-			Broadcaster.Unregister(this);
+			// We don't call Broadcaster.Unregister because it isn't thread safe
+			// (and because it uses weak references).
 			
 			base.OnDealloc();
 		}
@@ -434,6 +435,7 @@ namespace Debugger
 			}
 		}
 		
+		[Pure]
 		private string DoStringDictToStr(System.Collections.Specialized.StringDictionary dict)
 		{
 			var builder = new System.Text.StringBuilder();

@@ -53,6 +53,7 @@ namespace Disassembler
 			m_types.Add(item);
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		protected override void OnDealloc()
 		{
 			m_types.ForEach(t => t.release());
@@ -140,6 +141,7 @@ namespace Disassembler
 			}
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		protected override void OnDealloc()
 		{
 			m_methods.ForEach(m => m.release());
@@ -424,6 +426,7 @@ namespace Disassembler
 			while (false);
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		protected override void OnDealloc()
 		{
 			m_resources.ForEach(r => r.release());

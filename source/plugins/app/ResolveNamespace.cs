@@ -90,18 +90,20 @@ namespace App
 			boss = finder.GetDirectoryEditor(windowBoss);
 			if (boss == null)
 				throw new InvalidOperationException("Couldn't find a directory window associated with the text window.");
-				
+			
+			IEnumerable<string> names;
 			var database = boss.Get<IDatabase>();
-			Database db = database.GetDatabase();
-			
-			string sql = string.Format(@"
-				SELECT root_name
-					FROM Types
-				WHERE name = '{0}'
-				LIMIT {1}", typeName, max);
-			string[][] rows = db.QueryRows(sql);
-			
-			var names = from r in rows select r[0];
+			using (Database db = database.GetDatabase())
+			{
+				string sql = string.Format(@"
+					SELECT root_name
+						FROM Types
+					WHERE name = '{0}'
+					LIMIT {1}", typeName, max);
+				string[][] rows = db.QueryRows(sql);
+				
+				names = from r in rows select r[0];
+			}
 			
 			return names.ToArray();
 		}

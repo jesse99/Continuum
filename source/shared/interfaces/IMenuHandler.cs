@@ -20,6 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Gear;
+using Gear.Helpers;
 using System;
 
 namespace Shared
@@ -49,6 +50,7 @@ namespace Shared
 		void Register2(object owner, int tag, Action handler, Func<MenuState> state);
 		
 		// Removes every handler owner registered.
+		[ThreadModel(ThreadModel.Concurrent)]
 		void Deregister(object owner);
 	}
 }

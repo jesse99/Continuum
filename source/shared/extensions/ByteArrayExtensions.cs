@@ -34,6 +34,8 @@ namespace Shared
 		[Pure]
 		public static string ToText(this byte[] data)
 		{
+			Contract.Requires(data != null);
+			
 			var builder = new StringBuilder();
 			
 			int i = 0;
@@ -81,16 +83,16 @@ namespace Shared
 		}
 		
 		#region Fields		
-		private static readonly string RightArrow = "\x2192";
-		private static readonly string DownArrow = "\x2193";
-		private static readonly string DownHookedArrow = "\x21A9";
-
+		private const string RightArrow = "\x2192";
+		private const string DownArrow = "\x2193";
+		private const string DownHookedArrow = "\x21A9";
+		
 		// These are more technically correct but the new-line and tab
 		// symbols are really hard to read unless the font's point size
 		// is very large.
-//		private static readonly string NewLineSymbol = "\x2424";
-//		private static readonly string ReturnSymbol = "\x23CE";
-//		private static readonly string TabSymbol = "\x2409";
+//		private const string NewLineSymbol = "\x2424";
+//		private const string ReturnSymbol = "\x23CE";
+//		private const string TabSymbol = "\x2409";
 		#endregion
 	}
 }

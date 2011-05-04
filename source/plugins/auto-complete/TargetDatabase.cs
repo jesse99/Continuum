@@ -30,15 +30,26 @@ using System.Text;
 
 namespace AutoComplete
 {
-	internal sealed class TargetDatabase : ITargetDatabase
+	internal sealed class TargetDatabase : ITargetDatabase, IDisposable
 	{
 		public TargetDatabase(Database database)
 		{
 			m_database = database;
 		}
 		
+		public void Dispose()
+		{
+			if (!m_disposed)
+			{
+				m_database.Dispose();
+				m_disposed = true;
+			}
+		}
+		
 		public bool HasType(string typeName)
 		{
+			if (m_disposed)
+				throw new ObjectDisposedException(GetType().Name);
 			Contract.Requires(!string.IsNullOrEmpty(typeName), "typeName is null or empty");
 			Profile.Start("TargetDatabase::HasType");
 			
@@ -74,6 +85,8 @@ namespace AutoComplete
 		
 		public Item[] GetNamespaces(string ns)
 		{
+			if (m_disposed)
+				throw new ObjectDisposedException(GetType().Name);
 			var items = new List<Item>();
 			Profile.Start("TargetDatabase::GetNamespaces");
 			
@@ -119,6 +132,8 @@ namespace AutoComplete
 		
 		public void GetBases(string typeName, List<string> baseNames, List<string> interfaceNames, List<string> allNames)
 		{
+			if (m_disposed)
+				throw new ObjectDisposedException(GetType().Name);
 			Profile.Start("TargetDatabase::GetBases");
 			
 			if (typeName == "array-type")
@@ -172,6 +187,8 @@ namespace AutoComplete
 		
 		public Item[] GetFields(string[] typeNames, bool instanceCall, bool isStaticCall, bool includeProtected)
 		{
+			if (m_disposed)
+				throw new ObjectDisposedException(GetType().Name);
 			Profile.Start("TargetDatabase::GetFields1");
 			var items = new List<Item>();
 			
@@ -213,6 +230,8 @@ namespace AutoComplete
 		
 		public Item[] GetFields(string[] typeNames, bool instanceCall, bool isStaticCall, string name,  bool includeProtected)
 		{
+			if (m_disposed)
+				throw new ObjectDisposedException(GetType().Name);
 			Profile.Start("TargetDatabase::GetFields2");
 			var items = new List<Item>();
 			
@@ -254,6 +273,8 @@ namespace AutoComplete
 		
 		public Item[] GetStemmedTypes(string[] namespaces, string stem)
 		{
+			if (m_disposed)
+				throw new ObjectDisposedException(GetType().Name);
 			Profile.Start("TargetDatabase::GetStemmedTypes");
 			var items = new List<Item>();
 			
@@ -296,6 +317,8 @@ namespace AutoComplete
 		
 		public Item[] GetStemmedCtors(string[] namespaces, string stem)
 		{
+			if (m_disposed)
+				throw new ObjectDisposedException(GetType().Name);
 			Profile.Start("TargetDatabase::GetStemmedCtors");
 			var items = new List<Item>();
 			
@@ -352,6 +375,8 @@ namespace AutoComplete
 		
 		public Item[] GetMembers(string[] typeNames, bool instanceCall, bool isStaticCall, bool includeProtected)
 		{
+			if (m_disposed)
+				throw new ObjectDisposedException(GetType().Name);
 			Profile.Start("TargetDatabase::GetMembers1");
 			var items = new List<Item>();
 			
@@ -408,6 +433,8 @@ namespace AutoComplete
 		
 		public Item[] GetMembers(string[] typeNames, bool instanceCall, bool isStaticCall, string name, int arity, bool includeProtected)
 		{
+			if (m_disposed)
+				throw new ObjectDisposedException(GetType().Name);
 			Profile.Start("TargetDatabase::GetMembers2");
 			var items = new List<Item>();
 			
@@ -466,6 +493,8 @@ namespace AutoComplete
 		
 		public Item[] GetExtensionMethods(string[] typeNames, string[] namespaces)
 		{
+			if (m_disposed)
+				throw new ObjectDisposedException(GetType().Name);
 			Profile.Start("TargetDatabase::GetExtensionMethods1");
 			var items = new List<Item>();
 			
@@ -515,6 +544,8 @@ namespace AutoComplete
 		
 		public Item[] GetExtensionMethods(string[] typeNames, string[] namespaces, string name, int arity)
 		{
+			if (m_disposed)
+				throw new ObjectDisposedException(GetType().Name);
 			Profile.Start("TargetDatabase::GetExtensionMethods2");
 			var items = new List<Item>();
 			
@@ -651,6 +682,7 @@ namespace AutoComplete
 		#endregion
 		
 		#region Fields
+		private bool m_disposed;
 		private Database m_database;
 		#endregion
 	}

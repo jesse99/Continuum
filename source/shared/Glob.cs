@@ -40,6 +40,7 @@ namespace Shared
 	
 	public static class Glob
 	{
+		[ThreadModel(ThreadModel.Concurrent)]
 		public static bool Match(string glob, string name)
 		{
 			Contract.Requires(glob != null, "glob is null");
@@ -89,6 +90,7 @@ namespace Shared
 		}
 		
 		[DllImport("libc")]
+		[ThreadModel(ThreadModel.Concurrent)]
 		private static extern int fnmatch(
 			string    pattern,
 			string    name,

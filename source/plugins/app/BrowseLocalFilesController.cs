@@ -179,6 +179,7 @@ namespace App
 		}
 		
 		#region Private Types
+		[ThreadModel(ThreadModel.Concurrent)]
 		private struct LocalFile
 		{
 			public LocalFile(ThreadedFile file) : this()
@@ -208,6 +209,7 @@ namespace App
 			public NSAttributedString DisplayText {get; private set;}
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		private struct ThreadedFile
 		{
 			public ThreadedFile(string fullPath, string relativePath, NSColor color) : this()

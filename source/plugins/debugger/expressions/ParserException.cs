@@ -22,11 +22,12 @@
 using System;
 //using System.Collections.Generic;
 //using System.Globalization;
-//using System.Runtime.Serialization;
+using System.Runtime.Serialization;
 //using System.Security.Permissions;
 
 namespace Debugger
 {
+	[Serializable]
 	internal sealed class ParserException : Exception
 	{
 		public ParserException(int line, int col, string file, string input, string message) : base(DoBuildMesg(col, input, message))

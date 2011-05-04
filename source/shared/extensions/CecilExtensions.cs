@@ -35,6 +35,8 @@ namespace Shared
 	{
 		public static string ToText(this CustomAttribute attr, bool includeNamespace)
 		{
+			Contract.Requires(attr != null);
+			
 			var args = new List<string>();
 			
 			for (int i = 0; i < attr.ConstructorArguments.Count; ++i)
@@ -98,6 +100,9 @@ namespace Shared
 		
 		public static bool HasAttribute(this Collection<CustomAttribute> attrs, string name)
 		{
+			Contract.Requires(attrs != null);
+			Contract.Requires(name != null);
+			
 			foreach (CustomAttribute attr in attrs)
 			{
 				string fullName = attr.Constructor.DeclaringType.FullName;
@@ -110,12 +115,16 @@ namespace Shared
 		
 		public static bool IsExtension(this MethodDefinition method)
 		{
+			Contract.Requires(method != null);
+			
 			string name = "System.Runtime.CompilerServices.ExtensionAttribute";
 			return method.HasCustomAttributes && method.CustomAttributes.HasAttribute(name);
 		}
 		
 		public static string GetParameterModifier(this MethodReference method, int index)
 		{
+			Contract.Requires(method != null);
+			
 			var builder = new System.Text.StringBuilder();
 			
 			MethodDefinition md = method as MethodDefinition;
@@ -140,6 +149,8 @@ namespace Shared
 		
 		public static string ToText(this SecurityDeclaration sec, bool includeNamespace)
 		{
+			Contract.Requires(sec != null);
+			
 			var builder = new System.Text.StringBuilder();
 			
 			if (includeNamespace)
@@ -233,6 +244,8 @@ namespace Shared
 		
 		public static string LayoutToText(this TypeDefinition type, bool includeNamespace)
 		{
+			Contract.Requires(type != null);
+			
 			var builder = new System.Text.StringBuilder();
 			
 			if (includeNamespace)
@@ -299,6 +312,8 @@ namespace Shared
 		
 		public static string ArgToString(TypeReference type, object value, bool includeNamespace, bool includeTypeName)
 		{
+			Contract.Requires(type != null);
+			
 			string result = null;
 			
 			TypeDefinition td = type.Resolve();

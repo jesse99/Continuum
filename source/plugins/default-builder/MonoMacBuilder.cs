@@ -59,10 +59,10 @@ namespace DefaultBuilder
 			m_make.Init(makefile);
 		}
 		
-		public static string[] Globs
-		{
-			get {return ms_srcGlobs;}
-		}
+//		public static string[] Globs
+//		{
+//			get {return ms_srcGlobs;}
+//		}
 		
 		public string DefaultTarget
 		{

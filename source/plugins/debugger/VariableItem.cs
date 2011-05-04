@@ -258,6 +258,7 @@ namespace Debugger
 			}
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		private void DoToString(System.Text.StringBuilder builder, string format, int depth)
 		{
 			switch (format)

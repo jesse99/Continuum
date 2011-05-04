@@ -21,6 +21,7 @@
 
 using MCocoa;
 using MObjc;
+using MObjc.Helpers;
 using System;
 
 namespace Shared
@@ -29,6 +30,8 @@ namespace Shared
 	{
 		public static void Copy(this NSTableView table)
 		{
+			Contract.Requires(table != null);
+			
 			var tab = NSAttributedString.Create("\t");
 			var newline = NSAttributedString.Create("\n");
 			NSArray cols = table.tableColumns();
@@ -56,6 +59,8 @@ namespace Shared
 		
 		public static void Copy(this NSOutlineView table)
 		{
+			Contract.Requires(table != null);
+			
 			var tab = NSAttributedString.Create("\t");
 			var newline = NSAttributedString.Create("\n");
 			NSArray cols = table.tableColumns();

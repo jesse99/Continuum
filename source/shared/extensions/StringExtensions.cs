@@ -40,7 +40,7 @@ namespace Shared
 		[Pure]
 		public static bool IsNullOrWhiteSpace(this string s)	// .NET 4.0 method
 		{
-			if (s == null || s.Length == 0)
+			if (string.IsNullOrEmpty(s))
 				return true;
 			
 			foreach (char ch in s)
@@ -91,6 +91,10 @@ namespace Shared
 		[Pure]
 		public static string ReplaceChars(this string str, string chars, string value)
 		{
+			Contract.Requires(str != null);
+			Contract.Requires(chars != null);
+			Contract.Requires(value != null);
+			
 			var builder = new System.Text.StringBuilder(str.Length);
 			
 			for (int i = 0; i < str.Length; ++i)
@@ -107,6 +111,8 @@ namespace Shared
 		[Pure]
 		public static string ReversePath(this string path)
 		{
+			Contract.Requires(path != null);
+			
 			// Returns "baz • bar • foo" for "/foo/bar/baz".
 			string[] parts = path.Split(new char[]{'/'}, StringSplitOptions.RemoveEmptyEntries);
 			Array.Reverse(parts);

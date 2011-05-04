@@ -122,9 +122,9 @@ namespace DirectoryEditor
 			}
 		}
 		
+		[ThreadModel(ThreadModel.Concurrent)]
 		protected override void OnDealloc()
 		{
-			Broadcaster.Invoke("closed directory", m_boss);
 //			m_boss.Free();
 			m_boss = null;
 			
@@ -161,6 +161,7 @@ namespace DirectoryEditor
 			
 			window().autorelease();
 			autorelease();
+			Broadcaster.Invoke("closed directory", m_boss);
 		}
 		
 		public Boss Boss
