@@ -41,11 +41,9 @@ PID    COMMAND      %CPU TIME          #TH #WQ  #POR #MREGS RPRVT  RSHRD  RSIZE
 25237- Foreshadow   0.0  01:05.43 35    2    289  825    35M+   27M    57M+
 25237- Foreshadow   0.0  01:55.69 34    1    289  826    31M-   32M+   55M		after a few days of minimal activity
 25237- Foreshadow   3.5  02:59.00 37    3    301 1359   45M+   45M    89M+	after trying to run unit tests
-
-
+25237- Foreshadow   0.0  09:20.09 38    4    303  2488  79M+   49M-   120M 	after a bunch of gendarme stuff
 
 * Release checklist:
-	- run gendarme
 	- look at memory usage
 	- search for TODO (in all files)
 	- make sure untitled docs work OK
@@ -57,7 +55,7 @@ PID    COMMAND      %CPU TIME          #TH #WQ  #POR #MREGS RPRVT  RSHRD  RSIZE
 	- update known issues in the README
 	- review README
 	- review config file
-	- mention that thr debugger requires mono 2.6.3 or later
+	- mention that the debugger requires mono 2.6.3 or later
 	- run from the finder
 	- review tar targets
 	- use svn log -r 1:HEAD > CHANGE_LOG
@@ -602,7 +600,6 @@ PID    COMMAND      %CPU TIME          #TH #WQ  #POR #MREGS RPRVT  RSHRD  RSIZE
 	- update known issues in the README
 	- review README
 	- review config file
-	- mention that thr debugger requires mono 2.6.3 or later
 	- run from the finder
 	- review tar targets
 	- use svn log -r 1:HEAD > CHANGE_LOG

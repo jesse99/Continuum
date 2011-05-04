@@ -5,12 +5,57 @@
 R: Gendarme.Rules.Design.Linq.AvoidExtensionMethodOnSystemObjectRule
 M: System.String CsRefactor.Script.ObjectExtensions::Stringify(System.Object)
 M: System.String CsRefactor.Script.ObjectExtensions::QuotedStringify(System.Object)
+M: System.String Debugger.ObjectExtensions::Stringify(System.Object)
 
 # These are OK.
+R: Gendarme.Rules.Correctness.AvoidMethodsWithSideEffectsInConditionalCodeRule
+M: Mono.Debugger.Soft.TypeMirror Debugger.ThreadMirrorExtensions::GetType(Mono.Debugger.Soft.ThreadMirror,System.String)
+M: Mono.Debugger.Soft.TypeMirror Debugger.ThreadMirrorExtensions::GetType(Mono.Debugger.Soft.ThreadMirror,System.String)
+M: System.Void TextEditor.Editor::Reload()
+M: System.Void TextEditor.Editor::Reload()
+
 R: Gendarme.Rules.Design.EnumsShouldUseInt32Rule
 A: shared
 
+R: Gendarme.Rules.Design.Generic.AvoidDeclaringCustomDelegatesRule
+T: Shared.Database/UpdateCallback
+T: Shared.Database/HeaderCallback
+T: Shared.Database/RowCallback
+T: Shared.Database/SelectCallback
+
+R: Gendarme.Rules.Correctness.UseValueInPropertySetterRule
+M: System.Void Transcript.Transcript::set_Window(MCocoa.NSWindow)
+
+R: Gendarme.Rules.Correctness.ProvideCorrectArgumentsToFormattingMethodsRule
+M: System.Void DefaultBuilder.MonoMacBuilder::DoCreatePlist(System.String)
+
+R: Gendarme.Rules.Concurrency.ReviewLockUsedOnlyForOperationsOnVariablesRule
+M: Debugger.State Debugger.DebuggerThread::GetState()
+
+R: Gendarme.Rules.Design.PreferEventsOverMethodsRule
+M: System.Void Shared.LiveRange::Fire()
+
 R: Gendarme.Rules.Naming.AvoidRedundancyInMethodNameRule
+A: app
+A: auto-complete
+A: build-errors
+A: continuum
+A: cs-parser
+A: cs-refactor
+A: debugger
+A: directory-editor
+A: file-system
+A: find
+A: make-builder
+A: object-model
+A: shared
+A: svn
+A: styler
+A: text-editor
+A: text-view
+A: transcript
+
+R: Gendarme.Rules.Design.Generic.DoNotExposeGenericListsRule
 A: app
 A: auto-complete
 A: build-errors
@@ -38,14 +83,17 @@ A: cs-parser
 A: cs-refactor
 A: debugger
 A: directory-editor
+A: disassembler
 A: file-system
 A: find
+A: git
 A: make-builder
 A: object-model
 A: shared
 A: svn
 A: styler
 A: text-editor
+A: text-view
 A: transcript
 
 R: Gendarme.Rules.Maintainability.AvoidLackOfCohesionOfMethodsRule
@@ -56,16 +104,22 @@ A: continuum
 A: cs-parser
 A: cs-refactor
 A: debugger
+A: default-builder
 A: directory-editor
+A: disassembler
 A: file-system
 A: find
+A: git
 A: make-builder
+A: nant-builder
 A: object-model
 A: shared
 A: svn
 A: styler
 A: text-editor
+A: text-view
 A: transcript
+A: waf-builder
 
 R: Gendarme.Rules.Performance.AvoidUncalledPrivateCodeRule
 A: app
@@ -76,15 +130,19 @@ A: cs-parser
 A: cs-refactor
 A: debugger
 A: directory-editor
+A: disassembler
 A: file-system
 A: find
 A: make-builder
+A: nant-builder
 A: object-model
 A: shared
 A: svn
 A: styler
 A: text-editor
+A: text-view
 A: transcript
+A: waf-builder
 
 R: Gendarme.Rules.Portability.DoNotHardcodePathsRule
 A: app
@@ -94,6 +152,7 @@ A: continuum
 A: cs-parser
 A: cs-refactor
 A: debugger
+A: default-builder
 A: directory-editor
 A: file-system
 A: find
@@ -103,6 +162,7 @@ A: shared
 A: svn
 A: styler
 A: text-editor
+A: text-view
 A: transcript
 
 R: Gendarme.Rules.Interoperability.MarshalStringsInPInvokeDeclarationsRule
@@ -189,17 +249,20 @@ A: continuum
 A: cs-parser
 A: cs-refactor
 A: debugger
+A: default-builder
 A: directory-editor
 A: disassembler
 A: file-system
 A: find
 A: make-builder
+A: nant-builder
 A: object-model
 A: shared
 A: svn
 A: styler
 A: text-editor
 A: transcript
+A: waf-builder
 
 R: Gendarme.Rules.Performance.AvoidUnusedParametersRule
 A: app
@@ -214,6 +277,7 @@ A: disassembler
 A: file-system
 A: find
 A: make-builder
+A: nant-builder
 A: object-model
 A: shared
 A: svn
@@ -276,6 +340,7 @@ A: shared
 A: svn
 A: styler
 A: text-editor
+A: text-view
 A: transcript
 
 R: Gendarme.Rules.Portability.NewLineLiteralRule
@@ -286,6 +351,7 @@ A: continuum
 A: cs-parser
 A: cs-refactor
 A: debugger
+A: default-builder
 A: directory-editor
 A: file-system
 A: find
@@ -305,16 +371,20 @@ A: continuum
 A: cs-parser
 A: cs-refactor
 A: debugger
+A: default-builder
 A: directory-editor
 A: disassembler
 A: file-system
 A: find
+A: git
 A: make-builder
+A: nant-builder
 A: object-model
 A: shared
 A: svn
 A: styler
 A: text-editor
+A: text-view
 A: transcript
 
 R: Gendarme.Rules.BadPractice.DisableDebuggingCodeRule
@@ -345,9 +415,11 @@ A: cs-parser
 A: cs-refactor
 A: debugger
 A: directory-editor
+A: disassembler
 A: file-system
 A: find
 A: make-builder
+A: nant-builder
 A: object-model
 A: shared
 A: svn
@@ -368,12 +440,14 @@ A: disassembler
 A: file-system
 A: find
 A: make-builder
+A: nant-builder
 A: object-model
 A: shared
 A: svn
 A: styler
 A: text-editor
 A: transcript
+A: waf-builder
 
 R: Gendarme.Rules.Design.AvoidSmallNamespaceRule
 A: app
@@ -405,6 +479,7 @@ A: debugger
 A: directory-editor
 A: file-system
 A: find
+A: git
 A: make-builder
 A: object-model
 A: shared
@@ -494,6 +569,9 @@ T: CsRefactor.Script.ReturnException
 T: CsRefactor.Script.ParserException
 T: CsRefactor.Script.ScannerException
 T: Shared.ScriptException
+T: Shared.BaseParserException
+T: Shared.ParserException
+T: Debugger.ParserException
 
 # These rules are (almost always) lame.
 R: Gendarme.Rules.Performance.ConsiderCustomAccessorsForNonVisibleEventsRule
@@ -536,14 +614,20 @@ A: app
 A: auto-complete
 A: cs-refactor
 A: debugger
+A: directory-editor
+A: disassembler
 A: cs-parser
+A: nant-builder
 A: object-model
 A: shared
 A: styler
 A: text-editor
+A: text-view
+A: waf-builder
 
 R: Gendarme.Rules.Naming.AvoidTypeInterfaceInconsistencyRule
 T: Shared.ISccs
+T: Shared.IDatabase
 
 R: Gendarme.Rules.Concurrency.DoNotUseLockedRegionOutsideMethodRule
 M: System.Void Shared.AssemblyCache::ReleaseLock()
@@ -553,6 +637,8 @@ M: System.Void Shared.AssemblyCache::AcquireLock()
 R: Gendarme.Rules.BadPractice.ConstructorShouldNotCallVirtualMethodsRule
 M: System.Void Shared.CsNamespace::SetDeclarations(System.Collections.Generic.List`1<Shared.CsDeclaration>)
 M: System.Void Shared.CsType::SetDeclarations(System.Collections.Generic.List`1<Shared.CsDeclaration>)
+T: Shared.CsNamespace
+T: Shared.CsType
 
 # These cares are a bit smelly but should be OK.
 R: Gendarme.Rules.BadPractice.ConstructorShouldNotCallVirtualMethodsRule
@@ -572,17 +658,26 @@ T: ObjectModel.Populate
 T: ObjectModel.ShortForm
 T: TextEditor.Styler
 T: TextEditor.TextController
+T: TextEditor.TextEditorView
+T: Transcript.Transcript
 
 # Complains about generic names like A1.
 R: Gendarme.Rules.Naming.UseCorrectPrefixRule
-T: CsRefactor.Script.RefactorType/Binary`3
-T: CsRefactor.Script.RefactorType/Unary`2
-T: CsRefactor.Script.RefactorType/Binary`3
-T: Shared.UniqueIndexer`2
+A: cs-parser
+A: cs-refactor
+A: default-builder
+A: shared
+A: styler
 T: Styler.CSharpDeclarations
 
 R: Gendarme.Rules.Performance.AvoidRepetitiveCastsRule
 M: System.Object CsRefactor.Script.ScriptType::DoAsk(CsRefactor.Script.Script,System.String,System.Object)
+A: auto-complete
+A: debugger
+AL default-builder
+A: object-model
+A: shared
+A: styler
 
 R: Gendarme.Rules.Naming.DoNotPrefixValuesWithEnumNameRule
 T: Shared.Database/Error
@@ -613,4 +708,184 @@ R: Gendarme.Rules.Concurrency.DecorateThreadsRule
 M: MCocoa.NSFileHandle Find.FindAll::OnOpenFile(System.String)
 M: MCocoa.NSFileHandle Find.ReplaceAll::OnOpenFile(System.String)
 M: Gear.Boss Shared.InterfaceExtensions::SafeBoss(Gear.IInterface)
+M: System.Void Debugger.DebuggerThread::AddBreakpoint(Debugger.Breakpoint,Mono.Debugger.Soft.MethodMirror,System.Int64)
+M: Debugger.DebuggerThread/HandlerAction Debugger.DebuggerThread::DoVMStartEvent(Mono.Debugger.Soft.VMStartEvent)
+M: System.Void Debugger.DebuggerThread::DoDispatchEvents()
+M: MCocoa.NSColor DirectoryEditor.DirectoryItemStyler::GetFileColor(System.String,System.String[][],MCocoa.NSColor[])
+M: MCocoa.NSColor DirectoryEditor.DirectoryItemStyler::GetFileColor(System.String,System.String[][],MCocoa.NSColor[])
+M: System.Void Styler.Language::DoWriteError(System.String,System.Object[])
+M: System.Void TextView.TimeMachine::DoFindBackups(System.String)
+M: System.Void App.BrowseLocalFilesController/LocalFile::.ctor(App.BrowseLocalFilesController/ThreadedFile)
+M: System.Void App.BrowseLocalFilesController/LocalFile::.ctor(App.BrowseLocalFilesController/LocalFile,System.String)
+M: System.Void Debugger.DebuggerDocument::OnDealloc()
 
+# Properties are supposed to be fast so this rule seems rather silly.
+R: Gendarme.Rules.Performance.AvoidRepetitiveCallsToPropertiesRule
+A: app
+A: auto-complete
+A: build-errors
+A: continuum
+A: cs-parser
+A: cs-refactor
+A: debugger
+A: directory-editor
+A: disassembler
+A: file-system
+A: find
+A: git
+A: make-builder
+A: nant-builder
+A: object-model
+A: shared
+A: svn
+A: styler
+A: text-editor
+A: text-view
+A: transcript
+A: waf-builder
+
+# This rule fires a lot and would hardly ever matter.
+R: Gendarme.Rules.Performance.AvoidConcatenatingCharsRule
+A: app
+A: auto-complete
+A: build-errors
+A: continuum
+A: cs-parser
+A: cs-refactor
+A: debugger
+A: disassembler
+A: directory-editor
+A: file-system
+A: find
+A: make-builder
+A: object-model
+A: shared
+A: svn
+A: styler
+A: text-editor
+A: transcript
+
+# It would be nice to rewrite at least some of these methods, but that is too much
+# work for very little payoff.
+R: Gendarme.Rules.Performance.AvoidMethodWithLargeMaximumStackSizeRule
+A: app
+A: auto-complete
+A: build-errors
+A: continuum
+A: cs-parser
+A: cs-refactor
+A: debugger
+A: directory-editor
+A: disassembler
+A: file-system
+A: find
+A: make-builder
+A: object-model
+A: shared
+A: svn
+A: styler
+A: text-editor
+A: text-view
+A: transcript
+
+# Usually better to allow the caller to handle errors.
+R: Gendarme.Rules.BadPractice.PreferTryParseRule
+A: app
+A: auto-complete
+A: build-errors
+A: continuum
+A: cs-parser
+A: cs-refactor
+A: debugger
+A: directory-editor
+A: disassembler
+A: file-system
+A: find
+A: make-builder
+A: object-model
+A: shared
+A: svn
+A: styler
+A: text-editor
+A: transcript
+A: waf-builder
+
+# We don't care about security for p/invokes.
+R: Gendarme.Rules.Interoperability.CentralizePInvokesIntoNativeMethodsTypeRule
+A: app
+A: auto-complete
+A: build-errors
+A: continuum
+A: cs-parser
+A: cs-refactor
+A: debugger
+A: directory-editor
+A: file-system
+A: find
+A: make-builder
+A: object-model
+A: shared
+A: svn
+A: styler
+A: text-editor
+A: transcript
+
+# Compiler already warns about obsolete.
+R: Gendarme.Rules.Maintainability.RemoveDependenceOnObsoleteCodeRule
+A: app
+A: auto-complete
+A: build-errors
+A: continuum
+A: cs-parser
+A: cs-refactor
+A: debugger
+A: directory-editor
+A: file-system
+A: find
+A: make-builder
+A: object-model
+A: shared
+A: svn
+A: styler
+A: text-editor
+A: transcript
+
+# This is a bit slower but it is also safer than using const.
+R: Gendarme.Rules.BadPractice.AvoidVisibleConstantFieldRule
+A: app
+A: auto-complete
+A: build-errors
+A: continuum
+A: cs-parser
+A: cs-refactor
+A: debugger
+A: directory-editor
+A: file-system
+A: find
+A: make-builder
+A: object-model
+A: shared
+A: svn
+A: styler
+A: text-editor
+A: transcript
+
+# See AvoidVisibleConstantFieldRule.
+R: Gendarme.Rules.Performance.PreferLiteralOverInitOnlyFieldsRule
+A: app
+A: auto-complete
+A: build-errors
+A: continuum
+A: cs-parser
+A: cs-refactor
+A: debugger
+A: directory-editor
+A: file-system
+A: find
+A: make-builder
+A: object-model
+A: shared
+A: svn
+A: styler
+A: text-editor
+A: transcript
