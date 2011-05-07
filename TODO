@@ -37,27 +37,7 @@ http://research.microsoft.com/en-us/projects/pex/
 [2] http://www.mono-project.com/Compacting_GC
 [3] http://www.mono-project.com/Mono_LLVM 
 
-PID    COMMAND      %CPU TIME          #TH #WQ  #POR #MREGS RPRVT  RSHRD  RSIZE
-25237- Foreshadow   0.0  01:05.43 35    2    289  825    35M+   27M    57M+
-25237- Foreshadow   0.0  01:55.69 34    1    289  826    31M-   32M+   55M		after a few days of minimal activity
-25237- Foreshadow   3.5  02:59.00 37    3    301 1359   45M+   45M    89M+	after trying to run unit tests
-25237- Foreshadow   0.0  09:20.09 38    4    303  2488  79M+   49M-   120M 	after a bunch of gendarme stuff
-
 * Release checklist:
-	- look at memory usage
-	- search for TODO (in all files)
-	- make sure untitled docs work OK
-	- run continuum with no databases (including the windows db)
-	- run continuum with no Continuum Files dir
-	- look at memory usage
-	- build a new foreshadow
-	- review BUILDING doc
-	- update known issues in the README
-	- review README
-	- review config file
-	- mention that the debugger requires mono 2.6.3 or later
-	- run from the finder
-	- review tar targets
 	- use svn log -r 1:HEAD > CHANGE_LOG
 	- update CHANGES file
 	- make sure gear is checked in
@@ -66,7 +46,7 @@ PID    COMMAND      %CPU TIME          #TH #WQ  #POR #MREGS RPRVT  RSHRD  RSIZE
 	- review the front page of the web site
 	- review the screen shots
 	- email
-	- merge release branch into master
+	- create a new branch for the release
 	- update version (both in the make file and the readme)
 	- get a plan for the next version
 * peg-sharp fixes:
@@ -601,7 +581,7 @@ PID    COMMAND      %CPU TIME          #TH #WQ  #POR #MREGS RPRVT  RSHRD  RSIZE
 	- review README
 	- review config file
 	- run from the finder
-	- review tar targets
+	- review dist target
 	- use svn log -r 1:HEAD > CHANGE_LOG
 	- update CHANGES file
 	- make sure gear is checked in
@@ -610,7 +590,7 @@ PID    COMMAND      %CPU TIME          #TH #WQ  #POR #MREGS RPRVT  RSHRD  RSIZE
 	- review the front page of the web site
 	- review the screen shots
 	- email
-	- merge release branch into master
+	- create a new branch for the release
 	- update version (both in the make file and the readme)
 	- get a plan for the next version
 

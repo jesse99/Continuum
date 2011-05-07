@@ -142,7 +142,7 @@ mini-clean:
 	
 dist: mini-clean app
 	tar --create --compress --exclude \*/.svn --exclude \*/.svn/\* --file=Continuum-$(version).tar.gz \
-		BUILDING CHANGES CHANGE_LOG Dictionary.txt MIT.X11 Makefile README.asciidoc README.html Tables.rtf gendarme.ignore install-tool.c make-foreshadow source bin/Continuum.app
+		BUILDING CHANGES CHANGE_LOG Dictionary.txt MIT.X11 Makefile README.asciidoc README.html Tables.rtf coco-pack gendarme.ignore install-tool.c make-foreshadow source bin/Continuum.app
 
 dist-clean:
 	-rm -rf bin
@@ -202,15 +202,6 @@ bin/continuum.exe.config:
 	@echo "</configuration>" >> bin/continuum.exe.config
 	@echo "" >> bin/continuum.exe.config
 	
-smokey_flags := --not-localized -set:naming:jurassic -set:dictionary:Dictionary.txt
-smokey_flags += -exclude-check:C1030	# UnusedArg
-smokey_flags += -exclude-check:D1020	# NativeMethods
-smokey_flags += -exclude-check:D1047	# TooManyArgs
-smokey_flags += -exclude-check:P1003	# AvoidBoxing
-smokey_flags += -exclude-check:P1004	# AvoidUnboxing
-smokey_flags += -exclude-check:P1005	# StringConcat
-smokey_flags += -exclude-check:P1022	# PropertyReturnsCollection
-
 gendarme_flags := --severity all --confidence all --ignore gendarme.ignore --quiet
 gendarme: app
 	@-$(GENDARME) $(gendarme_flags) $(smoke-files)

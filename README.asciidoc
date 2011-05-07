@@ -9,16 +9,17 @@ Continuum 0.8.0 includes the following features:
 
  * A debugger implemented using the http://www.mono-project.com/Soft_Debugger[Mono Soft Debugger].
  * Auto-completion for C# code.
- * Builds using http://www.gnu.org/software/make/manual/html_node/index.html[make] or http://nant.sourceforge.net/[nant].
+ * Can generate make files for simple C/C++, C#, F#, and MonoMac projects. Can also build
+using existing http://www.gnu.org/software/make/manual/html_node/index.html[make], http://nant.sourceforge.net/[nant], or http://code.google.com/p/waf/[waf] files.
  * Customizable regex based syntax highlighting.
- * Support for showing make and gmcs build errors.
+ * Support for showing build errors.
  * An sqlite database containing information about the types in each project's assemblies and the assemblies they reference.
  * Context commands which operate on the selection using the database such as show short form or show derived classes.
  * Flexible regex based searching of single files or directories.
  * Customizable scripts to change selections.
  * Customizable scripts to refactor C# code.
  * Time Machine integration.
- * Basic integrated svn support.
+ * Basic integrated svn and git support.
  * Basic integrated file system support.
 
 Continuum depends upon http://code.google.com/p/mobjc[mobjc], http://code.google.com/p/mcocoa[mcocoa], and http://code.google.com/p/gear-sharp[gear].
@@ -29,8 +30,7 @@ You don't have to do any sort of installation to run Continuum, but there are a 
 
 • Continuum uses the Unix locate command quite a bit when searching for files. Unfortunately the locate command is disabled in Snow Leopard. To enable it you need to type the following into a terminal: `sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.locate.plist`. 
 
-• There is a command line tool that can be used within a terminal to open files or directories using Continuum. To install the tool open Continuum and select the `Install Command Line Tool` item 
-from the Continuum menu. 
+• There is a command line tool that can be used within a terminal to open files or directories using Continuum. To install the tool open Continuum and select the `Install Command Line Tool` item from the Continuum menu. 
 
 • It's helpful to install the mono sources when using Continuum. This lets you open the source file associated with System or Mono types using a contextual menu. If you have one copy of the source code Continuum can figure out where it is using the locate command. But if you have multiple copies you may want to go to the Environment panel in Continuum's preferences and double-check that it is set correctly.
 
@@ -42,9 +42,9 @@ In order to do things like auto-complete Continuum has to parse the assemblies y
 
 ==== 2.1 Directory Editor ====
 
-Continuum uses a different model than most other IDEs: instead of project or solution files you open arbitrary directories and use make or nant files within the directory to build. By default, every file within the directory appears in the directory editor but you can use the preferences associated with that directory to specify globs for files to exclude and to color code files which are included.
+Continuum uses a different model than most other IDEs: instead of project or solution files you open arbitrary directories and use make, nant, and waf files within the directory to build. By default, every file within the directory appears in the directory editor but you can use the preferences associated with that directory to specify globs for files to exclude, to color code files which are included, etc.
 
-There is a contextual menu for files within the directory editor which allows you to do basic file manager and svn tasks. Command-shift-D can be used to duplicate a file and clicking on a file twice allows you to rename it. The file list is live so it will update as files are updated or removed.
+There is a contextual menu for files within the directory editor which allows you to do basic file manager and SCCS tasks. Command-shift-D can be used to duplicate a file and clicking on a file twice allows you to rename it. The file list is live so it will update as files are updated or removed from the file system.
 
 ==== 2.2 Text Editor ==== 
 
@@ -140,6 +140,8 @@ These are shell scripts which read from stdin and write to stdout. They are auto
 These scripts allow you to do more complex processing of C# source. They are written in a custom little language which allows you to easily access and change C# code. To add a new refactor select the `Open Refactors` menu item from the Refactor menu. `standard/Refactor Language.rtf` explains the language used to write the refactors.
 
 == 5 Known Issues == 
+
+ * Continuum started crashing when exiting within some unknown finalizer starting with mono 2.10.
 
  * Auto-complete won't complete subscripted expressions (name[0].) or bound generic types (List<string> foo; foo.First().).
 
