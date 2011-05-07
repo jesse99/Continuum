@@ -1,3 +1,25 @@
+Version 0.8 (May 7 2011)
+
+* Added basic support for git.
+* Added recent files and local files browsers.
+* Added support for building projects using waf.
+* Added support for generating makefiles for simple C/C++, C#, F#, and Monomac projects.
+* Collapsing a directory window will now collapse all of the associated text windows.
+* Added new C# refactors: Implement IComparable, Add ToString, and Add Regex.
+* Added Copy Path and Show in Finder to the text window context menu.
+* Added syntax highlighting for Asciidoc and F# files.
+* Command-option-up-arrow toggles between C/C++/Objective-C header and source files.
+* Command-option-left/right-arrow cycles through text windows in a nicer way than the standard Cocoa command-` command.
+* Added a toggle comment command (command-/).
+* Shift-delete will delete lines.
+* Added a directory pref to insert spaces when tab is pressed.
+* Improved the debugger: it now supports the standard debugger attributes, does a better job of displaying collections, only shows visible local variables, can debug Monomac apps, and can show details for various types.
+* Made it easier to add new languages for syntax highlighting and to edit the colors and text styles for language elements.
+* Syntax highlighting will now use shebangs to figure out which language to use.
+* Open text windows on exit are re-opened on startup.
+* Transcript context menu now has (most of) the standard Continuum context menu items.
+* Fixed save as utf16.
+
 Version 0.7 (Fri Oct 8 17:58:35 2010)
 
 * Added debugging support using the Mono Soft Debugger.

@@ -1,1656 +1,633 @@
-commit 4e3366e45f37c382dd3c13e9de7f684c7a842b3a
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Fri Oct 8 17:58:35 2010 -0700
-
-    Work around a mono 2.8 parser bug
-
-commit 7b063c1edfa07b1f587c5a0188799da806724c36
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Fri Oct 8 17:57:17 2010 -0700
-
-    Don't try to break on exceptions that happen when the UI is calling things like ToString methods
-
-commit d19a14df43da1951112a667621883b0760354e38
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Fri Oct 8 17:56:28 2010 -0700
-
-    Fix stepping with mono 2.8
-
-commit f9c303069b8e0d6415ac45a017c7afd4d8d440e9
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Fri Oct 8 17:56:06 2010 -0700
-
-    Use ReferenceEquals (had a compiler warning with mono 2.8)
-
-commit 2e1200119f7c1811c5c7dcdbe87ef98001f0b114
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Fri Oct 8 17:55:20 2010 -0700
-
-    Removed a bogus new attribute
-
-commit ec7ee0fb21f6e51ce627c81b91cc136fa6874e46
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Fri Oct 8 17:54:47 2010 -0700
-
-    Need to use this() when constructing structs with mono 2.8
-
-commit 492ca9024ba79371483bbfe2b21cc13fa458bde3
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Wed Oct 6 19:51:41 2010 -0700
-
-    Updated
-
-commit ba6836bdef60859be81913f5e698adc57d435a9b
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Wed Oct 6 19:50:28 2010 -0700
-
-    Updated make file for readme name change
-
-commit cc1b8c74f0294c9c4c01419ae681fae65dadd977
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Wed Oct 6 19:47:56 2010 -0700
-
-    Renaming README to try to get github to recognize it
-
-commit 6f16a15a1d399364a5a12d8ee2ad592dd7f5a446
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Wed Oct 6 19:46:13 2010 -0700
-
-    Deleted the dummy README added during the creation of the repo
-
-commit d97f64c3ab20c1bbe7590c97df7fa2728029ffa3
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Wed Oct 6 19:45:05 2010 -0700
-
-    Changed README from rtf to asciidoc so that it should work better with github
-
-commit c45985981ee61ecee1ad0f70bce24c8bd87ba767
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Tue Oct 5 23:16:29 2010 -0700
-
-    Updated
-
-commit f7d220caef766bd8cc95e18fa41bef9d3bdac563
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Mon Oct 4 19:30:38 2010 -0700
-
-    Stdout is the type that should use para indent
-
-commit 8a55f76317c199a8d14b9188a92b654f3f812bd9
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Mon Oct 4 19:30:15 2010 -0700
-
-    GetHashCode was using a property that Equals stopped using
-
-commit 0181f81fb87975ee54c5bc66380699a6268a42aa
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Mon Oct 4 19:29:28 2010 -0700
-
-    Removed some unused code
-
-commit 62f09d7dd65ebae80184e9b1be1e431fdea17a86
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Mon Oct 4 19:26:09 2010 -0700
-
-    Added missing ThreadModel attribute
-
-commit ec7057b9d7cb1fa2869968bdeade54a1c472619d
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Mon Oct 4 19:23:49 2010 -0700
-
-    Ignore the debugger assembly for a lot of rules
-
-commit 6abfbe0ed1329d7ecb74b155ab99e32472f1a683
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Mon Oct 4 19:23:18 2010 -0700
-
-    Added some more ignores
-
-commit f0cb6145643d2c2363d7c823924c6bcd90ec7ce1
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Mon Oct 4 18:55:01 2010 -0700
-
-    Removed some ifdefed out code
-
-commit 1531d3482e3580956090b2d0332062791a5c8f53
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Oct 3 20:15:02 2010 -0700
-
-    Updated again
-
-commit 961782f2f459de4902c3bc4c92eb38f5a5bcbc32
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Oct 3 20:12:33 2010 -0700
-
-    Updated
-
-commit f3376b03da2413f6921b7d96999c342b0132a16b
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Oct 3 20:11:39 2010 -0700
-
-    Removed some debugging code
-
-commit d3e802a63159eba5a6143db8f60a04ba21bac4ed
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Oct 3 20:06:43 2010 -0700
-
-    Use Apple's search engine with Search in Apple command (gives much better results than using google)
-
-commit fcd8ba875e5c49dc08beea5fdd2703a909d3d238
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Oct 3 20:01:43 2010 -0700
-
-    Only use paragraph indendation for command output
-
-commit 3d50c0f8577315e76751fc16c1ac9b03621ae63e
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Oct 3 20:00:06 2010 -0700
-
-    Warn if the test is not Unix (which shouldn't happen)
-
-commit 001e8784e833e099e6072bd1ea763f6bbaa589f7
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Oct 3 19:47:43 2010 -0700
-
-    Strings are converted to unix line endings when pasting (they'll be converted to the document endian when saving)
-
-commit 00a7c4fb14e8c6435b33cb8beee895349257520e
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Oct 3 11:02:44 2010 -0700
-
-    Added ignores
-
-commit 9eb4dfd364f2b65133d028bc3da4c53c596a6deb
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Oct 3 11:02:30 2010 -0700
-
-    Try to find files locally even if they don't have a slash
-
-commit 91de19cbf82b898b54748e17fccc2366eea6aa71
-Merge: 9e412a7 2bc506d
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sat Oct 2 22:19:53 2010 -0700
-
-    Merge branch 'master' of github.com:jesse99/Continuum
-
-commit 9e412a715f3f7f9cd09ef1586c395f41c1efbe85
-Author: Jesse Jones <jessejones@c-67-160-119-21.hsd1.wa.comcast.net>
-Date:   Sat Oct 2 21:38:48 2010 -0700
-
-    first commit
-
-commit 2bc506d1c81e1e5802f36d3ae2a9bc72dba214e3
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Fri Oct 1 01:38:09 2010 +0000
-
-    Minor updates.
-
-commit 6ba80b152ed5509bdb6fbf44c155e13e76ce0156
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Fri Oct 1 01:37:40 2010 +0000
-
-    Fixed the D glob.
-
-commit ec52f64c14f34257a053738d80e646017a3728f3
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Tue Sep 28 01:50:19 2010 +0000
-
-    Html files can again be edited as text files.
-
-commit bf0d9d0069a3553b4c8beaca0e462946efe2f605
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Sep 26 17:28:41 2010 +0000
-
-    Index: source/plugins/debugger/Debugger.cs
-    * Work around asynchronously invoked delegates not being collected in a timely manner.
-    
-    Index: source/plugins/text-editor/TextEditorView.cs
-    * Close the tooltip window so that Debugger instances go away.
-
-commit 3c3e014734f164dd0868471e4f7788dc6a40c905
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Sep 26 00:08:44 2010 +0000
-
-    Index: source/plugins/text-editor/TextDocument.cs
-    * Fix the code that checks for control chars on saves (it shouldn't have been using m_text).
-    
-    Index: source/plugins/text-editor/TextEncoding.cs
-    * Read as utf-8 even if the file has bad control characters (these are not technically illegal and
-    if they are in the file the user will be warned).
-    
-    Index: Makefile
-    * Incremented version number.
-
-commit 524c4e089285373572aa23873e0aa31c7bdc7754
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sat Sep 25 22:39:13 2010 +0000
-
-    Command-line tool can now open directories (and they can also be dropped on Continuum's icon).
-
-commit 037a87223d5ebf2d864fa288da694578d20500e7
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sat Sep 25 14:46:37 2010 +0000
-
-    * Work around a 10.6 bug that prevents toolbar buttons from validating.
-    * Apple doesn't ensure that toolbar buttons are valid before handling clicks so fixed
-    cancel build so that it works even if no build is in progress.
-
-commit 2cbc15f7a22e72fb020275391a199726d8d30d67
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Wed Sep 22 04:07:17 2010 +0000
-
-    Use the Unicode names for control characters.
-
-commit 0bab7e3448d9b371fac0935e7a1c3125d48c0423
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Wed Sep 22 03:50:58 2010 +0000
-
-    Use rangeOfCharacterFromSet_options_range to check for control characters so that we can
-    warn the user about embedded nulls (which screw everything up). Also checks for the control
-    characters in 0x80-0x9F.
-
-commit 7278fbbab22ff4ef9e50c1455798fb0e1ee7f7a7
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Sep 19 17:10:32 2010 +0000
-
-    Index: source/plugins/app/AppDelegate.cs
-    Index: source/plugins/app/MainMenu.nib/keyedobjects.nib
-    Index: source/plugins/app/MainMenu.nib/designable.nib
-    Index: source/plugins/app/module.mk
-    Index: source/plugins/app/Application.cs
-    Index: source/plugins/app/debug-assembly.nib/designable.nib
-    Index: source/plugins/app/DebugAssemblyController.cs
-    Index: README.rtf
-    * Added a Debug menu item to make it easier to debug arbitrary assemblies.
-    
-    Index: source/plugins/app/Continuum.sdef
-    Index: source/plugins/debugger/DebugCommand.cs
-    Index: source/plugins/debugger/CodeViewer.cs
-    * Debug apple script command now allows working directory and break in main to be specified.
-    
-    Index: source/plugins/debugger/DebuggerThread.cs
-    Index: source/plugins/debugger/DebuggerDocument.cs
-    Index: source/plugins/debugger/Debugger.cs
-    * Got break in main working again.
-    
-    Index: source/plugins/text-editor/TextEditorView.cs
-    * Fix a race where we could try to show tool tips after the window had closed.
-
-commit 1cea4f5b9403446755e524044d140e811b42aff1
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sat Sep 18 23:15:01 2010 +0000
-
-    Debug apple script command now supports specifying environment variables.
-
-commit f52ead826586904280c46bc449223be0361b61be
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sat Sep 18 14:45:41 2010 +0000
-
-    Find gremlins now wraps around and tells the user when it cycles all the way around.
-
-commit c48afb5fd81d2b0216c5bda645ce9a3319b9bf63
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sat Sep 18 14:14:04 2010 +0000
-
-    Added wscript_build to Python globs
-
-commit 92f293aefa87a8db073c6e2cb996c05c8fd9ddb2
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sat Sep 18 14:00:52 2010 +0000
-
-    Added support for drmd shebangs and a few more keywords.
-
-commit 85b40a0c6d68a70aac26f92f734e19e2f03cfb54
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sat Sep 18 14:00:08 2010 +0000
-
-    Added a comment.
-
-commit b07dbd4d60eaf9630160765c0b5af95b342e2125
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sat Sep 18 13:59:34 2010 +0000
-
-    Added some profiling.
-
-commit 768526da16ae05eb068f1985506856afb331c5b3
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Fri Sep 10 00:59:24 2010 +0000
-
-    Added missing file.
-
-commit 210df6f5e247cbb159e0243be8a1b8c0b0e38342
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Tue Sep 7 04:59:40 2010 +0000
-
-    Added an IParseErrors implementation to recognize dmd (D language) compiler errors.
-
-commit 44f07faa72a9aacc321892b9cce52aa76999523d
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Tue Sep 7 04:58:29 2010 +0000
-
-    Made string a keyword.
-
-commit aef8a9b2e449581751e57504a63938f1b74868ee
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Tue Sep 7 04:57:55 2010 +0000
-
-    Removed some debug console writelines.
-
-commit 96c58c5e6af3f1d93961c101747f3365887212e1
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Mon Sep 6 23:54:20 2010 +0000
-
-    Added *.slb and *.csproj to the default list of items to ignore when populating the directory view.
-
-commit b2bc6be4d28161bb1fa29ccdbf92e3a9cbbce921
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Mon Sep 6 23:53:43 2010 +0000
-
-    Re-arranged so that the two methods that touch fields are together.
-
-commit 284ffc5cd2a7a7f8d207149499b8b786ec248bda
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Mon Sep 6 23:41:53 2010 +0000
-
-    Fixed new documents so that they are created with unix line endings instead of mac classic.
-
-commit 20f7c9780aa3e513b02267ac1c8c5091fa3e8c88
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Mon Sep 6 23:41:03 2010 +0000
-
-    Fixed so that attribute names are properly highlighted when the value uses single quotes.
-
-commit c33b64e1d7fb46f1308cc0cb4d90dca6dd948f36
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Mon Sep 6 23:40:20 2010 +0000
-
-    First cut at syntax highlighting for the D2 language.
-
-commit 6cb7e2372b843d3352a9bfa9e5ca280139a84e4e
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Aug 22 04:08:49 2010 +0000
-
-    Debugger now frees windows and other objects after the debugging session ends.
-    
-    Index: source/plugins/debugger/CodeViewer.cs
-    * Close the annotation when the debugger is stopped (otherwise the CodeViewer hangs around).
-    
-    Index: source/plugins/debugger/VariableItem.cs
-    * Autorelease child used when refreshing.
-    
-    Index: source/plugins/debugger/ThreadsController.cs
-    Index: source/plugins/debugger/StackController.cs
-    * Reload the table when stopping the debugger to ensure that cocoa releases the items.
-    
-    Index: source/plugins/debugger/VariableController.cs
-    * Use [\\w.]+ instead of .* for the default trace roots regex.
-    * Autorelease the VariableItems we get from InstanceValue and TypeValue.
-    
-    Index: source/plugins/debugger/TraceRoots.cs
-    * No longer walks arrays of primitives.
-    * No longer walks into WeakReferences.
-    
-    Index: source/plugins/app/Launcher.cs
-    * Launch no longer pops up an error alert if the user cancelled.
-
-commit c5a485f36343b93f09f2564097170d24c068c5dc
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sat Aug 21 03:55:33 2010 +0000
-
-    Open selection works even if a text window is not the main window.
-
-commit f35eb6f98355e71a7c60deaaf61d7cd1e13e003e
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sat Aug 21 03:53:57 2010 +0000
-
-    Added an InstanceType overload to avoid exceptions.
-
-commit 55662822697cf37db8782ecf8653b34d952d4f18
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sat Aug 21 02:57:43 2010 +0000
-
-    Index: source/plugins/debugger/CodeViewer.cs
-    * GetTooltip no longer falls down if the cursor is past the text.
-    
-    Index: source/plugins/text-editor/TextController.cs
-    * Create a RestoreViewState when resetting the language so that when showing lines or
-    the selection we can wait for the text to be re-laid out.
-    
-    Index: source/plugins/text-editor/CurrentStyles.cs
-    * Fixed the m_applied code so that we properly defer showing lines and such until the text has
-    been re-laid out.
-    
-    Index: source/plugins/text-editor/TextEditorView.cs
-    * Added a paste override so we can strip styles if the view is doing styling.
-
-commit 443646cf979fec1a5548e3ffa33a7b64abb50db7
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Aug 15 18:25:26 2010 +0000
-
-    Index: source/plugins/find/Find.cs
-    Index: source/plugins/find/FindInFilesController.cs
-    Index: source/plugins/find/Re.cs
-    Index: source/plugins/text-editor/Editor.cs
-    Index: source/plugins/text-editor/TextController.cs
-    Index: source/plugins/text-editor/WarningWindow.cs
-    Index: source/shared/interfaces/ITextEditor.cs
-    * Find in file (for now) defaults to wrapping around.
-    
-    Index: source/plugins/directory-editor/DirectoryController.cs
-    * Double clicking on a directory in the directory editor now toggles its expansion instead of opening it
-    in the Finder.
-    
-    Index: source/plugins/transcript/TranscriptController.cs
-    * Long lines in the transcript are now indented with a head indent attribute.
-    
-    Index: source/plugins/text-editor/TextEditorView.cs
-    * Selections can now be indented by pressing tab.
-    
-    These changes are based on patches submitted by Chuck Esterbrook.
-
-commit a91a1ebd2bc2205d816351abc9b98948e0e5e1db
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Aug 15 16:38:41 2010 +0000
-
-    Launcher script now extends PATH and PKG_CONFIG_PATH so that Continuum can
-    build itself when launched via the Finder.
-
-commit e99ac27d4e5862323ae3a99ec792cc15c1b1b72c
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Aug 15 15:30:29 2010 +0000
-
-    Fixed the annotation text width code so that it works better.
-
-commit 330debd545e63c6189656fff552bae79a1420082
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Wed Aug 11 04:01:50 2010 +0000
-
-    When auto-complete positions the sheet it sets the reserved y-coordinate to
-    zero which somehow stops the sheet from growing by one pixel each time it
-    is opened.
-
-commit cf2861499a8867dc330b73271c4ed0ebf97e1d59
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Wed Aug 11 03:19:09 2010 +0000
-
-    All open directory windows are now added to find in files popup when it is first opened.
-
-commit a990c07ae8e91eb04f44e295cd15f38f5dd3c3e6
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Wed Aug 11 00:49:01 2010 +0000
-
-    Can now hover over arguments, locals, fields, and properties to see their values.
-
-commit 7651288a57d45bd6cfe1aaefef419e07b9da1ddc
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Aug 8 22:03:35 2010 +0000
-
-    * Find Line is now command-L.
-    * Find next/prev error is command-> and command-<.
-    * Added Find Selection.
-
-commit 5007d0a02df01b803e1249d6a170e88a17983f7b
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Aug 8 18:30:25 2010 +0000
-
-    Added *.cc to c++ glob, *.csproj to xml, and *.sln to plain-text.
-
-commit ffa272fe70ee4b9e438b61c8e50f493a3af39cc5
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Aug 8 18:23:49 2010 +0000
-
-    Don't try to show thread static fields (sdb falls down).
-
-commit 8ceaa380aed0a3b96525e42a12e005518b356d43
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Aug 8 03:07:13 2010 +0000
-
-    Added a Break All debugger command.
-
-commit d94518a0b31255c418618f156d759159eb2658d4
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Aug 8 01:32:24 2010 +0000
-
-    Renamed the code viewer window "[debugging Foo.cs]" instead of "[Foo.cs]".
-
-commit ffa03cf49d670b125d574732b85fab698ce6f9cd
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Aug 8 01:28:51 2010 +0000
-
-    Renamed the Run debugger menu item Resume.
-
-commit 86ef5f9fa60d7ec494c812fe5f69ace3e6a917af
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Aug 8 01:27:45 2010 +0000
-
-    Only broadcast debugger stopped once (so debugger window prefs don't get hosed).
-
-commit a0000006e71f2b23247ebe7148cb9b167c2355d5
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Aug 8 00:46:48 2010 +0000
-
-    Code viewer window is closed when the debugger exits.
-
-commit c98e2bd574db6d4635d57b647185140b9d820d62
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Aug 8 00:38:51 2010 +0000
-
-    Index: source/plugins/debugger/VariableController.cs
-    Index: source/plugins/debugger/ThreadsController.cs
-    Index: source/plugins/debugger/StackController.cs
-    * Don't persist VM state across debugger sessions (can cause the VM to fall over).
-    
-    Index: source/plugins/debugger/DebuggerDocument.cs
-    Index: source/plugins/debugger/Debugger.cs
-    * Does a better job shutting down the debugger.
-    
-    Index: source/plugins/debugger/DebuggerThread.cs
-    * Ignore errors when trying to resume when the VM is not suspended.
-
-commit 98a7977444bb4bd6826f22504393e3626d9d8d70
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Mon Jul 26 14:07:07 2010 +0000
-
-    Index: source/plugins/debugger/values/SetValue.cs
-    Index: source/plugins/debugger/values/SetValueOverloads.cs
-    * Allow non-indexor properties to be set.
-    
-    Index: source/plugins/debugger/expressions/EvalMember.cs
-    * Now returns an error string instead of null.
-    
-    Index: source/plugins/debugger/values/GetItemOverloads.cs
-    Index: source/plugins/debugger/values/TypeValue.cs
-    Index: source/plugins/debugger/values/InstanceValue.cs
-    Index: source/plugins/debugger/values/GetChildOverloads.cs
-    Index: source/plugins/debugger/SoftDebuggerExtensions.cs
-    * Use HasSimpleGetter instead of IsIndexor.
-
-commit e909b002f60d6acca688abe64defdc0cd640139e
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Jul 25 15:26:41 2010 +0000
-
-    Index: source/plugins/debugger/values/GetItemOverloads.cs
-    Index: source/plugins/debugger/values/TypeValue.cs
-    Index: source/plugins/debugger/values/InstanceValue.cs
-    Index: source/plugins/debugger/values/GetChildOverloads.cs
-    Index: source/plugins/debugger/SoftDebuggerExtensions.cs
-    * Variable window ignores indexor properties.
-    
-    Index: source/plugins/directory-editor/TableItems.cs
-    Index: source/plugins/directory-editor/TableItem.cs
-    Index: source/plugins/directory-editor/module.mk
-    * Directory editor window is now much faster opening directories with lots of sub-directories (and
-       refreshing the window when a file in the directory changes).
-    
-    Index: source/plugins/object-model/Populate.cs
-    * Black list dll's that are not assemblies so we don't try to parse them more than once.
-    
-    Index: source/plugins/find/Re.cs
-    * Find now escapes backslash so that you can search for it without doing a regex search (thanks
-       to Chuck Esterbrook).
-
-commit a48fa31bcd801f6fb6d1bd83368e97cf46a9628e
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sat Jul 24 04:12:15 2010 +0000
-
-    Added a comment.
-
-commit 50654ae791454364c2270b871166555a0f2c0739
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sat Jul 24 04:07:34 2010 +0000
-
-    Retain the attribute dictionary returned by convertAttributes.
-
-commit 61b88dc3521f532c77f3493acbb93d0d052cb9da
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sat Jul 24 03:21:13 2010 +0000
-
-    Use ThinSpace when reversing paths.
-
-commit 5219073e8b54a5c6f92c141f9e6e68787ccee7da
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sat Jul 24 03:20:53 2010 +0000
-
-    Left paren can now be used during auto-completion (patch from Chuck Esterbrook).
-
-commit f39813b04e844f7ebd896e0120a844f6307d8fe3
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Fri Jul 23 02:03:58 2010 +0000
-
-    Index: source/plugins/find/FindAll.cs
-    Index: source/shared/StringExtensions.cs
-    * Find in Files returns reversed paths (modified patch from Chuck Esterbrook).
-    
-    Index: source/shared/Database.cs
-    Index: source/shared/DirectoryWatcher.cs
-    * Use PtrToStringAnsi instead of PtrToStringAuto (later isn't what we want if the code is ported to .NET).
-    * Also added some KeepAlive for callbacks in Database class.
-
-commit 4e347820410e9c613ef54b62c05a6ce62ad4a65d
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Wed Jul 21 03:06:18 2010 +0000
-
-    All properties are shown in the variables window (instead of just auto-props).
-
-commit 6278224408e5c78649782f0d6166d81fc61b64ad
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Mon Jul 19 02:14:03 2010 +0000
-
-    Added a missing file.
-
-commit 6a8cc0f35054ea42dfdc61a0fca55d9c387d650f
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Mon Jul 19 00:26:56 2010 +0000
-
-    Index: source/plugins/app/AppDelegate.cs
-    Index: source/plugins/app/MainMenu.nib/keyedobjects.nib
-    Index: source/plugins/app/MainMenu.nib/designable.nib
-    Index: source/plugins/app/ignore-exception.nib/keyedobjects.nib
-    Index: source/plugins/app/ignore-exception.nib/designable.nib
-    Index: source/plugins/app/module.mk
-    Index: source/plugins/debugger/Exceptions.cs
-    Index: source/plugins/debugger/Debugger.cs
-    Index: source/plugins/debugger/debugger.nib/keyedobjects.nib
-    Index: source/plugins/debugger/debugger.nib/designable.nib
-    Index: source/plugins/debugger/Bosses.xml
-    Index: source/shared/interfaces/IExceptions.cs
-    * Added a dialog to allow users to list exceptions they want to not break into the debugger for
-    when they are thrown.
-    
-    Index: source/plugins/debugger/CodeViewer.cs
-    Index: source/plugins/debugger/ICodeViewer.cs
-    Index: source/plugins/debugger/ContextMenu.cs
-    * Added a context menu to open the source file corresponding to the file being debugged.
-    
-    Index: source/plugins/app/Application.cs
-    * Don't popup an alert for the weird -psn file mono/snow leopard pass on the command line.
-
-commit ca3cea032bcb88cb865f1cdce1e3cd51db17c7d9
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Jul 18 15:40:20 2010 +0000
-
-    Fixed the debug target example.
-
-commit 5e66cf1349dc616003ce7a2d39333454276c497a
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sat Jul 17 03:52:36 2010 +0000
-
-    Deregister the menu handler before trying to add a new one to the window.
-
-commit 8e57c84d74f7fd00ef4b7cc21ab6d43a56d4e9c3
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Tue Jul 13 03:30:23 2010 +0000
-
-    Index: source/plugins/debugger/Debugger.cs
-    * Activate the Continuum app when a breakpoint is hit.
-    
-    Index: source/plugins/text-editor/TextEditorView.cs
-    * Fix an exception when right-clicking after the last line.
-    
-    Index: Makefile
-    * Debug target now creates the link to mono.
-
-commit c6970714c01067f44848c4917a18894f6ea8bdba
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Jul 11 17:52:25 2010 +0000
-
-    Fixed a few silly bugs with adding breakpoints after the type has been loaded.
-
-commit 732602bb7a375b9bbb517d6a83e022d6117c7711
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Jul 11 14:27:52 2010 +0000
-
-    Fix the time out code. Added work around for lock up due to calling
-    ToString on a type which has not been loaded.
-
-commit c18eb3e5cdf998d0a36b624902048717727d2658
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Jul 11 14:27:01 2010 +0000
-
-    Added a method to test whether an exception is a VMDisconnectedException.
-
-commit 75ab6019dbbd11c61ecb3b2f096a4b28f49c4212
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Wed Jul 7 03:28:47 2010 +0000
-
-    Made it a bit clearer than when adding new languages the globs.xml should be edited as well.
-
-commit d879faf377ef6857f70765b611db55cebd6926cb
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Wed Jul 7 03:28:12 2010 +0000
-
-    Added a debug target.
-
-commit 7c2ac92bf1556f3a16e0434f77ec3544c3fbf6e3
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Wed Jul 7 03:27:56 2010 +0000
-
-    No longer crashes Continuum if a time machine directory cannot be found.
-
-commit e0bf38d9cb5d3f658fce94a79f1322927daf41d3
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Tue Jul 6 01:25:42 2010 +0000
-
-    Improved a message.
-
-commit ecae3bdfdb601ca8b86fb30a79082dcb4c19cd24
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Tue Jul 6 01:25:27 2010 +0000
-
-    Added a new readme.
-
-commit 5827a9279b6fcbd2289e200e849fde73c28725ca
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Mon Jul 5 13:48:15 2010 +0000
-
-    If a file has no glob and cannot be opened with the Finder we now fall back
-    to opening it with Continuum (this is part of the previous commit).
-
-commit bff712e799428c3de086c672ebc76b1be89f9c96
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Mon Jul 5 13:46:11 2010 +0000
-
-    Changed a warning from using stderr to an Info level log.
-
-commit 778bead4f35fc22687b78528e23e24b35369a235
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Mon Jul 5 13:14:14 2010 +0000
-
-    Experimenting with including cocoa ref counts in traces.
-
-commit d59f4fad3f2c9ea051f585b21f1136aa79e02f39
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Mon Jul 5 13:12:56 2010 +0000
-
-    Debug script command now allows the mono app to be specified.
-
-commit e8ce0741b3cc60b74a0d804a12f5c6a1e02113da
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Jul 4 17:07:48 2010 +0000
-
-    Show roots now allows a regex used to match the type.
-
-commit fc926de695ffeeedc39f0014b02fa9ca1588151f
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sat Jul 3 15:12:28 2010 +0000
-
-    Trace static fields. Added support for tracing instances.
-
-commit 977766bc85d9e1f717e9daa222f7dfaf795e9127
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Thu Jul 1 03:25:11 2010 +0000
-
-    Started adding support for GC root tracing.
-
-commit 041a01eebdb6a06f9f78d17aaa166a0f812ff979
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Thu Jul 1 03:24:47 2010 +0000
-
-    Whitespace?
-
-commit 93a92d62c4800a86dfcab7559e0f2bac149733ec
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Jun 27 02:51:26 2010 +0000
-
-    Removed the controls window.
-
-commit d3ed67bc69c6d2bd4e9946a0e1bfafa07edc0cc7
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Jun 27 02:38:29 2010 +0000
-
-    Added some commented out code to nicely show IEnumerable types.
-
-commit b8eadefa5c640835e76c8ae899ef08c53f2bbedd
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Tue Jun 22 01:44:42 2010 +0000
-
-    Removed some unused code and tweaked a comment.
-
-commit 0b7eaf180474720a9e3e5032c25f169308402ed1
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Tue Jun 22 01:16:33 2010 +0000
-
-    Don't try to update if the window has been closed.
-
-commit 8de6750da516b5073aae04434566a06fdc633b61
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Tue Jun 22 01:15:56 2010 +0000
-
-    Removed.
-
-commit aa083c35beb60b7b3e8fa25a88dd0232d3e81d72
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Tue Jun 22 01:15:42 2010 +0000
-
-    Added a note about the soft debugger dll.
-
-commit db019da5d9f0651358b9fea6d19946ab09ece995
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Thu Jun 17 03:07:24 2010 +0000
-
-    Removed some old code.
-
-commit 05c082c2a3e9123914a4d92b734b92740bb700b8
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Thu Jun 17 02:56:33 2010 +0000
-
-    Mostly finished rewriting the value stuff.
-
-commit 82f80e0e0fc74a0206caa7ad173d0d449ab42d89
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sat Jun 12 15:16:54 2010 +0000
-
-    Getting SetValue working again.
-    Added a LiveStackFrame class so that we can get a new stack frame when the current one becomes invalid.
-
-commit 410a08c9cfb79af8ebdb6952ed4a476f2031a5d1
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Jun 6 02:40:55 2010 +0000
-
-    Got this and statics variables working again.
-
-commit ae159402ef64103b914faacdd76f18930862283f
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Thu Jun 3 23:43:45 2010 +0000
-
-    VariableItems are now constructed with a declaration type hint so that we can show proper types
-    for null values.
-
-commit 5e0add13583b276377ddeb5dca753b09743c064a
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Tue Jun 1 21:43:25 2010 +0000
-
-    Started adding support for getting type names with Cecil (tho it
-    doesn't work so well with values).
-
-commit db2b5486ccd29241997f816a199e7fffbd8fc120
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Mon May 31 05:37:34 2010 +0000
-
-    Continuing VariableItem rewrite.
-
-commit 678cb9aa703c41fbec30010bb6c3d1037c89ad72
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Mon May 31 02:48:49 2010 +0000
-
-    Removed VariableItem.Owner and started simplifying the multimethods.
-
-commit d5aa865d97a10fe2e9539e7165cc6fea243934cb
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sat May 29 17:22:55 2010 +0000
-
-    Started rewriting the icky VariableItem class using multimethods.
-
-commit 1223faa4d0a296b7b7eaed8dd856863736ef220a
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Wed May 26 04:10:45 2010 +0000
-
-    Special case DateTime, TimeSpan, and Uri.
-
-commit 143d55195eb88f229f164c00eeda437c04a2aafe
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Wed May 26 04:01:44 2010 +0000
-
-    Special case Nullable<T>.
-
-commit ccace995c6afbf92a8b22921b52ca1ecc6baac5c
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Wed May 26 03:36:41 2010 +0000
-
-    Special cases IntPtr and UIntPtr.
-
-commit 65ae81d1c3c677a1e38dd49a8fc6b0815788afef
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Wed May 26 03:14:46 2010 +0000
-
-    Process debugger events within the thread to avoid deadlocks and related
-    craziness.
-
-commit 24be4f3d16cc509077d22a00824d41363de0569b
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Wed May 19 01:32:31 2010 +0000
-
-    Special case multicast delegates.
-
-commit 8600a14a9ef585d32a3c63577d729cae416b769a
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Tue May 18 03:51:16 2010 +0000
-
-    Need to process deferred events whenever we resume the vm.
-
-commit 5bdf944c30e21382b5bc5c82b0b078bc4fff5b72
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Tue May 18 03:24:02 2010 +0000
-
-    Debugger events received while the debugger is suspended now immediatel resume the VM.
-    
-    Index: source/plugins/debugger/expressions/InvokeMethod.cs
-    Index: source/plugins/debugger/SpecialVariableItems.cs
-    * Changed to synchronously return a value with a timeout.
-    
-    Index: source/plugins/debugger/Debugger.cs
-    * See above.
-
-commit 441bd3fd1fa412eb0606bd4588f0d145f889d0aa
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Thu May 13 04:02:46 2010 +0000
-
-    Special cases delegate types so that we show something useful.
-    
-    Index: source/plugins/debugger/expressions/InvokeMethod.cs
-    * Added so that we can invoke methods asynchronously which allows us to avoid deadlocks if
-    the method does stuff like cause types to load.
-    
-    Index: source/plugins/debugger/SpecialVariableItems.cs
-    Index: source/plugins/debugger/VariableItem.cs
-    * Get the children using the Target and Method properties.
-    
-    Index: source/plugins/debugger/VariableController.cs
-    * Added some goo to allow variables to force a table reload.
-    
-    Index: source/plugins/debugger/SoftDebuggerExtensions.cs
-    * Added Value.IsType.
-    
-    Index: source/shared/StringExtensions.cs
-    * Added IsNullOrWhiteSpace.
-
-commit 05234338641bf6eb31c322078a1941dbb2fe1d30
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Tue May 11 02:55:44 2010 +0000
-
-    Alphabetized the public methods.
-
-commit ea0916a134dad591db1dd6295969ffd61320252a
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun May 9 13:43:36 2010 +0000
-
-    Special cases auto-props so users don't see the lame generated field names.
-
-commit 74cc6de0de79033cb226f106cc7c0f4aec8153bc
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun May 9 13:16:09 2010 +0000
-
-    Does a better job evaluating fields and properties in the debugger.
-    
-    Index: source/plugins/debugger/expressions/EvalMember.cs
-    Index: source/plugins/debugger/expressions/Identifier.cs
-    Index: source/plugins/debugger/expressions/PostfixOperators.cs
-    * Get fields and properties from base classes as well as the most derived type.
-    
-    Index: source/plugins/debugger/SoftDebuggerExtensions.cs
-    * Fixed stringify of boxed primitives (need the special case or the soft debugger hangs).
-    
-    Index: source/plugins/debugger/expressions/StringLiteral.cs
-    * Don't escape the quotes around the string.
-    
-    Index: source/plugins/debugger/ObjectExtensions.cs
-    Index: source/plugins/debugger/VariableItem.cs
-    * Moved the primitive stringify method here.
-    
-    Index: source/plugins/debugger/VariableItems.cs
-    * Sort variables (everything but those in structs).
-
-commit 1fde103b5455e0667271794bbbf6ece63e8a1294
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Thu May 6 04:01:12 2010 +0000
-
-    User can now rename threads in the threads window.
-
-commit bf87bbc00abb31a7d5237a32f30f5b5c4795cb15
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Thu May 6 03:36:04 2010 +0000
-
-    Getting properties and subscripts working better with conditional breakpoints.
-    
-    Index: source/plugins/debugger/expressions/PostfixExpression.cs
-    Index: source/plugins/debugger/expressions/ExpressionParser.cs
-    Index: source/plugins/debugger/expressions/ExpressionParser.peg
-    Index: source/plugins/debugger/expressions/PostfixOperators.cs
-    Index: source/plugins/debugger/expressions/ExpressionParserAddons.cs
-    Index: source/plugins/debugger/expressions/PostfixOperator.cs
-    * Can now chain properties, fields, and subscripting (tho subscripts only work with arrays and strings).
-    
-    Index: source/plugins/debugger/expressions/BooleanExpressions.cs
-    * Get the correct value when evaluating the rhs of RelationalExpression.
-
-commit d442533944d32624ca089ab648c79fbc7cae64e2
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Mon May 3 03:10:27 2010 +0000
-
-    More work on conditional breakpoints plus misc other stuff.
-    
-    Index: source/plugins/debugger/expressions/ExpressionParser.cs
-    Index: source/plugins/debugger/expressions/ExpressionParser.peg
-    * Don't need the text subscript work around with the latest peg-sharp.
-    * Fixed the Identifier production.
-    
-    Index: source/plugins/debugger/expressions/EvalMember.cs
-    * Have to special case static properties on structs.
-    
-    Index: source/plugins/debugger/expressions/BadExpression.cs
-    * Keep the condition text even if it fails to parse.
-    
-    Index: source/plugins/debugger/expressions/ParserException.cs
-    * Use a custom ParserException so that we can include the text that was not parsed.
-    
-    Index: source/plugins/styler/languages/C#.xml
-    * Made "dynamic" a keyword.
-    
-    Index: source/plugins/debugger/module.mk
-    Index: Makefile
-    * Fix unit test compilation.
-
-commit b228979d8546b8d5014693c2dd7a61b4433a35fd
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun May 2 15:08:29 2010 +0000
-
-    Got conditional breakpoints mostly working.
-
-commit 724231f72f0f602d22e8be97765c03ba0a1e24f8
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Wed Apr 28 03:32:27 2010 +0000
-
-    Finished up implementing support for literals in conditional breakpoints.
-    
-    Index: source/plugins/debugger/VariableItems.cs
-    * ParseVerbatim properly handles "".
-    * Fixed a couple of silly bugs with hex escapes in Parse.
-    
-    Index: source/shared/StringExtensions.cs
-    * Escapes ".
-
-commit 6dad3af9f02d1c89d0925f657d1fe450f59eb9c7
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Apr 25 22:43:04 2010 +0000
-
-    Index: BooleanExpression.cs
-    Index: Expression.cs
-    Index: BooleanExpressions.cs
-    * RelationalExpression now also handles equality. It also now does type promotion.
-    
-    Index: ExpressionParser.peg
-    Index: UnaryExpressions.cs
-    Index: ExpressionParser.cs
-    * Added support for the ! operator.
-
-commit e89c05c192712680098180812d76745409b0cb53
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Apr 25 00:30:27 2010 +0000
-
-    More work on conditional breakpoints: boolean expressions now mostly work.
-
-commit b4cef18fb79a81ed93780745f81f1588f1bcc3bf
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Tue Apr 20 03:25:21 2010 +0000
-
-    Started implementing conditional breakpoints.
-
-commit cbb03af54f390d003806952e441b6b811e9a7f10
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sat Apr 17 15:11:42 2010 +0000
-
-    Index: source/plugins/debugger/ResolvedBreakpoint.cs
-    Index: source/plugins/debugger/Breakpoints.cs
-    Index: source/plugins/debugger/Debugger.cs
-    Index: source/plugins/debugger/BreakpointsController.cs
-    Index: source/plugins/debugger/debugger.nib/keyedobjects.nib
-    Index: source/plugins/debugger/debugger.nib/designable.nib
-    * Breakpoints window now includes the method name.
-    
-    Index: source/plugins/debugger/TypeMirrorExtensions.cs
-    Index: source/plugins/debugger/StackFrameExtensions.cs
-    Index: source/plugins/debugger/SoftDebuggerExtensions.cs
-    Index: source/plugins/debugger/StackController.cs
-    * Moved soft debugger extensions all into one file.
-    * Added an extension for converting a MethodMirror into a better full name.
-
-commit 05547412d0d706b121adacb546af67dfccc1580d
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sat Apr 17 03:25:49 2010 +0000
-
-    Index: source/plugins/debugger/Breakpoints.cs
-    * Use gold instead of light salmon for unresolved breakpoint color.
-    * Fixed the broadcaster resolve/unresolve breakpoint broadcast listener strings.
-    * Added listen for debugger stopped so we can unreolve all breakpoints.
-    
-    Index: source/plugins/debugger/BreakpointsController.cs
-    * Double click now opens the file associated with the breakpoint.
-
-commit e2b9a9a8034db88b167bb4254e16edf733c26213
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Fri Apr 16 03:24:01 2010 +0000
-
-    Index: source/plugins/app/MainMenu.nib/keyedobjects.nib
-    Index: source/plugins/app/MainMenu.nib/designable.nib
-    Index: source/plugins/debugger/Breakpoints.cs
-    Index: source/plugins/debugger/BreakpointsController.cs
-    Index: source/plugins/debugger/debugger.nib/keyedobjects.nib
-    Index: source/plugins/debugger/debugger.nib/designable.nib
-    Index: source/plugins/debugger/Bosses.xml
-    Index: source/plugins/debugger/IBreakpoints.cs
-    Index: source/plugins/debugger/DebuggerWindows.cs
-    * Started implementing a breakpoints window.
-    
-    Index: source/plugins/debugger/ThreadsController.cs
-    * Threads are now sorted by name.
-    
-    Index: source/plugins/text-editor/TextEditorView.cs
-    Index: source/shared/Constants.cs
-    * Moved some key constants into shared.
-
-commit 8696c17415919c92e7d8cbfa2d411bae66513398
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Tue Apr 13 03:48:19 2010 +0000
-
-    Index: source/plugins/debugger/StackController.cs
-    * Build our own MethodMirror full name because the FullName property does not include arg names.
-    
-    Index: source/plugins/debugger/debugger.nib/keyedobjects.nib
-    Index: source/plugins/debugger/debugger.nib/designable.nib
-    * Tweaked a table view width.
-    
-    Index: source/plugins/debugger/VariableItem.cs
-    * Made GetValueText so it can be used when building stack window entries (tho I decided
-    not to include arg values in that window).
-
-commit 8ee0865c6e65f8af8a6d5f411f31c81907724604
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Apr 11 23:53:27 2010 +0000
-
-    Index: source/plugins/debugger/DebuggerWindows.cs
-    Index: source/plugins/app/MainMenu.nib/keyedobjects.nib
-    Index: source/plugins/app/MainMenu.nib/designable.nib
-    Index: source/plugins/debugger/Debugger.cs
-    * Optionally write selected debugger events to the transcript.
-    
-    Index: source/plugins/debugger/ThreadsController.cs
-    * Update threads list while the debugee is running.
-
-commit 76b06e49ad06d3290518efc953e5d94927532cbd
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Apr 11 04:20:00 2010 +0000
-
-    Added a threads window.
-
-commit 5a45c1e933e7ad0aebfb517d0158601076d9921c
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sat Apr 10 20:59:12 2010 +0000
-
-    Index: source/plugins/debugger/VariableController.cs
-    Index: source/plugins/debugger/CodeViewer.cs
-    Index: source/plugins/debugger/DebuggerWindows.cs
-    Index: source/plugins/debugger/StackFrameExtensions.cs
-    Index: source/plugins/debugger/StackController.cs
-    Index: source/plugins/debugger/debugger.nib/keyedobjects.nib
-    Index: source/plugins/debugger/debugger.nib/designable.nib
-    Index: source/plugins/app/MainMenu.nib/keyedobjects.nib
-    Index: source/plugins/app/MainMenu.nib/designable.nib
-    * Added a stack window.
-    
-    Index: source/plugins/debugger/Breakpoints.cs
-    * Check in a few more places for a valid annotation before trying to use it,
-
-commit 3a903602bc0a2c8d532137d4e89251d6fc6c027b
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sat Apr 10 03:09:05 2010 +0000
-
-    Index: source/plugins/app/MainMenu.nib/keyedobjects.nib
-    Index: source/plugins/app/MainMenu.nib/designable.nib
-    Index: source/plugins/debugger/VariableController.cs
-    Index: source/plugins/debugger/CodeViewer.cs
-    Index: source/plugins/debugger/DebuggerWindows.cs
-    * Added support for breaking on exceptions.
-    
-    Index: source/plugins/directory-editor/DirectoryController.cs
-    Index: source/plugins/text-editor/TextController.cs
-    Index: source/shared/interfaces/IMenuHandler.cs
-    Index: source/shared/MenuHandler.cs
-    Index: source/plugins/app/AppDelegate.cs
-    * IMenuHandler now supports checking the menu items.
-
-commit 208bcbe420e372d8b853ea97a8661d52cb634790
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Thu Apr 8 04:11:19 2010 +0000
-
-    Index: source/plugins/debugger/VariableItems.cs
-    * Setter delegate is now always set and the rare cases where we cannot set the value have
-    delegates which throw.
-    * Added lame code to deal with the lame way StructMirror handles static fields.
-    
-    Index: source/plugins/debugger/VariableController.cs
-    * Trap exceptions during a set value in the controller instead of in the item classes.
-    
-    Index: source/plugins/debugger/Debugger.cs
-    * Enabled breaking on exceptions (not tested too well yet though).
-    
-    Index: source/plugins/debugger/module.mk
-    * Fixed reference to Mono.Debugger.Soft.dll so that it includes "bin/".
-    
-    Index: source/plugins/debugger/TypeMirrorExtensions.cs
-    Index: source/plugins/debugger/StackFrameExtensions.cs
-    Index: source/plugins/debugger/VariableItem.cs
-    Index: source/plugins/debugger/CodeViewer.cs
-    Index: source/plugins/debugger/Context.cs
-    Index: source/plugins/debugger/DebuggerDocument.cs
-    * Use the new mono 2.6.3 namespace for the soft debugger.
-
-commit 4103cd21db148c847b98e8d3a6ecec4a80f4113b
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Apr 4 03:11:36 2010 +0000
-
-    * String variables can now be set.
-    * When strings are displayed they are now escaped as needed.
-
-commit 7ae4a226c04964a37b81e9afef4d128f084d6282
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sat Apr 3 23:22:39 2010 +0000
-
-    Added annoying code to allow objects, arrays, and strings to be set to null.
-
-commit 81ac994dfd5d3e16f52848caf463d10a2e434f90
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sat Apr 3 17:55:27 2010 +0000
-
-    * Can now set the value for enum variables.
-    * Enums in the debugger are now printed with '|' if they are combinations of fields.
-    * Fixed the old code that converts enums to strings so zero is printed as "0" instead of an empty
-    string when the enum has no field with a zero value.
-
-commit 207772c842d4930283c9295caca623f0281b7035
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Fri Apr 2 02:48:23 2010 +0000
-
-    Index: source/plugins/debugger/VariableItem.cs
-    Index: source/plugins/debugger/VariableItems.cs
-    * When setting a field within a struct we also need to set the struct within whatever it is defined within.
-    
-    Index: source/plugins/app/AppDelegate.cs
-    Index: source/plugins/debugger/VariableController.cs
-    * Save the show hex, thousands, unicode bools in a pref.
-
-commit be4f8824b78fecab0c955da98503545bb99e723e
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Thu Apr 1 03:33:53 2010 +0000
-
-    Added a menu to the variables window to allow integral numbers to optionally be
-    displayed using hex, to allow numbers to be displayed without a thousands separator
-    character, and to allow characters above 7F to be displayed as unicode.
-
-commit d920fbde87e0537eb9e9aa14fb190629149e9438
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Thu Apr 1 02:40:50 2010 +0000
-
-    * Primitive values can now be set by double clicking on the value and editing it.
-    * Stack frames are compared using the Id instead of the Address (which can change via a GC).
-    * Does a better job handling nulls (which are actually PrimitiveValues).
-    * Numeric types are now stringified using separator characters.
-    * Char types are now stringified using escape character sequences.
-
-commit 157bb40865acc9de73908134ffcef00ea2c3d898
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Mon Mar 29 00:34:28 2010 +0000
-
-    Variables window now draws changed values in red (although NSOutlineView doesn't
-    seem to recognize that when variables go from null to non-null their expand flag changes).
-
-commit 179d21a5a61b24eccc7ca77460f8da05f80dca0f
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Mon Mar 22 01:30:04 2010 +0000
-
-    Index: source/plugins/debugger/DebuggerDocument.cs
-    Index: source/plugins/debugger/DebugCommand.cs
-    Index: source/plugins/debugger/Debugger.cs
-    * Don't allow concurrent debugging sessions.
-    
-    Index: source/plugins/app/MainMenu.nib/keyedobjects.nib
-    Index: source/plugins/app/MainMenu.nib/designable.nib
-    * Added a Debug/Windows menu.
-    
-    Index: source/plugins/debugger/DebuggerWindows.cs
-    * Cleaned up.
-    * Save whether the windows are visible in a pref.
-    
-    Index: source/plugins/text-editor/CreateWindow.cs
-    * Added (think this should have been included in the previous commit).
-
-commit de4a3134c3044cc1d050b016dca47f54cb8ae082
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Mar 21 23:36:17 2010 +0000
-
-    Index: source/plugins/text-editor/Bosses.xml
-    Index: source/plugins/debugger/DebuggerDocument.cs
-    * CodeViewer is now created as a text window instead of a text document which is then
-      turned into a debugger document.
-    
-    Index: source/plugins/debugger/VariableController.cs
-    * Reset variables when the debugger stops.
-    
-    Index: source/plugins/debugger/Debugger.cs
-    * Signal that the debugger has stopped when Dispose is called.
-
-commit f2bc695b8e22c001cda761740709e0467cfb1c26
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Mar 21 04:06:50 2010 +0000
-
-    Index: source/plugins/debugger/DebuggerDocument.cs
-    * Changed get info so that it does something useful for the code viewer.
-    
-    Index: source/plugins/text-editor/TextController.cs
-    Index: source/plugins/text-editor/TextDocument.cs
-    * Use the document to show the get info window.
-    
-    Index: source/plugins/debugger/CodeViewer.cs
-    * Save the window position (can't use the normal mechanism because we don't really have a path).
-    
-    Index: source/plugins/disassembler/AssemblyController.cs
-    * Show "neutral" instead of an empty string if the assembly doesn't specify a culture.
-    
-    Index: source/plugins/debugger/Debugger.cs
-    * Broadcast app domain events (tho they don't seem to be invoked).
-
-commit a880807f7689d7fe56e2902788b0410f2bf8852f
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Mar 21 01:48:56 2010 +0000
-
-    * Debugger windows are now created once and are no longer part of the debugger document.
-    * Debugger uses Broadcaster instead of C# events to reduce coupling.
-
-commit 4c08313242ba74cbfbfe67dac50d75a2c4680089
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Fri Mar 19 21:54:15 2010 +0000
-
-    Index: source/plugins/debugger/DebuggerDocument.cs
-    * Redirect the debugee's stdout and stderr to the transcript window.
-    
-    Index: source/plugins/debugger/VariableItems.cs
-    Index: source/plugins/debugger/VariableItem.cs
-    * ObjectValueItem and StructValueItem call ToString if the object overrides it.
-    
-    Index: source/plugins/debugger/TypeMirrorExtensions.cs
-    * Added FindMethod extension method to find the first instance of a method in a
-       type or base class.
-    
-    Index: source/plugins/debugger/debugger.nib/keyedobjects.nib
-    Index: source/plugins/debugger/debugger.nib/designable.nib
-    Index: source/plugins/debugger/DebuggerController.cs
-    Index: source/plugins/debugger/VariableController.cs
-    Index: source/plugins/debugger/CodeViewer.cs
-    Index: source/plugins/debugger/ICodeViewer.cs
-    * Started working on closing the debugger document sanely.
-
-commit 18bb67708a0de5018f707b9f413222d1a1b7aef6
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Mar 14 23:11:45 2010 +0000
-
-    Added a window to display local variables.
-
-commit c47add114e3f273381a5425ec1e69e5be909da60
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Mar 14 01:54:30 2010 +0000
-
-    Index: source/plugins/debugger/DebuggerDocument.cs
-    Index: source/plugins/debugger/Debugger.cs
-    Index: source/plugins/debugger/DebuggerController.cs
-    * Only break on main entry if the debugger was started by opening an mdb file.
-    * Redirect stdout and stderr to the transcript window.
-
-commit 59101781a7be4cca90c1475dc0bfa919fdf9afd1
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Mar 14 01:00:44 2010 +0000
-
-    Index: source/plugins/debugger/DebugCommand.cs
-    Index: source/plugins/debugger/DebuggerDocument.cs
-    Index: source/plugins/app/Info.plist
-    Index: source/plugins/app/module.mk
-    Index: source/plugins/app/Continuum.sdef
-    * Added support for debugging exceutables using apple script, e.g.
-      tell application "Continuum" to debug "CoolApp.exe" with "--foo --bar".
-    
-    Index: source/plugins/styler/languages/Xml.xml
-    * XML element names with dashes are now properly syntax highlighted.
-    
-    Index: source/plugins/styler/languages/Globs.xml
-    Index: source/plugins/directory-editor/DirectoryItemStyler.cs
-    * Added *.sdef glob to xml.
-
-commit 9e311e33849e3aba669b95282e2ee2575e216bf5
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Fri Mar 12 20:49:52 2010 +0000
-
-    * Unresolved breakpoints are drawn using a different color than resolved ones.
-    * DoBreakpointEvent disables the step request (if it exists).
-
-commit 2483ccd45c1cba7b740932e7e4adee51526c8f5c
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Mar 7 17:44:35 2010 +0000
-
-    Index: source/plugins/debugger/Debugger.cs
-    * Handle toggling breakpoints after types have been loaded.
-    * Can't resume the VM in the thread because we have process types before we
-       execute code in those types.
-    
-    Index: source/plugins/debugger/CodeViewer.cs
-    Index: source/plugins/debugger/Breakpoints.cs
-    * Got breakpoints working correctly with multiple windows viewing the same file
-       (e.g. the debugger window and normal windows).
-    
-    Index: source/plugins/text-editor/Annotation.cs
-    Index: source/plugins/text-editor/Editor.cs
-    Index: source/plugins/auto-complete/CompletionsTable.cs
-    Index: source/shared/interfaces/ITextEditor.cs
-    Index: source/shared/ITextAnnotation.cs
-    * Added an AnnotationAlignment enum so that annotations don't always appear
-       below the line their range is on.
-    
-    Index: source/plugins/debugger/DebuggerDocument.cs
-    Index: Makefile
-    * Got rid of some test code.
-
-commit 7c770ae562b68cc7620f06e5b3a5515c82c57f02
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Mon Feb 22 02:25:19 2010 +0000
-
-    Index: source/plugins/debugger/Breakpoints.cs
-    Index: source/plugins/debugger/Bosses.xml
-    * Saves the breakpoints in a pref.
-    * Replaced Values with GetBreakpoints.
-    * Does a better job handling offset changes in annotations.
-    
-    Index: source/plugins/text-editor/TextController.cs
-    Index: source/plugins/text-editor/ConcreteLiveRange.cs
-    Index: source/plugins/text-editor/Annotation.cs
-    * Annotations now use a different notification than LiveRange.Changed to re-position
-      when the text window does a layout.
-    
-    Index: source/plugins/debugger/CodeViewer.cs
-    * Made the "Source is newer than the assembly." overlay a bit more transparent.
-
-commit fdbabb6a620fc79a1ad8e12b7b06f027a0d9d4fb
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Feb 21 02:24:28 2010 +0000
-
-    Index: source/plugins/app/MainMenu.nib/keyedobjects.nib
-    Index: source/plugins/app/MainMenu.nib/designable.nib
-    Index: source/plugins/debugger/CodeViewer.cs
-    Index: source/plugins/debugger/Breakpoint.cs
-    Index: source/plugins/debugger/Breakpoints.cs
-    Index: source/plugins/debugger/ICodeViewer.cs
-    Index: source/plugins/debugger/Bosses.xml
-    * Started adding support for toggling breakpoints.
-    
-    Index: source/plugins/text-editor/TextController.cs
-    Index: source/plugins/text-editor/Bosses.xml
-    * Text windows now support IMenuHandler.
-    
-    Index: source/shared/ITextAnnotation.cs
-    Index: source/plugins/text-editor/Annotation.cs
-    * Added Parent property.
-
-commit 5a25296a7f06ae57c2d5618ef30e81b787b20f71
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sat Feb 20 04:07:01 2010 +0000
-
-    Index: source/plugins/debugger/CodeViewer.cs
-    * Current instruction pointer is now marked with an annotation window.
-    * If the current source is newer than the assembly an a text overlay is used
-       to warn the user.
-    
-    Index: source/shared/interfaces/ITextOverlay.cs
-    * Added.
-    
-    Index: source/shared/interfaces/ITextMetrics.cs
-    Index: source/plugins/text-editor/Editor.cs
-    Index: source/plugins/text-editor/TextController.cs
-    Index: source/plugins/text-editor/Bosses.xml
-    * Added ITextMetrics interface.
-    
-    Index: source/shared/ITextAnnotation.cs
-    Index: source/plugins/text-editor/Annotation.cs
-    * Dragging can now be disabled for annotations.
-
-commit 5b0ea4e4ca47f8215bef2c49c12d70d2ce5f566d
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Wed Feb 17 05:32:05 2010 +0000
-
-    Index: source/plugins/debugger/CodeViewer.cs
-    * If the source is newer than the assembly a window overlay is used to indicate that.
-    
-    Index: source/plugins/disassembler/Disassembler.cs
-    Index: source/plugins/disassembler/DisassembleExtensions.cs
-    Index: source/plugins/disassembler/AssemblyDocument.cs
-    Index: source/plugins/disassembler/AssemblyItems.cs
-    Index: source/plugins/disassembler/ContextMenu.cs
-    Index: source/shared/interfaces/IDisassembler.cs
-    * Source code comments are only added if the source file is not newer than the assembly.
-    
-    Index: source/plugins/text-editor/TextOverlay.cs
-    Index: source/plugins/text-editor/Bosses.xml
-    Index: source/plugins/text-editor/TextEditorView.cs
-    * Added support for overlaying arbitrary messages on top of text windows.
-
-commit 22932f7477000330c67b45caced50c8f53fc6f2b
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Mon Feb 15 05:19:15 2010 +0000
-
-    Use the mono root pref to allow mono files to be displayed as source
-    when debugging.
-
-commit 474b62a7831f62be02f2becd21b699cae753d1d2
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Mon Feb 15 02:47:23 2010 +0000
-
-    * Code view window now shows IL if the source file cannot be loaded.
-    * Added a context menu to allow the code view to be switched between source and IL.
-
-commit c47d0463b85a0c18646e21336fe38bd0c19fcca4
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Feb 14 06:12:44 2010 +0000
-
-    Index: source/plugins/text-editor/TextController.cs
-    Index: source/plugins/debugger/CodeViewer.cs
-    Index: source/plugins/debugger/DebuggerController.cs
-    * Does a better job of setting the text in the CodeViewer and updating the language.
-    
-    Index: source/plugins/debugger/Debugger.cs
-    * Set the state to running after resuming following stepping.
-
-commit 1002329ed3b04ef1ef9aa37d4ff274b22f48a655
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sun Feb 14 00:35:43 2010 +0000
-
-    Index: source/shared/interfaces/ITextEditor.cs
-    Index: source/plugins/text-editor/Editor.cs
-    * Text windows can now be made non-editable.
-    
-    Index: source/plugins/debugger/DebuggerController.cs
-    * Make the code viewer non-editable.
-    
-    Index: source/shared/interfaces/IFind.cs
-    Index: source/shared/interfaces/ITextContextCommands.cs
-    Index: source/plugins/disassembler/ContextMenu.cs
-    Index: source/plugins/text-editor/TextEditorView.cs
-    Index: source/plugins/text-editor/TextController.cs
-    Index: source/plugins/svn/SvnTextCommands.cs
-    Index: source/plugins/text-editor/ShowSpaces.cs
-    Index: source/plugins/app/TimeMachine.cs
-    Index: source/plugins/app/FindOnSites.cs
-    Index: source/plugins/app/Scripts.cs
-    Index: source/plugins/app/ScriptsMenu.cs
-    Index: source/plugins/app/Spelling.cs
-    Index: source/plugins/find/BaseFindController.cs
-    Index: source/plugins/find/Find.cs
-    Index: source/plugins/app/AppDelegate.cs
-    * Disable text mutators if the view is not editable.
-    
-    Index: source/plugins/debugger/Debugger.cs
-    * Only call Exit if we are not paused.
-
-commit 2d0f0bd14b2fe14920a4e6d04e2672bc45a9917b
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sat Feb 13 19:47:08 2010 +0000
-
-    * Debugger window title is now set according to the source file currently being
-       stepped through.
-    * Code viewer now styles the text.
-
-commit 1a87777d80455b8f2479140579c20b567d3da3ae
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sat Feb 13 15:36:52 2010 +0000
-
-    Index: source/plugins/debugger/DebuggerController.cs
-    * First cut at showing the code the user is stepping through.
-    
-    Index: source/plugins/debugger/Debugger.cs
-    * Added SteppedEvent.
-    
-    Index: source/shared/interfaces/IText.cs
-    Index: source/plugins/transcript/Transcript.cs
-    Index: source/plugins/text-editor/Editor.cs
-    * IText now has a Replace method which replaces all the text and isn't undoable.
-
-commit 3f5035ae1e2576dd073cb03bccd78bcd7b90753e
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sat Feb 13 04:20:55 2010 +0000
-
-    * Started working on soft debugger support. Currently you can single step and run, but
-    there is no GUI to speak of and IL offsets are not mapped to line numbers. For now
-    debugging sessions begin when an mdb file is opened.
-    * Fixed the command line tool so that it handles spaces in file names.
-    * C# parser now handles default arguments.
-
-commit ebd7ce679c39cb377d75f6401623150b29ca91a7
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sat Feb 13 02:42:37 2010 +0000
-
-    * Started working on soft debugger support. Currently you can single step and run, but
-    there is no GUI to speak of and IL offsets are not mapped to line numbers. For now
-    debugging sessions begin when an mdb file is opened.
-    * Fixed the command line tool so that it handles spaces in file names.
-    * C# parser now handles default arguments.
-
-commit faad5a408c67645cdcab4cfe1617de6e8138dbff
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Sat Jan 30 02:34:59 2010 +0000
-
-    Index: Makefile
-    * Added a single dist target which includes both binaries and source.
-    
-    Index: BUILDING
-    * Updated for the new dist format.
-    
-    Index: GOALS
-    * Spelling.
-
-commit 0eddf37a3183a87bd4eccffd8dd9eb464d3d9517
-Author: Jesse Jones <jesjones@mindspring.com>
-Date:   Wed Jan 27 05:55:31 2010 +0000
-
-    Index: README
-    Index: CHANGES
-    Index: CHANGE_LOG
-    * Updated.
-    
-    Index: source/plugins/cs-parser/Parses.cs
-    * Updated for parameter switch.
-
-Continuum 0.6 and earlier commits omitted
+ee98327 Updated
+dec65f3 Gendarme tweaks
+fab130e Updated
+4d148b3 Added add tostring refactor
+a457915 Defaults to using fields and auto-properties
+e905031 Added a comment
+a43974f Make file sets PKG_CONFIG_PATH so that installing mobj and mcocoa works w/o fiddling with it.
+eb8dbf2 Open selection command now will open relative URLs
+8301902 Fixed escaping of back-slash with enter selection (for find) command
+c44bc51 Assemblies being debugged ar no longer added to the recent files window.
+23c4578 Debugger now shows the visible locals within a method
+5589c63 Python verbatim string regex didn't work when lines were escaped with a backslash
+f43020a Debugger now shows ThreadStatic fields
+614de7d Trace roots now works with ThreadStatic fields
+3e2730d update-libraries now updates cecil
+a360f38 C# keywords are no longer highlighted when preceded by an @ sign
+f242393 C# parser handles explicit interface implementation of properties
+047d559 Minor updates
+8e3407f Use --debug=casts
+bff1028 Require mono 2.10
+4802917 Lots of updates for mono 2.10 and cecil 0.9
+7a1e52e Added f# operator names to assembly parser
+40415ff ICanOpen takes a path instead of a fileName
+14f2ac0 Open files with a shebang (and no extension) as text files instead of trying to run them via the finder
+ea96ff7 Second try at fixing crashes when closing assembly viewer window
+b1d7d09 Made the windowWillClose code look more like the code in AssemblyController
+222504e Fixed a crash when closing assembly viewer windows
+1de6b82 Moved GetFiles into Helpers
+378264f Added a default f# builder
+9ad5f99 default.mk is now only written out if it has changed
+4c485ea Check for null before disposing of make process on error
+3c1c900 Improved monomac debugging
+d6876b1 Check for null before trying to dispose debugger vm when starting up
+bdc521f Continuum now requires mono 2.8 (and pops up an alert when an older mono is used)
+3692d75 Added a default builder for monomac apps
+2a9a31c Added a default c# builder
+d95d4e3 Rewrote line comments to use $ (which matches new lines but not returns)
+4b47b06 Added a default C builder
+3096b21 Improved generated make file
+d736e1a Default builder now generates a make file
+61d75af Started adding a default builder for c/c++
+99a9585 Added Make.shared, scons/waf build files, and a few others to globs for find in files and directory window item colors
+3a9aab7 Added Make.shared to the Makefile glob list
+cdc4225 Spelling
+763d055 Fixed StructMirror case (was totally broken for structs with properties)
+f4ae6d8 Fixed DoRefreshNameText so that it uses AttributeName for the old text instead of AttributeType
+c9ab30a Added SourceIsUpToDate
+7d0ce6e Can now debug monomac app bundles
+24456c4 Added some exception handlers to catch unexpected debugger deaths
+42ed90a Added *.md to the plain text glob list
+9a2c874 Fixed the fsharp word setting so that double clicking works properly
+7304dfc Text context menu now has a Search in Google command if the selection has spaces
+99d85f5 Transcript window now uses a subset of the normal Continuum context menu commands (instead of the default NSTextView commands)
+58b57b6 Moved the ITextContextCommands around
+f4862dc Moving the text context menu builder into a new TextView plugin so that we can use our custom context menu in the transcript window.
+7fa05da Fixed a crash that could happen when canceling the build variables dialog with an empty row selected
+66c953e Python language now styles decorators
+d9d759b Recent files browser now shows newly saved documents
+109f060 Added *.fs to default find in files extensions
+58358d0 Need to append onto m_errors even if stderr is expected
+4e17b2e Added waf to the default directory item ignore list
+d0a1510 waf build flags are now persisted
+629b9be Got most of waf flags dialog in
+6b81106 Added support for custom waf command-line switches
+fda7e39 Started adding support for building via waf
+8ff70e3 Added a refactor to make it easier to write regex code
+c0694f3 Don't hang onto text bosses
+f967c35 Don't need to create a mutable attributed string any more
+a0af011 Made IFileColor thread safe and moved implementation into GetLocalFiles.
+877dce7 Improved local files browser: 1) References to text editor bosses are now short duration. 2) Thread no longer gets the window or controller (potential races if the window was closed).
+fa59c67 An alert now pops up when the user tries to open more than 20 files
+3990da9 Transcript stdout now defaults to a monospace font
+f76d889 Fixed a few places which need to check isMinaturized as well as isVisible
+2ba61ee Minaturizing a directory editor window now minaturizes the associated text windows:
+93c95f7 IWindows.All now returns windows that are in the dock
+31bb4a2 Misc minor recent files improvements: Search field is made the focus when re-opening the browser. No longer renders the matching text in blue. Table now always has a selection which saves a keystroke when tabbing into it.
+10aa758 Added a directory pref to have tabs insert spaces
+61f433d Added a SpacesNotTabs language element
+b6a6670 Added a Keywords2 element
+27fc20b Use a subtler default color for leading/trailing spaces
+7652189 First cut at a language file for F#
+a38c6d2 Use two immutable structs instead of one mutable class
+9488beb Color code the matched part of the display names
+d8547ea Only handle broadcasts if the window is visible
+2b4de41 Local files now matches within instead of at start. Also matches upper case letter sequences.
+bc5159c Added shift-delete (to delete lines)
+f10c5a8 Recent files browser no longer shows tmp files
+478143c Added context menu items for open and show via the finder
+1dcb302 Return and enter keys can be used to open the selection
+4ab7eac Rebuilds the list if the directories change
+c6aa7eb Added directory closed and changed broadcasts
+c15f368 Listen to the correct open directory notification
+ee52339 First cut at local files browser
+1dd33c8 Fixed code that was updating display names in the event of matches
+a65bedb Put open declarations back in
+7582660 Added a context menu to the recent files browser which can be used to change the sort order or clear the list
+56a4a6e Recent files browser items are now color coded
+e40a81e Replacing the old recent files dialog with a recent files browser
+56e78a9 C, C++, and Obj-C use header4 instead of preprocessor for includes and also treat angle brackets as strings when preceded by #include.
+d10249b Updated readme to include the new special keys
+7aa5732 Control-1 now shows recent files dialog. Control-2 opens the declarations popup menu.
+722eb96 Added toggle comment command
+443a970 Added nicer window cycling than command-`: command-option-left arrow cycles down document windows and command-option-right arrow cycles up
+d957c58 Command-option-up-arrow toggles between headers and code (instead of just option-up-arrow)
+da64467 var assignment type inference now handles new expressions with braces
+b1aab8b option-up-arrow toggles between c/c++/obj-c headers and source files
+9a737fe Don't persist the debugger code viewer window
+d1a2838 Show Details now shows properties and fields
+23c1e3b Added more types to Show Details
+4937bcb Show Details respects the show thousands flag
+c4e88c9 Added support for the integral types
+74ba5a9 Started implementing new debugger Show Details command
+8a9b90d Updated readme pointing out that the mono installer no longer installs mdb files
+d385289 Text windows that were open on shutdown are saved in a pref and re-opened on startup
+287dc76 Autocomplete now deduces the type of var assignments when casts are used on the rhs
+ee0b1f5 Option arrow no longer skips over periods (this started happening with Snow Leopard)
+ea82ac0 Add Thread refactor now includes a comment pointing out that a reference to the thread object need not be retained
+a585a13 Implement IComparable refactor now also implements the non-generic IComparable
+78a4055 Mentioned how . works
+d5a0359 Whitespace
+7ea5032 Tweaked the colors used for diffs
+92800d7 Tab only (un)indents lines if at least one line is selected
+2fb597b Removed a bogus quote from the refactor language name
+824fd79 Only reset typing attributes if we're pasting into a rich document
+a3b5960 Got save as working with utf16 encoding
+e7a8582 Paste resets the typing attributes so that pasting attributed text into things like rtf documents works properly
+8699d7b Fixed some word language element regexen so that they work better when extending selections
+9dc68e7 When restoring text views don't crash of the old selection is now invalid
+d8d23a4 Fixed an assert that could cause context menus not to appear
+35ba1c5 Fixed the new version of the control character reporting code so that it doesn't crash on BOMs
+56aba97 Removed the last of the old xml language files
+69dfba3 Updated
+af4277f Updated languages readme
+2745c38 No longer have to restart for language changes to take effect
+b821052 Generated config file points out that stdout can be used for the log path
+0275128 Added elements like italic, bold, header1, etc for asciidoc
+5d766a5 Makefile language now highlights the built-in functions, eg shell
+681c839 Added a language file for asciidoc
+664f13c Removed some obsolete code
+496d032 Removed Other1 and Other2
+ec66691 Converted the remaining lamguages
+d11a7d9 Converted c++, c, cil, css, d, html, and ignore languages
+2be491d Added support for IgnoreWhitespace. Converted git-log lang.
+baa323f Added support for shebang setting. Converted shell language.
+f8fdc5a Added support for Word setting. Converted Objective-C language
+84227f8 Glob prefs now show only the globs overriding or complementing the globs in lang files
+291a45c Added c#.lang. Language files now include globs.
+705010b Got binary files styling again
+4cf6fe0 Got lang files styling
+1543d20 Got the makefile language working
+5ed398d Added check for elements defined multiple times. Handle case of no Default element.
+4bc54d7 Added style elements for the different Type elements (Class, Delegate, Enum, etc)
+6957aed Made styles strings instead of enums as a first step towards making language files more flexible
+9669628 Added style elements for the different types of members (fields, events, properties, methods, etc).
+97790f4 Replaced the text style pref buttons with one that opens Styles.rtf
+03ecebe Fixed a couple of minor bugs in the live style updating. Style error reporting uses the right line numbers.
+7361a04 Changes to Styles.rtf now take effect immediately
+a0b7a89 Use a styles.rtf file instead of preferences to set syntax highlighting attributes
+8c41b99 Fixed Time Machine context menu so that it doesn't show a disabled 'Finding old Files' for brand new files
+de26c3d Added Copy Path and Show in Finder text document context menu commands
+2ffc592 Shadow cache assemblies are no longer added to the assembly db and removed if they are present
+44eaf95 If a file is not unicode then warn that it is being opened as mac os roman
+0ee5439 README now mentions a few debugger attributes
+34f1fdb Breakpoints, threads, variables, directory editor, and find in files results windows now all support copy
+8aeaa7d Added an extension method to copy table views into the pasteboard
+15f8849 Moved shared extension classes into their own directory
+92351cc Copy no longer hard codes table columns
+b76dc0c Can now ignore exceptions using both the exception type name and the method name
+1efd0be Updated
+6ac9bbe First cut at adding copy support to the stack window
+daaca7d Stack window line number again properly updates when stepping
+7dcf13f Variable names for string and array subscripts now have square brackets
+b5dd2c8 Got the new attibute goo working when refreshing variables
+90518ef Finished adding support for DebuggerDisplayAttribute
+78bcf97 Added ToDisplayText extension. Started adding support for DebuggerDisplayAttribute.
+b88bf0a Addd support for DebuggerHiddenAttribute and DebuggerNonUserCodeAttribute
+afab7b7 Added a pref (which defaults to off) for reversed window paths
+905f352 Tried to get the path component in the Window menu items  rendering in gray
+52e5052 Added support for DebuggerHiddenAttribute
+59330d4 Handle property and fields that are decorated with DebuggerBrowsableAttribute and the Never display state
+572c56e When ussing a debugger proxy display the original type instead of the proxy type
+0a7bdc4 Added support for DebuggerTypeProxyAttribute so that collections can be viewed as arrays
+534a013 Added support for git blame, checkout, and gitk
+b2430cd Added support for git diff
+757e6b8 Started adding a git plugin. Currently it supports git log.
+06365a4 Trying out the sgen GC
+3e3e93c Merged with releases
+c2dc482 Updated
+ca31070 Updated
+b10d476 Replace all replaces within the entire file
+2959317 Updated
+11edf34 Merge branch 'releases/version-0.7'
+4e3366e Work around a mono 2.8 parser bug
+7b063c1 Don't try to break on exceptions that happen when the UI is calling things like ToString methods
+d19a14d Fix stepping with mono 2.8
+f9c3030 Use ReferenceEquals (had a compiler warning with mono 2.8)
+2e12001 Removed a bogus new attribute
+ec7ee0f Need to use this() when constructing structs with mono 2.8
+ce80116 Updated
+1f805ae Incremented version number in the readme
+be5cf9b Merge branch 'releases/version-0.7'
+492ca90 Updated
+ba6836b Updated make file for readme name change
+cc1b8c7 Renaming README to try to get github to recognize it
+6f16a15 Deleted the dummy README added during the creation of the repo
+d97f64c Changed README from rtf to asciidoc so that it should work better with github
+99fc84d Trying out Chuck's reverse path in title bars
+c459859 Updated
+f7d220c Stdout is the type that should use para indent
+8a55f76 GetHashCode was using a property that Equals stopped using
+0181f81 Removed some unused code
+62f09d7 Added missing ThreadModel attribute
+ec7057b Ignore the debugger assembly for a lot of rules
+6abfbe0 Added some more ignores
+f0cb614 Removed some ifdefed out code
+1531d34 Updated again
+961782f Updated
+f3376b0 Removed some debugging code
+d3e802a Use Apple's search engine with Search in Apple command (gives much better results than using google)
+fcd8ba8 Only use paragraph indendation for command output
+3d50c0f Warn if the test is not Unix (which shouldn't happen)
+001e878 Strings are converted to unix line endings when pasting (they'll be converted to the document endian when saving)
+00a7c4f Added ignores
+9eb4dfd Try to find files locally even if they don't have a slash
+91de19c Merge branch 'master' of github.com:jesse99/Continuum
+9e412a7 first commit
+2bc506d Minor updates.
+6ba80b1 Fixed the D glob.
+ec52f64 Html files can again be edited as text files.
+bf0d9d0 Index: source/plugins/debugger/Debugger.cs * Work around asynchronously invoked delegates not being collected in a timely manner.
+3c3e014 Index: source/plugins/text-editor/TextDocument.cs * Fix the code that checks for control chars on saves (it shouldn't have been using m_text).
+524c4e0 Command-line tool can now open directories (and they can also be dropped on Continuum's icon).
+037a872 * Work around a 10.6 bug that prevents toolbar buttons from validating. * Apple doesn't ensure that toolbar buttons are valid before handling clicks so fixed cancel build so that it works even if no build is in progress.
+2cbc15f Use the Unicode names for control characters.
+0bab7e3 Use rangeOfCharacterFromSet_options_range to check for control characters so that we can warn the user about embedded nulls (which screw everything up). Also checks for the control characters in 0x80-0x9F.
+7278fbb Index: source/plugins/app/AppDelegate.cs Index: source/plugins/app/MainMenu.nib/keyedobjects.nib Index: source/plugins/app/MainMenu.nib/designable.nib Index: source/plugins/app/module.mk Index: source/plugins/app/Application.cs Index: source/plugins/app/debug-assembly.nib/designable.nib Index: source/plugins/app/DebugAssemblyController.cs Index: README.rtf * Added a Debug menu item to make it easier to debug arbitrary assemblies.
+1cea4f5 Debug apple script command now supports specifying environment variables.
+f52ead8 Find gremlins now wraps around and tells the user when it cycles all the way around.
+c48afb5 Added wscript_build to Python globs
+92f293a Added support for drmd shebangs and a few more keywords.
+85b40a0 Added a comment.
+b07dbd4 Added some profiling.
+768526d Added missing file.
+210df6f Added an IParseErrors implementation to recognize dmd (D language) compiler errors.
+44f07fa Made string a keyword.
+aef8a9b Removed some debug console writelines.
+96c58c5 Added *.slb and *.csproj to the default list of items to ignore when populating the directory view.
+b2bc6be Re-arranged so that the two methods that touch fields are together.
+284ffc5 Fixed new documents so that they are created with unix line endings instead of mac classic.
+20f7c97 Fixed so that attribute names are properly highlighted when the value uses single quotes.
+c33b64e First cut at syntax highlighting for the D2 language.
+6cb7e23 Debugger now frees windows and other objects after the debugging session ends.
+c5a485f Open selection works even if a text window is not the main window.
+f35eb6f Added an InstanceType overload to avoid exceptions.
+5566282 Index: source/plugins/debugger/CodeViewer.cs * GetTooltip no longer falls down if the cursor is past the text.
+443646c Index: source/plugins/find/Find.cs Index: source/plugins/find/FindInFilesController.cs Index: source/plugins/find/Re.cs Index: source/plugins/text-editor/Editor.cs Index: source/plugins/text-editor/TextController.cs Index: source/plugins/text-editor/WarningWindow.cs Index: source/shared/interfaces/ITextEditor.cs * Find in file (for now) defaults to wrapping around.
+a91a1eb Launcher script now extends PATH and PKG_CONFIG_PATH so that Continuum can build itself when launched via the Finder.
+e99ac27 Fixed the annotation text width code so that it works better.
+330debd When auto-complete positions the sheet it sets the reserved y-coordinate to zero which somehow stops the sheet from growing by one pixel each time it is opened.
+cf28614 All open directory windows are now added to find in files popup when it is first opened.
+a990c07 Can now hover over arguments, locals, fields, and properties to see their values.
+7651288 * Find Line is now command-L. * Find next/prev error is command-> and command-<. * Added Find Selection.
+5007d0a Added *.cc to c++ glob, *.csproj to xml, and *.sln to plain-text.
+ffa272f Don't try to show thread static fields (sdb falls down).
+8ceaa38 Added a Break All debugger command.
+d94518a Renamed the code viewer window "[debugging Foo.cs]" instead of "[Foo.cs]".
+ffa03cf Renamed the Run debugger menu item Resume.
+86ef5f9 Only broadcast debugger stopped once (so debugger window prefs don't get hosed).
+a000000 Code viewer window is closed when the debugger exits.
+c98e2bd Index: source/plugins/debugger/VariableController.cs Index: source/plugins/debugger/ThreadsController.cs Index: source/plugins/debugger/StackController.cs * Don't persist VM state across debugger sessions (can cause the VM to fall over).
+98a7977 Index: source/plugins/debugger/values/SetValue.cs Index: source/plugins/debugger/values/SetValueOverloads.cs * Allow non-indexor properties to be set.
+e909b00 Index: source/plugins/debugger/values/GetItemOverloads.cs Index: source/plugins/debugger/values/TypeValue.cs Index: source/plugins/debugger/values/InstanceValue.cs Index: source/plugins/debugger/values/GetChildOverloads.cs Index: source/plugins/debugger/SoftDebuggerExtensions.cs * Variable window ignores indexor properties.
+a48fa31 Added a comment.
+50654ae Retain the attribute dictionary returned by convertAttributes.
+61b88dc Use ThinSpace when reversing paths.
+5219073 Left paren can now be used during auto-completion (patch from Chuck Esterbrook).
+f39813b Index: source/plugins/find/FindAll.cs Index: source/shared/StringExtensions.cs * Find in Files returns reversed paths (modified patch from Chuck Esterbrook).
+4e34782 All properties are shown in the variables window (instead of just auto-props).
+6278224 Added a missing file.
+6a8cc0f Index: source/plugins/app/AppDelegate.cs Index: source/plugins/app/MainMenu.nib/keyedobjects.nib Index: source/plugins/app/MainMenu.nib/designable.nib Index: source/plugins/app/ignore-exception.nib/keyedobjects.nib Index: source/plugins/app/ignore-exception.nib/designable.nib Index: source/plugins/app/module.mk Index: source/plugins/debugger/Exceptions.cs Index: source/plugins/debugger/Debugger.cs Index: source/plugins/debugger/debugger.nib/keyedobjects.nib Index: source/plugins/debugger/debugger.nib/designable.nib Index: source/plugins/debugger/Bosses.xml Index: source/shared/interfaces/IExceptions.cs * Added a dialog to allow users to list exceptions they want to not break into the debugger for when they are thrown.
+ca3cea0 Fixed the debug target example.
+5e66cf1 Deregister the menu handler before trying to add a new one to the window.
+8e57c84 Index: source/plugins/debugger/Debugger.cs * Activate the Continuum app when a breakpoint is hit.
+c697071 Fixed a few silly bugs with adding breakpoints after the type has been loaded.
+732602b Fix the time out code. Added work around for lock up due to calling ToString on a type which has not been loaded.
+c18eb3e Added a method to test whether an exception is a VMDisconnectedException.
+75ab601 Made it a bit clearer than when adding new languages the globs.xml should be edited as well.
+d879faf Added a debug target.
+7c2ac92 No longer crashes Continuum if a time machine directory cannot be found.
+e0bf38d Improved a message.
+ecae3bd Added a new readme.
+5827a92 If a file has no glob and cannot be opened with the Finder we now fall back to opening it with Continuum (this is part of the previous commit).
+bff712e Changed a warning from using stderr to an Info level log.
+778bead Experimenting with including cocoa ref counts in traces.
+d59f4fa Debug script command now allows the mono app to be specified.
+e8ce074 Show roots now allows a regex used to match the type.
+fc926de Trace static fields. Added support for tracing instances.
+977766b Started adding support for GC root tracing.
+041a01e Whitespace?
+93a92d6 Removed the controls window.
+d3ed67b Added some commented out code to nicely show IEnumerable types.
+b8eadef Removed some unused code and tweaked a comment.
+0b7eaf1 Don't try to update if the window has been closed.
+8de6750 Removed.
+aa083c3 Added a note about the soft debugger dll.
+db019da Removed some old code.
+05c082c Mostly finished rewriting the value stuff.
+82f80e0 Getting SetValue working again. Added a LiveStackFrame class so that we can get a new stack frame when the current one becomes invalid.
+410a08c Got this and statics variables working again.
+ae15940 VariableItems are now constructed with a declaration type hint so that we can show proper types for null values.
+5e0add1 Started adding support for getting type names with Cecil (tho it doesn't work so well with values).
+db2b548 Continuing VariableItem rewrite.
+678cb9a Removed VariableItem.Owner and started simplifying the multimethods.
+d5aa865 Started rewriting the icky VariableItem class using multimethods.
+1223faa Special case DateTime, TimeSpan, and Uri.
+143d551 Special case Nullable<T>.
+ccace99 Special cases IntPtr and UIntPtr.
+65ae81d Process debugger events within the thread to avoid deadlocks and related craziness.
+24be4f3 Special case multicast delegates.
+8600a14 Need to process deferred events whenever we resume the vm.
+5bdf944 Debugger events received while the debugger is suspended now immediatel resume the VM.
+441bd3f Special cases delegate types so that we show something useful.
+0523433 Alphabetized the public methods.
+ea0916a Special cases auto-props so users don't see the lame generated field names.
+74cc6de Does a better job evaluating fields and properties in the debugger.
+1fde103 User can now rename threads in the threads window.
+bf87bbc Getting properties and subscripts working better with conditional breakpoints.
+d442533 More work on conditional breakpoints plus misc other stuff.
+b228979 Got conditional breakpoints mostly working.
+724231f Finished up implementing support for literals in conditional breakpoints.
+6dad3af Index: BooleanExpression.cs Index: Expression.cs Index: BooleanExpressions.cs * RelationalExpression now also handles equality. It also now does type promotion.
+e89c05c More work on conditional breakpoints: boolean expressions now mostly work.
+b4cef18 Started implementing conditional breakpoints.
+cbb03af Index: source/plugins/debugger/ResolvedBreakpoint.cs Index: source/plugins/debugger/Breakpoints.cs Index: source/plugins/debugger/Debugger.cs Index: source/plugins/debugger/BreakpointsController.cs Index: source/plugins/debugger/debugger.nib/keyedobjects.nib Index: source/plugins/debugger/debugger.nib/designable.nib * Breakpoints window now includes the method name.
+0554741 Index: source/plugins/debugger/Breakpoints.cs * Use gold instead of light salmon for unresolved breakpoint color. * Fixed the broadcaster resolve/unresolve breakpoint broadcast listener strings. * Added listen for debugger stopped so we can unreolve all breakpoints.
+e2b9a9a Index: source/plugins/app/MainMenu.nib/keyedobjects.nib Index: source/plugins/app/MainMenu.nib/designable.nib Index: source/plugins/debugger/Breakpoints.cs Index: source/plugins/debugger/BreakpointsController.cs Index: source/plugins/debugger/debugger.nib/keyedobjects.nib Index: source/plugins/debugger/debugger.nib/designable.nib Index: source/plugins/debugger/Bosses.xml Index: source/plugins/debugger/IBreakpoints.cs Index: source/plugins/debugger/DebuggerWindows.cs * Started implementing a breakpoints window.
+8696c17 Index: source/plugins/debugger/StackController.cs * Build our own MethodMirror full name because the FullName property does not include arg names.
+8ee0865 Index: source/plugins/debugger/DebuggerWindows.cs Index: source/plugins/app/MainMenu.nib/keyedobjects.nib Index: source/plugins/app/MainMenu.nib/designable.nib Index: source/plugins/debugger/Debugger.cs * Optionally write selected debugger events to the transcript.
+76b06e4 Added a threads window.
+5a45c1e Index: source/plugins/debugger/VariableController.cs Index: source/plugins/debugger/CodeViewer.cs Index: source/plugins/debugger/DebuggerWindows.cs Index: source/plugins/debugger/StackFrameExtensions.cs Index: source/plugins/debugger/StackController.cs Index: source/plugins/debugger/debugger.nib/keyedobjects.nib Index: source/plugins/debugger/debugger.nib/designable.nib Index: source/plugins/app/MainMenu.nib/keyedobjects.nib Index: source/plugins/app/MainMenu.nib/designable.nib * Added a stack window.
+3a90360 Index: source/plugins/app/MainMenu.nib/keyedobjects.nib Index: source/plugins/app/MainMenu.nib/designable.nib Index: source/plugins/debugger/VariableController.cs Index: source/plugins/debugger/CodeViewer.cs Index: source/plugins/debugger/DebuggerWindows.cs * Added support for breaking on exceptions.
+208bcbe Index: source/plugins/debugger/VariableItems.cs * Setter delegate is now always set and the rare cases where we cannot set the value have delegates which throw. * Added lame code to deal with the lame way StructMirror handles static fields.
+4103cd2 * String variables can now be set. * When strings are displayed they are now escaped as needed.
+7ae4a22 Added annoying code to allow objects, arrays, and strings to be set to null.
+81ac994 * Can now set the value for enum variables. * Enums in the debugger are now printed with '|' if they are combinations of fields. * Fixed the old code that converts enums to strings so zero is printed as "0" instead of an empty string when the enum has no field with a zero value.
+207772c Index: source/plugins/debugger/VariableItem.cs Index: source/plugins/debugger/VariableItems.cs * When setting a field within a struct we also need to set the struct within whatever it is defined within.
+be4f882 Added a menu to the variables window to allow integral numbers to optionally be displayed using hex, to allow numbers to be displayed without a thousands separator character, and to allow characters above 7F to be displayed as unicode.
+d920fbd * Primitive values can now be set by double clicking on the value and editing it. * Stack frames are compared using the Id instead of the Address (which can change via a GC). * Does a better job handling nulls (which are actually PrimitiveValues). * Numeric types are now stringified using separator characters. * Char types are now stringified using escape character sequences.
+157bb40 Variables window now draws changed values in red (although NSOutlineView doesn't seem to recognize that when variables go from null to non-null their expand flag changes).
+179d21a Index: source/plugins/debugger/DebuggerDocument.cs Index: source/plugins/debugger/DebugCommand.cs Index: source/plugins/debugger/Debugger.cs * Don't allow concurrent debugging sessions.
+de4a313 Index: source/plugins/text-editor/Bosses.xml Index: source/plugins/debugger/DebuggerDocument.cs * CodeViewer is now created as a text window instead of a text document which is then   turned into a debugger document.
+f2bc695 Index: source/plugins/debugger/DebuggerDocument.cs * Changed get info so that it does something useful for the code viewer.
+a880807 * Debugger windows are now created once and are no longer part of the debugger document. * Debugger uses Broadcaster instead of C# events to reduce coupling.
+4c08313 Index: source/plugins/debugger/DebuggerDocument.cs * Redirect the debugee's stdout and stderr to the transcript window.
+18bb677 Added a window to display local variables.
+c47add1 Index: source/plugins/debugger/DebuggerDocument.cs Index: source/plugins/debugger/Debugger.cs Index: source/plugins/debugger/DebuggerController.cs * Only break on main entry if the debugger was started by opening an mdb file. * Redirect stdout and stderr to the transcript window.
+5910178 Index: source/plugins/debugger/DebugCommand.cs Index: source/plugins/debugger/DebuggerDocument.cs Index: source/plugins/app/Info.plist Index: source/plugins/app/module.mk Index: source/plugins/app/Continuum.sdef * Added support for debugging exceutables using apple script, e.g.   tell application "Continuum" to debug "CoolApp.exe" with "--foo --bar".
+9e311e3 * Unresolved breakpoints are drawn using a different color than resolved ones. * DoBreakpointEvent disables the step request (if it exists).
+2483ccd Index: source/plugins/debugger/Debugger.cs * Handle toggling breakpoints after types have been loaded. * Can't resume the VM in the thread because we have process types before we    execute code in those types.
+7c770ae Index: source/plugins/debugger/Breakpoints.cs Index: source/plugins/debugger/Bosses.xml * Saves the breakpoints in a pref. * Replaced Values with GetBreakpoints. * Does a better job handling offset changes in annotations.
+fdbabb6 Index: source/plugins/app/MainMenu.nib/keyedobjects.nib Index: source/plugins/app/MainMenu.nib/designable.nib Index: source/plugins/debugger/CodeViewer.cs Index: source/plugins/debugger/Breakpoint.cs Index: source/plugins/debugger/Breakpoints.cs Index: source/plugins/debugger/ICodeViewer.cs Index: source/plugins/debugger/Bosses.xml * Started adding support for toggling breakpoints.
+5a25296 Index: source/plugins/debugger/CodeViewer.cs * Current instruction pointer is now marked with an annotation window. * If the current source is newer than the assembly an a text overlay is used    to warn the user.
+5b0ea4e Index: source/plugins/debugger/CodeViewer.cs * If the source is newer than the assembly a window overlay is used to indicate that.
+22932f7 Use the mono root pref to allow mono files to be displayed as source when debugging.
+474b62a * Code view window now shows IL if the source file cannot be loaded. * Added a context menu to allow the code view to be switched between source and IL.
+c47d046 Index: source/plugins/text-editor/TextController.cs Index: source/plugins/debugger/CodeViewer.cs Index: source/plugins/debugger/DebuggerController.cs * Does a better job of setting the text in the CodeViewer and updating the language.
+1002329 Index: source/shared/interfaces/ITextEditor.cs Index: source/plugins/text-editor/Editor.cs * Text windows can now be made non-editable.
+2d0f0bd * Debugger window title is now set according to the source file currently being    stepped through. * Code viewer now styles the text.
+1a87777 Index: source/plugins/debugger/DebuggerController.cs * First cut at showing the code the user is stepping through.
+3f5035a * Started working on soft debugger support. Currently you can single step and run, but there is no GUI to speak of and IL offsets are not mapped to line numbers. For now debugging sessions begin when an mdb file is opened. * Fixed the command line tool so that it handles spaces in file names. * C# parser now handles default arguments.
+ebd7ce6 * Started working on soft debugger support. Currently you can single step and run, but there is no GUI to speak of and IL offsets are not mapped to line numbers. For now debugging sessions begin when an mdb file is opened. * Fixed the command line tool so that it handles spaces in file names. * C# parser now handles default arguments.
+faad5a4 Index: Makefile * Added a single dist target which includes both binaries and source.
+0eddf37 Index: README Index: CHANGES Index: CHANGE_LOG * Updated.
+4cd7fcd Fixed a null deref when opening new windows due to the last commit.
+a072a18 Index: source/shared/interfaces/IFindLanguage.cs Index: source/shared/interfaces/ILanguage.cs Index: source/plugins/styler/Languages.cs Index: source/plugins/styler/languages/Language.schema Index: source/plugins/styler/RegexLanguage.cs Index: source/plugins/styler/Language.cs Index: source/plugins/styler/FindLanguage.cs Index: source/plugins/styler/CSharpLanguage.cs * XML language files now can now include a list of shebang names.
+c6c2c03 Parser and styler classes store a document key instead of a document path so that they work if the user sets the language of unsaved documents using the get info window.
+e2c1522 * Saving an untitled document will now re-style the text based on the file extension. * Updated the regexen for a bunch of languages to work better with windows  line endings (mostly one line comments).
+900bad3 Index: source/plugins/directory-editor/DirectoryController.cs Index: source/plugins/object-model/Populate.cs Index: source/plugins/text-editor/TextController.cs Index: source/plugins/text-editor/Annotation.cs * Remove ourself from the Changed event.
+3b3616b Index: source/plugins/object-model/FindInDatabase.cs * Renamed the "Show Implementors" context menu item "Show Derived Types" because interfaces can inherit from interfaces.
+0907f94 Index: source/plugins/text-editor/TextEditorView.cs Index: source/plugins/text-editor/CurrentStyles.cs * When creating a new text window the default typing style is now set according to the user's default text preferences (this mainly affects new untitled windows). * Removed the lame hack that reset styles after the user typed a key.
+ef1548a Index: source/plugins/text-editor/TextEditorView.cs * Right-clicking past the bottom of the text no longer pops up an error alert.
+f7d8cfe Index: source/plugins/directory-editor/GenericBuilder.cs * Handle IOExceptions when building (mono 2.6 sometimes throws "Error creating standard error pipe" when starting the System.Diagnostics.Process).
+dc431a0 Index: source/plugins/text-editor/TextController.cs * Only reset styles on the first keystroke if there is no path.
+3445de6 Index: source/plugins/transcript/Bosses.xml Index: source/plugins/transcript/Transcript.cs * Transcript now implements the IWindow interface which allows the find window to find stuff in it again.
+4feac0a Index: source/plugins/styler/Languages.cs Index: source/plugins/styler/languages/README Index: source/plugins/styler/FactoryPrefs.cs * Languages are stored in '~/Library/Application Support/Continuum' instead of the app bundle to make it easier to add custom languages.
+f32bb5f Index: README * Added a note about the locate command. * Removed a couple of issues that have been fixed.
+bfb62b1 Use ` instead of ' when quoting terminal commands.
+5b30b3e Index: source/plugins/app/Preferences.nib/keyedobjects.nib Index: source/plugins/app/Preferences.nib/designable.nib * Added a static text label explaining how to rebuild the locate database after changing the mono root location.
+9568a1f Index: source/plugins/app/FindOnSites.cs * Updated the Search in Apple URL so that it works with Apple's new organization.
+44376bf Index: Makefile * Disabled warnaserror since Apple has deprecated a lot of methods that we use in Snow Leopard and mcocoa doesn't support blocks yet.
+847ad2d Index: source/plugins/text-editor/TextEditorView.cs * Fixed option-shift arrow so that it works when the selection starts or ends with whitespace.
+c1dab24 Index: source/plugins/styler/Language.cs Index: source/plugins/styler/RegexLanguage.cs Index: source/plugins/styler/CSharpLanguage.cs Index: source/plugins/styler/languages/Language.schema Index: source/shared/interfaces/ILanguage.cs * Language XML files now have an optional entry for words which is used for things like double clicking. This prevents periods from counting as word characters on Snow Leopard and makes usage a bit nicer on languages with wacky identifiers.
+72d91a7 Index: source/plugins/app/Launcher.cs * Added some logs to the catch blocks.
+7e50071 Fixed the auto-save/reloading changed files interaction.
+25160c8 Index: source/plugins/app/DocumentController.cs Index: source/plugins/text-editor/TextDocument.cs Index: source/plugins/text-editor/TextController.cs * Enabled auto-save using a ten second interval.
+fe2a368 Index: source/plugins/app/ResolveNamespace.cs Index: source/plugins/app/Bosses.xml * Added ResolveNamespace refactor.
+5518f9f Index: source/plugins/app/refactors/Add Null Check.ref Index: source/plugins/app/refactors/Add Null or Empty Check.ref * Added.
+3b346d1 Index: source/plugins/app/FindOnSites.cs * Names that start with CA, CG, QC, and SB (and are followed by an upper-case letter) are now looked up on apple's site instead of msdn.
+c3998c0 Index: source/plugins/text-editor/ApplyStyles.cs * Updated for the new mcocoa which has somewhat better typing.
+7702ed7 Added Create Attribute refactor.
+d5a10d2 Index: source/plugins/auto-complete/ResolveExpr.cs * typeof(xxx) now auto-completes when used in chained method calls.
+9746fbd Implement IDisposable no longer adds throw new ObjectDisposedException to private methods.
+74f7a0d First cut at adding support for opening files corresponding to gcc errors.
+faaca37 Index: source/plugins/styler/languages/Globs.xml Index: source/plugins/styler/languages/C++.xml Index: source/plugins/directory-editor/DirectoryItemStyler.cs * Added a styler file for c++. * Added *.resx to the xml glob list.
+a89be2d Index: source/plugins/app/MainMenu.nib/keyedobjects.nib Index: source/plugins/app/MainMenu.nib/designable.nib * Made underscore the command key for italic (I is used for get info).
+0a73490 Added dist-clean make target.
+b23f121 Index: source/plugins/cs-refactor/script/types/ScriptType.cs * Added Selection property.
+fceaa26 Updated TODO and CHANGES files.
+c476bba Index: source/plugins/directory-editor/Startup.cs * Added bin to default ignore target list. * Removed some targets from the list which are standard user targets per gnu.
+f94f47a Index: source/plugins/find/FindResultsController.cs * If there is one match then set the title to "one match" instead of "1 matches".
+dda9259 Index: source/plugins/build-errors/HandleBuildError.cs * DoUpdateLines checks for user edits so that we don't modify line numbers    when re-opening files.
+9b1dc11 * Updated for mobj changes.
+e1967aa Index: source/shared/AssemblyCache.cs * Don't abort processing an assembly if the mdb file doesn't match the assembly.
+0f55f8c Index: source/shared/Database.cs Index: source/plugins/auto-complete/AutoComplete.cs Index: source/plugins/cs-parser/ParserRecoveryTest.cs * Compiles in release.
+e7f45f7 Index: source/plugins/text-editor/OpenSelection.cs * Check files before urls (since we get good error messages from trying to open missing files, but not always for bad urls).
+cd426f5 Index: source/plugins/directory-editor/TableItems.cs Index: source/plugins/directory-editor/DirectoryController.cs * Outline view again updates when ignored items changes.
+743e773 Index: source/plugins/auto-complete/TargetDatabase.cs Index: source/plugins/auto-complete/ResolveMembers.cs * Events now auto-complete.
+eccb7c0 Index: source/plugins/directory-editor/DirPrefsController.cs Index: source/plugins/directory-editor/DirectoryItemStyler.cs Index: source/plugins/directory-editor/dir-prefs.nib/keyedobjects.nib Index: source/plugins/directory-editor/dir-prefs.nib/designable.nib * Assemblies now default to using a red color. * Added another line of file glob/colors to the directory pref dialog.
+7128f82 Index: source/plugins/text-editor/TextDocument.cs * Save now uses the fileType instead of the cached format so the popup in the save   dialog no longer is sometimes ignored. * Format setter now changes the fileType.
+7ebe5df Index: source/plugins/text-editor/TextDocument.cs * Don't fall down when reading zero length wrapped files.
+3fecb5b Index: source/shared/CecilExtensions.cs * ArgToString maps ints to enum field names.
+e8f07e2 Index: source/plugins/text-editor/OpenSelection.cs * Does a better job handling files returned by the locate command which don't actually exist.
+030739d Updated for mcocoa/mobjc changes.
+afa945c Index: source/plugins/styler/languages/Css.xml Index: source/plugins/styler/languages/Globs.xml * First cut at a css language.
+cbb5c42 Index: source/plugins/auto-complete/ResolvedTarget.cs Index: source/plugins/auto-complete/ResolveMembers.cs Index: source/plugins/auto-complete/ResolveName.cs * Added a lame special case to allow the base keyword to resolve protected members.
+e633f5c Index: source/plugins/text-editor/OpenSelection.cs * Pops up a picker if there are more than two files to open (instead of beeping if there are    more than ten files).
+141364b Index: source/plugins/nant-builder/AssemblyInfo.cs Index: source/plugins/nant-builder/nant-flags.nib/keyedobjects.nib Index: source/plugins/nant-builder/nant-flags.nib/designable.nib Index: source/plugins/nant-builder/Plugin.cs Index: source/plugins/nant-builder/Prefs.cs Index: source/plugins/nant-builder/CanBuild.cs Index: source/plugins/nant-builder/NantFlagsController.cs Index: source/plugins/nant-builder/Builder.cs Index: source/plugins/nant-builder/module.mk Index: source/plugins/nant-builder/Bosses.xml * Added support for building via nant.
+0d3a2b4 Index: source/plugins/disassembler/ContextMenu.cs * Fixed a null deref when right clicking on a window which isn't main.
+5629d81 Index: source/plugins/text-editor/RestoreViewState.cs Index: source/plugins/text-editor/TextController.cs Index: source/plugins/text-editor/CurrentStyles.cs * Fixed a race between restoring the view and showing line/selection.
+1322985 Index: source/plugins/styler/languages/Cil.xml Index: source/plugins/disassembler/DisassembleExtensions.cs * Now includes source lines.
+47c2fc7 Index: source/plugins/app/scripts/Reverse Lines.py * Added.
+7c82fad Index: source/plugins/text-editor/TextDocument.cs Index: source/plugins/text-editor/module.mk Index: source/plugins/text-editor/TextController.cs Index: source/plugins/text-editor/ApplyStyles.cs Index: source/plugins/text-editor/text-info.nib/keyedobjects.nib Index: source/plugins/text-editor/text-info.nib/designable.nib Index: source/plugins/text-editor/CurrentStyles.cs Index: source/plugins/text-editor/TextEditorView.cs Index: source/plugins/text-editor/TextInfoController.cs * Added a text document info window which allows line ending, format, encoding, and language    to be viewed and changed.
+0c88666 Index: source/plugins/directory-editor/DirectoryItem.cs Index: source/plugins/directory-editor/Editor.cs Index: source/plugins/directory-editor/TableItems.cs Index: source/plugins/directory-editor/DirectoryView.cs Index: source/plugins/directory-editor/TableItem.cs * Rewrote so that it only loads the items which are open.
+27f95b6 Index: source/plugins/object-model/ShortForm.cs * Now includes attributes for types and members.
+39a10df Index: source/plugins/app/AppDelegate.cs Index: source/plugins/app/MainMenu.nib/keyedobjects.nib Index: source/plugins/app/MainMenu.nib/designable.nib Index: source/plugins/app/Info.plist Index: source/plugins/directory-editor/DirectoryView.cs Index: source/plugins/text-editor/TextController.cs * Added Open as Binary command.
+4f3fde6 Index: source/plugins/styler/FactoryPrefs.cs Index: source/plugins/app/Application.cs * Fixed glob handling so we pickup on new globs added by Continuum (when the user    has edited the list).
+69096d2 Index: source/plugins/disassembler/Bosses.xml Index: source/plugins/disassembler/ContextMenu.cs * Can now disassemble types and methods using the text context menu.
+0155f40 Index: source/plugins/disassembler/AssemblyDocument.cs Index: source/plugins/disassembler/AssemblyItem.cs Index: source/plugins/disassembler/AssemblyItems.cs Index: source/plugins/disassembler/AssemblyController.cs * Can now browse resources embedded in the disassembled assembly.
+b89d9b4 Index: source/plugins/object-model/FindInDatabase.cs Index: source/plugins/object-model/IObjectModel.cs Index: source/plugins/object-model/Objects.cs * Handle clicking on cecil style method names (e.g. from disassemblies).
+3487a51 Index: source/plugins/disassembler/AssemblyItem.cs Index: source/plugins/disassembler/AssemblyItems.cs Index: source/plugins/disassembler/AssemblyController.cs Index: source/plugins/disassembler/AssemblyDocument.cs Index: source/plugins/app/MainMenu.nib/keyedobjects.nib Index: source/plugins/app/MainMenu.nib/designable.nib * Added Get Info support to disassembled assemblies, namspaces, types, and methods.
+d228f2f Index: source/plugins/disassembler/AssemblyDocument.cs Index: source/plugins/disassembler/AssemblyItems.cs Index: source/plugins/disassembler/AssemblyController.cs * Got the objects releasing correctly.
+10fa94f * Got types disassembling.
+bd84360 Index: source/plugins/disassembler/DisassembleExtensions.cs * Add attributes to the method.
+24d1695 Index: source/shared/interfaces/ILanguage.cs Index: source/plugins/styler/languages/Cil.xml Index: source/plugins/styler/languages/Language.schema Index: source/plugins/styler/CSharpLanguage.cs Index: source/plugins/styler/Language.cs Index: source/plugins/styler/RegexLanguage.cs Index: source/plugins/text-editor/TextController.cs Index: source/plugins/text-editor/ApplyStyles.cs * Replaced the initial_tab language attribute with tab stops.
+195d04b Index: source/plugins/disassembler/DisassembleExtensions.cs * Disassembles exception handlers.
+4214fbd Index: source/plugins/disassembler/DisassembleExtensions.cs * Special case Instruction operands.
+fb63c5b Language files now support an optional initial_tab attribute to allow for column based languages like cil.
+bb65254 More work on disassembling.
+226cb8f Index: source/plugins/disassembler/AssemblyInfo.cs Index: source/plugins/disassembler/AssemblyDocument.cs Index: source/plugins/disassembler/AssemblyItem.cs Index: source/plugins/disassembler/Plugin.cs Index: source/plugins/disassembler/disassembler.nib/keyedobjects.nib Index: source/plugins/disassembler/disassembler.nib/designable.nib Index: source/plugins/disassembler/AssemblyItems.cs Index: source/plugins/disassembler/AssemblyController.cs Index: source/plugins/disassembler/CanOpen.cs Index: source/plugins/disassembler/module.mk Index: source/plugins/disassembler/Bosses.xml Index: source/plugins/app/Info.plist * Started adding support for disassembling assemblies.
+0b97fb6 Index: source/plugins/styler/languages/Globs.xml * Made *.svn-blame and *.svn-log plain text.
+36fccab Index: source/plugins/auto-complete/ResolveExpr.cs Index: source/plugins/auto-complete/ResolveName.cs Index: source/plugins/auto-complete/ResolveType.cs * Auto-completion inside nested classes wasn't finding locals and arguments. * Auto-complete was not finding nested class names.
+6f99bd2 Index: source/plugins/object-model/ShortForm.cs * Fixed the lookup of bound generic base types. * Now gets members of base interfaces.
+ef7a74e Index: source/plugins/app/MainMenu.nib/keyedobjects.nib Index: source/plugins/app/MainMenu.nib/designable.nib Index: source/plugins/app/TimeMachine.cs Index: source/plugins/app/Bosses.xml Index: source/plugins/app/TimeMachineWindowTitle.cs * Added support for viewing files in Time Machine.
+a8f08dc Index: source/plugins/app/MainMenu.nib/keyedobjects.nib Index: source/plugins/app/MainMenu.nib/designable.nib * Added Save To command.
+35ad105 Reformatted Tables.rtf.
+fa0a410 Converted Tables.txt to an rtf file.
+cf78e85 Index: source/plugins/text-editor/ShowSpaces.cs Index: source/plugins/text-editor/WindowDatabase.cs * Added support for word wrapping files.
+ab2c904 Whitespace.
+00f5787 Index: source/plugins/app/PreferencesController.cs * Button titles are now updated when the attributes change.
+0833512 Index: source/plugins/text-editor/TextController.cs Index: source/plugins/text-editor/ApplyStyles.cs Index: source/plugins/text-editor/CurrentStyles.cs * Re-apply paragraph styles after text is reset. * Fix ShowLine so that it works when styles haven't been applied yet.
+fe1de81 Index: source/plugins/cs-parser/Scanner.cs Index: source/plugins/cs-parser/ScannerTest.cs * Added some asserts to ensure that the scan progresses. * Fixed scanning of preprocessor directives (it was trying to scan these in verbatim    strings which soemtimes lead to infinite loops).
+3f7adcf Re-used Shared namespace so the unit tests work again.
+3cae52b Declarations popup is now only rebuilt if the declarations changed.
+fa98827 Index: source/plugins/styler/ComputeRegexStyles.cs Index: source/plugins/styler/RegexLanguage.cs Index: source/plugins/styler/CSharpStyler.cs Index: source/plugins/styler/Language.cs Index: source/plugins/styler/CSharpLanguage.cs Index: source/plugins/styler/Whitespace.cs Index: source/plugins/styler/IStyleWith.cs Index: source/shared/interfaces/IParses.cs Index: source/shared/interfaces/IWhitespace.cs Index: source/plugins/cs-parser/Parses.cs * Added ThreadModel attributes to some code that needed it. Removed it from a few    places where it is no longer needed.
+8fff6b9 Renamed a file.
+55937cb Index: source/plugins/cs-parser/Parses.cs * Removed the check for a newer edit before broadcasting (screws things up when we   re-open files).
+9007550 Removed obsolete files.
+40d7650 * Reworking the way style runs and parses are handled. Instead of thread safe interfaces    allowing you to get the cached data they are now computed on the fly within a thread    and then the data is broadcast using the main thread. * Started rewriting AppleStyles so that it's simpler, more responsive and hopefully more reliable.
+f9f1a61 Index: source/plugins/find/FindResultsController.cs Index: source/plugins/find/FindAll.cs * Edited find results were not being dimmed when the edit happened.
+6da3dfa Finally got all the threaded code decorated.
+1a5988f More thread model work.
+cde660b More thread model work.
+c060738 More work on adding threading attributes.
+c6ec91b Continued adding threading attributes to the code.
+a5cdec4 Fixed two auto-complete crashes for files with no using directives.
+ac410ce Index: source/plugins/object-model/Populate.cs Index: source/plugins/object-model/ParseAssembly.cs Index: source/shared/DirectoryWatcher.cs Index: source/shared/StringExtensions.cs Index: source/shared/CsHelpers.cs Index: source/shared/Tuple.cs Index: source/shared/SafeTimer.cs Index: source/shared/Log.cs Index: source/shared/AssemblyCache.cs Index: source/shared/Database.cs Index: source/plugins/object-model/StringExtensions.cs Index: source/plugins/object-model/DatabaseExtensions.cs Index: source/plugins/object-model/IParseAssembly.cs Index: source/plugins/object-model/CecilExtensions.cs * Started documenting the threading model supported by the code using a custom    attribute.
+b97b3ae * Comented out 'using Shared;' from a lot of files. * Added 'using Gear.Helpers;' to many files. * Removed the Contract class (use the Gear or Mobjc helpers version). * Removed the Unused class (use the Gear or Mobjc helpers version). * Added a custom SafeTimer delegate so that we can add a threading attribute to it. * Fixed the gendarme make target.
+6466f19 Index: source/shared/CsHelpers.cs Index: source/plugins/app/Refactors.cs * Fixed a couple of null access exceptions (which didn't really cause any harm) when    trying to enable the refactor window with untitled windows.
+08c50bc Index: README * Added some verbiage about auto-complete and known issues.
+8778d8e Index: source/plugins/auto-complete/ResolveMembers.cs * Includes parsed extension methods.
+02802f2 Index: source/plugins/text-editor/TextDocument.cs Index: source/plugins/text-editor/TextController.cs * Have to use file size as well as mod time to figure out if the file needs to be reloaded.
+d1cc934 Index: source/plugins/cs-parser/Parser.cs * Handle exceptions thrown when tying to scan the very first token.
+fccd912 Index: source/plugins/auto-complete/ResolveExpr.cs * Handle cases like `System.String.Empty.`.
+06552f4 Whitespace.
+957c427 Index: source/continuum/module.mk Index: source/plugins/app/AppDelegate.cs Index: source/plugins/app/MainMenu.nib/keyedobjects.nib Index: source/plugins/app/MainMenu.nib/designable.nib Index: install-tool.c Index: Makefile * Added a menu item to install a tool which can be used to open files in continuum (or   foreshadow).
+7ef0998 Index: source/plugins/transcript/TranscriptController.cs * Cap the number of characters to 128K.
+95e69cf Whitespace.
+02b9bc8 Index: source/plugins/directory-editor/DirectoryController.cs * Fixed so it works when a target is declared more than once in the make file.
+49fd76a Index: source/shared/interfaces/ICsLocalsParser.cs Index: source/plugins/cs-parser/LocalsParser.cs * Exposed ParseType.
+6a3f404 Whitespace.
+f549704 Index: source/plugins/find/Re.cs * Rewrote DoSearchWithin so that it uses a multi-line search if the prefix   and suffix are both present and differ from each other.
+b270de0 * Moved scripts from ~/Continuum Files to ~/Library/Application Support/Continuum. * Moved databases from ~/Continuum Files/databases to ~/Library/Caches/Continuum.
+9b3dbe5 Index: source/plugins/object-model/Objects.cs * Updated method name generation for the new schema.
+6d7ec50 Index: source/plugins/text-editor/TextDocument.cs Index: source/plugins/text-editor/TextController.cs * Use the back color even for rich text documents. * OnPathChanged wasn't being called correctly on save as.
+b159323 Index: source/plugins/app/Info.plist Index: source/plugins/text-editor/TextDocument.cs Index: source/plugins/text-editor/ApplyStyles.cs Index: source/plugins/text-editor/CanOpen.cs Index: source/shared/interfaces/ITextEncoding.cs Index: source/plugins/text-editor/TextEncoding.cs Index: source/plugins/find/BaseFindInFiles.cs * Added support for reading and writing utf16, 7-bit ASCII, rtf, html, word, open xml, and   open document files.
+8051995 Index: source/plugins/app/PreferencesController.cs * Fixed ordering of text default font changed, text spaces color changed,    text tabs color changed, and tab stops changed broadcast handlers.
+28d2689 Index: source/plugins/cs-refactor/script/types/ExternAliasType.cs Index: source/plugins/cs-refactor/script/types/EventType.cs Index: source/plugins/cs-refactor/script/types/EnumType.cs Index: source/plugins/app/refactors/Refactor Language.rtf * Exposed CsEnum::Names, CsEvent::Type, and CsExternAlias::Name to the refactor script.
+bc90073 Rewrote LocalsParser so that it's cleaner and hopefully will do a better job finding all of the locals.
+894203b Index: source/shared/Profile.cs * Added.
+f6d9572 Index: source/plugins/cs-parser/Parser.cs * Recover using void too so we work better with people who omit private from members.
+f979884 Improved cs parser error recovery quite a bit.
+7e5d6c6 * Static methods now complete when within a static method. * CsParser wasn't parsing generic methods quite right. * Replaced auto-complete Member class with new saner Item classes. * Changed the Methods.display_text table field so that it is easier to break apart and  better defined. * Improved filtering of auto-complete items.
+b3d3ccc * Type names can now be completed with tab. * Namespace member label now is the full namespace. * Constructor member label now tacks on " Constructor". * GetCtors now takes an array of namespaces instead of one namespace.
+14b99e6 Index: source/plugins/app/refactors/Implement IEnumerable.ref * Added.
+e1b47f9 Index: source/plugins/auto-complete/ITargetDatabase.cs Index: source/plugins/auto-complete/TargetDatabase.cs Index: source/plugins/auto-complete/ResolveExpr.cs Index: source/plugins/auto-complete/ResolveMembers.cs Index: source/plugins/auto-complete/AutoComplete.cs * Only include protected members if we're in that type or a subclass. * Only include private methods if the their type is the same as the current context.
+36cba73 Index: source/plugins/auto-complete/ResolveMembers.cs * Get bases using the parsed info if available.
+e4d9ce5 Index: source/plugins/auto-complete/ResolveMembers.cs Index: source/plugins/auto-complete/TargetDatabase.cs * Add setters to the members lists.
+d4f7db0 Index: source/plugins/auto-complete/AutoComplete.cs * Stem completion is now done via tab instead of enter.
+2fc62cf Index: source/plugins/auto-complete/AutoComplete.cs Index: source/plugins/auto-complete/Member.cs * Dot now completes namespaces and method calls. * Enter now completes ctors when used with a new expression.
+01fd134 Index: source/plugins/auto-complete/AutoComplete.cs * We now look for (possibly partial) type names when completing dots or expressions which   start with "new ".
+c5f5258 Got the unit tests working again.
+57092af Updated.
+d1b756a Starting to get the unit tests working after the last set of refactors.
+f8fe333 Index: source/plugins/auto-complete/ResolveExpr.cs * Chained method calls should always resolve to an instance of the type.
+a3a4d82 More minor gendarme fixes.
+cc4e451 Index: source/continuum/Program.cs Index: source/shared/AssertListener.cs * Removed AssertListener.
+8954ccc * Minor gendarme fixes.
+c398850 Index: source/plugins/auto-complete/TargetDatabase.cs * GetExtensionMethods no longer asserts for nullary extension methods.
+82f9949 Index: source/plugins/app/MoveSelectionToFile.cs * Uses the new braces on their own line pref. * Fixed a silly bug that caused a bogus namespace to be used when moving types.
+43ee281 Replaced Trace.Fail with Contract.Assert.
+098212b Index: source/plugins/cs-parser/LocalsParser.cs Index: source/plugins/cs-parser/LocalsParserTest.cs * Does a better job handling < characters which are not part of a generic type. * (Non-type) keywords are no longer considered to be type names.
+96e263f Index: source/plugins/auto-complete/ResolveMembers.cs * Const parsed fields should be considered static fields.
+d8bb1a6 Added a directory pref to put curly braces on their own lines (for refactor commands).
+91d91aa Refactor commands now use the AddSpace pref (bullets before ( or [ are placed with a space or nothing).
+0ee469a Index: source/shared/interfaces/IDirectoryEditor.cs Index: source/plugins/directory-editor/DirPrefsController.cs Index: source/plugins/directory-editor/Editor.cs Index: source/plugins/directory-editor/dir-prefs.nib/keyedobjects.nib Index: source/plugins/directory-editor/dir-prefs.nib/designable.nib Index: source/plugins/directory-editor/DirectoryController.cs Index: source/plugins/auto-complete/CompletionsTable.cs * Added a directory pref to add spaces before method args.
+ceef451 Replaced Debug.Assert with Contract.Requires/Assert wrapped with #if DEBUG.
+a626646 Replaced Trace.Assert with Contract.Requires/Assert.
+48c929c Index: source/plugins/auto-complete/ResolveName.cs * Handle name where name is a local declared as "var name = Foo;" and Foo    is a getter or field.
+3024823 Index: Tables.txt Index: source/plugins/object-model/Populate.cs Index: source/plugins/object-model/ParseAssembly.cs * Reworked assembly parsing. Now we have a flag in the Assemblies table which tells us    if the assembly is being used (in the Types table) and update Assemblies when assemblies    are found or removed. Then we ensure that Types is using the latest version of each assembly    in Assemblies.
+52d369b Index: Tables.txt Index: source/plugins/object-model/FindInDatabase.cs Index: source/plugins/object-model/Objects.cs Index: source/plugins/auto-complete/CompletionsTable.cs * display_text uses semi-colons to separate arguments to allow for easier post processing.
+be59748 Index: Tables.txt Index: source/plugins/object-model/Objects.cs Index: source/plugins/object-model/Populate.cs Index: source/plugins/object-model/ParseAssembly.cs * Made Types base_type_name and interface_type_names root names instead of type    names because they are only used to resolve members and we don't care if the type    is an instantiated generic for that. * Added kind_name to SpecialTypes to allow us to more easily resolve special types.
+8501774 Index: source/plugins/auto-complete/TargetDatabase.cs Index: source/plugins/auto-complete/ResolveExpr.cs Index: source/plugins/auto-complete/ResolveName.cs Index: source/plugins/auto-complete/ResolveType.cs Index: source/plugins/auto-complete/ITargetDatabase.cs Index: source/plugins/auto-complete/ArgsAnnotation.cs Index: source/plugins/auto-complete/ResolveMembers.cs Index: source/plugins/auto-complete/CompletionsTable.cs Index: source/plugins/auto-complete/Member.cs * More work on updating auto-complete to use the new schema. Seems to mostly   work except for special type names.
+405ee96 Got rid of the Names table. It only made the db 30% smaller and makes the auto-complete queries painful.
+b6d93c7 Index: source/plugins/auto-complete/ResolveName.cs Index: source/plugins/auto-complete/ResolveType.cs Index: source/plugins/auto-complete/ITargetDatabase.cs Index: source/plugins/auto-complete/ResolvedTarget.cs Index: source/plugins/auto-complete/ResolveMembers.cs Index: source/plugins/auto-complete/AutoComplete.cs Index: source/plugins/auto-complete/Member.cs Index: source/plugins/auto-complete/TargetDatabase.cs * Started rewriting auto-complete to match the new db schema.
+05eb6ae Index: source/plugins/object-model/FindInDatabase.cs Index: source/plugins/object-model/IObjectModel.cs Index: source/plugins/object-model/Objects.cs * Updated the show info commands for the new schema.
+7695cd6 Index: Tables.txt Index: source/plugins/object-model/Populate.cs Index: source/plugins/object-model/ParseAssembly.cs Index: source/shared/Paths.cs * Redesigned the schema so the tables take about 3x less space and include information    about whether types are arrays or instantiated generics.
+e8a0b0e Index: source/plugins/auto-complete/ResolveType.cs * Special case arrays to allow linq methods to complete.
+0156a08 Index: source/plugins/auto-complete/ResolveExpr.cs Index: source/plugins/auto-complete/ResolveExprTest.cs Index: source/plugins/auto-complete/ResolveName.cs * Auto-complete char and string literals.
+8ad961a Index: source/plugins/auto-complete/ResolveExpr.cs Index: source/plugins/auto-complete/ResolveExprTest.cs Index: source/plugins/auto-complete/ResolveName.cs * Added so that we can resolve chained method calls.
+71d2d8f Removed ResolveTarget.
+e24ea76 Index: source/plugins/auto-complete/ResolveName.cs Index: source/plugins/auto-complete/ResolveNameTest.cs Index: source/plugins/auto-complete/ResolveTarget.cs Index: source/plugins/auto-complete/ResolveTargetTest.cs Index: source/plugins/auto-complete/ResolveVarTargetTest.cs Index: source/plugins/auto-complete/AutoComplete.cs * Replacing ResolveTarget with new ResolveName class.
+9cc4eb0 * Auto-complete now has a context menu which allows users to filter what    is shown.
+e33010a Index: source/shared/ITextAnnotation.cs Index: source/plugins/text-editor/Annotation.cs * Added support for context menus. * Tweaked the width of the window (it wasn't always quite wide enough).
+ae43864 Index: source/plugins/auto-complete/ResolveType.cs * Resolve members for base interfaces instead of just the direct interface.
+ad3a838 Index: source/plugins/auto-complete/ResolveMembers.cs Index: source/shared/interfaces/IParses.cs * Try to find the type in parses for files besides the one being edited.
+1c8dee9 * Started replacing the old parser interface goo with a new one which:    1) Caches parses even when the associated text document is closed so    that we can make use of them until the assembly is built.    2) Bundles the parse and scanner info together.    3) Provides a simpler way to get the either the current parse info or the    up to date parse info. * Added asserts to some key classes to ensure that they are not being called   from incorrect threads. * Added CsHelpers.IsCSharp. * Tweaked text position in anotation windows. * When auto-complete looks up types it first tries the namespaces within the    file and then the namespaces from uses directives (instead of the opposite).
+b601739 Index: source/shared/Broadcaster.cs Index: source/shared/IObserver.cs Index: source/plugins/find/FindInFilesController.cs Index: source/plugins/find/FindResultsController.cs Index: source/plugins/styler/Languages.cs Index: source/plugins/object-model/Objects.cs Index: source/plugins/object-model/Populate.cs Index: source/plugins/directory-editor/DirectoryController.cs Index: source/plugins/text-editor/TextController.cs Index: source/plugins/text-editor/ApplyStyles.cs Index: source/plugins/build-errors/ErrorsController.cs Index: source/plugins/build-errors/HandleBuildError.cs Index: source/plugins/transcript/TranscriptController.cs * Broadcaster now uses an IObserver interface so it no longer needs a strong    reference to the observer and observers no longer need to unregister    themselves. * Broadcaster no longer traps exceptions from callbacks.
+12b6351 Whitespace.
+d4a1bc0 Can now move annotation windows by clicking within them. If moved completely outside the parent they are closed.
+067db45 Index: source/plugins/auto-complete/ArgsAnnotation.cs * Supports nested arg completion windows.
+22f35d7 Add abstract methods to the Members table.
+5640458 Handle < better when counting arguments.
+8628ca5 Arg completion window no longer goes away when an inner closing paren is typed. Arg completion window no longer hilites the wrong argument when commas are typed within nested braces.
+c70aa1b Index: source/plugins/text-editor/Annotation.cs * Allow callers to hide a closed window. * Allow the window to extend past the left/right edges of the parent window   (but not above or below the parent).
+e0aa5c6 Hilites the current argument (using a dumb argument matcher atm).
+369c0ed Renaming/minor refactoring.
+3d80f28 Index: source/shared/interfaces/ITextEditor.cs Index: source/plugins/auto-complete/CompletionsController.cs Index: source/plugins/text-editor/Editor.cs * Completion windows do a better job getting the base line of the text.
+8737888 Annotation windows use a new LiveRange class so that their position is updated as the text is edited.
+a58fc00 Index: source/plugins/text-editor/Editor.cs Index: source/plugins/text-editor/Annotation.cs * Annotation scrolls with the parent window. * Annotation closes if the parent closes.
+c0ed13a Closes arg completion window when ) is type (tho the test isn't quite right atm).
+473ef21 Started replacing the old argument compeletion UI with a new one which uses text annonation windows.
+60ee57a Index: source/shared/CsDeclarations.cs Index: source/plugins/app/refactors/Refactor Language.rtf * Clarified when GetterBody and SetterBody may be null.
+0f0a9b8 Index: source/plugins/text-editor/WindowDatabase.cs Index: source/plugins/text-editor/TextController.cs * WindowDatabase now stores the text length so we can tell if the origin    and selection are still valid when we re-open the file.
+e8c165d Index: source/plugins/object-model/ParseAssembly.cs * Use InsertOrReplace instead of InsertOrIgnore. * Add setters to the auto-complete table.
+8742d15 Checked in missing WindowDatabase.cs. Adjust default window frames.
+f783779 Index: source/plugins/text-editor/TextController.cs * Use a database to store window frame and scroller position instead of a pref. * Also store selection.
+378b5a1 Index: source/plugins/object-model/Populate.cs Index: source/plugins/directory-editor/DirectoryController.cs * Stop the thread when the directory editor closes.
+85074a9 Index: source/shared/Database.cs Index: source/plugins/object-model/Populate.cs Index: source/shared/DatabaseTest.cs * Handle database deadlocks by restarting transactions a few times.
+ce43c6b Index: source/plugins/auto-complete/ResolveMembers.cs * When completing an extension method don't insert the first argument.
+09281de Index: source/shared/Database.cs Index: source/plugins/object-model/Objects.cs Index: source/plugins/object-model/Populate.cs Index: source/plugins/object-model/ParseAssembly.cs Index: source/plugins/auto-complete/AutoComplete.cs Index: source/shared/DatabaseTest.cs * Added some more Database debug code to provide more information about BUSY errors. * Database objects must now only be used from within a single thread.
+80e8d68 Sped up auto-complete about 20% more by dropping the ExtensionMethods table and adding a Members table.
+6984ee2 Sped up auto-completion about 4x.
+d79dd52 Index: source/plugins/auto-complete/AutoComplete.cs Index: source/plugins/auto-complete/CompletionsTable.cs Index: source/plugins/auto-complete/CompletionsController.cs * Added support for chaining method completions.
+547be26 Index: source/plugins/auto-complete/AutoComplete.cs Index: source/plugins/auto-complete/ResolvedTarget.cs Index: source/plugins/auto-complete/CompletionsController.cs Index: source/plugins/auto-complete/CompletionsTable.cs * Implemented expression completion via the enter key.
+96c8b0d Index: source/plugins/text-editor/TextEditorView.cs * Tab key now selects the next or previous identifier when the selection is an identifier    or when the selection is empty and just before a comma.
+698b1cd Previous checkin was a bit premature and had a bogus commit message. The message should have been something like:
+a6213cd Whitespace.
+eedc8be Whitespace.
+2c5d445 Got argument completion working.
+8a90d29 Replaced some CWLs with Logs.
+c82e1c6 Index: source/plugins/text-editor/DeclarationsPopup.cs * textSelectionChanged clears the selected item if globals is not up to date. * After rebuilding the menu select the correct item.
+def853e Index: source/plugins/auto-complete/TargetDatabase.cs Index: source/plugins/auto-complete/ResolveType.cs Index: source/plugins/auto-complete/ITargetDatabase.cs Index: source/plugins/auto-complete/MockTargetDatabase.cs Index: source/plugins/auto-complete/ResolveTarget.cs Index: source/plugins/auto-complete/ResolveMembers.cs Index: source/plugins/auto-complete/ResolveVarTargetTest.cs * Handle `var local = new X...` * Handle `var local = from x in foo...` * Handle `var local = x.Get<X>();` * Add extension methods if the namespace they were declared in is used. * Fix DoTrimNamespace so that it works properly with nested (generic) types.
+f44e57c Index: source/plugins/auto-complete/TargetDatabase.cs Index: source/plugins/auto-complete/ResolveTypeTest.cs Index: source/plugins/auto-complete/ResolveType.cs Index: source/plugins/auto-complete/MockTargetDatabase.cs Index: source/plugins/auto-complete/ITargetDatabase.cs Index: source/plugins/auto-complete/ResolveTarget.cs Index: source/plugins/auto-complete/ResolveTargetTest.cs Index: source/plugins/auto-complete/ResolveMembers.cs Index: source/plugins/auto-complete/AutoComplete.cs * Does a better job getting base target fields and base members. * Target can now be a property.
+34a2e73 Index: source/plugins/object-model/ParseAssembly.cs * Special case auto-properties so that they are included in the database.
+c1d5485 CsDelegate and CsEnum are now subclasses of CsType instead of CsMember.
+97956f2 Exposed Type.FullName and Member.FullName to refactor scripts.
+5d52a80 Index: source/plugins/auto-complete/ResolveTypeTest.cs Index: source/plugins/auto-complete/ResolveType.cs * Fix resolve of arrays and generics. * Resolve nested types.
+6ae112c Factored out new ResolveType class.
+7d78a26 Added ResolvedTarget. Did some renaming.
+4635c01 Index: source/plugins/text-editor/ApplyStyles.cs * Rewrote the origin sort again (previous change slowed it down a lot).
+40d448e Index: source/plugins/styler/RegexComputer.cs Index: source/plugins/styler/CSharpComputer.cs Index: source/plugins/text-editor/Styles.cs Index: source/plugins/text-editor/CachedCsDeclarations.cs Index: source/plugins/text-editor/TextController.cs Index: source/plugins/text-editor/CachedCsCatalog.cs Index: source/plugins/text-editor/Bosses.xml Index: source/plugins/text-editor/DeclarationsPopup.cs Index: source/plugins/text-editor/CachedStyleRuns.cs Index: source/plugins/text-editor/Styler.cs Index: source/plugins/auto-complete/AutoComplete.cs Index: source/shared/interfaces/ICsParser.cs Index: source/shared/interfaces/ICachedCsCatalog.cs Index: source/shared/interfaces/ICachedStyleRuns.cs Index: source/shared/interfaces/IStyles.cs Index: source/shared/interfaces/ICachedCsDeclarations.cs * Added ICachedCsCatalog so auto-complete can figure out if it should complete. * Split IStyler into ICachedCsDeclarations and ICachedStyleRuns.
+ba648fa Index: source/plugins/auto-complete/AutoComplete.cs Index: source/plugins/auto-complete/ITargetDatabase.cs Index: source/plugins/auto-complete/Target.cs Index: source/plugins/auto-complete/TargetTest.cs Index: source/plugins/auto-complete/TargetDatabase.cs * Refactored so we can write a unit test for Target.
+9eb2b24 Index: source/plugins/auto-complete/AutoComplete.cs Index: source/plugins/auto-complete/Target.cs * Special case value target within setters. * Use the correct type name for arrays, nullable types, and generics. * Check for local variable targets. * Check for field targets.
+92cd593 Index: source/plugins/auto-complete/AutoComplete.cs Index: source/plugins/auto-complete/Members.cs * Factored some code out into new Members class. * Get members of base classes.
+aab21a8 Index: source/plugins/auto-complete/AutoComplete.cs Index: source/plugins/auto-complete/Target.cs * Factored out some code into new Target class. * If the type is declared within the current file then use the parsed info instead of the database    because it should be more up to date. * Handle "this" target.
+12996c8 Made the window resizeable.
+4b4174c Index: source/shared/SafeTimer.cs Index: source/plugins/text-editor/Styler.cs * Added SafeTimer which works like System.Threading.Timer but releases refererences   deterministically.
+b4ce419 Index: source/plugins/text-editor/Styler.cs * Close disposes of the timer.
+7b8a217 Whitespace.
+105e2a2 First cut at implementing auto-completion. Currently only works with arguments and does not lookup types with the using directives.
+ac52ccf Index: source/plugins/cs-parser/Scanner.cs Index: source/shared/Token.cs Index: source/plugins/cs-parser/ScannerTest.cs * C# scanner now returns integers and floats.
+e88f453 Scanners return punct tokens instead of other tokens for punctuation and special case multi-character punctuation.
+5c76fba Moved CsParser into ParseCs and renamed it Parser.
+afe1077 Moved CsScanner into ScanCs and renamed it Scanner.
+b617944 Added ICsScanner interface.
+50b421f Started moving C# parser out of cs-refactor and into new cs-parser.
+2a4e550 Added a new line.
+db7c1c8 Index: source/plugins/find/BaseFindInFiles.cs Index: source/plugins/find/ReplaceAll.cs Index: source/plugins/find/FindAll.cs * Fixed (again) searching locked files.
+2d85a50 Whitespace.
+8845aa8 Index: source/plugins/text-editor/DeclarationsPopup.cs * Region directives now appear (if the option key is not down) as disabled items.
+2b28962 Whitespace.
+94c648d Whitespace.
+44dcda1 Index: source/plugins/find/FindInFilesController.cs Index: source/plugins/find/Startup.cs Index: source/plugins/styler/FactoryPrefs.cs Index: source/plugins/directory-editor/DirPrefsController.cs Index: source/plugins/directory-editor/DirectoryItemStyler.cs Index: source/plugins/directory-editor/DirectoryController.cs * Changed the rest of the glob lists to use space separators instead of semi-colons.
+87467db Index: source/plugins/app/AppDelegate.cs Index: source/plugins/directory-editor/DirectoryController.cs * Sccs menu is now manually enabled so we can check svn status for the menu instead    of for each menu item. * Sccs menu now works for text editor windows (instead of just for directory editor windows).
+e1c18f3 Whitespace.
+36a90e8 Index: source/continuum/PrettyTraceListener.cs * Instead of killing the app fallback on stdout if the log file cannot be created.
+502e92b Removed a bogus line which was accidentally committed.
+a708389 Index: source/plugins/text-editor/TextMetrics.cs * Fix an off by one error that could cause the very last line to not be counted.
+3ea6498 Whitespace.
+6397ecb Index: Makefile * Added tar-bin target. * Generated config file has more log categories.
+051c48f Index: source/shared/interfaces/IWhitespace.cs Index: source/shared/interfaces/IComputeRuns.cs Index: source/shared/interfaces/IStylers.cs Index: source/shared/interfaces/IStyler.cs Index: source/plugins/text-editor/IStyler.cs Index: source/plugins/text-editor/Bosses.xml Index: source/plugins/text-editor/Styler.cs Index: source/plugins/text-editor/ShowSpaces.cs Index: source/plugins/styler/Stylers.cs Index: source/plugins/styler/CSharpComputer.cs Index: source/plugins/styler/Whitespace.cs Index: source/plugins/styler/RegexComputer.cs Index: source/plugins/styler/Bosses.xml Index: source/plugins/styler/CSharpStyler.cs Index: source/plugins/styler/RegexStyler.cs * Moved IStyler to the TextEditor boss so that there aren't any problems with styling   mutiple documents together. * Added IComputeRuns. * Renamed IStylers IWhitespace.
+511b7e4 Index: source/plugins/text-editor/ApplyStyles.cs * Do a better job with the no runs (i.e. plain text) case.
+88d8c1c Index: source/plugins/app/PreferencesController.cs Index: source/plugins/app/Preferences.nib/keyedobjects.nib Index: source/plugins/app/Preferences.nib/designable.nib Index: source/plugins/app/GlobsTableView.cs Index: source/plugins/styler/Bosses.xml Index: source/plugins/styler/Languages.cs Index: source/plugins/styler/FactoryPrefs.cs * Added a pref to set language globs.
+cd694b6 Index: source/plugins/styler/languages/Globs.xml * Removed some globs from plain-text.
+48f2748 Index: source/plugins/text-editor/OpenSelection.cs * When using the locate command prefer paths where the file name matches the original file name. * When expanding selections for html stop when a [] is hit (so wiki style links work). * Improved logging.
+c4bc607 Index: source/plugins/app/FallbackSccs.cs * Added Open with Finder command.
+dfd5a1a Index: source/plugins/styler/CSharpDeclarations.cs * Fixed an infinite loop introduced in the last batch of changes.
+cc103b4 Index: source/plugins/text-editor/TextDocument.cs * Only call OnPathChanged if the path really changed.
+762fbbd Index: source/plugins/find/Find.cs * Enable replace menu items even if there is no replace text.
+fc03548 Index: source/plugins/find/FindResultsController.cs * DoDocChanged can get a null path for untitled documents.
+4bfda29 Style runs and CsGlobalNamespace are now cached so the type/member popup doesn't recompute them.
+33abbdb First cut at a type/member popup menu.
+224e79c Initial import.

@@ -35,14 +35,13 @@ http://research.microsoft.com/en-us/projects/pex/
 [0] http://mono.ximian.com/monobuild/preview/download-preview/
 [1] http://www.mono-project.com/Release_Notes_Mono_2.8
 [2] http://www.mono-project.com/Compacting_GC
-[3] http://www.mono-project.com/Mono_LLVM 
+[3] http://www.mono-project.com/Mono_LLVM
+
+git log --oneline 06365a4cb5afa260c2925db149e7ae8211273b35 
+ 
 
 * Release checklist:
-	- use svn log -r 1:HEAD > CHANGE_LOG
-	- update CHANGES file
-	- make sure gear is checked in
 	- upload the new binary
-	- build a new foreshadow
 	- review the front page of the web site
 	- review the screen shots
 	- email
@@ -582,7 +581,7 @@ http://research.microsoft.com/en-us/projects/pex/
 	- review config file
 	- run from the finder
 	- review dist target
-	- use svn log -r 1:HEAD > CHANGE_LOG
+	- use git log --oneline > CHANGE_LOG
 	- update CHANGES file
 	- make sure gear is checked in
 	- upload the new binary
