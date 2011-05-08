@@ -37,10 +37,9 @@ http://research.microsoft.com/en-us/projects/pex/
 [2] http://www.mono-project.com/Compacting_GC
 [3] http://www.mono-project.com/Mono_LLVM
 
-git log --oneline 06365a4cb5afa260c2925db149e7ae8211273b35 
- 
 
 * Release checklist:
+	- push changes
 	- upload the new binary
 	- review the front page of the web site
 	- review the screen shots
@@ -584,6 +583,7 @@ git log --oneline 06365a4cb5afa260c2925db149e7ae8211273b35
 	- use git log --oneline > CHANGE_LOG
 	- update CHANGES file
 	- make sure gear is checked in
+	- push changes
 	- upload the new binary
 	- build a new foreshadow
 	- review the front page of the web site
