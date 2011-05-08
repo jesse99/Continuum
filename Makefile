@@ -142,7 +142,7 @@ mini-clean:
 	
 dist: mini-clean app
 	tar --create --compress --exclude \*/.svn --exclude \*/.svn/\* --file=Continuum-$(version).tar.gz \
-		BUILDING CHANGES CHANGE_LOG Dictionary.txt MIT.X11 Makefile README.asciidoc README.html Tables.rtf coco-pack gendarme.ignore install-tool.c make-foreshadow source bin/Continuum.app
+		BUILDING CHANGES CHANGE_LOG Dictionary.txt MIT.X11 Makefile README.asciidoc README.html Tables.rtf cocoa-pack gendarme.ignore install-tool.c make-foreshadow source bin/Continuum.app
 
 dist-clean:
 	-rm -rf bin
