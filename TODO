@@ -38,14 +38,6 @@ http://research.microsoft.com/en-us/projects/pex/
 [3] http://www.mono-project.com/Mono_LLVM
 
 
-* Release checklist:
-	- upload the new binary
-	- review the front page of the web site
-	- review the screen shots
-	- email
-	- create a new branch for the release
-	- update version (both in the make file and the readme)
-	- get a plan for the next version
 * peg-sharp fixes:
 	- SHELL := /bin/bash
 	- has issues building under 2010
