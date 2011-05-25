@@ -35,13 +35,16 @@ http://research.microsoft.com/en-us/projects/pex/
 [0] http://mono.ximian.com/monobuild/preview/download-preview/
 [1] http://www.mono-project.com/Release_Notes_Mono_2.8
 [2] http://www.mono-project.com/Compacting_GC
-[3] http://www.mono-project.com/Mono_LLVM
+[3] http://www.mono-project.com/Mono_LLVM			 
 
 
-* peg-sharp fixes:
-	- SHELL := /bin/bash
-	- has issues building under 2010
-
+* See if Linguist has anything useful.
+* Work on F#:
+	- work on an auto-complete framework (check out PySmell)
+	- add F# auto-complete (the compiler has at least some stuff which may make this easier)
+	- declarations popup
+	- can inferred types be shown when hovering over variables?
+	- refactors
 * If backspacing a space at the start of a line and UseTabs is false then delete NumSpaces of them?
 * Add support for waf colored output?
 	- might have to set the TERM environment variable
@@ -51,12 +54,6 @@ http://research.microsoft.com/en-us/projects/pex/
 * May want to add scheme support. See http://coderchrome.org/browse/greatest/0 for example.
 * Add a generate stub refactor
 	- should this be automatic?
-* Work on F#:
-	- work on an auto-complete framework (check out PySmell)
-	- add F# auto-complete (the compiler has at least some stuff which may make this easier)
-	- declarations popup
-	- can inferred types be shown when hovering over variables?
-	- refactors
 * Zooming navigation interface?
 * Get auto-complete working better.
 * Probably want some sort of advanced prefs panel:
