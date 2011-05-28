@@ -153,4 +153,4 @@ These scripts allow you to do more complex processing of C# source. They are wri
 
  * There is support for saving files using different encodings, but no support for specifying the encoding when loading (although utf8 and the various forms of utf16 should work fine).
 
-jesjones@mindspring.com
+jesse9jones@gmail.com
