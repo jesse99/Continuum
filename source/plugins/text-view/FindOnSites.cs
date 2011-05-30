@@ -55,10 +55,14 @@ namespace TextView
 			if (selection != null && selection.Length < 100 && !selection.Any(c => char.IsWhiteSpace(c)))
 			{
 				if (DoNeedsFindOnApple(selection))
+				{
 					commands.Add(new TextContextItem("Search in Apple", this.DoFindOnApple, 0.1f));
-				
-				if (DoNeedsFindOnMSDN(selection))
+				}
+				else if (DoNeedsFindOnMSDN(selection))
+				{
 					commands.Add(new TextContextItem("Search in MSDN", this.DoFindOnMSDN, 0.1f));
+					commands.Add(new TextContextItem("Search in Apple", this.DoFindOnApple, 0.101f));	// MonoMac uses .NET naming conventions we we need this one too...
+				}
 			}
 			
 			if (commands.Count == 0 && selection != null && selection.Length < 2048)
