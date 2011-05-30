@@ -141,7 +141,7 @@ These scripts allow you to do more complex processing of C# source. They are wri
 
 == 5 Known Issues == 
 
- * Continuum started crashing when exiting within some unknown finalizer starting with mono 2.10.
+ * Continuum started crashing when exiting within some unknown finalizer starting with mono 2.10. I've also seen the same thing with fsi so it may be a mono bug.
 
  * Auto-complete won't complete subscripted expressions (name[0].) or bound generic types (List<string> foo; foo.First().).
 
