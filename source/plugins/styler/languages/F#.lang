@@ -16,7 +16,7 @@ Keyword: \b(?: obj | exn | nativeint | unativeint | float32 | single | float | d
 Keyword2: \b(?: async | box | failwith | fst | hash | ignore | invalidArg | None | not | raise | ref | reraise | sizeof | snd | Some | stderr | stdin | stdout | typeof | typedefof | unbox | unit )\b	# misc 
 String: " (?: [^"\\] | \\.)* " B?
 String: @" (?: [^"\\] | \\. | (?: " "))* " B?
-String: ' (?: [^'\r\n\\] | \\.)* ' B?
+String: ' (?: [^'\r\n\\] | \\ [^']+) ' B?
 Number: (?<= \W) \d+ (?: \. \d+)? [eE] [\+-]? \d+ [fFmM]? (?: < [ \(\)\w^/-]+ >)? (?= \W)
 Number: (?<= \W) \d+ \. \d+ [fFmM]? (?: < [ \(\)\w^/-]+ >)? (?= \W)
 Number: (?<= \W) 0[xX] [0-9A-Fa-f]+ (?: y | uy | s | us | l | ul | u | n | un | L | UL | uL | m | M)? (?: < [ \(\)\w^/-]+ >)? (?= \W)
