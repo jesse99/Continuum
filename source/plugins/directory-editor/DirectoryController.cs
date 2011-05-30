@@ -1,4 +1,4 @@
-// Copyright (C) 2008-2010 Jesse Jones
+// Copyright (C) 2008-2011 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -628,7 +628,10 @@ namespace DirectoryEditor
 			{
 				foreach (TableItem item in items)
 				{
-					DoOpen(item.Path);
+					if (!item.Path.Contains("(Autosaved)"))
+						DoOpen(item.Path);
+					else if (count == 1)
+						Functions.NSBeep();
 				}
 			}
 		}
