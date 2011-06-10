@@ -298,65 +298,93 @@ namespace DirectoryEditor
 		
 		private IBuilder DoFindBuilder(string dir)
 		{
-			Dictionary<string, IBuilder> builders = new Dictionary<string, IBuilder>();
-			Boss boss = ObjectModel.Create("Builders");
-			
-			foreach (string path in System.IO.Directory.GetFiles(dir))
-			{
-				foreach (ICanBuild can in boss.GetRepeated<ICanBuild>())
-				{
-					IBuilder b = can.GetBuilder(path);
-					if (b != null)
-						builders.Add(path, b);
-				}
-			}
-			
-			IBuilder builder = null;
-			string path2 = DoChooseBuilder(builders);
-			if (path2 != null)
-			{
-				builder = builders[path2];
-				builder.Init(path2);
-			}
+			IBuilder builder = DoFindExistingBuilder(dir);
 			
 			if (builder == null)
+				builder = DoFindDefaultBuilder(dir);
+			
+			return builder;
+		}
+		
+		private IBuilder DoFindDefaultBuilder(string dir)
+		{
+			var finder = new FindBuildScriptController();
+			finder.Run();
+			
+			IBuilder builder = null;
+			if (finder.Generate)
 			{
-				boss = ObjectModel.Create("DefaultBuilder");
+				Boss boss = ObjectModel.Create("DefaultBuilder");
 				var can = boss.Get<ICanBuild>();
 				builder = can.GetBuilder(dir);
 				
 				if (builder != null)
+				{
 					builder.Init(dir);
+				}
+				else
+				{
+					NSString title = NSString.Create(System.IO.Path.GetFileName(dir));
+					NSString message = NSString.Create("Couldn't generate a Makefile. Either a compiler can't be found or multiple compilers are necessary.");
+					Unused.Value = Functions.NSRunAlertPanel(title, message);
+				}
+			}
+			else if (finder.Path != null)
+			{
+				builder = DoGetBuilder(finder.Path);
+				
+				if (builder != null)
+				{
+					builder.Init(finder.Path);
+				}
+				else
+				{
+					NSString title = NSString.Create(System.IO.Path.GetFileName(dir));
+					NSString message = NSString.Create("{0} doesn't seem to be a build script.", System.IO.Path.GetFileName(finder.Path));
+					Unused.Value = Functions.NSRunAlertPanel(title, message);
+				}
 			}
 			
 			return builder;
 		}
 		
-		private string DoChooseBuilder(Dictionary<string, IBuilder> builders)
+		private IBuilder DoFindExistingBuilder(string dir)
 		{
-			string path = null;
-			
-			if (builders.Count > 1)
+			Dictionary<string, IBuilder> builders = new Dictionary<string, IBuilder>();
+			foreach (string path in System.IO.Directory.GetFiles(dir))
 			{
-				string[] paths = builders.Keys.ToArray();
-				Array.Sort(paths);
-				
-				var getter = new GetItem<string>{Title = "Choose Build File", Items = paths};
-				string[] result = getter.Run(i => System.IO.Path.GetFileName(i));
-				if (result.Length > 0)
-					path = result[0];
-			}
-			else if (builders.Count == 1)
-			{
-				path = builders.Keys.First();
+				IBuilder b = DoGetBuilder(path);
+				if (b != null)
+					builders.Add(path, b);
 			}
 			
-			return path;
+			IBuilder builder = null;
+			if (builders.Count == 1)
+			{
+				string path2 = builders.Keys.First();
+				builder = builders[path2];
+				builder.Init(path2);
+			}
+			
+			return builder;
+		}
+		
+		private IBuilder DoGetBuilder(string path)
+		{
+			Boss boss = ObjectModel.Create("Builders");
+			foreach (ICanBuild can in boss.GetRepeated<ICanBuild>())
+			{
+				IBuilder b = can.GetBuilder(path);
+				if (b != null)
+					return b;
+			}
+			
+			return null;
 		}
 		#endregion
 		
 		#region Fields
-		private string m_path;
+		private string m_path;			// full path to the directory being edited 
 		private IBuilder m_builder;
 		private string m_target;
 		private State m_state;
