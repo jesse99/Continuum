@@ -38,19 +38,6 @@ http://research.microsoft.com/en-us/projects/pex/
 [3] http://www.mono-project.com/Mono_LLVM			 
 
 
-error with a ' identifier:
-	Shared.DatabaseException: Failed to execute `INSERT OR REPLACE INTO Methods VALUES ('Game:Core.Game:move::int;int:dx';dy', 'move', 'Core.Game', 'Core.Game', '2', '0', '33', '', '0', '0', '\Users\jessejones\Source\BurnsHammer\source\core\Game.fs', '7', '0')` (near ";": syntax error)
-	  at Shared.Database.DoRaiseError (System.String command, Error err, IntPtr errMesg) [0x00055] in /Users/jessejones/Source/Continuum/source/shared/Database.cs:541 
-	  at Shared.Database.Update (System.String command) [0x000ae] in /Users/jessejones/Source/Continuum/source/shared/Database.cs:241 
-	  at ObjectModel.DatabaseExtensions.InsertOrReplace (Shared.Database database, System.String table, System.String[] values) [0x00042] in /Users/jessejones/Source/Continuum/source/plugins/object-model/DatabaseExtensions.cs:56 
-	  at ObjectModel.ParseAssembly.DoParseMethod (Mono.Cecil.TypeDefinition type, Mono.Cecil.MethodDefinition method, System.String id, Boolean fullParse) [0x0027a] in /Users/jessejones/Source/Continuum/source/plugins/object-model/ParseAssembly.cs:420 
-failed to read symbols for core
-fsi is exiting unexpectedly too
-delete should delete N spaces
-tab of a selection is inserting tabs
-why are paths in monomac.dll still screwed up?
-build a new foreshadow
-
 * See if Linguist has anything useful.
 * Work on F#:
 	- work on an auto-complete framework (check out PySmell)
@@ -58,7 +45,6 @@ build a new foreshadow
 	- declarations popup
 	- can inferred types be shown when hovering over variables?
 	- refactors
-* If backspacing a space at the start of a line and UseTabs is false then delete NumSpaces of them?
 * Add support for waf colored output?
 	- might have to set the TERM environment variable
 	- would have to extend ITranscript

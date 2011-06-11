@@ -459,7 +459,7 @@ namespace TextEditor
 					
 					if (controller.Language != null && !controller.UsesTabs)
 					{
-						if (! NSObject.IsNullOrNil(controller.SpacesText))
+						if (!NSObject.IsNullOrNil(controller.SpacesText))
 						{
 							this.insertText(controller.SpacesText);
 							return true;
@@ -475,14 +475,30 @@ namespace TextEditor
 		{
 			if (evt.keyCode() == Constants.DeleteKey)
 			{
+				var range = selectedRange();
 				if ((evt.modifierFlags() & Enums.NSShiftKeyMask) == Enums.NSShiftKeyMask)
 				{
-					var selRange = selectedRange();
-					if (selRange.length == 0)
+					if (range.length == 0)
 					{
 						// Shift-delete deletes the current line
-						DoDeleteLine(selRange.location);
+						DoDeleteLine(range.location);
 						return true;
+					}
+				}
+				else if (range.length == 0)
+				{
+					TextController controller = (TextController) window().windowController();
+					if (controller.Language != null && !controller.UsesTabs && !NSObject.IsNullOrNil(controller.SpacesText))
+					{
+						// If we're inserting N spaces for tabs then delete should delete N spaces at a time.
+						int count = DoGetSpaceCount(string_(), range.location - 1);
+						int length = (int) controller.SpacesText.length();
+						if (count >= length)
+						{
+							setSelectedRange(new NSRange(range.location - length, length));
+							delete(this);
+							return true;
+						}
 					}
 				}
 			}
@@ -932,6 +948,25 @@ namespace TextEditor
 			}
 			
 			return 0;
+		}
+		
+		// Return the number of space characters at index and before.
+		private int DoGetSpaceCount(NSString text, int index)
+		{
+			int count = 0;
+			
+			while (index >= 0)
+			{
+				char ch = text.characterAtIndex((uint) index);
+				
+				if (ch != ' ')
+					break;
+				
+				++count;
+				--index;
+			}
+			
+			return count;
 		}
 		
 		// Another possibility here is that after completing a method we could set the

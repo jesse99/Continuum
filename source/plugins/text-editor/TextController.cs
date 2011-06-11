@@ -633,7 +633,11 @@ namespace TextEditor
 			int lastLine = args.objectAtIndex(1).To<NSNumber>().intValue();
 			int delta = args.objectAtIndex(2).To<NSNumber>().intValue();
 			
-			var tab = NSString.Create("\t");
+			NSString tab;
+			if (Language != null && !UsesTabs && !NSObject.IsNullOrNil(SpacesText))
+				tab = SpacesText;
+			else
+				tab = NSString.Create("\t");
 			
 			NSTextStorage storage = m_textView.Value.textStorage();
 			storage.beginEditing();
