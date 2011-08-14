@@ -1,0 +1,18 @@
+#http://www.haskell.org/onlinereport/haskell2010/haskellch2.html#x7-140002
+Language: haskell
+Globs: *.hs
+Word: [\p{Ll}\p{Lt}\p{Lu}\p{Nd}'_]+
+LineComment: --
+
+Comment: -- .* $
+Comment: \{- (?: . | \r | \n)*? -\}
+Keyword: \b(?:  case | class | data |default | deriving | do | else | foreign | if | import | in | infix | infixl | infixr | instance | let | module | newtype | of | then | type | where)\b
+Number: (?<= \W) [0-9]+ \. [0-9]+ (?: [eE] [+-]? [0-9]+)? (?= \W)
+Number: (?<= \W) [0-9]+ [eE] [+-]? [0-9] (?= \W)
+Number: (?<= \W) 0[xX] [0-9A-Fa-f]+ (?= \W)
+Number: (?<= \W) 0[oO] [0-7]+ (?= \W)
+Number: (?<= \W) [0-9]+ (?= \W)
+String: " (?: [^"\r\n\\] | \\.)* "
+String: ' (?: [^'\r\n\\] | \\.)* '
+Type: (?<= ^ \s* data \s+) \w+
+Member: (?<= ^ \s* ) \w+ (?= \s* ::)
