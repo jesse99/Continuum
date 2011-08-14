@@ -1,0 +1,11 @@
+Language: R
+Globs: *.R
+LineComment: \x23
+
+Comment: \x23 .* $
+Keyword: \b(?:  NULL | NA | Inf | NaN | TRUE | FALSE | if | else | repeat | while | function | for | in | next | break)\b
+Keyword: \b (?: [a-zA-Z] [\w_.]*) \s* \(
+Number: (?<= \W) [\d_]+ \. \d+ (?: [eE] [\+-]? \d+)? (?= \W)
+Number: (?<= \W) [\d_]+ (?: [eE] [\+-]? \d+)? L? (?= \W)
+String: " (?: [^"\r\n\\] | \\.)* "
+String: ' (?: [^'\r\n\\] | \\.)* '

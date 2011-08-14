@@ -38,8 +38,11 @@ http://research.microsoft.com/en-us/projects/pex/
 [3] http://www.mono-project.com/Mono_LLVM			 
 
 
-* See if Linguist has anything useful.
+
 * Work on F#:
+	- backspace should delete N chars when possible
+	- should highlight functions defined with let (or all lets?)
+	- WARNING: in asciidoc should be bold and red
 	- work on an auto-complete framework (check out PySmell)
 	- add F# auto-complete (the compiler has at least some stuff which may make this easier)
 	- declarations popup

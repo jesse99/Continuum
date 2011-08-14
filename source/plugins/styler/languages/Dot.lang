@@ -1,0 +1,13 @@
+# http://www.graphviz.org/doc/info/lang.html
+Language: dot
+Globs: *.dot
+LineComment: //
+
+Comment: // .* $
+Comment: /\* (?: . | \r | \n)*? \*/
+Comment: ^ \x23 .* $
+Keyword: \b(?i)(?: digraph | edge | graph | node | strict | subgraph)(?-i)\b
+Number: (?<= \W) \d* \. \d+ 
+Number: (?<= \W) \d+
+String: " (?: [^"\r\n\\] | \\.)* "
+String: ' (?: [^'\r\n\\] | \\.)* '

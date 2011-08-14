@@ -1,0 +1,21 @@
+# See http://www.ruby-doc.org/docs/ruby-doc-bundle/Manual/man-1.4/syntax.html#ident
+Language: ruby
+Globs: *.rb
+Shebangs: ruby
+LineComment: \x23
+
+Comment: \x23 .* $
+Keyword: \b(?: include | require | BEGIN | END | __FILE__ | __LINE__)\b
+Keyword: \b(?: alias | and | begin | break | case | class | def | defined | do | else | elsif )\b
+Keyword: \b(?: end | ensure | false | for | if | in | module | next | nil | not | or | redo )\b
+Keyword: \b(?: rescue | retry | return | self | super | then | true | undef | unless | until )\b
+Keyword: \b(?: when | while | yield )\b
+Keyword: \b(?: false | nil | self | true)\b
+Number: (?<= \W) (?: 0[xX])? \d+ [lL]? (?= \W)
+String: r? ''' (?: . | [\n\r])*? '''
+String: r? """ (?: . | [\n\r])*? """
+String: r? " (?: [^"\r\n\\] | \\.)* "
+String: r? ' (?: [^'\r\n\\] | \\.)* '
+Type: (?<=\b class \s+) \w+
+Member: (?<=\b def \s+) \w+
+Attribute: (?<= ^ \s*) @ [\w]+ [^\x23\n\r]*

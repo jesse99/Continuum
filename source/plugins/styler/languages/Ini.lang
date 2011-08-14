@@ -1,0 +1,6 @@
+Language: ini
+Globs: *.ini
+LineComment: ;
+
+Comment: ; .* $
+Preprocess: ^ \[ [a-zA-Z] [a-zA-Z0-9_ ]* \]
