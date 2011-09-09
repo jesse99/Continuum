@@ -1,6 +1,6 @@
 # Based on bash syntax.
 Language: shell
-Globs: *.sh
+Globs: *.sh .bash_profile .bashrc
 Shebangs: sh ksh csh bash dash zsh
 LineComment: \x23
 
