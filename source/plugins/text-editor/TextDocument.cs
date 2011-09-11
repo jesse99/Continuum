@@ -1,4 +1,4 @@
-// Copyright (C) 2008-2010 Jesse Jones
+// Copyright (C) 2008-2011 Jesse Jones
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -212,6 +212,12 @@ namespace TextEditor
 			Unused.Value = new TextInfoController(this);
 		}
 		
+		// TODO: The modification time resolution is rather coarse so when we get notified that the directory
+		// the file in has changed we can't always tell that the file has changed. We used to fall back on 
+		// comparing the file size with what we think the size should be, but that causes problems with
+		// auto-save (especially on Lion). To do this right we'd have to figure out when auto-save starts
+		// (easy), when it is done (hard unless maybe we use undocumented methods), and probably
+		// suppress DoDirChanged while that is happening.
 		public bool HasChangedOnDisk()
 		{
 			Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
@@ -229,16 +235,6 @@ namespace TextEditor
 				if (fileTime != null && fileTime.compare(docTime) == Enums.NSOrderedDescending)
 				{
 					changed = true;
-				}
-				else
-				{
-					// The modification date is a bit too coarse to work properly if the file is being
-					// written to as we are trying to reload it so we need to also check the file size.
-					NSNumber size = attrs.objectForKey(Externs.NSFileSize).To<NSNumber>();
-					if (size != null && size.unsignedIntValue() != m_size)
-					{
-						changed = true;
-					}
 				}
 			}
 			
@@ -301,8 +297,6 @@ namespace TextEditor
 					string text = m_text.string_().description();
 					DoSetEndian(text);
 					DoCheckForControlChars(m_text.string_());
-						
-					m_size = data.length();
 					
 					if (m_controller != null)			// will be null for initial open, but non-null for revert
 					{
@@ -401,9 +395,6 @@ namespace TextEditor
 						Contract.Assert(false, "bad typeName: " + typeName.description());
 						break;
 				}
-				
-				if (!m_autoSaving)
-					m_size = data.length();
 			}
 			catch (Exception e)
 			{
@@ -419,20 +410,6 @@ namespace TextEditor
 			}
 			
 			return data;
-		}
-		
-		public void autosaveDocumentWithDelegate_didAutosaveSelector_contextInfo(NSObject delegate_, IntPtr selector, IntPtr context)
-		{
-			m_autoSaving = true;
-			
-			try
-			{
-				SuperCall(NSDocument.Class, "autosaveDocumentWithDelegate:didAutosaveSelector:contextInfo:", delegate_, selector, context);
-			}
-			finally
-			{
-				m_autoSaving = false;
-			}
 		}
 		
 		// Used to reload a document for which the file changed.
@@ -738,11 +715,9 @@ namespace TextEditor
 		private TextController m_controller;
 		private NSMutableAttributedString m_text;
 		private NSURL m_url;
-		private uint m_size;
 		private bool m_binary;
 		private LineEndian m_endian = LineEndian.Unix;
 		private uint m_encoding;
-		private bool m_autoSaving;
 		
 		private static Dictionary<char, string> ms_controlNames = new Dictionary<char, string>
 		{

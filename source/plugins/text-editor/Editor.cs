@@ -264,7 +264,7 @@ namespace TextEditor
 				if (doc.isDocumentEdited())
 				{
 					// Cocoa will display this sheet, but it does it when the user attempts
-					// to save which is later than we like.
+					// to save which is much later than we'd like.
 					var title = NSString.Create("The file for this document has been modified - do you want to revert?");
 					var message = NSString.Create("Another application has made changes to the file for this document. You can choose to keep the version in Continuum, or revert to the version on disk. (Reverting will lose any unsaved changes.)");
 					
