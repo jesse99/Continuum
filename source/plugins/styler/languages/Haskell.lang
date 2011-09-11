@@ -9,7 +9,7 @@ Comment: \{- (?: . | \r | \n)*? -\}
 Keyword: \b(?:  case | class | data |default | deriving | do | else | foreign | if | import | in | infix | infixl | infixr | instance | let | module | newtype | of | then | type | where)\b
 Keyword2: \b(?: as | qualified | hiding | return)\b
 Keyword2: \b(?: Bool | Bounded | Char | Double | Either | Enum | Eq | EQ | False | FilePath | Floating  | Float | Fractional | Functor | GT | Int | Integer | Integral | IOError | IO | Just | Left | LT | Maybe | Monad | Nothing | Num | Ordering | Ord | Rational | ReadS | Read | RealFloat | RealFrac | Real | Right | ShowS | Show | String | True)\b
-Keyword2: \b(?: catch | not | otherwise)\b
+Keyword2: \b(?: catch | error | not | otherwise)\b
 Number: (?<= \W) [0-9]+ \. [0-9]+ (?: [eE] [+-]? [0-9]+)? (?= \W)
 Number: (?<= \W) [0-9]+ [eE] [+-]? [0-9] (?= \W)
 Number: (?<= \W) 0[xX] [0-9A-Fa-f]+ (?= \W)
