@@ -152,7 +152,7 @@ namespace TextView
 			if (name.Length > 2 && char.IsLower(name[0]) && name[1] != '_')
 				name = name.Replace("_", "%20");
 			
-			NSURL url = NSURL.URLWithString(NSString.Create("http://developer.apple.com/library/mac/search/?q=" + name));			// TODO: probably should use a pref for the sites
+			NSURL url = NSURL.URLWithString(NSString.Create("http://developer.apple.com/search/index.php?q=" + name));			// TODO: probably should use a pref for the sites
 			Unused.Value = NSWorkspace.sharedWorkspace().openURL(url);
 			
 			return selection;
