@@ -17,5 +17,5 @@ Number: (?<= \W) 0[oO] [0-7]+ (?= \W)
 Number: (?<= \W) [0-9]+ (?= \W)
 String: " (?: [^"\r\n\\] | \\.)* "
 String: (?<! [\w\d_']) ' (?: [^'\r\n\\] | \\.)* '
-Type: (?<= ^ \s* data \s+) \w+
+Type: (?<= ^ \s* (?: data|class) \s+) \w+
 Member: (?<= ^ \s* ) \w+ (?= \s* ::)
