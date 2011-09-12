@@ -89,19 +89,27 @@ namespace TextView
 				if (m_range.length > 0)
 					view.string_().getCharacters_range(m_range, out m_selection);
 				
+				// Get the language.
+				string language = null;
+				if (window.Has<ITextEditor>())
+				{
+					var editor = window.Get<ITextEditor>();
+					language = editor.Language;
+				}
+				
 				// Get the commands.
 				var watch = new Stopwatch();
 				watch.Start();
 				m_entries.Clear();
 				if (window != null)
-					DoGetEntries(view, m_selection, window);
-				DoGetEntries(view, m_selection, m_boss);
+					DoGetEntries(view, m_selection, language, window);
+				DoGetEntries(view, m_selection, language, m_boss);
 				
 				if (m_entries.Count == 0)
 				{
 					if (window != null)
-						DoGetEntries(view, null, window);
-					DoGetEntries(view, null, m_boss);
+						DoGetEntries(view, null, language, window);
+					DoGetEntries(view, null, language, m_boss);
 				}
 				Log.WriteLine("ContextMenu", "took {0:0.000} secs to open the menu", watch.ElapsedMilliseconds/1000.0);
 				
@@ -227,7 +235,7 @@ namespace TextView
 			return result;
 		}
 		
-		private void DoGetEntries(NSTextView view, string selection, Boss boss)
+		private void DoGetEntries(NSTextView view, string selection, string language, Boss boss)
 		{
 			int group = 0;
 			
@@ -235,7 +243,7 @@ namespace TextView
 			foreach (ITextContextCommands i in boss.GetRepeated<ITextContextCommands>())
 			{
 				var items = new List<TextContextItem>();
-				i.Get(selection, editable, items);
+				i.Get(selection, language, editable, items);
 				
 				if (items.Count > 0)
 				{

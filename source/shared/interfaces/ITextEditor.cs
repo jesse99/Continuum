@@ -31,6 +31,9 @@ namespace Shared
 		// is not on disk.
 		string Path {get;}
 		
+		// Either something like "c#' or "python" or null.
+		string Language {get;}
+		
 		// Returns a unique identifier for the document. If the document is on disk
 		// it will be Path, otherwise it will be a string like "untitled2".
 		string Key {get;}

@@ -65,6 +65,15 @@ namespace TextEditor
 			}
 		}
 		
+		public string Language
+		{
+			get
+			{
+				TextController controller = (TextController) m_window.windowController();
+				return controller.Language != null ? controller.Language.FriendlyName : null;
+			}
+		}
+		
 		public string Key
 		{
 			get

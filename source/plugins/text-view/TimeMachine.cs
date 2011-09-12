@@ -60,7 +60,7 @@ namespace TextView
 			get {return m_boss;}
 		}
 		
-		public void Get(string selection, bool editable, List<TextContextItem> items)
+		public void Get(string selection, string language, bool editable, List<TextContextItem> items)
 		{
 			if (selection == null && m_timeMachineDir != null)
 			{

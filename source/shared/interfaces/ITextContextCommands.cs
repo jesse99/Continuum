@@ -91,7 +91,8 @@ namespace Shared
 	public interface ITextContextCommands : IInterface
 	{
 		// Adds zero or more menu items the list. Note that the selection may
-		// be null (if there is no selection) but will not be empty. 
-		void Get(string selection, bool editable, List<TextContextItem> items);
+		// be null (if there is no selection) but will not be empty. Language may
+		// also be null.
+		void Get(string selection, string language, bool editable, List<TextContextItem> items);
 	}
 }

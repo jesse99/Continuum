@@ -48,7 +48,7 @@ namespace TextView
 			get {return m_boss;}
 		}
 		
-		public void Get(string selection, bool editable, List<TextContextItem> items)
+		public void Get(string selection, string language, bool editable, List<TextContextItem> items)
 		{
 			var commands = new List<TextContextItem>();
 			
@@ -65,7 +65,11 @@ namespace TextView
 				}
 			}
 			
-			if (commands.Count == 0 && selection != null && selection.Length < 2048)
+			string site = null;
+			if (language != null && selection.Length < 1024 && ms_sites.TryGetValue(language, out site))
+				items.Add(new TextContextItem("Search in " + DoGetHost(site), (s) => DoFindOnSite(s, site), 0.102f));
+			
+			if (commands.Count == 0 && selection != null && selection.Length < 1024)
 				items.Add(new TextContextItem("Search in Google", this.DoFindOnGoogle, 0.1f));
 			
 			if (commands.Count > 0)
@@ -125,6 +129,28 @@ namespace TextView
 			string selection = DoGetWindowSelection();
 			if (selection != null)
 				DoFindOnMSDN(selection);
+		}
+		
+		private string DoFindOnSite(string selection, string site)
+		{
+			string name = DoSanitize(selection);
+			
+			NSURL url = NSURL.URLWithString(NSString.Create("http://www.google.com/search?q={0}%20site:{1}", name, site));
+			Unused.Value = NSWorkspace.sharedWorkspace().openURL(url);
+			
+			return selection;
+		}
+		
+		private string DoGetHost(string site)
+		{
+			int i = site.IndexOf("://");
+			Contract.Assert(i >= 0);
+			
+			int j = site.IndexOf('/', i+3);
+			if (j > 0)
+				return site.Substring(i+3, j - (i+3));
+			else
+				return site.Substring(i+3);
 		}
 		
 		private string DoSanitize(string url)
@@ -216,6 +242,16 @@ namespace TextView
 		#region Fields
 		private Boss m_boss;
 		
+		private static Dictionary<string, string> ms_sites = new Dictionary<string, string>
+		{
+			// TODO: should probably make this a pref or at least pull it in from a file somewhere
+			// TODO: could also use multiple sites for some of these
+			{"c", "http://www.cplusplus.com/reference"},
+			{"c++", "http://www.cplusplus.com/reference"},
+			{"haskell", "http://haskell.org/ghc/docs/latest/html/"},
+			{"python", "http://docs.python.org"},
+			{"shell", "http://www.gnu.org/s/bash/manual"}
+		};
 		private static string[] ms_applePrefixes = new string[]
 		{
 			"CA",
