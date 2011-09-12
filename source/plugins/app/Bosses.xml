@@ -5,6 +5,7 @@
 		<Implementation interfaces = "IMenuHandler" name = "MenuHandler"/>
 		<Implementation interfaces = "ISccs" name = "FallbackSccs"/>
 		<Implementation interfaces = "IInterface +IParseErrors" name = "DParser"/>
+		<Implementation interfaces = "IInterface +IParseErrors" name = "GhcParser"/>
 		<Implementation interfaces = "IInterface +IParseErrors" name = "GmcsParser"/>
 		<Implementation interfaces = "IInterface +IParseErrors" name = "GccParser"/>
 		<Implementation interfaces = "IInterface +IParseErrors" name = "MakeParser"/>
