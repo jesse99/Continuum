@@ -80,7 +80,7 @@ namespace App
 				NSString lang = entry.Value.To<NSString>();
 				
 				int index = Array.IndexOf(m_languages, lang.ToString());
-				if (index < m_languages.Length)
+				if (index >= 0)
 					m_globs.Add(Tuple.Create(glob, index));
 				else
 					Console.Error.WriteLine("Couldn't find a language for glob: {0}, lang: {1:D}", glob, lang);
