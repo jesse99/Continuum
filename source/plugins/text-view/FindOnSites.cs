@@ -66,7 +66,7 @@ namespace TextView
 			}
 			
 			string site = null;
-			if (language != null && selection.Length < 1024 && ms_sites.TryGetValue(language, out site))
+			if (language != null && selection != null && selection.Length < 1024 && ms_sites.TryGetValue(language, out site))
 				items.Add(new TextContextItem("Search in " + DoGetHost(site), (s) => DoFindOnSite(s, site), 0.102f));
 			
 			if (commands.Count == 0 && selection != null && selection.Length < 1024)
