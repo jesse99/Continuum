@@ -1,0 +1,16 @@
+Language: go
+Globs: *.go
+LineComment: //
+
+Comment: // .* $
+Comment: /\* (?: . | \r | \n)*? \*/
+Keyword: \b(?: break | case | chan | const | continue | default | defer | else | fallthrough | for | func | goto | go | if | import | interface | map | package | range | return | select | struct | switch | type | var)\b # keywords
+Keyword2: \b(?: uint8 | uint16 | uint32 | uint64 | int8 | int16 | int32 | int64 | float32 | float64 | complex64 | complex128 | byte | uint | int | uintptr)\b	# numeric types
+Keyword2: \b(?: iota | nil | string)\b	# other common identifiers
+Keyword2: \b(?: append | cap | close | complex | copy | imag | len | make | new | panic | println | print | real | recover)\b	# built-in functions
+Number: (?<= \W) \d+ [\deE.]* i? (?= \W)
+String: " (?: [^"\r\n\\] | \\.)* "
+String: ' (?: [^'\r\n\\] | \\.)* '
+Type: (?<=\b type \s+) \w+
+Member: (?<=\b func (?: \s+ \( [\w.*\s]+ \))? \s+) \w+
+

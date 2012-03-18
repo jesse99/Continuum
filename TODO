@@ -35,10 +35,13 @@ http://research.microsoft.com/en-us/projects/pex/
 [0] http://mono.ximian.com/monobuild/preview/download-preview/
 [1] http://www.mono-project.com/Release_Notes_Mono_2.8
 [2] http://www.mono-project.com/Compacting_GC
-[3] http://www.mono-project.com/Mono_LLVM			 
+[3] http://www.mono-project.com/Mono_LLVM	
 
+ 
 
-
+* Didn't get a good error message trying to open a binary file (swf file). For some reason
+   the returned error is ignored.
+* Might want to use http://holumbus.fh-wedel.de/hayoo/hayoo.html
 * Work on F#:
 	- match static method names
 	- member internal doesn't work either (see Game.fs)
