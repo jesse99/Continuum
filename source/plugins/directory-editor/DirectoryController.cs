@@ -196,7 +196,7 @@ namespace DirectoryEditor
 			{
 				Contract.Requires(System.Threading.Thread.CurrentThread.ManagedThreadId == 1, "can only be used from the main thread");
 				
-				return m_root.Path;
+				return m_root != null ? m_root.Path : "?";
 			}
 		}
 		
