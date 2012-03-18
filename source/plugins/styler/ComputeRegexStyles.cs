@@ -148,10 +148,14 @@ namespace Styler
 						Group g = groups[i];
 						if (g.Success)
 						{
+							string type = language.ElementName(i);
 							if (i == 1 && language.StylesWhitespace)
 								DoMatchWhitespace(text, g, language, runs);
 							else
-								runs.Add(new StyleRun(g.Index, g.Length, language.ElementName(i)));
+								if (g.Length > 0)
+									runs.Add(new StyleRun(g.Index, g.Length, type));
+								else if (type != "Error")
+									Log.WriteLine(TraceLevel.Error, "Styler", "{0} matched zero characters", type);
 							break;
 						}
 					}
