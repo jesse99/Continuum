@@ -195,6 +195,12 @@ namespace DirectoryEditor
 			{
 				m_results.WriteOutput(e.Data);
 				m_results.WriteOutput(Environment.NewLine);
+				
+				// TODO: This is for Go's 6g compiler. It doesn't write errors to stderr so we have to
+				// somehow give it stdout. But I really don't want to save all of stdout just to get 6g
+				// working (stdout can be huge for big builds).
+				if (e.Data.Contains(".go:"))
+					m_errors.AppendLine(e.Data);
 			}
 		}
 		
