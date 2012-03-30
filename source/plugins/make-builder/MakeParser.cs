@@ -71,6 +71,7 @@ namespace MakeBuilder
 						args += string.Format("{0}=\"{1}\" ", v.Name, v.Value);
 					else
 						args += string.Format("{0}={1} ", v.Name, v.Value);
+			args += string.Format("TERM=\"dumb\" ");
 			args += target;
 			
 			m_command = "make " + args + Environment.NewLine;
