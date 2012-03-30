@@ -10,6 +10,7 @@
 		<Implementation interfaces = "IInterface +IParseErrors" name = "GccParser"/>
 		<Implementation interfaces = "IInterface +IParseErrors" name = "GoParser"/>
 		<Implementation interfaces = "IInterface +IParseErrors" name = "MakeParser"/>
+		<Implementation interfaces = "IInterface +IParseErrors" name = "RustParser"/>
 		<Implementation interfaces = "IScripts +IStartup" name = "Scripts"/>
 		<Implementation interfaces = "IRegisterRefactor +IStartup" name = "Refactors"/>
 		<Implementation interfaces = "IInterface +IStartup" name = "MoveSelectionToFile"/>
