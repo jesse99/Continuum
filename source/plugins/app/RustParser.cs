@@ -53,7 +53,7 @@ namespace App
 						match.Groups[1].ToString(), 		// file
 						match.Groups[4].ToString(), 		// message
 						line, 									// line
-						col,									// col
+						col+1,									// col
 						true));								// isError
 				}
 			}
@@ -63,7 +63,7 @@ namespace App
 		private Boss m_boss; 
 		//                                                                1                       2         3                              4
 		//                                                                hello.rs           :  4       : 53    : 4:54   error: expecting ',' but found ';'
-		private static Regex ms_re = new Regex(@"([\w\.\-\\\/]+)  : (\d+) : (\d+) [:0-9 ]+ error: \s+ (.+)", RegexOptions.IgnorePatternWhitespace | RegexOptions.Multiline);
+		private static Regex ms_re = new Regex(@"([\w\.\-\\\/]+)  : (\d+) : (\d+) [:0-9 ]+ (?: error|warning): \s+ (.+)", RegexOptions.IgnorePatternWhitespace | RegexOptions.Multiline);
 		#endregion
 	} 
 }
