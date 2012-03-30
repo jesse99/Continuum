@@ -64,7 +64,7 @@ namespace App
 		private Boss m_boss; 
 		//                                                                1                            2          3                              4
 		//                                                                source/program.hs : 21     :  8           - 22     :\n    Could not find module `foo`:
-		private static Regex ms_re = new Regex(@"([\w\.\-\\\/]+)        : (\d+) : (\d+) (?: - \d+)? : \s+ (.+)", RegexOptions.IgnorePatternWhitespace | RegexOptions.Multiline);
+		private static Regex ms_re = new Regex(@"([\w\.\-\\\/]+)        : (\d+) : (\d+) (?: - \d+)? : \s+ (?! [0-9]) (.+)", RegexOptions.IgnorePatternWhitespace | RegexOptions.Multiline);
 		#endregion
 	} 
 }

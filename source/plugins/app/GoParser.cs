@@ -62,7 +62,7 @@ namespace App
 		private Boss m_boss;
 		//                                                                1                      2            3
 		//                                                                src/Foo.go       : 19    :     syntax error: unexpected semicolon or newline before 
-		private static Regex ms_re = new Regex(@"([\w\.\-\\\/]+) : (\d+) : \s (.+)$", RegexOptions.IgnorePatternWhitespace | RegexOptions.Multiline);
+		private static Regex ms_re = new Regex(@"([\w\.\-\\\/]+) : (\d+) : \s (?! [0-9]) (.+)$", RegexOptions.IgnorePatternWhitespace | RegexOptions.Multiline);
 		#endregion
 	}
 }
