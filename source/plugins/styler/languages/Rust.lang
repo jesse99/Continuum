@@ -1,11 +1,11 @@
 Language: rust
-Globs: *.rs
+Globs: *.rs *.rc
 LineComment: //
 
 Comment: // .* $
 Comment: /\* (?: . | \r | \n)*? \*/
-Keyword: \b(?: alt | assert | as | be | break | check | claim | class | const | cont | copy | crust | do | else | enum | export | fail | false | fn | for | iface | if | impl | import | let | log | loop | mod | mut | native | pure | resource | ret | true | type | (?: (?<! :) unsafe (?! :)) | use | while)\b
-Keyword2: \b(?: option | some | none | char | str | bool | u8 | u16 | u32 | u64 | i8 | i16 | i32 | i64 | binary32 | binary64 | f32 | f64 | uint | int | float)\b
+Keyword: \b(?: (?: (?<= \w \s* : \s*) send) | with | alt | assert | as | be | break | check | claim | class | const | cont | copy | crust | do | else | enum | export | fail | false | fn | for | iface | if | impl | import | let | log | loop | mod | mut | native | pure | resource | ret | true | type | (?: (?<! :) unsafe (?! :)) | use | while)\b
+Keyword2: \b(?: either | option | some | none | char | str | bool | u8 | u16 | u32 | u64 | i8 | i16 | i32 | i64 | binary32 | binary64 | f32 | f64 | uint | int | float)\b
 String: r? " (?: [^"\\] | \\.)* "
 String: r? ' (?: [^'\r\n\\] | \\.)* '
 Number: (?<= \W) 0b [01_]+ (?: [ui] \d*)? (?= \W)
