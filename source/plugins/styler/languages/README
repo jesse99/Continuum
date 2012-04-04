@@ -19,6 +19,13 @@ TabStops: space separated list of integral tab stops. This overrides the normal 
 
 Word: a regex that indicates what a word (aka identifier) means in the language. Generally this only needs to be used if the language which allow Unicode or unusual characters (like '-' or ':') in identifiers. Note that regular expressions like \w [\w-]* should be written as [\w-]+ because double clicking in the middle of a word will keep extending the selection one character at a time until the regex fails to match.
 
-Elements may have arbitrary names and use .NET regular expressions. If the element matches source code then that source code is styled using the font attributes from the associated element in Styles.rtf. All regexen use the following options: Multiline | IgnorePatternWhitespace (among other things his means that . does not match new line characters). If parenthesis are used within a regex they should be non-grouping: (?: your expression here ).
+Elements may have arbitrary names and use .NET regular expressions. If the element matches source code then that source code is styled using the font attributes from the associated element in Styles.rtf. All regexen use the following options: Multiline | IgnorePatternWhitespace (among other things his means that . does not match new line characters).
+
+Commonly used regex patterns include:
+	(?: e)		non-capturing group, this should be used instead of ()
+	(?<= e)	zero-width positive lookbehind assertion
+	(?<! e)	zero-width negative lookbehind assertion
+	(?= e)		zero-width positive lookahead assertion
+	(?! e)		zero-width negative lookahead assertion
 
 Changes to the lang files are dynamic: the prefs panel and text documents will both update when a lang file is saved. 
