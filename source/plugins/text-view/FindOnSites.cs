@@ -52,7 +52,12 @@ namespace TextView
 		{
 			var commands = new List<TextContextItem>();
 			
-			if (selection != null && selection.Length < 100 && !selection.Any(c => char.IsWhiteSpace(c)))
+			string site = null;
+			if (language != null && selection != null && selection.Length < 1024 && ms_sites.TryGetValue(language, out site))
+			{
+				items.Add(new TextContextItem("Search in " + DoGetHost(site), (s) => DoFindOnSite(s, site), 0.1f));
+			}
+			else if (selection != null && selection.Length < 100 && !selection.Any(c => char.IsWhiteSpace(c)))
 			{
 				if (DoNeedsFindOnApple(selection))
 				{
@@ -64,10 +69,6 @@ namespace TextView
 					commands.Add(new TextContextItem("Search in Apple", this.DoFindOnApple, 0.101f));	// MonoMac uses .NET naming conventions we we need this one too...
 				}
 			}
-			
-			string site = null;
-			if (language != null && selection != null && selection.Length < 1024 && ms_sites.TryGetValue(language, out site))
-				items.Add(new TextContextItem("Search in " + DoGetHost(site), (s) => DoFindOnSite(s, site), 0.102f));
 			
 			if (commands.Count == 0 && selection != null && selection.Length < 1024)
 				items.Add(new TextContextItem("Search in Google", this.DoFindOnGoogle, 0.1f));
@@ -249,7 +250,8 @@ namespace TextView
 			{"c", "http://www.cplusplus.com/reference"},
 			{"c++", "http://www.cplusplus.com/reference"},
 			{"haskell", "http://haskell.org/ghc/docs/latest/html/"},
-			{"python", "http://docs.python.org"},
+			{"python", "http://docs.python.org/release/2.7.3"},
+			{"rust", "http://doc.rust-lang.org/doc"},
 			{"shell", "http://www.gnu.org/s/bash/manual"}
 		};
 		private static string[] ms_applePrefixes = new string[]
