@@ -4,7 +4,7 @@ Shebangs: python
 LineComment: \x23
 
 Comment: \x23 .* $
-Keyword: \b(?:  and | del | for | is | raise | assert | elif | from | lambda | return | break | else | global | not | try | class | except | if | or | while | continue | exec | import | pass | yield | def | finally | in | print | as | None)\b
+Keyword: \b(?:  with | and | del | for | is | raise | assert | elif | from | lambda | return | break | else | global | not | try | class | except | if | or | while | continue | exec | import | pass | yield | def | finally | in | print | as | None)\b
 Keyword: \b(?: self | property | True | False)\b | \@property
 Keyword2: \b(?: abs | divmod | input | open | staticmethod | all | enumerate | int | ord | str | any | eval | isinstance | pow | sum | basestring | execfile | issubclass | print | super | bin | file | iter | property | tuple | bool | filter | len | range | type | bytearray | float | list | raw_input | unichr | callable | format | locals | reduce | unicode | chr | frozenset | long | reload | vars | classmethod | getattr | map | repr | xrange | cmp | globals | max | reversed | zip | compile | hasattr | memoryview | round | __import__ | complex | hash | min | set | apply | delattr | help | next | setattr | buffer | dict | hex | object | slice | coerce | dir | id | oct | sorted | intern)\b
 Number: (?<= \W) (?: 0[xX])? \d+ [lL]? (?= \W)
