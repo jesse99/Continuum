@@ -46,6 +46,7 @@ namespace TextEditor
 			m_boss = controller.Boss;
 			m_autoComplete = m_boss.Get<IAutoComplete>();
 			setTypingAttributes(CurrentStyles.DefaultAttributes);
+			setAutomaticTextReplacementEnabled(false);
 			
 			if (m_boss.Has<ITooltip>())
 			{
