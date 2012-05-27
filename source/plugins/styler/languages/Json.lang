@@ -1,0 +1,7 @@
+Language: json
+Globs: *.json
+
+Keyword: \b(?:  false | null | true)\b 
+Number: (?<= \W) [\d.]+ [eE] [\+-]? \d+ (?= \W)
+Number: (?<= \W) [\d.]+ (?= \W)
+String: " (?: [^"\r\n\\] | \\.)* "

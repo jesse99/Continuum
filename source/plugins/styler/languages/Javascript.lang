@@ -1,0 +1,16 @@
+Language: javascript
+Globs: *.js
+LineComment: //
+
+Comment: // .* $
+Comment: /\* (?: . | \r | \n)*? \*/
+Keyword: \b(?: break | delete | function | return | typeof | case | var | catch | void | continue | while | debugger | with | default | do | else | false | finally | for | if | in | instanceof | new | null | switch | this | throw | true | try)\b
+Keyword: \b(?: implements | yield | interface | let | package | private | protected | public | static)\b		# strict mode
+Keyword2: \b(?: arguments | eval)\b
+Keyword2: \b(?: RegExpr | Array | String | Boolean | parseFloat | Date | parseInt | decodeURI | RangeError | decodeURIComponent | ReferenceError | encodeURI | encodeURIComponent | Error | SyntaxError | TypeError | EvalError | undefined | Function | URIError | Infinity | isFinite | isNaN | JSON | Math | NaN | Number | Object)\b
+Number: (?<= \W) [\d.]+ [eE] [\+-]? \d+ (?= \W)
+Number: (?<= \W) [\d.]+ (?= \W)
+String: " (?: [^"\r\n\\] | \\.)* "
+String: ' (?: [^'\r\n\\] | \\.)* '
+String: / (?: [^/\r\n\\] | \\.)* / (?= \s* [,;)\n])
+Member: (?<=\b function \s+) \w+

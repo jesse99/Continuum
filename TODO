@@ -39,11 +39,6 @@ http://research.microsoft.com/en-us/projects/pex/
 
  
 
-* Update rust lang
-	- ( c ) is getting mapped to © 
-	- … is getting mapped to ellipsis
-* yaml language should support # comments
-* Dylib should be colored red by default.
 * Didn't get a good error message trying to open a binary file (swf file). For some reason
    the returned error is ignored.
 * Might want to use http://holumbus.fh-wedel.de/hayoo/hayoo.html
