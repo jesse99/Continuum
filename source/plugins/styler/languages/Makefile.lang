@@ -5,16 +5,28 @@
 
 # May want a custom language for automake files.
 Language: makefile
-Globs: Makefile Makefile.am Make.shared *.make *.mk
+Globs: Makefile Makefile.am Make.shared *.make *.mk *.mak makefrag
 LineComment: \x23
 
 Comment: \x23 .* $
-Keyword: \b(?: (?<! -)define | ended | ifdef | ifndef | ifeq | ifneq | else | endif | include | sinclude | override | export | unexport | VPATH | vpath)\b
-Keyword: \b(?: DEFAULT | IGNORE | POSIX | PRECIOUS | SCCS_GET | SILENT | SUFFIXES)\b	# these should be prepended with \., but that doesn't seem to work
-Keyword: \$\^ | \$@ | \$% | \$\? | \$< | \$\* | \$@D | \$%D | \$\?D | \$<D | \$\*D | \$@F | \$%F | \$\?F | \$<F | \$\*F	# automatic variables
+Keyword: \b(?: define | undefine | endef | export | ifdef | ifndef | ifeq | ifneq | else | endif | include | -include | sinclude | override | export | unexport | VPATH | vpath | private)\b
+Keyword: \b(?: \.DEFAULT | \.IGNORE | \.POSIX | \.PRECIOUS | \.SCCS_GET | \.SILENT | \.SUFFIXES | \.SECONDEXPANSION | \.PHONY | \.INTERMEDIATE | \.DELETE_ON_ERROR | \.SILENT | \.ONESHELL | MAKEFILE_LIST | \.DEFAULT_GOAL | MAKE_RESTARTS | \.RECIPEPREFIX | \.VARIABLES | \.INCLUDE_DIRS | MAKE | MAKEFLAGS | OVERRIDES | SHELL)\b
 Keyword: (?<= \$\() (?: abspath | addprefix | addsuffix | and | basename | call | dir | error | eval | filter-out | filter | findstring | firstword | flavor | foreach | if | info | join | lastword | notdir | or | origin | patsubst | realpath | shell | sort | strip | subst | suffix | value | warning | wildcard | wordlist | words | word)
 Number: (?<= \W) \d+ (?= \W)
-Target: ^[-\w\.\(\)/\\$]+ \s* : (?! =)
+
+#automatic variables
+Variable2: \$\^(?: D|F)? | \$@(?: D|F)? | \$%(?: D|F)? | \$\?(?: D|F)? | \$<(?: D|F)? | \$\*(?: D|F)? | \$\+(?: D|F)? | \$\| 
+# Variable is a word after $(
+Variable: (?<= \$\() [\w-]+\W
+
+#Target is everything before the last : or :: before ';', but not if starts with a tab, and not a Variable as defined above
+# last : as part of := does not count
+Target: ^ [^\t;\:\r\n](?: [^;\r\n]*[^;\:\r\n])? (?= \:[^\=\r\n] (?: [^\:\r\n] | \:\= )* ;?.* $)
+Target: ^ [^\t;\:\r\n](?: [^;\r\n]*[^;\:\r\n])? (?= \: \s* $)
+
+Prerequisite: (?<= :) [^\:\=;\r\n][^:;\r\n]* $
+Operator2: [\?\=\:\-\+;\$\(\)\\\@\$]
+
 String: " (?: [^"\r\n\\] | \\. | \\\r | \\\n)* "
 String: ` (?: [^`\r\n\\] | \\. | \\\r | \\\n)* `
 String: ' (?: [^'\r\n\\] | \\. | \\\r | \\\n)* '

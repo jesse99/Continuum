@@ -8,7 +8,8 @@ Keyword: \b(?:  auto | bool | break | case | char | const | continue | default |
 Keyword: \b(?:  __asm | __based1 | __cdecl | __declspec | __except | __fastcall | __finally | __inline | __int16 | __int32 | __int64 | __int8 | __leave | __stdcall | __try | dllexport2 | dllimport2)\b	# Microsoft
 Keyword: \b(?:  __asm__ | __inline__ | __typeof__ | __unix__ | __vax__ | asm | inline | typeof | unix | vax)\b	# gcc
 Keyword: \b(?:  NULL)\b
-Number: (?<= \W) \d+ (?= \W)
+Number: (?<= \W) \d+ (?: [luLU]{0, 2}) (?= \W)
+Number: (?<= \W) 0x [0-9a-fA-f]+ (?: [luLU]{0, 2}) (?= \W)
 Preprocess: \x23 \s* (?: ifdef | ifndef | if | else | elif | endif | define | undef | warning | error | line | pragma)
 Header4: \x23 \s* (?: include)
 String: " (?: [^"\r\n\\] | \\.)* "

@@ -13,6 +13,7 @@ Number: (?<= \W) \. \d+ (?: [eE] [\+-]? \d+)? [FfDdMm]? (?= \W)
 Number: (?<= \W) \d+ [eE] [\+-]? \d+ [FfDdMm]? (?= \W)
 Number: (?<= \W) \d+ [FfDdMm] (?= \W)
 Number: (?<= \W) \d+ (?= \W)
+Number: (?<= \W) 0x [0-9a-fA-f]+ (?= \W)
 Attribute: (?<= ^ \s* \[ (?: \w+ \s* :)? \s*) [\w\.]+ \s* (?= \]|\()
 Region: \x23region [^\r\n]* [\r\n]
 Region: \x23endregion
