@@ -51,10 +51,10 @@ namespace Find
 			this.willChangeValueForKey(NSString.Create("includeList"));
 			NSMutableArray includes = NSMutableArray.Create();
 			includes.addObject(defaultIncludes);
-			includes.addObject(NSString.Create("*.cs *.cpp *.c *.hpp *.h *.m"));
+			includes.addObject(NSString.Create("*.cs *.cpp *.c *.hpp *.h *.m *.rs *.js"));
 			includes.addObject(NSString.Create("*.py *.sh *.rb *.pl"));
-			includes.addObject(NSString.Create("Makefile Makefile.am Make.shared *.make *.mk SConstruct SConscript wscript wscript_build"));	// TODO: might want some sort of pref for these
-			includes.addObject(NSString.Create("*.xml *.xsd *.xsdl *.xsl *.schema *.config *.plist *.dtd"));
+			includes.addObject(NSString.Create("Makefile Makefile.am Make.shared *.make *.mk SConstruct SConscript wscript wscript_build *.rc"));	// TODO: might want some sort of pref for these
+			includes.addObject(NSString.Create("*.xml *.xsd *.xsdl *.xsl *.schema *.config *.plist *.dtd *.html *.css"));
 			m_includeList.Value = includes;
 			this.didChangeValueForKey(NSString.Create("includeList"));
 			
