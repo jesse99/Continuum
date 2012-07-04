@@ -1,0 +1,5 @@
+Language: tex
+Globs: *.tex *.aux
+
+Comment: (?<! \\) % .* $
+Keyword: \\ [a-zA-Z] [a-zA-Z0-9_]* \b

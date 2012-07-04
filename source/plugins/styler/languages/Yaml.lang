@@ -1,0 +1,8 @@
+Language: yaml
+Globs: *.yaml *.yml
+IgnoreWhitespace: true
+LineComment: ;
+
+Comment: \x23 .* $
+Bold: ^ \s* (?: - \s+)* [\w-]+ (?= \s* :)
+Preprocess: ^ --- \s .*
