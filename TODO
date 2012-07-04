@@ -38,6 +38,13 @@ http://research.microsoft.com/en-us/projects/pex/
 [3] http://www.mono-project.com/Mono_LLVM	
 
  
+* f64 is a valid float suffix.
+* new and drop should be styled as functions (drop should at least be a keyword).
+	See rust-socket
+* Green project window color is too dark.
+* Review linguist changes.
+* Add Comments2.
+* Open selection should change search paths based on language type.
 
 * Didn't get a good error message trying to open a binary file (swf file). For some reason
    the returned error is ignored.
