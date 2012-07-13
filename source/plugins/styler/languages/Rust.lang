@@ -4,7 +4,7 @@ LineComment: //
 
 Comment: // .* $
 Comment: /\* (?: . | \r | \n)*? \*/
-Keyword: \b(?: implements | continue | of | priv | in | (?: (?<= \w \s* : \s*) send) | with | alt | assert | as | be | break | check | claim | class | const | cont | copy | crust | do | else | enum | export | fail | false | fn | for | iface | if | impl | import | let | log | loop | mod | mut | native | pure | resource | ret | true | type | (?: (?<! :) unsafe (?! :)) | use | while)\b
+Keyword: \b(?: implements | continue | of | priv | in | (?: (?<= \w \s* : \s*) send) | with | alt | assert | as | break | check | claim | class | const | cont | copy | crust | do | else | enum | export | fail | false | fn | for | iface | if | impl | import | let | log | loop | mod | mut | extern | pure | resource | ret | true | type | (?: (?<! :) unsafe (?! :)) | use | while)\b
 Keyword2: \b(?: self | char | str | bool | u8 | u16 | u32 | u64 | i8 | i16 | i32 | i64 | binary32 | binary64 | f32 | f64 | uint | int | float) (?! \w | \( )
 String: " (?: [^"\\] | \\. | \\\n | \\\r)* "
 String: ' (?: [^'\r\n\\] | \\.)* '
