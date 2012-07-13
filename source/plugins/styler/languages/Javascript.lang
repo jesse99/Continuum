@@ -10,7 +10,7 @@ Keyword2: \b(?: arguments | eval)\b
 Keyword2: \b(?: RegExpr | Array | String | Boolean | parseFloat | Date | parseInt | decodeURI | RangeError | decodeURIComponent | ReferenceError | encodeURI | encodeURIComponent | Error | SyntaxError | TypeError | EvalError | undefined | Function | URIError | Infinity | isFinite | isNaN | JSON | Math | NaN | Number | Object)\b
 Number: (?<= \W) [\d.]+ [eE] [\+-]? \d+ (?= \W)
 Number: (?<= \W) [\d.]+ (?= \W)
-String: " (?: [^"\r\n\\] | \\.)* "
-String: ' (?: [^'\r\n\\] | \\.)* '
-String: / (?: [^/\r\n\\] | \\.)* / (?= \s* [,;)\n])
+String: " (?: [^"\r\n\\] | \\. | \\\n | \\\r)* "
+String: ' (?: [^'\r\n\\] | \\. | \\\n | \\\r)* '
+String: / (?: [^/\r\n\\] | \\.)* /
 Member: (?<=\b function \s+) \w+
