@@ -4,7 +4,7 @@ LineComment: //
 
 Comment: // .* $
 Comment: /\* (?: . | \r | \n)*? \*/
-Keyword: \b(?: implements | continue | of | priv | in | (?: (?<= \w \s* : \s*) send) | with | alt | assert | as | break | check | claim | class | const | cont | copy | crust | do | else | enum | export | fail | false | fn | for | iface | if | impl | import | let | log | loop | mod | mut | extern | pure | resource | ret | true | type | (?: (?<! :) unsafe (?! :)) | use | while)\b
+Keyword: \b(?: owned | trait | again | of | priv | in | (?: (?<= \w \s* : \s*) send) | with | alt | assert | as | break | check | claim | class | const | cont | copy | crust | do | else | enum | export | fail | false | fn | for | iface | if | impl | import | let | log | loop | mod | mut | extern | pure | resource | ret | true | type | (?: (?<! :) unsafe (?! :)) | use | while)\b
 Keyword2: \b(?: self | char | str | bool | u8 | u16 | u32 | u64 | i8 | i16 | i32 | i64 | binary32 | binary64 | f32 | f64 | uint | int | float) (?! \w | \( )
 String: " (?: [^"\\] | \\. | \\\n | \\\r)* "
 String: ' (?: [^'\r\n\\] | \\.)* '
@@ -14,13 +14,11 @@ Number: (?<= \W) [\d_]+ (?: [uif] \d*)? (?= \W)
 Number: (?<= \W) [eE] [+-]? [\d_]+ (?: f \d+)? (?= \W)
 Number: (?<= \W) \. [\d_]+ (?: [eE] [+-]? [\d_]+)? (?: f \d+)? (?= \W)
 Attribute: (?<= ^ \s* \x23 \s* \[) \w+
-Argument: \b(?: (?<! let \s+) [&+]? \w+ \s* : (?! :))
+Argument: \b(?: (?<! (?: let | class) \s+) [&+]? \w+ \s* : (?! :))
 Type: (?<= class \s+) [\w:]+
 Type: (?<= enum \s+) [\w:]+
-Type: (?<= resource \s+) [\w:]+
-Type: (?<= iface \s+) [\w:]+
+Type: (?<= trait \s+) [\w:]+
 Type: (?<= impl \s+) [\w:]+
-Type: (?<= of \s+) [\w:]+
 Type: (?<= mod \s+) [\w:]+
 Type: (?<= type \s+) [\w:]+
 Member: (?<= ^ \s* (?: (?: crust | pure | unsafe) \s+)? fn \s+) [\w_]+ \s* (?= \(|<)
