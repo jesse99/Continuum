@@ -3,7 +3,7 @@ Globs: *.css
 
 Comment: \/\*[^*]*\*+(?:[^/*][^*]*\*+)*\/
 Keyword: \b(?: import)\b
-CssSelector: ^ \s* \w [^\{\r\n]*  \s* (?= \{)
+CssSelector: ^ \s* \x23? \w [^\{\r\n]*  \s* (?= \{)
 CssProperty: \w [^:\{\r\n\ ]* : \s
 String: " [^"\r\n]* "
 String: ' [^'\r\n]* '
