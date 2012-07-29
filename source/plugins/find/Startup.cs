@@ -67,7 +67,7 @@ namespace Find
 			"/System/Library/Frameworks/CoreFoundation.framework/Versions/Current/Headers/",
 		};
 		
-		internal const string DefaultInclude = "*.cs *.fs *.h *.m *.rs";
+		internal const string DefaultInclude = "*.cs *.h *.m *.rs *.js";
 		
 		internal const string AlwaysExclude = ".* *.app *.dll *.dylib *.exe *.gif *.icns *.jpeg *.jpg *.mdb *.nib *.pdb *.X11";
 		
