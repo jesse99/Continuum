@@ -38,7 +38,7 @@ http://research.microsoft.com/en-us/projects/pex/
 [3] http://www.mono-project.com/Mono_LLVM	
 
 
-* Find in files should default to searching js.
+* Style js foo: like tust does.
 * Make prerequisite should not allow spaces in the target part.
 * Make prerequisite should not allow double colon in the target part.
 * Open selection should change search paths based on language type.
