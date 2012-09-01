@@ -38,7 +38,15 @@ http://research.microsoft.com/en-us/projects/pex/
 [3] http://www.mono-project.com/Mono_LLVM	
 
 
-* Style js foo: like tust does.
+* tex \todo should be more visible, maybe red or something.
+* Css isn't quite right. All the below should work:
+	#top {}		id selector
+	.foo {}		class selector
+	.foo, .bar {}	match foo class or bar class
+	#top h1 {}	matches header1s nested within an element with id top
+* Need to special case searching in javascript (use MDN).
+	
+* tex sections (and html headers) should be big.
 * Make prerequisite should not allow spaces in the target part.
 * Make prerequisite should not allow double colon in the target part.
 * Open selection should change search paths based on language type.
