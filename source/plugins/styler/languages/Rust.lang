@@ -3,11 +3,12 @@ Globs: *.rs *.rc
 LineComment: //
 
 DocComment: /// .* $
+DocComment: //! .* $
 DocComment: /\*! (?: . | \r | \n)*? \*/
 DocComment: /\*\* (?: . | \r | \n)*? \*/
 Comment: // .* $
 Comment: /\* (?: . | \r | \n)*? \*/
-Keyword: \b(?: again | as | assert | break | const | (?: (?<= \w \s* : \s*) copy) | do | else | enum | export | extern | fail | false | fn | for | if | impl | let | log | loop | match | mod | mut | owned | priv | pure | ref | return | (?: (?<= \w \s* : \s*) send) | static | struct | trait | true | type | (?: (?<! :) unsafe (?! :)) | unchecked | use | while)\b
+Keyword: \b(?: macro_rules | again | as | assert | break | const | copy | do | else | enum | export | extern | fail | false | fn | for | if | impl | let | log | loop | match | mod | mut | owned | priv | pure | ref | return | send | static | struct | trait | true | type | unsafe | unchecked | use | while)\b
 Keyword2: \b(?: binary32 | binary64 | bool | char | f32 | f64 | float | i16 | i32 | i64 | i8 | int | self | str | u16 | u32 | u64 | u8 | uint) (?! \w | \( )
 String: " (?: [^"\\] | \\. | \\\n | \\\r)* "
 String: ' (?: [^'\r\n\\] | \\.)* '
@@ -18,13 +19,14 @@ Number: (?<= \W) [eE] [+-]? [\d_]+ (?: f \d+)? (?= \W)
 Number: (?<= \W) \. [\d_]+ (?: [eE] [+-]? [\d_]+)? (?: f \d+)? (?= \W)
 Attribute: (?<= ^ \s* \x23 \s* \[) \w+
 Argument: \b(?: (?<! (?: let | impl | struct) \s+) [&+]? \w+ \s* : (?! :))
-Type: (?<= enum \s+) [\w:]+
-Type: (?<= trait \s+) [\w:]+
-Type: (?<= impl \s+) [\w:]+
-Type: (?<= mod \s+) [\w:]+
-Type: (?<= struct \s+) [\w:]+
-Type: (?<= type \s+) [\w:]+
+Type: (?<= enum \s+) [\w:&~@]+
+Type: (?<= trait \s+) [\w:&~@]+
+Type: (?<= impl \s+) [\w:&~@]+
+Type: (?<= mod \s+) [\w:&~@]+
+Type: (?<= struct \s+) [\w:&~@]+
+Type: (?<= type \s+) [\w:&~@]+
 Member: (?<= ^ \s* (?: (?: pure | static | unsafe) \s+)* fn \s+) [\w_]+ \s* (?= \(|<)
 Member: (?<= ^ \s*) new \s*  (?= \()
 Member: (?<= ^ \s*) drop \s*  (?= \{)
 Operator: (?<= \s+) (?: \&\& | \|\|) (?= \s+)
+Variable: \$ \w+
