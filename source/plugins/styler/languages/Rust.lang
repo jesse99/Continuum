@@ -20,8 +20,8 @@ Number: (?<= \W) \. [\d_]+ (?: [eE] [+-]? [\d_]+)? (?: f \d+)? (?= \W)
 Attribute: (?<= ^ \s* \x23 \s* \[) \w+
 Argument: \b(?: (?<! (?: let | impl | struct) \s+) [&+]? \w+ \s* : (?! :))
 Type: (?<= enum \s+) \w+
-Type: (?<= trait \s*  (?: < [\w:\s,]+ > \s*)?) \w+
-Type: (?<= impl \s*  (?: < [\w:\s,]+ > \s*)?) [\w@~&]+
+Type: (?<= trait (?: (?: \s* < [\w:\s,]+ > \s*) | \s+)) [\w@~&]+
+Type: (?<= impl  (?: (?: \s* < [\w:\s,]+ > \s*) | \s+)) [\w@~&]+
 Type: (?<= mod \s+) [\w]+
 Type: (?<= struct \s+) [\w]+
 Type: (?<= type \s+) [\w]+
