@@ -22,10 +22,9 @@ Argument: \b(?: (?<! (?: let | impl | struct) \s+) [&+]? \w+ \s* : (?! :))
 Type: (?<= enum \s+) \w+
 Type: (?<= trait (?: (?: \s* < [\w:\s,]+ > \s*) | \s+)) [\w@~&]+
 Type: (?<= impl  (?: (?: \s* < [\w:\s,]+ > \s*) | \s+)) [\w@~&]+
-Type: (?<= mod \s+) [\w]+
 Type: (?<= struct \s+) [\w]+
 Type: (?<= type \s+) [\w]+
-Member: (?<= ^ \s* (?: (?: pure | static | unsafe) \s+)* fn \s+) [\w_]+ \s* (?= \(|<)
+Member: (?<= ^ \s* (?: (?: pub | priv | pure | static | unsafe) \s+)* fn \s+) [\w_]+ \s* (?= \(|<)
 Member: (?<= ^ \s*) new \s*  (?= \()
 Member: (?<= ^ \s*) drop \s*  (?= \{)
 Operator: (?<= \s+) (?: \&\& | \|\|) (?= \s+)
