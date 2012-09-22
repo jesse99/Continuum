@@ -39,6 +39,8 @@ http://research.microsoft.com/en-us/projects/pex/
 
 
 * unsafe should not be followed by ::
+* 1.0e23 should be a number.
+* Need to special case searching in javascript (use MDN).
 
 * tex \todo should be more visible, maybe red or something.
 * Css isn't quite right. All the below should work:
@@ -46,7 +48,6 @@ http://research.microsoft.com/en-us/projects/pex/
 	.foo {}		class selector
 	.foo, .bar {}	match foo class or bar class
 	#top h1 {}	matches header1s nested within an element with id top
-* Need to special case searching in javascript (use MDN).
 	
 * tex sections (and html headers) should be big.
 * Make prerequisite should not allow spaces in the target part.
