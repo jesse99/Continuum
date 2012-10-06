@@ -252,7 +252,8 @@ namespace TextView
 			{"haskell", "http://haskell.org/ghc/docs/latest/html/"},
 			{"python", "http://docs.python.org/release/2.7.3"},
 			{"rust", "http://doc.rust-lang.org/doc"},
-			{"shell", "http://www.gnu.org/s/bash/manual"}
+			{"shell", "http://www.gnu.org/s/bash/manual"},
+			{"javascript", "https://developer.mozilla.org/en-US/"}
 		};
 		private static string[] ms_applePrefixes = new string[]
 		{
