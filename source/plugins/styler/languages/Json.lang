@@ -1,6 +1,8 @@
 Language: json
 Globs: *.json
+LineComment: \x23
 
+Comment: \x23 .* $	# not part of the spec but sometimes used (e.g. via pre-processing)
 Keyword: \b(?:  false | null | true)\b 
 Number: (?<= \W) [\d.]+ [eE] [\+-]? \d+ (?= \W)
 Number: (?<= \W) [\d.]+ (?= \W)
