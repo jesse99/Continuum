@@ -9,6 +9,7 @@
 		<Implementation interfaces = "IInterface +IParseErrors" name = "GmcsParser"/>
 		<Implementation interfaces = "IInterface +IParseErrors" name = "GccParser"/>
 		<Implementation interfaces = "IInterface +IParseErrors" name = "GoParser"/>
+		<Implementation interfaces = "IInterface +IParseErrors" name = "JslParser"/>
 		<Implementation interfaces = "IInterface +IParseErrors" name = "MakeParser"/>
 		<Implementation interfaces = "IInterface +IParseErrors" name = "RustParser"/>
 		<Implementation interfaces = "IScripts +IStartup" name = "Scripts"/>

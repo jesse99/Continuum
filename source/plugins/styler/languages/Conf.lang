@@ -1,0 +1,5 @@
+Language: conf
+Globs: *.conf
+LineComment: \x23
+
+Comment: \x23 .* $
