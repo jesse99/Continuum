@@ -154,7 +154,7 @@ namespace Styler
 							else
 								if (g.Length > 0)
 									runs.Add(new StyleRun(g.Index, g.Length, type));
-								else if (type != "Error")
+								else if (type != "ParseError")
 									Log.WriteLine(TraceLevel.Error, "Styler", "{0} matched zero characters", type);
 							break;
 						}

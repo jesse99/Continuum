@@ -164,7 +164,7 @@ namespace Styler
 		private void DoParseMatch(Parse parse, List<StyleRun> runs)
 		{
 			if (parse.ErrorLength > 0)
-				runs.Add(new StyleRun(parse.ErrorIndex, parse.ErrorLength, "Error"));
+				runs.Add(new StyleRun(parse.ErrorIndex, parse.ErrorLength, "ParseError"));
 			
 			if (parse.Globals != null)
 				DoMatchScope(parse.Globals, runs);

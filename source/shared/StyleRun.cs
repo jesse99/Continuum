@@ -32,7 +32,7 @@ namespace Shared
 		{
 #if DEBUG
 			Contract.Requires(offset >= 0, "offset is negative");
-			Contract.Requires(((type == "Error") && length >= 0) || length > 0, "length is not correct");
+			Contract.Requires(((type == "ParseError") && length >= 0) || length > 0, "length is not correct");
 #endif
 			
 			Offset = offset;

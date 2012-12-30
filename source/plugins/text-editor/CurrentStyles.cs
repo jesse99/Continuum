@@ -292,7 +292,7 @@ namespace TextEditor
 			if (run.Length == 0)
 				return;
 				
-			if (run.Type == "Error")			// this is a parse error (HighlightError handles build errors)
+			if (run.Type == "ParseError")			// HighlightError handles build errors
 			{
 				range = AdjustRangeForZeroWidthChars(m_controller.Text, range);
 				m_storage.addAttribute_value_range(Externs.NSUnderlineStyleAttributeName, NSNumber.Create(2), range);
