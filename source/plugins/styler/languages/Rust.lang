@@ -8,8 +8,8 @@ DocComment: /\*! (?: . | \r | \n)*? \*/
 DocComment: /\*\* (?: . | \r | \n)*? \*/
 Comment: // .* $
 Comment: /\* (?: . | \r | \n)*? \*/
-Keyword: \b(?: macro_rules | as | assert | break | const | copy | do | else | enum | extern | fail | false | fn | for | if | impl | let | log | loop | match | mod | move | mut | priv | pub | pure | ref | return | static | struct | trait | true | type | unsafe | use | while)\b
-Keyword2: \b(?: Const | Copy | Send | Owned | binary32 | binary64 | bool | char | f32 | f64 | float | i16 | i32 | i64 | i8 | int | self | str | u16 | u32 | u64 | u8 | uint) (?! \w | \( )
+Keyword: \b(?: macro_rules | once | as | assert | break | const | copy | do | else | enum | extern | fail | false | fn | for | if | impl | let | log | loop | match | mod | move | mut | priv | pub | pure | ref | return | static | struct | trait | true | type | unsafe | use | while)\b
+Keyword2: \b(?: Const | Copy | Durable | Send | Owned | binary32 | binary64 | bool | char | f32 | f64 | float | i16 | i32 | i64 | i8 | int | self | str | u16 | u32 | u64 | u8 | uint) (?! \w | \( )
 String: " (?: [^"\\] | \\. | \\\n | \\\r)* "
 String: ' (?: [^'\r\n\\] | \\.)* '
 Number: (?<= \W) \d+ \. [\d_]+ (?: [eE] [+-]? [\d_]+)? (?: f \d+)? (?= \W)
